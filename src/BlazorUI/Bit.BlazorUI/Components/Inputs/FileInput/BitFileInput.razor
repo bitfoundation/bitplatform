@@ -74,7 +74,12 @@
 
         @* the list is named so that it is announced as the selected files rather than as one more
            unlabelled list of the page when a screen reader user walks the landmarks and the lists. *@
+        @* a file list given a ceiling scrolls, and a scrollable box a keyboard has no way into is
+           unreachable for anyone who cannot use a pointer. The remove buttons are that way in whenever
+           they are rendered; without them - and without a template that brings its own - the list takes
+           the tab stop itself so the arrow keys can scroll it. *@
         <div role="list"
+             tabindex="@(Files.Count > 0 && ShowRemoveButton is false && FileViewTemplate is null ? "0" : null)"
              aria-label="@(FileListAriaLabel ?? "Selected files")"
              style="@Styles?.FileList" class="bit-fin-fl @Classes?.FileList">
             @foreach (var file in Files)

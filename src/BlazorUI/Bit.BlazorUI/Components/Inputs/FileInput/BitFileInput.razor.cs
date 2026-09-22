@@ -164,10 +164,10 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public Func<BitFileInputInfo, BitIconInfo?>? FileIconSelector { get; set; }
 
     /// <summary>
-    /// Custom validation function called for each newly selected file after the built-in validations pass.
-    /// Return an error message to mark the file as invalid, or null to accept it.
+    /// The accessible name of the file list, which tells a screen reader user walking the lists of the page
+    /// what this one holds. Defaults to "Selected files".
     /// </summary>
-    [Parameter] public Func<BitFileInputInfo, string?>? FileValidator { get; set; }
+    [Parameter] public string? FileListAriaLabel { get; set; }
 
     /// <summary>
     /// Custom formatter of the file size shown under the name of each file item.
@@ -178,10 +178,10 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public Func<long, string>? FileSizeFormatter { get; set; }
 
     /// <summary>
-    /// The accessible name of the file list, which tells a screen reader user walking the lists of the page
-    /// what this one holds. Defaults to "Selected files".
+    /// Custom validation function called for each newly selected file after the built-in validations pass.
+    /// Return an error message to mark the file as invalid, or null to accept it.
     /// </summary>
-    [Parameter] public string? FileListAriaLabel { get; set; }
+    [Parameter] public Func<BitFileInputInfo, string?>? FileValidator { get; set; }
 
     /// <summary>
     /// Custom Razor template for rendering individual file items in the file list.
@@ -421,9 +421,13 @@ public partial class BitFileInput : BitComponentBase
     /// Reads the content of the specified file from the browser and populates its <see cref="BitFileInputInfo.Content"/> property
     /// with the byte array, or reads every valid file of the file list when no file is specified.
     /// Only reads valid files and only while the component is enabled.
+    /// The whole file crosses the interop boundary as one message, which on Blazor Server the circuit caps
+    /// (SignalR's MaximumReceiveMessageSize, 32 KB by default), so anything larger than a small file is read
+    /// with <see cref="OpenReadStreamAsync"/> instead.
     /// </summary>
     /// <param name="fileInfo">The file info whose content should be loaded, or null to load all the valid files.</param>
-    public async Task ReadContentAsync(BitFileInputInfo? fileInfo = null)
+    /// <param name="cancellationToken">A token that cancels the read.</param>
+    public async Task ReadContentAsync(BitFileInputInfo? fileInfo = null, CancellationToken cancellationToken = default)
     {
         if (IsDisposed) return;
         if (IsEnabled is false) return;
@@ -432,7 +436,9 @@ public partial class BitFileInput : BitComponentBase
         {
             foreach (var file in _files.ToArray())
             {
-                await ReadContentAsync(file);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await ReadContentAsync(file, cancellationToken);
             }
 
             return;
@@ -440,14 +446,15 @@ public partial class BitFileInput : BitComponentBase
 
         if (fileInfo.IsValid is false) return;
 
-        fileInfo.Content = await _js.BitFileInputReadContent(UniqueId, fileInfo.FileId);
+        fileInfo.Content = await _js.BitFileInputReadContent(UniqueId, fileInfo.FileId, cancellationToken);
     }
 
     /// <summary>
     /// Opens a stream over the content of the specified file, which the runtime reads from the browser in chunks
     /// instead of materializing the whole file in memory the way <see cref="ReadContentAsync"/> does.
     /// This is what makes a file too large to hold as a byte array - a video, an archive, a database dump -
-    /// copyable to disk, hashable or forwardable to a server.
+    /// copyable to disk, hashable or forwardable to a server, and on Blazor Server it is also what gets a file
+    /// past the circuit's message size cap, which one byte array in one interop message runs into almost at once.
     /// The stream is forward only and must be disposed by the caller, which is also what releases the
     /// underlying JavaScript reference to the file.
     /// Unlike <see cref="ReadContentAsync"/> it also reads a file the validations rejected, since a file too

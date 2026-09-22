@@ -243,72 +243,157 @@ private void AddEventLog(string log)
     private readonly string example14RazorCode = @"
 <BitFileInput @ref=""bitFileInput""
               Multiple
+              Append
               MaxSize=""1024 * 1024 * 2""
               AllowedExtensions=""@(["".jpg"", "".jpeg"", "".png"", "".bmp""])""
               Classes=""@(new() { Dragging = ""custom-drop-zone"" })"">
     <LabelTemplate>
-        @if (bitFileInput.Files?.Any() is not true)
-        {
-            <div class=""browse-file"" @onclick=""() => bitFileInput.Browse()"">
-                <div class=""browse-file-header"">
-                    <i class=""bit-icon bit-icon--CloudUpload"" />
-                    <div>
-                        Drag and drop or
-                    </div>
-                    <div>
-                        <strong>
-                            Browse files
-                        </strong>
-                    </div>
-                </div>
-
-                <div class=""browse-file-footer"">
-                    <div>Max file size: 2 MB</div>
-                    <div>Supported file types: jpg, jpeg, png, bmp</div>
-                </div>
-            </div>
-        }
+        <button type=""button"" class=""browse-file"" @onclick=""() => bitFileInput.Browse()"">
+            <i class=""bit-icon bit-icon--CloudUpload"" aria-hidden=""true"" />
+            <div class=""browse-file-title"">Drag and drop or <strong>browse files</strong></div>
+            <div class=""browse-file-hint"">JPG, JPEG, PNG or BMP, up to 2 MB each</div>
+        </button>
     </LabelTemplate>
     <FileViewTemplate Context=""file"">
-        @if (!string.IsNullOrEmpty(file.Name))
-        {
-            <div class=""file-list"">
-                <div class=""file-list-header"">
-                    <div class=""file-info"">
-                        <div class=""file-info-main"">
-                            <i class=""bit-icon bit-icon--Page"" />
-                            <div class=""file-info-data"">
-                                <div class=""file-info-name"">
-                                    @file.Name
-                                </div>
-                                <div>
-                                    @FileSizeHumanizer.Humanize(file.Size)
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class=""file-info-btns"">
-                            <i class=""bit-icon bit-icon--Cancel remove-ico""
-                               @onclick=""() => bitFileInput.RemoveFile(file)"" />
-                        </div>
-                    </div>
-
-                    @if (!file.IsValid)
-                    {
-                        <div class=""file-info-e-msg"">@file.Message</div>
-                    }
-                </div>
-
-                <div class=""file-list-footer"">
-                    <div>Max file size: 2 MB</div>
-                    <div>Supported file types: jpg, jpeg, png, bmp</div>
-                </div>
+        <div class=""file-row @(file.IsValid ? null : ""file-row-invalid"")"">
+            <i class=""bit-icon bit-icon--Page"" aria-hidden=""true"" />
+            <div class=""file-row-data"">
+                <div class=""file-row-name"">@file.Name</div>
+                <div class=""file-row-meta"">@FileSizeHumanizer.Humanize(file.Size)</div>
+                @if (file.IsValid is false)
+                {
+                    <div class=""file-row-error"">@file.Message</div>
+                }
             </div>
-        }
+            <button type=""button"" class=""file-row-remove"" aria-label=""@($""Remove {file.Name}"")""
+                    @onclick=""() => bitFileInput.RemoveFile(file)"">
+                <i class=""bit-icon bit-icon--Cancel"" aria-hidden=""true"" />
+            </button>
+        </div>
     </FileViewTemplate>
 </BitFileInput>";
     private readonly string example14CsharpCode = @"
 private BitFileInput bitFileInput = default!;";
+    private const string example14ScssCode = @"
+/* Every color is a theme token, so the hand-built panel and rows follow the preset and the scheme. */
+.browse-file {
+    gap: 0.5rem;
+    width: 100%;
+    display: flex;
+    cursor: pointer;
+    padding: 1.5rem;
+    text-align: center;
+    align-items: center;
+    font-family: inherit;
+    justify-content: center;
+    flex-flow: column nowrap;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-pri);
+    border-radius: var(--bit-shp-radius-surface);
+    border: 2px dashed var(--bit-clr-brd-pri);
+
+    &:hover {
+        border-color: var(--bit-clr-pri);
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bit-clr-pri-focus);
+        outline-offset: 2px;
+    }
+
+    i {
+        font-size: 1.5rem;
+        color: var(--bit-clr-pri);
+    }
+}
+
+.browse-file-title {
+    font-size: 1rem;
+}
+
+.browse-file-hint {
+    font-size: 0.75rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+.file-row {
+    gap: 0.75rem;
+    display: flex;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    align-items: center;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
+    border-radius: var(--bit-shp-radius-surface);
+    border: 1px solid var(--bit-clr-brd-pri);
+
+    > i {
+        font-size: 1.5rem;
+        color: var(--bit-clr-fg-sec);
+    }
+}
+
+.file-row-invalid {
+    border-color: var(--bit-clr-err);
+}
+
+.file-row-data {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.file-row-name {
+    overflow: hidden;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.file-row-meta {
+    font-size: 0.75rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+.file-row-error {
+    font-size: 0.75rem;
+    color: var(--bit-clr-err);
+}
+
+.file-row-remove {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    flex-shrink: 0;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: var(--bit-clr-err);
+    background-color: transparent;
+    border-radius: var(--bit-shp-radius-button);
+
+    &:hover {
+        background-color: var(--bit-clr-bg-ter);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bit-clr-pri-focus);
+        outline-offset: -2px;
+    }
+}
+
+/* Classes.Dragging lands on the root while files hover over it, which is where the panel gets its
+   drag feedback from now that it no longer carries the component's own drop indicator. */
+::deep .custom-drop-zone .browse-file {
+    border-color: var(--bit-clr-pri);
+    background-color: var(--bit-clr-bg-sec-hover);
+}";
+
+    private readonly DemoCodeFile[] example14CodeFiles =
+    [
+        new("BitFileInputDemo.razor.scss", example14ScssCode),
+    ];
 
     private readonly string example15RazorCode = @"
 <BitFileInput @ref=""publicApiFileInput"" HideLabel Multiple OnChange=""@(_ => StateHasChanged())"" />
@@ -473,7 +558,7 @@ private readonly BitFileInputParams[] fileInputParams =
 
 
 <BitFileInput Label=""Pill button, wide component"" ShowPreview ShowRemoveButton
-              Style=""--bit-FileInput-label-radius: 999px; --bit-FileInput-max-width: 100%;"" />
+              Style=""--bit-FileInput-label-radius: 999px; --bit-FileInput-max-width: 100%; --bit-FileInput-label-font-weight: 400;"" />
 
 <BitFileInput Label=""Solid drop indicator in the role color"" ShowRemoveButton
               Style=""--bit-FileInput-drop-border-style: solid; --bit-FileInput-drop-background: var(--bit-clr-suc);"" />

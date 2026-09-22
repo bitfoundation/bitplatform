@@ -10,11 +10,14 @@
 //   --bit-FileInput-active-color              role color while pressed                         (default: the role's active color)
 //   --bit-FileInput-focus-color               focus ring color of the browse and remove buttons (default: the role's focus color)
 //   --bit-FileInput-disabled-color            foreground when IsEnabled is false               (default: $clr-fg-dis)
-//   --bit-FileInput-disabled-background       background when IsEnabled is false               (default: $clr-bg-dis)
-//   --bit-FileInput-disabled-border-color     border color when IsEnabled is false             (default: $clr-brd-dis)
+//   --bit-FileInput-disabled-background       background of the browse and remove buttons
+//                                             when IsEnabled is false                          (default: $clr-bg-dis)
+//   --bit-FileInput-disabled-border-color     border color of the browse button
+//                                             when IsEnabled is false                          (default: $clr-brd-dis)
 //   --bit-FileInput-label-height              smallest height of the browse button             (default: per size, $siz-ctrl-*)
 //   --bit-FileInput-label-padding             padding of the browse button                     (default: per size, $siz-ctrl-pad-*)
 //   --bit-FileInput-label-font-size           text size of the browse button                   (default: per size, from the type ramp)
+//   --bit-FileInput-label-font-weight         text weight of the browse button                 (default: $tg-font-weight)
 //   --bit-FileInput-label-radius              corner radius of the browse button and its ring  (default: $shp-radius-button)
 //   --bit-FileInput-drop-zone-height          smallest height of the drop zone panel           (default: per size)
 //   --bit-FileInput-drop-zone-padding         padding of the drop zone panel                   (default: per size)
@@ -63,10 +66,12 @@
     --bit-fin-c-hover: var(--bit-FileInput-hover-color, var(--bit-fin-clr-hover));
     --bit-fin-c-active: var(--bit-FileInput-active-color, var(--bit-fin-clr-active));
 
+    // only the inherited text color is set here: the root is the column holding the button, the hint and
+    // the file list, not a control of its own, so painting a background or a border on it would put a
+    // disabled-colored block behind the hint and in the gaps between the file items - and show straight
+    // through the two variants whose button is transparent.
     &.bit-dis {
         color: var(--bit-FileInput-disabled-color, #{$clr-fg-dis});
-        border-color: var(--bit-FileInput-disabled-border-color, #{$clr-brd-dis});
-        background-color: var(--bit-FileInput-disabled-background, #{$clr-bg-dis});
 
         //the browse button carries the role color while enabled, but a disabled file input reads as a
         //neutral form field whatever its role and variant (see the disabled conventions in
@@ -99,7 +104,7 @@
     font-family: inherit;
     // the family's own control weight, so the browse button reads as the same kind of thing as the buttons
     // it sits next to rather than as a lighter one of its own.
-    font-weight: $tg-font-weight;
+    font-weight: var(--bit-FileInput-label-font-weight, #{$tg-font-weight});
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
     -webkit-tap-highlight-color: transparent;
@@ -259,6 +264,12 @@
     padding: 0;
     overflow-y: auto;
     max-height: var(--bit-FileInput-file-list-max-height, none);
+
+    // the list only takes a tab stop when nothing inside it can (see the markup), and a stop with no
+    // indicator is a stop nobody can follow, so the ring is drawn on it as it is on the buttons.
+    &:focus-visible {
+        @include focus-ring(var(--bit-FileInput-focus-color, var(--bit-fin-clr-focus)));
+    }
 }
 
 .bit-fin-itm {

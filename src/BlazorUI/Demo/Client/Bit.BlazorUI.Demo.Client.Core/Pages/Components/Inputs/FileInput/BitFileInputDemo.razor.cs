@@ -142,15 +142,6 @@ public partial class BitFileInputDemo
         },
         new()
         {
-            Name = "FileValidator",
-            Type = "Func<BitFileInputInfo, string?>?",
-            DefaultValue = "null",
-            Description = "Custom validation function called for each newly selected file after the built-in validations pass. Return an error message to mark the file as invalid, or null to accept it.",
-            LinkType = LinkType.Link,
-            Href = "#file-input-info"
-        },
-        new()
-        {
             Name = "FileListAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -162,6 +153,15 @@ public partial class BitFileInputDemo
             Type = "Func<long, string>?",
             DefaultValue = "null",
             Description = "Custom formatter of the file size shown under the name of each file item. Receives the size of the file in bytes and returns the text to display, which is the place to localize the units or to switch between the binary and the decimal bases. When not set, a built-in humanizer is used.",
+        },
+        new()
+        {
+            Name = "FileValidator",
+            Type = "Func<BitFileInputInfo, string?>?",
+            DefaultValue = "null",
+            Description = "Custom validation function called for each newly selected file after the built-in validations pass. Return an error message to mark the file as invalid, or null to accept it.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
         },
         new()
         {
@@ -413,9 +413,9 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "ReadContentAsync",
-            Type = "(BitFileInputInfo? fileInfo = null) => Task",
+            Type = "(BitFileInputInfo? fileInfo = null, CancellationToken cancellationToken = default) => Task",
             DefaultValue = "",
-            Description = "Reads the content of the specified file from the browser and populates its Content property with the byte array, or reads every valid file of the file list when no file is specified. Only reads valid files and only while the component is enabled.",
+            Description = "Reads the content of the specified file from the browser and populates its Content property with the byte array, or reads every valid file of the file list when no file is specified. Only reads valid files and only while the component is enabled. The whole file crosses the interop boundary as one message, which on Blazor Server the circuit caps (SignalR's MaximumReceiveMessageSize, 32 KB by default), so anything larger is read with OpenReadStreamAsync instead.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -424,7 +424,7 @@ public partial class BitFileInputDemo
             Name = "OpenReadStreamAsync",
             Type = "(BitFileInputInfo fileInfo, long? maxAllowedSize = null, CancellationToken cancellationToken = default) => Task<Stream>",
             DefaultValue = "",
-            Description = "Opens a forward-only stream over the content of the specified file, which the runtime reads from the browser in chunks instead of materializing the whole file in memory the way ReadContentAsync does. Unlike ReadContentAsync it also reads a file the validations rejected. maxAllowedSize defaults to the size the browser reported for the file, and the stream must be disposed by the caller.",
+            Description = "Opens a forward-only stream over the content of the specified file, which the runtime reads from the browser in chunks instead of materializing the whole file in memory the way ReadContentAsync does - which is also what gets a file past a Blazor Server circuit's message size cap. Unlike ReadContentAsync it also reads a file the validations rejected. maxAllowedSize defaults to the size the browser reported for the file, and the stream must be disposed by the caller.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -805,13 +805,13 @@ public partial class BitFileInputDemo
         {
             Name = "--bit-FileInput-disabled-background",
             DefaultValue = "--bit-clr-bg-dis",
-            Description = "Background when IsEnabled is false.",
+            Description = "Background of the browse button and of the remove buttons when IsEnabled is false.",
         },
         new()
         {
             Name = "--bit-FileInput-disabled-border-color",
             DefaultValue = "--bit-clr-brd-dis",
-            Description = "Border color when IsEnabled is false.",
+            Description = "Border color of the browse button when IsEnabled is false.",
         },
         new()
         {
@@ -830,6 +830,12 @@ public partial class BitFileInputDemo
             Name = "--bit-FileInput-label-font-size",
             DefaultValue = "Per Size, from the type ramp",
             Description = "Text size of the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-label-font-weight",
+            DefaultValue = "--bit-tpg-font-weight",
+            Description = "Text weight of the browse button, which defaults to the weight the theme gives every control label.",
         },
         new()
         {

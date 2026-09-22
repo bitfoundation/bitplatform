@@ -1719,6 +1719,43 @@ public class BitFileInputTests : BunitTestContext
         Assert.AreEqual("Cascaded list", component.Find(".bit-fin-fl").GetAttribute("aria-label"));
     }
 
+    [TestMethod]
+    public void BitFileInputFileListShouldTakeATabStopOnlyWhenNothingInsideItCan()
+    {
+        // an empty list has nothing to scroll, so it stays out of the tab order.
+        var component = RenderComponent<BitFileInput>();
+
+        Assert.IsFalse(component.Find(".bit-fin-fl").HasAttribute("tabindex"));
+
+        // a list given a ceiling scrolls, and without the remove buttons there is nothing inside it
+        // a keyboard can reach, so the list itself has to be reachable to be scrollable.
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("0", component.Find(".bit-fin-fl").GetAttribute("tabindex"));
+
+        // the remove buttons are that way in, so the list does not take a stop of its own on top of them.
+        component.Render(parameters => parameters.Add(p => p.ShowRemoveButton, true));
+
+        Assert.IsFalse(component.Find(".bit-fin-fl").HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitFileInputFileListShouldLeaveTheTabStopToACustomFileViewTemplate()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.FileViewTemplate, file => builder => builder.AddContent(0, file.Name));
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        // the template owns what is inside the list, focusable or not, so the list does not compete with it.
+        Assert.IsFalse(component.Find(".bit-fin-fl").HasAttribute("tabindex"));
+    }
+
     private void SetupFiles(BitFileInputInfo[] files)
     {
         Context.JSInterop.Setup<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup", _ => true).SetResult(files);

@@ -376,84 +376,50 @@
         }
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Templates" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode"
+                 CodeFiles="@example14CodeFiles" Id="example14">
         <div>
-            The default UI can be swapped out entirely: <b>LabelTemplate</b> replaces the browse button - here with
-            a full drop-zone panel that hides itself once files are selected - and <b>FileViewTemplate</b> replaces
-            each item of the file list, receiving the file info as its context, validation state and error message
-            included. Replacing the browse button also replaces the built-in dashed drop indicator that lives on
-            it, so a custom label should bring its own drag feedback: <b>Classes.Dragging</b> puts a class on the
-            root element for as long as files hover over the component, which is what turns the panel below blue.
-            For a drop panel that is not this hand-built, reach for
-            <BitLink Href="#example18"><b>ShowDropZone</b></BitLink> instead - it brings the same shape with the
-            focus ring, the drag state and the theme already wired in.
+            The default UI can be swapped out entirely: <b>LabelTemplate</b> replaces the browse button and
+            <b>FileViewTemplate</b> replaces each item of the file list, receiving the file info as its context,
+            validation state and error message included. Both replace real controls, so a template has to bring
+            back what it replaced: the panel below is a <code>&lt;button&gt;</code> and the remove control is one
+            too, which is what keeps Tab, Enter and Space working and gives each of them a focus ring. Replacing
+            the browse button also replaces the built-in dashed drop indicator that lived on it, so a custom label
+            needs its own drag feedback: <b>Classes.Dragging</b> puts a class on the root element for as long as
+            files hover over the component, which is what recolors the panel below. For a drop panel that is not
+            this hand-built, reach for <BitLink Href="#example18"><b>ShowDropZone</b></BitLink> instead - it brings
+            the same shape with the focus ring, the drag state and the theme already wired in.
         </div>
 
         <br />
 
         <div>
-            <BitFileInput @ref="bitFileInput" Multiple MaxSize="1024 * 1024 * 2"
+            <BitFileInput @ref="bitFileInput" Multiple Append MaxSize="1024 * 1024 * 2"
                           AllowedExtensions="@([".jpg", ".jpeg", ".png", ".bmp"])"
                           Classes="@(new() { Dragging = "custom-drop-zone" })">
                 <LabelTemplate>
-                    @if (bitFileInput.Files?.Any() is not true)
-                    {
-                        <div class="browse-file" @onclick="() => bitFileInput.Browse()">
-                            <div class="browse-file-header">
-                                <i class="bit-icon bit-icon--CloudUpload" />
-                                <div>
-                                    Drag and drop or
-                                </div>
-                                <div>
-                                    <strong>
-                                        Browse files
-                                    </strong>
-                                </div>
-                            </div>
-
-                            <div class="browse-file-footer">
-                                <div>Max file size: 2 MB</div>
-                                <div>Supported file types: jpg, jpeg, png, bmp</div>
-                            </div>
-                        </div>
-                    }
+                    <button type="button" class="browse-file" @onclick="() => bitFileInput.Browse()">
+                        <i class="bit-icon bit-icon--CloudUpload" aria-hidden="true" />
+                        <div class="browse-file-title">Drag and drop or <strong>browse files</strong></div>
+                        <div class="browse-file-hint">JPG, JPEG, PNG or BMP, up to 2 MB each</div>
+                    </button>
                 </LabelTemplate>
                 <FileViewTemplate Context="file">
-                    @if (!string.IsNullOrEmpty(file.Name))
-                    {
-                        <div class="file-list">
-                            <div class="file-list-header">
-                                <div class="file-info">
-                                    <div class="file-info-main">
-                                        <i class="bit-icon bit-icon--Page" />
-                                        <div class="file-info-data">
-                                            <div class="file-info-name">
-                                                @file.Name
-                                            </div>
-                                            <div>
-                                                @FileSizeHumanizer.Humanize(file.Size)
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="file-info-btns">
-                                        <i class="bit-icon bit-icon--Cancel remove-ico"
-                                           @onclick="() => bitFileInput.RemoveFile(file)" />
-                                    </div>
-                                </div>
-
-                                @if (!file.IsValid)
-                                {
-                                    <div class="file-info-e-msg">@file.Message</div>
-                                }
-                            </div>
-
-                            <div class="file-list-footer">
-                                <div>Max file size: 2 MB</div>
-                                <div>Supported file types: jpg, jpeg, png, bmp</div>
-                            </div>
+                    <div class="file-row @(file.IsValid ? null : "file-row-invalid")">
+                        <i class="bit-icon bit-icon--Page" aria-hidden="true" />
+                        <div class="file-row-data">
+                            <div class="file-row-name">@file.Name</div>
+                            <div class="file-row-meta">@FileSizeHumanizer.Humanize(file.Size)</div>
+                            @if (file.IsValid is false)
+                            {
+                                <div class="file-row-error">@file.Message</div>
+                            }
                         </div>
-                    }
+                        <button type="button" class="file-row-remove" aria-label="@($"Remove {file.Name}")"
+                                @onclick="() => bitFileInput.RemoveFile(file)">
+                            <i class="bit-icon bit-icon--Cancel" aria-hidden="true" />
+                        </button>
+                    </div>
                 </FileViewTemplate>
             </BitFileInput>
         </div>
@@ -474,7 +440,10 @@
             browser in chunks instead of materializing it whole the way <b>ReadContentAsync</b> does, which is
             what makes a file too large to hold as a byte array - a video, an archive, a database dump - copyable
             to disk, hashable or forwardable to a server. It reads at most as many bytes as the browser reported
-            for the file unless a different ceiling is passed, and the stream is the caller's to dispose.
+            for the file unless a different ceiling is passed, and the stream is the caller's to dispose. On
+            Blazor Server it is not only the faster route but the only one past a handful of kilobytes:
+            <b>ReadContentAsync</b> sends the whole array in one interop message, which the circuit caps at
+            SignalR's <code>MaximumReceiveMessageSize</code> - 32 KB out of the box.
         </div>
 
         <br />
@@ -518,7 +487,10 @@
             and <b>AriaLabel</b> labels the browse button where a short visible label like "Browse" does not say
             enough on its own. Dragging is never the only way in either - everything a drop does, the browse
             button does with a single tap - and both it and the remove buttons stay at or above the 24 CSS pixel
-            target size in every <b>Size</b>.
+            target size in every <b>Size</b>. A file list capped with
+            <code>--bit-FileInput-file-list-max-height</code> scrolls, and a box a keyboard cannot enter cannot be
+            scrolled: the remove buttons are that way in whenever they are shown, and without them the list takes
+            the tab stop itself.
         </div>
 
         <br />
@@ -781,7 +753,7 @@
         <br />
         <div class="example-box">
             <BitFileInput Label="Pill button, wide component" ShowPreview ShowRemoveButton
-                          Style="--bit-FileInput-label-radius: 999px; --bit-FileInput-max-width: 100%;" />
+                          Style="--bit-FileInput-label-radius: 999px; --bit-FileInput-max-width: 100%; --bit-FileInput-label-font-weight: 400;" />
 
             <BitFileInput Label="Solid drop indicator in the role color" ShowRemoveButton
                           Style="--bit-FileInput-drop-border-style: solid; --bit-FileInput-drop-background: var(--bit-clr-suc);" />

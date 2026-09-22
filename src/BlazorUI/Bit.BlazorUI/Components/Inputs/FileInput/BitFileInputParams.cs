@@ -107,6 +107,11 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
     public Func<BitFileInputInfo, BitIconInfo?>? FileIconSelector { get; set; }
 
     /// <summary>
+    /// The accessible name of the file list, which is a piece of English a whole app localizes once.
+    /// </summary>
+    public string? FileListAriaLabel { get; set; }
+
+    /// <summary>
     /// Custom formatter of the file size shown under the name of each file item, which is where a localized
     /// unit name belongs - the kind of decision a whole app makes once rather than per file input.
     /// </summary>
@@ -116,11 +121,6 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
     /// Custom validation function called for each newly selected file after the built-in validations pass.
     /// </summary>
     public Func<BitFileInputInfo, string?>? FileValidator { get; set; }
-
-    /// <summary>
-    /// The accessible name of the file list, which is a piece of English a whole app localizes once.
-    /// </summary>
-    public string? FileListAriaLabel { get; set; }
 
     /// <summary>
     /// Whether to hide the file list that displays the selected files in the UI.
@@ -346,6 +346,11 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.FileIconSelector = FileIconSelector;
         }
 
+        if (FileListAriaLabel.HasValue() && bitFileInput.HasNotBeenSet(nameof(FileListAriaLabel)))
+        {
+            bitFileInput.FileListAriaLabel = FileListAriaLabel;
+        }
+
         if (FileSizeFormatter is not null && bitFileInput.HasNotBeenSet(nameof(FileSizeFormatter)))
         {
             bitFileInput.FileSizeFormatter = FileSizeFormatter;
@@ -354,11 +359,6 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
         if (FileValidator is not null && bitFileInput.HasNotBeenSet(nameof(FileValidator)))
         {
             bitFileInput.FileValidator = FileValidator;
-        }
-
-        if (FileListAriaLabel.HasValue() && bitFileInput.HasNotBeenSet(nameof(FileListAriaLabel)))
-        {
-            bitFileInput.FileListAriaLabel = FileListAriaLabel;
         }
 
         if (HideFileList.HasValue && bitFileInput.HasNotBeenSet(nameof(HideFileList)))
