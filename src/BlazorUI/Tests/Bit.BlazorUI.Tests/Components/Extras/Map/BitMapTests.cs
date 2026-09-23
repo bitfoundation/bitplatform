@@ -50,17 +50,6 @@ public class BitMapTests : BunitTestContext
     private const string GET_VIEW = "BitBlazorUI.BitMapLeaflet.getView";
     private const string PROJECT = "BitBlazorUI.BitMapLeaflet.project";
 
-    [TestInitialize]
-    public void ResetAssetCache()
-    {
-        // BitMap dedupes script / stylesheet loads process-wide so the same provider URL
-        // isn't re-requested when multiple maps mount in quick succession. Tests that
-        // assert on initScripts/initStylesheets invocations need to reset that cache so
-        // each test starts from a clean state.
-        BitMap<BitLeafletMapProvider>.ResetAssetLoadCacheForTesting();
-        BitMap<TestMapProviderA>.ResetAssetLoadCacheForTesting();
-    }
-
     /// <summary>
     /// Sets up the two capability probes a mount makes, so the map reaches its Ready state.
     /// <para>
@@ -116,13 +105,16 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMapShouldDedupeAssetLoadsAcrossMounts()
+    public void BitMapShouldRequestAssetsOnEveryMount()
     {
+        // Dedup belongs to the JS side, which caches per document. A .NET-side cache would
+        // be process-wide, and on Blazor Server one process serves many documents: the
+        // second document would be told its provider scripts were already injected and fail
+        // on a global that was never defined there. So every mount asks.
         Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
         Context.JSInterop.SetupVoid(INIT);
 
-        // First mount: stylesheets + scripts must be requested.
         RenderComponent<BitMap<BitLeafletMapProvider>>();
         var firstStylesheetCalls = Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_STYLESHEETS);
         var firstScriptCalls = Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS);
@@ -130,15 +122,14 @@ public class BitMapTests : BunitTestContext
         Assert.IsTrue(firstStylesheetCalls >= 1, "First mount should request stylesheets");
         Assert.IsTrue(firstScriptCalls >= 1, "First mount should request scripts");
 
-        // Second mount: cache should kick in and skip redundant load round-trips.
         RenderComponent<BitMap<BitLeafletMapProvider>>();
 
-        Assert.AreEqual(firstStylesheetCalls,
+        Assert.AreEqual(firstStylesheetCalls * 2,
             Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_STYLESHEETS),
-            "Second mount must not re-request already-loaded stylesheets");
-        Assert.AreEqual(firstScriptCalls,
+            "Second mount must request stylesheets again");
+        Assert.AreEqual(firstScriptCalls * 2,
             Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS),
-            "Second mount must not re-request already-loaded scripts");
+            "Second mount must request scripts again");
     }
 
     [TestMethod]
@@ -645,11 +636,12 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMapShouldShareTheAssetCacheAcrossProviderTypes()
+    public void BitMapShouldAskForTheSameUrlFromEveryProviderType()
     {
-        // The cache lives on a non-generic type on purpose: static state inside
-        // BitMap<TMapProvider> is per closed generic, so two maps over different provider types
-        // that share a script URL would each pay their own interop round-trip.
+        // Two provider types sharing a script URL both ask for it, each with the URL itself as
+        // the request. That is what lets the JS side collapse them: it keys its cache on the URL
+        // list and scans what the document already holds, so nothing about the dedup depends on
+        // which closed generic asked, or on a .NET static outliving the document.
         Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
         Context.JSInterop.SetupVoid("BitBlazorUI.SharedAssetProviderA.init");
@@ -659,13 +651,18 @@ public class BitMapTests : BunitTestContext
         Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
 
         RenderComponent<BitMap<SharedAssetProviderA>>();
-        var afterFirst = Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS);
-
         RenderComponent<BitMap<SharedAssetProviderB>>();
 
-        Assert.AreEqual(1, afterFirst);
-        Assert.AreEqual(afterFirst, Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS),
-            "A second provider type sharing the same script URL must not re-request it");
+        var scriptCalls = Context.JSInterop.Invocations.Where(i => i.Identifier == INIT_SCRIPTS).ToList();
+
+        Assert.AreEqual(2, scriptCalls.Count, "Each provider type must request its scripts");
+        CollectionAssert.AreEqual(
+            new[] { "https://cdn.example.com/shared-map.js" },
+            ((IEnumerable<string>)scriptCalls[0].Arguments[0]!).ToArray());
+        CollectionAssert.AreEqual(
+            ((IEnumerable<string>)scriptCalls[0].Arguments[0]!).ToArray(),
+            ((IEnumerable<string>)scriptCalls[1].Arguments[0]!).ToArray(),
+            "Both must ask under the same URL, which is the key the JS side dedupes on");
     }
 
     [TestMethod]

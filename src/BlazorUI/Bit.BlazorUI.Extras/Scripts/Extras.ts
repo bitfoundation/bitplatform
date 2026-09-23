@@ -276,78 +276,83 @@ namespace BitBlazorUI {
             }
         }
 
+        // Both loaders cache per asset, not per list: two components asking for
+        // overlapping-but-unequal lists have to await the very same load, instead of one of
+        // them finding the other's still-loading tag in the document and taking it for ready.
+
         private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
         public static async initScripts(scripts: string[], isModule: boolean) {
-            const key = scripts.join('|');
+            return Promise.all(scripts.map(s => Extras.initScript(s, isModule)));
+        }
+
+        private static initScript(url: string, isModule: boolean) {
+            const key = `${isModule ? 'module' : 'script'}|${url}`;
             if (Extras._initScriptsPromises[key] !== undefined) {
                 return Extras._initScriptsPromises[key];
             }
 
             const allScripts = Array.from(document.scripts).map(s => s.src);
-            const notAddedScripts = scripts.filter(s => !allScripts.find(as => as.includes(s)));
+            if (allScripts.find(as => as.includes(url))) return Promise.resolve();
 
-            if (notAddedScripts.length == 0) return Promise.resolve();
-
-            const promise = new Promise(async (res: any, rej: any) => {
-                try {
-                    await Promise.all(notAddedScripts.map(addScript));
-                    res();
-                } catch (e: any) {
-                    rej(e);
+            const promise = new Promise((res, rej) => {
+                const script = document.createElement('script');
+                script.src = url;
+                if (isModule) {
+                    script.type = 'module';
                 }
+                script.onload = res;
+                script.onerror = e => {
+                    // The dead tag goes out with the forgotten promise, otherwise the scan
+                    // above would find it and take a retry for an already loaded script.
+                    script.remove();
+                    rej(e);
+                };
+                document.body.appendChild(script);
             });
 
-            Extras._initScriptsPromises[key] = promise;
-            return promise;
-
-            async function addScript(url: string) {
-                return new Promise((res, rej) => {
-                    const script = document.createElement('script');
-                    script.src = url;
-                    if (isModule) {
-                        script.type = 'module';
-                    }
-                    script.onload = res;
-                    script.onerror = rej;
-                    document.body.appendChild(script);
-                })
-            }
+            // A rejected load is not remembered: caching it would make one CDN hiccup
+            // permanent for the life of the document, so a later mount could never retry.
+            Extras._initScriptsPromises[key] = promise.catch((e: any) => {
+                delete Extras._initScriptsPromises[key];
+                throw e;
+            });
+            return Extras._initScriptsPromises[key];
         }
 
         private static _initStylesheetsPromises: { [key: string]: Promise<unknown> } = {};
-        public static async initStylesheets(stylesheets: string[], isModule: boolean) {
-            const key = stylesheets.join('|');
-            if (Extras._initStylesheetsPromises[key] !== undefined) {
-                return Extras._initStylesheetsPromises[key];
+        public static async initStylesheets(stylesheets: string[]) {
+            return Promise.all(stylesheets.map(s => Extras.initStylesheet(s)));
+        }
+
+        private static initStylesheet(url: string) {
+            if (Extras._initStylesheetsPromises[url] !== undefined) {
+                return Extras._initStylesheetsPromises[url];
             }
 
-            const allStylesheets = Array.from(document.links).filter(l => l.rel === 'stylesheet').map(s => s.href);
-            const notAddedStylesheets = stylesheets.filter(s => !allStylesheets.find(as => as.includes(s)));
+            // Queried, not read off document.links, which holds only <a> and <area> elements.
+            const links = document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]');
+            const allStylesheets = Array.from(links).map(l => l.href);
+            if (allStylesheets.find(as => as.includes(url))) return Promise.resolve();
 
-            if (notAddedStylesheets.length == 0) return Promise.resolve();
-
-            const promise = new Promise(async (res: any, rej: any) => {
-                try {
-                    await Promise.all(notAddedStylesheets.map(addStylesheet));
-                    res();
-                } catch (e: any) {
+            const promise = new Promise((res, rej) => {
+                const link = document.createElement('link');
+                link.href = url;
+                link.rel = 'stylesheet';
+                link.onload = res;
+                link.onerror = e => {
+                    link.remove();
                     rej(e);
-                }
+                };
+                document.head.appendChild(link);
             });
 
-            Extras._initStylesheetsPromises[key] = promise;
-            return promise;
-
-            async function addStylesheet(url: string) {
-                return new Promise((res, rej) => {
-                    const link = document.createElement('link');
-                    link.href = url;
-                    link.rel = 'stylesheet';
-                    link.onload = res;
-                    link.onerror = rej;
-                    document.head.appendChild(link);
-                })
-            }
+            // A rejected load is not remembered: caching it would make one CDN hiccup
+            // permanent for the life of the document, so a later mount could never retry.
+            Extras._initStylesheetsPromises[url] = promise.catch((e: any) => {
+                delete Extras._initStylesheetsPromises[url];
+                throw e;
+            });
+            return Extras._initStylesheetsPromises[url];
         }
 
 
