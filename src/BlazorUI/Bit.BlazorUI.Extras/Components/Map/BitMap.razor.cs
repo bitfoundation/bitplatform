@@ -12,13 +12,6 @@ namespace Bit.BlazorUI;
 public partial class BitMap<TMapProvider> : BitComponentBase
     where TMapProvider : class, IBitMapProvider, new()
 {
-    /// <summary>
-    /// Clears the process-wide script/stylesheet load cache. Intended for unit tests only -
-    /// production code should not need to invalidate the cache because the browser already
-    /// dedupes the underlying network requests.
-    /// </summary>
-    public static void ResetAssetLoadCacheForTesting() => BitMapAssetCache.Reset();
-
     private bool _initialized;
     private string _canvasId = string.Empty;
     private string _helpId = string.Empty;
@@ -2030,22 +2023,24 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     }
 
     /// <summary>
-    /// Loads the provider's stylesheets and scripts, deduped process-wide.
+    /// Loads the provider's stylesheets and scripts.
     /// Returns false when the scripts could not be loaded, which means the map cannot be built.
     /// </summary>
     private async ValueTask<bool> LoadAssetsAsync(TMapProvider provider)
     {
-        // Process-wide dedup so mounting/unmounting multiple BitMaps over the same provider
-        // doesn't pay an interop round-trip per mount. The browser dedupes by URL too, but
-        // skipping the round-trip avoids serialising the URL list and waiting for a JS
-        // promise that does nothing useful.
-        var pendingStylesheets = BitMapAssetCache.FilterUnloadedStylesheets(provider.Stylesheets);
-        if (pendingStylesheets.Count > 0)
+        // Every mount asks, and the dedup lives on the JS side on purpose: it caches per
+        // document - by the in-flight promise and by scanning what the document already
+        // holds - which is the only scope that is right in every render mode. A .NET-side
+        // cache would have to be per document too, and on Blazor Server a process serves
+        // many of them: the first document to mount a map would mark the URLs loaded and
+        // every later one would be told there is nothing to inject and fail on a provider
+        // global that was never defined. What the round-trip costs is serialising the URL
+        // list and awaiting a promise that resolves at once.
+        if (provider.Stylesheets.Count > 0)
         {
             try
             {
-                await _js.BitExtrasInitStylesheets(pendingStylesheets);
-                BitMapAssetCache.MarkStylesheetsLoaded(pendingStylesheets);
+                await _js.BitExtrasInitStylesheets(provider.Stylesheets);
             }
             catch (Exception ex)
             {
@@ -2058,13 +2053,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         if (Gone) return false;
 
-        var pendingScripts = BitMapAssetCache.FilterUnloadedScripts(provider.Scripts);
-        if (pendingScripts.Count > 0)
+        if (provider.Scripts.Count > 0)
         {
             try
             {
-                await _js.BitExtrasInitScripts(pendingScripts, provider.ScriptsAreModules);
-                BitMapAssetCache.MarkScriptsLoaded(pendingScripts);
+                await _js.BitExtrasInitScripts(provider.Scripts, provider.ScriptsAreModules);
             }
             catch (Exception ex)
             {

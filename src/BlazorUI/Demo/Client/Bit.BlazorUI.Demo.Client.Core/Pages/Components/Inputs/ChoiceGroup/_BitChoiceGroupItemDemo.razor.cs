@@ -161,6 +161,32 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "Month", Value = "Month" }
     ];
 
+    private BitChoiceGroup<BitChoiceGroupItem<string>, string>? focusRef;
+
+    private readonly List<BitChoiceGroupItem<string>> sortItems =
+    [
+        new() { Text = "Ascending", Value = "Asc" },
+        new() { Text = "Descending", Value = "Desc" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> densityItems =
+    [
+        new() { Text = "Compact", Value = "Compact" },
+        new() { Text = "Cozy", Value = "Cozy" },
+        new() { Text = "Comfortable", Value = "Comfortable" }
+    ];
+
+    // The visible text of these items is a bare number, which says nothing on its own once it is read out
+    // of the group; the AriaLabel spells it out and keeps that number inside the name it writes.
+    private readonly List<BitChoiceGroupItem<string>> ratingItems =
+    [
+        new() { Text = "1", Value = "1", AriaLabel = "1 star" },
+        new() { Text = "2", Value = "2", AriaLabel = "2 stars" },
+        new() { Text = "3", Value = "3", AriaLabel = "3 stars" },
+        new() { Text = "4", Value = "4", AriaLabel = "4 stars" },
+        new() { Text = "5", Value = "5", AriaLabel = "5 stars" }
+    ];
+
     private readonly List<BitChoiceGroupItem<string>> rtlItems =
     [
         new() { Text = "بخش آ", Value = "A" },
@@ -197,4 +223,14 @@ public partial class _BitChoiceGroupItemDemo
     {
         successMessage = string.Empty;
     }
+
+    private readonly BitChoiceGroupParams[] choiceGroupParams =
+    [
+        new()
+        {
+            Gap = "0.5rem",
+            FullWidth = true,
+            Variant = BitVariant.Outline,
+        }
+    ];
 }
