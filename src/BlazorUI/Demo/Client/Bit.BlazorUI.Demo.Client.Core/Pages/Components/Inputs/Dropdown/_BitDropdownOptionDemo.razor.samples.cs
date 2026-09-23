@@ -1876,7 +1876,33 @@ private async Task LoadDelayedItems()
 }";
 
     private readonly string example24RazorCode = @"
-<div>Virtualizing large item lists is demonstrated with the Items and ItemsProvider APIs; check the Item and Custom tabs for the examples.</div>";
+<div class=""virtualize-note"">
+    <div class=""virtualize-note-body"">
+        <div class=""virtualize-note-title"">No live example on this tab</div>
+        <p>
+            The worked examples for this section are on the Item and Custom tabs. Virtualization is a
+            property of a list too large to draw at once, and this is the API for a list written out by hand.
+        </p>
+        <p>
+            Virtualize itself is not refused here: each BitDropdownOption registers its item with the
+            dropdown as it renders, and the callout then draws only the rows inside the visible window, exactly as
+            it does for the other two APIs. What it cannot do is skip the options themselves. An option is a
+            component in the markup, and a component has to be instantiated and rendered for its registration to
+            happen at all, so all ten thousand of them are built whether or not a single row is on screen - and
+            building them is the cost the technique exists to avoid.
+        </p>
+        <p>
+            ItemsProvider has no counterpart here at all. It answers with one window of a dataset that lives
+            on a server, and there is no markup to write for items nobody has fetched yet; the same goes for
+            InitialSelectedItems, which exists to name the items a provider has not handed over.
+        </p>
+        <p>
+            So a list big enough to need virtualizing is a list that belongs to the Items or
+            ItemsProvider API. Bind the data there, and keep this API for the handful of options you would
+            write out by hand anyway.
+        </p>
+    </div>
+</div>";
 
     private readonly string example25RazorCode = @"
 <BitDropdown @bind-Values=""localizationValues""

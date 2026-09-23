@@ -433,7 +433,13 @@ namespace BitBlazorUI {
                 callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
                 scrollContainer.style.maxHeight = cap(Math.max(0, available - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
             } else if (dropDirection == BitDropDirection.TopAndBottom) {
-                if (calloutHeight <= distanceToBottom || distanceToBottom >= distanceToTop) {
+                // A callout measuring nothing is one whose content has not arrived yet - a list still
+                // being fetched - and "nothing fits below" is true however little room there is down
+                // there, which would pin it to a side that cannot show it once it fills. With no height
+                // to go on, the side with more room is the one to take.
+                const fitsBelow = calloutHeight > 0 && calloutHeight <= distanceToBottom;
+
+                if (fitsBelow || distanceToBottom >= distanceToTop) {
                     callout.style.top = (componentY + componentHeight + offset - fixedRect.top) + 'px';
                     scrollContainer.style.maxHeight = cap(Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 } else {

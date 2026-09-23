@@ -1792,7 +1792,53 @@
 </DemoExample>
 
 <DemoExample Title="Virtualization" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
-    <div>Virtualizing large item lists is demonstrated with the <b>Items</b> and <b>ItemsProvider</b> APIs; check the <b>Item</b> and <b>Custom</b> tabs for the examples.</div>
+    <div>
+        The <b>Virtualize</b> parameter renders only the items that are currently visible instead of the whole list,
+        which keeps the callout fast with thousands of items; <b>ItemSize</b> tells it how tall an item is and
+        <b>OverscanCount</b> how many extra items to keep rendered around the visible window. It works over a local
+        <b>Items</b> collection, or over an <b>ItemsProvider</b> that fetches one page at a time from a server (and
+        receives the current search term, so filtering happens remotely too). <b>ItemsProviderDebounceTime</b> (100ms by default)
+        collapses the burst of requests that fast scrolling and typing produce into a single one, so the provider is
+        not asked once per rendered frame. Because a value can be selected before
+        the page holding its item has ever been fetched, <b>InitialSelectedItems</b> supplies those items up front so
+        the dropdown can show their text right away. The <b>VirtualizePlaceholder</b> template fills the rows that are
+        still being fetched.
+        Opening a virtualized dropdown still lands on what is currently selected, even when that item sits thousands of
+        rows down and has never been rendered: the list is scrolled to where its index says it is and the selection is
+        centred in the window, the way a native select behaves. That needs an index to scroll to, so it applies to a
+        local <b>Items</b> collection; with an <b>ItemsProvider</b> the loaded window is all the component has.
+        Each option still reports where it sits in the whole set - the provider says how many items there are
+        and which window it is handing over - so a screen reader announces "Item 4210 of 10,000" in a list that
+        has never been loaded in full.
+    </div>
+    <br /><br /><br />
+    <div class="virtualize-note">
+        <div class="virtualize-note-body">
+            <div class="virtualize-note-title">No live example on this tab</div>
+            <p>
+                The worked examples for this section are on the <b>Item</b> and <b>Custom</b> tabs. Virtualization is a
+                property of a list too large to draw at once, and this is the API for a list written out by hand.
+            </p>
+            <p>
+                <b>Virtualize</b> itself is not refused here: each <b>BitDropdownOption</b> registers its item with the
+                dropdown as it renders, and the callout then draws only the rows inside the visible window, exactly as
+                it does for the other two APIs. What it cannot do is skip the options themselves. An option is a
+                component in the markup, and a component has to be instantiated and rendered for its registration to
+                happen at all, so all ten thousand of them are built whether or not a single row is on screen - and
+                building them is the cost the technique exists to avoid.
+            </p>
+            <p>
+                <b>ItemsProvider</b> has no counterpart here at all. It answers with one window of a dataset that lives
+                on a server, and there is no markup to write for items nobody has fetched yet; the same goes for
+                <b>InitialSelectedItems</b>, which exists to name the items a provider has not handed over.
+            </p>
+            <p>
+                So a list big enough to need virtualizing is a list that belongs to the <b>Items</b> or
+                <b>ItemsProvider</b> API. Bind the data there, and keep this API for the handful of options you would
+                write out by hand anyway.
+            </p>
+        </div>
+    </div>
 </DemoExample>
 
 <DemoExample Title="Localization" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>

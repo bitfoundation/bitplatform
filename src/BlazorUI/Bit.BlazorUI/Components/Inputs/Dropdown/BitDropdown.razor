@@ -600,7 +600,9 @@
             var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
             <div style="@Styles?.SelectAllContainer"
                  class="@selectAllClasses @Classes?.SelectAllContainer">
-                @* Reached with the arrow keys like the options below it, so it stays out of the tab order too. *@
+                @* Reached with the arrow keys like the options below it, so it stays out of the tab order too.
+                   It sits outside the listbox it commands, so nothing but its aria-controls says which
+                   list it is the select all of. *@
                 <button @onclick="HandleOnSelectAllClick"
                         type="button"
                         role="checkbox"
@@ -609,8 +611,6 @@
                         class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
                         disabled="@(IsEnabled is false || ReadOnly)"
                         aria-checked="@selectAllAriaChecked"
-                        @* It sits outside the listbox it commands, so nothing but this says which list
-                           it is the select all of. *@
                         aria-controls="@_scrollContainerId">
                     <div style="@Styles?.SelectAllCheckBox"
                          class="bit-drp-chb @Classes?.SelectAllCheckBox">
