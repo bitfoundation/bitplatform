@@ -780,6 +780,20 @@ public partial class BitColorPicker : BitComponentBase
         }
     }
 
+    /// <summary>
+    /// What the inputs mode switch calls the mode the fields are currently in. The enum name is not it: it is
+    /// English and it is written the way C# names things (<c>HexRgb</c>), while the switch is both read out
+    /// and hovered, so every mode is named by a text of its own that a translation can rewrite.
+    /// </summary>
+    private string _InputsModeLabel => InputsMode switch
+    {
+        BitColorInputsMode.Hex => _Texts.HexModeLabel,
+        BitColorInputsMode.Rgb => _Texts.RgbModeLabel,
+        BitColorInputsMode.Hsl => _Texts.HslModeLabel,
+        BitColorInputsMode.Hsv => _Texts.HsvModeLabel,
+        _ => _Texts.HexRgbModeLabel
+    };
+
     private bool _ShowHexField => InputsMode is BitColorInputsMode.HexRgb or BitColorInputsMode.Hex;
 
     private bool _HasLabel => LabelTemplate is not null || Label.HasValue();

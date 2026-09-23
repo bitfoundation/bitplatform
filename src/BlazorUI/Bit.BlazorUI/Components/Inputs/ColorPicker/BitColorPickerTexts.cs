@@ -157,16 +157,41 @@ public class BitColorPickerTexts
     public string EyeDropperLabel { get; set; } = "Pick a color from the screen";
 
     /// <summary>
+    /// What the inputs mode switch calls the <see cref="BitColorInputsMode.HexRgb"/> set of fields.
+    /// </summary>
+    public string HexRgbModeLabel { get; set; } = "HEX & RGB";
+
+    /// <summary>
+    /// What the inputs mode switch calls the <see cref="BitColorInputsMode.Hex"/> set of fields.
+    /// </summary>
+    public string HexModeLabel { get; set; } = "HEX";
+
+    /// <summary>
+    /// What the inputs mode switch calls the <see cref="BitColorInputsMode.Rgb"/> set of fields.
+    /// </summary>
+    public string RgbModeLabel { get; set; } = "RGB";
+
+    /// <summary>
+    /// What the inputs mode switch calls the <see cref="BitColorInputsMode.Hsl"/> set of fields.
+    /// </summary>
+    public string HslModeLabel { get; set; } = "HSL";
+
+    /// <summary>
+    /// What the inputs mode switch calls the <see cref="BitColorInputsMode.Hsv"/> set of fields.
+    /// </summary>
+    public string HsvModeLabel { get; set; } = "HSV";
+
+    /// <summary>
     /// The tooltip of the inputs mode switch, which says which set of channels the fields are currently in.
     /// <br />
-    /// <c>{0}</c> the current <see cref="BitColorInputsMode"/>.
+    /// <c>{0}</c> the name of the current mode, which is the matching <c>...ModeLabel</c>.
     /// </summary>
     public string InputsModeFormat { get; set; } = "Color inputs: {0}";
 
     /// <summary>
     /// The accessible name of the inputs mode switch, which says what pressing it will do as well.
     /// <br />
-    /// <c>{0}</c> the current <see cref="BitColorInputsMode"/>.
+    /// <c>{0}</c> the name of the current mode, which is the matching <c>...ModeLabel</c>.
     /// </summary>
     public string InputsModeSwitchFormat { get; set; } = "Color inputs: {0}. Switch to the next set.";
 

@@ -250,8 +250,8 @@
                             disabled="@(IsEnabled is false)"
                             tabindex="@(IsEnabled ? TabIndex : "-1")"
                             style="@Styles?.InputsModeSwitch"
-                            title="@string.Format(texts.InputsModeFormat, InputsMode)"
-                            aria-label="@string.Format(texts.InputsModeSwitchFormat, InputsMode)"
+                            title="@string.Format(texts.InputsModeFormat, _InputsModeLabel)"
+                            aria-label="@string.Format(texts.InputsModeSwitchFormat, _InputsModeLabel)"
                             class="bit-clp-swb @Classes?.InputsModeSwitch">
                         <i aria-hidden="true"
                            style="@Styles?.InputsModeSwitchIcon"
