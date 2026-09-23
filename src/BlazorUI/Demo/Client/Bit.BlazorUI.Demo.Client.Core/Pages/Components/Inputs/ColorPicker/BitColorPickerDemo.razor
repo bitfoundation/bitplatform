@@ -3,11 +3,12 @@
 
 <PageOutlet Url="components/colorpicker"
             Title="ColorPicker"
-            Description="A keyboard-accessible color picker with a saturation-brightness area, hue and alpha sliders, text fields in hex, RGB, HSL or HSV, preset swatches, the browser's screen eyedropper, a translatable set of accessible names, and a value that reads and writes hex, rgb, hsl, hsv, hwb and oklch." />
+            Description="A keyboard-accessible color picker with a saturation-brightness area, hue and alpha sliders, text fields in hex, RGB, HSL or HSV, preset swatches, the browser's screen eyedropper, a translatable set of accessible names, and a value that reads and writes hex, rgb, hsl, hsv, hwb and oklch. Every part is optional, so the same component is also a palette picker or a row of channel fields." />
 
 <DemoPage Name="ColorPicker"
-          Description="BitColorPicker is the panel a color is chosen on: drag the saturation-brightness area for the shade, the hue slider for the color it is a shade of, and the alpha slider for how much of it shows through. The exact value can be typed into the text fields instead - in hexadecimal, RGB, HSL or HSV, with an optional button that moves between them - picked in one click from a palette of presets, or sampled from anywhere on the screen with the browser's own eyedropper. The value is read and written in whatever notation it arrives in - hexadecimal in three, four, six or eight digits, rgb(), hsl(), hwb(), the perceptual oklab() and oklch() modern design tokens are written in, a color keyword like 'tomato', plus hsv() for the model the picker itself is built on - or pinned to one with Format, with a matching alpha-carrying notation for when a single string has to survive a transparent color. Everything on it is reachable from the keyboard, including the two-dimensional area, every part of it announces the color by name rather than by channel numbers, every string it writes for itself is translatable through Texts, and the whole panel mirrors in right-to-left."
+          Description="BitColorPicker is the panel a color is chosen on: drag the saturation-brightness area for the shade, the hue slider for the color it is a shade of, and the alpha slider for how much of it shows through. The exact value can be typed into the text fields instead - in hexadecimal, RGB, HSL or HSV, with an optional button that moves between them - picked in one click from a palette of presets, or sampled from anywhere on the screen with the browser's own eyedropper. The value is read and written in whatever notation it arrives in - hexadecimal in three, four, six or eight digits, rgb(), hsl(), hwb(), the perceptual oklab() and oklch() modern design tokens are written in, a color keyword like 'tomato', plus hsv() for the model the picker itself is built on - or pinned to one with Format, with a matching alpha-carrying notation for when a single string has to survive a transparent color. Every part of the panel is optional - the gradient and the hue slider included - so the same component is also a palette picker, a tint picker pinned to one hue, or a row of channel fields. Everything on it is reachable from the keyboard, including the two-dimensional area, every part of it announces the color by name rather than by channel numbers, every string it writes for itself is translatable through Texts, and the whole panel mirrors in right-to-left."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           CssVariables="componentCssVariables"
@@ -297,16 +298,19 @@
             <b>ArrowLeft</b> and <b>ArrowRight</b> move the saturation by one percent, <b>ArrowUp</b> and
             <b>ArrowDown</b> the brightness; <b>Shift</b>, or <b>PageUp</b> and <b>PageDown</b> which need no
             modifier, moves ten at a time, and <b>Home</b> and <b>End</b> jump to the ends of the saturation axis. The
-            horizontal arrows follow the reading direction, so they swap in right-to-left. The hue and alpha tracks
-            are native range inputs and answer the whole keyboard contract of a slider for free.
+            horizontal arrows follow the reading direction, so they swap in right-to-left. A key pressed with
+            <b>Ctrl</b>, <b>Alt</b> or <b>Meta</b> on it is left to the browser, so Ctrl+Home still goes to the top of
+            the page. The hue and alpha tracks are native range inputs and answer the whole keyboard contract of a
+            slider for free, on a hit target kept at the 24 pixels WCAG 2.2 asks for however thin the track is drawn.
         </div>
         <br />
         <div>
             <b>AriaLabel</b> names the panel, <b>Label</b> names it through the text it renders, and a picker given
-            neither describes the color it is on. <b>AutoFocus</b> puts the focus on the gradient as soon as the
-            picker renders, which is what a picker opened as the answer to a question - in a popover, a dialog, a
-            toolbar - usually wants. A <b>ReadOnly</b> picker keeps every control focusable and announces itself as
-            read-only rather than unavailable, since the color is the thing it is there to show.
+            neither describes the color it is on. <b>AutoFocus</b> puts the focus on the gradient - or on whichever
+            control comes first, on a picker built without it - as soon as the picker renders, which is what a picker
+            opened as the answer to a question, in a popover, a dialog or a toolbar, usually wants. A
+            <b>ReadOnly</b> picker keeps every control focusable and announces itself as read-only rather than
+            unavailable, since the color is the thing it is there to show.
         </div>
         <br />
         <div class="example-box">
@@ -343,14 +347,48 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Panel parts" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            The gradient and the hue slider are the two parts that are on to begin with. <b>ShowSaturationArea</b> and
+            <b>ShowHueSlider</b> turn them off, which is what leaves a palette picker, a tint picker for one fixed hue,
+            or a row of text fields where a whole panel would not fit - a toolbar, a cell, a popover.
+            The color is unaffected either way: the parts are ways of choosing it, not where it is kept, so a palette
+            picker still reports <b>hsv()</b> and still answers <b>Hex</b>.
+        </div>
+        <br />
+        <div>
+            <b>AutoFocus</b> and <b>FocusAsync</b> land on whichever control comes first, so a picker without the
+            gradient is still focused in one call.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>A palette picker - no gradient, no hue:</div>
+            <BitColorPicker ShowSaturationArea="false" ShowHueSlider="false" ShowPreview
+                            Presets="brandPresets"
+                            PresetsPerRow="5"
+                            @bind-Color="paletteOnlyColor" />
+            <BitLabel>Color: @paletteOnlyColor</BitLabel>
+            <br />
+            <div>A tint picker, pinned to one hue:</div>
+            <BitColorPicker ShowHueSlider="false" ShowPreview ShowInputs @bind-Color="tintColor" />
+            <BitLabel>Color: @tintColor</BitLabel>
+            <br />
+            <div>Fields only:</div>
+            <BitColorPicker ShowSaturationArea="false" ShowHueSlider="false" ShowInputs ShowInputsModeSwitch ShowPreview ShowAlphaSlider
+                            @bind-Color="fieldsOnlyColor" />
+            <BitLabel>Color: @fieldsOnlyColor</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>BitParams</b> carries a <b>BitColorPickerParams</b> down to every picker under it, so a panel, a form,
             or a whole page sets the shared shape - which controls to show, which palette to offer, which notation to
             publish - once instead of on every picker. What it carries is a default and not an override: a picker that
             writes a parameter for itself keeps its own value, and only what it left unset is filled in, which is what
-            lets one step out of the group without the group knowing. The color itself is not on it: <b>Color</b> and
-            <b>Alpha</b> are the value of one picker rather than a setting shared by all of them.
+            lets one step out of the group without the group knowing. Everything but the color is on it: <b>Color</b>,
+            <b>Alpha</b> and the two change callbacks are the value of one picker, and what one page does with it,
+            rather than a setting shared by all of them.
         </div>
         <br />
         <div class="example-box">
@@ -372,7 +410,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <b>EyeDropperIconName</b> replaces the built-in glyph of the eyedropper button with another from the bit
             icon set, and <b>EyeDropperIcon</b> takes a <b>BitIconInfo</b> instead, which is how an icon from an
@@ -406,7 +444,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Size" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
             <b>Size</b> scales the whole panel at once - the gradient, the tracks, the thumbs, the preview, the
             swatches and the type - from the <b>Small</b> that fits inside a narrow popover to the <b>Large</b> that
@@ -426,7 +464,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element, where the panel's overall size and framing live -
             note that its height is the sum of its rows, so a fixed height shrinks the gradient rather than the
@@ -482,7 +520,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Dir="BitDir.Rtl"</b> mirrors the whole panel: the saturation axis runs from the right edge outwards,
             the hue and alpha tracks reverse along with the native sliders on them - so the fully transparent end

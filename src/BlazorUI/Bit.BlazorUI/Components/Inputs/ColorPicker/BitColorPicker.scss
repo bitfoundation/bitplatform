@@ -18,6 +18,8 @@
 //   --bit-ColorPicker-thumb-size                diameter of the saturation thumb and of the
 //                                               thumbs of both sliders                         (default: per Size)
 //   --bit-ColorPicker-thumb-color               fill of the slider thumbs                      (default: $clr-ntr-white)
+//   --bit-ColorPicker-thumb-ring-color          inner ring that keeps the saturation thumb
+//                                               readable over a dark area of the gradient      (default: $clr-ntr-white)
 //   --bit-ColorPicker-thumb-shadow              elevation under the saturation thumb           (default: $box-shadow-nm)
 //   --bit-ColorPicker-track-height              height of the hue and alpha tracks             (default: per Size)
 //   --bit-ColorPicker-track-radius              corner radius of both tracks                   (default: $shp-radius-control)
@@ -278,7 +280,7 @@
         position: absolute;
         border-radius: 50%;
         box-sizing: border-box;
-        border: $shp-border-width $shp-border-style $clr-ntr-white;
+        border: $shp-border-width $shp-border-style var(--bit-ColorPicker-thumb-ring-color, #{$clr-ntr-white});
     }
 }
 
@@ -309,6 +311,13 @@
     height: var(--bit-ColorPicker-track-height, var(--bit-clp-track-height-def));
     border-radius: var(--bit-ColorPicker-track-radius, #{$shp-radius-control});
     border: $shp-border-width $shp-border-style var(--bit-clp-brd);
+
+    // The ring is drawn around the rail rather than around the input, because the input is deliberately
+    // taller than the rail it sits on (see .bit-clp-inp): drawn on the input it would trace the hit area
+    // instead of the control, and a keyboard user would be shown a box that is not what they are looking at.
+    &:has(.bit-clp-inp:focus-visible) {
+        @include focus-ring(var(--bit-clp-focus));
+    }
 }
 
 .bit-clp-hsd {
@@ -329,18 +338,28 @@
 }
 
 .bit-clp-inp {
+    margin: 0;
+    top: 50%;
     background: none;
-    position: relative;
-    top: spacing(-0.0625);
+    position: absolute;
     -webkit-appearance: none;
-    margin: 0 calc(var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)) / -2);
+    transform: translateY(-50%);
+    inset-inline-start: calc(var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)) / -2);
     width: calc(100% + var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)));
-    height: var(--bit-ColorPicker-track-height, var(--bit-clp-track-height-def));
+    // The hit area rather than the rail. A range whose box is only as tall as the rail it draws is a 16px
+    // target at the small size, under the 24 CSS pixels WCAG 2.2 asks a pointer target for (SC 2.5.8), and
+    // a thumb that is easy to see is still awkward to catch with a finger. The box is grown to that floor -
+    // or to the thumb, wherever the thumb is the larger of the two - and centred on the rail, so the target
+    // grows without the rail moving or anything around it giving way. The gap between the rows is wider
+    // than the overhang, so the two sliders never reach into one another.
+    height: max(var(--bit-ColorPicker-track-height, var(--bit-clp-track-height-def)),
+                var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)),
+                #{spacing(3)});
 
+    // The ring belongs to the rail, which is what the user is looking at - see .bit-clp-sld. The native
+    // outline is still taken off here, since it would be drawn around this box instead.
     &:focus-visible {
-        @include focus-ring(var(--bit-clp-focus));
-
-        border-radius: var(--bit-ColorPicker-track-radius, #{$shp-radius-control});
+        outline: none;
     }
 
     &::-webkit-slider-thumb {

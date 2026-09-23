@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @{
@@ -14,6 +14,11 @@
     var contrastText = FormatContrast(contrast);
     var aaNormal = BitThemeColorContrast.MeetsWcagAaNormalText(contrast);
     var aaLarge = BitThemeColorContrast.MeetsWcagAaLargeText(contrast);
+    @* The contrast readout describes the first widget the panel renders, so the verdict is read out with the
+       control the user is standing on rather than waiting at the bottom of the panel to be found. Every part
+       above the text fields is optional, so which one that is has to be worked out rather than assumed. *@
+    var describes = ShowContrast ? _ContrastId : null;
+    var sliders = ShowHueSlider || ShowAlphaSlider;
 }
 
 <div @ref="RootElement"
@@ -51,101 +56,117 @@
        with the brightness and the resulting hex carried in its value text. The arrow keys walk both axes,
        Shift and the Page keys move a tenth of the area at a time, and Home and End jump to the ends of
        the saturation axis. *@
-    <div @ref="_saturationPickerRef"
-         @onkeydown="HandleOnSaturationKeyDown"
-         role="slider"
-         aria-valuemin="0"
-         aria-valuemax="100"
-         tabindex="@_TabIndex"
-         style="@_SaturationPickerStyle"
-         aria-roledescription="@texts.SaturationAreaRoleDescription"
-         aria-valuenow="@_SaturationValueNow"
-         aria-valuetext="@_SaturationValueText"
-         aria-label="@texts.SaturationAreaLabel"
-         aria-readonly="@(readOnly ? "true" : null)"
-         aria-describedby="@(ShowContrast ? _ContrastId : null)"
-         aria-disabled="@(IsEnabled ? null : "true")"
-         class="bit-clp-rec @Classes?.SaturationPicker">
-        <div class="bit-clp-light"></div>
-        <div class="bit-clp-dark"></div>
-        <div class="bit-clp-thumb @Classes?.SaturationThumb" style="@_SaturationThumbStyle"></div>
-    </div>
+    @if (ShowSaturationArea)
+    {
+        <div @ref="_saturationPickerRef"
+             @onkeydown="HandleOnSaturationKeyDown"
+             role="slider"
+             aria-valuemin="0"
+             aria-valuemax="100"
+             tabindex="@_TabIndex"
+             style="@_SaturationPickerStyle"
+             aria-roledescription="@texts.SaturationAreaRoleDescription"
+             aria-valuenow="@_SaturationValueNow"
+             aria-valuetext="@_SaturationValueText"
+             aria-label="@texts.SaturationAreaLabel"
+             aria-readonly="@(readOnly ? "true" : null)"
+             aria-describedby="@describes"
+             aria-disabled="@(IsEnabled ? null : "true")"
+             class="bit-clp-rec @Classes?.SaturationPicker">
+            <div class="bit-clp-light"></div>
+            <div class="bit-clp-dark"></div>
+            <div class="bit-clp-thumb @Classes?.SaturationThumb" style="@_SaturationThumbStyle"></div>
+        </div>
+    }
 
-    <div class="bit-clp-cnt @Classes?.Content" style="@Styles?.Content">
-        <div class="bit-clp-sct @Classes?.Sliders" style="@Styles?.Sliders">
-            <div class="bit-clp-sld bit-clp-hsd @Classes?.HueSlider" style="@Styles?.HueSlider">
-                @* A native range input, so the hue arrives with the whole keyboard contract of a slider -
-                   arrows, Home, End, Page - and with the platform's own touch handling, for free. *@
-                <input @ref="_hueInputRef"
-                       @oninput="e => HandleOnHueInput(e, false)"
-                       @onchange="e => HandleOnHueInput(e, true)"
-                       min="0"
-                       max="360"
-                       step="1"
-                       type="range"
-                       aria-label="@texts.HueLabel"
-                       value="@_HueValue"
-                       tabindex="@_TabIndex"
-                       disabled="@disabled"
-                       style="@Styles?.SliderInput"
-                       class="bit-clp-inp @Classes?.SliderInput"
-                       aria-valuetext="@_HueValueText"
-                       aria-readonly="@(readOnly ? "true" : null)" />
-            </div>
-
-            @if (ShowAlphaSlider)
+    @* Only drawn where it has something to hold: a picker built without the gradient, the sliders, the
+       eyedropper and the preview would otherwise keep the row's gap above the text fields. *@
+    @if (sliders || _ShowEyeDropper || ShowPreview)
+    {
+        <div class="bit-clp-cnt @Classes?.Content" style="@Styles?.Content">
+            @if (sliders)
             {
-                <div class="bit-clp-sld bit-clp-asd @Classes?.AlphaSlider"
-                     style="@($"--bit-clp-alpha-clr:{_color.Rgb};{Styles?.AlphaSlider}")">
-                    @* The transparency gradient is a layer of its own so that the checkerboard it is read
-                       against stays in the stylesheet instead of being rebuilt on every render. *@
-                    <div class="bit-clp-abg"></div>
-                    <input @ref="_alphaSliderRef"
-                           @oninput="e => HandleOnAlphaInput(e, false)"
-                           @onchange="e => HandleOnAlphaInput(e, true)"
-                           min="0"
-                           max="1"
-                           step="0.01"
-                           type="range"
-                           aria-label="@texts.AlphaLabel"
-                           value="@_AlphaValue"
-                           tabindex="@_TabIndex"
-                           disabled="@disabled"
-                           style="@Styles?.SliderInput"
-                           class="bit-clp-inp @Classes?.SliderInput"
-                           aria-valuetext="@_AlphaValueText"
-                           aria-readonly="@(readOnly ? "true" : null)" />
+                <div class="bit-clp-sct @Classes?.Sliders" style="@Styles?.Sliders">
+                    @if (ShowHueSlider)
+                    {
+                        <div class="bit-clp-sld bit-clp-hsd @Classes?.HueSlider" style="@Styles?.HueSlider">
+                            @* A native range input, so the hue arrives with the whole keyboard contract of a slider -
+                               arrows, Home, End, Page - and with the platform's own touch handling, for free. *@
+                            <input @ref="_hueInputRef"
+                                   @oninput="e => HandleOnHueInput(e, false)"
+                                   @onchange="e => HandleOnHueInput(e, true)"
+                                   min="0"
+                                   max="360"
+                                   step="1"
+                                   type="range"
+                                   aria-label="@texts.HueLabel"
+                                   value="@_HueValue"
+                                   tabindex="@_TabIndex"
+                                   disabled="@disabled"
+                                   style="@Styles?.SliderInput"
+                                   class="bit-clp-inp @Classes?.SliderInput"
+                                   aria-valuetext="@_HueValueText"
+                                   aria-describedby="@(ShowSaturationArea ? null : describes)"
+                                   aria-readonly="@(readOnly ? "true" : null)" />
+                        </div>
+                    }
+
+                    @if (ShowAlphaSlider)
+                    {
+                        <div class="bit-clp-sld bit-clp-asd @Classes?.AlphaSlider"
+                             style="@($"--bit-clp-alpha-clr:{_color.Rgb};{Styles?.AlphaSlider}")">
+                            @* The transparency gradient is a layer of its own so that the checkerboard it is read
+                               against stays in the stylesheet instead of being rebuilt on every render. *@
+                            <div class="bit-clp-abg"></div>
+                            <input @ref="_alphaSliderRef"
+                                   @oninput="e => HandleOnAlphaInput(e, false)"
+                                   @onchange="e => HandleOnAlphaInput(e, true)"
+                                   min="0"
+                                   max="1"
+                                   step="0.01"
+                                   type="range"
+                                   aria-label="@texts.AlphaLabel"
+                                   value="@_AlphaValue"
+                                   tabindex="@_TabIndex"
+                                   disabled="@disabled"
+                                   style="@Styles?.SliderInput"
+                                   class="bit-clp-inp @Classes?.SliderInput"
+                                   aria-valuetext="@_AlphaValueText"
+                                   aria-describedby="@(ShowSaturationArea || ShowHueSlider ? null : describes)"
+                                   aria-readonly="@(readOnly ? "true" : null)" />
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (_ShowEyeDropper)
+            {
+                <button @onclick="HandleOnEyeDropperClick"
+                        type="button"
+                        disabled="@disabled"
+                        tabindex="@(disabled ? "-1" : TabIndex)"
+                        aria-disabled="@(readOnly ? "true" : null)"
+                        style="@Styles?.EyeDropper"
+                        title="@texts.EyeDropperLabel"
+                        aria-label="@texts.EyeDropperLabel"
+                        class="bit-clp-eyd @Classes?.EyeDropper">
+                    <i aria-hidden="true"
+                       style="@Styles?.EyeDropperIcon"
+                       class="bit-clp-eyi @eyeDropperIcon?.GetCssClasses() @Classes?.EyeDropperIcon">
+                    </i>
+                </button>
+            }
+
+            @if (ShowPreview)
+            {
+                @* The color sits on a checkerboard so that a semi-transparent one reads as transparent rather
+                   than as a lighter shade of whatever happens to be behind the picker. *@
+                <div class="bit-clp-pre @Classes?.Preview" style="@Styles?.Preview" title="@_color.Rgba">
+                    <div class="bit-clp-prc" style="@($"background-color:{_color.Rgba}")"></div>
                 </div>
             }
         </div>
-
-        @if (_ShowEyeDropper)
-        {
-            <button @onclick="HandleOnEyeDropperClick"
-                    type="button"
-                    disabled="@disabled"
-                    tabindex="@(disabled ? "-1" : TabIndex)"
-                    aria-disabled="@(readOnly ? "true" : null)"
-                    style="@Styles?.EyeDropper"
-                    title="@texts.EyeDropperLabel"
-                    aria-label="@texts.EyeDropperLabel"
-                    class="bit-clp-eyd @Classes?.EyeDropper">
-                <i aria-hidden="true"
-                   style="@Styles?.EyeDropperIcon"
-                   class="bit-clp-eyi @eyeDropperIcon?.GetCssClasses() @Classes?.EyeDropperIcon">
-                </i>
-            </button>
-        }
-
-        @if (ShowPreview)
-        {
-            @* The color sits on a checkerboard so that a semi-transparent one reads as transparent rather
-               than as a lighter shade of whatever happens to be behind the picker. *@
-            <div class="bit-clp-pre @Classes?.Preview" style="@Styles?.Preview" title="@_color.Rgba">
-                <div class="bit-clp-prc" style="@($"background-color:{_color.Rgba}")"></div>
-            </div>
-        }
-    </div>
+    }
 
     @if (ShowInputs)
     {

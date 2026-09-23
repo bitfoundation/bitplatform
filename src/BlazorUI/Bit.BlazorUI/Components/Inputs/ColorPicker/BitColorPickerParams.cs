@@ -6,7 +6,9 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// It carries the shape of the picker - which controls it shows, how it is laid out, which palette it offers -
 /// and not the color it is on: <see cref="BitColorPicker.Color"/> and <see cref="BitColorPicker.Alpha"/> are the
-/// value of one picker rather than a setting shared by every picker under a <see cref="BitParams"/>.
+/// value of one picker rather than a setting shared by every picker under a <see cref="BitParams"/>. The two
+/// change callbacks are left off for the same reason, since what a page does with a new color is the one thing
+/// that belongs to the picker it came from.
 /// </remarks>
 public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -27,7 +29,8 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
-    /// Whether the saturation-brightness area takes the focus on the first render.
+    /// Whether the picker takes the focus on the first render, landing on the saturation-brightness area - or, on
+    /// a picker built without it, on whichever of its controls comes first.
     /// </summary>
     public bool? AutoFocus { get; set; }
 
@@ -82,6 +85,12 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
     public string? Label { get; set; }
 
     /// <summary>
+    /// Custom markup in place of the plain <see cref="Label"/> text, for when the name needs more than a
+    /// string - an icon beside it, a required marker, a link.
+    /// </summary>
+    public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
     /// The colors offered as a row of one-click swatches under the picker, in any of the notations the
     /// Color parameter accepts. This is the parameter a brand palette is usually cascaded through, so that
     /// every picker on a page offers the same colors without repeating the list.
@@ -118,6 +127,11 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
     public bool? ShowEyeDropper { get; set; }
 
     /// <summary>
+    /// Whether to show the hue slider. It is on by default; turning it off pins the picker to one hue.
+    /// </summary>
+    public bool? ShowHueSlider { get; set; }
+
+    /// <summary>
     /// Whether to show the hexadecimal and Red-Green-Blue text fields.
     /// </summary>
     public bool? ShowInputs { get; set; }
@@ -131,6 +145,12 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
     /// Whether to show color preview box.
     /// </summary>
     public bool? ShowPreview { get; set; }
+
+    /// <summary>
+    /// Whether to show the saturation-brightness area. It is on by default; turning it off is what makes a
+    /// palette picker out of the presets, the text fields, or both.
+    /// </summary>
+    public bool? ShowSaturationArea { get; set; }
 
     /// <summary>
     /// The size of the color picker.
@@ -220,6 +240,11 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
             bitColorPicker.Label = Label;
         }
 
+        if (LabelTemplate is not null && bitColorPicker.HasNotBeenSet(nameof(LabelTemplate)))
+        {
+            bitColorPicker.LabelTemplate = LabelTemplate;
+        }
+
         if (Presets is not null && bitColorPicker.HasNotBeenSet(nameof(Presets)))
         {
             bitColorPicker.Presets = Presets;
@@ -252,6 +277,11 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
             bitColorPicker.ShowEyeDropper = ShowEyeDropper.Value;
         }
 
+        if (ShowHueSlider.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowHueSlider)))
+        {
+            bitColorPicker.ShowHueSlider = ShowHueSlider.Value;
+        }
+
         if (ShowInputs.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowInputs)))
         {
             bitColorPicker.ShowInputs = ShowInputs.Value;
@@ -265,6 +295,11 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
         if (ShowPreview.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowPreview)))
         {
             bitColorPicker.ShowPreview = ShowPreview.Value;
+        }
+
+        if (ShowSaturationArea.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowSaturationArea)))
+        {
+            bitColorPicker.ShowSaturationArea = ShowSaturationArea.Value;
         }
 
         if (Size.HasValue && bitColorPicker.HasNotBeenSet(nameof(Size)))

@@ -34,6 +34,9 @@ public partial class BitColorPicker : BitComponentBase
     private string? _abortControllerId;
     private bool _eyeDropperChecked;
     private bool _eyeDropperSupported;
+    // Whether the drag listeners are attached to a gradient that is still on the page. The gradient is
+    // optional, and Blazor removes the element when it goes, which takes the listeners with it.
+    private bool _pointerRegistered;
     private BitColorFormat? _formatEmitted;
     private string? _contrastParam;
     private BitInternalColor? _contrastColor;
@@ -78,7 +81,8 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter, TwoWayBound] public double Alpha { get; set; } = 1;
 
     /// <summary>
-    /// Whether the saturation-brightness area takes the focus on the first render.
+    /// Whether the picker takes the focus on the first render, landing on the saturation-brightness area - or,
+    /// on a picker built without it, on whichever of its controls comes first.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
 
@@ -92,8 +96,10 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Hexadecimal in three, four, six or eight digits, <c>rgb()</c> and <c>rgba()</c>, <c>hsl()</c> and
-    /// <c>hsla()</c>, <c>hsv()</c>, a CSS color keyword such as "tomato", and <c>transparent</c> are all
-    /// understood, in both the comma-separated and the modern space-separated syntax. Unless a
+    /// <c>hsla()</c>, <c>hwb()</c>, <c>lab()</c> and <c>lch()</c>, <c>oklab()</c> and <c>oklch()</c>,
+    /// <c>color(srgb ...)</c>, a CSS color keyword such as "tomato", and <c>transparent</c> are all understood,
+    /// in both the comma-separated and the modern space-separated syntax - as are <c>hsv()</c> and
+    /// <c>hsva()</c>, which are not CSS notations but the model the picker itself is built on. Unless a
     /// <see cref="Format"/> says otherwise the picker answers in the same notation it was given.
     /// </remarks>
     [Parameter, TwoWayBound] public string Color { get; set; } = "rgb(255,255,255)";
@@ -239,6 +245,13 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter] public bool ShowEyeDropper { get; set; }
 
     /// <summary>
+    /// Whether to show the hue slider. It is on by default, since the hue is what the saturation-brightness
+    /// area is a shade of; turning it off pins the picker to one hue, which is what a tint picker for a brand
+    /// color is.
+    /// </summary>
+    [Parameter] public bool ShowHueSlider { get; set; } = true;
+
+    /// <summary>
     /// Whether to show the hexadecimal and Red-Green-Blue text fields, which is how an exact color is
     /// entered or read off without hunting for it on the gradient.
     /// </summary>
@@ -255,6 +268,17 @@ public partial class BitColorPicker : BitComponentBase
     /// Whether to show color preview box.
     /// </summary>
     [Parameter] public bool ShowPreview { get; set; }
+
+    /// <summary>
+    /// Whether to show the saturation-brightness area, the gradient the shade is dragged out of. It is on by
+    /// default, since it is what makes the panel a picker rather than a list.
+    /// </summary>
+    /// <remarks>
+    /// Turning it off is what makes a palette picker: a row of <see cref="Presets"/>, or the text fields, with
+    /// none of the gradient above them. The color the picker is on is unaffected either way - the area is a way
+    /// of choosing it, not where it is kept - and whichever control is left first takes the focus in its place.
+    /// </remarks>
+    [Parameter] public bool ShowSaturationArea { get; set; } = true;
 
     /// <summary>
     /// The size of the color picker.
@@ -334,10 +358,32 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is what a picker revealed rather than rendered - opened in a popover, switched to in a tab,
-    /// added to a list - is focused with, since AutoFocus only fires once. A disabled picker is not in the
-    /// tab order and is left alone; a read-only one is, and takes the focus like any other.
+    /// added to a list - is focused with, since AutoFocus only fires once. A picker built without that area -
+    /// see <see cref="ShowSaturationArea"/> - hands the focus to whichever of its controls comes first
+    /// instead, so a palette picker is focused the same way. A disabled picker is not in the tab order and is
+    /// left alone; a read-only one is, and takes the focus like any other.
     /// </remarks>
-    public ValueTask FocusAsync() => IsEnabled ? _saturationPickerRef.FocusAsync() : ValueTask.CompletedTask;
+    public ValueTask FocusAsync() => IsEnabled ? FocusFirstAsync() : ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Moves the focus to the first control the picker actually renders, in the order they are rendered in.
+    /// Every part above the text fields is optional, so the area a picker is normally focused at is not
+    /// always there to be focused.
+    /// </summary>
+    private ValueTask FocusFirstAsync()
+    {
+        if (ShowSaturationArea) return _saturationPickerRef.FocusAsync();
+
+        if (ShowHueSlider) return _hueInputRef.FocusAsync();
+
+        if (ShowAlphaSlider) return _alphaSliderRef.FocusAsync();
+
+        // The palette is the last part that is focusable without the text fields, and it is entered at the
+        // swatch the picker is already on - the same one a Tab would land on.
+        if (_presetRefs.Length > 0) return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)].FocusAsync();
+
+        return ValueTask.CompletedTask;
+    }
 
 
 
@@ -472,21 +518,43 @@ public partial class BitColorPicker : BitComponentBase
             _presetKeysRegistered = false;
         }
 
-        if (firstRender is false && presetsToRegister is false && (_eyeDropperChecked || ShowEyeDropper is false)) return;
+        // The drag listeners belong to the gradient rather than to the picker, and the gradient is one of the
+        // parts a picker can be built without. Gone with it is the element they were attached to, so they are
+        // released here rather than waiting for the whole picker to go.
+        if (ShowSaturationArea is false && _pointerRegistered)
+        {
+            _pointerRegistered = false;
+
+            await ReleasePointerAsync();
+        }
+
+        // And registered on the render the gradient appears on rather than on the first render, so a palette
+        // picker that is later given its gradient back is dragged like any other.
+        var pointerToRegister = ShowSaturationArea && _pointerRegistered is false;
+
+        if (firstRender is false && pointerToRegister is false && presetsToRegister is false && (_eyeDropperChecked || ShowEyeDropper is false)) return;
 
         try
         {
-            if (firstRender)
+            if (pointerToRegister)
             {
+                _pointerRegistered = true;
+
+                // A fresh reference every time, because releasing the listeners releases this one with them:
+                // the JavaScript side disposes the object it was given along with the controller holding it,
+                // so a picker that gets its gradient back cannot be registered with the same one again.
                 _dotnetObj = DotNetObjectReference.Create(this);
 
                 _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, _saturationPickerRef, nameof(HandlePointerMove), nameof(HandlePointerUp));
+            }
 
+            if (firstRender)
+            {
                 // The autofocus attribute is only honored for elements that are in the initial document, so
                 // a picker rendered into a page that is already up has to ask for the focus itself.
                 if (AutoFocus && IsEnabled)
                 {
-                    await _saturationPickerRef.FocusAsync();
+                    await FocusFirstAsync();
                 }
             }
 
@@ -811,6 +879,11 @@ public partial class BitColorPicker : BitComponentBase
                 if (_presetItems.Count > 0)
                 {
                     _presetItems = [];
+
+                    // The references go with the swatches they were captured from. Left behind, they are
+                    // references to elements that are no longer on the page, and focusing one - which is what
+                    // a picker with nothing else focusable does - throws rather than doing nothing.
+                    _presetRefs = [];
                 }
 
                 return _presetItems;
@@ -893,6 +966,11 @@ public partial class BitColorPicker : BitComponentBase
     private async Task HandleOnSaturationKeyDown(KeyboardEventArgs e)
     {
         if (_IsInteractive is false) return;
+
+        // A key pressed with a modifier on it belongs to the browser or to the operating system - Ctrl+Home
+        // goes to the top of the page, Alt+Left goes back - and the JavaScript side leaves those alone rather
+        // than preventing them. Moving the color as well would answer one press with two actions.
+        if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         var (hue, saturation, value) = _color.Hsv;
 
@@ -1317,34 +1395,50 @@ public partial class BitColorPicker : BitComponentBase
 
 
 
+    /// <summary>
+    /// Drops the drag listeners the gradient was given. The element they were attached to is gone - hidden by
+    /// <see cref="ShowSaturationArea"/>, or taken down with the whole picker - so what is left to release is
+    /// the abort controller that holds them on the JavaScript side.
+    /// </summary>
+    /// <remarks>
+    /// The JavaScript side owns the listeners, and they hold the .NET reference the moves are reported
+    /// through, so it is told to drop them first. Whatever that call answers - a torn-down circuit, or a setup
+    /// that never returned an id to release - the reference itself is released here, so it is never left
+    /// registered, and the next registration starts from a new one.
+    /// </remarks>
+    private async Task ReleasePointerAsync()
+    {
+        var id = _abortControllerId;
+        var dotnetObj = _dotnetObj;
+
+        // Both cleared first, so a release that fails is not retried against a controller that is already gone.
+        _abortControllerId = null;
+        _dotnetObj = null;
+
+        try
+        {
+            if (id.HasValue())
+            {
+                await _js.BitColorPickerDispose(id);
+            }
+        }
+        catch (JSException) { } // whatever the interop answered, the listeners went with the element
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            dotnetObj?.Dispose();
+        }
+    }
+
+
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
-        if (_dotnetObj is not null)
-        {
-            // The JavaScript side owns the listeners that hold the .NET reference, so it is told to drop them
-            // first. Whether that call succeeds, fails, or cannot be made at all - a torn-down circuit, or a
-            // setup that never returned an id to release - the reference itself is released here, so it is
-            // never left registered.
-            try
-            {
-                if (_abortControllerId.HasValue())
-                {
-                    await _js.BitColorPickerDispose(_abortControllerId);
-                }
-            }
-            catch (JSException) { } // whatever the interop answered, the reference below is still ours to release
-            catch (JSDisconnectedException) { }
-            catch (ObjectDisposedException) { }
-            catch (OperationCanceledException) { }
-            finally
-            {
-                _dotnetObj.Dispose();
-            }
-
-            _dotnetObj = null;
-        }
+        await ReleasePointerAsync();
 
         await base.DisposeAsync(disposing);
     }
