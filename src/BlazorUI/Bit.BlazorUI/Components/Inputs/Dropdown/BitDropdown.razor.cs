@@ -92,6 +92,22 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the dropdown component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple dropdown components through the <see cref="BitParams"/> component.
+    /// <br />
+    /// Only a <see cref="BitDropdownParams{TItem, TValue}"/> closed over this dropdown's own type arguments
+    /// is matched, so one <see cref="BitParams"/> can carry one object per pair of type arguments.
+    /// </remarks>
+    [CascadingParameter(Name = BitDropdownParams<TItem, TValue>.ParamName)]
+    public BitDropdownParams<TItem, TValue>? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Detailed description of the dropdown for the benefit of screen readers. It is rendered into a
     /// visually hidden element that the dropdown references through its aria-describedby attribute,
     /// which is what lets a field carry an instruction too long to show next to it. It is read after
@@ -1770,8 +1786,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         StyleBuilder.Register(() => FitWidth ? "width:fit-content" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDropdownParams<,>))]
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is applied here as well as in OnParametersSet, because this method already reads the
+        // parameters it would otherwise only get after the first render: MultiSelect decides which of the
+        // two initialization branches runs, and ItemsProvider and Items decide whether an empty item
+        // collection is created for the dropdown.
+        CascadingParameters?.UpdateParameters(this);
+
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _overlayId = $"{_dropdownId}-overlay";
@@ -1834,6 +1857,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // dropdown's own parameters (Styles, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();

@@ -6,6 +6,24 @@ public partial class _BitDropdownCustomDemo
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
 
+    private readonly BitDropdownParams<Product, string>[] dropdownParams =
+    [
+        new()
+        {
+            NameSelectors = new()
+            {
+                Id = { Selector = c => c.Key },
+                ItemType = { Selector = c => c.Type },
+                Text = { Selector = c => c.Text },
+                Value = { Selector = c => c.Value },
+            },
+            Placeholder = "Select an item",
+            ShowClearButton = true,
+            ShowSearchBox = true,
+            SearchBoxPlaceholder = "Search the list",
+        }
+    ];
+
     private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     {
         AriaLabel = { Selector = c => c.Label },

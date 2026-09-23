@@ -2,6 +2,17 @@
 
 public partial class _BitDropdownOptionDemo
 {
+    private readonly BitDropdownParams<BitDropdownOption<string>, string>[] dropdownParams =
+    [
+        new()
+        {
+            Placeholder = "Select an item",
+            ShowClearButton = true,
+            ShowSearchBox = true,
+            SearchBoxPlaceholder = "Search the list",
+        }
+    ];
+
     private readonly List<BitDropdownItem<string>> basicItems =
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },

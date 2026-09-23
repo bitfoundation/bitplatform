@@ -1654,7 +1654,46 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
+<DemoExample Title="Cascading parameters" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
+    <div>
+        The <b>BitParams</b> component carries a <b>BitDropdownParams</b> down to every dropdown under it, so a form
+        sets the search box, the clear button and the placeholder once instead of at every field in it. What it carries
+        is a default and not an override: a dropdown that sets a parameter for itself keeps its own value, and only
+        what it left unset is filled in from the cascade - which is what lets one field step out of the section it is
+        in without the section having to know about it. The params object is closed over the same type arguments as the
+        dropdowns it feeds (<code>BitDropdownParams&lt;BitDropdownItem&lt;string&gt;, string&gt;</code> here), so
+        one <b>BitParams</b> can carry one object per pair of type arguments and each dropdown picks the one
+        that matches its own. The selection itself (<b>Value</b>,
+        <b>Values</b> and <b>IsOpen</b>), the validation state and everything that is written as markup or as a handler
+        - the templates, the <b>Options</b> content and the event callbacks - are left out of the params object on
+        purpose: they belong to a single dropdown rather than to a group of them.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitParams Parameters="dropdownParams">
+            <BitDropdown Label="Category"
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty" />
+            <br /><br />
+            <BitDropdown Label="Tags"
+                         MultiSelect
+                         Items="GetBasicItems()"
+                         DefaultValues="@(Array.Empty<string>())" />
+            <br /><br />
+            <BitDropdown Label="Its own placeholder"
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Pick one of these" />
+        </BitParams>
+        <br /><br />
+        <BitDropdown Label="Outside the cascade"
+                     Items="GetBasicItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
     <div>
         The <b>Color</b> parameter paints the accents of the dropdown - the focus border, the search box
         underline and icon, the group headers and the check boxes of the multi select items - in one of the theme
@@ -1729,7 +1768,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
     <div>
         Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
         <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
@@ -1814,7 +1853,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34" PreventRenderForMcpClient>
     <div>
         The <b>Size</b> parameter scales the whole component in one step, <b>Medium</b> being the default: the height
         and the font size of the dropdown, of its search box and of the items in the callout all follow the chosen size.
@@ -1844,7 +1883,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example35RazorCode" CsharpCode="@example35CsharpCode" Id="example35" PreventRenderForMcpClient>
     <div>
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
@@ -1923,7 +1962,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example35RazorCode" CsharpCode="@example35CsharpCode" Id="example35" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example36RazorCode" CsharpCode="@example36CsharpCode" Id="example36" PreventRenderForMcpClient>
     <div>
         Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
         Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the

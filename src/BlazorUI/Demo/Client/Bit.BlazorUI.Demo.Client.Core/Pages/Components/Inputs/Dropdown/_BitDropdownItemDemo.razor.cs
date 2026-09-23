@@ -6,6 +6,17 @@ public partial class _BitDropdownItemDemo
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
 
+    private readonly BitDropdownParams<BitDropdownItem<string>, string>[] dropdownParams =
+    [
+        new()
+        {
+            Placeholder = "Select an item",
+            ShowClearButton = true,
+            ShowSearchBox = true,
+            SearchBoxPlaceholder = "Search the list",
+        }
+    ];
+
     private List<BitDropdownItem<string>> GetBasicItems() =>
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },

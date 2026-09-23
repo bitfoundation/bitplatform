@@ -4617,6 +4617,330 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(1, values.Count);
     }
 
+    [TestMethod]
+    public void BitDropdownParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitDropdownParams<BitDropdownItem<string>, string>.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitDropdown<BitDropdownItem<string>, string>)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitDropdownParams<BitDropdownItem<string>, string>();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitDropdownParams<BitDropdownItem<string>, string>.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldApplyCascadingParametersFromBitParams()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<string>, string>
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                NoBorder = true,
+                Underlined = true,
+                Placeholder = "Cascaded placeholder",
+                Title = "Cascaded title"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-suc"));
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-lg"));
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-nbd"));
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-und"));
+        Assert.AreEqual("Cascaded placeholder", instance.Placeholder);
+        Assert.AreEqual("Cascaded title", instance.Title);
+    }
+
+    [TestMethod]
+    public void BitDropdownDirectParametersShouldOverrideCascadingParameters()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<string>, string>
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Placeholder = "Cascaded placeholder",
+                Underlined = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.AddAttribute(2, nameof(BitDropdown<BitDropdownItem<string>, string>.Color), BitColor.Error);
+                builder.AddAttribute(3, nameof(BitDropdown<BitDropdownItem<string>, string>.Size), BitSize.Small);
+                builder.AddAttribute(4, nameof(BitDropdown<BitDropdownItem<string>, string>.Placeholder), "Direct placeholder");
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+
+        // Direct parameters should override cascading ones
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-err"));
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-sm"));
+        Assert.AreEqual("Direct placeholder", instance.Placeholder);
+
+        // Underlined from cascading params should still apply (not overridden)
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-und"));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldIgnoreCascadingParametersOfOtherTypeArguments()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<int>, int>
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+
+        Assert.IsNull(instance.CascadingParameters);
+        Assert.IsFalse(dropdown.ClassList.Contains("bit-drp-suc"));
+        Assert.IsFalse(dropdown.ClassList.Contains("bit-drp-lg"));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldMatchTheCascadingParametersOfItsOwnTypeArguments()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<int>, int> { Color = BitColor.Error },
+            new BitDropdownParams<BitDropdownItem<string>, string> { Color = BitColor.Success }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-suc"));
+        Assert.IsFalse(dropdown.ClassList.Contains("bit-drp-err"));
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsUpdateParametersShouldSetAllProperties()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var @params = new BitDropdownParams<BitDropdownItem<string>, string>
+        {
+            AriaDescription = "Test description",
+            AutoFocus = true,
+            CaretDownIconName = "ChevronDown",
+            Chips = true,
+            CloseOnSelect = false,
+            Color = BitColor.Warning,
+            Combo = true,
+            DebounceTime = 300,
+            Description = "Test description text",
+            DropDirection = BitDropDirection.All,
+            FitWidth = true,
+            IsLoading = true,
+            Items = items,
+            ItemSize = 40,
+            Label = "Test label",
+            MaxHeight = 200,
+            MultiSelect = true,
+            MultiSelectDelimiter = " | ",
+            NoBorder = true,
+            Placeholder = "Test placeholder",
+            Prefix = "Pre",
+            SearchBoxPlaceholder = "Test search",
+            SearchMode = BitDropdownSearchMode.StartsWith,
+            ShowClearButton = true,
+            ShowSearchBox = true,
+            Size = BitSize.Small,
+            Suffix = "Suf",
+            Title = "Test title",
+            Transparent = true,
+            Underlined = true,
+            Virtualize = true,
+            AriaLabel = "Test aria label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+
+        Assert.AreEqual("Test description", instance.AriaDescription);
+        Assert.IsTrue(instance.AutoFocus);
+        Assert.AreEqual("ChevronDown", instance.CaretDownIconName);
+        Assert.IsTrue(instance.Chips);
+        Assert.IsFalse(instance.CloseOnSelect);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.IsTrue(instance.Combo);
+        Assert.AreEqual(300, instance.DebounceTime);
+        Assert.AreEqual("Test description text", instance.Description);
+        Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
+        Assert.IsTrue(instance.FitWidth);
+        Assert.IsTrue(instance.IsLoading);
+        Assert.AreSame(items, instance.Items);
+        Assert.AreEqual(40, instance.ItemSize);
+        Assert.AreEqual("Test label", instance.Label);
+        Assert.AreEqual(200, instance.MaxHeight);
+        Assert.IsTrue(instance.MultiSelect);
+        Assert.AreEqual(" | ", instance.MultiSelectDelimiter);
+        Assert.IsTrue(instance.NoBorder);
+        Assert.AreEqual("Test placeholder", instance.Placeholder);
+        Assert.AreEqual("Pre", instance.Prefix);
+        Assert.AreEqual("Test search", instance.SearchBoxPlaceholder);
+        Assert.AreEqual(BitDropdownSearchMode.StartsWith, instance.SearchMode);
+        Assert.IsTrue(instance.ShowClearButton);
+        Assert.IsTrue(instance.ShowSearchBox);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Suf", instance.Suffix);
+        Assert.AreEqual("Test title", instance.Title);
+        Assert.IsTrue(instance.Transparent);
+        Assert.IsTrue(instance.Underlined);
+        Assert.IsTrue(instance.Virtualize);
+        Assert.AreEqual("Test aria label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var @params = new BitDropdownParams<BitDropdownItem<string>, string>
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Placeholder = "Params placeholder"
+        };
+
+        // First render with direct parameters
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Size, BitSize.Small);
+            parameters.Add(p => p.Placeholder, "Existing placeholder");
+        });
+
+        var instance = component.Instance;
+
+        // Verify initial values
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing placeholder", instance.Placeholder);
+
+        // Now try to update with param, should not overwrite since properties were already set
+        @params.UpdateParameters(instance);
+
+        // Values should remain unchanged because HasNotBeenSet returns false
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing placeholder", instance.Placeholder);
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsShouldApplyClassesAndStyles()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var classes = new BitDropdownClassStyles { Root = "custom-root" };
+        var styles = new BitDropdownClassStyles { Root = "color: red;" };
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<string>, string>
+            {
+                Classes = classes,
+                Styles = styles
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+
+        Assert.IsTrue(dropdown.ClassList.Contains("custom-root"));
+        Assert.IsTrue(dropdown.GetAttribute("style")?.Contains("color: red;"));
+    }
+
     private static List<BitDropdownItem<string>> GetDropdownItemsWithDisabled() => new()
     {
         new() { Text = "Apple", Value = "f-app" },
