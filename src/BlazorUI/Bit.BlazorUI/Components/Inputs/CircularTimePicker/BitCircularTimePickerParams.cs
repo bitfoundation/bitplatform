@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -56,6 +56,11 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
     /// click outside of it.
     /// </summary>
     public bool? AutoClose { get; set; }
+
+    /// <summary>
+    /// How long, in milliseconds, an <see cref="AutoClose"/> picker waits before it closes.
+    /// </summary>
+    public int? AutoCloseDelay { get; set; }
 
     /// <summary>
     /// If true, the input of the TimePicker automatically receives focus when the page renders.
@@ -117,6 +122,12 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
     /// CultureInfo for the TimePicker.
     /// </summary>
     public CultureInfo? Culture { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a time entered as text that
+    /// <see cref="AllowedHours"/>, <see cref="AllowedMinutes"/> or <see cref="AllowedSeconds"/> rejects.
+    /// </summary>
+    public string? DisallowedTimeErrorMessage { get; set; }
 
     /// <summary>
     /// Disables every time of day after the current time, exactly as a <see cref="MaxTime"/> of now would.
@@ -326,13 +337,17 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         UpdateBaseParameters(bitCircularTimePicker);
 
-        // Three of the parameters below carry a [CallOnSet] hook on the component, which has already run for
+        // Some of the parameters below carry a [CallOnSet] hook on the component, which has already run for
         // whatever the markup set before anything cascaded here reached it. Assigning through the cascade
         // bypasses the setter, so the hooks are re-run at the end - but only when the assignment actually
         // changed something. This method runs on every parameters-set, and re-running them unconditionally
         // would drag the dial back to its starting view on every re-render of the page around it.
+        // The three flags are kept apart rather than rolled into one because the hooks behind them are not
+        // the same: a change of the seconds only moves the dial off a ring the picker has stopped carrying,
+        // where a change of the edit mode or the start view moves it back to where a picker begins.
         var cultureChanged = false;
         var viewChanged = false;
+        var secondsChanged = false;
 
         if (AllowTextInput.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AllowTextInput)))
         {
@@ -362,6 +377,11 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
         if (AutoClose.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AutoClose)))
         {
             bitCircularTimePicker.AutoClose = AutoClose.Value;
+        }
+
+        if (AutoCloseDelay.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AutoCloseDelay)))
+        {
+            bitCircularTimePicker.AutoCloseDelay = AutoCloseDelay.Value;
         }
 
         if (AutoFocus.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AutoFocus)))
@@ -435,6 +455,11 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.Culture = Culture;
 
             bitCircularTimePicker.ClassBuilder.Reset();
+        }
+
+        if (DisallowedTimeErrorMessage.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(DisallowedTimeErrorMessage)))
+        {
+            bitCircularTimePicker.DisallowedTimeErrorMessage = DisallowedTimeErrorMessage;
         }
 
         if (DisableFuture.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(DisableFuture)))
@@ -587,7 +612,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         if (ShowSeconds.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(ShowSeconds)))
         {
-            viewChanged = viewChanged || bitCircularTimePicker.ShowSeconds != ShowSeconds.Value;
+            secondsChanged = secondsChanged || bitCircularTimePicker.ShowSeconds != ShowSeconds.Value;
 
             bitCircularTimePicker.ShowSeconds = ShowSeconds.Value;
         }
@@ -642,6 +667,6 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.ValueFormat = ValueFormat;
         }
 
-        bitCircularTimePicker.ApplyCascadedParameters(cultureChanged, viewChanged);
+        bitCircularTimePicker.ApplyCascadedParameters(cultureChanged, viewChanged, secondsChanged);
     }
 }

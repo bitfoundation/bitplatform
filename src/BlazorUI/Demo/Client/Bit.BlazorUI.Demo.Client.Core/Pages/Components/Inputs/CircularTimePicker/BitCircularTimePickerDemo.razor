@@ -103,7 +103,9 @@
         <div>
             <b>EditMode</b> decides which parts of the time the dial offers. <b>Normal</b> edits all of them and
             settles onto the next one as soon as the current one is picked, while <b>OnlyHours</b>,
-            <b>OnlyMinutes</b> and <b>OnlySeconds</b> pin the dial to a single part and leave the rest as it is.
+            <b>OnlyMinutes</b> and <b>OnlySeconds</b> pin the dial to a single part and leave the rest as it is -
+            including the AM/PM pair, which is shown so the read-out can be placed in the day but is not offered
+            where the hour is not a part being edited.
             <b>StartView</b> chooses which part an opening picker lands on in Normal mode, <b>View</b> reports the one
             it is on, <b>SwitchView</b> moves it from code, and <b>OnViewChange</b> reports every switch - including
             the automatic one after a pick.
@@ -157,6 +159,8 @@
             its own <b>OutOfRangeErrorMessage</b> rather than the message an unreadable one gets.
             <b>DisablePast</b> and <b>DisableFuture</b> bound the range by the current time exactly as a
             <b>MinTime</b> or a <b>MaxTime</b> of now would; where both apply, the narrower of the two wins.
+            The pair is a range inside one day and does not wrap past midnight - a window that does, such as a
+            night shift, is a job for <b>AllowedHours</b>.
         </div>
         <br />
         <div class="example-content-standalone">
@@ -167,6 +171,10 @@
                                    AllowedHours="@(h => h is >= 9 and <= 17)" AllowedMinutes="@(m => m is 0 or 30)"
                                    DefaultValue="@(new TimeSpan(9, 0, 0))" />
             <br /><br />
+            <BitCircularTimePicker Label="Night shift - 22:00 to 06:00, across midnight" Standalone
+                                   AllowedHours="@(h => h is >= 22 or <= 6)"
+                                   DefaultValue="@(new TimeSpan(23, 0, 0))" />
+            <br /><br />
             <BitCircularTimePicker Label="Later today only" Standalone DisablePast />
         </div>
     </DemoExample>
@@ -176,8 +184,9 @@
             <b>ShowNowButton</b> jumps to the current time - snapped to the steps and clamped into the range, so it
             can never land on a time the dial itself refuses - and <b>ShowClearButton</b> empties the picker.
             <b>ShowCloseButton</b> adds a dismiss button in the corner of the callout, and <b>AutoClose</b> closes it
-            the moment the selection is complete, without waiting for either. Their captions are set with
-            <b>NowButtonText</b>, <b>ClearButtonText</b> and <b>CloseButtonTitle</b>.
+            as soon as the selection is complete, without waiting for either - <b>AutoCloseDelay</b> holds the clock
+            open for a moment first, so the pick that completed it can be seen being made. Their captions are set
+            with <b>NowButtonText</b>, <b>ClearButtonText</b> and <b>CloseButtonTitle</b>.
         </div>
         <br />
         <div class="example-content">
@@ -186,6 +195,9 @@
             <BitCircularTimePicker Label="Close button" ShowCloseButton Placeholder="Select a time" />
             <br /><br />
             <BitCircularTimePicker Label="AutoClose" AutoClose Placeholder="Select a time" />
+            <br /><br />
+            <BitCircularTimePicker Label="AutoClose after 400ms" AutoClose AutoCloseDelay="400"
+                                   Placeholder="Select a time" />
         </div>
     </DemoExample>
 
@@ -365,14 +377,31 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Responsive" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Layout" RazorCode="@example16RazorCode" Id="example16">
         <div>
-            <b>Responsive</b> turns the callout into a sheet anchored to the top of the screen once the viewport is
-            narrow enough, and lets it be swiped away upwards. Resize the window below the small breakpoint to see it.
+            Two parameters answer the space the picker has, and the small breakpoint is where one hands over to the
+            other. <b>Landscape</b> puts the toolbar down the leading edge instead of above the clock, stacking the
+            parts of the time in a column - roughly half the height for a picker with width to spare - and takes
+            effect from that breakpoint up. <b>Responsive</b> takes over below it, turning the callout into a sheet
+            anchored to the top of the screen that can be swiped away upwards. The <b>Body</b> slot of <b>Styles</b>
+            and <b>Classes</b> reaches the column the toolbar is set beside: the clock, the AM/PM pair when
+            <b>AmPmInClock</b> puts it there, and the row of actions.
+        </div>
+        <br />
+        <div class="example-content-standalone">
+            <BitCircularTimePicker Label="Landscape" Standalone Landscape
+                                   DefaultValue="@(new TimeSpan(9, 30, 0))" />
+            <br /><br />
+            <BitCircularTimePicker Label="Landscape, 12-hour with the seconds" Standalone Landscape ShowSeconds
+                                   AmPmInClock ShowNowButton TimeFormat="BitTimeFormat.TwelveHours"
+                                   DefaultValue="@(new TimeSpan(21, 45, 30))" />
         </div>
         <br />
         <div class="example-content">
-            <BitCircularTimePicker Label="Responsive CircularTimePicker" Placeholder="Select a time" Responsive />
+            <BitCircularTimePicker Label="Landscape in the callout" Landscape Placeholder="Select a time" />
+            <br /><br />
+            <BitCircularTimePicker Label="Responsive - resize below the small breakpoint" Responsive
+                                   Placeholder="Select a time" />
         </div>
     </DemoExample>
 
@@ -419,10 +448,13 @@
     <DemoExample Title="Validation" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
         <div>
             Inside an <b>EditForm</b> the picker is an ordinary form input: it registers with the <b>EditContext</b>,
-            turns red and gets <b>aria-invalid</b> when its field has messages, and reports a value that cannot be
-            parsed - or that falls outside <b>MinTime</b> / <b>MaxTime</b> - through <b>InvalidErrorMessage</b> and
-            <b>OutOfRangeErrorMessage</b>. A <b>Standalone</b> picker has no field to redden, so the rule is drawn
-            around the dial instead, and the dial is what carries <b>aria-required</b> and <b>aria-invalid</b>.
+            turns red and gets <b>aria-invalid</b> when its field has messages. Text is the only way a time the dial
+            itself refuses can reach it, and the three ways it can be wrong get three messages of their own -
+            <b>InvalidErrorMessage</b> for one that cannot be read, <b>OutOfRangeErrorMessage</b> for one outside
+            <b>MinTime</b> / <b>MaxTime</b>, and <b>DisallowedTimeErrorMessage</b> for one the <b>Allowed*</b>
+            predicates rule out. The steps are the one constraint typed text is not held to. A <b>Standalone</b>
+            picker has no field to redden, so the rule is drawn around the dial instead, and the dial is what
+            carries <b>aria-required</b> and <b>aria-invalid</b>.
         </div>
         <br />
         <div class="example-content">
@@ -451,7 +483,7 @@
         </div>
         <br /><br />
         <div class="example-desc">
-            The custom invalid error message shows when an unparsable or out-of-range time is entered.
+            Type <b>ab:cd</b>, <b>07:00</b> and <b>09:10</b> into the field below to see each of the three messages.
         </div>
         <div class="example-content">
             <EditForm Model="formValidationCircularTimePickerModel">
@@ -459,8 +491,11 @@
                 <div>
                     <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time" AllowTextInput
                                            MinTime="@(new TimeSpan(8, 0, 0))" MaxTime="@(new TimeSpan(18, 0, 0))"
-                                           Label="Custom Invalid Error Message"
-                                           InvalidErrorMessage="Please enter a time between 08:00 and 18:00." />
+                                           AllowedMinutes="@(m => m is 0 or 15 or 30 or 45)"
+                                           Label="Custom error messages"
+                                           InvalidErrorMessage="That is not a time - write it as HH:mm."
+                                           OutOfRangeErrorMessage="Please enter a time between 08:00 and 18:00."
+                                           DisallowedTimeErrorMessage="Appointments start on the quarter hour." />
                     <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
                 </div>
                 <br />
@@ -488,14 +523,16 @@
     <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
         <div>
             <b>OnSelectTime</b> fires for every change the dial makes, <b>OnChange</b> for every change of the value
-            itself, <b>OnOpen</b> and <b>OnClose</b> follow the callout, <b>OnViewChange</b> follows the dial between
-            the parts of the time, and <b>OnClick</b>, <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the field.
+            itself, <b>OnClear</b> for the clear button emptying it, <b>OnOpen</b> and <b>OnClose</b> follow the
+            callout, <b>OnViewChange</b> follows the dial between the parts of the time, and <b>OnClick</b>,
+            <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the field.
         </div>
         <br />
         <div class="example-content">
             <BitCircularTimePicker Label="Watch the log" Placeholder="Select a time" ShowClearButton OnOpen="LogOpen"
                                    OnClose="LogClose" OnClick="LogClick" OnFocusIn="LogFocusIn" OnFocusOut="LogFocusOut"
-                                   OnViewChange="LogViewChange" OnSelectTime="LogSelectTime" OnChange="LogChange" />
+                                   OnViewChange="LogViewChange" OnSelectTime="LogSelectTime" OnChange="LogChange"
+                                   OnClear="LogClear" />
         </div>
         <br />
         <div class="event-log">
@@ -506,31 +543,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Landscape" RazorCode="@example20RazorCode" Id="example20">
-        <div>
-            <b>Landscape</b> puts the toolbar down the leading edge of the picker instead of above the clock,
-            stacking the parts of the time in a column - which is roughly half the height for a picker that has
-            width to spare. It takes effect from the small breakpoint up: below it there is no width to give the
-            toolbar, so the picker keeps its portrait layout. The <b>Body</b> slot of <b>Styles</b> and
-            <b>Classes</b> reaches the column the toolbar is set beside - the clock, the AM/PM pair when
-            <b>AmPmInClock</b> puts it there, and the row of actions.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="Landscape" Standalone Landscape
-                                   DefaultValue="@(new TimeSpan(9, 30, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="Landscape, 12-hour with the seconds" Standalone Landscape ShowSeconds
-                                   AmPmInClock ShowNowButton TimeFormat="BitTimeFormat.TwelveHours"
-                                   DefaultValue="@(new TimeSpan(21, 45, 30))" />
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="In the callout" Landscape Placeholder="Select a time" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+    <DemoExample Title="Cascading parameters" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
         <div>
             A form full of time pickers usually repeats the same handful of parameters on every one of them.
             <b>BitParams</b> takes them out of the markup: it cascades a <b>BitCircularTimePickerParams</b> down to
@@ -566,7 +579,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21">
         <div>
             <b>Color</b> picks the theme color of the accent the dial is painted with - the toolbar, the hand, the pin
             and the selected number - with <b>Primary</b> as the default. The semantic colors tie the picker to what
@@ -623,7 +636,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
         <div>
             The glyphs are not limited to the built-in icon font: <b>Icon</b> and <b>CloseButtonIcon</b> take a
             <b>BitIconInfo</b> - or a raw CSS class string - that can point at any icon library whose stylesheet is
@@ -657,10 +670,11 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23">
         <div>
-            <b>Size</b> scales the dial, its numbers and the toolbar together: <b>Small</b> where the clock has to
-            share a dense layout, <b>Medium</b> (the default) for forms, and <b>Large</b> where the picker is the
+            <b>Size</b> scales the field, the label, the dial, its numbers and the toolbar together, so the picker
+            lines up with the other controls of a form at whichever size they are: <b>Small</b> where the clock has
+            to share a dense layout, <b>Medium</b> (the default) for forms, and <b>Large</b> where the picker is the
             point of the screen or aimed at touch. The two rings and the hand keep their proportions at every size.
         </div>
         <br />
@@ -673,7 +687,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
+    <DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every
             named part of the picker on their own - the toolbar, the face, the numbers, the hand and its thumb - so
@@ -727,7 +741,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="CSS variables" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
+    <DemoExample Title="CSS variables" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
         <div>
             Every visual property of the picker reads a public CSS variable first, so a whole application can be
             re-skinned from one rule without touching a single component. The full list is in the
@@ -763,7 +777,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example27RazorCode" Id="example27">
+    <DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26">
         <div>
             <b>Dir</b> flips the field, the label and the toolbar into a right-to-left layout, and reaches the callout
             as well even though it is rendered outside the root element. The dial itself keeps running clockwise, and

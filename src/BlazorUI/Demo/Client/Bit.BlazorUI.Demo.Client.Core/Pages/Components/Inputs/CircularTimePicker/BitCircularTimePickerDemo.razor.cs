@@ -50,6 +50,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "AutoCloseDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "How long, in milliseconds, an AutoClose picker waits before it closes, so the pick that completed the selection can be seen being made. A further pick inside the wait supersedes it and starts it over.",
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -138,6 +145,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "DisallowedTimeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a time entered as text that AllowedHours, AllowedMinutes or AllowedSeconds rejects. The steps are the one constraint typed text is not held to.",
+        },
+        new()
+        {
             Name = "DisableFuture",
             Type = "bool",
             DefaultValue = "false",
@@ -155,7 +169,9 @@ public partial class BitCircularTimePickerDemo
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
-            Description = "Determines the allowed drop directions of the callout."
+            Description = "Determines the allowed drop directions of the callout.",
+            Href = "#drop-direction-enum",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -164,7 +180,7 @@ public partial class BitCircularTimePickerDemo
             LinkType = LinkType.Link,
             Href = "#edit-mode-enum",
             DefaultValue = "BitCircularTimePickerEditMode.Normal",
-            Description = "Choose the edition mode. By default, you can edit every part the picker shows."
+            Description = "Choose the edition mode. By default, you can edit every part the picker shows. A mode pinned to one part leaves the rest as it is, the AM/PM pair included - it is shown but only offered where the hour is a part the picker edits."
         },
         new()
         {
@@ -264,14 +280,14 @@ public partial class BitCircularTimePickerDemo
             Name = "MaxTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "The latest time that can be selected. Later hours, and the minutes past it inside its own hour, are dimmed on the dial and refused by the pointer, the keyboard and the text input.",
+            Description = "The latest time that can be selected. Later hours, and the minutes past it inside its own hour, are dimmed on the dial and refused by the pointer, the keyboard and the text input. With MinTime it forms a range inside one day that does not wrap past midnight - use AllowedHours for a window that does.",
         },
         new()
         {
             Name = "MinTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "The earliest time that can be selected. Earlier hours, and the minutes before it inside its own hour, are dimmed on the dial and refused by the pointer, the keyboard and the text input.",
+            Description = "The earliest time that can be selected. Earlier hours, and the minutes before it inside its own hour, are dimmed on the dial and refused by the pointer, the keyboard and the text input. It is also where the grids of HourStep, MinuteStep and SecondStep start.",
         },
         new()
         {
@@ -574,6 +590,27 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Id = "drop-direction-enum",
+            Name = "BitDropDirection",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "All",
+                    Description = "The direction determined automatically based on the available spaces in all directions.",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Description = "Show the callout at the top or bottom side.",
+                    Value = "1"
+                }
+            ]
+        },
+        new()
+        {
             Id = "edit-mode-enum",
             Name = "BitCircularTimePickerEditMode",
             Description = "",
@@ -770,6 +807,20 @@ public partial class BitCircularTimePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the callout container of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "CalloutHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout header, the container of the CalloutHeaderTemplate."
+                },
+                new()
+                {
+                    Name = "CalloutFooter",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout footer, the container of the CalloutFooterTemplate."
                 },
                 new()
                 {
@@ -988,8 +1039,8 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-label-font-size",
-            DefaultValue = "--bit-tpg-fs-sm",
-            Description = "The text size of that label."
+            DefaultValue = "per Size",
+            Description = "The text size of that label. Small, medium and large map to --bit-tpg-fs-xs, --bit-tpg-fs-sm and --bit-tpg-fs-md."
         },
         new()
         {
@@ -1006,14 +1057,14 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-input-font-size",
-            DefaultValue = "--bit-tpg-fs-sm",
-            Description = "The size of that text."
+            DefaultValue = "per Size",
+            Description = "The size of that text. Small, medium and large map to --bit-tpg-fs-xs, --bit-tpg-fs-sm and --bit-tpg-fs-md."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-input-height",
-            DefaultValue = "--bit-siz-ctrl-md",
-            Description = "The height of the field, which is what lines it up with the other controls of a form."
+            DefaultValue = "per Size",
+            Description = "The height of the field, which is what lines it up with the other controls of a form. Small, medium and large map to --bit-siz-ctrl-sm, --bit-siz-ctrl-md and --bit-siz-ctrl-lg."
         },
         new()
         {
@@ -1115,7 +1166,7 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "--bit-CircularTimePicker-number-size",
             DefaultValue = "Per Size",
-            Description = "The diameter of one number on the dial, which is also its pointer target and the size of its selected disc."
+            Description = "The diameter of one number on the dial, which is also its pointer target and the size of its selected disc. The two rings of the 24-hour dial are laid out from what it leaves of the clock, and the pointer tells them apart at a fixed fraction of the radius - so a much larger number wants a larger --bit-CircularTimePicker-clock-size with it."
         },
         new()
         {
@@ -1227,6 +1278,12 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "--bit-CircularTimePicker-close-button-color",
+            DefaultValue = "--bit-CircularTimePicker-toolbar-color",
+            Description = "The close button. It is laid over the corner of the toolbar, so it is painted for the accent there; under a CalloutHeaderTemplate it takes that corner instead and falls back to --bit-clr-fg-pri."
+        },
+        new()
+        {
             Name = "--bit-CircularTimePicker-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
             Description = "The foreground of every disabled part - the label, the field, the toolbar, the numbers and the actions."
@@ -1283,6 +1340,7 @@ public partial class BitCircularTimePickerDemo
     private void LogOpen() => Log("OnOpen");
     private void LogClose() => Log("OnClose");
     private void LogClick() => Log("OnClick");
+    private void LogClear() => Log("OnClear");
     private void LogFocusIn() => Log("OnFocusIn");
     private void LogFocusOut() => Log("OnFocusOut");
     private void LogViewChange(BitCircularTimePickerView view) => Log($"OnViewChange: {view}");

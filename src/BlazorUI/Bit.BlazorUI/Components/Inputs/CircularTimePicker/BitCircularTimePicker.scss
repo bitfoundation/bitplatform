@@ -26,11 +26,11 @@
  *                                                         the actions and the close button
  *                                                                                  (default: the role's focus color)
  *   --bit-CircularTimePicker-label-color                  label above the field     (default: $clr-fg-pri)
- *   --bit-CircularTimePicker-label-font-size              label text size           (default: $tg-fs-sm)
+ *   --bit-CircularTimePicker-label-font-size              label text size           (default: per size)
  *   --bit-CircularTimePicker-input-background             field background          (default: $clr-bg-pri)
  *   --bit-CircularTimePicker-input-color                  field foreground          (default: $clr-fg-pri)
- *   --bit-CircularTimePicker-input-font-size              field text size           (default: $tg-fs-sm)
- *   --bit-CircularTimePicker-input-height                 field height              (default: $siz-ctrl-md)
+ *   --bit-CircularTimePicker-input-font-size              field text size           (default: per size)
+ *   --bit-CircularTimePicker-input-height                 field height              (default: per size)
  *   --bit-CircularTimePicker-input-padding                field padding             (default: 0 spacing(1))
  *   --bit-CircularTimePicker-border-color                 field border, and the underline of the
  *                                                         Underlined variant        (default: $clr-brd-pri)
@@ -56,7 +56,12 @@
  *                                                         and the hit test follow   (default: per size)
  *   --bit-CircularTimePicker-clock-background             face of the dial          (default: $clr-bg-sec)
  *   --bit-CircularTimePicker-clock-margin                 room around the dial      (default: spacing(2))
- *   --bit-CircularTimePicker-number-size                  diameter of one number    (default: per size)
+ *   --bit-CircularTimePicker-number-size                  diameter of one number. The two rings of the
+ *                                                         24-hour dial are laid out from what it leaves of
+ *                                                         the clock, and the pointer tells them apart at a
+ *                                                         fixed fraction of the radius - so a much larger
+ *                                                         number wants a larger clock with it
+ *                                                                                  (default: per size)
  *   --bit-CircularTimePicker-number-font-size             its text size             (default: per size)
  *   --bit-CircularTimePicker-number-color                 numbers of the outer ring (default: $clr-fg-pri)
  *   --bit-CircularTimePicker-inner-number-color           numbers of the inner ring, which only the
@@ -87,6 +92,11 @@
  *   --bit-CircularTimePicker-action-color                 the "now" and "clear" buttons
  *                                                                                  (default: the accent)
  *   --bit-CircularTimePicker-action-font-size             their text size           (default: $tg-fs-sm)
+ *   --bit-CircularTimePicker-close-button-color           the close button, which is laid over the corner of
+ *                                                         the toolbar and so is painted for it - unless a
+ *                                                         CalloutHeaderTemplate has taken that corner, where
+ *                                                         it is painted for the callout surface instead
+ *                                                                  (default: the toolbar foreground, or $clr-fg-pri under a header)
  *   --bit-CircularTimePicker-disabled-color               foreground of every disabled part
  *                                                                                  (default: $clr-fg-dis)
  *   --bit-CircularTimePicker-disabled-background          background of the disabled field and toolbar
@@ -100,6 +110,9 @@
 // The medium preset is also what a picker carrying no size class at all is drawn at, so it lives in a mixin
 // the base block and .bit-ctp-md both pull from rather than being written out twice.
 @mixin ctp-size-medium {
+    --bit-ctp-inp-h: #{$siz-ctrl-md};
+    --bit-ctp-inp-fs: #{$tg-fs-sm};
+    --bit-ctp-lbl-fs: #{$tg-fs-sm};
     --bit-ctp-clk-size: #{spacing(32.5)};
     --bit-ctp-num-size: #{spacing(4)};
     --bit-ctp-txt-fontsize: calc(#{$tg-fs-4xl} * 1.375);
@@ -282,7 +295,7 @@
     box-sizing: border-box;
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    font-size: var(--bit-CircularTimePicker-label-font-size, #{$tg-fs-sm});
+    font-size: var(--bit-CircularTimePicker-label-font-size, var(--bit-ctp-lbl-fs));
     color: var(--bit-CircularTimePicker-label-color, #{$clr-fg-pri});
 }
 
@@ -300,7 +313,7 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     border-style: $shp-border-style;
-    height: var(--bit-CircularTimePicker-input-height, #{$siz-ctrl-md});
+    height: var(--bit-CircularTimePicker-input-height, var(--bit-ctp-inp-h));
     padding: var(--bit-CircularTimePicker-input-padding, 0 #{spacing(1)});
     border-radius: var(--bit-CircularTimePicker-border-radius, #{$shp-radius-control});
     border-width: var(--bit-CircularTimePicker-border-width, #{$shp-border-width});
@@ -331,7 +344,7 @@
     text-overflow: ellipsis;
     background: none transparent;
     font-family: $tg-font-family;
-    font-size: var(--bit-CircularTimePicker-input-font-size, #{$tg-fs-sm});
+    font-size: var(--bit-CircularTimePicker-input-font-size, var(--bit-ctp-inp-fs));
     color: var(--bit-CircularTimePicker-input-color, #{$clr-fg-pri});
 }
 
@@ -460,7 +473,10 @@
     flex-direction: row;
     justify-content: center;
     min-width: var(--bit-ctp-tlb-minwidth);
-    padding: var(--bit-CircularTimePicker-toolbar-padding, #{spacing(2)} 0);
+    // The inline part of the default padding is a variable of its own so the close button - which is laid
+    // over the corner of the bar - can reserve room at both ends without the read-out sliding off center,
+    // and without the rule having to be re-declared at a specificity that would beat the public variable.
+    padding: var(--bit-CircularTimePicker-toolbar-padding, #{spacing(2)} var(--bit-ctp-tlb-pad-inline, 0));
     color: var(--bit-CircularTimePicker-toolbar-color, var(--bit-ctp-clr-text));
     background-color: var(--bit-CircularTimePicker-toolbar-background, var(--bit-ctp-clr));
 }
@@ -471,6 +487,12 @@
     margin: 0;
     padding: 0;
     outline: 0;
+    // Room for the wash a hover is drawn with, so it is not painted hard against the glyphs of the read-out.
+    // It is also what the parts of the time are spaced apart by, so the container adds no gap of its own on
+    // top of it - the read-out keeps the width it had before the wash was there to make room for.
+    padding-block: spacing(0.25);
+    padding-inline: spacing(0.5);
+    border-radius: $shp-radius-control;
     line-height: 1;
     cursor: pointer;
     font-weight: $tg-fw-regular;
@@ -543,7 +565,6 @@ span.bit-ctp-txt {
 .bit-ctp-hmc {
     display: flex;
     direction: ltr;
-    gap: spacing(0.5);
     align-items: baseline;
     justify-content: flex-end;
 }
@@ -650,6 +671,10 @@ span.bit-ctp-txt {
     position: relative;
     touch-action: none;
     border-radius: 50%;
+    // The toolbar can be the widest thing in the callout - a twelve-hour read-out with the seconds and the
+    // meridiem beside it at the large size is - and a dial left at the start of the column would then sit
+    // off to one side of the bar above it.
+    align-self: center;
     width: var(--bit-ctp-clk);
     height: var(--bit-ctp-clk);
     margin: var(--bit-CircularTimePicker-clock-margin, #{spacing(2)});
@@ -817,7 +842,7 @@ span.bit-ctp-txt {
     max-width: spacing(5);
     font-size: $tg-fs-xs;
     background-color: transparent;
-    color: var(--bit-CircularTimePicker-number-color, #{$clr-fg-pri});
+    color: var(--bit-CircularTimePicker-close-button-color, #{$clr-fg-pri});
     border-radius: var(--bit-CircularTimePicker-border-radius, #{$shp-radius-control});
 
     @media (hover: hover) {
@@ -832,6 +857,56 @@ span.bit-ctp-txt {
 
     &:focus-visible {
         @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+    }
+}
+
+/*
+ * The close button is laid over the top corner of the callout, and unless a header template has been put
+ * above it that corner is the toolbar - a bar painted with the accent of the theme. The page foreground it
+ * would otherwise carry is what the rest of the callout surface is read against, not that bar: on the light
+ * theme it lands at about 2.7:1 there, under the 4.5:1 of WCAG 1.4.3 and the 3:1 SC 1.4.11 asks of the glyph
+ * itself. So the button takes the foreground of the bar it sits on, lifts with a wash of that same color
+ * rather than a light one that would vanish into it, and rings itself the way the other buttons of the bar
+ * do - the shared focus ring paints its inner gap in the page background, which on the accent reads as a
+ * pale halo rather than as an offset.
+ *
+ * Room is reserved at both ends of the bar with it, so the read-out stays centered and never runs under the
+ * button. Landscape puts the bar down the side instead, where the corner is free.
+ */
+.bit-ctp-wcb {
+    --bit-ctp-tlb-pad-inline: #{spacing(5.5)};
+
+    .bit-ctp-cbn {
+        color: var(--bit-CircularTimePicker-close-button-color,
+                   var(--bit-CircularTimePicker-toolbar-color, var(--bit-ctp-clr-text)));
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: translucent(currentcolor, 16%);
+            }
+        }
+
+        &:active {
+            background-color: translucent(currentcolor, 24%);
+        }
+
+        &:focus-visible {
+            box-shadow: none;
+            outline: $shp-focus-ring-width $shp-border-style currentcolor;
+            outline-offset: calc(#{$shp-focus-ring-offset} * -1);
+
+            // The shared ring answers forced-colors with a Highlight outline; the one above replaces it
+            // wholesale, so the system color it was reaching for is put back here.
+            @media (forced-colors: active) {
+                outline-color: Highlight;
+            }
+        }
+    }
+
+    &.bit-ctp-lnd {
+        @include gt-xs {
+            --bit-ctp-tlb-pad-inline: 0;
+        }
     }
 }
 
@@ -893,14 +968,18 @@ span.bit-ctp-txt {
             background-color: var(--bit-CircularTimePicker-number-hover-background, #{$clr-bg-pri-hover});
         }
 
-        // Scoped to the toolbar: its buttons sit on the accent, so the on-accent color is what reads as a
-        // lift there. The meridiem pair under the clock sits on the callout instead, where that same color
-        // would make it vanish, so it lifts with a background of its own. Only the buttons lift: the
-        // separators and the read-out of a single-part edit mode carry the same class without being
-        // anything a pointer can press, and :not(:disabled) is no help there - a span is never disabled.
+        // Scoped to the toolbar: its buttons sit on the accent, so a light background would be a patch of
+        // the page showing through the bar - they lift with a wash of the foreground they already carry
+        // instead, which reads on whatever accent a theme paints it with. The color is put back with it for
+        // a theme that has asked the inactive parts to be dimmed, where the lift is that dim coming off.
+        // The meridiem pair under the clock sits on the callout rather than the bar, and lifts with a
+        // background of its own below. Only the buttons lift: the separators and the read-out of a
+        // single-part edit mode carry the same class without being anything a pointer can press, and
+        // :not(:disabled) is no help there - a span is never disabled.
         .bit-ctp-tlb button.bit-ctp-txt:not(:disabled):hover,
         .bit-ctp-tlb .bit-ctp-apb:not(:disabled):hover {
             color: var(--bit-CircularTimePicker-toolbar-color, var(--bit-ctp-clr-text));
+            background-color: translucent(currentcolor, 16%);
         }
 
         .bit-ctp-apk .bit-ctp-apb:not(:disabled):not(.bit-ctp-aps):hover {
@@ -910,6 +989,9 @@ span.bit-ctp-txt {
 }
 
 .bit-ctp-sm {
+    --bit-ctp-inp-h: #{$siz-ctrl-sm};
+    --bit-ctp-inp-fs: #{$tg-fs-xs};
+    --bit-ctp-lbl-fs: #{$tg-fs-xs};
     --bit-ctp-thb-size: #{spacing(2.875)};
     --bit-ctp-thb-size-min: #{spacing(1.5)};
     --bit-ctp-clk-size: #{spacing(26)};
@@ -926,6 +1008,9 @@ span.bit-ctp-txt {
 }
 
 .bit-ctp-lg {
+    --bit-ctp-inp-h: #{$siz-ctrl-lg};
+    --bit-ctp-inp-fs: #{$tg-fs-md};
+    --bit-ctp-lbl-fs: #{$tg-fs-md};
     --bit-ctp-thb-size: #{spacing(4.25)};
     --bit-ctp-thb-size-min: #{spacing(2)};
     --bit-ctp-clk-size: #{spacing(39)};
