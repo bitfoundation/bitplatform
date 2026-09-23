@@ -1,5 +1,10 @@
 name: bit platform CI - Butil
 
+# One pipeline per package: the build/unit stage gates the browser, hybrid and publish-gate stages below, so a
+# broken build fails once instead of burning a runner per E2E leg. Every E2E job runs the same suite against a
+# different host (BUTIL_E2E_HOST); see src/Butil/tests/Bit.Butil.Tests.E2E/README.md for what each host proves
+# and how to run the same thing locally.
+
 on:
   workflow_dispatch:
   pull_request:
@@ -13,6 +18,9 @@ permissions:
   contents: read
 
 jobs:
+
+  # Stage 1 - build, MCP and hosting tests. Every stage below depends on this one, so its `if:` is the single
+  # switch that skips the whole pipeline on Release/Prerelease/Version PRs.
   build-Butil:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Butil
@@ -84,7 +92,7 @@ jobs:
 
     # Every render mode of the Blazor Web App harness host over HTTP, on net8.0/net9.0/net10.0: the prerendered
     # pages, the served scripts, and every member of every service called during a static render. Browser, hybrid
-    # and trimmed/AOT publish coverage runs in bit.ci.Butil.e2e.yml.
+    # and trimmed/AOT publish coverage are the stages below.
     - name: Hosting tests
       run: >
         cd src/Butil &&
@@ -98,4 +106,206 @@ jobs:
       with:
         name: butil-hosting-results
         path: '**/butil-hosting*.trx'
+        if-no-files-found: ignore
+
+  # Stage 2 - the standalone WebAssembly sample, and every render mode of the Blazor Web App harness host (with
+  # and without prerendering) in Chromium - on every runtime the library ships for where the runtime is what differs.
+  e2e-web:
+    needs: build-Butil
+    name: Butil E2E - ${{ matrix.host }} (${{ matrix.framework }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { host: standalone, framework: net10.0 }
+        - { host: server, framework: net10.0 }
+        - { host: server-noprerender, framework: net10.0 }
+        - { host: wasm, framework: net10.0 }
+        - { host: wasm-noprerender, framework: net10.0 }
+        - { host: auto, framework: net10.0 }
+        - { host: auto-noprerender, framework: net10.0 }
+        - { host: server, framework: net9.0 }
+        - { host: wasm, framework: net9.0 }
+        - { host: server, framework: net8.0 }
+        - { host: wasm, framework: net8.0 }
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 8.0.x
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    # The standalone sample is started with `dotnet run`, which builds it; the web harness host is built here.
+    - name: Build the web harness host
+      if: matrix.host != 'standalone'
+      run: dotnet build src/Butil/tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
+
+    - name: Build the E2E suite
+      run: dotnet build src/Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Butil/tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests
+      env:
+        BUTIL_E2E_HOST: ${{ matrix.host }}
+        BUTIL_E2E_FRAMEWORK: ${{ matrix.framework }}
+        BUTIL_E2E_CONFIGURATION: Release
+        BUTIL_E2E_SKIP_BUILD: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Butil &&
+        dotnet test --project tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release --no-build
+        --report-trx --report-trx-filename butil-e2e-${{ matrix.host }}-${{ matrix.framework }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: butil-e2e-${{ matrix.host }}-${{ matrix.framework }}
+        path: '**/butil-e2e-*.trx'
+        if-no-files-found: ignore
+
+  # Stage 2 - Blazor Hybrid: the harness pages in a WinForms BlazorWebView, driven through WebView2's DevTools port.
+  e2e-hybrid:
+    needs: build-Butil
+    name: Butil E2E - hybrid (WebView2)
+    runs-on: windows-2025
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    # windows-2025 ships the Edge browser but not the WebView2 Runtime, which BlazorWebView needs.
+    - name: Install the WebView2 Runtime
+      shell: pwsh
+      run: |
+        $clientKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+        $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        if (-not $version -or $version -eq '0.0.0.0') {
+          $installer = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebview2Setup.exe'
+          Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $installer
+          Start-Process $installer -ArgumentList '/silent', '/install' -Wait
+          $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        }
+        if (-not $version -or $version -eq '0.0.0.0') { throw 'The WebView2 Runtime did not install.' }
+        Write-Host "WebView2 Runtime $version"
+
+    - name: Build the hybrid harness host
+      run: dotnet build src/Butil/tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj -c Release
+
+    - name: Build the E2E suite
+      run: dotnet build src/Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
+
+    # No Playwright browser download: the suite attaches to the WebView2 Runtime installed above.
+    - name: Run hybrid E2E tests
+      env:
+        BUTIL_E2E_HOST: hybrid
+        BUTIL_E2E_CONFIGURATION: Release
+        BUTIL_E2E_SKIP_BUILD: 1
+      run: >
+        cd src/Butil &&
+        dotnet test --project tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release --no-build
+        --report-trx --report-trx-filename butil-e2e-hybrid.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: butil-e2e-hybrid
+        path: '**/butil-e2e-hybrid.trx'
+        if-no-files-found: ignore
+
+  # Stage 3 - publishes the Web App harness host the way an app ships - its WebAssembly client trimmed, and in a
+  # second leg AOT-compiled, with the JavaScript bundle trimmed by the reference scan - failing on any trim analysis
+  # warning from Bit.Butil, then runs the browser suite against that output in the WebAssembly render mode. Trimming
+  # is where a DTO System.Text.Json reflects over, a DI constructor or a JavaScript module goes missing, and none of
+  # it is visible in a Debug build.
+  publish-gate:
+    needs: build-Butil
+    name: Butil publish gate (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: trimmed
+          properties: ''
+        - name: aot
+          properties: '-p:RunAOTCompilation=true'
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      if: matrix.name == 'aot'
+      run: dotnet workload install wasm-tools
+
+    - name: Publish the web harness host (fails on trim/AOT warnings from Bit.Butil)
+      run: bash src/Butil/tests/Bit.Butil.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/butil-harness-${{ matrix.name }} ${{ matrix.properties }}
+
+    - name: Build the E2E suite
+      run: dotnet build src/Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Butil/tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests against the published host
+      env:
+        BUTIL_E2E_HOST: wasm
+        BUTIL_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/butil-harness-${{ matrix.name }}
+      run: >
+        cd src/Butil &&
+        dotnet test --project tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release --no-build
+        --report-trx --report-trx-filename butil-publish-${{ matrix.name }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: butil-publish-${{ matrix.name }}
+        path: '**/butil-publish-*.trx'
         if-no-files-found: ignore
