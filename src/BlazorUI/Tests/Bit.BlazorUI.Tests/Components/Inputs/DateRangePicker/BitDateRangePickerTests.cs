@@ -4138,4 +4138,96 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(applied.StartDate, value?.StartDate);
         Assert.AreEqual(applied.EndDate, value?.EndDate);
     }
+
+    [TestMethod]
+    public void BitDateRangePickerArrowKeysShouldPreviewTheRange()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var today = new DateTimeOffset(2024, 6, 12, 0, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = today });
+        });
+
+        // The start date alone is picked and the keyboard has not moved yet, so there is nothing
+        // between it and the focused day to preview.
+        Assert.AreEqual(0, component.FindAll(".bit-dtrp-dhr").Count);
+
+        var focused = component.FindAll(".bit-dtrp-dbt").Single(d => d.GetAttribute("tabindex") == "0");
+        focused.KeyDown(Key.Right);
+        component.FindAll(".bit-dtrp-dbt").Single(d => d.GetAttribute("tabindex") == "0").KeyDown(Key.Right);
+
+        // Two days past the start date: the pointer is not involved, so this is the keyboard's own preview.
+        Assert.AreEqual(2, component.FindAll(".bit-dtrp-dhr").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldAnnounceOnlyTheFirstMonthTitle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MonthCount, 3);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        // A strip of months would otherwise read every one of its titles out on every navigation.
+        var titles = component.FindAll(".bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb");
+
+        Assert.IsTrue(titles.Count > 1);
+        Assert.AreEqual(1, titles.Count(t => t.GetAttribute("aria-live") is not null));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerSubDayMaxRangeShouldLeaveOnlyTheStartDaySelectable()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var today = new DateTimeOffset(2024, 6, 12, 0, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.MaxRange, TimeSpan.FromHours(6));
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = today });
+        });
+
+        // A range that has to fit inside six hours cannot end on another day, so the grid must say so
+        // rather than accept the pick and silently rewrite the end date back to the start day.
+        var enabled = component.FindAll(".bit-dtrp-dbt").Where(d => d.HasAttribute("disabled") is false).ToList();
+
+        Assert.AreEqual(1, enabled.Count);
+        Assert.AreEqual("12", enabled[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerMaxRangeShouldReachEquallyFarBackAndForward()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var today = new DateTimeOffset(2024, 6, 12, 10, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.MaxRange, TimeSpan.FromDays(3));
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = today });
+        });
+
+        // Three days either side of June 12, whatever time of day the start date carries.
+        var enabled = component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")
+                               .Where(d => d.HasAttribute("disabled") is false)
+                               .Select(d => d.TextContent.Trim())
+                               .ToList();
+
+        CollectionAssert.AreEqual(new[] { "9", "10", "11", "12", "13", "14", "15" }, enabled);
+    }
 }

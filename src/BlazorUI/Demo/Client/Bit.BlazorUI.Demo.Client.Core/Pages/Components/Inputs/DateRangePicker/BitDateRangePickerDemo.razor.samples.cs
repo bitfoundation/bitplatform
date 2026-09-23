@@ -85,6 +85,7 @@ private readonly BitDateRangePickerPreset[] presets =
 <BitDateRangePicker DisablePast />
 <BitDateRangePicker DisableFuture />
 <BitDateRangePicker MaxRange=""new TimeSpan(2, 4, 30, 0)"" ShowTimePicker />
+<BitDateRangePicker MaxRange=""TimeSpan.FromHours(6)"" ShowTimePicker />
 <BitDateRangePicker MinRange=""TimeSpan.FromDays(3)"" />
 <BitDateRangePicker MinRange=""TimeSpan.FromDays(2)"" MaxRange=""TimeSpan.FromDays(7)"" />";
 
@@ -138,7 +139,11 @@ private readonly DateTimeOffset[] highlightedDates =
 
 <BitDateRangePicker Label=""Today: 2020/12/04"" Today=""new DateTimeOffset(2020, 12, 4, 0, 0, 0, DateTimeOffset.Now.Offset)"" />
 
-<BitDateRangePicker Label=""HighlightToday: false"" HighlightToday=""false"" />";
+<BitDateRangePicker Label=""HighlightToday: false"" HighlightToday=""false"" />
+
+<BitDateRangePicker Label=""ShowMonthPickerAsOverlay"" ShowMonthPickerAsOverlay />
+
+<BitDateRangePicker Label=""ShowGoToToday: false, with a close button"" ShowGoToToday=""false"" ShowCloseButton />";
 
     private readonly string example7RazorCode = @"
 <BitDateRangePicker Label=""Two months"" MonthCount=""2"" @bind-Value=""monthCountValue"" />
@@ -156,12 +161,22 @@ private BitDateRangePickerValue? monthCountValue;";
 
     private readonly string example8RazorCode = @"
 <BitDateRangePicker ShowTimePicker
+                    Label=""12-hour clock""
+                    TimeFormat=""BitTimeFormat.TwelveHours"" />
+
+<BitDateRangePicker ShowTimePicker
                     Label=""HourStep = 2""
                     HourStep=""2"" />
 
 <BitDateRangePicker ShowTimePicker
-                    Label=""MinuteStep = 15""
-                    MinuteStep=""15"" />";
+                    Label=""MinuteStep = 15, with a faster press-and-hold""
+                    MinuteStep=""15""
+                    ContinuousSpinDelay=""250""
+                    ContinuousSpinInterval=""40"" />
+
+<BitDateRangePicker ShowTimePicker
+                    Label=""Times on top of the calendar""
+                    ShowTimePickerAsOverlay />";
 
     private readonly string example9RazorCode = @"
 <BitDateRangePicker Label=""DateFormat: 'dd=MM(yy)'"" DateFormat=""dd=MM(yy)"" />
@@ -448,6 +463,39 @@ private void HandleInvalidSubmit()
                     EndTimeMinuteInputAriaLabel=""Check-out minute"" />";
 
     private readonly string example22RazorCode = @"
+<BitButton OnClick=""() => isOpen = true"">Open the calendar</BitButton>
+
+<BitDateRangePicker Label=""Two-way bound IsOpen"" @bind-IsOpen=""isOpen"" @bind-Value=""isOpenValue"" />
+
+<div>The callout is <b>@(isOpen ? ""open"" : ""closed"")</b></div>
+
+
+<BitButton Variant=""BitVariant.Outline"" OnClick=""OpenFromCode"">OpenCallout()</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""CloseFromCode"">CloseCallout()</BitButton>
+
+<BitDateRangePicker @ref=""calloutPicker"" Label=""Driven by its component reference"" />";
+    private readonly string example22CsharpCode = @"
+private bool isOpen;
+private BitDateRangePickerValue? isOpenValue;
+private BitDateRangePicker? calloutPicker;
+
+private async Task OpenFromCode()
+{
+    if (calloutPicker is not null)
+    {
+        await calloutPicker.OpenCallout();
+    }
+}
+
+private async Task CloseFromCode()
+{
+    if (calloutPicker is not null)
+    {
+        await calloutPicker.CloseCallout();
+    }
+}";
+
+    private readonly string example23RazorCode = @"
 <BitParams Parameters=""@dateRangePickerParams"">
     <BitDateRangePicker Label=""Departure & return"" />
 
@@ -457,7 +505,7 @@ private void HandleInvalidSubmit()
 </BitParams>
 
 <BitDateRangePicker Label=""Untouched by it"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private readonly IBitComponentParams[] dateRangePickerParams =
 [
     new BitDateRangePickerParams
@@ -476,7 +524,7 @@ private readonly IBitComponentParams[] dateRangePickerParams =
     }
 ];";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitDateRangePicker Label=""Primary"" Color=""BitColor.Primary"" ShowTimePicker />
 <BitDateRangePicker Label=""Secondary"" Color=""BitColor.Secondary"" />
 <BitDateRangePicker Label=""Tertiary"" Color=""BitColor.Tertiary"" />
@@ -486,7 +534,7 @@ private readonly IBitComponentParams[] dateRangePickerParams =
 <BitDateRangePicker Label=""SevereWarning"" Color=""BitColor.SevereWarning"" />
 <BitDateRangePicker Label=""Error"" Color=""BitColor.Error"" />";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitDateRangePicker Label=""FontAwesome (string)"" Icon=""@(""fa-solid fa-calendar-days"")"" />
@@ -540,14 +588,14 @@ private readonly IBitComponentParams[] dateRangePickerParams =
                    NextYearRangeNavIcon=""@BitIconInfo.Bi(""chevron-double-right"")""
                    GoToTodayIcon=""@BitIconInfo.Bi(""calendar-event"")"" />";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitDateRangePicker Label=""Small"" Size=""BitSize.Small"" />
 <BitDateRangePicker Label=""Medium (default)"" Size=""BitSize.Medium"" />
 <BitDateRangePicker Label=""Large"" Size=""BitSize.Large"" ShowWeekNumbers />
 
 <BitDateRangePicker Label=""Small, standalone, with presets"" Size=""BitSize.Small"" Standalone Presets=""presets"" />";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example27RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -745,15 +793,15 @@ private readonly IBitComponentParams[] dateRangePickerParams =
                     Style=""--bit-DateRangePicker-input-radius: 2rem; --bit-DateRangePicker-input-border-width: 2px; --bit-DateRangePicker-icon-color: mediumvioletred;"" />
 
 <BitDateRangePicker Label=""Roomier calendar""
-                    Styles=""@(new() { Callout = ""--bit-DateRangePicker-day-size: 2.5rem; --bit-DateRangePicker-day-radius: 50%; --bit-DateRangePicker-calendar-padding: 1rem;"" })"" />
+                    Styles=""@(new() { Callout = ""--bit-DateRangePicker-day-size: 2.5rem; --bit-DateRangePicker-day-radius: 50%; --bit-DateRangePicker-today-radius: 50%; --bit-DateRangePicker-range-radius: 1.25rem; --bit-DateRangePicker-calendar-padding: 1rem;"" })"" />
 
 <div style=""--bit-DateRangePicker-color: var(--bit-clr-suc); --bit-DateRangePicker-text-color: var(--bit-clr-suc-text); --bit-DateRangePicker-hover-color: var(--bit-clr-suc-hover); --bit-DateRangePicker-range-background: var(--bit-clr-suc-light); --bit-DateRangePicker-focus-color: var(--bit-clr-suc-focus); --bit-DateRangePicker-label-color: var(--bit-clr-suc);"">
     <BitDateRangePicker Label=""Arrival"" />
     <BitDateRangePicker Label=""Departure"" />
 </div>";
-    private readonly string example26CsharpCode = @"
+    private readonly string example27CsharpCode = @"
 private BitDateRangePickerValue? classesValue;";
 
-    private readonly string example27RazorCode = @"
+    private readonly string example28RazorCode = @"
 <BitDateRangePicker Dir=""BitDir.Rtl"" />";
 }

@@ -1048,8 +1048,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public int HourStep { get; set; } = 1;
 
     /// <summary>
-    /// The maximum range of day and times allowed for selection in DateRangePicker.
+    /// The longest span the selected range is allowed to cover, in days and times alike.
     /// </summary>
+    /// <remarks>
+    /// The day grid is bounded by it in whole days, equally far either side of the picked start date, and
+    /// the time picker refuses a time that would push the span past it - so a MaxRange shorter than a day
+    /// leaves the day the range started on as the only one it can end on, with the hours inside that day
+    /// the time picker's to enforce.
+    /// </remarks>
     [Parameter] public TimeSpan? MaxRange { get; set; }
 
     /// <summary>
@@ -2567,19 +2573,19 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             if (minDateYear == _currentYear && minDateMonth == _currentMonth) return false;
         }
 
-        if (MaxRange.HasValue && MaxRange.Value.TotalDays > 0 && CurrentValue?.StartDate is not null && CurrentValue.EndDate.HasValue is false)
+        if (HasMaxRangeDayBounds())
         {
             if (isNext)
             {
-                var maxDateYear = _culture.Calendar.GetYear(GetMaxEndDate());
-                var maxDateMonth = _culture.Calendar.GetMonth(GetMaxEndDate());
+                var maxDateYear = _culture.Calendar.GetYear(GetMaxEndDay());
+                var maxDateMonth = _culture.Calendar.GetMonth(GetMaxEndDay());
 
                 if (maxDateYear == _currentYear && maxDateMonth == _currentMonth) return false;
             }
             else
             {
-                var minDateYear = _culture.Calendar.GetYear(GetMinEndDate());
-                var minDateMonth = _culture.Calendar.GetMonth(GetMinEndDate());
+                var minDateYear = _culture.Calendar.GetYear(GetMinEndDay());
+                var minDateMonth = _culture.Calendar.GetMonth(GetMinEndDay());
 
                 if (minDateYear == _currentYear && minDateMonth == _currentMonth) return false;
             }
@@ -2601,12 +2607,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                   _culture.Calendar.GetYear(GetDateTime(maxDate.Value)) == _currentYear;
             if (isInMaxDateYear) return false;
 
-            var isInMaxDayRangeYear = MaxRange.HasValue &&
-                                      MaxRange.Value.TotalDays > 0 &&
-                                      CurrentValue?.StartDate is not null &&
-                                      CurrentValue!.EndDate.HasValue is false &&
-                                      (_culture.Calendar.GetYear(GetMaxEndDate()) == _currentYear ||
-                                       _culture.Calendar.GetYear(GetMinEndDate()) == _currentYear);
+            var isInMaxDayRangeYear = HasMaxRangeDayBounds() &&
+                                      (_culture.Calendar.GetYear(GetMaxEndDay()) == _currentYear ||
+                                       _culture.Calendar.GetYear(GetMinEndDay()) == _currentYear);
 
             return isInMaxDayRangeYear is false;
         }
@@ -2616,12 +2619,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                   _culture.Calendar.GetYear(GetDateTime(minDate.Value)) == _currentYear;
             if (isInMinDateYear) return false;
 
-            var isInMaxDayRangeYear = MaxRange.HasValue &&
-                                      MaxRange.Value.TotalDays > 0 &&
-                                      CurrentValue?.StartDate is not null &&
-                                      CurrentValue!.EndDate.HasValue is false &&
-                                      (_culture.Calendar.GetYear(GetMaxEndDate()) == _currentYear ||
-                                       _culture.Calendar.GetYear(GetMinEndDate()) == _currentYear);
+            var isInMaxDayRangeYear = HasMaxRangeDayBounds() &&
+                                      (_culture.Calendar.GetYear(GetMaxEndDay()) == _currentYear ||
+                                       _culture.Calendar.GetYear(GetMinEndDay()) == _currentYear);
 
             return isInMaxDayRangeYear is false;
         }
@@ -2640,12 +2640,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                        _culture.Calendar.GetYear(GetDateTime(maxDate.Value)) < _yearPickerStartYear + 12;
             if (isInMaxDateYearRange) return false;
 
-            var isInMaxDayRangeYearRange = MaxRange.HasValue &&
-                                           MaxRange.Value.TotalDays > 0 &&
-                                           CurrentValue?.StartDate is not null &&
-                                           CurrentValue.EndDate.HasValue is false &&
-                                           (_culture.Calendar.GetYear(GetMaxEndDate()) < _yearPickerStartYear + 12 ||
-                                            _culture.Calendar.GetYear(GetMinEndDate()) < _yearPickerStartYear + 12);
+            var isInMaxDayRangeYearRange = HasMaxRangeDayBounds() &&
+                                           (_culture.Calendar.GetYear(GetMaxEndDay()) < _yearPickerStartYear + 12 ||
+                                            _culture.Calendar.GetYear(GetMinEndDay()) < _yearPickerStartYear + 12);
 
             return isInMaxDayRangeYearRange is false;
         }
@@ -2655,12 +2652,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                        _culture.Calendar.GetYear(GetDateTime(minDate.Value)) >= _yearPickerStartYear;
             if (isInMinDateYearRange) return false;
 
-            var isInMaxDayRangeYearRange = MaxRange.HasValue &&
-                                           MaxRange.Value.TotalDays > 0 &&
-                                           CurrentValue?.StartDate is not null &&
-                                           CurrentValue.EndDate.HasValue is false &&
-                                           (_culture.Calendar.GetYear(GetMaxEndDate()) >= _yearPickerStartYear ||
-                                            _culture.Calendar.GetYear(GetMinEndDate()) >= _yearPickerStartYear);
+            var isInMaxDayRangeYearRange = HasMaxRangeDayBounds() &&
+                                           (_culture.Calendar.GetYear(GetMaxEndDay()) >= _yearPickerStartYear ||
+                                            _culture.Calendar.GetYear(GetMinEndDay()) >= _yearPickerStartYear);
 
             return isInMaxDayRangeYearRange is false;
         }
@@ -2719,15 +2713,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             if (date < GetDateTime(minDate.Value)) return true;
         }
 
-        if (MaxRange.HasValue && MaxRange.Value.TotalDays > 0 &&
-            CurrentValue?.StartDate is not null &&
-            CurrentValue.EndDate.HasValue is false)
+        if (HasMaxRangeDayBounds())
         {
-            var maxEndDate = GetMaxEndDate();
-            if (date > maxEndDate) return true;
+            if (date > GetMaxEndDay()) return true;
 
-            var minEndDate = GetMinEndDate();
-            if (date < minEndDate) return true;
+            if (date < GetMinEndDay()) return true;
         }
 
         if (IsInMinRangeOfStartDate(date)) return true;
@@ -3380,14 +3370,22 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _hoveredDate = null;
     }
 
-    // The prospective range shown while the pointer moves over the day cells and only the start date is picked.
+    // The prospective range shown while only the start date is picked: the day the pointer is over, or -
+    // with no pointer in the grid - the day the arrow keys have moved the focus to, so a keyboard user is
+    // shown the same range a pointer user is before committing to it.
     private bool IsInHoverRange(DateTime date)
     {
-        if (_hoveredDate.HasValue is false) return false;
+        // A picker that cannot be changed has no prospective range to show.
+        if (IsEnabled is false || ReadOnly) return false;
+
         if (CurrentValue?.StartDate is null || CurrentValue.EndDate.HasValue) return false;
 
+        var previewDate = _hoveredDate ?? _focusedDate;
+
+        if (previewDate.HasValue is false) return false;
+
         var startDate = GetDateTime(CurrentValue.StartDate.Value).Date;
-        var hoveredDate = _hoveredDate.Value.Date;
+        var hoveredDate = previewDate.Value.Date;
 
         return date.Date >= (startDate < hoveredDate ? startDate : hoveredDate) &&
                date.Date <= (startDate < hoveredDate ? hoveredDate : startDate);
@@ -3424,17 +3422,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             if (_currentYear < minDateYear || (_currentYear == minDateYear && month < minDateMonth)) return true;
         }
 
-        if (MaxRange.HasValue && MaxRange.Value.TotalDays > 0 &&
-            CurrentValue?.StartDate is not null &&
-            CurrentValue.EndDate.HasValue is false)
+        if (HasMaxRangeDayBounds())
         {
-            var maxEndDate = GetMaxEndDate();
+            var maxEndDate = GetMaxEndDay();
             var maxDateYear = _culture.Calendar.GetYear(maxEndDate);
             var maxDateMonth = _culture.Calendar.GetMonth(maxEndDate);
 
             if (_currentYear > maxDateYear || (_currentYear == maxDateYear && month > maxDateMonth)) return true;
 
-            var minEndDate = GetMinEndDate();
+            var minEndDate = GetMinEndDay();
             var minDateYear = _culture.Calendar.GetYear(minEndDate);
             var minDateMonth = _culture.Calendar.GetMonth(minEndDate);
 
@@ -3451,10 +3447,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         return (maxDate.HasValue && year > _culture.Calendar.GetYear(GetDateTime(maxDate.Value))) ||
                (minDate.HasValue && year < _culture.Calendar.GetYear(GetDateTime(minDate.Value))) ||
-               (MaxRange.HasValue && MaxRange.Value.TotalDays > 0 &&
-                CurrentValue?.StartDate is not null &&
-                CurrentValue!.EndDate.HasValue is false &&
-                (year > _culture.Calendar.GetYear(GetMaxEndDate()) || year < _culture.Calendar.GetYear(GetMinEndDate())));
+               (HasMaxRangeDayBounds() &&
+                (year > _culture.Calendar.GetYear(GetMaxEndDay()) || year < _culture.Calendar.GetYear(GetMinEndDay())));
     }
 
     private void CheckCurrentCalendarMatchesCurrentValue()
@@ -4145,14 +4139,33 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return maxRangeTotalMinutes < Math.Abs((startTime - endTime).TotalMinutes);
     }
 
+    // The instant the range may reach, which is what an end date picked past it is clamped back to.
     private DateTime GetMaxEndDate(DateTimeOffset? startDate = null)
     {
         return (startDate ?? CurrentValue!.StartDate!.Value).DateTime.AddDays(MaxRange!.Value.TotalDays);
     }
 
-    private DateTime GetMinEndDate(DateTimeOffset? startDate = null)
+    // The last and the first DAY the range is allowed to end on, which is what the day grid, the month and
+    // year grids and the navigation buttons are bounded by. Whole days rather than the instants above: a
+    // day is picked at midnight, so measuring it against an instant a few hours into the day would disable
+    // the very day the range started on - and a MaxRange shorter than a day would then have no day left to
+    // end on at all, while the hours inside that day are the time picker's to enforce.
+    private DateTime GetMaxEndDay()
     {
-        return (startDate ?? CurrentValue!.StartDate!.Value).DateTime.AddDays(-1 * MaxRange!.Value.TotalDays);
+        return GetDateTime(CurrentValue!.StartDate!.Value).Date.AddDays(Math.Floor(MaxRange!.Value.TotalDays));
+    }
+
+    /// <inheritdoc cref="GetMaxEndDay"/>
+    private DateTime GetMinEndDay()
+    {
+        return GetDateTime(CurrentValue!.StartDate!.Value).Date.AddDays(-Math.Floor(MaxRange!.Value.TotalDays));
+    }
+
+    // Whether the day the range can end on is bounded at all right now: only while a start date is picked
+    // and the end date is still to come does MaxRange have a second end to keep within reach of the first.
+    private bool HasMaxRangeDayBounds()
+    {
+        return MaxRange.HasValue && CurrentValue?.StartDate is not null && CurrentValue.EndDate.HasValue is false;
     }
 
     private void ResetPickersState()

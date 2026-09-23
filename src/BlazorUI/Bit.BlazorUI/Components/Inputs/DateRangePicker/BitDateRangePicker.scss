@@ -1,4 +1,4 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 @import "../../../Styles/color-role-maps.scss";
 
@@ -15,7 +15,8 @@
 //   --bit-DateRangePicker-active-color             accent while pressed            (default: the role's active color)
 //   --bit-DateRangePicker-range-background         body of the selected range      (default: the role's light color)
 //   --bit-DateRangePicker-preview-background       body of the range previewed while hovering (default: $clr-bg-sec)
-//   --bit-DateRangePicker-focus-color              focus ring color                (default: $clr-pri-focus)
+//   --bit-DateRangePicker-focus-color              focus ring of the field and of every cell
+//                                                  and button in the calendar     (default: the role's focus color)
 //   --bit-DateRangePicker-invalid-color            border and underline while invalid         (default: $clr-err)
 //   --bit-DateRangePicker-required-color           the asterisk after a required label        (default: $clr-req)
 //   --bit-DateRangePicker-disabled-color           text of every disabled part                (default: $clr-fg-dis)
@@ -44,6 +45,8 @@
 //   --bit-DateRangePicker-day-color                text color of a day cell                   (default: $clr-fg-pri)
 //   --bit-DateRangePicker-day-radius               corner radius of a day cell      (default: $shp-radius-control)
 //   --bit-DateRangePicker-day-hover-background     background of a hovered day          (default: $clr-bg-pri-hover)
+//   --bit-DateRangePicker-today-radius             corner radius of today's cell       (default: $shp-radius-full)
+//   --bit-DateRangePicker-range-radius             corner radius at the two ends of the range (default: $shp-radius-lg)
 //   --bit-DateRangePicker-outside-day-color        days of the adjacent months                (default: $clr-fg-sec)
 //   --bit-DateRangePicker-highlighted-background   background of a HighlightedDates day       (default: $clr-bg-ter)
 //   --bit-DateRangePicker-week-day-color           the row of weekday initials                (default: $clr-fg-pri)
@@ -67,6 +70,8 @@
     --bit-dtrp-hdr-fs: #{$tg-fs-sm};
     --bit-dtrp-clr-size: #{spacing(3.75)};
     --bit-dtrp-time-size: #{spacing(3.75)};
+    --bit-dtrp-time-fs: #{$tg-fs-lg};
+    --bit-dtrp-time-sep-fs: #{$tg-fs-xl};
     --bit-dtrp-month-cell-w: #{spacing(6)};
     --bit-dtrp-month-cell-h: #{spacing(5)};
     --bit-dtrp-month-pane-w: #{spacing(24.5)};
@@ -127,6 +132,11 @@
     }
 
     &.bit-inv {
+        // Showing the error border and a primary-colored focus ring at once would report two states
+        // of the same field, so the ring follows the border into the error color. The rules that draw
+        // it read the slot rather than a literal, so re-pointing it here is all it takes.
+        --bit-dtrp-clr-focus: #{$clr-err-focus};
+
         .bit-dtrp-icn {
             border-color: var(--bit-DateRangePicker-invalid-color, #{$clr-err});
         }
@@ -135,14 +145,6 @@
             // Underlined variant drops the icon border, so surface the error cue on the
             // underline itself to keep the invalid state visible before focus.
             border-bottom-color: var(--bit-DateRangePicker-invalid-color, #{$clr-err});
-        }
-
-        &.bit-dtrp-foc:not(.bit-dtrp-und) .bit-dtrp-icn {
-            @include focus-ring($clr-err-focus);
-        }
-
-        &.bit-dtrp-und.bit-dtrp-foc .bit-dtrp-icn {
-            @include focus-underline-ring($clr-err-focus);
         }
     }
 
@@ -209,6 +211,8 @@
     height: var(--bit-dtrp-clr-size);
     justify-content: center;
     background-color: $clr-bg-sec;
+    border-radius: $shp-radius-control;
+    transition: background-color $mot-duration-short $mot-easing;
 
     i {
         speak: none;
@@ -223,6 +227,16 @@
         &:hover {
             background-color: $clr-bg-pri-hover;
         }
+    }
+
+    &:active {
+        background-color: $clr-bg-pri-active;
+    }
+
+    // It sits inside the field, whose own ring is drawn around the border a pixel away, so this one
+    // takes no offset of its own or the two would overlap.
+    &:focus-visible {
+        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
     }
 }
 
@@ -263,8 +277,7 @@
 
 .bit-dtrp-foc:not(.bit-dtrp-und) {
     .bit-dtrp-icn {
-        @include focus-ring;
-        --bit-focus-ring-color: var(--bit-DateRangePicker-focus-color, #{$clr-pri-focus});
+        @include focus-ring(var(--bit-dtrp-clr-focus));
     }
 }
 
@@ -399,6 +412,10 @@
     justify-content: center;
     background-color: transparent;
     border-radius: var(--bit-DateRangePicker-day-radius, #{$shp-radius-control});
+    // Only what a state actually changes is transitioned, so a cell that is hovered or joins the
+    // range eases rather than snapping - and collapses to nothing under prefers-reduced-motion,
+    // which the duration token carries on its own.
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -416,9 +433,13 @@
         background-color: transparent;
     }
 
+    // The grid moves the focus with the arrow keys, so the focused day has to be visible as such - and
+    // above its neighbors, whose backgrounds would otherwise clip the ring. The ring is drawn without an
+    // offset: the cells of a week sit against one another, and a gap between the cell and its ring would
+    // be filled with the background of the day next to it.
     &:focus-visible {
         z-index: 1;
-        outline: $shp-border-width $shp-border-style $clr-brd-pri;
+        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
     }
 }
 
@@ -439,7 +460,7 @@
 
 .bit-dtrp-dtd {
     font-weight: $tg-fw-semibold;
-    border-radius: 50%;
+    border-radius: var(--bit-DateRangePicker-today-radius, #{$shp-radius-full});
     color: var(--bit-dtrp-clr-txt);
     background-color: var(--bit-dtrp-clr);
 
@@ -459,8 +480,8 @@
     border-end-end-radius: 0;
     border-start-end-radius: 0;
     background-color: var(--bit-dtrp-clr);
-    border-end-start-radius: spacing(1);
-    border-start-start-radius: spacing(1);
+    border-end-start-radius: var(--bit-DateRangePicker-range-radius, #{$shp-radius-lg});
+    border-start-start-radius: var(--bit-DateRangePicker-range-radius, #{$shp-radius-lg});
 
     @media (hover: hover) {
         &:hover {
@@ -478,8 +499,8 @@
     background-color: var(--bit-dtrp-clr);
     border-end-start-radius: 0;
     border-start-start-radius: 0;
-    border-end-end-radius: spacing(1);
-    border-start-end-radius: spacing(1);
+    border-end-end-radius: var(--bit-DateRangePicker-range-radius, #{$shp-radius-lg});
+    border-start-end-radius: var(--bit-DateRangePicker-range-radius, #{$shp-radius-lg});
 
     @media (hover: hover) {
         &:hover {
@@ -492,13 +513,14 @@
     }
 }
 
+// A range of a single day is one cell carrying both ends, so it takes the radius on all four corners.
 .bit-dtrp-dsse {
-    border-radius: $shp-radius-lg;
+    border-radius: var(--bit-DateRangePicker-range-radius, #{$shp-radius-lg});
 }
 
 .bit-dtrp-dsb {
     border-radius: 0;
-    color: $clr-fg-pri;
+    color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
     background-color: var(--bit-dtrp-clr-body);
 
     @media (hover: hover) {
@@ -585,11 +607,17 @@
 
 .bit-dtrp-ptb {
     cursor: pointer;
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             background-color: $clr-bg-pri-hover;
         }
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
     }
 
     &:disabled {
@@ -628,11 +656,17 @@
     line-height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
     background-color: transparent;
     border-radius: $shp-radius-control;
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-DateRangePicker-day-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
     }
 
     &:disabled {
@@ -661,6 +695,7 @@
     line-height: var(--bit-dtrp-time-size);
     background-color: transparent;
     border-radius: $shp-radius-control;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -670,6 +705,11 @@
 
     &:active {
         background-color: $clr-bg-pri-hover;
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
     }
 
     i {
@@ -731,10 +771,11 @@
     outline: transparent;
     text-overflow: ellipsis;
     padding: spacing(1) spacing(1.25);
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-dtrp-hdr-fs);
     background-color: transparent;
     border-radius: $shp-radius-control;
     font-family: $tg-font-family;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -743,13 +784,15 @@
     }
 
     &:disabled {
-        color: $clr-fg-dis;
+        color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
         pointer-events: none;
         background-color: transparent;
     }
 
+    // The presets sit in a column with a gap between them, so nothing clips a ring drawn with its
+    // regular offset here.
     &:focus-visible {
-        outline: $shp-border-width $shp-border-style $clr-brd-pri;
+        @include focus-ring(var(--bit-dtrp-clr-focus));
     }
 }
 
@@ -800,6 +843,7 @@
     text-overflow: ellipsis;
     background-color: transparent;
     border-radius: $shp-radius-control;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -807,8 +851,15 @@
         }
     }
 
+    // The month and year grids move the focus with the arrow keys just as the day grid does, so the
+    // cell the keyboard is on has to say so.
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
+    }
+
     &:disabled {
-        color: $clr-fg-dis;
+        color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
         pointer-events: none;
         background-color: transparent;
     }
@@ -870,9 +921,10 @@
     display: flex;
     align-items: center;
     align-content: center;
-    font-size: $tg-fs-xl;
+    font-size: var(--bit-dtrp-time-sep-fs);
     justify-content: center;
     font-weight: $tg-font-weight;
+    color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
 }
 
 .bit-dtrp-am-pm {
@@ -895,10 +947,12 @@
     width: var(--bit-dtrp-time-size);
     box-sizing: border-box;
     justify-content: center;
-    font-size: $tg-fs-lg;
+    font-size: var(--bit-dtrp-time-fs);
     -moz-appearance: textfield; // Firefox
     font-weight: $tg-font-weight;
-    background-color: $clr-bg-pri;
+    color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
+    background-color: transparent;
+    font-variant-numeric: tabular-nums;
 
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button {
@@ -907,20 +961,22 @@
     }
 
     &:focus {
-        @include focus-underline-ring;
+        @include focus-underline-ring(var(--bit-dtrp-clr-focus));
         border: none;
     }
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
     }
 }
 
 .bit-dtrp-bam,
 .bit-dtrp-bpm {
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-dtrp-hdr-fs);
     font-weight: $tg-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 }
 
 .bit-dtrp-bns {
@@ -959,6 +1015,11 @@
 .bit-dtrp-act {
     display: flex;
     gap: spacing(1);
+    // The callout is what scrolls when a tall one (three months, the presets and the time picker) outgrows
+    // the viewport, and the one control the range cannot be committed without must not scroll out of it.
+    bottom: 0;
+    z-index: 1;
+    position: sticky;
     box-sizing: border-box;
     padding: spacing(1) spacing(1.5);
     align-items: $layout-dialog-actions-align;
@@ -1064,7 +1125,7 @@
 
     &.bit-dtrp-foc {
         .bit-dtrp-icn {
-            @include focus-underline-ring;
+            @include focus-underline-ring(var(--bit-dtrp-clr-focus));
         }
     }
 
@@ -1230,6 +1291,7 @@
         --bit-dtrp-clr-hover: var(--bit-DateRangePicker-hover-color, #{role($tokens, hover)});
         --bit-dtrp-clr-active: var(--bit-DateRangePicker-active-color, #{role($tokens, active)});
         --bit-dtrp-clr-body: var(--bit-DateRangePicker-range-background, #{role($tokens, light)});
+        --bit-dtrp-clr-focus: var(--bit-DateRangePicker-focus-color, #{role($tokens, focus)});
     }
 }
 
@@ -1244,6 +1306,8 @@
     --bit-dtrp-hdr-fs: #{$tg-fs-xs};
     --bit-dtrp-clr-size: #{spacing(3)};
     --bit-dtrp-time-size: #{spacing(3.25)};
+    --bit-dtrp-time-fs: #{$tg-fs-md};
+    --bit-dtrp-time-sep-fs: #{$tg-fs-lg};
     --bit-dtrp-month-cell-w: #{spacing(5)};
     --bit-dtrp-month-cell-h: #{spacing(4.25)};
     --bit-dtrp-month-pane-w: #{spacing(21)};
@@ -1262,6 +1326,8 @@
     --bit-dtrp-hdr-fs: #{$tg-fs-md};
     --bit-dtrp-clr-size: #{spacing(4.25)};
     --bit-dtrp-time-size: #{spacing(4.5)};
+    --bit-dtrp-time-fs: #{$tg-fs-xl};
+    --bit-dtrp-time-sep-fs: #{$tg-fs-2xl};
     --bit-dtrp-month-cell-w: #{spacing(7)};
     --bit-dtrp-month-cell-h: #{spacing(6)};
     --bit-dtrp-month-pane-w: #{spacing(28)};
@@ -1278,4 +1344,68 @@
 // Only the day view takes it - the month view's header is a bare year and needs none of the room.
 .bit-dtrp-dwp .bit-dtrp-ptb {
     min-width: 8.75em;
+}
+
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, which strips every
+// background the picker paints - and with them today, the two ends of the range, the days between them,
+// the range being previewed, the highlighted days, the selected preset and month, the meridiem that is in
+// force and the Apply button, every one of which is conveyed by a background alone. The ends and the
+// single-cell states take the system Highlight pair; the three bands that would then be indistinguishable
+// from one another are given an edge each instead, so the range, its preview and a highlighted day still
+// read apart.
+@media (forced-colors: active) {
+    .bit-dtrp-dbt,
+    .bit-dtrp-pkb,
+    .bit-dtrp-prb,
+    .bit-dtrp-tbt,
+    .bit-dtrp-acb {
+        &:disabled {
+            color: GrayText;
+        }
+    }
+
+    .bit-dtrp-nbt,
+    .bit-dtrp-gtb,
+    .bit-dtrp-gtn,
+    .bit-dtrp-ptb {
+        &:disabled .bit-dtrp-cic,
+        &:disabled .bit-icon {
+            color: GrayText;
+        }
+    }
+
+    .bit-dtrp-dtd,
+    .bit-dtrp-dss,
+    .bit-dtrp-dse,
+    .bit-dtrp-prs,
+    .bit-dtrp-pcm,
+    .bit-dtrp-psm,
+    .bit-dtrp-bns,
+    .bit-dtrp-apb {
+        color: HighlightText;
+        background-color: Highlight;
+        forced-color-adjust: none;
+    }
+
+    .bit-dtrp-dsb {
+        outline: $shp-border-width $shp-border-style CanvasText;
+        outline-offset: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-dtrp-dhr {
+        outline: $shp-border-width dashed CanvasText;
+        outline-offset: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-dtrp-dhl {
+        outline: $shp-border-width dotted CanvasText;
+        outline-offset: calc(-1 * #{$shp-border-width});
+    }
+
+    // The callout is a surface floating over the page, which this palette flattens into the one canvas
+    // behind it, so it is given an edge of its own to stand on.
+    .bit-dtrp-cac {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
 }

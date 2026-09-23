@@ -98,8 +98,10 @@
             <b>MinDate</b> and <b>MaxDate</b> bound the whole calendar: days, months and years outside them are disabled and
             the navigation buttons stop at the boundary. <b>MaxRange</b> and <b>MinRange</b> instead bound the length of the
             selection itself - once the start date is picked, every day that would produce a range longer than
-            <b>MaxRange</b> or shorter than <b>MinRange</b> becomes unselectable. <b>MaxRange</b> also accounts for the hours
-            and minutes of a range, so the time picker's spinners are disabled as soon as they would exceed it.
+            <b>MaxRange</b> or shorter than <b>MinRange</b> becomes unselectable. <b>MaxRange</b> bounds the day grid in whole days,
+            equally far either side of the picked start date, and also accounts for the hours and minutes, so the time
+            picker's spinners are disabled as soon as they would exceed it - and a <b>MaxRange</b> shorter than a day
+            leaves the day the range started on as the only one it can end on.
             <b>DisablePast</b> and <b>DisableFuture</b> bound the calendar by today exactly as a <b>MinDate</b> or a
             <b>MaxDate</b> of today would, without having to keep one up to date; where both apply, the narrower of
             the two wins.
@@ -125,6 +127,9 @@
             <br /><br />
             <div>MaxRange: 2 days, 4 hours and 30 minutes</div>
             <BitDateRangePicker MaxRange="new TimeSpan(2, 4, 30, 0)" ShowTimePicker />
+            <br /><br />
+            <div>MaxRange: 6 hours (shorter than a day, so the range stays on the day it starts on)</div>
+            <BitDateRangePicker MaxRange="TimeSpan.FromHours(6)" ShowTimePicker />
             <br /><br />
             <div>MinRange: 3 days (a stay of at least 3 nights)</div>
             <BitDateRangePicker MinRange="TimeSpan.FromDays(3)" />
@@ -183,6 +188,10 @@
             considers as today, which is useful for tests and for server-driven "current date" scenarios, and
             <b>HighlightToday</b> turns off the accent on today's cell - the cell still reports itself as the current
             date to a screen reader, so only the paint goes away.
+            <br /><br />
+            The chrome around the grid is optional too: <b>ShowMonthPickerAsOverlay</b> hides the month and year picker
+            until the month title is clicked instead of standing it beside the days, <b>ShowGoToToday</b> drops the
+            jump-to-today button, and <b>ShowCloseButton</b> adds a dismiss button to the callout's header.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="FirstDayOfWeek: Monday" FirstDayOfWeek="DayOfWeek.Monday" />
@@ -199,6 +208,10 @@
             <BitDateRangePicker Label="Today: 2020/12/04" Today="new DateTimeOffset(2020, 12, 4, 0, 0, 0, DateTimeOffset.Now.Offset)" />
             <br /><br />
             <BitDateRangePicker Label="HighlightToday: false" HighlightToday="false" />
+            <br /><br />
+            <BitDateRangePicker Label="ShowMonthPickerAsOverlay" ShowMonthPickerAsOverlay />
+            <br /><br />
+            <BitDateRangePicker Label="ShowGoToToday: false, with a close button" ShowGoToToday="false" ShowCloseButton />
         </div>
     </DemoExample>
 
@@ -230,20 +243,34 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Hour/Minute step" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Time picker" RazorCode="@example8RazorCode" Id="example8">
         <div class="example-desc">
-            <b>HourStep</b> and <b>MinuteStep</b> set how much each press of the time picker's up/down buttons changes the
-            start and end times. They apply to both the start and the end time inputs and are handy for quarter-hour
-            bookings or shift-based scheduling.
+            <b>ShowTimePicker</b> puts a start and an end time under the calendar, so the range carries a time of day
+            as well as a date. <b>TimeFormat</b> switches it between the 24-hour clock and a 12-hour one with the
+            culture's AM/PM designators. <b>HourStep</b> and <b>MinuteStep</b> lay a grid over the day that every time
+            the spin buttons produce sits on - a quarter-hour booking or a shift-based schedule says so this way - and
+            holding a spin button repeats it, after <b>ContinuousSpinDelay</b> and then every
+            <b>ContinuousSpinInterval</b>. <b>ShowTimePickerAsOverlay</b> puts the times on top of the calendar behind a
+            toggle instead of beside it, which is what a callout too narrow for both does on its own.
         </div>
         <div class="example-content">
             <BitDateRangePicker ShowTimePicker
+                                Label="12-hour clock"
+                                TimeFormat="BitTimeFormat.TwelveHours" />
+            <br /><br />
+            <BitDateRangePicker ShowTimePicker
                                 Label="HourStep = 2"
                                 HourStep="2" />
-            <br />
+            <br /><br />
             <BitDateRangePicker ShowTimePicker
-                                Label="MinuteStep = 15"
-                                MinuteStep="15" />
+                                Label="MinuteStep = 15, with a faster press-and-hold"
+                                MinuteStep="15"
+                                ContinuousSpinDelay="250"
+                                ContinuousSpinInterval="40" />
+            <br /><br />
+            <BitDateRangePicker ShowTimePicker
+                                Label="Times on top of the calendar"
+                                ShowTimePickerAsOverlay />
         </div>
     </DemoExample>
 
@@ -606,6 +633,12 @@
             <b>In the field:</b> <kbd>ArrowDown</kbd> opens the calendar. <b>In the time picker:</b>
             <kbd>PageUp</kbd>/<kbd>PageDown</kbd> step by <b>HourStep</b> and <b>MinuteStep</b>.
             <br /><br />
+            While the start date is picked and the end date is not, the arrow keys paint the range they would produce
+            exactly as the pointer does. Every cell and button of the calendar draws the same focus ring, in the accent
+            of <b>Color</b>; Windows High Contrast re-establishes the states that are otherwise a background - the range,
+            its preview, today, the highlighted days - as borders and system colors; and the callout's entry animation
+            collapses under <code>prefers-reduced-motion</code>.
+            <br /><br />
             Every control carries a name of its own, and all of them are parameters, so the whole component localizes
             without a resource file: <b>CalloutAriaLabel</b>, <b>PresetsAriaLabel</b>, the <b>GoTo…Title</b> and
             <b>…ButtonTitle</b> texts, the time picker's <b>…AriaLabel</b> texts, and <b>SelectedDateAriaAtomic</b>,
@@ -630,7 +663,33 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+    <DemoExample Title="Open state" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <div class="example-desc">
+            <b>IsOpen</b> is the open state of the callout and it is two-way bound, so the calendar can be opened and
+            closed from anywhere on the page as well as from the field. The same two moves are available on a component
+            reference as <b>OpenCallout</b> and <b>CloseCallout</b>.
+            <br /><br />
+            Bound one way only - an <b>IsOpen</b> the picker has no way to write back to - the picker stops closing
+            itself: the second pick still goes through, but the callout waits for the page to close it.
+            <b>OnOpen</b> and <b>OnClose</b> report every opening and closing whichever of the two caused it.
+        </div>
+        <div class="example-content">
+            <BitButton OnClick="() => isOpen = true">Open the calendar</BitButton>
+            <br /><br />
+            <BitDateRangePicker Label="Two-way bound IsOpen" @bind-IsOpen="isOpen" @bind-Value="isOpenValue" />
+        </div>
+        <br />
+        <div>The callout is <b>@(isOpen ? "open" : "closed")</b></div>
+        <br /><br /><br />
+        <div class="example-content">
+            <BitButton Variant="BitVariant.Outline" OnClick="OpenFromCode">OpenCallout()</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="CloseFromCode">CloseCallout()</BitButton>
+            <br /><br />
+            <BitDateRangePicker @ref="calloutPicker" Label="Driven by its component reference" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Cascading parameters" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
         <div class="example-desc">
             <b>BitParams</b> carries a <b>BitDateRangePickerParams</b> down to every picker under it, so a booking form or
             a whole page settles the shared shape of its pickers - the culture, the bounds, the presets, the look - once
@@ -656,7 +715,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="Color" RazorCode="@example24RazorCode" Id="example24">
         <div class="example-desc">
             The <b>Color</b> parameter applies one of the theme colors to the accented parts of the calendar: the today cell,
             the two ends of the selected range, the highlighted current month and the active AM/PM button.
@@ -680,7 +739,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="External Icons" RazorCode="@example25RazorCode" Id="example25">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
 
         <br /><br />
@@ -758,7 +817,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example25RazorCode" Id="example25">
+    <DemoExample Title="Size" RazorCode="@example26RazorCode" Id="example26">
         <div class="example-desc">
             <b>Size</b> scales the field, the label and the calendar cells together in one of three steps. The callout
             takes the size with it, so a small picker opens a small calendar.
@@ -776,7 +835,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
+    <DemoExample Title="Style & Class" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
         <div class="example-desc">
             <b>Style</b> and <b>Class</b> reach the root element only, while <b>Styles</b> and <b>Classes</b> address every
             part of the component individually - the input and its container, the callout, the day/month/year grids and each
@@ -857,7 +916,7 @@
         <br />
         <div class="example-content">
             <BitDateRangePicker Label="Roomier calendar"
-                                Styles="@(new() { Callout = "--bit-DateRangePicker-day-size: 2.5rem; --bit-DateRangePicker-day-radius: 50%; --bit-DateRangePicker-calendar-padding: 1rem;" })" />
+                                Styles="@(new() { Callout = "--bit-DateRangePicker-day-size: 2.5rem; --bit-DateRangePicker-day-radius: 50%; --bit-DateRangePicker-today-radius: 50%; --bit-DateRangePicker-range-radius: 1.25rem; --bit-DateRangePicker-calendar-padding: 1rem;" })" />
         </div>
         <br /><br /><br />
         <div>Set once on an ancestor, inherited by the fields and the callouts of every picker inside it:</div>
@@ -870,7 +929,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example27RazorCode" Id="example27">
+    <DemoExample Title="RTL" RazorCode="@example28RazorCode" Id="example28">
         <div class="example-desc">
             Set <b>Dir</b> to <b>BitDir.Rtl</b> to render the DateRangePicker in a right-to-left layout. The calendar, the
             navigation buttons and the arrow-key navigation all mirror accordingly. A right-to-left <b>Culture</b> switches

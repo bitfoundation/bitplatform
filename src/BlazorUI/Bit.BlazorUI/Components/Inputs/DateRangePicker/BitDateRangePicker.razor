@@ -202,6 +202,8 @@
                             @if (isFirstMonth && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
                             {
                                 var title = string.Format(MonthPickerToggleTitle, monthTitle);
+                                @* Only the first month announces itself: a strip of three would otherwise
+                                   read every one of its titles out on every navigation. *@
                                 <button @onclick="@ToggleMonthPickerOverlay"
                                         tabindex="0"
                                         type="button"
@@ -220,8 +222,8 @@
                             {
                                 <div style="@Styles?.DayPickerMonth"
                                      class="bit-dtrp-pkt @Classes?.DayPickerMonth"
-                                     aria-live="polite"
-                                     aria-atomic="true"
+                                     aria-live="@(isFirstMonth ? "polite" : null)"
+                                     aria-atomic="@(isFirstMonth ? "true" : null)"
                                      tabindex="-1">
                                     @monthTitle
                                 </div>
@@ -305,8 +307,11 @@
                             </div>
                         </div>
 
+                        @* A range is a run of selected cells rather than one of them, which is what
+                           aria-multiselectable says about a grid. *@
                         <div role="grid"
                              aria-label="@monthTitle"
+                             aria-multiselectable="true"
                              style="@Styles?.DaysGrid"
                              class="bit-dtrp-grd @Classes?.DaysGrid"
                              @onpointerleave="HandleOnDaysPointerLeave">

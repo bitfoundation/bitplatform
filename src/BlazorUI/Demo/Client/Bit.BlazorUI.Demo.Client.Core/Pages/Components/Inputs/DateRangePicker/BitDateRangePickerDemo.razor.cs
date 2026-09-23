@@ -76,13 +76,6 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "CascadingParameters",
-            Type = "BitDateRangePickerParams?",
-            DefaultValue = "null",
-            Description = "The cascading parameters of the DateRangePicker, provided by an ancestor BitParams component. Every value it carries is a default: a parameter the picker sets for itself wins over the cascade.",
-        },
-        new()
-        {
             Name = "Classes",
             Type = "BitDateRangePickerClassStyles?",
             DefaultValue = "null",
@@ -572,7 +565,7 @@ public partial class BitDateRangePickerDemo
             Name = "MaxRange",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "The maximum range of day and times allowed for selection in DateRangePicker.",
+            Description = "The longest span the selected range is allowed to cover. The day grid is bounded by it in whole days, equally far either side of the picked start date, and the time picker refuses a time that would push the span past it - so a MaxRange shorter than a day leaves the day the range started on as the only one it can end on.",
         },
         new()
         {
@@ -1184,8 +1177,8 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "--bit-DateRangePicker-focus-color",
-            DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the focus ring around the field.",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the focus ring, around the field and around every cell and button of the calendar. An invalid value overrides it with the error focus color, so the field never shows two states at once.",
         },
         new()
         {
@@ -1324,6 +1317,18 @@ public partial class BitDateRangePickerDemo
             Name = "--bit-DateRangePicker-day-hover-background",
             DefaultValue = "--bit-clr-bg-pri-hover",
             Description = "Background of a hovered day and of a hovered navigation button.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-today-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of today's cell, which is a circle by default while the other days take the day radius.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-range-radius",
+            DefaultValue = "--bit-shp-radius-lg",
+            Description = "Corner radius at the two ends of the selected range, which is what gives the range its pill shape. A range of a single day takes it on all four corners.",
         },
         new()
         {
@@ -2448,6 +2453,26 @@ public partial class BitDateRangePickerDemo
         StartDate = new DateTimeOffset(2024, 12, 8, 12, 15, 0, DateTimeOffset.Now.Offset),
         EndDate = new DateTimeOffset(2024, 12, 12, 16, 45, 0, DateTimeOffset.Now.Offset),
     };
+
+    private bool isOpen;
+    private BitDateRangePickerValue? isOpenValue;
+    private BitDateRangePicker? calloutPicker;
+
+    private async Task OpenFromCode()
+    {
+        if (calloutPicker is not null)
+        {
+            await calloutPicker.OpenCallout();
+        }
+    }
+
+    private async Task CloseFromCode()
+    {
+        if (calloutPicker is not null)
+        {
+            await calloutPicker.CloseCallout();
+        }
+    }
 
     private string? applyOutcome;
     private BitDateRangePickerValue? applyValue;
