@@ -342,11 +342,13 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
         // bypasses the setter, so the hooks are re-run at the end - but only when the assignment actually
         // changed something. This method runs on every parameters-set, and re-running them unconditionally
         // would drag the dial back to its starting view on every re-render of the page around it.
-        // The three flags are kept apart rather than rolled into one because the hooks behind them are not
-        // the same: a change of the seconds only moves the dial off a ring the picker has stopped carrying,
-        // where a change of the edit mode or the start view moves it back to where a picker begins.
+        // The flags are kept apart rather than rolled into one because what each parameter does to the dial
+        // is not the same: the edit mode moves it back to where a picker begins, the seconds only move it off
+        // a ring the picker has stopped carrying, and the start view - which has no hook of its own when it is
+        // written on the markup - leaves the view the person is on exactly where it is.
         var cultureChanged = false;
-        var viewChanged = false;
+        var editModeChanged = false;
+        var startViewChanged = false;
         var secondsChanged = false;
 
         if (AllowTextInput.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AllowTextInput)))
@@ -479,7 +481,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         if (EditMode.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(EditMode)))
         {
-            viewChanged = viewChanged || bitCircularTimePicker.EditMode != EditMode.Value;
+            editModeChanged = bitCircularTimePicker.EditMode != EditMode.Value;
 
             bitCircularTimePicker.EditMode = EditMode.Value;
 
@@ -612,7 +614,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         if (ShowSeconds.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(ShowSeconds)))
         {
-            secondsChanged = secondsChanged || bitCircularTimePicker.ShowSeconds != ShowSeconds.Value;
+            secondsChanged = bitCircularTimePicker.ShowSeconds != ShowSeconds.Value;
 
             bitCircularTimePicker.ShowSeconds = ShowSeconds.Value;
         }
@@ -638,7 +640,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         if (StartView.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(StartView)))
         {
-            viewChanged = viewChanged || bitCircularTimePicker.StartView != StartView.Value;
+            startViewChanged = bitCircularTimePicker.StartView != StartView.Value;
 
             bitCircularTimePicker.StartView = StartView.Value;
         }
@@ -667,6 +669,6 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.ValueFormat = ValueFormat;
         }
 
-        bitCircularTimePicker.ApplyCascadedParameters(cultureChanged, viewChanged, secondsChanged);
+        bitCircularTimePicker.ApplyCascadedParameters(cultureChanged, editModeChanged, startViewChanged, secondsChanged);
     }
 }

@@ -22,12 +22,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private string? _labelId;
     private string? _inputId;
     private string? _clockId;
+    private string? _clockLabelId;
     private bool _pointerPicked;
     private bool _isPointerDown;
     private ElementReference _clockRef;
     private ElementReference _calloutRef;
     private string? _abortControllerId;
     private bool _internalIsOpenChange;
+    private bool _cascadeApplied;
     private CancellationTokenSource? _autoCloseCts;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
@@ -764,6 +766,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _labelId = $"{_circularTimePickerId}-label";
         _inputId = $"{_circularTimePickerId}-input";
         _clockId = $"{_circularTimePickerId}-clock";
+        _clockLabelId = $"{_circularTimePickerId}-clock-label";
         _headerId = $"{_circularTimePickerId}-header";
         _footerId = $"{_circularTimePickerId}-footer";
         _calloutId = $"{_circularTimePickerId}-callout";
@@ -790,18 +793,35 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     // Re-runs the [CallOnSet] hooks of the parameters a BitParams cascade filled in, which the cascade
     // itself bypasses by assigning the properties directly. Only the hooks whose parameters actually
-    // changed are run: the edit mode and the start view move the dial back to where a
-    // picker begins, and doing that on every parameters-set would undo the view the person had switched to
-    // on any re-render around the picker. The seconds get a hook of their own rather than that one, since
-    // turning them on or off only moves the dial off a ring the picker has stopped carrying.
-    internal void ApplyCascadedParameters(bool cultureChanged, bool viewChanged, bool secondsChanged)
+    // changed are run: the edit mode moves the dial back to where a picker begins, and doing that on every
+    // parameters-set would undo the view the person had switched to on any re-render around the picker. The
+    // seconds get a hook of their own rather than that one, since turning them on or off only moves the dial
+    // off a ring the picker has stopped carrying. The start view gets neither: it has no hook when it is
+    // written on the markup, so a cascade that changes it must not move a dial the markup would have left be.
+    internal void ApplyCascadedParameters(bool cultureChanged, bool editModeChanged, bool startViewChanged, bool secondsChanged)
     {
         if (cultureChanged)
         {
             OnSetCulture();
         }
 
-        if (viewChanged)
+        // The first pass is where the cascaded values reach the picker at all: the view was worked out in
+        // OnInitialized, which runs before OnParametersSet and so before any of them had arrived. It is worked
+        // out again here, with all three of the parameters it is read from finally in place. Every later pass
+        // is an actual change and goes through the hooks below.
+        if (_cascadeApplied is false)
+        {
+            _cascadeApplied = true;
+
+            if (editModeChanged || startViewChanged || secondsChanged)
+            {
+                _view = GetInitialView();
+            }
+
+            return;
+        }
+
+        if (editModeChanged)
         {
             OnSetEditMode();
         }
@@ -2143,6 +2163,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             return name.HasValue() ? $"{name} {ViewTitle}" : ViewTitle;
         }
     }
+
+    // A label written as a template is markup rather than a string, so there is no text to read out of it and
+    // build a name with. The dial is pointed at the label element itself instead, alongside a hidden copy of
+    // the part it is on - the two together read exactly as the string the other standalone paths produce.
+    // An AriaLabel is still a string and still wins, and a picker with a field is named by that field.
+    private bool IsClockNamedByLabelTemplate => Standalone && LabelTemplate is not null && AriaLabel.HasValue() is false;
 
     private string ViewTitle => _view switch
     {

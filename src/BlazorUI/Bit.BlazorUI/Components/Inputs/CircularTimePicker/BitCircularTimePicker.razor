@@ -244,6 +244,10 @@
         *@
         <div style="@Styles?.Body" class="bit-ctp-bdy @Classes?.Body">
             <div style="@Styles?.ClockContainer" class="bit-ctp-clk @Classes?.ClockContainer">
+                @if (IsClockNamedByLabelTemplate)
+                {
+                    <span id="@_clockLabelId" class="bit-ctp-lvr">@ViewTitle</span>
+                }
                 @*
                     A listbox rather than a plain drawing: the numbers are the options of the current view and the
                     pointer is the selection, which is what lets a screen reader read out what the dial is on and
@@ -258,7 +262,8 @@
                      role="listbox"
                      tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
                      data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
-                     aria-label="@ClockAriaLabel"
+                     aria-label="@(IsClockNamedByLabelTemplate ? null : ClockAriaLabel)"
+                     aria-labelledby="@(IsClockNamedByLabelTemplate ? $"{_labelId} {_clockLabelId}" : null)"
                      aria-disabled="@(IsEnabled ? null : "true")"
                      aria-readonly="@(ReadOnly ? "true" : null)"
                      @*
