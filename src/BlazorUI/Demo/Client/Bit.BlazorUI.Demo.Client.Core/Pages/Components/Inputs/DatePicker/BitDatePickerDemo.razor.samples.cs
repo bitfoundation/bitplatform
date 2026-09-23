@@ -102,11 +102,20 @@ private bool showMonthPickerAsOverlay;";
 
 <BitDatePicker Label=""TimeFormat (12-hour with AM/PM)"" ShowTimePicker TimeFormat=""BitTimeFormat.TwelveHours"" />
 
+<BitDatePicker Label=""ShowSeconds (SecondStep 15)"" ShowTimePicker ShowSeconds SecondStep=""15"" />
+
 <BitDatePicker Label=""ShowTimePickerAsOverlay"" ShowTimePicker ShowTimePickerAsOverlay />
 
 <BitDatePicker Label=""Without the now button"" ShowTimePicker ShowNowButton=""false"" />
 
 <BitDatePicker Label=""HourStep 2 & MinuteStep 15"" ShowTimePicker HourStep=""2"" MinuteStep=""15"" />
+
+<BitDatePicker Label=""Working hours only, no lunch hour""
+               ShowTimePicker
+               MinuteStep=""15""
+               MinTime=""TimeSpan.FromHours(9)""
+               MaxTime=""new TimeSpan(17, 30, 0)""
+               AllowedHours=""@(h => h != 13)"" />
 
 <BitDatePicker Label=""Nothing later than now (MaxDate)"" ShowTimePicker MaxDate=""DateTimeOffset.Now"" />
 
@@ -218,9 +227,13 @@ private DateTimeOffset? timeZoneDate2;";
     private readonly string example12RazorCode = @"
 <BitDatePicker Label=""Basic DatePicker"" Standalone />
 <BitDatePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
-<BitDatePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
-<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
-<BitDatePicker Label=""TimePicker"" ShowTimePicker Standalone />";
+
+<BitDatePicker Label=""Week numbers, highlighted months and a time picker""
+               Standalone
+               ShowTimePicker
+               ShowWeekNumbers
+               HighlightCurrentMonth
+               HighlightSelectedMonth />";
 
     private readonly string example13RazorCode = @"
 <BitDatePicker Label=""Basic MonthPicker""
@@ -490,8 +503,11 @@ private BitDatePicker? programmaticPicker;";
                                             ""--bit-DatePicker-focus-color: mediumpurple;"" })"" />
 
 <BitDatePicker Label=""Roomier calendar, same field""
+               ShowTimePicker
                Styles=""@(new() { Callout = ""--bit-DatePicker-day-size: 2.75rem;"" +
                                             ""--bit-DatePicker-day-font-size: 1rem;"" +
+                                            ""--bit-DatePicker-header-font-size: 1rem;"" +
+                                            ""--bit-DatePicker-time-font-size: 1.5rem;"" +
                                             ""--bit-DatePicker-padding: 1rem;"" })"" />";
 
     private readonly string example23RazorCode = @"

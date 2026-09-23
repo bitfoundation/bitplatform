@@ -19,6 +19,8 @@
     var decreaseHourIconCss = BitIconInfo.From(TimePickerDecreaseHourIcon, TimePickerDecreaseHourIconName ?? "ChevronDownSmall")?.GetCssClasses();
     var increaseMinuteIconCss = BitIconInfo.From(TimePickerIncreaseMinuteIcon, TimePickerIncreaseMinuteIconName ?? "ChevronDownSmall bit-ico-r180")?.GetCssClasses();
     var decreaseMinuteIconCss = BitIconInfo.From(TimePickerDecreaseMinuteIcon, TimePickerDecreaseMinuteIconName ?? "ChevronDownSmall")?.GetCssClasses();
+    var increaseSecondIconCss = BitIconInfo.From(TimePickerIncreaseSecondIcon, TimePickerIncreaseSecondIconName ?? "ChevronDownSmall bit-ico-r180")?.GetCssClasses();
+    var decreaseSecondIconCss = BitIconInfo.From(TimePickerDecreaseSecondIcon, TimePickerDecreaseSecondIconName ?? "ChevronDownSmall")?.GetCssClasses();
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -42,6 +44,8 @@
 
     @if (Standalone is false)
     {
+        var formatDescription = GetDateFormatDescription();
+
         <div style="@Styles?.InputWrapper" class="bit-dtp-wrp @Classes?.InputWrapper" id="@_datePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
             <div style="@Styles?.InputContainer" class="bit-dtp-icn @Classes?.InputContainer">
                 <input @ref="InputElement" @attributes="InputHtmlAttributes"
@@ -63,10 +67,18 @@
                        disabled=@(IsEnabled is false)
                        readonly=@(AllowTextInput is false || ReadOnly)
                        aria-expanded="@(IsOpen ? "true" : "false")"
-                       aria-controls="@(IsOpen ? _calloutId : null)"
+                       aria-controls="@(IsOpen ? _dialogId : null)"
+                       aria-describedby="@(formatDescription.HasValue() ? _formatHintId : null)"
                        aria-labelledby="@((LabelTemplate is not null || Label.HasValue()) ? _labelId : null)"
                        style="@Styles?.Input"
                        class="bit-dtp-inp@(AllowTextInput ? " bit-dtp-ein" : null) @Classes?.Input" />
+
+                @if (formatDescription.HasValue())
+                {
+                    @* The pattern the field is read with, as a description of the input rather than as a
+                       placeholder: it is still there once the first character has been typed. *@
+                    <span id="@_formatHintId" class="bit-dtp-sdt">@formatDescription</span>
+                }
 
                 @if (IsEnabled && ShowClearButton && CurrentValue.HasValue)
                 {
@@ -137,6 +149,7 @@
        any other, where role="dialog" would announce a dialog the user can never leave - and where a plain div
        would leave the label below naming nothing. *@
     <div style="@Styles?.CalloutContainer" class="bit-dtp-cac @Classes?.CalloutContainer"
+         id="@_dialogId"
          role="@(Standalone ? "group" : "dialog")"
          aria-modal="@(Standalone ? null : "true")"
          @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
@@ -279,8 +292,6 @@
                                     <button @onclick="@ToggleTimePickerOverlay"
                                             tabindex="0"
                                             type="button"
-                                            aria-live="polite"
-                                            aria-atomic="true"
                                             title="@ShowTimePickerTitle"
                                             disabled="@(IsEnabled is false)"
                                             aria-label="@ShowTimePickerTitle"
@@ -374,7 +385,7 @@
                                                 aria-readonly="@(ReadOnly ? "true" : null)"
                                                 disabled="@disabled"
                                                 aria-disabled="@((disabled || ReadOnly) ? "true" : null)"
-                                                aria-label="@date.ToString(_culture.DateTimeFormat.LongDatePattern, _culture)"
+                                                aria-label="@GetDayAriaLabel(date)"
                                                 aria-current="@(isToday ? "date" : null)"
                                                 style="@style"
                                                 class="bit-dtp-dbt@(klass) @Classes?.DayButton"
@@ -473,8 +484,6 @@
                                     <button @onclick="@ToggleTimePickerOverlay"
                                             tabindex="0"
                                             type="button"
-                                            aria-live="polite"
-                                            aria-atomic="true"
                                             title="@ShowTimePickerTitle"
                                             disabled="@(IsEnabled is false)"
                                             aria-label="@ShowTimePickerTitle"
@@ -684,7 +693,8 @@
                         <div style="@Styles?.HourInputContainer" class="bit-dtp-tpr @Classes?.HourInputContainer">
                             <button @onpointerup="HandleOnPointerUpOrOut"
                                     @onpointerout="HandleOnPointerUpOrOut"
-                                    @onpointerdown="() => HandleOnPointerDown(true, true)"
+                                    @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Hour)"
+                                    @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Hour)"
                                     type="button"
                                     title="@TimePickerIncreaseHourTitle"
                                     aria-label="@TimePickerIncreaseHourTitle"
@@ -699,9 +709,9 @@
                             <input @ref="_inputTimeHourRef"
                                    @bind="@_hourView"
                                    @bind:event="oninput"
-                                   @onchange="() => HandleOnTimeInputChange(true)"
+                                   @onchange="() => HandleOnTimeInputChange(TimeUnit.Hour)"
                                    @onfocus="HandleOnTimeHourFocus"
-                                   @onkeydown="e => HandleOnTimeInputKeyDown(e, true)"
+                                   @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Hour)"
                                    min="@(TimeFormat == BitTimeFormat.TwelveHours ? "1" : "0")"
                                    max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                    type="number"
@@ -716,7 +726,8 @@
                                    autocomplete="@BitAutoCompleteValue.NewPassword" />
                             <button @onpointerup="HandleOnPointerUpOrOut"
                                     @onpointerout="HandleOnPointerUpOrOut"
-                                    @onpointerdown="() => HandleOnPointerDown(false, true)"
+                                    @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Hour)"
+                                    @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Hour)"
                                     type="button"
                                     title="@TimePickerDecreaseHourTitle"
                                     aria-label="@TimePickerDecreaseHourTitle"
@@ -729,11 +740,14 @@
                                    class="bit-dtp-cic @decreaseHourIconCss @Classes?.TimePickerDecreaseHourIcon" />
                             </button>
                         </div>
-                        <div style="@Styles?.TimePickerHourMinuteSeparator" class="bit-dtp-tpr bit-dtp-tdv @Classes?.TimePickerHourMinuteSeparator">:</div>
+                        @* The colon is punctuation between two fields that name themselves, so it is kept out
+                           of the accessibility tree rather than read out between them. *@
+                        <div style="@Styles?.TimePickerHourMinuteSeparator" aria-hidden="true" class="bit-dtp-tpr bit-dtp-tdv @Classes?.TimePickerHourMinuteSeparator">:</div>
                         <div style="@Styles?.MinuteInputContainer" class="bit-dtp-tpr @Classes?.MinuteInputContainer">
                             <button @onpointerup="HandleOnPointerUpOrOut"
                                     @onpointerout="HandleOnPointerUpOrOut"
-                                    @onpointerdown="() => HandleOnPointerDown(true, false)"
+                                    @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Minute)"
+                                    @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Minute)"
                                     type="button"
                                     title="@TimePickerIncreaseMinuteTitle"
                                     aria-label="@TimePickerIncreaseMinuteTitle"
@@ -748,9 +762,9 @@
                             <input @ref="_inputTimeMinuteRef"
                                    @bind="@_minuteView"
                                    @bind:event="oninput"
-                                   @onchange="() => HandleOnTimeInputChange(false)"
+                                   @onchange="() => HandleOnTimeInputChange(TimeUnit.Minute)"
                                    @onfocus="HandleOnTimeMinuteFocus"
-                                   @onkeydown="e => HandleOnTimeInputKeyDown(e, false)"
+                                   @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Minute)"
                                    min="0"
                                    max="59"
                                    type="number"
@@ -765,7 +779,8 @@
                                    autocomplete="@BitAutoCompleteValue.NewPassword" />
                             <button @onpointerup="HandleOnPointerUpOrOut"
                                     @onpointerout="HandleOnPointerUpOrOut"
-                                    @onpointerdown="() => HandleOnPointerDown(false, false)"
+                                    @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Minute)"
+                                    @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Minute)"
                                     type="button"
                                     title="@TimePickerDecreaseMinuteTitle"
                                     aria-label="@TimePickerDecreaseMinuteTitle"
@@ -779,6 +794,61 @@
                             </button>
                         </div>
 
+                        @if (ShowSeconds)
+                        {
+                            <div style="@Styles?.TimePickerMinuteSecondSeparator" aria-hidden="true" class="bit-dtp-tpr bit-dtp-tdv @Classes?.TimePickerMinuteSecondSeparator">:</div>
+                            <div style="@Styles?.SecondInputContainer" class="bit-dtp-tpr @Classes?.SecondInputContainer">
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Second)"
+                                        @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Second)"
+                                        type="button"
+                                        title="@TimePickerIncreaseSecondTitle"
+                                        aria-label="@TimePickerIncreaseSecondTitle"
+                                        disabled="@(IsEnabled is false)"
+                                        aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
+                                        style="@Styles?.TimePickerIncreaseSecondButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerIncreaseSecondButton">
+                                    <i aria-hidden="true"
+                                       style="@Styles?.TimePickerIncreaseSecondIcon"
+                                       class="bit-dtp-cic @increaseSecondIconCss @Classes?.TimePickerIncreaseSecondIcon" />
+                                </button>
+                                <input @ref="_inputTimeSecondRef"
+                                       @bind="@_secondView"
+                                       @bind:event="oninput"
+                                       @onchange="() => HandleOnTimeInputChange(TimeUnit.Second)"
+                                       @onfocus="HandleOnTimeSecondFocus"
+                                       @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Second)"
+                                       min="0"
+                                       max="59"
+                                       type="number"
+                                       inputmode="numeric"
+                                       readonly="@ReadOnly"
+                                       title="@TimePickerSecondTitle"
+                                       aria-label="@TimePickerSecondTitle"
+                                       disabled="@(IsEnabled is false)"
+                                       aria-disabled="@(IsEnabled is false ? "true" : null)"
+                                       style="@Styles?.TimePickerSecondInput"
+                                       class="bit-dtp-tin @Classes?.TimePickerSecondInput"
+                                       autocomplete="@BitAutoCompleteValue.NewPassword" />
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Second)"
+                                        @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Second)"
+                                        type="button"
+                                        title="@TimePickerDecreaseSecondTitle"
+                                        aria-label="@TimePickerDecreaseSecondTitle"
+                                        disabled="@(IsEnabled is false)"
+                                        aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
+                                        style="@Styles?.TimePickerDecreaseSecondButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerDecreaseSecondButton">
+                                    <i aria-hidden="true"
+                                       style="@Styles?.TimePickerDecreaseSecondIcon"
+                                       class="bit-dtp-cic @decreaseSecondIconCss @Classes?.TimePickerDecreaseSecondIcon" />
+                                </button>
+                            </div>
+                        }
+
                         @if (TimeFormat == BitTimeFormat.TwelveHours)
                         {
                             @* The two halves of the day are a pair of toggles rather than a pair of commands: which
@@ -786,6 +856,7 @@
                             <div style="@Styles?.TimePickerAmPmContainer" class="bit-dtp-tpr bit-dtp-am-pm @Classes?.TimePickerAmPmContainer">
                                 <button @onclick="HandleOnAmClick"
                                         type="button"
+                                        title="@_culture.DateTimeFormat.AMDesignator"
                                         disabled="@(IsEnabled is false)"
                                         aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
                                         aria-pressed="@(IsAm() is true ? "true" : "false")"
@@ -796,6 +867,7 @@
 
                                 <button @onclick="HandleOnPmClick"
                                         type="button"
+                                        title="@_culture.DateTimeFormat.PMDesignator"
                                         disabled="@(IsEnabled is false)"
                                         aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
                                         aria-pressed="@(IsAm() is false ? "true" : "false")"

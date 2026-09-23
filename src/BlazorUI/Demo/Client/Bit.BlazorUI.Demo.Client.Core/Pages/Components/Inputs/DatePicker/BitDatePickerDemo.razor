@@ -101,7 +101,8 @@
 
     <DemoExample Title="Highlighted dates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            Mark important dates using <b>HighlightedDates</b>, or provide custom CSS classes for any day using
+            Mark important dates using <b>HighlightedDates</b> - a highlighted day is named as one for a screen
+            reader too, through <b>HighlightedDateAriaLabel</b> - or provide custom CSS classes for any day using
             the <b>GetDayClass</b> function, which receives each rendered day and returns the classes to add to it.
             The highlight of today's day can also be turned off using <b>HighlightToday</b>; the day keeps its
             accessibility semantics and only loses the visual accent.
@@ -169,14 +170,22 @@
 
     <DemoExample Title="TimePicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
-            <b>ShowTimePicker</b> adds the time of day to the value. <b>TimeFormat</b> switches between the 24-hour
-            and the 12-hour clock, <b>ShowTimePickerAsOverlay</b> lays the time picker over the calendar (reached
-            through the clock button), and <b>ShowNowButton</b> hides the now button. <b>HourStep</b> and
-            <b>MinuteStep</b> lay a grid over the day that every time the picker produces sits on - the spin
-            buttons, the <b>PageUp</b>/<b>PageDown</b> keys and what is typed into the fields alike. On the day a
-            <b>MinDate</b> or <b>MaxDate</b> falls on, the bound limits the hours on offer as well, so the picker
-            cannot produce an instant past it. Selecting a day keeps the callout open while the time picker is on
-            screen, so the time can be set too. Holding a spin button down keeps it moving, after
+            <b>ShowTimePicker</b> adds the time of day to the value and <b>ShowSeconds</b> adds a seconds field to
+            it. <b>TimeFormat</b> switches between the 24-hour and the 12-hour clock,
+            <b>ShowTimePickerAsOverlay</b> lays the time picker over the calendar (reached through the clock
+            button), and <b>ShowNowButton</b> hides the now button.
+            <br /><br />
+            Which times the picker offers is declared in three ways, and everything that moves the time - the spin
+            buttons, the <b>PageUp</b>/<b>PageDown</b> keys and what is typed into the fields - is held to all of
+            them: <b>HourStep</b>, <b>MinuteStep</b> and <b>SecondStep</b> lay a grid over the day, the hour and
+            the minute; <b>MinTime</b> and <b>MaxTime</b> bound the hours of every day the picker offers (as the
+            time of day <b>MinDate</b> and <b>MaxDate</b> are not - those bound whole days, and only limit the
+            hours of the one day they fall on); and <b>AllowedHours</b>, <b>AllowedMinutes</b> and
+            <b>AllowedSeconds</b> rule out anything else, such as a lunch hour in the middle of a working day.
+            <br /><br />
+            Selecting a day keeps the callout open while the time picker is on screen, so the time can be set too.
+            The time picker writes into the selected day, so the now button picks today along with the current
+            time where there is no value yet. Holding a spin button down keeps it moving, after
             <b>ContinuousSpinDelay</b> and then every <b>ContinuousSpinInterval</b> milliseconds.
         </div>
         <br />
@@ -186,11 +195,20 @@
             <br /><br />
             <BitDatePicker Label="TimeFormat (12-hour with AM/PM)" ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" />
             <br /><br />
+            <BitDatePicker Label="ShowSeconds (SecondStep 15)" ShowTimePicker ShowSeconds SecondStep="15" />
+            <br /><br />
             <BitDatePicker Label="ShowTimePickerAsOverlay" ShowTimePicker ShowTimePickerAsOverlay />
             <br /><br />
             <BitDatePicker Label="Without the now button" ShowTimePicker ShowNowButton="false" />
             <br /><br />
             <BitDatePicker Label="HourStep 2 & MinuteStep 15" ShowTimePicker HourStep="2" MinuteStep="15" />
+            <br /><br />
+            <BitDatePicker Label="Working hours only, no lunch hour"
+                           ShowTimePicker
+                           MinuteStep="15"
+                           MinTime="TimeSpan.FromHours(9)"
+                           MaxTime="new TimeSpan(17, 30, 0)"
+                           AllowedHours="@(h => h != 13)" />
             <br /><br />
             <BitDatePicker Label="Slower press-and-hold spin"
                            ShowTimePicker
@@ -203,12 +221,17 @@
 
     <DemoExample Title="Date format & text input" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div class="example-desc">
-            <b>DateFormat</b> is the pattern the value is written with and the one a typed date is read back with;
-            without it the short date pattern of the culture is used, plus the time pattern where the time picker
-            is on. <b>AllowTextInput</b> lets the date be typed instead of picked - text that does not match the
+            <b>DateFormat</b> is the pattern the value is written with, and the only one a typed date is then read
+            with. Without it the short date pattern of the culture is used, plus the time pattern where the time
+            picker is on - and a typed date is read more freely there: the same day with the time left off, with
+            the seconds left off or spelled out, and in either clock format, are all accepted and rewritten into
+            the canonical spelling. <b>AllowTextInput</b> lets the date be typed instead of picked - text that does not match the
             pattern, a date outside the Min/Max range, and a date the picker disables are each reported as a
             validation error, worded by <b>InvalidErrorMessage</b>, <b>OutOfRangeErrorMessage</b> and
-            <b>DisabledDateErrorMessage</b>.
+            <b>DisabledDateErrorMessage</b> - and, for a time of day the time picker does not offer,
+            <b>DisallowedTimeErrorMessage</b>. A typed field also carries the pattern as its accessible
+            description, which a placeholder cannot keep saying once the first character is typed;
+            <b>DateFormatAriaDescription</b> words it.
         </div>
         <div class="example-content">
             <BitDatePicker Label="DateFormat"
@@ -365,11 +388,12 @@
             <br /><br />
             <BitDatePicker Label="Disabled" IsEnabled="false" Standalone />
             <br /><br />
-            <BitDatePicker Label="Week numbers" ShowWeekNumbers Standalone />
-            <br /><br />
-            <BitDatePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth Standalone />
-            <br /><br />
-            <BitDatePicker Label="TimePicker" ShowTimePicker Standalone />
+            <BitDatePicker Label="Week numbers, highlighted months and a time picker"
+                           Standalone
+                           ShowTimePicker
+                           ShowWeekNumbers
+                           HighlightCurrentMonth
+                           HighlightSelectedMonth />
         </div>
     </DemoExample>
 
@@ -562,8 +586,9 @@
             <br />
             The month and the year grids answer the same keys, four cells to a row, with
             <b>PageUp</b>/<b>PageDown</b> moving to the adjacent year (in the month grid) or range of years (in
-            the year grid). The hour and minute fields of the time picker answer <b>PageUp</b>/<b>PageDown</b>
-            with the same step their spin buttons move by.
+            the year grid). The hour, minute and second fields of the time picker answer
+            <b>PageUp</b>/<b>PageDown</b> with the same step their spin buttons move by, and the spin buttons
+            themselves are operable with <b>Enter</b> and <b>Space</b> like any other button.
             <br /><br />
             Crossing a month boundary navigates the calendar and keeps the focus on the day - across the panes of
             a MonthCount strip without moving it - switching between the pickers takes the focus along, and
@@ -684,8 +709,11 @@
                                                        "--bit-DatePicker-focus-color: mediumpurple;" })" />
             <br /><br />
             <BitDatePicker Label="Roomier calendar, same field"
+                           ShowTimePicker
                            Styles="@(new() { Callout = "--bit-DatePicker-day-size: 2.75rem;" +
                                                        "--bit-DatePicker-day-font-size: 1rem;" +
+                                                       "--bit-DatePicker-header-font-size: 1rem;" +
+                                                       "--bit-DatePicker-time-font-size: 1.5rem;" +
                                                        "--bit-DatePicker-padding: 1rem;" })" />
         </div>
     </DemoExample>

@@ -12,9 +12,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 {
     private const int MAX_WIDTH = 470;
     private const int MONTH_WIDTH = 240;
+    private const int SECONDS_WIDTH = 50;
     private const int MAX_MONTH_COUNT = 3;
     private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
+
+    // The parts of the time of day the time picker edits. Everything that moves the time - the spin buttons,
+    // the keys, what is typed - names the part it moves rather than carrying a flag per part.
+    private enum TimeUnit { Hour, Minute, Second }
 
 
 
@@ -54,12 +59,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
+    private string _dialogId = string.Empty;
+    private string _formatHintId = string.Empty;
     private string _overlayId = string.Empty;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
     private string _datePickerId = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
+    private ElementReference _inputTimeSecondRef = default!;
 
 
 
@@ -128,6 +136,24 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
     }
 
+    private int _second;
+    private int _secondBeforeInput;
+    private int _secondView
+    {
+        get => _second;
+        set
+        {
+            if (IsEnabled is false || ReadOnly) return;
+
+            // Brought into the minute here and held to the SecondStep grid and the bounds on commit, for the
+            // same reason the hour and the minute above are.
+            _secondBeforeInput = _second;
+            _second = Math.Clamp(value, 0, 59);
+
+            _ = UpdateCurrentValue();
+        }
+    }
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -152,6 +178,39 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The callout stays open after a deselection, so another date can be picked right away.
     /// </summary>
     [Parameter] public bool AllowDeselect { get; set; }
+
+    /// <summary>
+    /// The hours the time picker can be set to, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
+    /// the bounds of the day already allow.
+    /// </summary>
+    /// <remarks>
+    /// The predicate receives an hour of the day (0-23), whichever <see cref="TimeFormat"/> the picker is in,
+    /// and returns whether it can be picked. The spin buttons skip over the hours it rejects, a typed one snaps
+    /// to the nearest it accepts, and a date entered as text whose time lands on one fails validation.
+    /// </remarks>
+    [Parameter] public Func<int, bool>? AllowedHours { get; set; }
+
+    /// <summary>
+    /// The minutes the time picker can be set to, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
+    /// the bounds of the day already allow.
+    /// </summary>
+    /// <remarks>
+    /// The predicate receives a minute of the hour (0-59) and returns whether it can be picked. The spin buttons
+    /// skip over the minutes it rejects, a typed one snaps to the nearest it accepts, and a date entered as text
+    /// whose time lands on one fails validation.
+    /// </remarks>
+    [Parameter] public Func<int, bool>? AllowedMinutes { get; set; }
+
+    /// <summary>
+    /// The seconds the time picker can be set to, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
+    /// the bounds of the day already allow. It only has an effect while <see cref="ShowSeconds"/> is set.
+    /// </summary>
+    /// <remarks>
+    /// The predicate receives a second of the minute (0-59) and returns whether it can be picked. The spin buttons
+    /// skip over the seconds it rejects, a typed one snaps to the nearest it accepts, and a date entered as text
+    /// whose time lands on one fails validation.
+    /// </remarks>
+    [Parameter] public Func<int, bool>? AllowedSeconds { get; set; }
 
     /// <summary>
     /// Whether or not the DatePicker allows a string date input.
@@ -264,6 +323,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string? DateFormat { get; set; }
 
     /// <summary>
+    /// The accessible description of the input of a picker that accepts a typed date, which the pattern the
+    /// date is read with is formatted into. Setting it to an empty string leaves the input without one.
+    /// </summary>
+    /// <remarks>
+    /// A placeholder is gone as soon as the first character is typed, so the pattern the field expects is
+    /// carried by a description of the input instead, which a screen reader reads out after its name and which
+    /// stays there while the date is being typed. It is only rendered where <see cref="AllowTextInput"/> makes
+    /// the pattern something the user has to meet.
+    /// </remarks>
+    [Parameter] public string DateFormatAriaDescription { get; set; } = "Expected format: {0}";
+
+    /// <summary>
     /// Custom template to render the day cells of the DatePicker.
     /// </summary>
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
@@ -301,6 +372,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public bool DisablePast { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a date entered as text whose time of day the DatePicker does not
+    /// allow to be picked, through <see cref="MinTime"/>, <see cref="MaxTime"/>, <see cref="AllowedHours"/>,
+    /// <see cref="AllowedMinutes"/> or <see cref="AllowedSeconds"/>.
+    /// </summary>
+    [Parameter] public string? DisallowedTimeErrorMessage { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -409,6 +487,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public IEnumerable<DateTimeOffset>? HighlightedDates { get; set; }
 
     /// <summary>
+    /// The accessible name of a day of <see cref="HighlightedDates"/>, which its full date is formatted into.
+    /// Setting it to an empty string leaves a highlighted day named like any other.
+    /// </summary>
+    /// <remarks>
+    /// A highlighted day is marked by a background alone, which a screen reader has nothing to read out and a
+    /// person who cannot tell the two backgrounds apart has nothing to see - so the mark is said in the name of
+    /// the day as well.
+    /// </remarks>
+    [Parameter] public string HighlightedDateAriaLabel { get; set; } = "{0}, highlighted";
+
+    /// <summary>
     /// Whether the month picker should highlight the selected month.
     /// </summary>
     [Parameter] public bool HighlightSelectedMonth { get; set; }
@@ -423,9 +512,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The step, in hours, the spin buttons of the time picker move the hour by.
     /// </summary>
     /// <remarks>
-    /// A step greater than 1 lays a grid over the day that every hour the picker produces sits on, starting at
-    /// midnight, so a picker that only accepts times on a three-hour grid can say so. The buttons, the keys and
-    /// what is typed into the hour are all held to it. Values below 1 are treated as 1.
+    /// A step greater than 1 lays a grid over the day that every hour the picker produces sits on, so a picker
+    /// that only accepts times on a three-hour grid can say so. The grid starts at the hour of
+    /// <see cref="MinTime"/>, and at midnight where there is none. The buttons, the keys and what is typed into
+    /// the hour are all held to it. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int HourStep { get; set; } = 1;
 
@@ -512,12 +602,30 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
+    /// The latest time of day the time picker can be set to, on every day the DatePicker offers.
+    /// </summary>
+    /// <remarks>
+    /// It is the time of day <see cref="MaxDate"/> is not: a bound on the hours of every day rather than on the
+    /// days themselves, which is what a picker of business hours needs. Where both have something to say about
+    /// the day being set - the day a MaxDate falls on - the earlier of the two wins. A value outside of a day
+    /// (negative or over 23:59:59) is clamped into one before it is applied, and it only has an effect while
+    /// <see cref="ShowTimePicker"/> is set.
+    /// </remarks>
+    [Parameter] public TimeSpan? MaxTime { get; set; }
+
+    /// <summary>
     /// The minimum date allowed for the DatePicker.
     /// </summary>
     /// <inheritdoc cref="MaxDate" path="/remarks"/>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? MinDate { get; set; }
+
+    /// <summary>
+    /// The earliest time of day the time picker can be set to, on every day the DatePicker offers.
+    /// </summary>
+    /// <inheritdoc cref="MaxTime" path="/remarks"/>
+    [Parameter] public TimeSpan? MinTime { get; set; }
 
     /// <summary>
     /// The number of consecutive months rendered side by side in the day picker (1 to 3), which opens the
@@ -538,9 +646,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The step, in minutes, the spin buttons of the time picker move the minute by.
     /// </summary>
     /// <remarks>
-    /// A step greater than 1 lays a grid over the hour that every minute the picker produces sits on, starting
-    /// at the top of the hour, which is what turns it into a five-minute or quarter-hour picker. The buttons,
-    /// the keys and what is typed into the minute are all held to it. Values below 1 are treated as 1.
+    /// A step greater than 1 lays a grid over the hour that every minute the picker produces sits on, which is
+    /// what turns it into a five-minute or quarter-hour picker. The grid starts at the minute of
+    /// <see cref="MinTime"/>, and at the top of the hour where there is none. The buttons, the keys and what is
+    /// typed into the minute are all held to it. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
@@ -608,6 +717,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The title of the now button (tooltip).
     /// </summary>
+    /// <remarks>
+    /// The button sets the time of the selected day to the current time - and, on a picker with no value yet,
+    /// picks today along with it, since "now" is a whole instant rather than a time of day.
+    /// </remarks>
     [Parameter] public string NowButtonTitle { get; set; } = "Go to now";
 
     /// <summary>
@@ -713,6 +826,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public bool Responsive { get; set; }
 
     /// <summary>
+    /// The step, in seconds, the spin buttons of the time picker move the second by.
+    /// </summary>
+    /// <remarks>
+    /// A step greater than 1 lays a grid over the minute that every second the picker produces sits on. The grid
+    /// starts at the second of <see cref="MinTime"/>, and at the top of the minute where there is none. The
+    /// buttons, the keys and what is typed into the second are all held to it. Values below 1 are treated as 1.
+    /// </remarks>
+    [Parameter] public int SecondStep { get; set; } = 1;
+
+    /// <summary>
     /// The text of selected date aria-atomic of the DatePicker.
     /// </summary>
     [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date {0}";
@@ -750,6 +873,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// then appear in two panes at once.
     /// </summary>
     [Parameter] public bool ShowOutsideDays { get; set; } = true;
+
+    /// <summary>
+    /// Whether the time picker shows a seconds field beside the hour and the minute, which adds the second to
+    /// the value and to the default date format. It has no effect without <see cref="ShowTimePicker"/>.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowSeconds { get; set; }
 
     /// <summary>
     /// Whether or not render the time-picker.
@@ -849,6 +980,22 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string TimePickerDecreaseMinuteTitle { get; set; } = "Decrease minute";
 
     /// <summary>
+    /// The icon to display inside the time-picker's decrease-second button.
+    /// Takes precedence over <see cref="TimePickerDecreaseSecondIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? TimePickerDecreaseSecondIcon { get; set; }
+
+    /// <summary>
+    /// The name of the time-picker's decrease-second button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? TimePickerDecreaseSecondIconName { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's decrease-second button.
+    /// </summary>
+    [Parameter] public string TimePickerDecreaseSecondTitle { get; set; } = "Decrease second";
+
+    /// <summary>
     /// The title (tooltip) and the accessible name of the time-picker's hour input.
     /// </summary>
     [Parameter] public string TimePickerHourTitle { get; set; } = "Hour";
@@ -886,9 +1033,30 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string TimePickerIncreaseMinuteTitle { get; set; } = "Increase minute";
 
     /// <summary>
+    /// The icon to display inside the time-picker's increase-second button.
+    /// Takes precedence over <see cref="TimePickerIncreaseSecondIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? TimePickerIncreaseSecondIcon { get; set; }
+
+    /// <summary>
+    /// The name of the time-picker's increase-second button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? TimePickerIncreaseSecondIconName { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's increase-second button.
+    /// </summary>
+    [Parameter] public string TimePickerIncreaseSecondTitle { get; set; } = "Increase second";
+
+    /// <summary>
     /// The title (tooltip) and the accessible name of the time-picker's minute input.
     /// </summary>
     [Parameter] public string TimePickerMinuteTitle { get; set; } = "Minute";
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's second input.
+    /// </summary>
+    [Parameter] public string TimePickerSecondTitle { get; set; } = "Second";
 
     /// <summary>
     /// TimeZone for the DatePicker.
@@ -1043,6 +1211,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _datePickerId = $"DatePicker-{UniqueId}";
         _labelId = $"{_datePickerId}-label";
         _calloutId = $"{_datePickerId}-callout";
+        _dialogId = $"{_datePickerId}-dialog";
+        _formatHintId = $"{_datePickerId}-format";
         _overlayId = $"{_datePickerId}-overlay";
         _headerId = $"{_datePickerId}-header";
         _footerId = $"{_datePickerId}-footer";
@@ -1151,21 +1321,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return true;
         }
 
-        var pattern = DateFormat ?? GetDefaultDateFormat();
-
-        var parsed = DateTime.TryParseExact(value, pattern, _culture, DateTimeStyles.None, out DateTime parsedValue);
-
-        // When a custom DateFormat is not set and the time picker is enabled, the default pattern
-        // includes the time portion. Fall back to a date-only parse so users can still type a bare
-        // date (e.g. via AllowTextInput) without being forced to include the time.
-        if (parsed is false && DateFormat is null && ShowTimePicker)
-        {
-            var dateOnlyPattern = Mode == BitDatePickerMode.MonthPicker
-                ? _culture.DateTimeFormat.YearMonthPattern
-                : _culture.DateTimeFormat.ShortDatePattern;
-
-            parsed = DateTime.TryParseExact(value, dateOnlyPattern, _culture, DateTimeStyles.None, out parsedValue);
-        }
+        var parsed = DateTime.TryParseExact(value, GetParseFormats(), _culture, DateTimeStyles.None, out DateTime parsedValue);
 
         if (parsed)
         {
@@ -1197,6 +1353,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 validationErrorMessage = DisabledDateErrorMessage.HasValue()
                     ? DisabledDateErrorMessage!
                     : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not an allowed date.";
+                return false;
+            }
+
+            // And the same for the time of day, which the time picker holds to the bounds and to the allowed
+            // values the application declared: typing one it refuses would be the way around them.
+            if (IsTimeOfDayAllowed(parsedValue) is false)
+            {
+                result = default;
+                validationErrorMessage = DisallowedTimeErrorMessage.HasValue()
+                    ? DisallowedTimeErrorMessage!
+                    : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not an allowed time.";
                 return false;
             }
 
@@ -1236,9 +1403,64 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return pattern;
     }
 
+    // The description the input carries while it accepts a typed date: the pattern it is read with, which the
+    // placeholder cannot keep saying once the typing has started.
+    private string? GetDateFormatDescription()
+    {
+        if (AllowTextInput is false || Standalone) return null;
+
+        if (DateFormatAriaDescription.HasNoValue()) return null;
+
+        // A description the application put on the input itself is the one that stands.
+        if (InputHtmlAttributes?.ContainsKey("aria-describedby") is true) return null;
+
+        return string.Format(_culture, DateFormatAriaDescription, DateFormat ?? GetDefaultDateFormat());
+    }
+
     // The pattern of the time of day, in the clock format of the component, built out of the patterns
     // of the culture (see BitTimePatterns) so the DatePicker and the TimePicker write times the same way.
-    private string GetTimePattern() => BitTimePatterns.GetTimePattern(_culture, TimeFormat, withSeconds: false);
+    private string GetTimePattern() => BitTimePatterns.GetTimePattern(_culture, TimeFormat, withSeconds: ShowSeconds);
+
+    private BitTimeFormat OtherTimeFormat => TimeFormat == BitTimeFormat.TwelveHours
+        ? BitTimeFormat.TwentyFourHours
+        : BitTimeFormat.TwelveHours;
+
+    // What a typed date is read with. A DateFormat the application set is taken literally - it asked for that
+    // one - but the default is only how the picker writes a date, not the only way a person may write it: the
+    // same day with the time left off, with the seconds left off or spelled out, and in either clock format,
+    // are the same instant spelled differently, so they are accepted as well and rewritten into the canonical
+    // format afterwards.
+    private string[] GetParseFormats()
+    {
+        if (DateFormat.HasValue()) return [DateFormat!];
+
+        if (Mode == BitDatePickerMode.MonthPicker) return [_culture.DateTimeFormat.YearMonthPattern];
+
+        var date = _culture.DateTimeFormat.ShortDatePattern;
+
+        if (ShowTimePicker is false) return [date];
+
+        List<string> formats = [];
+
+        void Add(string format)
+        {
+            var pattern = $"{date} {format}";
+
+            if (formats.Contains(pattern)) return;
+
+            formats.Add(pattern);
+        }
+
+        Add(BitTimePatterns.GetTimePattern(_culture, TimeFormat, ShowSeconds));
+        Add(BitTimePatterns.GetTimePattern(_culture, TimeFormat, ShowSeconds is false));
+        Add(BitTimePatterns.GetTimePattern(_culture, OtherTimeFormat, ShowSeconds));
+        Add(BitTimePatterns.GetTimePattern(_culture, OtherTimeFormat, ShowSeconds is false));
+
+        // The day on its own, so a date can still be typed into a picker that also offers a time.
+        formats.Add(date);
+
+        return [.. formats];
+    }
 
 
 
@@ -1448,6 +1670,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         _hour = 0;
         _minute = 0;
+        _second = 0;
         _focusedDate = null;
 
         try
@@ -1488,8 +1711,19 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // to the TimeZone of the component, not to the offset the value happens to carry.
         var dateTime = GetDateTime(value);
 
-        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
-        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
+        var hasTime = CurrentValue.HasValue || StartingValue.HasValue;
+        _hour = hasTime ? dateTime.Hour : 0;
+        _minute = hasTime ? dateTime.Minute : 0;
+        _second = hasTime && ShowSeconds ? dateTime.Second : 0;
+
+        // A picker with no value yet is showing a time of its own making, so it shows one it actually offers -
+        // the top of the day is not a time a nine-to-five picker has. A value the application gave it is left
+        // alone instead: the fields are what the value reads, and correcting one without the other would have
+        // them disagree.
+        if (CurrentValue.HasValue is false)
+        {
+            ClampTimeToBounds();
+        }
 
         GenerateCalendarData(dateTime, keepViewIfVisible: true);
 
@@ -1554,6 +1788,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         selectedDate = selectedDate.AddHours(_hour);
         selectedDate = selectedDate.AddMinutes(_minute);
+        selectedDate = selectedDate.AddSeconds(_second);
 
         // With the time picker on screen, picking a day is only half of the value: closing right away
         // would send the user back to reopen the callout to set the time they were about to set.
@@ -2428,6 +2663,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return new(date, _timeZone.GetUtcOffset(date));
     }
 
+    // The name a day carries: its full date, and the mark of a highlighted one, which is otherwise conveyed
+    // by a background alone.
+    private string GetDayAriaLabel(DateTime date)
+    {
+        var label = date.ToString(_culture.DateTimeFormat.LongDatePattern, _culture);
+
+        if (HighlightedDateAriaLabel.HasNoValue()) return label;
+
+        return _highlightedDates.Contains(date.Date) ? string.Format(_culture, HighlightedDateAriaLabel, label) : label;
+    }
+
     private bool IsSelectedDate(DateTime date)
     {
         if (CurrentValue is null) return false;
@@ -2899,7 +3145,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         var currentValueYear = _culture.Calendar.GetYear(currentValue);
         var currentValueMonth = _culture.Calendar.GetMonth(currentValue);
         var currentValueDay = _culture.Calendar.GetDayOfMonth(currentValue);
-        var dateTime = _culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0);
+        var dateTime = _culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, _second, 0);
 
         CurrentValue = new(dateTime, _timeZone.GetUtcOffset(dateTime));
 
@@ -2933,6 +3179,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    private async Task HandleOnTimeSecondFocus()
+    {
+        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
+
+        try
+        {
+            await _js.BitUtilsSelectText(_inputTimeSecondRef);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     private async Task HandleOnAmClick()
     {
         if (ReadOnly) return;
@@ -2940,8 +3197,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
 
-        // Half a day is a wide move, so it can land outside of what a bound on this day allows.
-        ClampTimeToBounds();
+        SnapTimeIntoHalfOfDay(true);
 
         await UpdateCurrentValue();
     }
@@ -2958,9 +3214,32 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             _hour += 12;
         }
 
-        ClampTimeToBounds();
+        SnapTimeIntoHalfOfDay(false);
 
         await UpdateCurrentValue();
+    }
+
+    // Half a day is a wide move, so it can land on an hour the picker does not offer - one a bound or an
+    // AllowedHours rules out. The nearest hour of the half the user asked for is where it settles instead of
+    // being pulled back into the other half, and the minute and the second follow the hour they now sit in.
+    private void SnapTimeIntoHalfOfDay(bool am)
+    {
+        var start = am ? 0 : 12;
+
+        if (IsHourAllowed(_hour) is false)
+        {
+            var inHalf = BitTimeSteps.FindNearestAllowed(_hour - start, 12, h => IsHourAllowed(start + h));
+
+            if (inHalf.HasValue)
+            {
+                _hour = start + inHalf.Value;
+            }
+        }
+
+        ClampTimeToBounds();
+
+        _minute = BitTimeSteps.FindNearestAllowed(_minute, 60, IsMinuteAllowed) ?? _minute;
+        _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
     }
 
     private bool? IsAm()
@@ -2970,12 +3249,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return _hour >= 0 && _hour < 12; // am is 00:00 to 11:59
     }
 
-    private async Task HandleOnPointerDown(bool isNext, bool isHour)
+    private async Task HandleOnPointerDown(bool isNext, TimeUnit unit)
     {
         if (ReadOnly) return;
         if (IsEnabled is false) return;
 
-        await ChangeTime(isNext, isHour);
+        await ChangeTime(isNext, unit);
 
         if (IsDisposed) return;
 
@@ -2985,20 +3264,33 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // awaiting it would leave the pointerdown event handler (and the render it drives) pending for the
         // whole duration of the press. Its lifetime is owned by the cancellation token source instead, which
         // HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeTimeAfterDelay(isNext, isHour, _cancellationTokenSource);
+        _ = ContinuousChangeTimeAfterDelay(isNext, unit, _cancellationTokenSource);
+    }
+
+    // A press of a spin button that came from the keyboard rather than from a pointer: Enter and the space bar
+    // fire a click and no pointer event at all, so without this the buttons would be reachable by keyboard and
+    // do nothing. A click that follows a real press carries the number of that press in its detail, which is
+    // what tells the two apart - and keeps a pointer press from stepping the time twice.
+    private async Task HandleOnSpinClick(MouseEventArgs e, bool isNext, TimeUnit unit)
+    {
+        if (e.Detail != 0) return;
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
+        await ChangeTime(isNext, unit);
     }
 
     /// <summary>
     /// Waits out the <see cref="ContinuousSpinDelay"/> and then starts the continuous spin, unless the
     /// button was released (or the component went away) in the meantime.
     /// </summary>
-    private async Task ContinuousChangeTimeAfterDelay(bool isNext, bool isHour, CancellationTokenSource cts)
+    private async Task ContinuousChangeTimeAfterDelay(bool isNext, TimeUnit unit, CancellationTokenSource cts)
     {
         try
         {
             await Task.Delay(Math.Max(1, ContinuousSpinDelay), cts.Token);
 
-            await InvokeAsync(() => ContinuousChangeTime(isNext, isHour, cts));
+            await InvokeAsync(() => ContinuousChangeTime(isNext, unit, cts));
         }
         catch (OperationCanceledException) { } // the button was released before the continuous spin started
         catch (ObjectDisposedException) { } // the component was disposed while the delay was pending
@@ -3007,20 +3299,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // A loop rather than a call that ends in another one of itself: a button held for a few seconds is
     // hundreds of ticks, and every one of them would otherwise leave a frame of its own alive until the whole
     // chain unwinds at the end of the press.
-    private async Task ContinuousChangeTime(bool isNext, bool isHour, CancellationTokenSource cts)
+    private async Task ContinuousChangeTime(bool isNext, TimeUnit unit, CancellationTokenSource cts)
     {
         while (cts.IsCancellationRequested is false && IsDisposed is false)
         {
-            var partBeforeStep = isHour ? _hour : _minute;
+            var partBeforeStep = GetTimePart(unit);
 
-            await ChangeTime(isNext, isHour);
+            await ChangeTime(isNext, unit);
 
             if (cts.IsCancellationRequested || IsDisposed) return;
 
             // A tick that moved nothing will not move anything on the next one either - a step of a whole
             // range leaves a single value on the grid - so the held button has run out of room. Without this
             // it would spend the rest of the press re-rendering a value that never changes again.
-            if ((isHour ? _hour : _minute) == partBeforeStep) return;
+            if (GetTimePart(unit) == partBeforeStep) return;
 
             StateHasChanged();
 
@@ -3037,15 +3329,26 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
     }
 
-    private async Task ChangeTime(bool isNext, bool isHour)
+    private int GetTimePart(TimeUnit unit) => unit switch
     {
-        if (isHour)
+        TimeUnit.Hour => _hour,
+        TimeUnit.Minute => _minute,
+        _ => _second
+    };
+
+    private async Task ChangeTime(bool isNext, TimeUnit unit)
+    {
+        switch (unit)
         {
-            await ChangeHour(isNext);
-        }
-        else
-        {
-            await ChangeMinute(isNext);
+            case TimeUnit.Hour:
+                await ChangeHour(isNext);
+                break;
+            case TimeUnit.Minute:
+                await ChangeMinute(isNext);
+                break;
+            default:
+                await ChangeSecond(isNext);
+                break;
         }
     }
 
@@ -3070,8 +3373,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, IsHourAllowed) ?? _hour;
 
-        // Stepping onto the hour a bound falls in can leave the minute past the bound, so it comes along.
+        // Stepping onto the hour a bound falls in can leave the minute past the bound, so it comes along -
+        // and the second with it.
         _minute = BitTimeSteps.FindNearestAllowed(_minute, 60, IsMinuteAllowed) ?? _minute;
+        _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
 
         await UpdateCurrentValue();
     }
@@ -3081,16 +3386,33 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, IsMinuteAllowed) ?? _minute;
 
+        _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
+
         await UpdateCurrentValue();
     }
 
-    // The grid HourStep and MinuteStep lay over the day and over the hour, which everything that moves the
-    // time - the spin buttons, the keys, what is typed - is held to, so no two of them can disagree about
-    // which times the picker offers.
-    private bool IsHourOnGrid(int hour) => BitTimeSteps.IsOnGrid(hour, HourStep, 0, 24);
+    /// <inheritdoc cref="ChangeHour"/>
+    private async Task ChangeSecond(bool isNext)
+    {
+        _second = BitTimeSteps.StepToAllowed(_second, isNext, 60, IsSecondAllowed) ?? _second;
+
+        await UpdateCurrentValue();
+    }
+
+    // Where the step grids start: the same part of MinTime, so a picker whose day begins at 09:07 can still be
+    // set to 09:07, and the top of the day without one.
+    private TimeSpan? GridAnchor => BitTimeSteps.ClampToDay(MinTime);
+
+    // The grid HourStep, MinuteStep and SecondStep lay over the day, the hour and the minute, which everything
+    // that moves the time - the spin buttons, the keys, what is typed - is held to, so no two of them can
+    // disagree about which times the picker offers.
+    private bool IsHourOnGrid(int hour) => BitTimeSteps.IsOnGrid(hour, HourStep, GridAnchor?.Hours ?? 0, 24);
 
     /// <inheritdoc cref="IsHourOnGrid"/>
-    private bool IsMinuteOnGrid(int minute) => BitTimeSteps.IsOnGrid(minute, MinuteStep, 0, 60);
+    private bool IsMinuteOnGrid(int minute) => BitTimeSteps.IsOnGrid(minute, MinuteStep, GridAnchor?.Minutes ?? 0, 60);
+
+    /// <inheritdoc cref="IsHourOnGrid"/>
+    private bool IsSecondOnGrid(int second) => BitTimeSteps.IsOnGrid(second, SecondStep, GridAnchor?.Seconds ?? 0, 60);
 
     // MinDate and MaxDate rule out whole days everywhere else in the picker and the very hours of one day
     // here: the day a bound falls on stays selectable, but only from the time of day the bound carries. So
@@ -3100,6 +3422,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private bool IsHourAllowed(int hour)
     {
         if (IsHourOnGrid(hour) is false) return false;
+
+        if (AllowedHours is not null && AllowedHours(hour) is false) return false;
 
         var (min, max) = GetTimeBounds();
 
@@ -3114,6 +3438,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsMinuteOnGrid(minute) is false) return false;
 
+        if (AllowedMinutes is not null && AllowedMinutes(minute) is false) return false;
+
         var (min, max) = GetTimeBounds();
 
         // Only the hour a bound falls in is bounded by its minutes: every later hour of the day the minimum
@@ -3125,78 +3451,141 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     }
 
     /// <inheritdoc cref="IsHourAllowed"/>
-    private (TimeSpan? Min, TimeSpan? Max) GetTimeBounds()
+    private bool IsSecondAllowed(int second)
     {
-        // The picker writes into the value, so the day it is setting the time of is the day the value is on.
-        // Without one it produces nothing and nothing constrains it.
-        return CurrentValue.HasValue ? GetTimeBounds(GetDateTime(CurrentValue.Value).Date) : (null, null);
+        if (IsSecondOnGrid(second) is false) return false;
+
+        if (AllowedSeconds is not null && AllowedSeconds(second) is false) return false;
+
+        var (min, max) = GetTimeBounds();
+
+        // And only the minute a bound falls in is bounded by its seconds, for the same reason.
+        if (min.HasValue && _hour == min.Value.Hours && _minute == min.Value.Minutes && second < min.Value.Seconds) return false;
+        if (max.HasValue && _hour == max.Value.Hours && _minute == max.Value.Minutes && second > max.Value.Seconds) return false;
+
+        return true;
+    }
+
+    // Whether the time of day of a value the picker did not produce itself - one typed into the field - is one
+    // it offers. The step grids are left out of it, exactly as they are in the TimePicker: a step is how far the
+    // controls move, not a claim that nothing between two of their stops exists.
+    private bool IsTimeOfDayAllowed(DateTime dateTime)
+    {
+        if (ShowTimePicker is false) return true;
+
+        if (AllowedHours is not null && AllowedHours(dateTime.Hour) is false) return false;
+        if (AllowedMinutes is not null && AllowedMinutes(dateTime.Minute) is false) return false;
+        if (ShowSeconds && AllowedSeconds is not null && AllowedSeconds(dateTime.Second) is false) return false;
+
+        var (min, max) = GetTimeBounds(dateTime.Date);
+
+        var time = new TimeSpan(dateTime.Hour, dateTime.Minute, ShowSeconds ? dateTime.Second : 0);
+
+        if (min.HasValue && time < min.Value) return false;
+        if (max.HasValue && time > max.Value) return false;
+
+        return true;
     }
 
     /// <inheritdoc cref="IsHourAllowed"/>
-    private (TimeSpan? Min, TimeSpan? Max) GetTimeBounds(DateTime day)
+    private (TimeSpan? Min, TimeSpan? Max) GetTimeBounds()
     {
-        TimeSpan? min = null;
-        TimeSpan? max = null;
+        // The picker writes into the value, so the day it is setting the time of is the day the value is on.
+        // Without one it produces nothing and only the bounds that hold on every day constrain it.
+        return GetTimeBounds(CurrentValue.HasValue ? GetDateTime(CurrentValue.Value).Date : null);
+    }
 
+    /// <inheritdoc cref="IsHourAllowed"/>
+    private (TimeSpan? Min, TimeSpan? Max) GetTimeBounds(DateTime? day)
+    {
         // Only a picker carrying a time picker picks a time at all. Without one the time of the value is
         // whatever it was given rather than something the user chose here, and a day bound rules out days:
         // pulling today's midnight up to this very minute would hand the same minute to every later day
         // picked afterwards, none of it ever shown.
-        if (ShowTimePicker is false) return (min, max);
+        if (ShowTimePicker is false) return (null, null);
 
-        var minDate = GetMinDate();
-        if (minDate.HasValue)
+        // MinTime and MaxTime bound the hours of every day the picker offers, so they hold whether or not there
+        // is a value yet - which is what lets a picker of business hours open on one.
+        var min = TruncateBound(BitTimeSteps.ClampToDay(MinTime));
+        var max = TruncateBound(BitTimeSteps.ClampToDay(MaxTime));
+
+        if (day.HasValue)
         {
-            // The seconds of a bound are dropped rather than rounded up, so the minute it falls in - the one
-            // a bound of "now" is in - is a minute the picker can still be set to.
-            var date = GetDateTime(minDate.Value);
-            if (date.Date == day.Date)
+            // MinDate and MaxDate bound the hours of the one day they fall on, and where both have something to
+            // say about it the narrower of the two wins.
+            var minDate = GetMinDate();
+            if (minDate.HasValue)
             {
-                min = new TimeSpan(date.Hour, date.Minute, 0);
+                var date = GetDateTime(minDate.Value);
+                if (date.Date == day.Value.Date)
+                {
+                    // The seconds of a bound are dropped rather than rounded up while the picker does not show
+                    // them, so the minute it falls in - the one a bound of "now" is in - is a minute the picker
+                    // can still be set to.
+                    var bound = new TimeSpan(date.Hour, date.Minute, ShowSeconds ? date.Second : 0);
+                    if (min.HasValue is false || bound > min.Value)
+                    {
+                        min = bound;
+                    }
+                }
             }
-        }
 
-        var maxDate = GetMaxDate();
-        if (maxDate.HasValue)
-        {
-            var date = GetDateTime(maxDate.Value);
-            if (date.Date == day.Date)
+            var maxDate = GetMaxDate();
+            if (maxDate.HasValue)
             {
-                max = new TimeSpan(date.Hour, date.Minute, 0);
+                var date = GetDateTime(maxDate.Value);
+                if (date.Date == day.Value.Date)
+                {
+                    var bound = new TimeSpan(date.Hour, date.Minute, ShowSeconds ? date.Second : 0);
+                    if (max.HasValue is false || bound < max.Value)
+                    {
+                        max = bound;
+                    }
+                }
             }
         }
 
         return (min, max);
     }
 
-    /// <inheritdoc cref="ClampTimeToBounds(DateTime)"/>
+    // A bound taken to the precision the picker shows: with no seconds field on screen, the seconds of a bound
+    // are dropped rather than rounded up, so the minute it falls in is a minute the picker can still be set to -
+    // the same convention the day bounds are read with.
+    private TimeSpan? TruncateBound(TimeSpan? bound)
+    {
+        if (ShowSeconds || bound.HasValue is false) return bound;
+
+        return new TimeSpan(bound.Value.Hours, bound.Value.Minutes, 0);
+    }
+
+    /// <inheritdoc cref="ClampTimeToBounds(DateTime?)"/>
     private void ClampTimeToBounds()
     {
-        if (CurrentValue.HasValue is false) return;
-
-        ClampTimeToBounds(GetDateTime(CurrentValue.Value).Date);
+        ClampTimeToBounds(CurrentValue.HasValue ? GetDateTime(CurrentValue.Value).Date : null);
     }
 
     // The time brought into what the bounds allow on the given day. The bound itself is where an out of
     // range time lands, whether or not it sits on the step grid: a time the application declared is a time
     // the picker may produce.
-    private void ClampTimeToBounds(DateTime day)
+    private void ClampTimeToBounds(DateTime? day)
     {
         var (min, max) = GetTimeBounds(day);
 
         if (min.HasValue is false && max.HasValue is false) return;
 
-        var time = new TimeSpan(_hour, _minute, 0);
+        var time = new TimeSpan(_hour, _minute, _second);
 
         if (min.HasValue && time < min.Value)
         {
             _hour = min.Value.Hours;
             _minute = min.Value.Minutes;
+            _second = ShowSeconds ? min.Value.Seconds : 0;
         }
         else if (max.HasValue && time > max.Value)
         {
             _hour = max.Value.Hours;
             _minute = max.Value.Minutes;
+            _second = ShowSeconds ? max.Value.Seconds : 0;
         }
     }
 
@@ -3207,7 +3596,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // never rewrites a half-typed number; the value the editing started from is what tells a move of exactly
     // one - an arrow key - from a number that was typed, so a step of a sparser grid moves on rather than
     // sitting still.
-    private async Task HandleOnTimeInputChange(bool isHour)
+    private async Task HandleOnTimeInputChange(TimeUnit unit)
     {
         if (IsEnabled is false || ReadOnly) return;
 
@@ -3216,28 +3605,34 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // on the other side of the day - while what was meant is plainly the earliest time on offer.
         ClampTimeToBounds();
 
-        if (isHour)
+        switch (unit)
         {
-            _hour = BitTimeSteps.FindAllowedNear(_hour, _hourBeforeInput, 24, IsHourAllowed) ?? _hour;
-            _minute = BitTimeSteps.FindNearestAllowed(_minute, 60, IsMinuteAllowed) ?? _minute;
-        }
-        else
-        {
-            _minute = BitTimeSteps.FindAllowedNear(_minute, _minuteBeforeInput, 60, IsMinuteAllowed) ?? _minute;
+            case TimeUnit.Hour:
+                _hour = BitTimeSteps.FindAllowedNear(_hour, _hourBeforeInput, 24, IsHourAllowed) ?? _hour;
+                _minute = BitTimeSteps.FindNearestAllowed(_minute, 60, IsMinuteAllowed) ?? _minute;
+                _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
+                break;
+            case TimeUnit.Minute:
+                _minute = BitTimeSteps.FindAllowedNear(_minute, _minuteBeforeInput, 60, IsMinuteAllowed) ?? _minute;
+                _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
+                break;
+            default:
+                _second = BitTimeSteps.FindAllowedNear(_second, _secondBeforeInput, 60, IsSecondAllowed) ?? _second;
+                break;
         }
 
         await UpdateCurrentValue();
     }
 
-    // The hour and the minute answer PageUp and PageDown with the same step the spin buttons next to them
-    // move by, so the time can be set without leaving the keyboard or the field.
-    private async Task HandleOnTimeInputKeyDown(KeyboardEventArgs e, bool isHour)
+    // The hour, the minute and the second answer PageUp and PageDown with the same step the spin buttons next
+    // to them move by, so the time can be set without leaving the keyboard or the field.
+    private async Task HandleOnTimeInputKeyDown(KeyboardEventArgs e, TimeUnit unit)
     {
         if (IsEnabled is false || ReadOnly) return;
 
         if (e.Key is not ("PageUp" or "PageDown")) return;
 
-        await ChangeTime(e.Key is "PageUp", isHour);
+        await ChangeTime(e.Key is "PageUp", unit);
     }
 
     // Where the focus lands when the callout opens: the grid the callout opens onto, which is the day picker
@@ -3416,7 +3811,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // collapse into overlays has to account for them.
     private int GetMaxWidth(int? monthCount = null)
     {
-        return MAX_WIDTH + (((monthCount ?? _renderedMonths.Length) - 1) * MONTH_WIDTH);
+        var width = MAX_WIDTH + (((monthCount ?? _renderedMonths.Length) - 1) * MONTH_WIDTH);
+
+        // A seconds field is a whole column more of the time pane, so the viewport that still holds the pickers
+        // side by side has to be that much wider before they stop collapsing into overlays.
+        return ShowTimePicker && ShowSeconds ? width + SECONDS_WIDTH : width;
     }
 
     private string GetCalloutCssClasses()
@@ -3462,11 +3861,27 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         var now = GetToday();
 
-        _hour = now.Hour;
-        _minute = now.Minute;
+        // "Now" is a time like any other the picker produces, so the bounds, the allowed values and the step
+        // grids all have the same say over it: what it lands on is the nearest time on offer.
+        _hour = BitTimeSteps.FindNearestAllowed(now.Hour, 24, IsHourAllowed) ?? now.Hour;
+        _minute = BitTimeSteps.FindNearestAllowed(now.Minute, 60, IsMinuteAllowed) ?? now.Minute;
+        _second = ShowSeconds ? BitTimeSteps.FindNearestAllowed(now.Second, 60, IsSecondAllowed) ?? now.Second : 0;
 
-        // "Now" is a time like any other the picker produces, so the bounds have the same say over it.
         ClampTimeToBounds();
+
+        // "Now" names a whole instant, not a time of day, so on a picker with no value yet it picks today as
+        // well - the time picker writes into the value, and without one the button would be a control that
+        // never does anything. Today being one of the days the picker rules out is the one case it cannot.
+        if (CurrentValue.HasValue is false)
+        {
+            var today = GetToday().Date;
+
+            if (IsDayDisabled(today)) return;
+
+            await SelectDate(today);
+
+            return;
+        }
 
         await UpdateCurrentValue();
     }

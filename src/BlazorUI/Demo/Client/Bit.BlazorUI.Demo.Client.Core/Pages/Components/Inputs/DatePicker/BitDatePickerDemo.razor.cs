@@ -29,6 +29,27 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "AllowedHours",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The hours the time picker can be set to, on top of what MinTime, MaxTime and the bounds of the day already allow. The spin buttons skip over the hours it rejects, a typed one snaps to the nearest it accepts, and a date entered as text whose time lands on one fails validation."
+        },
+        new()
+        {
+            Name = "AllowedMinutes",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The minutes the time picker can be set to, on top of what MinTime, MaxTime and the bounds of the day already allow."
+        },
+        new()
+        {
+            Name = "AllowedSeconds",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The seconds the time picker can be set to, on top of what MinTime, MaxTime and the bounds of the day already allow. It only has an effect while ShowSeconds is set."
+        },
+        new()
+        {
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
@@ -166,7 +187,14 @@ public partial class BitDatePickerDemo
             Name = "DateFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The format of the date in the DatePicker."
+            Description = "The format the date is written with, and the only one a typed date is then read with. Without it the short date pattern of the culture is used (plus the time pattern where the time picker is on), and a typed date is read more freely: the day with the time left off, with the seconds left off or spelled out, and in either clock format, are all accepted."
+        },
+        new()
+        {
+            Name = "DateFormatAriaDescription",
+            Type = "string",
+            DefaultValue = "Expected format: {0}",
+            Description = "The accessible description of the input of a picker that accepts a typed date, which the pattern the date is read with is formatted into. A placeholder is gone as soon as the first character is typed, so the pattern is carried by a description of the input instead. Set it to an empty string to leave the input without one."
         },
         new()
         {
@@ -209,6 +237,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Disables all days before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins."
+        },
+        new()
+        {
+            Name = "DisallowedTimeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a date entered as text whose time of day the DatePicker does not allow, through MinTime, MaxTime, AllowedHours, AllowedMinutes or AllowedSeconds."
         },
         new()
         {
@@ -351,6 +386,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "HighlightedDateAriaLabel",
+            Type = "string",
+            DefaultValue = "{0}, highlighted",
+            Description = "The accessible name of a day of HighlightedDates, which its full date is formatted into. A highlighted day is marked by a background alone, so the mark is said in the name of the day as well. Set it to an empty string to name a highlighted day like any other."
+        },
+        new()
+        {
             Name = "HighlightSelectedMonth",
             Type = "bool",
             DefaultValue = "false",
@@ -368,7 +410,7 @@ public partial class BitDatePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at midnight, that every hour the picker produces sits on - the buttons, the PageUp/PageDown keys and what is typed into the hour alike.",
+            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day that every hour the picker produces sits on, starting at the hour of MinTime and at midnight where there is none - the buttons, the PageUp/PageDown keys and what is typed into the hour alike.",
         },
         new()
         {
@@ -453,10 +495,24 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "MaxTime",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The latest time of day the time picker can be set to, on every day the DatePicker offers - the time-of-day bound MaxDate is not. Where both bound the same day, the earlier of the two wins."
+        },
+        new()
+        {
             Name = "MinDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
             Description = "The minimum date allowed for the DatePicker. The days before it are ruled out as a whole and the day it falls on stays selectable; where a time picker is on screen, the time it carries bounds the hours of that day too."
+        },
+        new()
+        {
+            Name = "MinTime",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The earliest time of day the time picker can be set to, on every day the DatePicker offers - the time-of-day bound MinDate is not. Where both bound the same day, the later of the two wins."
         },
         new()
         {
@@ -477,7 +533,7 @@ public partial class BitDatePickerDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the top of it, that every minute the picker produces sits on - which is what turns it into a five-minute or quarter-hour picker. The buttons, the PageUp/PageDown keys and what is typed into the minute are all held to it.",
+            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour that every minute the picker produces sits on, starting at the minute of MinTime and at the top of the hour where there is none - which is what turns it into a five-minute or quarter-hour picker. The buttons, the PageUp/PageDown keys and what is typed into the minute are all held to it.",
         },
         new()
         {
@@ -571,7 +627,7 @@ public partial class BitDatePickerDemo
             Name = "NowButtonTitle",
             Type = "string",
             DefaultValue = "Go to now",
-            Description = "The title of the now button (tooltip)."
+            Description = "The title of the now button (tooltip). The button sets the time of the selected day to the current time - and, on a picker with no value yet, picks today along with it."
         },
         new()
         {
@@ -698,6 +754,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "SecondStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The step, in seconds, the spin buttons move the second by. The grid it lays over the minute starts at the second of MinTime, and at the top of the minute where there is none."
+        },
+        new()
+        {
             Name = "SelectedDateAriaAtomic",
             Type = "string",
             DefaultValue = "Selected date {0}",
@@ -744,6 +807,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the days of the previous and next months should be shown in the day picker. It has no effect when MonthCount renders more than one month, since those days would then appear in two panes at once."
+        },
+        new()
+        {
+            Name = "ShowSeconds",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the time picker shows a seconds field beside the hour and the minute, which adds the second to the value and to the default date format."
         },
         new()
         {
@@ -864,6 +934,22 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "TimePickerDecreaseSecondIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the time-picker's decrease-second button. Takes precedence over TimePickerDecreaseSecondIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseSecondIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the time-picker's decrease-second button icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
             Name = "TimePickerDecreaseHourTitle",
             Type = "string",
             DefaultValue = "Decrease hour",
@@ -931,10 +1017,47 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "TimePickerDecreaseSecondTitle",
+            Type = "string",
+            DefaultValue = "Decrease second",
+            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-second button."
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseSecondIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the time-picker's increase-second button. Takes precedence over TimePickerIncreaseSecondIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseSecondIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the time-picker's increase-second button icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseSecondTitle",
+            Type = "string",
+            DefaultValue = "Increase second",
+            Description = "The title (tooltip) and the accessible name of the time-picker's increase-second button."
+        },
+        new()
+        {
             Name = "TimePickerMinuteTitle",
             Type = "string",
             DefaultValue = "Minute",
             Description = "The title (tooltip) and the accessible name of the time-picker's minute input."
+        },
+        new()
+        {
+            Name = "TimePickerSecondTitle",
+            Type = "string",
+            DefaultValue = "Second",
+            Description = "The title (tooltip) and the accessible name of the time-picker's second input."
         },
         new()
         {
@@ -1305,6 +1428,13 @@ public partial class BitDatePickerDemo
                 },
                 new()
                 {
+                    Name = "SecondInputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's second input container of the BitDatePicker."
+                },
+                new()
+                {
                     Name = "TimePickerWrapper",
                     Type = "string?",
                     DefaultValue = "null",
@@ -1330,6 +1460,20 @@ public partial class BitDatePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the time-picker's minute input of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerMinuteSecondSeparator",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's minute/second separator of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerSecondInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's second input of the BitDatePicker."
                 },
                 new()
                 {
@@ -1386,6 +1530,34 @@ public partial class BitDatePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the time-picker's decrease minute icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerIncreaseSecondButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's increase second button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerIncreaseSecondIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's increase second icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerDecreaseSecondButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's decrease second button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerDecreaseSecondIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's decrease second icon of the BitDatePicker."
                 },
                 new()
                 {
@@ -2003,6 +2175,18 @@ public partial class BitDatePickerDemo
             Name = "--bit-DatePicker-week-number-background",
             DefaultValue = "--bit-clr-bg-sec",
             Description = "Background of a week number.",
+        },
+        new()
+        {
+            Name = "--bit-DatePicker-header-font-size",
+            DefaultValue = "per Size",
+            Description = "Text size of the month, year and year-range titles above the grids.",
+        },
+        new()
+        {
+            Name = "--bit-DatePicker-time-font-size",
+            DefaultValue = "per Size",
+            Description = "Text size of the hour, minute and second fields and of the colons between them.",
         },
     ];
 

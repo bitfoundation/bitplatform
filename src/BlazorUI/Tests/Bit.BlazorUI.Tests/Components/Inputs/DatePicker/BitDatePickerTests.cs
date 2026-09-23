@@ -3333,6 +3333,16 @@ public class BitDatePickerTests : BunitTestContext
             HighlightToday = false,
             HourStep = 2,
             IconLocation = BitIconLocation.Left,
+            AllowedHours = h => h != 13,
+            AllowedMinutes = m => m % 5 == 0,
+            AllowedSeconds = sec => sec % 10 == 0,
+            DateFormatAriaDescription = "Cascaded format {0}",
+            DisallowedTimeErrorMessage = "Cascaded time",
+            MaxTime = new TimeSpan(17, 30, 0),
+            MinTime = new TimeSpan(9, 0, 0),
+            SecondStep = 10,
+            ShowSeconds = true,
+            TimePickerSecondTitle = "Cascaded second",
             InvalidErrorMessage = "Cascaded invalid",
             IsMonthPickerVisible = false,
             Label = "Cascaded label text",
@@ -3399,6 +3409,16 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(instance.HighlightToday);
         Assert.AreEqual(2, instance.HourStep);
         Assert.AreEqual(BitIconLocation.Left, instance.IconLocation);
+        Assert.IsNotNull(instance.AllowedHours);
+        Assert.IsNotNull(instance.AllowedMinutes);
+        Assert.IsNotNull(instance.AllowedSeconds);
+        Assert.AreEqual("Cascaded format {0}", instance.DateFormatAriaDescription);
+        Assert.AreEqual("Cascaded time", instance.DisallowedTimeErrorMessage);
+        Assert.AreEqual(new TimeSpan(17, 30, 0), instance.MaxTime);
+        Assert.AreEqual(new TimeSpan(9, 0, 0), instance.MinTime);
+        Assert.AreEqual(10, instance.SecondStep);
+        Assert.IsTrue(instance.ShowSeconds);
+        Assert.AreEqual("Cascaded second", instance.TimePickerSecondTitle);
         Assert.AreEqual("Cascaded invalid", instance.InvalidErrorMessage);
         Assert.IsFalse(instance.IsMonthPickerVisible);
         Assert.AreEqual("Cascaded label text", instance.Label);
@@ -3659,6 +3679,434 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
     }
 
+    [TestMethod]
+    public void BitDatePickerShowSecondsShouldRenderTheSecondField()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowSeconds, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        Assert.HasCount(3, component.FindAll(".bit-dtp-tin"));
+        Assert.HasCount(6, component.FindAll(".bit-dtp-tbt"));
+
+        // The colons between the fields are punctuation, not content a screen reader has to read out.
+        Assert.IsTrue(component.FindAll(".bit-dtp-tdv").All(d => d.GetAttribute("aria-hidden") == "true"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerWithoutShowSecondsShouldNotRenderTheSecondField()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        Assert.HasCount(2, component.FindAll(".bit-dtp-tin"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShowSecondsShouldPutTheSecondInTheValueAndInTheDefaultFormat()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 20, 30);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowSeconds, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        Assert.AreEqual("30", component.FindAll(".bit-dtp-tin")[2].GetAttribute("value"));
+        StringAssert.Contains(component.Find(".bit-dtp-inp").GetAttribute("value"), "10:20:30");
+
+        var increaseSecond = component.FindAll(".bit-dtp-tbt")[4];
+        increaseSecond.PointerDown();
+        increaseSecond.PointerUp();
+
+        Assert.AreEqual(31, value!.Value.Second);
+    }
+
+    [TestMethod]
+    public void BitDatePickerSecondStepShouldLayAGridOverTheMinute()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 20, 7);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.SecondStep, 15);
+            parameters.Add(p => p.ShowSeconds, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var increaseSecond = component.FindAll(".bit-dtp-tbt")[4];
+        increaseSecond.PointerDown();
+        increaseSecond.PointerUp();
+
+        Assert.AreEqual(15, value!.Value.Second);
+    }
+
+    [TestMethod]
+    public void BitDatePickerMinTimeAndMaxTimeShouldBoundTheHoursOfEveryDay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 3, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoClose, false);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MinTime, new TimeSpan(9, 0, 0));
+            parameters.Add(p => p.MaxTime, new TimeSpan(17, 30, 0));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // A day picked while the time is below the bound arrives inside what the bound allows.
+        component.FindAll(".bit-dtp-dbt").First(b => b.TextContent.Trim() == "20").Click();
+
+        Assert.AreEqual(9, value!.Value.Hour);
+        Assert.AreEqual(0, value!.Value.Minute);
+
+        // And the spin buttons reach the other end of the range and no hour past it: like every other part of
+        // a time of day, the hour wraps around to the start of what is allowed rather than running off it.
+        for (var i = 0; i < 8; i++)
+        {
+            var increaseHour = component.FindAll(".bit-dtp-tbt")[0];
+            increaseHour.PointerDown();
+            increaseHour.PointerUp();
+        }
+
+        Assert.AreEqual(17, value!.Value.Hour);
+
+        component.FindAll(".bit-dtp-tbt")[0].PointerDown();
+        component.FindAll(".bit-dtp-tbt")[0].PointerUp();
+
+        Assert.AreEqual(9, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDatePickerAllowedHoursShouldBeSkippedByTheSpinButtons()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 12, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.AllowedHours, h => h != 13);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var increaseHour = component.FindAll(".bit-dtp-tbt")[0];
+        increaseHour.PointerDown();
+        increaseHour.PointerUp();
+
+        Assert.AreEqual(14, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDatePickerAllowedMinutesShouldBeSkippedByTheSpinButtons()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.AllowedMinutes, m => m % 20 == 0);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var increaseMinute = component.FindAll(".bit-dtp-tbt")[2];
+        increaseMinute.PointerDown();
+        increaseMinute.PointerUp();
+
+        Assert.AreEqual(20, value!.Value.Minute);
+    }
+
+    [TestMethod]
+    public void BitDatePickerSpinButtonsShouldAnswerTheKeyboard()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // Enter and the space bar fire a click of no detail at all, and no pointer event: without the click
+        // handler the buttons would be reachable by keyboard and do nothing.
+        component.FindAll(".bit-dtp-tbt")[0].Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.AreEqual(11, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDatePickerSpinButtonsShouldNotStepTwiceForOnePointerPress()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var increaseHour = component.FindAll(".bit-dtp-tbt")[0];
+        increaseHour.PointerDown();
+        increaseHour.PointerUp();
+        increaseHour.Click(new MouseEventArgs { Detail = 1 });
+
+        Assert.AreEqual(11, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDatePickerNowButtonShouldLandOnATimeThePickerOffers()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MinuteStep, 30);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15, 14, 40));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-gtn").Click();
+
+        Assert.AreEqual(14, value!.Value.Hour);
+        Assert.AreEqual(30, value!.Value.Minute);
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRejectATypedTimeItDoesNotOffer()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.DateFormat, "yyyy/MM/dd HH:mm");
+            parameters.Add(p => p.MinTime, new TimeSpan(9, 0, 0));
+            parameters.Add(p => p.MaxTime, new TimeSpan(17, 0, 0));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-inp").Input("2026/01/15 08:00");
+        Assert.IsNull(value);
+
+        component.Find(".bit-dtp-inp").Input("2026/01/15 10:00");
+        Assert.IsNotNull(value);
+        Assert.AreEqual(10, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDatePickerTypedFieldShouldDescribeTheFormatItExpects()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "dd/MM/yyyy");
+        });
+
+        var describedBy = component.Find(".bit-dtp-inp").GetAttribute("aria-describedby");
+        Assert.IsNotNull(describedBy);
+        Assert.AreEqual("Expected format: dd/MM/yyyy", component.Find($"#{describedBy}").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDatePickerWithoutTextInputShouldNotDescribeAFormat()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>();
+
+        Assert.IsNull(component.Find(".bit-dtp-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+        DataRow("1/15/2026", 0, 0),
+        DataRow("01/15/2026", 0, 0),
+        DataRow("1/15/2026 14:05", 14, 5),
+        DataRow("1/15/2026 14:05:30", 14, 5),
+        DataRow("1/15/2026 2:05 PM", 14, 5)
+    ]
+    public void BitDatePickerShouldReadTheSpellingsOfTheSameInstant(string typed, int hour, int minute)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-inp").Input(typed);
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(new DateTime(2026, 1, 15), value!.Value.DateTime.Date);
+        Assert.AreEqual(hour, value!.Value.Hour);
+        Assert.AreEqual(minute, value!.Value.Minute);
+    }
+
+    [TestMethod]
+    public void BitDatePickerWithACustomDateFormatShouldReadThatOneAlone()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "dd/MM/yyyy");
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-inp").Input("1/15/2026");
+        Assert.IsNull(value);
+
+        component.Find(".bit-dtp-inp").Input("15/01/2026");
+        Assert.AreEqual(new DateTime(2026, 1, 15), value!.Value.DateTime.Date);
+    }
+
+    [TestMethod]
+    public void BitDatePickerNowButtonShouldPickTodayOnAPickerWithNoValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15, 14, 40));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-gtn").Click();
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(new DateTime(2026, 1, 15), value!.Value.DateTime.Date);
+        Assert.AreEqual(14, value!.Value.Hour);
+        Assert.AreEqual(40, value!.Value.Minute);
+    }
+
+    [TestMethod]
+    public void BitDatePickerWithNoValueShouldShowATimeItOffers()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MinTime, new TimeSpan(9, 0, 0));
+        });
+
+        // The top of the day is not a time a nine-to-five picker has, so the empty fields do not offer it.
+        Assert.AreEqual("9", component.FindAll(".bit-dtp-tin")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerHighlightedDayShouldBeNamedAsOne()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.HighlightedDates, [GetLocalDate(2026, 1, 20)]);
+        });
+
+        var highlighted = component.Find(".bit-dtp-dbt.bit-dtp-dhl");
+
+        // The mark is a background alone, so it is said in the name of the day as well.
+        StringAssert.EndsWith(highlighted.GetAttribute("aria-label"), ", highlighted");
+        Assert.IsTrue(component.FindAll(".bit-dtp-dbt:not(.bit-dtp-dhl)")
+                               .All(b => b.GetAttribute("aria-label")!.EndsWith(", highlighted") is false));
+    }
+
+    [TestMethod]
+    public void BitDatePickerHighlightedDateAriaLabelShouldBeOptional()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.HighlightedDateAriaLabel, string.Empty);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.HighlightedDates, [GetLocalDate(2026, 1, 20)]);
+        });
+
+        var highlighted = component.Find(".bit-dtp-dbt.bit-dtp-dhl");
+
+        Assert.AreEqual("Tuesday, January 20, 2026", highlighted.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerInputShouldControlTheDialogItOpens()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        var controls = component.Find(".bit-dtp-inp").GetAttribute("aria-controls");
+
+        Assert.IsNotNull(controls);
+        Assert.AreEqual("dialog", component.Find($"#{controls}").GetAttribute("role"));
+    }
+
     // The component counts months with CultureInfo.Calendar, which has no public setter and is not
     // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
     private static CultureInfo CreateHebrewCulture()
@@ -3673,9 +4121,9 @@ public class BitDatePickerTests : BunitTestContext
         return culture;
     }
 
-    private static DateTimeOffset GetLocalDate(int year, int month, int day, int hour = 0, int minute = 0)
+    private static DateTimeOffset GetLocalDate(int year, int month, int day, int hour = 0, int minute = 0, int second = 0)
     {
-        var dateTime = new DateTime(year, month, day, hour, minute, 0);
+        var dateTime = new DateTime(year, month, day, hour, minute, second);
 
         return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
     }

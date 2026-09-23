@@ -30,6 +30,24 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     public bool? AllowDeselect { get; set; }
 
     /// <summary>
+    /// The hours the time picker can be set to, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
+    /// the bounds of the day already allow.
+    /// </summary>
+    public Func<int, bool>? AllowedHours { get; set; }
+
+    /// <summary>
+    /// The minutes the time picker can be set to, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
+    /// the bounds of the day already allow.
+    /// </summary>
+    public Func<int, bool>? AllowedMinutes { get; set; }
+
+    /// <summary>
+    /// The seconds the time picker can be set to, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
+    /// the bounds of the day already allow. It only has an effect while <see cref="ShowSeconds"/> is set.
+    /// </summary>
+    public Func<int, bool>? AllowedSeconds { get; set; }
+
+    /// <summary>
     /// Whether or not the DatePicker allows a string date input.
     /// </summary>
     public bool? AllowTextInput { get; set; }
@@ -137,6 +155,12 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     public string? DateFormat { get; set; }
 
     /// <summary>
+    /// The accessible description of the input of a picker that accepts a typed date, which the pattern the
+    /// date is read with is formatted into.
+    /// </summary>
+    public string? DateFormatAriaDescription { get; set; }
+
+    /// <summary>
     /// Custom template to render the day cells of the DatePicker.
     /// </summary>
     public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
@@ -170,6 +194,13 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     /// When both are set, the later of the two bounds wins.
     /// </summary>
     public bool? DisablePast { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a date entered as text whose time of day the DatePicker does not
+    /// allow to be picked, through <see cref="MinTime"/>, <see cref="MaxTime"/>, <see cref="AllowedHours"/>,
+    /// <see cref="AllowedMinutes"/> or <see cref="AllowedSeconds"/>.
+    /// </summary>
+    public string? DisallowedTimeErrorMessage { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -271,6 +302,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     public IEnumerable<DateTimeOffset>? HighlightedDates { get; set; }
 
     /// <summary>
+    /// The accessible name of a day of <see cref="HighlightedDates"/>, which its full date is formatted into.
+    /// </summary>
+    public string? HighlightedDateAriaLabel { get; set; }
+
+    /// <summary>
     /// Whether the month picker should highlight the selected month.
     /// </summary>
     public bool? HighlightSelectedMonth { get; set; }
@@ -362,10 +398,20 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
+    /// The latest time of day the time picker can be set to, on every day the DatePicker offers.
+    /// </summary>
+    public TimeSpan? MaxTime { get; set; }
+
+    /// <summary>
     /// The minimum date allowed for the DatePicker.
     /// </summary>
     /// <inheritdoc cref="MaxDate" path="/remarks"/>
     public DateTimeOffset? MinDate { get; set; }
+
+    /// <summary>
+    /// The earliest time of day the time picker can be set to, on every day the DatePicker offers.
+    /// </summary>
+    public TimeSpan? MinTime { get; set; }
 
     /// <summary>
     /// The number of consecutive months rendered side by side in the day picker (1 to 3).
@@ -503,6 +549,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     public bool? Responsive { get; set; }
 
     /// <summary>
+    /// The step, in seconds, the spin buttons of the time picker move the second by.
+    /// </summary>
+    public int? SecondStep { get; set; }
+
+    /// <summary>
     /// The text of selected date aria-atomic of the DatePicker.
     /// </summary>
     public string? SelectedDateAriaAtomic { get; set; }
@@ -536,6 +587,12 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     /// Whether the days of the previous and next months should be shown in the day picker.
     /// </summary>
     public bool? ShowOutsideDays { get; set; }
+
+    /// <summary>
+    /// Whether the time picker shows a seconds field beside the hour and the minute, which adds the second to
+    /// the value and to the default date format.
+    /// </summary>
+    public bool? ShowSeconds { get; set; }
 
     /// <summary>
     /// Whether or not render the time-picker.
@@ -626,6 +683,22 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     public string? TimePickerDecreaseMinuteTitle { get; set; }
 
     /// <summary>
+    /// The icon to display inside the time-picker's decrease-second button.
+    /// Takes precedence over <see cref="TimePickerDecreaseSecondIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? TimePickerDecreaseSecondIcon { get; set; }
+
+    /// <summary>
+    /// The name of the time-picker's decrease-second button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    public string? TimePickerDecreaseSecondIconName { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's decrease-second button.
+    /// </summary>
+    public string? TimePickerDecreaseSecondTitle { get; set; }
+
+    /// <summary>
     /// The title (tooltip) and the accessible name of the time-picker's hour input.
     /// </summary>
     public string? TimePickerHourTitle { get; set; }
@@ -663,9 +736,30 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     public string? TimePickerIncreaseMinuteTitle { get; set; }
 
     /// <summary>
+    /// The icon to display inside the time-picker's increase-second button.
+    /// Takes precedence over <see cref="TimePickerIncreaseSecondIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? TimePickerIncreaseSecondIcon { get; set; }
+
+    /// <summary>
+    /// The name of the time-picker's increase-second button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    public string? TimePickerIncreaseSecondIconName { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's increase-second button.
+    /// </summary>
+    public string? TimePickerIncreaseSecondTitle { get; set; }
+
+    /// <summary>
     /// The title (tooltip) and the accessible name of the time-picker's minute input.
     /// </summary>
     public string? TimePickerMinuteTitle { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's second input.
+    /// </summary>
+    public string? TimePickerSecondTitle { get; set; }
 
     /// <summary>
     /// TimeZone for the DatePicker.
@@ -739,6 +833,21 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         if (AllowDeselect.HasValue && bitDatePicker.HasNotBeenSet(nameof(AllowDeselect)))
         {
             bitDatePicker.AllowDeselect = AllowDeselect.Value;
+        }
+
+        if (AllowedHours is not null && bitDatePicker.HasNotBeenSet(nameof(AllowedHours)))
+        {
+            bitDatePicker.AllowedHours = AllowedHours;
+        }
+
+        if (AllowedMinutes is not null && bitDatePicker.HasNotBeenSet(nameof(AllowedMinutes)))
+        {
+            bitDatePicker.AllowedMinutes = AllowedMinutes;
+        }
+
+        if (AllowedSeconds is not null && bitDatePicker.HasNotBeenSet(nameof(AllowedSeconds)))
+        {
+            bitDatePicker.AllowedSeconds = AllowedSeconds;
         }
 
         if (AllowTextInput.HasValue && bitDatePicker.HasNotBeenSet(nameof(AllowTextInput)))
@@ -844,6 +953,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.DateFormat = DateFormat;
         }
 
+        if (DateFormatAriaDescription is not null && bitDatePicker.HasNotBeenSet(nameof(DateFormatAriaDescription)))
+        {
+            bitDatePicker.DateFormatAriaDescription = DateFormatAriaDescription;
+        }
+
         if (DayCellTemplate is not null && bitDatePicker.HasNotBeenSet(nameof(DayCellTemplate)))
         {
             bitDatePicker.DayCellTemplate = DayCellTemplate;
@@ -876,6 +990,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.DisablePast = DisablePast.Value;
 
             rebuildView = true;
+        }
+
+        if (DisallowedTimeErrorMessage.HasValue() && bitDatePicker.HasNotBeenSet(nameof(DisallowedTimeErrorMessage)))
+        {
+            bitDatePicker.DisallowedTimeErrorMessage = DisallowedTimeErrorMessage;
         }
 
         if (DropDirection.HasValue && bitDatePicker.HasNotBeenSet(nameof(DropDirection)))
@@ -979,6 +1098,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.HighlightedDates = HighlightedDates;
         }
 
+        if (HighlightedDateAriaLabel is not null && bitDatePicker.HasNotBeenSet(nameof(HighlightedDateAriaLabel)))
+        {
+            bitDatePicker.HighlightedDateAriaLabel = HighlightedDateAriaLabel;
+        }
+
         if (HighlightSelectedMonth.HasValue && bitDatePicker.HasNotBeenSet(nameof(HighlightSelectedMonth)))
         {
             bitDatePicker.HighlightSelectedMonth = HighlightSelectedMonth.Value;
@@ -1050,11 +1174,21 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             rebuildView = true;
         }
 
+        if (MaxTime.HasValue && bitDatePicker.HasNotBeenSet(nameof(MaxTime)))
+        {
+            bitDatePicker.MaxTime = MaxTime.Value;
+        }
+
         if (MinDate.HasValue && bitDatePicker.HasNotBeenSet(nameof(MinDate)))
         {
             bitDatePicker.MinDate = MinDate.Value;
 
             rebuildView = true;
+        }
+
+        if (MinTime.HasValue && bitDatePicker.HasNotBeenSet(nameof(MinTime)))
+        {
+            bitDatePicker.MinTime = MinTime.Value;
         }
 
         if (MonthCount.HasValue && bitDatePicker.HasNotBeenSet(nameof(MonthCount)))
@@ -1181,6 +1315,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.Responsive = Responsive.Value;
         }
 
+        if (SecondStep.HasValue && bitDatePicker.HasNotBeenSet(nameof(SecondStep)))
+        {
+            bitDatePicker.SecondStep = SecondStep.Value;
+        }
+
         if (SelectedDateAriaAtomic.HasValue() && bitDatePicker.HasNotBeenSet(nameof(SelectedDateAriaAtomic)))
         {
             bitDatePicker.SelectedDateAriaAtomic = SelectedDateAriaAtomic!;
@@ -1216,6 +1355,13 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         if (ShowOutsideDays.HasValue && bitDatePicker.HasNotBeenSet(nameof(ShowOutsideDays)))
         {
             bitDatePicker.ShowOutsideDays = ShowOutsideDays.Value;
+        }
+
+        if (ShowSeconds.HasValue && bitDatePicker.HasNotBeenSet(nameof(ShowSeconds)))
+        {
+            bitDatePicker.ShowSeconds = ShowSeconds.Value;
+
+            rebuildView = true;
         }
 
         if (ShowTimePicker.HasValue && bitDatePicker.HasNotBeenSet(nameof(ShowTimePicker)))
@@ -1355,6 +1501,41 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         if (TimePickerMinuteTitle.HasValue() && bitDatePicker.HasNotBeenSet(nameof(TimePickerMinuteTitle)))
         {
             bitDatePicker.TimePickerMinuteTitle = TimePickerMinuteTitle!;
+        }
+
+        if (TimePickerDecreaseSecondIcon is not null && bitDatePicker.HasNotBeenSet(nameof(TimePickerDecreaseSecondIcon)))
+        {
+            bitDatePicker.TimePickerDecreaseSecondIcon = TimePickerDecreaseSecondIcon;
+        }
+
+        if (TimePickerDecreaseSecondIconName.HasValue() && bitDatePicker.HasNotBeenSet(nameof(TimePickerDecreaseSecondIconName)))
+        {
+            bitDatePicker.TimePickerDecreaseSecondIconName = TimePickerDecreaseSecondIconName;
+        }
+
+        if (TimePickerDecreaseSecondTitle.HasValue() && bitDatePicker.HasNotBeenSet(nameof(TimePickerDecreaseSecondTitle)))
+        {
+            bitDatePicker.TimePickerDecreaseSecondTitle = TimePickerDecreaseSecondTitle!;
+        }
+
+        if (TimePickerIncreaseSecondIcon is not null && bitDatePicker.HasNotBeenSet(nameof(TimePickerIncreaseSecondIcon)))
+        {
+            bitDatePicker.TimePickerIncreaseSecondIcon = TimePickerIncreaseSecondIcon;
+        }
+
+        if (TimePickerIncreaseSecondIconName.HasValue() && bitDatePicker.HasNotBeenSet(nameof(TimePickerIncreaseSecondIconName)))
+        {
+            bitDatePicker.TimePickerIncreaseSecondIconName = TimePickerIncreaseSecondIconName;
+        }
+
+        if (TimePickerIncreaseSecondTitle.HasValue() && bitDatePicker.HasNotBeenSet(nameof(TimePickerIncreaseSecondTitle)))
+        {
+            bitDatePicker.TimePickerIncreaseSecondTitle = TimePickerIncreaseSecondTitle!;
+        }
+
+        if (TimePickerSecondTitle.HasValue() && bitDatePicker.HasNotBeenSet(nameof(TimePickerSecondTitle)))
+        {
+            bitDatePicker.TimePickerSecondTitle = TimePickerSecondTitle!;
         }
 
         if (TimeZone is not null && bitDatePicker.HasNotBeenSet(nameof(TimeZone)))

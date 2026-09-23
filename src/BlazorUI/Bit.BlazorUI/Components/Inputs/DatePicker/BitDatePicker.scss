@@ -57,6 +57,10 @@
 //   --bit-DatePicker-highlighted-background  background of a HighlightedDates day           (default: $clr-bg-ter)
 //   --bit-DatePicker-week-number-color       text color of a week number                    (default: $clr-fg-sec)
 //   --bit-DatePicker-week-number-background  background of a week number                    (default: $clr-bg-sec)
+//   --bit-DatePicker-header-font-size        text size of the month, year and year-range
+//                                            titles above the grids                         (default: per Size)
+//   --bit-DatePicker-time-font-size          text size of the hour, minute and second
+//                                            fields and of the colons between them          (default: per Size)
 
 // The default size, declared as a mixin so both the root element and the callout - which is rendered
 // outside of it and therefore inherits nothing from it - can fall back to it. The values an author can
@@ -68,6 +72,8 @@
     --bit-dtp-cell-size-def: #{spacing(3.5)};
     --bit-dtp-cell-fs-def: #{$tg-fs-xs};
     --bit-dtp-lbl-fs-def: #{$tg-fs-sm};
+    --bit-dtp-hdr-fs-def: #{$tg-fs-sm};
+    --bit-dtp-time-fs-def: #{$tg-fs-lg};
     --bit-dtp-mcell-w: #{spacing(6)};
     --bit-dtp-mcell-h: #{spacing(5)};
     --bit-dtp-tcell-size: #{spacing(3.75)};
@@ -83,6 +89,8 @@
     --bit-dtp-cell-size: var(--bit-DatePicker-day-size, var(--bit-dtp-cell-size-def));
     --bit-dtp-cell-fs: var(--bit-DatePicker-day-font-size, var(--bit-dtp-cell-fs-def));
     --bit-dtp-lbl-fs: var(--bit-DatePicker-label-font-size, var(--bit-dtp-lbl-fs-def));
+    --bit-dtp-hdr-fs: var(--bit-DatePicker-header-font-size, var(--bit-dtp-hdr-fs-def));
+    --bit-dtp-time-fs: var(--bit-DatePicker-time-font-size, var(--bit-dtp-time-fs-def));
 }
 
 .bit-dtp {
@@ -204,8 +212,8 @@
 
 .bit-dtp-clr {
     display: flex;
-    width: spacing(3.75);
-    height: spacing(3.75);
+    width: var(--bit-dtp-tcell-size);
+    height: var(--bit-dtp-tcell-size);
     justify-content: center;
     align-items: center;
     background-color: $clr-bg-sec;
@@ -536,7 +544,7 @@
     // Tightened from the 1.25 step so the longest month name clears the navigation buttons next to it
     // without the row having to run past the wrapper - see the header floor at the end of this file.
     padding: 0 spacing(0.75);
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-dtp-hdr-fs);
     line-height: var(--bit-dtp-cell-size);
     background-color: transparent;
     border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
@@ -801,7 +809,7 @@
 .bit-dtp-tdv {
     display: flex;
     align-items: center;
-    font-size: $tg-fs-xl;
+    font-size: var(--bit-dtp-time-fs);
     justify-content: center;
     font-weight: $tg-font-weight;
     color: var(--bit-DatePicker-color, #{$clr-fg-pri});
@@ -828,7 +836,7 @@
     -moz-appearance: textfield; // Firefox
     color: var(--bit-DatePicker-color, #{$clr-fg-pri});
     background-color: var(--bit-DatePicker-callout-background, #{$clr-bg-pri});
-    font-size: $tg-fs-lg;
+    font-size: var(--bit-dtp-time-fs);
     font-weight: $tg-font-weight;
     overflow: hidden;
     aspect-ratio: 1;
@@ -852,7 +860,7 @@
 
 .bit-dtp-bam,
 .bit-dtp-bpm {
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-dtp-cell-fs);
     font-weight: $tg-font-weight;
 }
 
@@ -1087,6 +1095,8 @@
     --bit-dtp-cell-size-def: #{spacing(3)};
     --bit-dtp-cell-fs-def: #{$tg-fs-xs};
     --bit-dtp-lbl-fs-def: #{$tg-fs-xs};
+    --bit-dtp-hdr-fs-def: #{$tg-fs-xs};
+    --bit-dtp-time-fs-def: #{$tg-fs-md};
     --bit-dtp-mcell-w: #{spacing(5.25)};
     --bit-dtp-mcell-h: #{spacing(4.5)};
     --bit-dtp-tcell-size: #{spacing(3.25)};
@@ -1103,6 +1113,8 @@
     --bit-dtp-cell-size-def: #{spacing(4.25)};
     --bit-dtp-cell-fs-def: #{$tg-fs-sm};
     --bit-dtp-lbl-fs-def: #{$tg-fs-md};
+    --bit-dtp-hdr-fs-def: #{$tg-fs-md};
+    --bit-dtp-time-fs-def: #{$tg-fs-xl};
     --bit-dtp-mcell-w: #{spacing(7)};
     --bit-dtp-mcell-h: #{spacing(6)};
     --bit-dtp-tcell-size: #{spacing(4.5)};
