@@ -1015,7 +1015,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         if (newValue.HasValue())
         {
-            var rawDiff = DiffValues(oldRendered, newValue);
+            var rawDiff = DiffValues(oldRendered, newValue, Mask);
 
             if (rawDiff.Length > 1)
             {
@@ -1481,16 +1481,20 @@ public partial class BitOtpInput : BitInputBase<string?>
                                                 : c)]);
     }
 
-    private static string DiffValues(string oldValue, string newValue)
+    private static string DiffValues(string oldValue, string newValue, string? mask)
     {
         var oldLength = oldValue.Length;
         var newLength = newValue.Length;
 
-        // An input event reporting exactly what the input was already showing (a step of an IME, or a
-        // keystroke the browser took back on its own) leaves nothing to write. It is answered before the
-        // single character shortcut below, which would otherwise take a Mask of one character as the
-        // character that had just been typed and write the masking glyph into the code itself.
-        if (newValue == oldValue) return string.Empty;
+        // A box under a Mask shows the masking text whatever it holds, so an event reporting exactly that
+        // text wrote nothing. It is answered before the single character shortcut below, which would
+        // otherwise take a Mask of one character as the character that had just been typed and write the
+        // masking glyph into the code itself. A longer Mask needs no shortcut of its own: the event is the
+        // old value repeated, which the prefix test further down already diffs down to nothing. The same
+        // event with no Mask set is a real keystroke - the focus handler selects the character a box holds,
+        // so typing the very same character over it reports a value equal to the old one and still has to
+        // be written and still has to move the focus on.
+        if (newValue == oldValue && mask.HasValue()) return string.Empty;
 
         if (newLength == 1) return newValue;
         if (newLength < oldLength) return newValue;

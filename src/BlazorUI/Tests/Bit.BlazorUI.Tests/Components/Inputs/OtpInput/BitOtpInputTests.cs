@@ -1078,6 +1078,53 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitOtpInputShouldTakeACharacterTypedOverTheSameCharacter()
+    {
+        // Focusing an input selects the character it holds, so typing that very same character over it is
+        // reported as a value equal to the one the input was already showing. With no Mask set that is a
+        // keystroke like any other: it has to be written and the focus has to move on. The guard answering
+        // an unchanged masked value must not reach it, or a code re-typed over a code that starts with the
+        // same digit would lose that digit and shift the rest of itself one input to the left.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.DefaultValue, "19");
+        });
+
+        var focusCount = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual("19", com.Instance.Value);
+        Assert.AreEqual(focusCount + 1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldWalkThroughACodeTypedOverTheSameCode()
+    {
+        // The whole of what a swallowed keystroke costs: the focus is what carries the next character to the
+        // next input, so a code typed over the very same code has to advance once per input but the last -
+        // otherwise the character after the swallowed one lands in the input that kept the focus, and the
+        // rest of the code shifts one input to the left.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        var focusCount = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        var code = "1234";
+        for (var index = 0; index < code.Length; index++)
+        {
+            await com.FindAll(".bit-otp-inp")[index].InputAsync(new ChangeEventArgs { Value = code[index].ToString() });
+        }
+
+        Assert.AreEqual("1234", com.Instance.Value);
+        Assert.AreEqual(focusCount + 3, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
     public void BitOtpInputShouldGroupTheSeparatorsBySeparatorInterval()
     {
         var com = RenderComponent<BitOtpInput>(parameters =>

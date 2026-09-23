@@ -432,6 +432,16 @@
         //over a color whatever the two selectors weigh, so the dimmed one has to be declared in kind.
         -webkit-text-fill-color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
 
+        //and the auto fill states are listed one by one here as well, for the reason the rule up there
+        //lists them and for one more: a hovered or a focused auto filled box is matched by a selector of
+        //the very same weight as this block, so the dimming would be left resting on the order of the two
+        //rules alone, which a reordering of this file would quietly take away.
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
+        }
+
         //the hint of an empty box is a part of the field, so it has to be dimmed along with it instead of
         //staying the only thing in the component that still reads as enabled.
         &::placeholder {
