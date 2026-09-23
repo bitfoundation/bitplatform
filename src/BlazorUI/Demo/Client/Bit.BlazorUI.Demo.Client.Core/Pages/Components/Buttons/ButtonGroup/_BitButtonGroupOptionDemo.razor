@@ -116,11 +116,12 @@
 
 <DemoExample Title="IconOnly" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
     <div>
-        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact
-        toolbars
-        and tight spaces. Because such a button has no visible label, give each option an <strong>AriaLabel</strong> (or
-        at
-        least a <strong>Title</strong>) so it stays understandable to screen reader users.
+        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, squaring the buttons
+        the way every icon button in the library is shaped. The hidden <strong>Text</strong> stays the button's
+        accessible name, together with its <strong>Badge</strong>, so a screen reader is told neither less nor more
+        than a sighted user; set an <strong>AriaLabel</strong> where the name should read differently, and a
+        <strong>Title</strong> to explain the icon on hover. An option with no text at all needs the
+        <strong>AriaLabel</strong> for its accessible name - a <strong>Title</strong> is only shown on hover.
     </div>
     <br /><br />
     <div class="example-content">
@@ -156,7 +157,7 @@
         <div>Fill (default)</div>
         <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
-            <BitButtonGroupOption IconName="@BitIconName.Edit" />
+            <BitButtonGroupOption IconName="@BitIconName.Edit" AriaLabel="Edit" />
             <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
         </BitButtonGroup>
     </div>
@@ -165,7 +166,7 @@
         <div>Outline</div>
         <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
-            <BitButtonGroupOption IconName="@BitIconName.Edit" />
+            <BitButtonGroupOption IconName="@BitIconName.Edit" AriaLabel="Edit" />
             <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
         </BitButtonGroup>
     </div>
@@ -174,7 +175,7 @@
         <div>Text</div>
         <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
-            <BitButtonGroupOption IconName="@BitIconName.Edit" />
+            <BitButtonGroupOption IconName="@BitIconName.Edit" AriaLabel="Edit" />
             <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
         </BitButtonGroup>
     </div>
@@ -229,7 +230,8 @@
         so
         the accessible name stays the same as the state changes. The toggled key is read and set through
         <strong>ToggleKey</strong>, seeded by <strong>DefaultToggleKey</strong>, and every change raises
-        <strong>OnToggleChange</strong>. Options without an explicit <strong>Key</strong> get one generated for them.
+        <strong>OnToggleChange</strong>. Setting the bound key to <strong>null</strong> - or to a key no
+        item carries - takes the selection back. Options without an explicit <strong>Key</strong> get one generated for them.
     </div>
     <br /><br />
     <div class="example-content">
@@ -279,6 +281,7 @@
     </BitButtonGroup>
     <div>Toggle key: @toggleKey</div>
     <BitButton OnClick="@(() => toggleKey = "forward")">Forward</BitButton>
+    <BitButton Variant="BitVariant.Outline" OnClick="@(() => toggleKey = null)">Clear</BitButton>
     <br /><br /><br /><br />
     <div>OnToggleChange:</div><br />
     <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" DefaultToggleKey="forward"
@@ -408,6 +411,9 @@
         Setting the <strong>SelectionMode</strong> to <strong>Multiple</strong> lets any number of buttons be toggled at
         the
         same time. The toggled keys are available through the <strong>ToggleKeys</strong> two-way bound parameter.
+        Only the keys the group can hold are kept - one naming no item, and everything past the
+        <strong>MaxToggles</strong> cap, is dropped and written back - so the bound value always reads as the set
+        of buttons that are actually toggled.
     </div>
     <br /><br />
     <div class="example-content">
@@ -422,7 +428,12 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div><strong>MaxToggles</strong> caps how many buttons can be toggled at once:</div>
+        <div>
+            <strong>MaxToggles</strong> caps how many buttons can be toggled at once. While the cap is reached the
+            buttons that are not toggled report themselves as <code>aria-disabled</code> and stop responding, so the
+            cap is visible instead of being a click that does nothing; they stay focusable and come back as soon as
+            one of the toggled buttons is un-toggled.
+        </div>
         <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
                         SelectionMode="BitButtonGroupSelectionMode.Multiple" MaxToggles="2" DefaultToggleKeys="@defaultKeys">
             <BitButtonGroupOption Key="bold" Text="Bold" IconName="@BitIconName.Bold" />
@@ -545,7 +556,8 @@
         shift+wheel, or with the arrow keys, since the scrollbar itself is hidden so that the border keeps hugging
         the buttons - <strong>Scrollbar</strong> does the same but keeps the scrollbar visible as an affordance,
         at the cost of the height it occupies inside the border, and <strong>Clip</strong> (the default) keeps one line
-        and cuts the rest off. Drag the bottom-right corner of the dashed boxes below to resize
+        and cuts the rest off. The scrolling follows the group's own axis, so a <strong>Vertical</strong> group
+        scrolls down its column instead of sideways. Drag the bottom-right corner of the dashed boxes below to resize
         them and watch the behavior change.
     </div>
     <br /><br />
@@ -668,7 +680,15 @@
 </DemoExample>
 
 <DemoExample Title="Links" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
-    <div>Providing an option's Href renders that button as an anchor tag, optionally with a Target.</div>
+    <div>
+        Providing an option's <strong>Href</strong> renders that button as an anchor tag, optionally with a
+        <strong>Target</strong>. A link opened in a new tab is given <code>rel="noopener"</code> automatically,
+        and <strong>Rel</strong> sets the relationship itself. A disabled or loading link drops its href and
+        keeps its link role. In a toggle group a link reports its selection through
+        <code>aria-current</code>, since <code>aria-pressed</code> belongs to a button.
+        In the Single mode a link also carries the radio role, so <strong>Space</strong> selects it while
+        <strong>Enter</strong> still follows it.
+    </div>
     <br /><br />
     <div class="example-content">
         <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
@@ -728,9 +748,8 @@
         explain an
         icon-only button on hover. In a toggle group, <strong>OnTitle</strong> and <strong>OffTitle</strong> let the
         tooltip
-        follow the toggle state and fall back to Title when they are not set. A tooltip is not an accessible name, so
-        keep
-        setting <strong>AriaLabel</strong> for icon-only buttons.
+        follow the toggle state and fall back to Title when they are not set. A tooltip is not an accessible name:
+        an icon-only button is named by its own text, or by <strong>AriaLabel</strong> when one is set.
     </div>
     <br /><br />
     <div class="example-content">
@@ -757,13 +776,15 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Accessibility" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
+             PreventRenderForMcpClient>
     <div>
-        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons in
-        the
-        Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole group is a
-        single
-        tab stop that the arrow, Home, and End keys navigate (a roving tabindex). Always give the group an AriaLabel.
+        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons
+        in the Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole
+        group is a single tab stop that the arrow, Home, and End keys navigate (a roving tabindex). Always give the
+        group an AriaLabel. Every button clears the 24px minimum pointer target at every size, and in Windows High
+        Contrast the toggled state is redrawn in the system highlight colors, since the background that marks it
+        everywhere else is discarded there.
     </div>
     <br /><br />
     <div class="example-content">
@@ -778,9 +799,17 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div><strong>SelectOnFocus</strong> makes the selection follow the keyboard focus:</div>
-        <BitButtonGroup AriaLabel="Text alignment (selection follows focus)" SelectOnFocus Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption" SelectionMode="BitButtonGroupSelectionMode.Single" DefaultToggleKey="start">
+        <div>
+            In the Single mode the arrow keys also toggle the button they land on, as the radiogroup pattern
+            expects. <strong>SelectOnFocus="false"</strong> takes that back for a group whose selection does work -
+            a filter, a fetch - so arrowing across it fires nothing and the user commits with Space or Enter.
+            The navigation only ever selects: a key landing on the button that is already toggled - Home on the
+            first, End on the last - leaves it toggled, which is not something the arrow keys of a radiogroup may
+            take back.
+        </div>
+        <BitButtonGroup AriaLabel="Text alignment (committed with Space)" SelectOnFocus="false"
+                        Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                        SelectionMode="BitButtonGroupSelectionMode.Single" DefaultToggleKey="start">
             <BitButtonGroupOption Key="start" Text="Start" IconName="@BitIconName.AlignLeft" AriaLabel="Align start" />
             <BitButtonGroupOption Key="center" Text="Center" IconName="@BitIconName.AlignCenter"
                                   AriaLabel="Align center" />
@@ -808,9 +837,68 @@
             <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
+    <br /><br />
+    <div class="example-content">
+        <div>
+            <strong>FocusAsync</strong> hands the keyboard back to the group, landing on the button that holds its
+            tab stop, which is what a page re-rendering the list behind a toolbar calls; <strong>AutoFocus</strong>
+            does the same on the first render. <strong>TabIndex</strong> sets the tabindex of that one button, so
+            <strong>TabIndex="-1"</strong> takes the group out of the tab order while leaving it navigable once
+            something else has focused it.
+        </div>
+        <BitButtonGroup @ref="focusGroup" AriaLabel="Operations" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
+        </BitButtonGroup>
+        <BitButton Variant="BitVariant.Outline" OnClick="FocusTheGroup">Focus the group</BitButton>
+    </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
+             PreventRenderForMcpClient>
+    <div>
+        <strong>BitParams</strong> carries a <strong>BitButtonGroupParams</strong> down to every ButtonGroup under it,
+        so a page sets the look of its groups once instead of repeating it at each of them. What it carries is a default
+        and not an override: a group that sets a parameter for itself keeps its own value, and only what it left unset
+        is filled in from the cascade, which is what lets one group step out of the section it is in without the section
+        having to know about it. The params object holds the parameters that say nothing about the item type, so one of
+        them fits all three APIs of the component; the items, the templates, the name selectors and the bound
+        <strong>ToggleKey</strong> stay on the group itself.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitParams Parameters="buttonGroupParams">
+            <div>Takes the variant, the shape and the justification from the cascade</div>
+            <BitButtonGroup TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+            <div>So does this one, without repeating any of it</div>
+            <BitButtonGroup TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+            <div>Its own variant, and the cascaded shape and justification</div>
+            <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+        </BitParams>
+        <div>Outside the cascade, and back to the defaults</div>
+        <BitButtonGroup TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
+        </BitButtonGroup>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
     <div>
         The <strong>Color</strong> sets the palette of the whole group - its border, fill, hover and active states, the
         focus ring, and the darker shade used for toggled buttons - from the theme's general, background, foreground,
@@ -818,8 +906,8 @@
         border colors.
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Primary</div>
+    <div>Primary</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -837,8 +925,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Secondary</div>
+    <div>Secondary</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -856,8 +944,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Tertiary</div>
+    <div>Tertiary</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -875,8 +963,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Info</div>
+    <div>Info</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -894,8 +982,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Success</div>
+    <div>Success</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -913,8 +1001,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Warning</div>
+    <div>Warning</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -932,8 +1020,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SevereWarning</div>
+    <div>SevereWarning</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -951,8 +1039,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Error</div>
+    <div>Error</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -971,8 +1059,8 @@
     </div>
     <br /><br />
     <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
+        <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
+        <div class="example-content row">
             <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
                 <BitButtonGroupOption Text="Add" />
                 <BitButtonGroupOption Text="Edit" />
@@ -991,8 +1079,8 @@
             </BitButtonGroup>
         </div>
         <br /><br />
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
+        <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
+        <div class="example-content row">
             <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
                 <BitButtonGroupOption Text="Add" />
                 <BitButtonGroupOption Text="Edit" />
@@ -1011,8 +1099,8 @@
             </BitButtonGroup>
         </div>
         <br /><br />
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
+        <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
+        <div class="example-content row">
             <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
                 <BitButtonGroupOption Text="Add" />
                 <BitButtonGroupOption Text="Edit" />
@@ -1032,8 +1120,8 @@
         </div>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>PrimaryForeground</div>
+    <div>PrimaryForeground</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -1051,8 +1139,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SecondaryForeground</div>
+    <div>SecondaryForeground</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -1070,8 +1158,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>TertiaryForeground</div>
+    <div>TertiaryForeground</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -1089,8 +1177,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>PrimaryBorder</div>
+    <div>PrimaryBorder</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -1108,8 +1196,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SecondaryBorder</div>
+    <div>SecondaryBorder</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -1127,8 +1215,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>TertiaryBorder</div>
+    <div>TertiaryBorder</div>
+    <div class="example-content row">
         <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -1148,8 +1236,8 @@
     <br /><br />
     <div><b>Disabled</b>:</div>
     <br />
-    <div class="example-content">
-        <div>Primary</div>
+    <div>Primary</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1170,8 +1258,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Secondary</div>
+    <div>Secondary</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1192,8 +1280,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Tertiary</div>
+    <div>Tertiary</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1214,8 +1302,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Info</div>
+    <div>Info</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -1234,8 +1322,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Success</div>
+    <div>Success</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1256,8 +1344,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Warning</div>
+    <div>Warning</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1278,8 +1366,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SevereWarning</div>
+    <div>SevereWarning</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1300,8 +1388,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Error</div>
+    <div>Error</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
             <BitButtonGroupOption Text="Edit" />
@@ -1321,8 +1409,8 @@
     </div>
     <br /><br />
     <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
+        <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
+        <div class="example-content row">
             <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill"
                             TItem="BitButtonGroupOption">
                 <BitButtonGroupOption Text="Add" />
@@ -1343,8 +1431,8 @@
             </BitButtonGroup>
         </div>
         <br /><br />
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
+        <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
+        <div class="example-content row">
             <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill"
                             TItem="BitButtonGroupOption">
                 <BitButtonGroupOption Text="Add" />
@@ -1365,8 +1453,8 @@
             </BitButtonGroup>
         </div>
         <br /><br />
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
+        <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
+        <div class="example-content row">
             <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill"
                             TItem="BitButtonGroupOption">
                 <BitButtonGroupOption Text="Add" />
@@ -1388,8 +1476,8 @@
         </div>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>PrimaryForeground</div>
+    <div>PrimaryForeground</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1410,8 +1498,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SecondaryForeground</div>
+    <div>SecondaryForeground</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1432,8 +1520,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>TertiaryForeground</div>
+    <div>TertiaryForeground</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1454,8 +1542,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>PrimaryBorder</div>
+    <div>PrimaryBorder</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1476,8 +1564,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SecondaryBorder</div>
+    <div>SecondaryBorder</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1498,8 +1586,8 @@
         </BitButtonGroup>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>TertiaryBorder</div>
+    <div>TertiaryBorder</div>
+    <div class="example-content row">
         <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill"
                         TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" />
@@ -1521,7 +1609,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
     <div>
         Beyond the built-in Fluent UI icons, the option's <strong>Icon</strong> takes a BitIconInfo that renders an icon
         from any external library. Pass the CSS classes directly, or use the helpers such as
@@ -1559,11 +1647,11 @@
     </BitButtonGroup>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
     <div>
-        The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which scale the font
-        size and padding of every button, along with the spinner, badge, and selection indicator that follow the text
-        size.
+        The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which set the
+        height, padding, text size, and icon size of every button from the theme's control tokens, so a group lines
+        up with the other controls of its size and even the smallest one stays above the 24px minimum pointer target.
     </div>
     <br /><br />
     <div class="example-content">
@@ -1624,13 +1712,16 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style &amp; Class" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
+<DemoExample Title="Style &amp; Class" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
     <div>
         Styling works at three levels: <strong>Style</strong> and <strong>Class</strong> target the root element, each
         option's own <strong>Style</strong> and <strong>Class</strong> target a single button, and
         <strong>Styles</strong>
         and <strong>Classes</strong> reach every part of the component - Root, Button, ToggledButton, Icon, Text, Badge,
-        Spinner, and SelectionIndicator.
+        Spinner, and SelectionIndicator. For a change that should reach every group at once - a corner radius, a
+        selected background, a border width - set one of the
+        <BitLink Href="#css-variables-section"><strong>CSS variables</strong></BitLink> instead, on
+        <code>:root</code> or on the Style of a single group.
     </div>
     <br /><br />
     <div class="example-content">
@@ -1659,6 +1750,18 @@
     </div>
     <br /><br />
     <div class="example-content">
+        <div>Item's CSS variables (the group's own knobs, set on a single button):</div>
+        <BitButtonGroup TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
+            <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" />
+            <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete"
+                                  Style="--bit-ButtonGroup-color: var(--bit-clr-err-text);
+                                         --bit-ButtonGroup-background: var(--bit-clr-err);
+                                         --bit-ButtonGroup-hover-background: var(--bit-clr-err-hover);" />
+        </BitButtonGroup>
+    </div>
+    <br /><br />
+    <div class="example-content">
         <div><b>Styles</b> & <b>Classes</b>:</div>
         <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption"
                         Styles="@(new() { Button = "color: darkcyan; border-color: deepskyblue; background-color: azure;" })">
@@ -1676,7 +1779,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26" PreventRenderForMcpClient>
     <div>
         Setting <strong>Dir</strong> to Rtl (or inheriting it from an ancestor) flips the ButtonGroup for right-to-left
         languages: the buttons, their icons, and the separators between them all reverse, and so does the arrow key

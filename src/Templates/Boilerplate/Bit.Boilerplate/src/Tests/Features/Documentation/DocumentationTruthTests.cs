@@ -71,7 +71,7 @@ public class DocumentationTruthTests
     /// <summary>The top-level directories a repository-relative path can start with.</summary>
     private static readonly string[] repositoryRoots =
         ["src/", ".docs/", ".github/", ".vscode/", ".grafana/", ".azure-devops/", ".template.config/",
-         ".agents/", ".claude/", ".gemini/", ".cursor/", ".junie/"];
+         ".agents/", ".claude/", ".gemini/", ".cursor/", ".junie/", ".codex/"];
 
     /// <summary>
     /// Paths that are correctly absent, each for a reason that is not "the documentation is stale". Keep this list
@@ -112,12 +112,12 @@ public class DocumentationTruthTests
 
             for (var i = 0; i < lines.Length; i++)
             {
-                var candidates = linkDestination.Matches(lines[i]).Select(match => match.Groups["candidate"].Value)
-                    .Concat(backtickedSpan.Matches(lines[i]).Select(match => match.Groups["candidate"].Value));
+                var candidates = linkDestination.Matches(lines[i]).Select(match => (Candidate: match.Groups["candidate"].Value, FromLink: true))
+                    .Concat(backtickedSpan.Matches(lines[i]).Select(match => (Candidate: match.Groups["candidate"].Value, FromLink: false)));
 
-                foreach (var candidate in candidates)
+                foreach (var (candidate, fromLink) in candidates)
                 {
-                    if (TryNormalize(candidate, out var path) is false)
+                    if (TryNormalize(candidate, fromLink, out var path) is false)
                         continue;
 
                     if (pathsThatAreDeliberatelyAbsent.ContainsKey(path))
@@ -244,7 +244,7 @@ public class DocumentationTruthTests
     /// anything that is not rooted in one of this repository's top-level directories, external URLs (a GitHub
     /// tree URL ends in a path that looks exactly like a local one), scaffolding placeholders, and build output.
     /// </summary>
-    private static bool TryNormalize(string candidate, out string path)
+    private static bool TryNormalize(string candidate, bool fromLink, out string path)
     {
         path = string.Empty;
 
@@ -258,8 +258,11 @@ public class DocumentationTruthTests
         if (candidate.Contains('{') || candidate.Contains('[') || candidate.Contains('*') || candidate.Contains('<'))
             return false;
 
-        // A link destination may carry an anchor or a title.
-        var cut = candidate.IndexOfAny([' ', '#']);
+        // A link destination may carry an anchor or a title after the path, so it ends at the first
+        // space. A backticked span has no such tail - it is the literal path - and several documents
+        // name files whose names contain spaces (every .docs/NN- Title.md), which cutting would turn
+        // into a search for `.docs/NN-`.
+        var cut = fromLink ? candidate.IndexOfAny([' ', '#']) : candidate.IndexOf('#');
         if (cut >= 0)
             candidate = candidate[..cut];
 

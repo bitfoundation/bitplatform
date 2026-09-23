@@ -3,6 +3,14 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "BL0005:Component parameter should not be set outside of its component.", Justification = "<Pending>")]
 public partial class _BitButtonGroupItemDemo
 {
+    private BitButtonGroup<BitButtonGroupItem>? focusGroup;
+
+    // FocusAsync returns a ValueTask, which an EventCallback cannot be assigned directly.
+    private async Task FocusTheGroup()
+    {
+        if (focusGroup is not null) await focusGroup.FocusAsync();
+    }
+
     private int clickCounter;
     private string? clickedItem;
 
@@ -26,7 +34,7 @@ public partial class _BitButtonGroupItemDemo
     private List<BitButtonGroupItem> onlyIconItems =
     [
         new() { Text = "Add", IconName = BitIconName.Add },
-        new() { IconName = BitIconName.Edit },
+        new() { IconName = BitIconName.Edit, AriaLabel = "Edit" },
         new() { Text = "Delete", IconName = BitIconName.Delete }
     ];
 
@@ -72,6 +80,23 @@ public partial class _BitButtonGroupItemDemo
         new() { Text = "Add", Icon = "fa-solid fa-plus" },
         new() { Text = "Edit", Icon = BitIconInfo.Css("fa-solid fa-pen") },
         new() { Text = "Delete", Icon = BitIconInfo.Fa("solid trash") }
+    ];
+
+    // Every public custom property of the group is read off each button, so one set in an item's own Style
+    // re-skins that button alone - a destructive action inside an otherwise neutral toolbar - and does it in
+    // theme colors rather than in literals, so it follows the light and dark schemes like everything else.
+    private List<BitButtonGroupItem> cssVarItems =
+    [
+        new() { Text = "Add", IconName = BitIconName.Add },
+        new() { Text = "Edit", IconName = BitIconName.Edit },
+        new()
+        {
+            Text = "Delete",
+            IconName = BitIconName.Delete,
+            Style = "--bit-ButtonGroup-color: var(--bit-clr-err-text);" +
+                    "--bit-ButtonGroup-background: var(--bit-clr-err);" +
+                    "--bit-ButtonGroup-hover-background: var(--bit-clr-err-hover);",
+        },
     ];
 
     private List<BitButtonGroupItem> styleClassItems =
@@ -222,6 +247,16 @@ public partial class _BitButtonGroupItemDemo
             OffTitle = "Click to repeat the playlist",
             OnIconName = BitIconName.RepeatOne,
             OffIconName = BitIconName.RepeatAll
+        }
+    ];
+
+    private readonly BitButtonGroupParams[] buttonGroupParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Rounded = true,
+            Justified = true,
         }
     ];
 

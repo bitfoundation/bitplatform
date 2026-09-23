@@ -1,9 +1,10 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Platform.Server.Services;
+using Bit.Websites.Platform.Server.Services.Mcp;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.Extensions.AI;
 using System.ClientModel.Primitives;
@@ -71,8 +72,6 @@ public static class Services
         });
 
         AddMcpServer(services);
-
-        services.AddHostedService<CodebaseMemoryIndexService>();
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -146,14 +145,21 @@ public static class Services
     }
 
     /// <summary>
-    /// Serves every tool of every MCP server listed in the repository's .mcp.json from this site's own
-    /// /mcp endpoint (mapped in <see cref="Middlewares"/>), so that an agent pointed at bitplatform.dev/mcp
-    /// gets all of them from a single connection. <see cref="McpProxyService"/> does the forwarding.
+    /// Serves every tool of every MCP server the team develops against from this site's own /mcp endpoint
+    /// (mapped in <see cref="Middlewares"/>), so that an agent pointed at bitplatform.dev/mcp gets all of
+    /// them from a single connection. <see cref="McpProxyService"/> does the forwarding, and the v query of
+    /// the connection picks which release answers.
     /// </summary>
     private static void AddMcpServer(IServiceCollection services)
     {
-        // Singleton: it keeps one session per upstream server, shared by every caller.
+        // Singletons: the proxy keeps one session per upstream server, shared by every caller, and the
+        // versions it serves are prepared once for the whole process.
+        services.AddSingleton<McpVersions>();
+        services.AddSingleton<CodebaseMemoryCli>();
         services.AddSingleton<McpProxyService>();
+        services.AddHostedService<McpVersionsService>();
+
+        services.AddScoped<McpFeedbackTool>();
 
         services.AddMcpServer(options =>
         {
@@ -171,9 +177,16 @@ public static class Services
             .WithHttpTransport(options => options.Stateless = true)
             .WithListToolsHandler(async (request, cancellationToken) => new ListToolsResult
             {
-                Tools = [.. await request.Services!.GetRequiredService<McpProxyService>().ListTools(cancellationToken)]
+                Tools = [.. await request.Services!.GetRequiredService<McpProxyService>().ListTools(RequestedVersion(request.Services!), cancellationToken)]
             })
             .WithCallToolHandler((request, cancellationToken) =>
-                request.Services!.GetRequiredService<McpProxyService>().CallTool(request.Params!, cancellationToken));
+                request.Services!.GetRequiredService<McpProxyService>().CallTool(RequestedVersion(request.Services!), request.Services!, request.Params!, cancellationToken));
     }
+
+    /// <summary>
+    /// The release a caller connected for, from the v query of the request being served. The transport is
+    /// stateless, so every request carries it and there is no session to remember it in.
+    /// </summary>
+    private static string? RequestedVersion(IServiceProvider requestServices)
+        => requestServices.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request.Query["v"].FirstOrDefault();
 }

@@ -154,8 +154,11 @@ all it takes for it to appear in the catalog, the search index and the completio
   is kept out of the listing and answered as a pointer to the type its members are read off.
 - **What a table cannot say is derived rather than left out**: which parameters are two-way bindable
   (an `X` with an `XChanged` beside it, printed as `@bind-X`), what constrains a generic component's
-  type arguments, and whether a type named beside a component is a class it takes or a component that
-  goes inside its markup.
+  type arguments, whether a type named beside a component is a class it takes or a component that
+  goes inside its markup, and the `<Component>Params` a `BitParams` ancestor sets its defaults with -
+  read off the component's own `[CascadingParameter]`, so it is in neither table, and named with the
+  call that lists its members rather than tabulated, since its members are the parameter table again
+  as nullables.
 - **A miss answers with the nearest names** (`BlazorUISuggest`, edit distance over the names less
   their shared `Bit` prefix) rather than a refusal, and never as a failed tool call.
 

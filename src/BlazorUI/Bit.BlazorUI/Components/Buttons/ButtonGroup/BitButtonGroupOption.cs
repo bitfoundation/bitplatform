@@ -139,6 +139,12 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     [Parameter] public bool ReversedIcon { get; set; }
 
     /// <summary>
+    /// The rel attribute of the link when the option renders as an anchor (by providing the Href parameter).
+    /// When <see cref="Target"/> is _blank and no opener-related rel is given, noopener is added automatically.
+    /// </summary>
+    [Parameter] public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
     /// The custom value for the style attribute of the option.
     /// </summary>
     [Parameter] public string? Style { get; set; }

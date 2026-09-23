@@ -5,6 +5,9 @@ using Aspire.Hosting.Azure;
 //#if (redis == true)
 using Azure.Provisioning.RedisEnterprise;
 //#endif
+//#if (filesStorage == "S3")
+using Aspire.Hosting.RustFs;
+//#endif
 
 namespace Aspire.Hosting;
 
@@ -183,6 +186,25 @@ public static class IDistributedApplicationBuilderExtensions
                         .WithDataVolume();
                 })
                 .AddBlobs("azureblobstorage");
+        }
+        //#endif
+
+        //#if (filesStorage == "S3")
+        /// <summary>
+        /// Adds RustFS, a lightweight S3-compatible object storage server, and exposes it as the <c>s3</c> connection
+        /// string that <c>Program.Services.cs</c> builds its FluentStorage store out of.
+        /// <see cref="RustFsResource"/> is a plain container resource with no connection string of its own, so it is
+        /// assembled here from the container's primary endpoint and its credentials.
+        /// https://github.com/konnta0/Aspire.Extensions
+        /// </summary>
+        public IResourceBuilder<IResourceWithConnectionString> AddS3Storage()
+        {
+            var rustFs = builder.AddRustFs("s3")
+                .WithDataVolume();
+
+            rustFs.AddBucket("files");
+
+            return rustFs;
         }
         //#endif
 

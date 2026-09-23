@@ -13,6 +13,8 @@ public abstract class AiChatPanelTestBase : AppPageTest
     /// </summary>
     protected async Task<ILocator> OpenChatPanel()
     {
+        // A menu that is only markup yet swallows the click, so it never opens and the wait below times out.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".open-panel-button").ClickAsync();
 
         var panel = Page.Locator(".panel-cnt");

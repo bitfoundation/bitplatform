@@ -295,6 +295,37 @@ private int innerClickCount;";
 private BitActionButton focusTargetRef = default!;";
 
     private readonly string example10RazorCode = @"
+<BitParams Parameters=""@actionButtonParams"">
+    <BitActionButton IconName=""@BitIconName.Documentation"" Href=""https://bitplatform.dev"">
+        Takes the icon position, the underline, and the target from the cascade
+    </BitActionButton>
+
+    <BitActionButton IconName=""@BitIconName.Feedback"" Href=""https://github.com/bitfoundation/bitplatform/issues"">
+        So does this one, without repeating any of it
+    </BitActionButton>
+
+    <BitActionButton Underlined=""false"" IconName=""@BitIconName.Info"" Href=""https://bitplatform.dev"">
+        Its own Underlined, the cascaded rest
+    </BitActionButton>
+</BitParams>
+
+
+<BitActionButton IconName=""@BitIconName.Documentation"" Href=""https://bitplatform.dev"">
+    Outside the cascade, and back to the defaults
+</BitActionButton>";
+
+    private readonly string example10CsharpCode = @"
+private readonly BitActionButtonParams[] actionButtonParams =
+[
+    new()
+    {
+        Underlined = true,
+        IconPosition = BitIconPosition.End,
+        Target = ""_blank"",
+    }
+];";
+
+    private readonly string example11RazorCode = @"
 <BitActionButton Color=""BitColor.Primary"" IconName=""@BitIconName.ColorSolid"">
     Primary
 </BitActionButton>
@@ -440,7 +471,7 @@ private BitActionButton focusTargetRef = default!;";
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitActionButton>
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitActionButton>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitActionButton Icon=""@(""fa-solid fa-house"")"">
@@ -487,7 +518,7 @@ private BitActionButton focusTargetRef = default!;";
     Large, click to load
 </BitActionButton>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">
     Small
 </BitActionButton>
@@ -500,7 +531,7 @@ private BitActionButton focusTargetRef = default!;";
     Large
 </BitActionButton>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-icon {
         color: hotpink;
@@ -567,7 +598,7 @@ private BitActionButton focusTargetRef = default!;";
     <BitActionButton IconName=""@BitIconName.Delete"" Color=""BitColor.Error"">Delete</BitActionButton>
 </div>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <div dir=""rtl"">
     <BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">
         ساخت حساب

@@ -75,6 +75,8 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
     private async Task ToggleThemeFromUserMenu(string themeBefore, string themeAfter, string darkTheme)
     {
         // The user menu (AppMenu) is a BitDropMenu; clicking its chevron opens the callout.
+        // A menu that is only markup yet swallows the click, so it never opens and the wait below times out.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".menu-chevron").ClickAsync();
 
         var callout = Page.Locator(".app-menu-callout");

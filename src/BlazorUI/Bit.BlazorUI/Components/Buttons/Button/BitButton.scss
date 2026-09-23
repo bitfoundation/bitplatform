@@ -1,8 +1,45 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// button and one set on the Style of an instance re-skins that one alone:
+//   --bit-Button-color                     foreground (text and icon) at rest             (default: per variant - the role's on-color filled, its main color otherwise)
+//   --bit-Button-background                background at rest                             (default: the role's main color filled, transparent otherwise)
+//   --bit-Button-border-color              border color at rest                           (default: the role's main color filled and outlined, transparent otherwise)
+//   --bit-Button-hover-color               foreground on hover                            (default: the role's on-color, unchanged from rest for the Fill variant)
+//   --bit-Button-hover-background          background on hover                            (default: the role's hover color)
+//   --bit-Button-hover-border-color        border color on hover                           (default: the rest border color, the hover background for the Fill variant)
+//   --bit-Button-active-color              foreground while pressed                       (default: as the hover foreground)
+//   --bit-Button-active-background         background while pressed                       (default: the role's active color)
+//   --bit-Button-active-border-color       border color while pressed                     (default: as the hover border color)
+//   --bit-Button-disabled-color            foreground when disabled                       (default: the role's disabled text color)
+//   --bit-Button-disabled-background       background when disabled                       (default: the role's disabled color filled, transparent otherwise)
+//   --bit-Button-disabled-border-color     border color when disabled                     (default: as the disabled background)
+//   --bit-Button-focus-color               focus ring color                               (default: the role's focus color)
+//   --bit-Button-radius                    corner radius of the box and its focus ring    (default: $shp-radius-button, $shp-radius-full when Rounded)
+//   --bit-Button-border-width              thickness of the border on every variant       (default: $shp-border-width)
+//   --bit-Button-shadow                    elevation of the box in every state            (default: none; a floating button has --bit-Button-float-shadow of its own)
+//   --bit-Button-padding                   padding of the box                             (default: per size, $siz-ctrl-pad-*)
+//   --bit-Button-min-width                 smallest width of a labeled button             (default: $siz-ctrl-min-width, 0 when FullWidth or NoWrap sizes the button by its container)
+//   --bit-Button-min-height                smallest height of the box, and the smallest
+//                                          width of an icon-only one                      (default: per size, $siz-ctrl-*)
+//   --bit-Button-gap                       room between the icon and the text, and
+//                                          between the spinner and its loading label      (default: per size, spacing(0.5) for Small and spacing(1) otherwise)
+//   --bit-Button-font-size                 size of the primary text                       (default: per size, from the type ramp)
+//   --bit-Button-secondary-color           color of the secondary line of text            (default: the button's own foreground)
+//   --bit-Button-secondary-font-size       size of the secondary text                     (default: one ramp step below the primary text)
+//   --bit-Button-font-weight               weight of both lines of text                   (default: $tg-font-weight)
+//   --bit-Button-text-transform            casing of both lines of text                   (default: $tg-ctrl-text-transform)
+//   --bit-Button-letter-spacing            tracking of both lines of text                 (default: $tg-ctrl-letter-spacing)
+//   --bit-Button-icon-size                 icon size, for a glyph and an IconUrl alike    (default: per size, $siz-icon-*)
+//   --bit-Button-spinner-size              diameter of the loading spinner                (default: per size, as the icon)
+//   --bit-Button-spinner-color             the spinner's moving arc                       (default: the button's own foreground)
+//   --bit-Button-spinner-track-color       the ring the arc travels on                    (default: the foreground at 25%)
+//   --bit-Button-float-offset              inset of a Float/FloatAbsolute button from the
+//                                          edge it is pinned to                           (default: spacing(2), overridden by the FloatOffset parameter)
+//   --bit-Button-float-shadow              elevation of a Float/FloatAbsolute button      (default: $box-shadow-card)
+
 .bit-btn {
     cursor: pointer;
-    gap: spacing(0.5);
     text-align: start;
     align-items: center;
     flex-direction: row;
@@ -10,27 +47,51 @@
     text-decoration: none;
     box-sizing: border-box;
     justify-content: center;
-    color: var(--bit-btn-clr-txt);
     font-family: $tg-font-family;
-    font-weight: $tg-font-weight;
-    padding: var(--bit-btn-padding);
-    min-width: $siz-ctrl-min-width;
-    border-width: $shp-border-width;
+    -webkit-tap-highlight-color: transparent;
+    // Casing and tracking default to the global control tokens but are reachable per component, because dropping
+    // the uppercasing of the buttons alone - without touching the tags, the pivots and everything else that reads
+    // $tg-ctrl-text-transform - is the first thing asked of a button inherited from another design system.
+    letter-spacing: var(--bit-Button-letter-spacing, #{$tg-ctrl-letter-spacing});
+    text-transform: var(--bit-Button-text-transform, #{$tg-ctrl-text-transform});
+    // Flat by default, the way every variant here is drawn. It is left out of the transition below on purpose:
+    // the focus ring is a box-shadow too, and an indicator that fades in is an indicator that arrives late.
+    box-shadow: var(--bit-Button-shadow, none);
+    gap: var(--bit-Button-gap, var(--bit-btn-gap));
+    color: var(--bit-Button-color, var(--bit-btn-clr-txt));
+    font-weight: var(--bit-Button-font-weight, #{$tg-font-weight});
+    padding: var(--bit-Button-padding, var(--bit-btn-padding));
+    min-width: var(--bit-Button-min-width, #{$siz-ctrl-min-width});
     border-style: $shp-border-style;
-    border-radius: $shp-radius-button;
-    letter-spacing: $tg-ctrl-letter-spacing;
-    text-transform: $tg-ctrl-text-transform;
-    --bit-btn-float-offset: #{spacing(2)};
+    border-width: var(--bit-Button-border-width, #{$shp-border-width});
+    border-radius: var(--bit-Button-radius, #{$shp-radius-button});
+    // The control height of the size class, as a floor rather than a height: the box still grows with a wrapped
+    // label, a secondary line or a taller icon. It is what lines a button up with the other controls of its size
+    // in a toolbar, and what keeps an icon-only one above the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8) -
+    // a Small icon-only button is a 12px glyph in 4px of padding without it.
+    min-height: var(--bit-Button-min-height, var(--bit-btn-min-height));
     // The variants below repaint all three on hover/active, so they animate together from here.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-btn-clr-focus));
+        @include focus-ring(var(--bit-Button-focus-color, var(--bit-btn-clr-focus)));
     }
 
+    // The pointer is deliberately left alone here. A disabled button that stops answering it also stops
+    // showing its Title, and "why can I not press this?" is exactly what that tooltip is usually there to
+    // answer; pointer-events: none would also let the press fall through to whatever is underneath, so a
+    // disabled button inside a clickable row would activate the row. The click itself is already refused in
+    // the component - and by the native disabled attribute when AllowDisabledFocus is off - and every
+    // hover and press rule below excludes this class, so none of them paint a disabled button.
     &.bit-dis {
         cursor: default;
-        pointer-events: none;
+
+        // AllowDisabledFocus - the default here - keeps a disabled button in the tab order, so the indicator has
+        // to stay visible, but drawn in the disabled color: the vivid role ring of the enabled state contradicts
+        // the inert look and reads as actionable.
+        &:focus-visible {
+            @include focus-ring(var(--bit-Button-disabled-color, var(--bit-btn-clr-dis-text)));
+        }
     }
 
     @keyframes bit-btn-spinner-animation {
@@ -44,8 +105,18 @@
     }
 }
 
-.bit-btn-hsc {
+// A compound button aligns its children to the top so the two lines of text start at the top of the box,
+// and the icon beside them is dropped onto the line of the primary text. That nudge belongs to this case
+// alone: everywhere else the root centres its children, and a top margin only pushes the icon off centre.
+// IconOnly is one of those elsewheres even when a secondary line is set - the text is out of the flow as
+// screen-reader-only content, so there is no line to drop the icon onto and nothing left to align to.
+.bit-btn-hsc:not(.bit-btn-ntx) {
     align-items: flex-start;
+
+    .bit-btn-icn,
+    .bit-btn-icnu {
+        margin-top: var(--bit-btn-icn-margintop);
+    }
 }
 
 .bit-btn-tcn {
@@ -57,38 +128,51 @@
 .bit-btn-prt {
     display: flex;
     align-items: center;
-    font-size: var(--bit-btn-prt-fontsize);
+    font-size: var(--bit-Button-font-size, var(--bit-btn-prt-fontsize));
 }
 
+// The secondary line inherits the button's foreground rather than being muted by default: on a filled
+// button the only color available to dim it with is the fill itself, and that is where the contrast of
+// the smaller of the two lines of text would go first (WCAG 1.4.3).
 .bit-btn-sct {
-    font-size: var(--bit-btn-sct-fontsize);
+    color: var(--bit-Button-secondary-color, inherit);
+    font-size: var(--bit-Button-secondary-font-size, var(--bit-btn-sct-fontsize));
 }
 
 .bit-btn-icn {
-    font-size: var(--bit-btn-icn-fontsize);
-    margin-top: var(--bit-btn-icn-margintop);
+    line-height: 1;
+    flex-shrink: 0;
+    font-size: var(--bit-Button-icon-size, var(--bit-btn-icn-size));
 }
 
 .bit-btn-icnu {
-    width: var(--bit-btn-icn-size);
-    height: var(--bit-btn-icn-size);
+    flex-shrink: 0;
+    object-fit: contain;
+    width: var(--bit-Button-icon-size, var(--bit-btn-icn-size));
+    height: var(--bit-Button-icon-size, var(--bit-btn-icn-size));
 }
 
 .bit-btn-eni {
     flex-direction: row-reverse;
 }
 
+// The arc and its track are both painted from the button's own foreground, so the spinner contrasts with whatever
+// the variant put behind it - the on-color over a filled background, the role color over a transparent one - and
+// follows the disabled and FixedColor states without a second set of role variables to keep in step.
 .bit-btn-spn {
+    flex-shrink: 0;
     border-radius: 50%;
-    border-width: $siz-spinner-stroke;
-    width: var(--bit-btn-spn-size);
-    height: var(--bit-btn-spn-size);
-    border-color: $clr-brd-sec;
     border-style: $shp-border-style;
-    border-top-color: var(--bit-btn-clr-spn);
+    border-width: $siz-spinner-stroke;
+    border-color: var(--bit-Button-spinner-track-color, #{translucent(currentcolor, 25%)});
+    border-top-color: var(--bit-Button-spinner-color, currentcolor);
+    width: var(--bit-Button-spinner-size, var(--bit-btn-spn-size));
+    height: var(--bit-Button-spinner-size, var(--bit-btn-spn-size));
     animation: bit-btn-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
+// The loading visuals are stacked on top of the content rather than replacing it, so the box keeps the width
+// and height it had before the click and nothing around it moves.
 .bit-btn-lda {
     display: inline-grid;
     place-items: center;
@@ -98,16 +182,29 @@
     }
 }
 
+// The cursor follows the click rather than the spinner: a loading button that refuses the second click stops
+// pointing, from the moment the loading starts rather than from the moment a delayed spinner appears, while a
+// Reclickable one keeps the pointer it has earned - it is still there to be clicked.
+.bit-btn-lnc {
+    cursor: default;
+}
+
 .bit-btn-hcn {
     opacity: 0;
-    gap: spacing(0.5);
     align-items: center;
     display: inline-flex;
     pointer-events: none;
     justify-content: center;
+    gap: var(--bit-Button-gap, var(--bit-btn-gap));
 }
 
-.bit-btn-dsc {
+// The three pieces of text the button carries for a screen reader and for nobody else: the live region that
+// announces the loading label, the description it is pointed at through aria-describedby, and the label an
+// icon-only button keeps so that it still has a name. All three are taken out of the flow rather than hidden,
+// since display:none is also hidden from the readers they are written for.
+.bit-btn-dsc,
+.bit-btn-srl,
+.bit-btn-sts {
     border: 0;
     padding: 0;
     width: 1px;
@@ -119,10 +216,12 @@
     clip-path: inset(50%);
 }
 
+// The spinner and its label are the icon and the text of the loading state, so they are spaced by the same gap
+// the icon and the label are - which is what keeps a Small button's loading state as tight as its rest state.
 .bit-btn-ldg {
     display: flex;
-    gap: spacing(1);
     align-items: center;
+    gap: var(--bit-Button-gap, var(--bit-btn-gap));
     justify-content: center;
     background-color: transparent;
 }
@@ -130,92 +229,156 @@
 .bit-btn-lbl {
     color: inherit;
     text-align: center;
-    font-size: var(--bit-btn-lbl-fontsize);
+    font-size: var(--bit-Button-font-size, var(--bit-btn-lbl-fontsize));
 }
 
+// A full-width button is sized by whatever holds it, so the control minimum that lines a normal one up with its
+// neighbours has to give way here: kept, it would push the button out of any container narrower than it.
 .bit-btn-flw {
     width: 100%;
+    min-width: var(--bit-Button-min-width, 0);
 }
 
+// A button that has a width of its own to protect keeps each line of its text on one line and ends it with an
+// ellipsis. Every box between the root and the text has to be allowed to shrink for the ellipsis to ever appear,
+// which is why the text column gives up its automatic minimum too, and why the primary line - a flex row, so that
+// an icon written into the child content sits beside the text - becomes a block while it is being clamped.
+.bit-btn-nwr {
+    // The root first: as a flex or grid item it is sized by its own content unless its automatic minimum is
+    // given up, so a toolbar row would grow to fit the label this class exists to clamp.
+    min-width: var(--bit-Button-min-width, 0);
+
+    // The two direct children of the loading grid give up their automatic minimum too, or the column
+    // they share is sized by the very label they are meant to be clamping.
+    .bit-btn-tcn,
+    .bit-btn-hcn,
+    .bit-btn-ldg {
+        min-width: 0;
+    }
+
+    .bit-btn-prt {
+        display: block;
+    }
+
+    .bit-btn-prt,
+    .bit-btn-sct,
+    .bit-btn-lbl {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+// A floating button sits over content rather than in it, so it is lifted off the surface the way every
+// other floating surface in the library is. The focus ring is a box-shadow too and replaces this one
+// while the button is focused, which is the right way round: the indicator has to win.
 .bit-btn-fab {
     position: absolute;
     z-index: $zindex-base;
+    box-shadow: var(--bit-Button-float-shadow, #{$box-shadow-card});
 }
 
 .bit-btn-ffx {
     position: fixed;
     z-index: $zindex-base;
+    box-shadow: var(--bit-Button-float-shadow, #{$box-shadow-card});
+}
+
+// A floating button that can be moved says so with the cursor; the script swaps it for a grabbing one
+// for the duration of the drag, and restores this one after.
+.bit-btn-drg {
+    cursor: grab;
+}
+
+// Rounded changes what the corner falls back to rather than replacing it, so a --bit-Button-radius set on an
+// ancestor or on the button's own Style still has the last word. An icon-only button is already a square, so
+// the same full radius rounds it into a circle - which is what a floating action button is.
+.bit-btn-rnd {
+    border-radius: var(--bit-Button-radius, #{$shp-radius-full});
 }
 
 
+// Two states are painted at rest however the pointer is over them, so every hover and press rule below excludes
+// both: a disabled button (bit-dis), and a loading one that refuses the second click (bit-btn-lnc - a Reclickable
+// one is left out of it, because it is still there to be clicked). Neither is done with pointer-events: none,
+// which would suppress the Title that explains the state and let the press fall through to whatever is underneath.
 .bit-btn-fil {
-    border-color: var(--bit-btn-clr);
-    background-color: var(--bit-btn-clr);
+    background-color: var(--bit-Button-background, var(--bit-btn-clr));
+    border-color: var(--bit-Button-border-color, var(--bit-Button-background, var(--bit-btn-clr)));
 
     @media (hover: hover) {
-        &:hover {
-            border-color: var(--bit-btn-clr-hover);
-            background-color: var(--bit-btn-clr-hover);
+        &:not(.bit-dis, .bit-btn-lnc):hover {
+            // Filled buttons keep their foreground through hover and press, so these resolve to the rest color
+            // until an author sets the state variable - the point is that the variable reaches this variant too.
+            color: var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-clr-txt)));
+            background-color: var(--bit-Button-hover-background, var(--bit-btn-clr-hover));
+            border-color: var(--bit-Button-hover-border-color, var(--bit-Button-hover-background, var(--bit-btn-clr-hover)));
         }
     }
 
-    &:active {
-        border-color: var(--bit-btn-clr-active);
-        background-color: var(--bit-btn-clr-active);
+    &:not(.bit-dis, .bit-btn-lnc):active {
+        color: var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-clr-txt))));
+        background-color: var(--bit-Button-active-background, var(--bit-btn-clr-active));
+        border-color: var(--bit-Button-active-border-color, var(--bit-Button-active-background, var(--bit-btn-clr-active)));
     }
 
     &.bit-dis {
-        color: var(--bit-btn-clr-dis-text);
-        border-color: var(--bit-btn-clr-dis);
-        background-color: var(--bit-btn-clr-dis);
+        color: var(--bit-Button-disabled-color, var(--bit-btn-clr-dis-text));
+        background-color: var(--bit-Button-disabled-background, var(--bit-btn-clr-dis));
+        border-color: var(--bit-Button-disabled-border-color, var(--bit-Button-disabled-background, var(--bit-btn-clr-dis)));
     }
 }
 
 .bit-btn-otl {
-    color: var(--bit-btn-clr);
-    background-color: transparent;
-    border-color: var(--bit-btn-clr);
+    color: var(--bit-Button-color, var(--bit-btn-clr));
+    background-color: var(--bit-Button-background, transparent);
+    border-color: var(--bit-Button-border-color, var(--bit-btn-clr));
 
     @media (hover: hover) {
-        &:hover {
-            color: var(--bit-btn-clr-txt);
-            background-color: var(--bit-btn-clr-hover);
+        &:not(.bit-dis, .bit-btn-lnc):hover {
+            color: var(--bit-Button-hover-color, var(--bit-btn-clr-txt));
+            background-color: var(--bit-Button-hover-background, var(--bit-btn-clr-hover));
+            border-color: var(--bit-Button-hover-border-color, var(--bit-Button-border-color, var(--bit-btn-clr)));
         }
     }
 
-    &:active {
-        color: var(--bit-btn-clr-txt);
-        background-color: var(--bit-btn-clr-active);
+    &:not(.bit-dis, .bit-btn-lnc):active {
+        color: var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-clr-txt)));
+        background-color: var(--bit-Button-active-background, var(--bit-btn-clr-active));
+        border-color: var(--bit-Button-active-border-color, var(--bit-Button-border-color, var(--bit-btn-clr)));
     }
 
     &.bit-dis {
-        color: var(--bit-btn-clr-dis-text);
-        border-color: var(--bit-btn-clr-dis);
-        background-color: transparent;
+        color: var(--bit-Button-disabled-color, var(--bit-btn-clr-dis-text));
+        background-color: var(--bit-Button-disabled-background, transparent);
+        border-color: var(--bit-Button-disabled-border-color, var(--bit-btn-clr-dis));
     }
 }
 
 .bit-btn-txt {
-    color: var(--bit-btn-clr);
-    border-color: transparent;
-    background-color: transparent;
+    color: var(--bit-Button-color, var(--bit-btn-clr));
+    background-color: var(--bit-Button-background, transparent);
+    border-color: var(--bit-Button-border-color, transparent);
 
     @media (hover: hover) {
-        &:hover {
-            color: var(--bit-btn-clr-txt);
-            background-color: var(--bit-btn-clr-hover);
+        &:not(.bit-dis, .bit-btn-lnc):hover {
+            color: var(--bit-Button-hover-color, var(--bit-btn-clr-txt));
+            background-color: var(--bit-Button-hover-background, var(--bit-btn-clr-hover));
+            border-color: var(--bit-Button-hover-border-color, var(--bit-Button-border-color, transparent));
         }
     }
 
-    &:active {
-        color: var(--bit-btn-clr-txt);
-        background-color: var(--bit-btn-clr-active);
+    &:not(.bit-dis, .bit-btn-lnc):active {
+        color: var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-clr-txt)));
+        background-color: var(--bit-Button-active-background, var(--bit-btn-clr-active));
+        border-color: var(--bit-Button-active-border-color, var(--bit-Button-border-color, transparent));
     }
 
     &.bit-dis {
-        color: var(--bit-btn-clr-dis-text);
-        border-color: transparent;
-        background-color: transparent;
+        color: var(--bit-Button-disabled-color, var(--bit-btn-clr-dis-text));
+        background-color: var(--bit-Button-disabled-background, transparent);
+        border-color: var(--bit-Button-disabled-border-color, transparent);
     }
 }
 
@@ -228,50 +391,61 @@
         --bit-btn-clr-hover: #{role($tokens, hover)};
         --bit-btn-clr-active: #{role($tokens, active)};
         --bit-btn-clr-focus: #{role($tokens, focus)};
-        --bit-btn-clr-spn: #{role-emphasis($tokens)};
         --bit-btn-clr-dis: #{role($tokens, dis)};
         --bit-btn-clr-dis-text: #{role($tokens, dis-text)};
     }
 }
 
 
-
+// The spinner takes the icon's size, so entering the loading state moves nothing around it. The secondary line
+// sits one step below the primary one on the type ramp, which is what makes it read as the caption of the label
+// above it rather than as a second label.
 .bit-btn-sm {
-    --bit-btn-spn-size: #{spacing(2.00)};
     --bit-btn-lbl-fontsize: #{$tg-fs-xs};
     --bit-btn-prt-fontsize: #{$tg-fs-xs};
     --bit-btn-sct-fontsize: #{$tg-fs-2xs};
-    --bit-btn-icn-fontsize: #{$siz-icon-sm};
+    --bit-btn-icn-size: #{$siz-icon-sm};
+    --bit-btn-spn-size: #{$siz-icon-sm};
+    --bit-btn-min-height: #{$siz-ctrl-sm};
     --bit-btn-icn-margintop: #{spacing(0.2)};
+    --bit-btn-gap: #{spacing(0.5)};
     --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-sm};
     --bit-btn-padding: #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm};
-    --bit-btn-icn-size: #{$siz-icon-sm};
 }
 
 .bit-btn-md {
-    --bit-btn-spn-size: #{spacing(2.35)};
     --bit-btn-lbl-fontsize: #{$tg-fs-sm};
     --bit-btn-prt-fontsize: #{$tg-fs-sm};
     --bit-btn-sct-fontsize: #{$tg-fs-xs};
-    --bit-btn-icn-fontsize: #{$siz-icon-md};
+    --bit-btn-icn-size: #{$siz-icon-md};
+    --bit-btn-spn-size: #{$siz-icon-md};
+    --bit-btn-min-height: #{$siz-ctrl-md};
     --bit-btn-icn-margintop: #{spacing(0.25)};
+    --bit-btn-gap: #{spacing(1)};
     --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-md};
     --bit-btn-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md};
-    --bit-btn-icn-size: #{$siz-icon-md};
 }
 
 .bit-btn-lg {
-    --bit-btn-spn-size: #{spacing(3.35)};
     --bit-btn-lbl-fontsize: #{$tg-fs-md};
-    --bit-btn-prt-fontsize: #{$tg-fs-xl};
-    --bit-btn-sct-fontsize: #{$tg-fs-md};
-    --bit-btn-icn-fontsize: #{$siz-icon-lg};
+    --bit-btn-prt-fontsize: #{$tg-fs-md};
+    --bit-btn-sct-fontsize: #{$tg-fs-sm};
+    --bit-btn-icn-size: #{$siz-icon-lg};
+    --bit-btn-spn-size: #{$siz-icon-lg};
+    --bit-btn-min-height: #{$siz-ctrl-lg};
     --bit-btn-icn-margintop: #{spacing(0.5)};
+    --bit-btn-gap: #{spacing(1)};
     --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-lg};
     --bit-btn-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
-    --bit-btn-icn-size: #{$siz-icon-lg};
 }
 
+
+// Where the loading label sits in relation to the spinner (LoadingLabelPosition). All four values are
+// written out, End included: it is the default direction of the container, but a value that names no rule
+// is a value that silently follows whatever the container happens to do next.
+.bit-btn-end {
+    flex-direction: row;
+}
 
 .bit-btn-srt {
     flex-direction: row-reverse;
@@ -287,35 +461,35 @@
 
 
 .bit-btn-tlf {
-    top: var(--bit-btn-float-offset);
-    left: var(--bit-btn-float-offset);
+    top: var(--bit-Button-float-offset, #{spacing(2)});
+    left: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-tcr {
     left: 50%;
     transform: translateX(-50%);
-    top: var(--bit-btn-float-offset);
+    top: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-trg {
-    top: var(--bit-btn-float-offset);
-    right: var(--bit-btn-float-offset);
+    top: var(--bit-Button-float-offset, #{spacing(2)});
+    right: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-tst {
-    top: var(--bit-btn-float-offset);
-    inset-inline-start: var(--bit-btn-float-offset);
+    top: var(--bit-Button-float-offset, #{spacing(2)});
+    inset-inline-start: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-ten {
-    top: var(--bit-btn-float-offset);
-    inset-inline-end: var(--bit-btn-float-offset);
+    top: var(--bit-Button-float-offset, #{spacing(2)});
+    inset-inline-end: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-clf {
     top: 50%;
     transform: translateY(-50%);
-    left: var(--bit-btn-float-offset);
+    left: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-ctr {
@@ -327,58 +501,100 @@
 .bit-btn-crg {
     top: 50%;
     transform: translateY(-50%);
-    right: var(--bit-btn-float-offset);
+    right: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-cst {
     top: 50%;
     transform: translateY(-50%);
-    inset-inline-start: var(--bit-btn-float-offset);
+    inset-inline-start: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-cen {
     top: 50%;
     transform: translateY(-50%);
-    inset-inline-end: var(--bit-btn-float-offset);
+    inset-inline-end: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-blf {
-    left: var(--bit-btn-float-offset);
-    bottom: var(--bit-btn-float-offset);
+    left: var(--bit-Button-float-offset, #{spacing(2)});
+    bottom: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-bcr {
     left: 50%;
     transform: translateX(-50%);
-    bottom: var(--bit-btn-float-offset);
+    bottom: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-brg {
-    right: var(--bit-btn-float-offset);
-    bottom: var(--bit-btn-float-offset);
+    right: var(--bit-Button-float-offset, #{spacing(2)});
+    bottom: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-bst {
-    bottom: var(--bit-btn-float-offset);
-    inset-inline-start: var(--bit-btn-float-offset);
+    bottom: var(--bit-Button-float-offset, #{spacing(2)});
+    inset-inline-start: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 .bit-btn-ben {
-    bottom: var(--bit-btn-float-offset);
-    inset-inline-end: var(--bit-btn-float-offset);
+    bottom: var(--bit-Button-float-offset, #{spacing(2)});
+    inset-inline-end: var(--bit-Button-float-offset, #{spacing(2)});
 }
 
 
 // important: these need to be here at the end!
 
-.bit-btn-fxc {
-    color: var(--bit-btn-clr-txt);
+// FixedColor has to outrank the hover and press rules of all three variants, each of which is a class, a state
+// guard and a pseudo-class, so it is written against the root class as well - and kept away from the disabled state, whose
+// muted foreground is not something a fixed color should hold on to.
+// The color it fixes is the on-color of the role - the one the hover and press states paint, because those fill the
+// box with the role's own color. An Outline or Text button given the color of the surface it sits on is the case this
+// is for: its resting foreground is that surface's color and would be invisible against it, so the button wears the
+// on-color from the start and never shifts.
+.bit-btn.bit-btn-fxc:not(.bit-dis) {
+    color: var(--bit-Button-color, var(--bit-btn-clr-txt));
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-Button-color, var(--bit-btn-clr-txt));
+        }
+    }
+
+    &:active {
+        color: var(--bit-Button-color, var(--bit-btn-clr-txt));
+    }
 }
 
+// An icon-only button is a square, the way every icon button in the library is: the side padding drops to the
+// vertical one and the box takes its own minimum height as a minimum width, which is what lines a row of them up
+// with the other controls of that size and clears the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8) on the
+// narrow axis too.
 .bit-btn-ntx {
-    // Icon-only buttons stay square whatever the design system's labeled-button minimum is.
-    min-width: auto;
-    padding: var(--bit-btn-pad-ntx);
-    --bit-btn-icn-margintop: 0;
-    --bit-btn-icn-fontsize: var(--bit-btn-spn-size);
+    padding: var(--bit-Button-padding, var(--bit-btn-pad-ntx));
+    // The height rather than the width: --bit-Button-min-width is the smallest width of a labeled button, and
+    // letting it through here would stretch an icon-only one out of its square.
+    min-width: var(--bit-Button-min-height, var(--bit-btn-min-height));
+}
+
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so a disabled button conveyed
+// through aria-disabled alone (AllowDisabledFocus, the default here) would look enabled, an Outline or Text button
+// would lose the border that is its only edge, and the spinner's track and arc would be painted the same color and
+// stop reading as motion. All three are re-established in system colors.
+@media (forced-colors: active) {
+    .bit-btn-otl,
+    .bit-btn-txt {
+        border-color: ButtonBorder;
+    }
+
+    .bit-btn.bit-dis {
+        color: GrayText;
+        border-color: GrayText;
+    }
+
+    .bit-btn-spn {
+        border-color: GrayText;
+        border-top-color: CanvasText;
+    }
 }

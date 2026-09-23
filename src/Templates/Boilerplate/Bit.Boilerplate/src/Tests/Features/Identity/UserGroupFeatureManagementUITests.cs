@@ -129,8 +129,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         await page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
+        await SignInPanelUtils.FillCredentials(page, email, password);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         await Expect(page).ToHaveURLAsync(serverAddress.ToString());
@@ -158,11 +157,21 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         var userGroupsCard = page.Locator(".roles-card");
 
         // Searching narrows the list to this run's group, so the click target is unambiguous and sits at the top of the card.
-        await userGroupsCard.GetByPlaceholder(AppStrings.SearchRolesPlaceholder).FillAsync(userGroupName);
+        // A group that is always there (demo) dropping out of the list is what says the search ran, so it is both the wait
+        // and what the filling is measured against: the card is on screen before the app is interactive, and a value typed
+        // into the pre-rendered input is discarded when hydration swaps that subtree out - leaving the list unfiltered and
+        // this step waiting out its whole timeout on a "demo" that was never going to go away.
+        var demoUserGroup = userGroupsCard.GetByText(AppRoles.Demo, new() { Exact = true });
 
-        // The search box is debounced, so the list is briefly still the unfiltered one. Wait for a group that is always
-        // there (demo) to drop out before clicking, rather than racing the re-render.
-        await Expect(userGroupsCard.GetByText(AppRoles.Demo, new() { Exact = true })).ToBeHiddenAsync();
+        // Seeing demo first is what makes its absence mean anything: a list that has not rendered yet has no demo in
+        // it either, and "hidden" would otherwise be satisfied before a single character was typed.
+        await page.WaitForBlazorInteractive();
+        await Expect(demoUserGroup).ToBeVisibleAsync();
+
+        await userGroupsCard.GetByPlaceholder(AppStrings.SearchRolesPlaceholder)
+                            .FillEnsuringStable(userGroupName, until: () => demoUserGroup.IsHiddenAsync());
+
+        await Expect(demoUserGroup).ToBeHiddenAsync();
 
         // Select this run's user-group, then open the Features tab where each feature has an add/remove toggle.
         await userGroupsCard.GetByText(userGroupName, new() { Exact = true }).ClickAsync();
@@ -234,6 +243,8 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         await page.GotoAsync(serverAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         // Open the account drop-menu in the header, then start signing out (which opens a confirmation dialog).
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await page.WaitForBlazorInteractive();
         await page.Locator(".menu-chevron").ClickAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
 

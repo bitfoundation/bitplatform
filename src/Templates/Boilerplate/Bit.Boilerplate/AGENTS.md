@@ -119,6 +119,8 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 ## 6. Behavioral Directives
 
 -   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.
+-   **Never wait unbounded.** Cap every long-running command with `timeout <seconds> <command>` and report the exit code (`124` = hit the cap), and pair the wait with a stall check - a process at ~0% CPU is hung, not slow. Re-arm in ~5 minute slices, inspecting the state between them.
+-   **Report platform bugs upstream.** Whenever something looks like a defect in the section 3 bit platform libraries or in the `bit-bp` template, tell the user, and tell them that if they agree you will write the report and submit it yourself. Once they approve, depending on whether you have GitHub access, either open an issue on <https://github.com/bitfoundation/bitplatform> or submit it through the feedback tool the bit platform MCP server exposes.
 
 ## 7. Available Agent Skills
 
