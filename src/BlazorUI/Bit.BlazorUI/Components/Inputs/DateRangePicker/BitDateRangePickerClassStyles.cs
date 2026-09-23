@@ -533,6 +533,22 @@ public class BitDateRangePickerClassStyles
     public string? YearButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the actions row the Apply and Cancel buttons of a picker that does
+    /// not AutoApply are laid out in.
+    /// </summary>
+    public string? ActionsContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the Apply button of a picker that does not AutoApply.
+    /// </summary>
+    public string? ApplyButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the Cancel button of a picker that does not AutoApply.
+    /// </summary>
+    public string? CancelButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the BitDateRangePicker's clear button.
     /// </summary>
     public string? ClearButton { get; set; }

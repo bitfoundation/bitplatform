@@ -3722,4 +3722,420 @@ public class BitDateRangePickerTests : BunitTestContext
 
         Assert.AreEqual(false, setup.Arguments[1]);
     }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-dtrp-sm"),
+        DataRow(BitSize.Medium, "bit-dtrp-md"),
+        DataRow(BitSize.Large, "bit-dtrp-lg"),
+    ]
+    public void BitDateRangePickerSizeShouldReachTheRootAndTheCallout(BitSize size, string expectedClass)
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        // The callout is rendered outside of the root, so nothing of the root's size cascades into it.
+        Assert.IsTrue(component.Find(".bit-dtrp").ClassList.Contains(expectedClass));
+        Assert.IsTrue(component.Find(".bit-dtrp-cal").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerWithNoSizeShouldCarryNoSizeClass()
+    {
+        var component = RenderComponent<BitDateRangePicker>();
+
+        var classes = component.Find(".bit-dtrp").ClassList;
+
+        Assert.IsFalse(classes.Contains("bit-dtrp-sm"));
+        Assert.IsFalse(classes.Contains("bit-dtrp-md"));
+        Assert.IsFalse(classes.Contains("bit-dtrp-lg"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitDateRangePickerHighlightTodayShouldOnlyDriveThePaint(bool highlightToday)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var today = FixedDate(2024, 6, 12);
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.HighlightToday, highlightToday);
+        });
+
+        Assert.AreEqual(highlightToday, component.FindAll(".bit-dtrp-dtd").Count > 0);
+
+        // Whether today is painted or not, it is still the current date as far as a screen reader is concerned.
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dbt[aria-current=\"date\"]").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldReportEveryPickThroughOnSelectDate()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var reported = new List<BitDateRangePickerValue?>();
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoClose, false);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.OnSelectDate, v => reported.Add(v));
+        });
+
+        var days = component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)");
+        days[9].Click();
+        days = component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)");
+        days[14].Click();
+
+        // The half-picked range is reported too: the callback follows the picks, not the completed value.
+        Assert.AreEqual(2, reported.Count);
+        Assert.IsNotNull(reported[0]?.StartDate);
+        Assert.IsNull(reported[0]?.EndDate);
+        Assert.IsNotNull(reported[1]?.StartDate);
+        Assert.IsNotNull(reported[1]?.EndDate);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldTellABlockedDayFromAnOutOfRangeOne()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.MaxDate, new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.DisabledDaysOfWeek, new[] { DayOfWeek.Saturday, DayOfWeek.Sunday });
+            parameters.Add(p => p.DisabledDateErrorMessage, "not available");
+            parameters.Add(p => p.OutOfRangeErrorMessage, "outside the range");
+        });
+
+        // 2026-01-10 is a Saturday, so it is blocked rather than out of bounds.
+        component.Find(".bit-dtrp-inp").Change("2026-01-10 - 2026-01-13");
+        component.Find("form").Submit();
+        Assert.IsTrue(component.FindAll(".validation-message").Any(m => m.TextContent == "not available"));
+
+        // 2027 is past MaxDate, and the bounds are a different mistake from a blocked day.
+        component.Find(".bit-dtrp-inp").Change("2027-01-12 - 2027-01-13");
+        component.Find("form").Submit();
+        Assert.IsTrue(component.FindAll(".validation-message").Any(m => m.TextContent == "outside the range"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerMonthGridShouldAlwaysHaveAReachableCell()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        var months = component.FindAll(".bit-dtrp-mwp .bit-dtrp-pkb");
+        Assert.AreEqual(12, months.Count);
+        Assert.AreEqual(1, months.Count(m => m.GetAttribute("tabindex") == "0"));
+        Assert.IsTrue(months.All(m => string.IsNullOrEmpty(m.Id) is false));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerMonthGridShouldAnswerTheArrowKeys()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        var focused = component.FindAll(".bit-dtrp-mwp .bit-dtrp-pkb").Single(m => m.GetAttribute("tabindex") == "0");
+        Assert.AreEqual("June", focused.GetAttribute("title"));
+
+        focused.KeyDown(Key.Right);
+        focused = component.FindAll(".bit-dtrp-mwp .bit-dtrp-pkb").Single(m => m.GetAttribute("tabindex") == "0");
+        Assert.AreEqual("July", focused.GetAttribute("title"));
+
+        // One row of the month grid is four months wide.
+        focused.KeyDown(Key.Down);
+        focused = component.FindAll(".bit-dtrp-mwp .bit-dtrp-pkb").Single(m => m.GetAttribute("tabindex") == "0");
+        Assert.AreEqual("November", focused.GetAttribute("title"));
+
+        focused.KeyDown(Key.Home);
+        focused = component.FindAll(".bit-dtrp-mwp .bit-dtrp-pkb").Single(m => m.GetAttribute("tabindex") == "0");
+        Assert.AreEqual("January", focused.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerYearGridShouldStayReachableWhenTheRangeMovesAwayFromTheCurrentYear()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        // Open the year grid, then browse to a range of years that no longer holds the displayed year.
+        component.Find(".bit-dtrp-mwp .bit-dtrp-ptb").Click();
+        component.FindAll(".bit-dtrp-mwp .bit-dtrp-nbt")[0].Click();
+
+        var years = component.FindAll(".bit-dtrp-mwp .bit-dtrp-pkb");
+        Assert.AreEqual(12, years.Count);
+        Assert.AreEqual(1, years.Count(y => y.GetAttribute("tabindex") == "0"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldReportAnInvalidValueOnTheField()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.InvalidErrorMessage, "not a range");
+        });
+
+        Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-invalid"));
+
+        component.Find(".bit-dtrp-inp").Change("nonsense");
+        component.Find("form").Submit();
+
+        Assert.AreEqual("true", component.Find(".bit-dtrp-inp").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldTakeItsUnsetParametersFromTheCascade()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePickerParamsTest>();
+
+        var pickers = component.FindAll(".bit-dtrp");
+
+        // The first picker sets nothing of its own, so it takes the whole cascade.
+        Assert.IsTrue(pickers[0].ClassList.Contains("bit-dtrp-inf"));
+        Assert.IsTrue(pickers[0].ClassList.Contains("bit-dtrp-lg"));
+
+        // The second one writes its own Color, which the cascade may not overwrite, and still takes the Size.
+        Assert.IsTrue(pickers[1].ClassList.Contains("bit-dtrp-suc"));
+        Assert.IsTrue(pickers[1].ClassList.Contains("bit-dtrp-lg"));
+
+        // The cascaded Placeholder reaches the field of the one that left it unset.
+        Assert.AreEqual("from the cascade", component.FindAll(".bit-dtrp-inp")[0].GetAttribute("placeholder"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerCascadedViewParametersShouldReachTheFirstRender()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePickerParamsTest>();
+
+        // MonthCount is one of the parameters the calendar is built from, and the calendar is built while
+        // initializing - before OnParametersSet has ever run - so a cascaded one has to be in by then.
+        Assert.AreEqual(2, component.FindAll(".bit-dtrp-cal")[0].QuerySelectorAll(".bit-dtrp-dwp").Length);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldNotRenderTheActionsWhileItAutoApplies()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-act"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerStandaloneShouldNotRenderTheActions()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // A standalone picker has no callout to commit or discard, so the buttons would promise something
+        // there is no transaction behind.
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.AutoApply, false);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-act"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerApplyShouldStayDisabledUntilTheRangeIsComplete()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoApply, false);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        component.Find(".bit-dtrp-wrp").Click();
+
+        // Nothing is picked yet, so there is nothing half-finished to hold Apply back.
+        Assert.IsFalse(component.Find(".bit-dtrp-apb").HasAttribute("disabled"));
+
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[9].Click();
+        Assert.IsTrue(component.Find(".bit-dtrp-apb").HasAttribute("disabled"));
+
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[14].Click();
+        Assert.IsFalse(component.Find(".bit-dtrp-apb").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerApplyShouldCommitTheRangeAndCloseTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        BitDateRangePickerValue? value = null;
+        BitDateRangePickerValue? applied = null;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoApply, false);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnApply, v => applied = v);
+        });
+
+        component.Find(".bit-dtrp-wrp").Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[9].Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[14].Click();
+
+        // AutoClose is ignored while the callout waits for its Apply button.
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        component.Find(".bit-dtrp-apb").Click();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.IsNotNull(value?.StartDate);
+        Assert.IsNotNull(value?.EndDate);
+        Assert.AreEqual(value?.StartDate, applied?.StartDate);
+        Assert.AreEqual(value?.EndDate, applied?.EndDate);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerCancelShouldPutBackTheRangeTheCalloutWasOpenedOn()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var original = new BitDateRangePickerValue
+        {
+            StartDate = FixedDate(2024, 6, 3),
+            EndDate = FixedDate(2024, 6, 5)
+        };
+
+        var value = original;
+        var cancelled = 0;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoApply, false);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnCancel, () => cancelled++);
+        });
+
+        component.Find(".bit-dtrp-wrp").Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[9].Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[14].Click();
+
+        // The picks reach the value as they are made, which is what the calendar itself reads.
+        Assert.AreNotEqual(original.StartDate, value?.StartDate);
+
+        component.Find(".bit-dtrp-cnb").Click();
+
+        Assert.AreEqual(1, cancelled);
+        Assert.AreEqual(original.StartDate, value?.StartDate);
+        Assert.AreEqual(original.EndDate, value?.EndDate);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerDismissingTheCalloutShouldRollTheRangeBackToo()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var original = new BitDateRangePickerValue
+        {
+            StartDate = FixedDate(2024, 6, 3),
+            EndDate = FixedDate(2024, 6, 5)
+        };
+
+        var value = original;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoApply, false);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtrp-wrp").Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[9].Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[14].Click();
+
+        // Escape is a dismissal like any other, so it discards the transaction rather than committing it.
+        component.Find(".bit-dtrp-cac").KeyDown(Key.Escape);
+
+        Assert.AreEqual(original.StartDate, value?.StartDate);
+        Assert.AreEqual(original.EndDate, value?.EndDate);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerReopeningShouldSnapshotTheRangeAgain()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        BitDateRangePickerValue? value = null;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoApply, false);
+            parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtrp-wrp").Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[9].Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[14].Click();
+        component.Find(".bit-dtrp-apb").Click();
+
+        var applied = value;
+        Assert.IsNotNull(applied);
+
+        // The second transaction is measured against what the first one committed, not against the empty
+        // range the picker started its life with.
+        component.Find(".bit-dtrp-wrp").Click();
+        component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[20].Click();
+        component.Find(".bit-dtrp-cnb").Click();
+
+        Assert.AreEqual(applied.StartDate, value?.StartDate);
+        Assert.AreEqual(applied.EndDate, value?.EndDate);
+    }
 }

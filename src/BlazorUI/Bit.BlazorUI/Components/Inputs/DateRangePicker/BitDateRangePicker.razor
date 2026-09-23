@@ -64,6 +64,7 @@
                        value="@CurrentValueAsString"
                        disabled="@(IsEnabled is false)"
                        readonly="@(AllowTextInput is false || ReadOnly)"
+                       aria-invalid="@(ValueInvalid is true ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _calloutId : null)"
                        aria-labelledby="@(Label.HasValue() ? _labelId : null)"
@@ -289,10 +290,7 @@
                                 @if (isLastMonth && (_showMonthPickerAsOverlayInternal || IsMonthPickerVisible is false) && _showTimePickerAsOverlayInternal && ShowTimePicker)
                                 {
                                     <button @onclick="@ToggleTimePickerOverlay"
-                                            tabindex="0"
                                             type="button"
-                                            aria-live="polite"
-                                            aria-atomic="true"
                                             title="@ShowTimePickerTitle"
                                             disabled="@(IsEnabled is false)"
                                             aria-label="@ShowTimePickerTitle"
@@ -315,7 +313,11 @@
                             <div role="row" style="@Styles?.DaysHeaderRow" class="bit-dtrp-dgh @Classes?.DaysHeaderRow">
                                 @if (ShowWeekNumbers)
                                 {
-                                    <div role="columnheader" style="@Styles?.WeekNumbersHeader" class="bit-dtrp-wlb @Classes?.WeekNumbersHeader"></div>
+                                    <div role="columnheader"
+                                         title="@WeekNumbersHeaderTitle"
+                                         aria-label="@WeekNumbersHeaderTitle"
+                                         style="@Styles?.WeekNumbersHeader"
+                                         class="bit-dtrp-wlb @Classes?.WeekNumbersHeader"></div>
                                 }
 
                                 @for (var index = 0; index < 7; index++)
@@ -372,7 +374,7 @@
                                                 type="button"
                                                 role="gridcell"
                                                 id="@GetDayButtonId(date)"
-                                                aria-readonly="true"
+                                                aria-readonly="@(ReadOnly ? "true" : null)"
                                                 aria-current="@(isToday ? "date" : null)"
                                                 aria-label="@date.ToString(_culture.DateTimeFormat.LongDatePattern, _culture)"
                                                 style="@style @Styles?.DayButton"
@@ -472,10 +474,7 @@
                                 @if (_showTimePickerAsOverlayInternal && ShowTimePicker)
                                 {
                                     <button @onclick="@ToggleTimePickerOverlay"
-                                            tabindex="0"
                                             type="button"
-                                            aria-live="polite"
-                                            aria-atomic="true"
                                             title="@ShowTimePickerTitle"
                                             disabled="@(IsEnabled is false)"
                                             aria-label="@ShowTimePickerTitle"
@@ -489,25 +488,34 @@
                                 }
                             </div>
                         </div>
+                        @* Not every calendar has twelve months: a leap year of the Hebrew calendar has thirteen. *@
+                        var monthsInYear = GetMonthsInCurrentYear();
+                        var monthRowCount = (monthsInYear + 3) / 4;
+                        var focusableMonth = GetFocusableMonth();
                         <div style="@Styles?.MonthsContainer" class="bit-dtrp-pkc @Classes?.MonthsContainer" role="grid" aria-label="@_currentYear">
-                            @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                            @for (var rowIndex = 0; rowIndex < monthRowCount; rowIndex++)
                             {
                                 <div style="@Styles?.MonthsRow" class="bit-dtrp-pkr @Classes?.MonthsRow" role="row">
                                     @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                                     {
                                         var month = (rowIndex * 4) + cellIndex;
+
+                                        if (month > monthsInYear) continue;
+
                                         var monthName = _culture.DateTimeFormat.GetMonthName(month);
                                         var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
                                         var selected = month == _currentMonth;
                                         <button @onclick="() => SelectMonth(month)"
+                                                @onkeydown="e => HandleMonthKeyDown(e, month)"
                                                 type="button"
                                                 role="gridcell"
                                                 title="@monthName"
-                                                aria-readonly="true"
+                                                id="@GetMonthButtonId(month)"
+                                                aria-readonly="@(ReadOnly ? "true" : null)"
                                                 aria-label="@monthName"
                                                 disabled="@disabled"
                                                 aria-disabled="@disabled"
-                                                tabindex="@(selected ? 0 : -1)"
+                                                tabindex="@(month == focusableMonth ? 0 : -1)"
                                                 aria-selected="@(selected ? "true" : "false")"
                                                 style="@Styles?.MonthButton"
                                                 class="bit-dtrp-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton">
@@ -589,6 +597,9 @@
                                 </button>
                             </div>
                         </div>
+                        @* The displayed year is not always inside the range on screen - browsing the
+                           ranges moves the range alone - so the roving tabindex has its own fallback. *@
+                        var focusableYear = GetFocusableYear();
                         <div style="@Styles?.YearsContainer" class="bit-dtrp-pkc @Classes?.YearsContainer" role="grid" aria-label="@_yearPickerStartYear - @_yearPickerEndYear">
                             @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                             {
@@ -599,11 +610,13 @@
                                         var disabled = IsYearOutOfMinAndMaxDate(year);
                                         var selected = year == _currentYear;
                                         <button @onclick="() => SelectYear(year)"
+                                                @onkeydown="e => HandleYearKeyDown(e, year)"
                                                 type="button"
                                                 role="gridcell"
+                                                id="@GetYearButtonId(year)"
                                                 disabled="@disabled"
-                                                tabindex="@(selected ? 0 : -1)"
-                                                aria-readonly="true"
+                                                tabindex="@(year == focusableYear ? 0 : -1)"
+                                                aria-readonly="@(ReadOnly ? "true" : null)"
                                                 aria-disabled="@disabled"
                                                 aria-selected="@(selected ? "true" : "false")"
                                                 style="@Styles?.YearButton"
@@ -680,6 +693,7 @@
                                        class="bit-dtrp-cic @startIncreaseHourIconCss @Classes?.StartTimeIncreaseHourIcon" />
                                 </button>
                                 <input @ref="_startTimeHourInputRef"
+                                       @onkeydown="e => HandleOnTimeInputKeyDown(e, true, true)"
                                        @bind="@_startTimeHourView"
                                        @bind:event="oninput"
                                        @onfocus="() => HandleOnHourInputFocus(true)"
@@ -726,6 +740,7 @@
                                        class="bit-dtrp-cic @startIncreaseMinuteIconCss @Classes?.StartTimeIncreaseMinuteIcon" />
                                 </button>
                                 <input @ref="_startTimeMinuteInputRef"
+                                       @onkeydown="e => HandleOnTimeInputKeyDown(e, false, true)"
                                        @bind="@_startTimeMinuteView"
                                        @bind:event="oninput"
                                        @onfocus="() => HandleOnMinuteInputFocus(true)"
@@ -765,6 +780,7 @@
 
                                     <button @onclick="() => HandleOnAmClick(true)"
                                             type="button"
+                                            aria-pressed="@(IsAm(_startTimeHour) is true ? "true" : "false")"
                                             disabled="@amDisabled"
                                             aria-disabled="@amDisabled"
                                             style="@Styles?.StartTimeAmButton"
@@ -774,6 +790,7 @@
 
                                     <button @onclick="() => HandleOnPmClick(true)"
                                             type="button"
+                                            aria-pressed="@(IsAm(_startTimeHour) is false ? "true" : "false")"
                                             disabled="@pmDisabled"
                                             aria-disabled="@pmDisabled"
                                             style="@Styles?.StartTimePmButton"
@@ -801,6 +818,7 @@
                                        class="bit-dtrp-cic @endIncreaseHourIconCss @Classes?.EndTimeIncreaseHourIcon" />
                                 </button>
                                 <input @ref="_endTimeHourInputRef"
+                                       @onkeydown="e => HandleOnTimeInputKeyDown(e, true, false)"
                                        @bind="@_endTimeHourView"
                                        @bind:event="oninput"
                                        @onfocus="() => HandleOnHourInputFocus(false)"
@@ -847,6 +865,7 @@
                                        class="bit-dtrp-cic @endIncreaseMinuteIconCss @Classes?.EndTimeIncreaseMinuteIcon" />
                                 </button>
                                 <input @ref="_endTimeMinuteInputRef"
+                                       @onkeydown="e => HandleOnTimeInputKeyDown(e, false, false)"
                                        @bind="@_endTimeMinuteView"
                                        @bind:event="oninput"
                                        @onfocus="() => HandleOnMinuteInputFocus(false)"
@@ -885,6 +904,7 @@
                                 <div style="@Styles?.EndTimeAmPmContainer" class="bit-dtrp-tpr bit-dtrp-am-pm @Classes?.EndTimeAmPmContainer">
                                     <button @onclick="() => HandleOnAmClick(false)"
                                             type="button"
+                                            aria-pressed="@(IsAm(_endTimeHour) is true ? "true" : "false")"
                                             disabled="@amDisabled"
                                             aria-disabled="@amDisabled"
                                             style="@Styles?.EndTimeAmButton"
@@ -894,6 +914,7 @@
 
                                     <button @onclick="() => HandleOnPmClick(false)"
                                             type="button"
+                                            aria-pressed="@(IsAm(_endTimeHour) is false ? "true" : "false")"
                                             disabled="@pmDisabled"
                                             aria-disabled="@pmDisabled"
                                             style="@Styles?.EndTimePmButton"
@@ -913,5 +934,28 @@
                 @CalloutFooterTemplate
             </div>
         }
+        @if (ShowActionButtons())
+        {
+            var applyDisabled = IsApplyDisabled();
+
+            <div id="@_actionsId" style="@Styles?.ActionsContainer" class="bit-dtrp-act @Classes?.ActionsContainer">
+                <button @onclick="HandleOnCancelButtonClick"
+                        type="button"
+                        disabled="@(IsEnabled is false)"
+                        aria-disabled="@(IsEnabled is false)"
+                        style="@Styles?.CancelButton"
+                        class="bit-dtrp-acb bit-dtrp-cnb @Classes?.CancelButton">
+                    @CancelButtonText
+                </button>
+                <button @onclick="HandleOnApplyButtonClick"
+                        type="button"
+                        disabled="@applyDisabled"
+                        aria-disabled="@applyDisabled"
+                        style="@Styles?.ApplyButton"
+                        class="bit-dtrp-acb bit-dtrp-apb @Classes?.ApplyButton">
+                    @ApplyButtonText
+                </button>
+            </div>
+        }
     </div>
-</div>
+</div>

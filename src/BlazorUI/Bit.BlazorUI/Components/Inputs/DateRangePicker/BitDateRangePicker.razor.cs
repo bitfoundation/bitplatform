@@ -26,6 +26,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private bool _focusAfterRender;
+    private int? _focusedYearCell;
+    private int? _focusedMonthCell;
+    private bool _focusTimePickerAfterRender;
+    private string? _focusElementIdAfterRender;
     private DateTime? _focusedDate;
     private DateTime? _hoveredDate;
     private HashSet<DateTime> _disabledDates = [];
@@ -37,6 +41,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
     private BitDateRangePickerPreset? _selectedPreset;
+    private bool _valueSnapshotTaken;
+    private BitDateRangePickerValue? _valueSnapshot;
     private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
@@ -58,6 +64,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private string? _inputId;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
+    private string _actionsId = string.Empty;
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
     private string _dateRangePickerId = string.Empty;
@@ -224,6 +231,20 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the DateRangePicker component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple DateRangePicker
+    /// components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitDateRangePickerParams.ParamName)]
+    public BitDateRangePickerParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Whether or not the DateRangePicker allows string date inputs. A typed range is validated against
     /// every restriction the calendar enforces (MinDate, MaxDate, MinRange, MaxRange, the disabled days
     /// and ExcludeDisabledDates), so an out-of-bounds range is rejected as an invalid value.
@@ -231,8 +252,24 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
+    /// Whether every pick is applied to the value as it is made. Turning it off makes the callout a
+    /// transaction: it renders a Cancel and an Apply button, and the range the callout was opened on is
+    /// put back unless Apply commits the new one. The picks still reach the value while the callout is
+    /// open - that is what the calendar, the presets and the time picker all read - so an application
+    /// watching the value sees the range being built and then either kept or rolled back.
+    /// </summary>
+    /// <remarks>
+    /// It has no effect on a <see cref="Standalone"/> picker, which has no callout to commit or discard,
+    /// and it overrides <see cref="AutoClose"/>, since the callout has to stay open for its Apply button.
+    /// </remarks>
+    [Parameter] public bool AutoApply { get; set; } = true;
+
+    /// <summary>
     /// Whether the DateRangePicker closes automatically after selecting the second value.
     /// </summary>
+    /// <remarks>
+    /// Ignored while <see cref="AutoApply"/> is off: the callout then waits for its Apply button.
+    /// </remarks>
     [Parameter] public bool AutoClose { get; set; } = true;
 
     /// <summary>
@@ -243,6 +280,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// to place the focus on and the parameter does nothing there.
     /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
+    /// The text of the button that commits the picked range, rendered while <see cref="AutoApply"/> is off.
+    /// </summary>
+    [Parameter] public string ApplyButtonText { get; set; } = "Apply";
 
     /// <summary>
     /// Aria label of the DateRangePicker's callout for screen readers.
@@ -296,6 +338,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The name of the close button's icon from the built-in Fluent UI icon set.
     /// </summary>
     [Parameter] public string? CloseButtonIconName { get; set; }
+
+    /// <summary>
+    /// The text of the button that discards the picked range, rendered while <see cref="AutoApply"/> is off.
+    /// </summary>
+    [Parameter] public string CancelButtonText { get; set; } = "Cancel";
 
     /// <summary>
     /// The title of the close button (tooltip).
@@ -367,6 +414,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public IEnumerable<DayOfWeek>? DisabledDaysOfWeek { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a typed range that the DateRangePicker does not allow to be
+    /// selected, through <see cref="DisabledDates"/>, <see cref="DisabledDaysOfWeek"/> or
+    /// <see cref="IsDateDisabled"/>.
+    /// </summary>
+    [Parameter] public string? DisabledDateErrorMessage { get; set; }
+
+    /// <summary>
+    /// Determines the allowed drop directions of the callout.
+    /// </summary>
+    [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
     /// <summary>
     /// Whether the disabled days are excluded from the selected range. By default a range simply spans over
@@ -482,6 +541,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// Whether the month picker should highlight the selected month.
     /// </summary>
     [Parameter] public bool HighlightSelectedMonth { get; set; }
+
+    /// <summary>
+    /// Whether the day picker should highlight today's day. It only affects the visual style of the
+    /// day cell; the accessibility attributes still report the day as the current date.
+    /// </summary>
+    [Parameter] public bool HighlightToday { get; set; } = true;
 
     /// <summary>
     /// Custom template for the DateRangePicker's icon.
@@ -636,6 +701,19 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public EventCallback OnClear { get; set; }
 
     /// <summary>
+    /// The callback for when the picked range is committed by the Apply button of a picker that does not
+    /// <see cref="AutoApply"/>.
+    /// </summary>
+    [Parameter] public EventCallback<BitDateRangePickerValue?> OnApply { get; set; }
+
+    /// <summary>
+    /// The callback for when the picked range is discarded by the Cancel button of a picker that does not
+    /// <see cref="AutoApply"/>. A callout dismissed any other way rolls the range back just the same, but
+    /// reports itself through <see cref="OnClose"/> alone.
+    /// </summary>
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    /// <summary>
     /// The callback for clicking on the DateRangePicker's input.
     /// </summary>
     [Parameter] public EventCallback OnClick { get; set; }
@@ -688,6 +766,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The callback for when a preset is selected. The argument is the selected preset.
     /// </summary>
     [Parameter] public EventCallback<BitDateRangePickerPreset> OnPresetSelect { get; set; }
+
+    /// <summary>
+    /// The callback for when the user picks a day in the calendar, reporting the range as it stands after
+    /// the pick - a range with only its start date set while the second day is still to be chosen.
+    /// </summary>
+    [Parameter] public EventCallback<BitDateRangePickerValue?> OnSelectDate { get; set; }
 
     /// <summary>
     /// The placeholder text of the DateRangePicker's input.
@@ -799,6 +883,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
+
+    /// <summary>
+    /// Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label.
+    /// </summary>
+    [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
     /// The title and the aria-label of the start time-picker's increase-hour button.
@@ -1036,6 +1125,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public CalendarWeekRule? WeekNumberRule { get; set; }
 
     /// <summary>
+    /// The accessible name of the empty header cell above the week numbers column.
+    /// </summary>
+    [Parameter] public string WeekNumbersHeaderTitle { get; set; } = "Week";
+
+    /// <summary>
     /// The title of the week number (tooltip).
     /// </summary>
     [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
@@ -1075,6 +1169,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (await AssignIsOpenInternal(false) is false) return;
 
+        RevertToValueSnapshot();
+
         // The focus is on its way to whatever callout is being opened in this one's place, so this is the
         // one close that must not pull it back onto the field.
         await OnClose.InvokeAsync();
@@ -1100,6 +1196,80 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
 
+    // The callout is a transaction while AutoApply is off. The picks still reach the value as they are
+    // made - the calendar, the presets and the time picker are all driven by it, and a draft of their own
+    // would be a second source of truth - so what the transaction holds is the range the callout was
+    // opened on, to put back if nothing commits the new one.
+    private void CaptureValueSnapshot()
+    {
+        if (AutoApply || Standalone) return;
+
+        _valueSnapshot = CurrentValue is null
+                         ? null
+                         : new BitDateRangePickerValue { StartDate = CurrentValue.StartDate, EndDate = CurrentValue.EndDate };
+        _valueSnapshotTaken = true;
+    }
+
+    private void ReleaseValueSnapshot()
+    {
+        _valueSnapshot = null;
+        _valueSnapshotTaken = false;
+    }
+
+    private void RevertToValueSnapshot()
+    {
+        if (_valueSnapshotTaken is false) return;
+
+        var snapshot = _valueSnapshot;
+
+        ReleaseValueSnapshot();
+
+        if (IsSameRange(snapshot, CurrentValue)) return;
+
+        CurrentValue = snapshot;
+    }
+
+    private static bool IsSameRange(BitDateRangePickerValue? left, BitDateRangePickerValue? right)
+    {
+        if (left is null || right is null) return left is null && right is null;
+
+        return left.StartDate == right.StartDate && left.EndDate == right.EndDate;
+    }
+
+    // The Apply and Cancel buttons are the callout's own, so a standalone picker - which has no callout to
+    // commit or discard - never renders them however AutoApply is set.
+    private bool ShowActionButtons() => AutoApply is false && Standalone is false;
+
+    // A range with one end picked and the other still to come is the transient state of the day grid, not
+    // something to commit; a cleared value is.
+    private bool IsApplyDisabled()
+    {
+        if (IsEnabled is false || ReadOnly) return true;
+
+        return CurrentValue is not null && CurrentValue.StartDate.HasValue != CurrentValue.EndDate.HasValue;
+    }
+
+    private async Task HandleOnApplyButtonClick()
+    {
+        if (IsApplyDisabled()) return;
+
+        // Released before the close, so the close leaves the committed range alone.
+        ReleaseValueSnapshot();
+
+        await OnApply.InvokeAsync(CurrentValue);
+
+        await CloseCalloutAndRestoreFocus();
+    }
+
+    private async Task HandleOnCancelButtonClick()
+    {
+        if (IsEnabled is false) return;
+
+        await OnCancel.InvokeAsync();
+
+        await CloseCalloutAndRestoreFocus();
+    }
+
     /// <summary>
     /// Opens the callout of the DateRangePicker, exactly like clicking on its input.
     /// </summary>
@@ -1120,6 +1290,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (await AssignIsOpenInternal(false) is false) return;
 
+        RevertToValueSnapshot();
+
         await ToggleCallout();
 
         await OnClose.InvokeAsync();
@@ -1136,6 +1308,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => GetColorClass());
+
+        ClassBuilder.Register(GetSizeClass);
 
         ClassBuilder.Register(() => BitCssClasses.CultureRtl(Dir, _culture));
 
@@ -1165,10 +1339,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     protected override void OnInitialized()
     {
+        // The cascade is read here as well as in OnParametersSet because the whole calendar view is built
+        // while initializing, which is before OnParametersSet has run for the first time - a cascaded
+        // Culture or MonthCount applied only there would arrive after the view it shapes was settled.
+        CascadingParameters?.UpdateParameters(this);
+
         _dateRangePickerId = $"DateRangePicker-{UniqueId}";
         _labelId = $"{_dateRangePickerId}-label";
         _headerId = $"{_dateRangePickerId}-header";
         _footerId = $"{_dateRangePickerId}-footer";
+        _actionsId = $"{_dateRangePickerId}-actions";
         _calloutId = $"{_dateRangePickerId}-callout";
         _overlayId = $"{_dateRangePickerId}-overlay";
         _inputId = $"{_dateRangePickerId}-input";
@@ -1180,6 +1360,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         OnSetParameters();
 
         base.OnInitialized();
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDateRangePickerParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1205,7 +1393,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                         id: _calloutId,
                         trigger: 0.25m,
                         position: BitPanelPosition.Top,
-                        isRtl: Dir is BitDir.Rtl,
+                        isRtl: IsRtl(),
                         orientationLock: BitSwipeOrientation.Vertical,
                         dotnetObj: _dotnetObj);
                 }
@@ -1215,12 +1403,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 // outside a moment later end up in the same state.
                 if (IsOpen && Standalone is false)
                 {
+                    CaptureValueSnapshot();
+
                     await ToggleCallout();
 
                     if (AllowTextInput is false)
                     {
-                        _focusedDate = GetFocusableDay();
-                        _focusAfterRender = true;
+                        MoveFocusToTheVisiblePicker();
                         StateHasChanged();
                     }
 
@@ -1253,6 +1442,29 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 catch (JSDisconnectedException) { } // we can ignore this exception here
             }
         }
+
+        if (_focusElementIdAfterRender.HasValue())
+        {
+            var elementId = _focusElementIdAfterRender!;
+            _focusElementIdAfterRender = null;
+
+            try
+            {
+                await _js.BitCalendarsFocusCell(elementId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        if (_focusTimePickerAfterRender)
+        {
+            _focusTimePickerAfterRender = false;
+
+            try
+            {
+                await _startTimeHourInputRef.FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
     }
 
     protected override bool TryParseValueFromString(
@@ -1282,9 +1494,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (IsRangeWithinRestrictions(parsedValue!) is false)
         {
             result = default;
-            validationErrorMessage = OutOfRangeErrorMessage.HasValue()
-                ? OutOfRangeErrorMessage!
-                : $"The {DisplayName ?? FieldIdentifier.FieldName} field is out of the allowed range.";
+
+            // A day the application has blocked (DisabledDates, DisabledDaysOfWeek, IsDateDisabled) is
+            // reported apart from a range that simply falls outside the bounds, so the two can be worded
+            // differently - the first is a day that is never available, the second a limit to respect.
+            validationErrorMessage = RangeTouchesABlockedDay(parsedValue!)
+                ? (DisabledDateErrorMessage.HasValue()
+                    ? DisabledDateErrorMessage!
+                    : $"The {DisplayName ?? FieldIdentifier.FieldName} field contains a date that is not available.")
+                : (OutOfRangeErrorMessage.HasValue()
+                    ? OutOfRangeErrorMessage!
+                    : $"The {DisplayName ?? FieldIdentifier.FieldName} field is out of the allowed range.");
             return false;
         }
 
@@ -1439,6 +1659,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             if (isOpen)
             {
+                CaptureValueSnapshot();
+
                 await PrepareCalloutForOpen();
 
                 // The callout holds the tab order while it is open, so an open pushed in from the outside has
@@ -1446,11 +1668,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 // on the page behind an overlay that it can no longer reach.
                 if (AllowTextInput is false)
                 {
-                    _focusedDate = GetFocusableDay();
-                    _focusAfterRender = true;
+                    MoveFocusToTheVisiblePicker();
                 }
 
                 StateHasChanged();
+            }
+
+            if (isOpen is false)
+            {
+                RevertToValueSnapshot();
             }
 
             await ToggleCallout();
@@ -1483,14 +1709,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (await AssignIsOpenInternal(true) is false) return;
 
+        if (wasOpen is false)
+        {
+            CaptureValueSnapshot();
+        }
+
         await PrepareCalloutForOpen();
 
-        // The callout is a dialog, so the keyboard focus moves into the day grid with it. An editable
-        // input keeps the focus instead, since the user may well want to go on typing the range.
+        // The callout is a dialog, so the keyboard focus moves into it. An editable input keeps the focus
+        // instead, since the user may well want to go on typing the range.
         if (AllowTextInput is false)
         {
-            _focusedDate = GetFocusableDay();
-            _focusAfterRender = true;
+            MoveFocusToTheVisiblePicker();
         }
         else
         {
@@ -1659,7 +1889,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         OnSetParameters();
     }
 
-    private void OnSetParameters()
+    // Internal rather than private so that BitDateRangePickerParams can run the pass again after it has
+    // filled in the parameters the view is built from: the cascade reaches the component after
+    // OnInitialized has already run it.
+    internal void OnSetParameters()
     {
         // The bounds are read in the time zone of the component, so the time zone is settled first.
         _timeZone = TimeZone ?? TimeZoneInfo.Local;
@@ -1826,8 +2059,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             curValue.EndDate = selectedDateTimeOffset;
 
             // A one-way bound IsOpen cannot be closed by the selection, so the callout stays open on the
-            // range that was just completed instead - the selection itself still goes through.
-            if (AutoClose && Standalone is false &&
+            // range that was just completed instead - the selection itself still goes through. A callout
+            // waiting for its Apply button stays open for the same reason.
+            if (AutoClose && AutoApply && Standalone is false &&
                 (IsOpenHasBeenSet is false || IsOpenChanged.HasDelegate))
             {
                 await AssignIsOpenInternal(false);
@@ -1882,6 +2116,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         GenerateMonthData(_currentYear, _currentMonth);
 
         await NotifyMonthChange(previousYear, previousMonth);
+
+        await OnSelectDate.InvokeAsync(CurrentValue);
     }
 
     private async Task SelectPreset(BitDateRangePickerPreset preset)
@@ -1948,8 +2184,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         await OnPresetSelect.InvokeAsync(preset);
 
         // A one-way bound IsOpen cannot be closed by the preset, so the callout stays open on the range
-        // the preset just applied instead - the preset itself still goes through.
-        if (AutoClose && Standalone is false &&
+        // the preset just applied instead - the preset itself still goes through. A callout waiting for
+        // its Apply button stays open for the same reason.
+        if (AutoClose && AutoApply && Standalone is false &&
             (IsOpenHasBeenSet is false || IsOpenChanged.HasDelegate))
         {
             await AssignIsOpenInternal(false);
@@ -1980,10 +2217,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (e.Key == "Escape")
         {
-            if (IsOpen)
-            {
-                await CloseCallout();
-            }
+            await CloseCalloutAndRestoreFocus();
 
             return;
         }
@@ -2012,6 +2246,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             ToggleMonthPickerOverlay();
         }
+        else
+        {
+            FocusMonthCell(month);
+        }
 
         await NotifyMonthChange(previousYear, previousMonth);
     }
@@ -2032,6 +2270,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ToggleBetweenMonthAndYearPicker();
 
+        // The year that was activated goes away with the year grid, so the focus is handed to the month
+        // grid that replaces it - otherwise a keyboard selection drops the focus onto the body.
+        FocusMonthCell(GetFocusableMonth());
+
         await NotifyMonthChange(previousYear, previousMonth);
     }
 
@@ -2047,6 +2289,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         _showMonthPicker = !_showMonthPicker;
+
+        // The grid that comes into view starts its roving tabindex over, on the month or the year the
+        // calendar is actually displaying, rather than on wherever the keyboard left it last time.
+        _focusedYearCell = null;
+        _focusedMonthCell = null;
     }
 
     private async Task HandleMonthChange(bool isNext)
@@ -2280,11 +2527,20 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private void ToggleMonthPickerOverlay()
     {
         _isMonthPickerOverlayOnTop = !_isMonthPickerOverlayOnTop;
+
+        // The grid that comes into view starts its roving tabindex over, on the month or the year the
+        // calendar is actually displaying, rather than on wherever the keyboard left it last time.
+        _focusedYearCell = null;
+        _focusedMonthCell = null;
+
+        MoveFocusToTheVisiblePicker();
     }
 
     private void ToggleTimePickerOverlay()
     {
         _isTimePickerOverlayOnTop = !_isTimePickerOverlayOnTop;
+
+        MoveFocusToTheVisiblePicker();
     }
 
     private bool CanChangeMonth(bool isNext)
@@ -2579,6 +2835,21 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return true;
     }
 
+    // Whether what a range breaks is one of the explicitly blocked days rather than one of the bounds.
+    private bool RangeTouchesABlockedDay(BitDateRangePickerValue range)
+    {
+        DateTime? startDate = range.StartDate.HasValue ? GetDateTime(range.StartDate.Value).Date : null;
+        DateTime? endDate = range.EndDate.HasValue ? GetDateTime(range.EndDate.Value).Date : null;
+
+        if (startDate.HasValue && IsDayBlocked(startDate.Value)) return true;
+
+        if (endDate.HasValue && IsDayBlocked(endDate.Value)) return true;
+
+        if (startDate.HasValue is false || endDate.HasValue is false) return false;
+
+        return ExcludeDisabledDates && RangeCoversBlockedDay(startDate.Value, endDate.Value);
+    }
+
     private bool IsDayDisabled(DateTime date)
     {
         if (IsWeekDayOutOfMinAndMaxDate(date)) return true;
@@ -2732,24 +3003,264 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return IsInRenderedMonths(date) && IsDayDisabled(date) is false;
     }
 
-    // Escape closes the callout from anywhere inside it, as the dialog pattern requires.
-    private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
+    private string GetMonthButtonId(int month)
+    {
+        return FormattableString.Invariant($"{_dateRangePickerId}-month-{month:D2}");
+    }
+
+    private string GetYearButtonId(int year)
+    {
+        return FormattableString.Invariant($"{_dateRangePickerId}-year-{year:D4}");
+    }
+
+    private int GetMonthsInCurrentYear()
+    {
+        // Not every calendar has twelve months: a leap year of the Hebrew calendar has thirteen.
+        return _culture.Calendar.GetMonthsInYear(_currentYear);
+    }
+
+    // The single month of the month grid that is in the tab sequence (the roving tabindex of the APG
+    // grid pattern): the one the keyboard last landed on, otherwise the month the calendar displays,
+    // and as a last resort the first month the Min/Max range allows - the grid must never be
+    // unreachable, so a month is always returned even when every one of them is disabled.
+    private int GetFocusableMonth()
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+
+        if (_focusedMonthCell.HasValue &&
+            _focusedMonthCell.Value >= 1 && _focusedMonthCell.Value <= monthsInYear &&
+            IsMonthOutOfMinAndMaxDate(_focusedMonthCell.Value) is false) return _focusedMonthCell.Value;
+
+        if (_currentMonth >= 1 && _currentMonth <= monthsInYear &&
+            IsMonthOutOfMinAndMaxDate(_currentMonth) is false) return _currentMonth;
+
+        for (var month = 1; month <= monthsInYear; month++)
+        {
+            if (IsMonthOutOfMinAndMaxDate(month) is false) return month;
+        }
+
+        return 1;
+    }
+
+    // The same for the year grid. The displayed year is not always inside the range on screen, since
+    // browsing the ranges moves the range alone, so it needs a fallback of its own.
+    private int GetFocusableYear()
+    {
+        if (_focusedYearCell.HasValue &&
+            _focusedYearCell.Value >= _yearPickerStartYear && _focusedYearCell.Value <= _yearPickerEndYear &&
+            IsYearOutOfMinAndMaxDate(_focusedYearCell.Value) is false) return _focusedYearCell.Value;
+
+        if (_currentYear >= _yearPickerStartYear && _currentYear <= _yearPickerEndYear &&
+            IsYearOutOfMinAndMaxDate(_currentYear) is false) return _currentYear;
+
+        for (var year = _yearPickerStartYear; year <= _yearPickerEndYear; year++)
+        {
+            if (IsYearOutOfMinAndMaxDate(year) is false) return year;
+        }
+
+        return _yearPickerStartYear;
+    }
+
+    // The month grid answers the same keys as the day grid, one row being four months wide, and
+    // PageUp/PageDown moving to the same month of the adjacent year.
+    private async Task HandleMonthKeyDown(KeyboardEventArgs e, int month)
+    {
+        if (IsEnabled is false) return;
+
+        if (e.Key is "Escape")
+        {
+            await CloseCalloutAndRestoreFocus();
+            return;
+        }
+
+        if (e.Key is "PageUp" or "PageDown")
+        {
+            var isNext = e.Key is "PageDown";
+
+            if (CanChangeYear(isNext) is false) return;
+
+            await HandleYearChange(isNext);
+
+            FocusMonthCell(GetFocusableMonth());
+            return;
+        }
+
+        var isRtl = IsRtl();
+
+        int? target = e.Key switch
+        {
+            "ArrowLeft" => FindEnabledMonth(month, isRtl ? 1 : -1),
+            "ArrowRight" => FindEnabledMonth(month, isRtl ? -1 : 1),
+            "ArrowUp" => FindEnabledMonth(month, -4),
+            "ArrowDown" => FindEnabledMonth(month, 4),
+            "Home" => FindEnabledMonthFrom(1, 1),
+            "End" => FindEnabledMonthFrom(GetMonthsInCurrentYear(), -1),
+            _ => null
+        };
+
+        if (target.HasValue is false) return;
+
+        FocusMonthCell(target.Value);
+    }
+
+    private void FocusMonthCell(int month)
+    {
+        _focusedMonthCell = month;
+        _focusElementIdAfterRender = GetMonthButtonId(month);
+    }
+
+    private int? FindEnabledMonth(int from, int step)
+    {
+        return FindEnabledMonthFrom(from + step, step);
+    }
+
+    private int? FindEnabledMonthFrom(int from, int step)
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+        var month = from;
+
+        while (month >= 1 && month <= monthsInYear)
+        {
+            if (IsMonthOutOfMinAndMaxDate(month) is false) return month;
+
+            month += step;
+        }
+
+        return null;
+    }
+
+    // The year grid answers the same keys, one row being four years wide, and PageUp/PageDown moving to
+    // the adjacent range of years.
+    private async Task HandleYearKeyDown(KeyboardEventArgs e, int year)
+    {
+        if (IsEnabled is false) return;
+
+        if (e.Key is "Escape")
+        {
+            await CloseCalloutAndRestoreFocus();
+            return;
+        }
+
+        if (e.Key is "PageUp" or "PageDown")
+        {
+            var isNext = e.Key is "PageDown";
+
+            if (CanChangeYearRange(isNext) is false) return;
+
+            HandleYearRangeChange(isNext);
+
+            _focusedYearCell = null;
+            FocusYearCell(GetFocusableYear());
+            return;
+        }
+
+        var isRtl = IsRtl();
+
+        int? target = e.Key switch
+        {
+            "ArrowLeft" => FindEnabledYear(year, isRtl ? 1 : -1),
+            "ArrowRight" => FindEnabledYear(year, isRtl ? -1 : 1),
+            "ArrowUp" => FindEnabledYear(year, -4),
+            "ArrowDown" => FindEnabledYear(year, 4),
+            "Home" => FindEnabledYearFrom(_yearPickerStartYear, 1),
+            "End" => FindEnabledYearFrom(_yearPickerEndYear, -1),
+            _ => null
+        };
+
+        if (target.HasValue is false) return;
+
+        FocusYearCell(target.Value);
+    }
+
+    private void FocusYearCell(int year)
+    {
+        _focusedYearCell = year;
+        _focusElementIdAfterRender = GetYearButtonId(year);
+    }
+
+    private int? FindEnabledYear(int from, int step)
+    {
+        return FindEnabledYearFrom(from + step, step);
+    }
+
+    private int? FindEnabledYearFrom(int from, int step)
+    {
+        var year = from;
+
+        while (year >= _yearPickerStartYear && year <= _yearPickerEndYear)
+        {
+            if (IsYearOutOfMinAndMaxDate(year) is false) return year;
+
+            year += step;
+        }
+
+        return null;
+    }
+
+    // Each toggle and each activation swaps one whole picker for another, taking the element that was
+    // activated out of the DOM with it, so the focus has to be handed over to the picker that takes its
+    // place - otherwise it drops onto the body, outside the dialog that is still open.
+    private void MoveFocusToTheVisiblePicker()
+    {
+        if (ShowDayPicker())
+        {
+            _focusedDate = GetFocusableDay();
+            _focusAfterRender = true;
+        }
+        else if (ShowMonthPicker() && _showMonthPicker)
+        {
+            FocusMonthCell(GetFocusableMonth());
+        }
+        else if (ShowMonthPicker())
+        {
+            FocusYearCell(GetFocusableYear());
+        }
+        else if (ShowTimePicker)
+        {
+            // Nothing but the time picker is left on screen, so its start hour input is where the focus goes.
+            _focusTimePickerAfterRender = true;
+        }
+    }
+
+    // Escape dismisses the callout from anywhere inside it and hands the focus back to the input,
+    // which is where the modal dialog pattern requires the focus to return.
+    private async Task CloseCalloutAndRestoreFocus()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
-        if (e.Key != "Escape") return;
         if (IsOpen is false) return;
 
         await CloseCallout();
 
-        await InputElement.FocusAsync();
+        // A refused close (a one-way bound IsOpen) leaves the callout open, so the focus stays in it.
+        if (IsOpen) return;
+
+        try
+        {
+            await InputElement.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // Escape closes the callout from anywhere inside it, as the dialog pattern requires.
+    private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (e.Key != "Escape") return;
+
+        await CloseCalloutAndRestoreFocus();
     }
 
     private async Task HandleDayKeyDown(KeyboardEventArgs e, DateTime date)
     {
         if (IsEnabled is false) return;
 
-        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+        if (e.Key is "Escape")
+        {
+            await CloseCalloutAndRestoreFocus();
+            return;
+        }
+
+        var isRtl = IsRtl();
 
         DateTime? target = e.Key switch
         {
@@ -2804,6 +3315,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         return null;
+    }
+
+    private bool IsRtl()
+    {
+        return BitCssClasses.IsRtl(Dir, _culture);
     }
 
     private DateTime GetStartOfWeek(DateTime date)
@@ -2875,6 +3391,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         return date.Date >= (startDate < hoveredDate ? startDate : hoveredDate) &&
                date.Date <= (startDate < hoveredDate ? hoveredDate : startDate);
+    }
+
+    private string GetSizeClass()
+    {
+        return BitCssClasses.Size(Size, "bit-dtrp");
     }
 
     private string GetColorClass()
@@ -3055,7 +3576,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         //Is today
-        if (isInMonth && date == GetToday().Date)
+        if (HighlightToday && isInMonth && date == GetToday().Date)
         {
             klass.Append(" bit-dtrp-dtd");
 
@@ -3199,6 +3720,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private DateTime GetDateTime(DateTimeOffset dateTimeOffset)
     {
         return TimeZoneInfo.ConvertTimeFromUtc(dateTimeOffset.UtcDateTime, _timeZone);
+    }
+
+    // The native number input already answers the arrow keys, but it steps by one and knows nothing of
+    // HourStep/MinuteStep, so the paging keys drive the component's own stepping instead.
+    private async Task HandleOnTimeInputKeyDown(KeyboardEventArgs e, bool isHour, bool isStartTime)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        if (e.Key is not ("PageUp" or "PageDown")) return;
+
+        await ChangeTime(e.Key is "PageUp", isHour, isStartTime);
     }
 
     private async Task HandleOnHourInputFocus(bool isStartTime)
@@ -3648,12 +4180,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
-            dropDirection: BitDropDirection.TopAndBottom,
-            isRtl: Dir is BitDir.Rtl,
+            dropDirection: DropDirection,
+            // The same direction the callout renders in (bit-dtrp-rtl covers the culture-implied RTL
+            // as well), so the positioning matches the layout.
+            isRtl: IsRtl(),
             scrollContainerId: "",
             scrollOffset: 0,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",
-            footerId: CalloutFooterTemplate is not null ? _footerId : "",
+            footerId: ShowActionButtons()
+                      ? _actionsId
+                      : (CalloutFooterTemplate is not null ? _footerId : ""),
             setCalloutWidth: false,
             fixedCalloutWidth: false,
             maxWindowWidth: GetMaxWidth());
@@ -3663,14 +4199,32 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // whether the pickers have to collapse into overlays has to account for them.
     private int GetMaxWidth(int? monthCount = null)
     {
-        var width = MAX_WIDTH + (((monthCount ?? _monthCount) - 1) * MONTH_WIDTH);
+        // The cells of a small calendar are narrower and those of a large one wider, so the threshold
+        // that decides whether the pickers have to collapse into overlays moves with the size.
+        var scale = Size switch
+        {
+            BitSize.Small => 0.9,
+            BitSize.Large => 1.15,
+            _ => 1
+        };
+
+        var width = (int)((MAX_WIDTH + (((monthCount ?? _monthCount) - 1) * MONTH_WIDTH)) * scale);
 
         return Presets is not null && Presets.Any() ? width + PRESETS_WIDTH : width;
     }
 
     private string GetCalloutCssClasses()
     {
+        // The callout is rendered outside of the root element (and is reparented to the body while it is
+        // open), so the custom properties of the color and the size have to be declared on it as well -
+        // nothing of the root cascades down to it.
         List<string> classes = ["bit-dtrp-cal", GetColorClass()];
+
+        var sizeClass = GetSizeClass();
+        if (sizeClass.HasValue())
+        {
+            classes.Add(sizeClass);
+        }
 
         if (IsEnabled is false)
         {
@@ -3693,7 +4247,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             classes.Add("bit-dtrp-res");
         }
 
-        if (BitCssClasses.IsRtl(Dir, _culture))
+        if (IsRtl())
         {
             classes.Add("bit-dtrp-rtl");
         }
