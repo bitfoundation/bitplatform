@@ -2986,6 +2986,679 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(0, value!.Value.Minute);
     }
 
+    [TestMethod]
+    public void BitDatePickerTimePickerButtonsShouldCarryAccessibleNames()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimePickerIncreaseHourTitle, "Up an hour");
+            parameters.Add(p => p.TimePickerDecreaseHourTitle, "Down an hour");
+            parameters.Add(p => p.TimePickerIncreaseMinuteTitle, "Up a minute");
+            parameters.Add(p => p.TimePickerDecreaseMinuteTitle, "Down a minute");
+        });
+
+        var buttons = component.FindAll(".bit-dtp-tbt");
+
+        Assert.AreEqual("Up an hour", buttons[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Up an hour", buttons[0].GetAttribute("title"));
+        Assert.AreEqual("Down an hour", buttons[1].GetAttribute("aria-label"));
+        Assert.AreEqual("Up a minute", buttons[2].GetAttribute("aria-label"));
+        Assert.AreEqual("Down a minute", buttons[3].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerTimePickerButtonsShouldCarryDefaultAccessibleNames()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        var buttons = component.FindAll(".bit-dtp-tbt");
+
+        Assert.AreEqual("Increase hour", buttons[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Decrease hour", buttons[1].GetAttribute("aria-label"));
+        Assert.AreEqual("Increase minute", buttons[2].GetAttribute("aria-label"));
+        Assert.AreEqual("Decrease minute", buttons[3].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerAmPmButtonsShouldReportWhichHalfOfTheDayIsSelected()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 14, 30);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        Assert.AreEqual("false", component.Find(".bit-dtp-bam").GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", component.Find(".bit-dtp-bpm").GetAttribute("aria-pressed"));
+
+        component.Find(".bit-dtp-bam").Click();
+
+        Assert.AreEqual("true", component.Find(".bit-dtp-bam").GetAttribute("aria-pressed"));
+        Assert.AreEqual("false", component.Find(".bit-dtp-bpm").GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerWeekNumbersColumnHeaderShouldBeNamed()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowWeekNumbers, true);
+            parameters.Add(p => p.WeekNumbersHeaderTitle, "Wk");
+        });
+
+        var header = component.Find(".bit-dtp-dgh .bit-dtp-wlb");
+
+        Assert.AreEqual("Wk", header.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerMaxDateShouldBoundTheTimeOfTheDayItFallsOn()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var maxDate = GetLocalDate(2026, 1, 15, 9, 30);
+        DateTimeOffset? value = GetLocalDate(2026, 1, 10, 18, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MaxDate, maxDate);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-dtp-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        Assert.AreEqual(9, value!.Value.Hour);
+        Assert.AreEqual(30, value!.Value.Minute);
+
+        var increaseHour = component.FindAll(".bit-dtp-tbt")[0];
+        increaseHour.PointerDown();
+        increaseHour.PointerUp();
+
+        Assert.IsTrue(value!.Value <= maxDate, $"The time picker moved past MaxDate: {value}.");
+    }
+
+    [TestMethod]
+    public void BitDatePickerMinDateShouldBoundTheTimeOfTheDayItFallsOn()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var minDate = GetLocalDate(2026, 1, 15, 9, 30);
+        DateTimeOffset? value = GetLocalDate(2026, 1, 20, 6, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MinDate, minDate);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-dtp-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        Assert.AreEqual(9, value!.Value.Hour);
+        Assert.AreEqual(30, value!.Value.Minute);
+    }
+
+    [TestMethod]
+    public void BitDatePickerNowButtonShouldStayInsideTheBounds()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var today = DateTimeOffset.Now.Date;
+        var maxDate = new DateTimeOffset(today.AddHours(1), TimeZoneInfo.Local.GetUtcOffset(today));
+        DateTimeOffset? value = new DateTimeOffset(today, TimeZoneInfo.Local.GetUtcOffset(today));
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MaxDate, maxDate);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-gtn").Click();
+
+        Assert.IsTrue(value!.Value <= maxDate, $"The now button moved past MaxDate: {value}.");
+    }
+
+    [TestMethod]
+    public void BitDatePickerTypedHourShouldSnapToTheStepGridOnCommit()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 0, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HourStep, 3);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var hourInput = component.FindAll(".bit-dtp-tin")[0];
+
+        // The value is taken as typed while the field is being edited...
+        hourInput.Input("7");
+        Assert.AreEqual(7, value!.Value.Hour);
+
+        // ...and brought onto the grid the step lays over the day once the field is committed.
+        hourInput.Change("7");
+        Assert.AreEqual(6, value!.Value.Hour);
+    }
+
+    [TestMethod,
+        DataRow("PageUp", 12),
+        DataRow("PageDown", 8)
+    ]
+    public void BitDatePickerTimeInputShouldAnswerPageUpAndPageDown(string key, int expectedHour)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HourStep, 2);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-dtp-tin")[0].KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(expectedHour, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDatePickerReadOnlyShouldRefuseATypedTime()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-dtp-tin")[0].Input("7");
+
+        Assert.AreEqual(10, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDatePickerParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitDatePicker)}", BitDatePickerParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitDatePickerParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitDatePickerParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitDatePickerParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldApplyCascadingParametersFromBitParams()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDatePickerParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Underlined = true,
+                Placeholder = "Cascaded placeholder",
+                AriaLabel = "Cascaded label"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-dtp");
+        var input = component.Find(".bit-dtp-inp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-und"));
+        Assert.AreEqual("Cascaded placeholder", input.GetAttribute("placeholder"));
+        Assert.AreEqual("Cascaded label", input.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerDirectParametersShouldOverrideCascadingParameters()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDatePickerParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                ShowWeekNumbers = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.AddAttribute(1, nameof(BitDatePicker.Color), BitColor.Error);
+                builder.AddAttribute(2, nameof(BitDatePicker.Size), BitSize.Small);
+                builder.AddAttribute(3, nameof(BitDatePicker.Standalone), true);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-dtp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-sm"));
+
+        // What the picker left unset is still filled in from the cascade.
+        Assert.IsTrue(component.FindAll(".bit-dtp-wnm").Count > 0);
+    }
+
+    [TestMethod]
+    public void BitDatePickerParamsUpdateParametersShouldSetAllProperties()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var maxDate = DateTimeOffset.Now.AddMonths(1);
+        var minDate = DateTimeOffset.Now.AddMonths(-1);
+        var today = new DateTimeOffset(2021, 3, 15, 0, 0, 0, TimeSpan.Zero);
+        var startingValue = new DateTimeOffset(2021, 3, 10, 9, 30, 0, TimeSpan.Zero);
+
+        var @params = new BitDatePickerParams
+        {
+            AllowDeselect = true,
+            AllowTextInput = true,
+            AutoClose = false,
+            CalloutAriaLabel = "Cascaded callout",
+            ClearButtonTitle = "Cascaded clear",
+            Color = BitColor.Warning,
+            ContinuousSpinDelay = 500,
+            ContinuousSpinInterval = 90,
+            Culture = CultureInfo.InvariantCulture,
+            DateFormat = "yyyy/MM/dd",
+            DisableFuture = true,
+            DropDirection = BitDropDirection.All,
+            FirstDayOfWeek = DayOfWeek.Monday,
+            FixedWeeks = true,
+            GoToTodayTitle = "Cascaded today",
+            HasBorder = false,
+            HighlightCurrentMonth = true,
+            HighlightSelectedMonth = true,
+            HighlightToday = false,
+            HourStep = 2,
+            IconLocation = BitIconLocation.Left,
+            InvalidErrorMessage = "Cascaded invalid",
+            IsMonthPickerVisible = false,
+            Label = "Cascaded label text",
+            MaxDate = maxDate,
+            MinDate = minDate,
+            MinuteStep = 5,
+            Mode = BitDatePickerMode.MonthPicker,
+            MonthPickerToggleTitle = "Cascaded month toggle",
+            OutOfRangeErrorMessage = "Cascaded range",
+            Placeholder = "Cascaded placeholder",
+            Responsive = true,
+            ShowClearButton = true,
+            ShowCloseButton = true,
+            ShowGoToToday = false,
+            ShowNowButton = false,
+            ShowOutsideDays = false,
+            ShowTimePicker = true,
+            ShowWeekNumbers = true,
+            Size = BitSize.Small,
+            StartingValue = startingValue,
+            TimeFormat = BitTimeFormat.TwelveHours,
+            TimePickerHourTitle = "Cascaded hour",
+            TimePickerIncreaseHourTitle = "Cascaded increase hour",
+            TimeZone = TimeZoneInfo.Utc,
+            Today = today,
+            Underlined = true,
+            WeekNumberRule = CalendarWeekRule.FirstFourDayWeek,
+            WeekNumbersHeaderTitle = "Cascaded week",
+            AriaLabel = "Cascaded Label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = component.FindComponent<BitDatePicker>().Instance;
+
+        Assert.IsTrue(instance.AllowDeselect);
+        Assert.IsTrue(instance.AllowTextInput);
+        Assert.IsFalse(instance.AutoClose);
+        Assert.AreEqual("Cascaded callout", instance.CalloutAriaLabel);
+        Assert.AreEqual("Cascaded clear", instance.ClearButtonTitle);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual(500, instance.ContinuousSpinDelay);
+        Assert.AreEqual(90, instance.ContinuousSpinInterval);
+        Assert.AreEqual(CultureInfo.InvariantCulture, instance.Culture);
+        Assert.AreEqual("yyyy/MM/dd", instance.DateFormat);
+        Assert.IsTrue(instance.DisableFuture);
+        Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
+        Assert.AreEqual(DayOfWeek.Monday, instance.FirstDayOfWeek);
+        Assert.IsTrue(instance.FixedWeeks);
+        Assert.AreEqual("Cascaded today", instance.GoToTodayTitle);
+        Assert.IsFalse(instance.HasBorder);
+        Assert.IsTrue(instance.HighlightCurrentMonth);
+        Assert.IsTrue(instance.HighlightSelectedMonth);
+        Assert.IsFalse(instance.HighlightToday);
+        Assert.AreEqual(2, instance.HourStep);
+        Assert.AreEqual(BitIconLocation.Left, instance.IconLocation);
+        Assert.AreEqual("Cascaded invalid", instance.InvalidErrorMessage);
+        Assert.IsFalse(instance.IsMonthPickerVisible);
+        Assert.AreEqual("Cascaded label text", instance.Label);
+        Assert.AreEqual(maxDate, instance.MaxDate);
+        Assert.AreEqual(minDate, instance.MinDate);
+        Assert.AreEqual(5, instance.MinuteStep);
+        Assert.AreEqual(BitDatePickerMode.MonthPicker, instance.Mode);
+        Assert.AreEqual("Cascaded month toggle", instance.MonthPickerToggleTitle);
+        Assert.AreEqual("Cascaded range", instance.OutOfRangeErrorMessage);
+        Assert.AreEqual("Cascaded placeholder", instance.Placeholder);
+        Assert.IsTrue(instance.Responsive);
+        Assert.IsTrue(instance.ShowClearButton);
+        Assert.IsTrue(instance.ShowCloseButton);
+        Assert.IsFalse(instance.ShowGoToToday);
+        Assert.IsFalse(instance.ShowNowButton);
+        Assert.IsFalse(instance.ShowOutsideDays);
+        Assert.IsTrue(instance.ShowTimePicker);
+        Assert.IsTrue(instance.ShowWeekNumbers);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual(startingValue, instance.StartingValue);
+        Assert.AreEqual(BitTimeFormat.TwelveHours, instance.TimeFormat);
+        Assert.AreEqual("Cascaded hour", instance.TimePickerHourTitle);
+        Assert.AreEqual("Cascaded increase hour", instance.TimePickerIncreaseHourTitle);
+        Assert.AreEqual(TimeZoneInfo.Utc, instance.TimeZone);
+        Assert.AreEqual(today, instance.Today);
+        Assert.IsTrue(instance.Underlined);
+        Assert.AreEqual(CalendarWeekRule.FirstFourDayWeek, instance.WeekNumberRule);
+        Assert.AreEqual("Cascaded week", instance.WeekNumbersHeaderTitle);
+        Assert.AreEqual("Cascaded Label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitDatePickerParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var @params = new BitDatePickerParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            GoToTodayTitle = "Params Title"
+        };
+
+        var component = RenderComponent<BitDatePicker>(p =>
+        {
+            p.Add(x => x.Color, BitColor.Error);
+            p.Add(x => x.Size, BitSize.Small);
+            p.Add(x => x.GoToTodayTitle, "Existing Title");
+        });
+
+        var instance = component.Instance;
+
+        @params.UpdateParameters(instance);
+
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Title", instance.GoToTodayTitle);
+    }
+
+    [TestMethod]
+    public void BitDatePickerParamsShouldApplyClassesAndStyles()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDatePickerParams
+            {
+                Classes = new BitDatePickerClassStyles { Root = "cascaded-root" },
+                Styles = new BitDatePickerClassStyles { Root = "color: red;" }
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-dtp");
+
+        Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
+        Assert.Contains("color: red;", root.GetAttribute("style"));
+    }
+
+    [TestMethod,
+        DataRow(1, 1),
+        DataRow(2, 2),
+        DataRow(3, 3),
+        DataRow(0, 1),
+        DataRow(9, 3)
+    ]
+    public void BitDatePickerMonthCountShouldRenderThatManyMonths(int monthCount, int expected)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, monthCount);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+        });
+
+        Assert.HasCount(expected, component.FindAll(".bit-dtp-dwp"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerMonthCountShouldRenderConsecutiveMonths()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 3);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 11, 15));
+        });
+
+        var grids = component.FindAll(".bit-dtp-grd");
+
+        Assert.HasCount(3, grids);
+        Assert.AreEqual("November 2026", grids[0].GetAttribute("aria-label"));
+        Assert.AreEqual("December 2026", grids[1].GetAttribute("aria-label"));
+        Assert.AreEqual("January 2027", grids[2].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerMultipleMonthsShouldDropTheOutsideDays()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.ShowOutsideDays, true);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+        });
+
+        // Every rendered day belongs to the pane it is in, so no day - and no day id - appears twice.
+        Assert.IsEmpty(component.FindAll(".bit-dtp-dbt.bit-dtp-dbo"));
+
+        var ids = component.FindAll(".bit-dtp-dbt").Select(b => b.Id).ToList();
+        Assert.AreEqual(ids.Count, ids.Distinct().Count());
+    }
+
+    [TestMethod]
+    public void BitDatePickerMultipleMonthsShouldCarryASingleTabStop()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 3);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+        });
+
+        Assert.HasCount(1, component.FindAll(".bit-dtp-dbt[tabindex='0']"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerMultipleMonthsShouldCarryOneNavigationBar()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 3);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+        });
+
+        // One previous arrow on the first pane, one next arrow on the last.
+        Assert.HasCount(2, component.FindAll(".bit-dtp-nbt"));
+    }
+
+    [TestMethod,
+        DataRow(false, "February 2026"),
+        DataRow(true, "April 2026")
+    ]
+    public void BitDatePickerPagedNavigationShouldMoveAWholeStrip(bool paged, string expectedFirstMonth)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 3);
+            parameters.Add(p => p.PagedNavigation, paged);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+        });
+
+        component.FindAll(".bit-dtp-nbt")[1].Click();
+
+        Assert.AreEqual(expectedFirstMonth, component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerMultipleMonthsShouldStayPutWhenASecondMonthIsPickedFrom()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var februaryGrid = component.FindAll(".bit-dtp-grd")[1];
+        februaryGrid.QuerySelectorAll(".bit-dtp-dbt").First(b => b.TextContent.Trim() == "10").Click();
+
+        Assert.AreEqual(new DateTime(2026, 2, 10), value!.Value.DateTime.Date);
+        Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerMultipleMonthsShouldMoveTheFocusAcrossThePanes()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 31));
+        });
+
+        component.Find(".bit-dtp-dbt[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        // The first of February lives in the second pane, and the strip does not scroll to reach it.
+        var focused = component.Find(".bit-dtp-dbt[tabindex='0']");
+        Assert.AreEqual("1", focused.TextContent.Trim());
+        Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+    }
+
     // The component counts months with CultureInfo.Calendar, which has no public setter and is not
     // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
     private static CultureInfo CreateHebrewCulture()
