@@ -222,13 +222,17 @@ public static class BlazorUIMarkdown
             AppendFence(section, owned.Code, example.CsharpField, "csharp");
             AppendCodeFiles(section, owned.Files, example.CodeFilesField);
 
-            // Stopped at the cap rather than cut mid-sample: half a code block is not a smaller
-            // answer, it is a wrong one. What is left is named with the call that returns it.
-            if (builder.Length + section.Length > MaxLength && written > 0)
-            {
-                var remaining = matches.Skip(written).Select(e => e.Tab is null ? e.Title : $"{e.Tab} · {e.Title}").Distinct();
+            var remaining = matches.Skip(written).Select(e => e.Tab is null ? e.Title : $"{e.Tab} · {e.Title}").Distinct();
 
-                builder.AppendLine($"Stopped here to stay within one answer. Also available, one at a time via `GetBitBlazorUIComponentExamples(name: \"{component.Name}\", example: \"...\")`: {string.Join(", ", remaining)}.");
+            var notice = $"Stopped here to stay within one answer. Also available, one at a time via `GetBitBlazorUIComponentExamples(name: \"{component.Name}\", example: \"...\")`: {string.Join(", ", remaining)}.";
+
+            // Stopped at the cap rather than cut mid-sample: half a code block is not a smaller
+            // answer, it is a wrong one. The notice is counted in the cap it keeps the answer under
+            // - a page with enough sections to need it has enough of them to make it long, and a
+            // notice cut in half names neither what was left out nor the call that returns it.
+            if (builder.Length + section.Length + notice.Length > MaxLength && written > 0)
+            {
+                builder.AppendLine(notice);
 
                 return Truncate(builder.ToString());
             }
@@ -442,7 +446,10 @@ public static class BlazorUIMarkdown
     {
         if (component.CascadingParams is null) return;
 
-        var name = component.CascadingParams.Name;
+        // Written the way it is written in Razor rather than as reflection names it: a params
+        // class of a generic component is generic too, and `BitDropdownParams`2` neither compiles
+        // in the snippet below nor resolves as the typeName the same line tells the caller to pass.
+        var name = BlazorUITypeNames.Of(component.CascadingParams);
 
         var carried = component.CascadingParams
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -451,7 +458,7 @@ public static class BlazorUIMarkdown
             .ToHashSet(StringComparer.Ordinal);
 
         var baseName = component.CascadingParams.BaseType is { } baseType && baseType != typeof(object)
-            ? baseType.Name
+            ? BlazorUITypeNames.Of(baseType)
             : null;
 
         // Read off the compiled component rather than off its table: the parameters a params object

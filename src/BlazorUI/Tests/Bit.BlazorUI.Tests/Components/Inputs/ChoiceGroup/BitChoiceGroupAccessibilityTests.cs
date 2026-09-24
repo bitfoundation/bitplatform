@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -358,6 +358,136 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitChoiceGroupShouldNameAnItemWithADescriptionByItsTextAlone()
+    {
+        // The description is rendered inside the label, so without a name of its own the input would be
+        // named "A desc A" and then have "desc A" announced a second time through aria-describedby.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A" },
+            new() { Text = "B", Value = "B" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var inputs = component.FindAll(".bit-chg-icn input");
+
+        Assert.AreEqual("A", inputs[0].GetAttribute("aria-label"));
+
+        // An item without a description is named by its label, so it needs no aria-label at all.
+        Assert.IsFalse(inputs[1].HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNameAnItemWithADescriptionByItsWholeVisibleText()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A", Prefix = "1.", Suffix = "(free)" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("1. A (free)", component.Find(".bit-chg-icn input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldKeepTheImageAltInTheDerivedNameOfAnItem()
+    {
+        // An ImageAlt written for the picture is part of the name the label computes, so the derived name
+        // carries it, in the place the image is rendered in - between the prefix and the text.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "Bar", Value = "Bar", Description = "desc Bar", ImageSrc = "bar.png", ImageAlt = "a bar chart" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("a bar chart Bar", component.Find(".bit-chg-icn input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNameADecorativeImageItemByItsTextAlone()
+    {
+        // The image is decorative without an ImageAlt (it renders an empty alt), so it adds nothing to the
+        // label's own name and nothing to the derived one either.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "Bar", Value = "Bar", Description = "desc Bar", ImageSrc = "bar.png" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("Bar", component.Find(".bit-chg-icn input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldPreferTheAriaLabelOfAnItemOverItsDerivedName()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A", AriaLabel = "the first option" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("the first option", component.Find(".bit-chg-icn input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotDeriveANameForATemplatedItem()
+    {
+        // A template renders neither the built-in description nor the built-in text, so there is nothing
+        // to derive a name from and nothing announced twice.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ItemTemplate, (BitChoiceGroupItem<string> item) => builder => builder.AddContent(0, item.Text));
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg-icn input").HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotDeriveANameThatWouldDropATemplatedAffix()
+    {
+        // The suffix template renders inside the label, so a name built from the text alone would leave it
+        // out. The label keeps naming the input instead, description and all.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ItemSuffixTemplate, (BitChoiceGroupItem<string> item) => builder => builder.AddContent(0, "$10"));
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg-icn input").HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitChoiceGroupShouldRenderTheTitleOfEachItem()
     {
         var items = new List<BitChoiceGroupItem<string>>
@@ -375,5 +505,55 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         Assert.AreEqual("the whole story of A", containers[0].GetAttribute("title"));
         Assert.IsFalse(containers[1].HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldMarkTheGroupAndItsInputsAsRequired()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Required, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-required"));
+        Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.HasAttribute("required")));
+    }
+
+    // A read-only control is barred from constraint validation in HTML, and the read-only this component
+    // implements itself has to behave the same way: the field is still announced as required, but the
+    // native check cannot block a submit with an error no one is able to clear.
+    [TestMethod]
+    public void BitChoiceGroupShouldNotRequireTheInputsOfAReadOnlyGroup()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-required"));
+        Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-readonly"));
+        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("required")));
+    }
+
+    // A disabled group is neither submitted nor validated and drops the required asterisk from its label,
+    // so announcing it as required would say the opposite of what the label shows.
+    [TestMethod]
+    public void BitChoiceGroupShouldNotAnnounceADisabledGroupAsRequired()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsFalse(root.HasAttribute("aria-required"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-req"));
+        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("required")));
     }
 }
