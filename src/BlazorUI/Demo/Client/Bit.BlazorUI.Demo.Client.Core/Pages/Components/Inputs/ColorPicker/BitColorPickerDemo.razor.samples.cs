@@ -15,7 +15,9 @@ public partial class BitColorPickerDemo
 
 <BitColorPicker IsEnabled=""false"" Color=""#B34D4D"" />
 
-<BitColorPicker ReadOnly ShowInputs Color=""#4D7FB3"" />";
+<BitColorPicker ReadOnly ShowInputs @bind-Color=""readOnlyColor"" />";
+    private readonly string example1CsharpCode = @"
+private string readOnlyColor = ""#4D7FB3"";";
 
     private readonly string example2RazorCode = @"
 <BitColorPicker ShowAlphaSlider ShowPreview @bind-Color=""alphaColor"" @bind-Alpha=""alphaValue"" />
@@ -195,7 +197,7 @@ private void HandleOnChangeEnd(BitColorChangeEventArgs args)
 
 <BitColorPicker ReadOnly ShowAlphaSlider ShowInputs ShowPreview
                 Presets=""brandPresets""
-                Color=""@accessibilityColor"" />
+                @bind-Color=""accessibilityColor"" />
 
 <BitColorPicker Dir=""BitDir.Rtl"" ShowAlphaSlider ShowInputs ShowPreview ShowInputsModeSwitch
                 Texts=""persianTexts""
@@ -280,6 +282,8 @@ private readonly BitColorPickerParams[] colorPickerParams =
         ShowInputs = true,
         ShowPreview = true,
         ShowAlphaSlider = true,
+        ShowInputsModeSwitch = true,
+        DefaultInputsMode = BitColorInputsMode.Hsl,
         Presets = brandPresets,
         PresetsPerRow = 6,
         Format = BitColorFormat.Rgba,

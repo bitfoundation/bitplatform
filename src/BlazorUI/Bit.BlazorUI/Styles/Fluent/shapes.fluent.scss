@@ -62,7 +62,9 @@
 
 //global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
 //Inner ring uses the page background (--bit-clr-bg-pri, not the focus-state background token) to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
-//The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element so per-call overrides apply.
+//The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element, which is what forced-colors
+//mode reads the offset back off; the ring itself cannot be recolored through them, since the var()s below are substituted
+//here rather than where the token is used, so a focus-ring() call carrying its own color writes the shadow out inline instead.
 //In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixin restores a real Highlight outline there instead.
 //
 //It is a composite of four other tokens, so - exactly as in semantic-tokens.scss and

@@ -43,6 +43,15 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "DefaultInputsMode",
+            Type = "BitColorInputsMode?",
+            DefaultValue = "null",
+            Description = "The set of channels the text fields start in, for a picker whose InputsMode is not bound. It is read once, while the picker initializes, so the inputs mode switch keeps whatever it moves to.",
+            LinkType = LinkType.Link,
+            Href = "#color-inputs-mode-enum",
+        },
+        new()
+        {
             Name = "EyeDropperIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -69,7 +78,7 @@ public partial class BitColorPickerDemo
             Name = "InputsMode",
             Type = "BitColorInputsMode",
             DefaultValue = "BitColorInputsMode.HexRgb",
-            Description = "Which channels the text fields are written in. It decides how the color is typed, not how it is published - a picker edited in HSL still answers in whatever Format says.",
+            Description = "Which channels the text fields are written in. It decides how the color is typed, not how it is published - a picker edited in HSL still answers in whatever Format says. A mode the user is allowed to move belongs in DefaultInputsMode, or in this one bound two ways.",
             LinkType = LinkType.Link,
             Href = "#color-inputs-mode-enum",
         },
@@ -764,6 +773,8 @@ public partial class BitColorPickerDemo
 
 
 
+    private string readOnlyColor = "#4D7FB3";
+
     private string alphaColor = "#4D8CB3";
     private double alphaValue = 0.5;
     private string previewColor = "#5B8C5A";
@@ -864,6 +875,8 @@ public partial class BitColorPickerDemo
             ShowInputs = true,
             ShowPreview = true,
             ShowAlphaSlider = true,
+            ShowInputsModeSwitch = true,
+            DefaultInputsMode = BitColorInputsMode.Hsl,
             Presets = brandPresets,
             PresetsPerRow = 6,
             Format = BitColorFormat.Rgba,

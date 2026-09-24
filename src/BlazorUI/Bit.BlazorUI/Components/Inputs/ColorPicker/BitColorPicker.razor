@@ -141,7 +141,8 @@
 
             @if (_ShowEyeDropper)
             {
-                <button @onclick="HandleOnEyeDropperClick"
+                <button @ref="_eyeDropperRef"
+                        @onclick="HandleOnEyeDropperClick"
                         type="button"
                         disabled="@disabled"
                         tabindex="@(disabled ? "-1" : TabIndex)"
@@ -245,7 +246,8 @@
                 @* Enabled wherever the picker itself is: it moves which numbers the color is being read as,
                    not the color, so a read-only picker has nothing to refuse about it. *@
                 <div class="bit-clp-fld bit-clp-fsw @Classes?.Field" style="@Styles?.Field">
-                    <button @onclick="HandleOnInputsModeSwitchClick"
+                    <button @ref="_inputsModeSwitchRef"
+                            @onclick="HandleOnInputsModeSwitchClick"
                             type="button"
                             disabled="@(IsEnabled is false)"
                             tabindex="@(IsEnabled ? TabIndex : "-1")"

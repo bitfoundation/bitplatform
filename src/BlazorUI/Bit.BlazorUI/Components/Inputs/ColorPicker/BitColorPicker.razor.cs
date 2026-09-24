@@ -48,6 +48,8 @@ public partial class BitColorPicker : BitComponentBase
     private ElementReference _hueInputRef;
     private ElementReference _alphaSliderRef;
     private ElementReference _alphaInputRef;
+    private ElementReference _eyeDropperRef;
+    private ElementReference _inputsModeSwitchRef;
     private readonly ElementReference[] _channelInputRefs = new ElementReference[3];
     private DotNetObjectReference<BitColorPicker>? _dotnetObj;
 
@@ -115,6 +117,13 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter] public string? ContrastColor { get; set; }
 
     /// <summary>
+    /// The set of channels the text fields start in, for a picker whose <see cref="InputsMode"/> is not
+    /// bound. It is read once, while the picker initializes, so the inputs mode switch - and anything else
+    /// that moves the mode afterwards - keeps what it moved to.
+    /// </summary>
+    [Parameter] public BitColorInputsMode? DefaultInputsMode { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon of the eye dropper button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="EyeDropperIconName"/> when both are set.
     /// </summary>
@@ -146,7 +155,9 @@ public partial class BitColorPicker : BitComponentBase
     /// <remarks>
     /// This is how the color is typed, not how it is published - a picker edited in HSL still answers in
     /// whatever <see cref="Format"/> says. It only takes effect where <see cref="ShowInputs"/> renders the
-    /// fields at all, and <see cref="ShowInputsModeSwitch"/> lets the user move it themselves.
+    /// fields at all, and <see cref="ShowInputsModeSwitch"/> lets the user move it themselves - which is
+    /// why a mode that is only a starting point belongs in <see cref="DefaultInputsMode"/>, set one way and
+    /// left alone, rather than in an unbound value of this one, which every re-render would put back.
     /// </remarks>
     [Parameter, TwoWayBound] public BitColorInputsMode InputsMode { get; set; }
 
@@ -374,13 +385,35 @@ public partial class BitColorPicker : BitComponentBase
     {
         if (ShowSaturationArea) return _saturationPickerRef.FocusAsync();
 
-        if (ShowHueSlider) return _hueInputRef.FocusAsync();
+        // Everything below carries the native disabled attribute on a picker with nowhere to report a change
+        // to, and a disabled element cannot take the focus. The inputs mode switch is the exception: it moves
+        // which numbers the color is read as rather than the color, so it is enabled wherever the picker is.
+        if (_IsInputDisabled is false)
+        {
+            if (ShowHueSlider) return _hueInputRef.FocusAsync();
 
-        if (ShowAlphaSlider) return _alphaSliderRef.FocusAsync();
+            if (ShowAlphaSlider) return _alphaSliderRef.FocusAsync();
 
-        // The palette is the last part that is focusable without the text fields, and it is entered at the
-        // swatch the picker is already on - the same one a Tab would land on.
-        if (_presetRefs.Length > 0) return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)].FocusAsync();
+            if (_ShowEyeDropper) return _eyeDropperRef.FocusAsync();
+
+            if (ShowInputs)
+            {
+                // The alpha field is not a case of its own: it is only rendered beside the alpha slider,
+                // which would have taken the focus above.
+                if (_ShowHexField) return _hexInputRef.FocusAsync();
+
+                if (_ChannelFields.Length > 0) return _channelInputRefs[0].FocusAsync();
+            }
+        }
+
+        if (ShowInputs && ShowInputsModeSwitch) return _inputsModeSwitchRef.FocusAsync();
+
+        // The palette is the last part of the panel, and it is entered at the swatch the picker is already
+        // on - the same one a Tab would land on.
+        if (_IsInputDisabled is false && _presetRefs.Length > 0)
+        {
+            return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)].FocusAsync();
+        }
 
         return ValueTask.CompletedTask;
     }
@@ -425,6 +458,21 @@ public partial class BitColorPicker : BitComponentBase
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitColorPickerParams))]
+    protected override async Task OnInitializedAsync()
+    {
+        // The cascade is read here as well as in OnParametersSet, since DefaultInputsMode is only acted on
+        // while the picker initializes and a cascaded one applied there alone would arrive one lifecycle
+        // step after the mode it is the default for has already been settled.
+        CascadingParameters?.UpdateParameters(this);
+
+        if (InputsModeHasBeenSet is false && DefaultInputsMode.HasValue)
+        {
+            await AssignInputsMode(DefaultInputsMode.Value);
+        }
+
+        await base.OnInitializedAsync();
+    }
+
     protected override void OnParametersSet()
     {
         // Applied before anything is read off the parameters, so a Format, an InputsMode or a palette that

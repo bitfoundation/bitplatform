@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -1942,7 +1942,7 @@ public class BitColorPickerTests : BunitTestContext
                 ShowAlphaSlider = true,
                 Format = BitColorFormat.Rgba,
                 Presets = ["#FF0000", "#00FF00"],
-                InputsMode = BitColorInputsMode.Hsl,
+                DefaultInputsMode = BitColorInputsMode.Hsl,
                 Label = "Cascaded label",
             }
         };
@@ -1963,8 +1963,8 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(1, com.FindAll(".bit-clp-asd").Count);
         Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
 
-        // The cascaded InputsMode decides which fields are rendered, and the cascaded Format decides the
-        // notation the picker answers in from its very first render.
+        // The cascaded DefaultInputsMode decides which fields are rendered, and the cascaded Format decides
+        // the notation the picker answers in from its very first render.
         Assert.AreEqual(0, com.FindAll(".bit-clp-fhx").Count);
         Assert.AreEqual("Hue", com.FindAll(".bit-clp-fin")[0].GetAttribute("title"));
         Assert.AreEqual("rgba(255,255,255,1)", com.FindComponent<BitColorPicker>().Instance.Color);
@@ -2000,6 +2000,111 @@ public class BitColorPickerTests : BunitTestContext
 
         // What the picker left unset is still filled in from the cascade.
         Assert.AreEqual(4, com.FindAll(".bit-clp-fin").Count);
+    }
+
+    // Only the STARTING mode is cascaded, because the picker's own switch moves the mode: a cascaded
+    // InputsMode would be re-imposed on every render of the parent and put back what the user just moved.
+    [TestMethod]
+    public void BitColorPickerCascadedDefaultInputsModeShouldNotUndoTheInputsModeSwitch()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitColorPickerParams
+            {
+                ShowInputs = true,
+                ShowInputsModeSwitch = true,
+                DefaultInputsMode = BitColorInputsMode.Hsl,
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitColorPicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var picker = com.FindComponent<BitColorPicker>().Instance;
+
+        Assert.AreEqual(BitColorInputsMode.Hsl, picker.InputsMode);
+
+        com.Find(".bit-clp-swb").Click();
+
+        Assert.AreEqual(BitColorInputsMode.Hsv, picker.InputsMode);
+
+        // A render of the cascading parent is what used to put the cascaded mode back.
+        com.Render(parameters => parameters.Add(p => p.Parameters, paramsList));
+
+        Assert.AreEqual(BitColorInputsMode.Hsv, picker.InputsMode);
+    }
+
+    // A picker built out of nothing but its text fields is still focused in one call: the parts the focus
+    // normally lands on are all optional, and the fields are what is left.
+    [TestMethod]
+    public async Task BitColorPickerShouldFocusTheFieldsWhenNothingAboveThemIsRendered()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+
+        // The hexadecimal field is not always the first one either - a picker typed in HSL starts at the
+        // hue field instead.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+            parameters.Add(p => p.InputsMode, BitColorInputsMode.Hsl);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-clp-fhx").Count);
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    // A one-way bound Color leaves every field, swatch and slider natively disabled, and a disabled element
+    // cannot take the focus. The inputs mode switch can: it moves which numbers the color is read as.
+    [TestMethod]
+    public async Task BitColorPickerShouldFocusTheInputsModeSwitchWhenEverythingElseIsDisabled()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowInputsModeSwitch, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+
+        // With the switch gone there is nothing left that is focusable, and nothing is asked for.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+            parameters.Add(p => p.ShowInputsModeSwitch, false);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     // Almost everything the picker tells a screen reader is text it writes rather than text a consumer hands

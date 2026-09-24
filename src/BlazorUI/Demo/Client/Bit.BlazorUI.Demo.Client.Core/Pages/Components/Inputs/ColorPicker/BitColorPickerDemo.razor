@@ -1,4 +1,4 @@
-@page "/components/colorpicker"
+﻿@page "/components/colorpicker"
 @page "/components/color-picker"
 
 <PageOutlet Url="components/colorpicker"
@@ -14,7 +14,7 @@
           CssVariables="componentCssVariables"
           GitHubUrl="Inputs/ColorPicker/BitColorPicker.razor"
           GitHubDemoUrl="Inputs/ColorPicker/BitColorPickerDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div>
             On its own the picker keeps its own state, starting on opaque white. <b>Label</b> names it - through
             <b>aria-labelledby</b> rather than a <b>label</b> element, since a panel of many controls has no single
@@ -42,7 +42,7 @@
             <BitColorPicker IsEnabled="false" Color="#B34D4D" />
             <br />
             <div>ReadOnly:</div>
-            <BitColorPicker ReadOnly ShowInputs Color="#4D7FB3" />
+            <BitColorPicker ReadOnly ShowInputs @bind-Color="readOnlyColor" />
         </div>
     </DemoExample>
 
@@ -323,7 +323,7 @@
             <div>Read-only: still reachable, still announced, refuses every change.</div>
             <BitColorPicker ReadOnly ShowAlphaSlider ShowInputs ShowPreview
                             Presets="brandPresets"
-                            Color="@accessibilityColor" />
+                            @bind-Color="accessibilityColor" />
         </div>
         <br />
         <div>
@@ -388,7 +388,10 @@
             writes a parameter for itself keeps its own value, and only what it left unset is filled in, which is what
             lets one step out of the group without the group knowing. Everything but the color is on it: <b>Color</b>,
             <b>Alpha</b> and the two change callbacks are the value of one picker, and what one page does with it,
-            rather than a setting shared by all of them.
+            rather than a setting shared by all of them. A value the picker itself moves is cascaded as the
+            starting point rather than as the value: <b>DefaultInputsMode</b> is what the group opens its fields
+            in, read once while each picker initializes, so <b>ShowInputsModeSwitch</b> keeps whatever the user
+            moves it to instead of the cascade putting it back on the next render.
         </div>
         <br />
         <div class="example-box">

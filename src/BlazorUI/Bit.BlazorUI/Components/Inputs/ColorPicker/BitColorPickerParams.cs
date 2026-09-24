@@ -46,6 +46,13 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
     public string? ContrastColor { get; set; }
 
     /// <summary>
+    /// The set of channels the text fields start in. It decides how the color is typed, not how it is
+    /// published - a picker edited in HSL still answers in whatever <see cref="Format"/> says. Only the
+    /// starting mode is cascaded, so the inputs mode switch keeps whatever the user moves it to.
+    /// </summary>
+    public BitColorInputsMode? DefaultInputsMode { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon of the eye dropper button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="EyeDropperIconName"/> when both are set.
     /// </summary>
@@ -61,12 +68,6 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
     /// notation the Color arrived in.
     /// </summary>
     public BitColorFormat? Format { get; set; }
-
-    /// <summary>
-    /// Which channels the text fields are written in. It decides how the color is typed, not how it is
-    /// published - a picker edited in HSL still answers in whatever <see cref="Format"/> says.
-    /// </summary>
-    public BitColorInputsMode? InputsMode { get; set; }
 
     /// <summary>
     /// Gets or sets the icon of the inputs mode switch button using custom CSS classes for external icon
@@ -205,6 +206,11 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
             bitColorPicker.ContrastColor = ContrastColor;
         }
 
+        if (DefaultInputsMode.HasValue && bitColorPicker.HasNotBeenSet(nameof(DefaultInputsMode)))
+        {
+            bitColorPicker.DefaultInputsMode = DefaultInputsMode.Value;
+        }
+
         if (EyeDropperIcon is not null && bitColorPicker.HasNotBeenSet(nameof(EyeDropperIcon)))
         {
             bitColorPicker.EyeDropperIcon = EyeDropperIcon;
@@ -218,11 +224,6 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
         if (Format.HasValue && bitColorPicker.HasNotBeenSet(nameof(Format)))
         {
             bitColorPicker.Format = Format.Value;
-        }
-
-        if (InputsMode.HasValue && bitColorPicker.HasNotBeenSet(nameof(InputsMode)))
-        {
-            bitColorPicker.InputsMode = InputsMode.Value;
         }
 
         if (InputsModeSwitchIcon is not null && bitColorPicker.HasNotBeenSet(nameof(InputsModeSwitchIcon)))
