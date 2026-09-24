@@ -1659,10 +1659,10 @@ public partial class BitFileUploadDemo
     private string onInvalidText = string.Empty;
     private string onUploadFailedText = string.Empty;
     private string onAllUploadsCompleteText = "No File";
-    private string UploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
-    private string ChunkedUploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
-    private string NonExistingUploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/MissingUploadEndpoint";
-    private string RemoveUrl => $"{_configuration.GetApiServerAddress()}FileUpload/RemoveFile";
+    private string UploadUrl => _configuration.GetApiUrl("api/FileUpload/UploadNonChunkedFile");
+    private string ChunkedUploadUrl => _configuration.GetApiUrl("api/FileUpload/UploadChunkedFile");
+    private string NonExistingUploadUrl => _configuration.GetApiUrl("api/FileUpload/MissingUploadEndpoint");
+    private string RemoveUrl => _configuration.GetApiUrl("api/FileUpload/RemoveFile");
 
     // the endpoints come from the injected configuration, so the cascaded parameters are built once the
     // injection has happened rather than in a field initializer - and once, so that the cascading value
@@ -2009,15 +2009,16 @@ private string onAllUploadsCompleteText = ""No File"";";
 private string ChunkedUploadUrl = ""/ChunkedUpload"";";
 
     private readonly string example12RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" RemoveUrl=""@RemoveUrl""
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" RemoveUrl=""@RemoveUrl"" ShowRemoveButton
                UploadRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs1"", ""qsValue1"" } })""
                UploadRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header1"", ""value1"" } })""
                UploadRequestFormFields=""@(new Dictionary<string, string>{ {""folder"", ""invoices"" } })""
                RemoveRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs2"", ""qsValue2"" } })""
                RemoveRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header2"", ""value2"" } })"" />
 
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple ChunkedUpload
-               UploadRequestHttpHeadersProvider=""@GetFreshAuthHeaders"" />
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" Multiple ChunkedUpload
+               UploadRequestHttpHeadersProvider=""@GetFreshAuthHeaders""
+               OnChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
 
 <div>Requests so far: @tokenRequestCount</div>
 
@@ -2031,6 +2032,7 @@ private string ChunkedUploadUrl = ""/ChunkedUpload"";";
     private readonly string example12CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";
+private string ChunkedUploadUrl = ""/ChunkedUpload"";
 private int tokenRequestCount;
 
 private Task<Dictionary<string, string>> GetFreshAuthHeaders()

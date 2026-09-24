@@ -349,7 +349,7 @@
             from the form rather than from the URL.
         </div>
         <br />
-        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl" ShowRemoveButton
                        UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
                        UploadRequestHttpHeaders="@(new Dictionary<string, string>{ {"header1", "value1" } })"
                        UploadRequestFormFields="@(new Dictionary<string, string>{ {"folder", "invoices" } })"
@@ -365,8 +365,9 @@
             value that never changes belongs in the static parameter, since a provider costs an await per request.
         </div>
         <br />
-        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple ChunkedUpload
-                       UploadRequestHttpHeadersProvider="@GetFreshAuthHeaders" />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" Multiple ChunkedUpload
+                       UploadRequestHttpHeadersProvider="@GetFreshAuthHeaders"
+                       OnChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
         <br />
         <div>Requests so far: @tokenRequestCount</div>
         <br /><br />

@@ -562,6 +562,21 @@ namespace BitBlazorUI {
     }
 
     class BitFileUploader {
+        // a response body is handed to .NET as the Message of the file, and on Blazor Server that hop is a
+        // SignalR message whose default limit is 32 KB - so the body is cut well below it.
+        static readonly MAX_RESPONSE_TEXT_LENGTH = 8 * 1024;
+
+        // the cut counts UTF-16 code units, so it can land between the two halves of a surrogate pair; a lone
+        // high surrogate is not valid UTF-16 and .NET's JSON reader would reject the whole call, leaving the
+        // file in progress for good - so the cut steps back one unit instead of keeping half a character.
+        static capText(text: string): string {
+            const max = BitFileUploader.MAX_RESPONSE_TEXT_LENGTH;
+            if (text.length <= max) return text;
+
+            const last = text.charCodeAt(max - 1);
+            return text.substring(0, last >= 0xD800 && last <= 0xDBFF ? max - 1 : max);
+        }
+
         id: string;
         dotnetReference: DotNetObject;
         file: File | null;
@@ -612,7 +627,13 @@ namespace BitBlazorUI {
             const me = this;
             this.xhr.onreadystatechange = function (event) {
                 if (me.xhr.readyState === 4) {
-                    dotnetReference.invokeMethodAsync("HandleChunkUpload", index, me.xhr.status, me.xhr.responseText);
+                    // the body of an error response is whatever the endpoint happens to serve - an error page
+                    // of a hundred kilobytes as easily as a one line message - and it travels to .NET over the
+                    // Blazor Server circuit, whose default message size is 32 KB. A body over that limit would
+                    // tear the circuit down and take the whole page with it, so it is capped to what a Message
+                    // is actually read for rather than sent whole.
+                    const body = me.xhr.responseText ?? '';
+                    dotnetReference.invokeMethodAsync("HandleChunkUpload", index, me.xhr.status, BitFileUploader.capText(body));
                 }
             };
         }

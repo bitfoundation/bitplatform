@@ -137,6 +137,8 @@ public class BitFileInfo
     /// <summary>
     /// The message attached to the current <see cref="Status"/> of the file: the reason it was rejected by
     /// the validations before the upload, or the body of the server response of its upload or removal.
+    /// A response body is truncated to its first 8 KB, since it crosses the Blazor Server circuit, whose
+    /// default message size limit an error page of a failing endpoint would otherwise exceed.
     /// </summary>
     [JsonIgnore] public string? Message { get; internal set; }
 
