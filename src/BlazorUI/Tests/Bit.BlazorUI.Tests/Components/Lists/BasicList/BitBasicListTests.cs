@@ -97,7 +97,7 @@ public class BitBasicListTests : BunitTestContext
             }
         });
 
-        var list = component.Find(".bit-bsl");
+        var list = component.Find(".bit-bsl-itm");
 
         var listRole = list.GetAttribute("role");
 
@@ -109,7 +109,7 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderList(p => p.Add(x => x.Role, (string?)null));
 
-        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("role"));
+        Assert.IsFalse(component.Find(".bit-bsl-itm").HasAttribute("role"));
     }
 
     [TestMethod, DataRow(100)]
@@ -154,6 +154,7 @@ public class BitBasicListTests : BunitTestContext
                 Root = "root-class",
                 Header = "header-class",
                 Footer = "footer-class",
+                Items = "items-class",
                 LoadMoreButton = "lmb-class",
                 LoadMoreText = "lmt-class",
             });
@@ -162,6 +163,7 @@ public class BitBasicListTests : BunitTestContext
                 Root = "background: red;",
                 Header = "background: green;",
                 Footer = "background: blue;",
+                Items = "display: grid;",
                 LoadMoreButton = "background: yellow;",
                 LoadMoreText = "background: pink;",
             });
@@ -170,12 +172,14 @@ public class BitBasicListTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-bsl").ClassList.Contains("root-class"));
         Assert.IsTrue(component.Find(".bit-bsl-hdr").ClassList.Contains("header-class"));
         Assert.IsTrue(component.Find(".bit-bsl-ftr").ClassList.Contains("footer-class"));
+        Assert.IsTrue(component.Find(".bit-bsl-itm").ClassList.Contains("items-class"));
         Assert.IsTrue(component.Find(".bit-bsl-lmb").ClassList.Contains("lmb-class"));
         Assert.IsTrue(component.Find(".bit-bsl-lmt").ClassList.Contains("lmt-class"));
 
         StringAssert.Contains(component.Find(".bit-bsl").GetAttribute("style"), "background: red;");
         StringAssert.Contains(component.Find(".bit-bsl-hdr").GetAttribute("style"), "background: green;");
         StringAssert.Contains(component.Find(".bit-bsl-ftr").GetAttribute("style"), "background: blue;");
+        StringAssert.Contains(component.Find(".bit-bsl-itm").GetAttribute("style"), "display: grid;");
         StringAssert.Contains(component.Find(".bit-bsl-lmb").GetAttribute("style"), "background: yellow;");
         StringAssert.Contains(component.Find(".bit-bsl-lmt").GetAttribute("style"), "background: pink;");
     }
@@ -185,7 +189,9 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderList(p => p.Add(x => x.AriaLabel, "the people"));
 
-        Assert.AreEqual("the people", component.Find(".bit-bsl").GetAttribute("aria-label"));
+        // The name belongs to the list, which is the element holding the rows, not the scrolling root.
+        Assert.AreEqual("the people", component.Find(".bit-bsl-itm").GetAttribute("aria-label"));
+        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -326,7 +332,8 @@ public class BitBasicListTests : BunitTestContext
         Assert.IsTrue(children[0].ClassList.Contains("bit-bsl-hdr"));
         Assert.AreEqual("the header", children[0].TextContent);
 
-        Assert.IsTrue(children[1].ClassList.Contains("row"));
+        Assert.IsTrue(children[1].ClassList.Contains("bit-bsl-itm"));
+        Assert.IsTrue(children[1].Children[0].ClassList.Contains("row"));
 
         Assert.IsTrue(children[^1].ClassList.Contains("bit-bsl-ftr"));
         Assert.AreEqual("the footer", children[^1].TextContent);
@@ -380,12 +387,13 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.Items, new List<string>());
         });
 
-        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("role"));
+        Assert.IsFalse(component.Find(".bit-bsl-itm").HasAttribute("role"));
 
         component.Render(p => p.Add(x => x.Loading, true));
 
-        // A loading list keeps its role, since its aria-busy says the items are on their way.
-        Assert.AreEqual("list", component.Find(".bit-bsl").GetAttribute("role"));
+        // A loading list shows the status of its loading content in place of the list altogether.
+        Assert.AreEqual(0, component.FindAll(".bit-bsl-itm").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-bsl-ldc").Count);
 
         component.Render(p =>
         {
@@ -393,7 +401,30 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.Items, new List<string> { "one" });
         });
 
-        Assert.AreEqual("list", component.Find(".bit-bsl").GetAttribute("role"));
+        Assert.AreEqual("list", component.Find(".bit-bsl-itm").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitBasicListShouldKeepEverythingButTheRowsOutOfTheList()
+    {
+        var component = RenderComponent<BitBasicList<string>>(p =>
+        {
+            p.Add(x => x.LoadMore, true);
+            p.Add(x => x.LoadMoreSize, 2);
+            p.Add(x => x.Items, new List<string> { "one", "two", "three" });
+            p.Add(x => x.HeaderTemplate, (RenderFragment)(b => b.AddContent(0, "header")));
+            p.Add(x => x.FooterTemplate, (RenderFragment)(b => b.AddContent(0, "footer")));
+        });
+
+        // A list may only own list items, so the header, the footer, the LoadMore button and the live
+        // region all sit beside the element carrying the role rather than inside it.
+        var list = component.Find("[role=list]");
+
+        Assert.IsTrue(list.ClassList.Contains("bit-bsl-itm"));
+        Assert.AreEqual(2, list.Children.Length);
+        Assert.IsTrue(list.Children.All(c => c.GetAttribute("role") == "listitem"));
+
+        Assert.IsNull(list.QuerySelector(".bit-bsl-hdr, .bit-bsl-ftr, .bit-bsl-lmb, .bit-bsl-sts"));
     }
 
     [TestMethod]
@@ -404,14 +435,14 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.Items, new List<string> { "one", "two" });
         });
 
-        var rows = component.Find(".bit-bsl").Children;
+        var rows = component.Find(".bit-bsl-itm").Children;
 
         Assert.AreEqual(2, rows.Length);
         Assert.IsTrue(rows.All(r => r.GetAttribute("role") == "listitem"));
 
         component.Render(p => p.Add(x => x.Role, "feed"));
 
-        Assert.IsTrue(component.Find(".bit-bsl").Children.All(r => r.HasAttribute("role") is false));
+        Assert.IsTrue(component.Find(".bit-bsl-itm").Children.All(r => r.HasAttribute("role") is false));
     }
 
     [TestMethod]
@@ -507,8 +538,10 @@ public class BitBasicListTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBasicListLoadMoreTemplateShouldLoadOnTheKeyboard()
+    public void BitBasicListLoadMoreTemplateShouldRegisterItsButtonKeysOnce()
     {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitBasicList<Person>>(p =>
         {
             p.Add(x => x.LoadMore, true);
@@ -518,14 +551,16 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.LoadMoreTemplate, (RenderFragment<bool>)(loading => b => b.AddContent(0, "more")));
         });
 
-        component.Find(".bit-bsl-lmb").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        // The keys are wired up in the browser, where a key pressed on the wrapper can be told apart from
+        // one pressed on a control inside it; the wrapper holds no keyboard handler of its own to fire twice.
+        Assert.IsFalse(component.Find(".bit-bsl-lmb").HasAttribute("blazor:onkeydown"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
 
-        component.Find(".bit-bsl-lmb").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "a" });
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        component.Find(".bit-bsl-lmb").Click();
+        component.Render();
 
-        component.Find(".bit-bsl-lmb").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = " " });
-        Assert.AreEqual(12, component.FindAll(".row").Count);
+        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
     }
 
     [TestMethod]
@@ -653,11 +688,13 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderList(p => p.Add(x => x.Loading, true));
 
-        Assert.AreEqual("true", component.Find(".bit-bsl").GetAttribute("aria-busy"));
+        // The loading content is a status of its own, so neither the root nor a list is marked busy by it.
+        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("aria-busy"));
+        Assert.AreEqual("status", component.Find(".bit-bsl-ldc").GetAttribute("role"));
 
         component.Render(p => p.Add(x => x.Loading, false));
 
-        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("aria-busy"));
+        Assert.IsFalse(component.Find(".bit-bsl-itm").HasAttribute("aria-busy"));
     }
 
     [TestMethod]
@@ -965,6 +1002,7 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreEqual("Loading...", button.TextContent.Trim());
         Assert.AreEqual("status", component.Find(".bit-bsl-sts").GetAttribute("role"));
         Assert.AreEqual("Loading...", component.Find(".bit-bsl-sts").TextContent);
+        Assert.AreEqual("true", component.Find(".bit-bsl-itm").GetAttribute("aria-busy"));
 
         // A click while busy is ignored rather than queued.
         button.Click();
@@ -975,6 +1013,7 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreEqual(10, component.FindAll(".row").Count);
         Assert.AreEqual(string.Empty, component.Find(".bit-bsl-sts").TextContent);
         Assert.IsFalse(component.Find("button.bit-bsl-lmb").HasAttribute("aria-busy"));
+        Assert.IsFalse(component.Find(".bit-bsl-itm").HasAttribute("aria-busy"));
     }
 
     [TestMethod]
@@ -1127,7 +1166,7 @@ public class BitBasicListTests : BunitTestContext
         {
             Assert.IsTrue(list.ClassList.Contains("bit-bsl-hrz"));
             Assert.IsTrue(list.ClassList.Contains("cascaded"));
-            Assert.AreEqual("feed", list.GetAttribute("role"));
+            Assert.AreEqual("feed", list.QuerySelector(".bit-bsl-itm")!.GetAttribute("role"));
             StringAssert.Contains(list.GetAttribute("style"), "width:100%");
         }
     }
@@ -1159,7 +1198,7 @@ public class BitBasicListTests : BunitTestContext
         var list = component.Find(".bit-bsl");
 
         Assert.IsFalse(list.ClassList.Contains("bit-bsl-hrz"));
-        Assert.AreEqual("list", list.GetAttribute("role"));
+        Assert.AreEqual("list", list.QuerySelector(".bit-bsl-itm")!.GetAttribute("role"));
         Assert.AreEqual("Cascaded more", component.Find(".bit-bsl-lmt").TextContent);
     }
 

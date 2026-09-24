@@ -198,7 +198,7 @@ public partial class BitBasicListDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "list",
-            Description = "The role attribute of the root element. Without a RowTemplate each row is rendered as a listitem while the role is list. Left off while the EmptyContent shows; set it to null to leave it off altogether.",
+            Description = "The role of the element holding the rows (which also carries the AriaLabel). Without a RowTemplate each row is rendered as a listitem while the role is list. Left off while the EmptyContent shows; set it to null to leave it off altogether.",
         },
         new()
         {
@@ -388,6 +388,13 @@ public partial class BitBasicListDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the header container of the list.",
+                },
+                new()
+                {
+                    Name = "Items",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the element holding the rows, where a grid or a gap between them is laid out.",
                 },
                 new()
                 {

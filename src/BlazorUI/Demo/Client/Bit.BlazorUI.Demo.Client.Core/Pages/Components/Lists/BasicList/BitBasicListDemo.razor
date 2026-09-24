@@ -289,14 +289,26 @@
         </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="Horizontal" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Layout" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>Horizontal</b> lays the rows out side by side and scrolls sideways - a strip of cards or thumbnails. Ignored while <b>Virtualize</b> is on.
+            The rows sit in an element of their own, styled through <b>Styles.Items</b> / <b>Classes.Items</b> - a responsive grid of cards is one line of CSS.
         </div>
         <br />
         <BitBasicList Horizontal Items="fewPeople" Style="border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;">
             <RowTemplate Context="person">
                 <div role="listitem" style="width: 150px; margin: 10px; padding: 10px; text-align: center; background-color: var(--bit-clr-bg-sec);">
+                    <div><strong>@person.FirstName</strong></div>
+                    <div>@person.Job</div>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+        <br />
+        <BitBasicList Items="fewPeople"
+                      Style="border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 300px;"
+                      Styles="@(new() { Items = "display: grid; gap: 10px; padding: 10px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));" })">
+            <RowTemplate Context="person">
+                <div role="listitem" style="padding: 10px; text-align: center; background-color: var(--bit-clr-bg-sec);">
                     <div><strong>@person.FirstName</strong></div>
                     <div>@person.Job</div>
                 </div>
@@ -328,8 +340,9 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
-            The root carries <code>role="list"</code> (<b>Role</b>; null removes it) and <code>aria-busy</code> while loading. Name it with <b>AriaLabel</b>.
-            A list whose rows hold nothing focusable needs <b>TabIndex</b> <code>0</code> so it can be scrolled from the keyboard (WCAG 2.1.1).
+            The element holding the rows carries <code>role="list"</code> (<b>Role</b>; null removes it), the <b>AriaLabel</b> and <code>aria-busy</code> while a page loads;
+            the header, footer and LoadMore button sit beside it, since a list may only own list items.
+            A list whose rows hold nothing focusable needs <b>TabIndex</b> <code>0</code> on its scrolling root so it can be scrolled from the keyboard (WCAG 2.1.1).
             A page being loaded is announced with <b>LoadingLabel</b>, and when the last page removes the focused LoadMore button the focus moves to the list instead of being lost.
         </div>
         <br />
@@ -379,7 +392,7 @@
 
     <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" CodeFiles="@example14CodeFiles" Id="example14">
         <div>
-            <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part - root, header, footer, loading content, LoadMore button and text.
+            <b>Style</b> and <b>Class</b> land on the scrolling root; <b>Styles</b> and <b>Classes</b> reach each part - root, header, items, footer, loading content, LoadMore button and text.
             The public <b>--bit-BasicList-*</b> CSS variables re-skin the height, focus ring, spinners and LoadMore button, set on <code>:root</code>, an ancestor or a single list's <b>Style</b>.
         </div>
         <br />

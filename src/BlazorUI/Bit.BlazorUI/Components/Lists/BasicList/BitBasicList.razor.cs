@@ -22,6 +22,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private string? _autoLoadMargin = null;
     private CancellationTokenSource? _globalCts;
     private ICollection<TItem>? _internalItems = null;
+    private ElementReference _itemsElement = default!;
+    private ElementReference _loadMoreElement = default!;
+    private string? _buttonKeysElementId;
     private ElementReference _sentinelElement = default!;
     private RenderFragment<TItem>? _defaultRowTemplate = null;
     private DotNetObjectReference<BitBasicList<TItem>>? _dotnetObj = null;
@@ -71,11 +74,11 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
     private bool _ShowLoading => Loading || (_isLoadingMore && _viewItems.Count == 0);
 
-    // A list is required to own list items, so the role is left off while the list shows its EmptyContent
-    // instead: an empty "list" is reported as an error by accessibility checkers and announced as an empty
-    // list before the content that explains why. The virtualized provider mode renders straight off the
-    // provider and never knows its count here, so it keeps the role; so does a list that is loading, whose
-    // aria-busy already tells that its items are on their way.
+    // The role belongs to the element holding the rows, not to the root. A list is required to own list
+    // items, so the role is left off while that element shows the EmptyContent instead: an empty "list" is
+    // reported as an error by accessibility checkers and announced as an empty list before the content that
+    // explains why. The virtualized provider mode renders straight off the provider and never knows its
+    // count here, so it keeps the role.
     private string? _EffectiveRole => _ShowLoading is false
                                       && _viewItems.Count == 0
                                       && (Virtualize && ItemsProvider is not null && LoadMore is false) is false
@@ -285,9 +288,13 @@ public partial class BitBasicList<TItem> : BitComponentBase
     [Parameter] public int OverscanCount { get; set; } = 3;
 
     /// <summary>
-    /// The role attribute of the html element of the list. Defaults to "list".
+    /// The role attribute of the element holding the rows of the list. Defaults to "list".
     /// </summary>
     /// <remarks>
+    /// The role, the <see cref="BitComponentBase.AriaLabel"/> and the busy state are rendered on the element
+    /// that holds the rows rather than on the root, since the root also holds the header, the footer and the
+    /// LoadMore button, none of which may be owned by a list. The root is the scrolling region around them.
+    /// <br />
     /// The rows of the list are the markup of the <see cref="RowTemplate"/>, so a role of "list" only describes
     /// the element correctly where that template renders a row of role "listitem" (an <c>li</c> element, for
     /// one). Set this to null to leave the role off altogether where the rows carry a structure of their own.
@@ -419,21 +426,20 @@ public partial class BitBasicList<TItem> : BitComponentBase
     {
         if (IsRendered is false || IsDisposed) return;
         if (index < 0) return;
+        // The loading content stands in for the rows, so there is no row to scroll to until they are back.
+        if (_ShowLoading) return;
 
-        // The header is rendered as a single element before the items, so it shifts every one of them by
-        // one child. Measuring off a child rather than off the container keeps the header (whose height is
-        // its own content's business) out of the calculation.
-        var headerOffset = HeaderTemplate is not null ? 1 : 0;
-
+        // The rows are the children of the element holding them, so the header (whose height is its own
+        // content's business) stays out of the calculation: the offset is measured off a row, never added up.
         if (Virtualize)
         {
-            // The items start after the spacer the virtualization renders in their place, so that is the
-            // child the offset of the item is measured from.
-            await _js.BitUtilsScrollToChild(RootElement, headerOffset, index * ItemSize, _IsHorizontal, smooth);
+            // The rows start after the spacer the virtualization renders in place of those scrolled away,
+            // so that is the child the offset of the item is measured from.
+            await _js.BitUtilsScrollToChild(RootElement, _itemsElement, 0, index * ItemSize, _IsHorizontal, smooth);
         }
         else
         {
-            await _js.BitUtilsScrollToChild(RootElement, headerOffset + index, 0, _IsHorizontal, smooth);
+            await _js.BitUtilsScrollToChild(RootElement, _itemsElement, index, 0, _IsHorizontal, smooth);
         }
     }
 
@@ -532,6 +538,20 @@ public partial class BitBasicList<TItem> : BitComponentBase
             catch (JSException) { } // the list may have been taken out of the DOM in the meantime
         }
 
+        // The wrapper of a LoadMoreTemplate is not a real button, so the keys a button is activated by are
+        // wired up in the browser, where a key pressed on the wrapper can be told apart from one pressed on
+        // a control inside it. The wrapper is a new element each time it comes back, so it is registered
+        // again whenever the element it holds changes.
+        if (LoadMore && LoadMoreTemplate is not null && _loadMoreFinished is false)
+        {
+            if (_loadMoreElement.Id is { } id && id != _buttonKeysElementId)
+            {
+                _buttonKeysElementId = id;
+
+                await _js.BitUtilsRegisterButtonKeys(_loadMoreElement);
+            }
+        }
+
         if (_ShowSentinel)
         {
             var margin = $"{Math.Max(0, AutoLoadThreshold)}px";
@@ -561,16 +581,6 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
 
     private bool _IsHorizontal => Horizontal && Virtualize is false;
-
-    // The wrapper of a LoadMoreTemplate is not a real button, so the keys a button would be activated
-    // by are handled here. The default action of the key is left alone so that neither Tab nor a key
-    // typed into a control the template brought along is taken away from the browser.
-    private async Task HandleLoadMoreKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key is not ("Enter" or " ")) return;
-
-        await LoadMoreItems(false);
-    }
 
     private async Task LoadMoreItems(bool reset)
     {

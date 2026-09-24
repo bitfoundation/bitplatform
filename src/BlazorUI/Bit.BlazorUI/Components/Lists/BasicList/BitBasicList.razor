@@ -4,10 +4,7 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     role="@_EffectiveRole"
      tabindex="@(TabIndex ?? (_focusHandedToRoot ? "-1" : null))"
-     aria-label="@AriaLabel"
-     aria-busy="@(_isLoadingMore || Loading ? "true" : null)"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
@@ -35,39 +32,52 @@
             }
         </div>
     }
-    else if (Virtualize)
-    {
-        if (ItemsProvider is null || LoadMore)
-        {
-            <_BitBasicListVirtualize Items="_viewItems"
-                                     ItemSize="@ItemSize"
-                                     EmptyContent="EmptyContent"
-                                     OverscanCount="@OverscanCount">
-                @_EffectiveRowTemplate(context)
-            </_BitBasicListVirtualize>
-        }
-        else
-        {
-            <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
-                                     ItemSize="@ItemSize"
-                                     EmptyContent="EmptyContent"
-                                     OverscanCount="@OverscanCount"
-                                     Placeholder="VirtualizePlaceholder"
-                                     ItemsProvider="ProvideVirtualizedItems">
-                @_EffectiveRowTemplate(context)
-            </_BitBasicListVirtualize>
-        }
-    }
-    else if (_viewItems.Count > 0)
-    {
-        foreach (var item in _viewItems)
-        {
-            @_EffectiveRowTemplate(item)
-        }
-    }
     else
     {
-        @EmptyContent
+        @* The rows live in an element of their own rather than straight under the root: a list may only own
+           list items, and the root also holds the header, the footer, the LoadMore button and the live
+           regions, none of which is one. The root stays the scrolling region around all of them. *@
+        <div @ref="_itemsElement"
+             role="@_EffectiveRole"
+             aria-label="@AriaLabel"
+             aria-busy="@(_isLoadingMore ? "true" : null)"
+             style="@Styles?.Items"
+             class="bit-bsl-itm @Classes?.Items">
+            @if (Virtualize)
+            {
+                if (ItemsProvider is null || LoadMore)
+                {
+                    <_BitBasicListVirtualize Items="_viewItems"
+                                             ItemSize="@ItemSize"
+                                             EmptyContent="EmptyContent"
+                                             OverscanCount="@OverscanCount">
+                        @_EffectiveRowTemplate(context)
+                    </_BitBasicListVirtualize>
+                }
+                else
+                {
+                    <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
+                                             ItemSize="@ItemSize"
+                                             EmptyContent="EmptyContent"
+                                             OverscanCount="@OverscanCount"
+                                             Placeholder="VirtualizePlaceholder"
+                                             ItemsProvider="ProvideVirtualizedItems">
+                        @_EffectiveRowTemplate(context)
+                    </_BitBasicListVirtualize>
+                }
+            }
+            else if (_viewItems.Count > 0)
+            {
+                foreach (var item in _viewItems)
+                {
+                    @_EffectiveRowTemplate(item)
+                }
+            }
+            else
+            {
+                @EmptyContent
+            }
+        </div>
     }
 
     @if (_ShowSentinel)
@@ -82,12 +92,12 @@
             @* A template is free to render a button (or any other control) of its own, and a button
                cannot be nested inside another one, so the clickable wrapper of a template is a plain
                element carrying the button role rather than a real button element. *@
-            <div role="button"
+            <div @ref="_loadMoreElement"
+                 role="button"
                  tabindex="@(IsEnabled ? "0" : "-1")"
                  aria-disabled="@(IsEnabled is false ? "true" : null)"
                  aria-busy="@(_isLoadingMore ? "true" : null)"
                  @onclick="() => LoadMoreItems(false)"
-                 @onkeydown="HandleLoadMoreKeyDown"
                  @onfocusin="() => _loadMoreHasFocus = true"
                  @onfocusout="() => _loadMoreHasFocus = false"
                  style="@Styles?.LoadMoreButton"
@@ -133,8 +143,7 @@
 
     @if (LoadMore)
     {
-        @* Rendered last, so it never shifts the children ScrollToIndexAsync counts the items by, and
-           present for as long as the LoadMore mode is on, since a live region only announces the changes
+        @* Present for as long as the LoadMore mode is on, since a live region only announces the changes
            made to it after it was rendered. The first page has the status of the loading content. *@
         <div role="status" class="bit-bsl-sts">@(_isLoadingMore && _ShowLoading is false ? LoadingLabel : null)</div>
     }

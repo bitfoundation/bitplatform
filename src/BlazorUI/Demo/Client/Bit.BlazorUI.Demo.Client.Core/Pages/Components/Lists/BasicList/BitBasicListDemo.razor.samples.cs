@@ -475,6 +475,17 @@ public class Person
             <div>@person.Job</div>
         </div>
     </RowTemplate>
+</BitBasicList>
+
+<BitBasicList Items=""fewPeople""
+              Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 300px;""
+              Styles=""@(new() { Items = ""display: grid; gap: 10px; padding: 10px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"" })"">
+    <RowTemplate Context=""person"">
+        <div role=""listitem"" style=""padding: 10px; text-align: center; background-color: var(--bit-clr-bg-sec);"">
+            <div><strong>@person.FirstName</strong></div>
+            <div>@person.Job</div>
+        </div>
+    </RowTemplate>
 </BitBasicList>";
     private readonly string example10CsharpCode = @"
 private readonly List<Person> fewPeople = [.. Enumerable.Range(0, 100).Select(i => new Person

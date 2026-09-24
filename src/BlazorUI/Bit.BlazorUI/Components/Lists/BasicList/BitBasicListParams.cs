@@ -114,7 +114,7 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
     public int? OverscanCount { get; set; }
 
     /// <summary>
-    /// The role attribute of the html element of the list.
+    /// The role attribute of the element holding the rows of the list.
     /// </summary>
     public string? Role { get; set; }
 
