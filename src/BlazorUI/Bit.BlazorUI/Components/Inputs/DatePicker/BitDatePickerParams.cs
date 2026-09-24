@@ -827,7 +827,9 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         // The parameters the picker rebuilds its view from are the ones carrying a [CallOnSet(OnSetParameters)] on
         // the component, and the component has already run that pass in OnInitialized - before anything cascaded
-        // here reached it. So whichever of them the cascade fills in, the pass is run once more at the end.
+        // here reached it. So whichever of them the cascade CHANGES, the pass is run once more at the end. Only a
+        // change: this runs on every render of the ancestor holding the BitParams, and cascading the same value a
+        // second time must not fling the calendar back off the month the user navigated it to.
         var rebuildView = false;
 
         if (AllowDeselect.HasValue && bitDatePicker.HasNotBeenSet(nameof(AllowDeselect)))
@@ -941,11 +943,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (Culture is not null && bitDatePicker.HasNotBeenSet(nameof(Culture)))
         {
+            rebuildView |= Equals(bitDatePicker.Culture, Culture) is false;
+
             bitDatePicker.Culture = Culture;
 
             bitDatePicker.ClassBuilder.Reset();
-
-            rebuildView = true;
         }
 
         if (DateFormat.HasValue() && bitDatePicker.HasNotBeenSet(nameof(DateFormat)))
@@ -980,16 +982,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (DisableFuture.HasValue && bitDatePicker.HasNotBeenSet(nameof(DisableFuture)))
         {
-            bitDatePicker.DisableFuture = DisableFuture.Value;
+            rebuildView |= bitDatePicker.DisableFuture != DisableFuture.Value;
 
-            rebuildView = true;
+            bitDatePicker.DisableFuture = DisableFuture.Value;
         }
 
         if (DisablePast.HasValue && bitDatePicker.HasNotBeenSet(nameof(DisablePast)))
         {
-            bitDatePicker.DisablePast = DisablePast.Value;
+            rebuildView |= bitDatePicker.DisablePast != DisablePast.Value;
 
-            rebuildView = true;
+            bitDatePicker.DisablePast = DisablePast.Value;
         }
 
         if (DisallowedTimeErrorMessage.HasValue() && bitDatePicker.HasNotBeenSet(nameof(DisallowedTimeErrorMessage)))
@@ -1004,16 +1006,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (FirstDayOfWeek.HasValue && bitDatePicker.HasNotBeenSet(nameof(FirstDayOfWeek)))
         {
-            bitDatePicker.FirstDayOfWeek = FirstDayOfWeek.Value;
+            rebuildView |= bitDatePicker.FirstDayOfWeek != FirstDayOfWeek.Value;
 
-            rebuildView = true;
+            bitDatePicker.FirstDayOfWeek = FirstDayOfWeek.Value;
         }
 
         if (FixedWeeks.HasValue && bitDatePicker.HasNotBeenSet(nameof(FixedWeeks)))
         {
-            bitDatePicker.FixedWeeks = FixedWeeks.Value;
+            rebuildView |= bitDatePicker.FixedWeeks != FixedWeeks.Value;
 
-            rebuildView = true;
+            bitDatePicker.FixedWeeks = FixedWeeks.Value;
         }
 
         if (GetDayClass is not null && bitDatePicker.HasNotBeenSet(nameof(GetDayClass)))
@@ -1152,9 +1154,9 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (IsMonthPickerVisible.HasValue && bitDatePicker.HasNotBeenSet(nameof(IsMonthPickerVisible)))
         {
-            bitDatePicker.IsMonthPickerVisible = IsMonthPickerVisible.Value;
+            rebuildView |= bitDatePicker.IsMonthPickerVisible != IsMonthPickerVisible.Value;
 
-            rebuildView = true;
+            bitDatePicker.IsMonthPickerVisible = IsMonthPickerVisible.Value;
         }
 
         if (Label.HasValue() && bitDatePicker.HasNotBeenSet(nameof(Label)))
@@ -1169,9 +1171,9 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (MaxDate.HasValue && bitDatePicker.HasNotBeenSet(nameof(MaxDate)))
         {
-            bitDatePicker.MaxDate = MaxDate.Value;
+            rebuildView |= bitDatePicker.MaxDate != MaxDate.Value;
 
-            rebuildView = true;
+            bitDatePicker.MaxDate = MaxDate.Value;
         }
 
         if (MaxTime.HasValue && bitDatePicker.HasNotBeenSet(nameof(MaxTime)))
@@ -1181,9 +1183,9 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (MinDate.HasValue && bitDatePicker.HasNotBeenSet(nameof(MinDate)))
         {
-            bitDatePicker.MinDate = MinDate.Value;
+            rebuildView |= bitDatePicker.MinDate != MinDate.Value;
 
-            rebuildView = true;
+            bitDatePicker.MinDate = MinDate.Value;
         }
 
         if (MinTime.HasValue && bitDatePicker.HasNotBeenSet(nameof(MinTime)))
@@ -1193,9 +1195,9 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (MonthCount.HasValue && bitDatePicker.HasNotBeenSet(nameof(MonthCount)))
         {
-            bitDatePicker.MonthCount = MonthCount.Value;
+            rebuildView |= bitDatePicker.MonthCount != MonthCount.Value;
 
-            rebuildView = true;
+            bitDatePicker.MonthCount = MonthCount.Value;
         }
 
         if (PagedNavigation.HasValue && bitDatePicker.HasNotBeenSet(nameof(PagedNavigation)))
@@ -1210,9 +1212,9 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (Mode.HasValue && bitDatePicker.HasNotBeenSet(nameof(Mode)))
         {
-            bitDatePicker.Mode = Mode.Value;
+            rebuildView |= bitDatePicker.Mode != Mode.Value;
 
-            rebuildView = true;
+            bitDatePicker.Mode = Mode.Value;
         }
 
         if (MonthCellTemplate is not null && bitDatePicker.HasNotBeenSet(nameof(MonthCellTemplate)))
@@ -1342,9 +1344,9 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (ShowMonthPickerAsOverlay.HasValue && bitDatePicker.HasNotBeenSet(nameof(ShowMonthPickerAsOverlay)))
         {
-            bitDatePicker.ShowMonthPickerAsOverlay = ShowMonthPickerAsOverlay.Value;
+            rebuildView |= bitDatePicker.ShowMonthPickerAsOverlay != ShowMonthPickerAsOverlay.Value;
 
-            rebuildView = true;
+            bitDatePicker.ShowMonthPickerAsOverlay = ShowMonthPickerAsOverlay.Value;
         }
 
         if (ShowNowButton.HasValue && bitDatePicker.HasNotBeenSet(nameof(ShowNowButton)))
@@ -1359,23 +1361,23 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (ShowSeconds.HasValue && bitDatePicker.HasNotBeenSet(nameof(ShowSeconds)))
         {
-            bitDatePicker.ShowSeconds = ShowSeconds.Value;
+            rebuildView |= bitDatePicker.ShowSeconds != ShowSeconds.Value;
 
-            rebuildView = true;
+            bitDatePicker.ShowSeconds = ShowSeconds.Value;
         }
 
         if (ShowTimePicker.HasValue && bitDatePicker.HasNotBeenSet(nameof(ShowTimePicker)))
         {
-            bitDatePicker.ShowTimePicker = ShowTimePicker.Value;
+            rebuildView |= bitDatePicker.ShowTimePicker != ShowTimePicker.Value;
 
-            rebuildView = true;
+            bitDatePicker.ShowTimePicker = ShowTimePicker.Value;
         }
 
         if (ShowTimePickerAsOverlay.HasValue && bitDatePicker.HasNotBeenSet(nameof(ShowTimePickerAsOverlay)))
         {
-            bitDatePicker.ShowTimePickerAsOverlay = ShowTimePickerAsOverlay.Value;
+            rebuildView |= bitDatePicker.ShowTimePickerAsOverlay != ShowTimePickerAsOverlay.Value;
 
-            rebuildView = true;
+            bitDatePicker.ShowTimePickerAsOverlay = ShowTimePickerAsOverlay.Value;
         }
 
         if (ShowTimePickerIcon is not null && bitDatePicker.HasNotBeenSet(nameof(ShowTimePickerIcon)))
@@ -1407,18 +1409,18 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (Standalone.HasValue && bitDatePicker.HasNotBeenSet(nameof(Standalone)))
         {
+            rebuildView |= bitDatePicker.Standalone != Standalone.Value;
+
             bitDatePicker.Standalone = Standalone.Value;
 
             bitDatePicker.ClassBuilder.Reset();
-
-            rebuildView = true;
         }
 
         if (StartingValue.HasValue && bitDatePicker.HasNotBeenSet(nameof(StartingValue)))
         {
-            bitDatePicker.StartingValue = StartingValue.Value;
+            rebuildView |= bitDatePicker.StartingValue != StartingValue.Value;
 
-            rebuildView = true;
+            bitDatePicker.StartingValue = StartingValue.Value;
         }
 
         if (Styles is not null && bitDatePicker.HasNotBeenSet(nameof(Styles)))
@@ -1540,16 +1542,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (TimeZone is not null && bitDatePicker.HasNotBeenSet(nameof(TimeZone)))
         {
-            bitDatePicker.TimeZone = TimeZone;
+            rebuildView |= Equals(bitDatePicker.TimeZone, TimeZone) is false;
 
-            rebuildView = true;
+            bitDatePicker.TimeZone = TimeZone;
         }
 
         if (Today.HasValue && bitDatePicker.HasNotBeenSet(nameof(Today)))
         {
-            bitDatePicker.Today = Today.Value;
+            rebuildView |= bitDatePicker.Today != Today.Value;
 
-            rebuildView = true;
+            bitDatePicker.Today = Today.Value;
         }
 
         if (Underlined.HasValue && bitDatePicker.HasNotBeenSet(nameof(Underlined)))

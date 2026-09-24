@@ -10,8 +10,15 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 {
-    private const int MAX_WIDTH = 470;
-    private const int MONTH_WIDTH = 240;
+    // The floor every pane of the callout is laid out on - --bit-dtp-pane-min-w of the size class, plus the
+    // padding on either side of it (the panes are content-box, so the padding is added to the floor). These
+    // are the values of the default rhythm: a design system that scales spacing moves the real widths, which
+    // only decides how early the callout folds its extra months and its pickers away, never whether it fits.
+    private const int PANE_WIDTH_SM = 208;
+    private const int PANE_WIDTH_MD = 232;
+    private const int PANE_WIDTH_LG = 272;
+    private const int PANE_PADDING = 12;
+    private const int WIDTH_SLACK = 6;
     private const int SECONDS_WIDTH = 50;
     private const int MAX_MONTH_COUNT = 3;
     private const int DEFAULT_WEEK_COUNT = 6;
@@ -72,7 +79,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
     private int _hour;
+    // What the field held when the current edit of it started, and how many input events that edit has
+    // fired so far. An arrow key and the spin buttons of the number input fire exactly one, so a session of
+    // one event moving by one is a step; a number typed digit by digit fires one per digit and is a typed
+    // value, whatever it happens to land next to. Both are reset once the field is committed.
     private int _hourBeforeInput;
+    private int _hourInputCount;
     private int _hourView
     {
         get
@@ -96,7 +108,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             if (IsEnabled is false || ReadOnly) return;
 
-            _hourBeforeInput = _hour;
+            if (_hourInputCount++ == 0)
+            {
+                _hourBeforeInput = _hour;
+            }
 
             // The field is bound on every keystroke, so what lands here is whatever has been typed so far -
             // the first digit of a two-digit hour among it. It is only brought into the day here; the
@@ -120,6 +135,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private int _minute;
     private int _minuteBeforeInput;
+    private int _minuteInputCount;
     private int _minuteView
     {
         get => _minute;
@@ -129,7 +145,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
             // Brought into the hour here and held to the MinuteStep grid and the bounds on commit, for the
             // same reason the hour above is.
-            _minuteBeforeInput = _minute;
+            if (_minuteInputCount++ == 0)
+            {
+                _minuteBeforeInput = _minute;
+            }
+
             _minute = Math.Clamp(value, 0, 59);
 
             _ = UpdateCurrentValue();
@@ -138,6 +158,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private int _second;
     private int _secondBeforeInput;
+    private int _secondInputCount;
     private int _secondView
     {
         get => _second;
@@ -147,7 +168,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
             // Brought into the minute here and held to the SecondStep grid and the bounds on commit, for the
             // same reason the hour and the minute above are.
-            _secondBeforeInput = _second;
+            if (_secondInputCount++ == 0)
+            {
+                _secondBeforeInput = _second;
+            }
+
             _second = Math.Clamp(value, 0, 59);
 
             _ = UpdateCurrentValue();
@@ -1758,8 +1783,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // user just emptied the value, so the calendar is exactly what they need to pick another one.
         if (AllowDeselect && IsSelectedDate(selectedDate))
         {
-            var year = _culture.Calendar.GetYear(selectedDate);
-            var month = _culture.Calendar.GetMonth(selectedDate);
+            // A day a strip of months already shows leaves the strip where it is - moving its start onto that
+            // day's month would shove the other panes along under a click that changed nothing but the value.
+            var isRendered = IsInRenderedMonths(selectedDate.Date);
+            var year = isRendered ? _currentYear : _culture.Calendar.GetYear(selectedDate);
+            var month = isRendered ? _currentMonth : _culture.Calendar.GetMonth(selectedDate);
 
             _focusedDate = selectedDate;
 
@@ -2382,11 +2410,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (isNext)
         {
-            // The strip moves as a whole, so what it is about to run past is judged on its last pane.
-            var (lastYear, lastMonth) = _renderedMonths[^1];
+            // The strip moves as a whole, so what it is about to run past is judged on its last pane -
+            // derived from where the strip starts rather than read off _renderedMonths, which a paged move
+            // steps past one month at a time before the strip is regenerated.
+            var (lastYear, lastMonth) = AddMonths(_currentYear, _currentMonth, _renderedMonths.Length - 1);
 
             var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
-            if (lastYear == maxCalendarYear && lastMonth >= maxCalendarMonth) return false;
+            if ((maxCalendarYear, maxCalendarMonth).CompareTo((lastYear, lastMonth)) <= 0) return false;
 
             var max = GetMaxDate();
             if (max.HasValue)
@@ -2395,13 +2425,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 var maxDateYear = _culture.Calendar.GetYear(maxDate);
                 var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
 
-                if (maxDateYear == lastYear && maxDateMonth == lastMonth) return false;
+                // A month the strip already shows is as far as it goes: a strip of several months would
+                // otherwise step right over the month the bound falls in and leave it behind.
+                if ((maxDateYear, maxDateMonth).CompareTo((lastYear, lastMonth)) <= 0) return false;
             }
         }
         else
         {
+            // Backwards the strip is judged on its first pane, which is where the view starts.
             var (minCalendarYear, minCalendarMonth) = GetMinCalendarYearMonth();
-            if (_currentYear == minCalendarYear && _currentMonth <= minCalendarMonth) return false;
+            if ((minCalendarYear, minCalendarMonth).CompareTo((_currentYear, _currentMonth)) >= 0) return false;
 
             var min = GetMinDate();
             if (min.HasValue)
@@ -2410,7 +2443,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 var minDateYear = _culture.Calendar.GetYear(minDate);
                 var minDateMonth = _culture.Calendar.GetMonth(minDate);
 
-                if (minDateYear == _currentYear && minDateMonth == _currentMonth) return false;
+                if ((minDateYear, minDateMonth).CompareTo((_currentYear, _currentMonth)) >= 0) return false;
             }
         }
 
@@ -3159,6 +3192,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnTimeHourFocus()
     {
+        // A new edit of the field starts here, so an edit left uncommitted - typed and then typed back -
+        // does not count towards it.
+        _hourInputCount = 0;
+
         if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
         try
@@ -3170,6 +3207,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnTimeMinuteFocus()
     {
+        // A new edit of the field starts here, so an edit left uncommitted - typed and then typed back -
+        // does not count towards it.
+        _minuteInputCount = 0;
+
         if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
         try
@@ -3181,6 +3222,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnTimeSecondFocus()
     {
+        // A new edit of the field starts here, so an edit left uncommitted - typed and then typed back -
+        // does not count towards it.
+        _secondInputCount = 0;
+
         if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
         try
@@ -3608,21 +3653,28 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         switch (unit)
         {
             case TimeUnit.Hour:
-                _hour = BitTimeSteps.FindAllowedNear(_hour, _hourBeforeInput, 24, IsHourAllowed) ?? _hour;
+                _hour = BitTimeSteps.FindAllowedNear(_hour, StartOfEdit(_hourInputCount, _hourBeforeInput), 24, IsHourAllowed) ?? _hour;
                 _minute = BitTimeSteps.FindNearestAllowed(_minute, 60, IsMinuteAllowed) ?? _minute;
                 _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
+                _hourInputCount = 0;
                 break;
             case TimeUnit.Minute:
-                _minute = BitTimeSteps.FindAllowedNear(_minute, _minuteBeforeInput, 60, IsMinuteAllowed) ?? _minute;
+                _minute = BitTimeSteps.FindAllowedNear(_minute, StartOfEdit(_minuteInputCount, _minuteBeforeInput), 60, IsMinuteAllowed) ?? _minute;
                 _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
+                _minuteInputCount = 0;
                 break;
             default:
-                _second = BitTimeSteps.FindAllowedNear(_second, _secondBeforeInput, 60, IsSecondAllowed) ?? _second;
+                _second = BitTimeSteps.FindAllowedNear(_second, StartOfEdit(_secondInputCount, _secondBeforeInput), 60, IsSecondAllowed) ?? _second;
+                _secondInputCount = 0;
                 break;
         }
 
         await UpdateCurrentValue();
     }
+
+    // The value an edit of a time field started from, to whoever is deciding whether it was stepped or typed -
+    // and nothing at all once more than one input event has landed, since only a step fires a single one.
+    private static int? StartOfEdit(int inputCount, int valueBeforeInput) => inputCount == 1 ? valueBeforeInput : null;
 
     // The hour, the minute and the second answer PageUp and PageDown with the same step the spin buttons next
     // to them move by, so the time can be set without leaving the keyboard or the field.
@@ -3808,10 +3860,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     }
 
     // Every extra month widens the callout, so the threshold that decides whether the pickers have to
-    // collapse into overlays has to account for them.
+    // collapse into overlays has to account for them - at the width the panes of the size in force actually
+    // have, which a Large picker overran while every size was measured as the medium one.
     private int GetMaxWidth(int? monthCount = null)
     {
-        var width = MAX_WIDTH + (((monthCount ?? _renderedMonths.Length) - 1) * MONTH_WIDTH);
+        var pane = Size switch
+        {
+            BitSize.Small => PANE_WIDTH_SM,
+            BitSize.Large => PANE_WIDTH_LG,
+            _ => PANE_WIDTH_MD
+        };
+
+        // The month picker stands beside the strip in a pane of its own, and every month after the first
+        // drops the padding on its leading edge (.bit-dtp-dwp + .bit-dtp-dwp).
+        var width = (2 * pane) + WIDTH_SLACK + (((monthCount ?? _renderedMonths.Length) - 1) * (pane - PANE_PADDING));
 
         // A seconds field is a whole column more of the time pane, so the viewport that still holds the pickers
         // side by side has to be that much wider before they stop collapsing into overlays.

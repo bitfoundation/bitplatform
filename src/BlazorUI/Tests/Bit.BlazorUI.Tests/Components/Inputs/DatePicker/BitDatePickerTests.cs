@@ -3264,6 +3264,44 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDatePickerCascadingParametersShouldNotResetTheViewOnEveryRender()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDatePickerParams
+            {
+                FixedWeeks = true,
+                Standalone = true,
+                IsMonthPickerVisible = false,
+                Culture = CultureInfo.GetCultureInfo("en-US")
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.AddAttribute(1, nameof(BitDatePicker.Value), (DateTimeOffset?)GetLocalDate(2026, 1, 15));
+                builder.CloseComponent();
+            });
+        });
+
+        component.FindAll(".bit-dtp-nbt")[1].Click();
+
+        Assert.AreEqual("February 2026", component.Find(".bit-dtp-grd").GetAttribute("aria-label"));
+
+        // The ancestor holding the BitParams rerenders and cascades exactly what it cascaded before, which
+        // must leave the calendar on the month it was navigated to.
+        component.Render();
+
+        Assert.AreEqual("February 2026", component.Find(".bit-dtp-grd").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitDatePickerDirectParametersShouldOverrideCascadingParameters()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -3632,6 +3670,65 @@ public class BitDatePickerTests : BunitTestContext
         component.FindAll(".bit-dtp-nbt")[1].Click();
 
         Assert.AreEqual(expectedFirstMonth, component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerPagedNavigationShouldStopOnTheMonthMaxDateFallsIn()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.PagedNavigation, true);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.MaxDate, GetLocalDate(2026, 3, 15));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+        });
+
+        component.FindAll(".bit-dtp-nbt")[1].Click();
+
+        // A whole strip of two would land on March + April, so the move stops one month short: March is the
+        // last month the bound allows, and it has to stay on screen rather than be stepped over.
+        Assert.AreEqual("February 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+        Assert.AreEqual("March 2026", component.FindAll(".bit-dtp-grd")[1].GetAttribute("aria-label"));
+
+        // And with the month of the bound on screen the strip cannot move any further forward.
+        Assert.IsTrue(component.FindAll(".bit-dtp-nbt")[1].HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerMultipleMonthsShouldStayPutWhenASecondMonthIsDeselected()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 2, 10);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.AllowDeselect, true);
+            parameters.Add(p => p.IsMonthPickerVisible, false);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The strip opens on the month of the value, so it is walked back onto January first.
+        component.FindAll(".bit-dtp-nbt")[0].Click();
+
+        Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
+
+        component.Find(".bit-dtp-dbs").Click();
+
+        Assert.IsNull(value);
+
+        // The deselected day is in the second pane, which the strip already shows - so the strip stays where
+        // it is rather than sliding its start onto February.
+        Assert.AreEqual("January 2026", component.FindAll(".bit-dtp-grd")[0].GetAttribute("aria-label"));
     }
 
     [TestMethod]

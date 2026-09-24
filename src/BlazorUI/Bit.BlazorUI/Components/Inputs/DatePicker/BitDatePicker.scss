@@ -1046,12 +1046,19 @@
         }
     }
 
+    // The hover and the active state of each of these paints a themed background of its own, from a rule of
+    // a higher specificity than this one, so each is answered with the same system pair - otherwise the
+    // palette is reinstated by a pointer resting on the cell.
     .bit-dtp-dtd,
     .bit-dtp-pcm,
     .bit-dtp-bns {
-        color: HighlightText;
-        background-color: Highlight;
-        forced-color-adjust: none;
+        &,
+        &:hover,
+        &:active {
+            color: HighlightText;
+            background-color: Highlight;
+            forced-color-adjust: none;
+        }
     }
 
     .bit-dtp-dbs::after {
