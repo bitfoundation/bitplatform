@@ -1707,9 +1707,14 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         // The wheel only moves the input the user is actually on. Reacting to a merely hovered one - or to a
         // scroll that carries no modifier - would silently change the time while the page is being scrolled.
-        if (e.ShiftKey is false || _focusedUnit != unit || e.DeltaY == 0) return;
+        if (e.ShiftKey is false || _focusedUnit != unit) return;
 
-        await ChangeTime((e.DeltaY < 0) != InvertMouseWheel, unit);
+        // Shift turns a vertical wheel into a horizontal one on macOS and in Chromium, so the movement can
+        // arrive in DeltaX with DeltaY left at 0.
+        var delta = e.DeltaY != 0 ? e.DeltaY : e.DeltaX;
+        if (delta == 0) return;
+
+        await ChangeTime((delta < 0) != InvertMouseWheel, unit);
     }
 
     // Rendered onto the time inputs as a data attribute rather than pushed over interop, so the script that has
