@@ -830,9 +830,9 @@ public partial class BitFileInput : BitComponentBase
         return BitIconInfo.Bit(GetDefaultFileIconName(file));
     }
 
-    // the MIME type the browser reports is the better signal and is checked first; the extension only has
-    // the last word for the families that share a type (an Office document is a zip to the browser) or for
-    // the files a browser hands over with no type at all.
+    // the extension is checked first, for the document families the MIME type cannot tell apart (an Office
+    // document is a zip to the browser); for everything else the MIME type the browser reports decides,
+    // falling back to a plain page when the browser hands a file over with no type at all.
     private static string GetDefaultFileIconName(BitFileInputInfo file)
     {
         var extension = Path.GetExtension(file.Name).ToLowerInvariant();
