@@ -75,6 +75,13 @@ public partial class BitOtpInput : BitInputBase<string?>
     [Parameter] public bool AutoShift { get; set; }
 
     /// <summary>
+    /// Submits the form the component sits in (a plain form or an EditForm) as soon as the code is complete,
+    /// right after the <see cref="OnFill"/>, the way pressing Enter would: the form still validates before it
+    /// is submitted, and nothing happens outside of a form.
+    /// </summary>
+    [Parameter] public bool AutoSubmit { get; set; }
+
+    /// <summary>
     /// Removes the focus from the inputs as soon as the code is complete, which is what dismisses the
     /// virtual keyboard of a phone once there is nothing left to type.
     /// </summary>
@@ -1352,6 +1359,16 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (IsDisposed) return;
 
         await OnFill.InvokeAsync(value);
+
+        // Submitted after the callback on purpose, so that whatever the consumer switches on in it (the
+        // IsLoading of the round trip above all) is already in place when the submit handler of the form runs.
+        if (AutoSubmit is false || IsDisposed || IsRendered is false) return;
+
+        try
+        {
+            await _js.BitOtpInputSubmit(RootElement);
+        }
+        catch (JSDisconnectedException) { } // the circuit may already be gone at this point.
     }
 
     private bool IsAllowedValue(string value) => value.All(IsAllowedChar);

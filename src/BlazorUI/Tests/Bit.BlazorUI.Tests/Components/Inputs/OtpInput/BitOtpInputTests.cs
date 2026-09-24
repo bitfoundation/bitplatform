@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -3093,5 +3095,92 @@ public class BitOtpInputTests : BunitTestContext
 
         Assert.IsNull(Array.Find(properties, p => p.Name == nameof(BitOtpInput.Value)));
         Assert.IsNull(Array.Find(properties, p => p.Name == nameof(BitOtpInput.DefaultValue)));
+    }
+
+    [TestMethod]
+    public void BitOtpInputParamsShouldCarryEveryPlainParameterOfTheComponent()
+    {
+        // A parameter added to the component without its counterpart here is one a BitParams cascade silently
+        // ignores. Callbacks, templates and the cascade itself are the ones deliberately left out.
+        var paramsProperties = typeof(BitOtpInputParams).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var missing = typeof(BitOtpInput).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                         .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                         .Where(p => p.PropertyType.Name.StartsWith("EventCallback") is false)
+                                         .Where(p => p.PropertyType.Name.StartsWith("RenderFragment") is false)
+                                         .Select(p => p.Name)
+                                         .Where(n => paramsProperties.Contains(n) is false)
+                                         .ToList();
+
+        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldSubmitTheFormOnFillWhenAutoSubmitIsEnabled()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.AutoSubmit, true);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+
+        // Retyping a character of the complete code keeps the very same code, which is not submitted twice.
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldSubmitAfterTheOnFillCallback()
+    {
+        var submitsSeenByOnFill = -1;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 1);
+            parameters.Add(p => p.AutoSubmit, true);
+            parameters.Add(p => p.OnFill, (string? _) => submitsSeenByOnFill = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+        });
+
+        await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual(0, submitsSeenByOnFill);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotSubmitOnFillWithoutAutoSubmit()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 1);
+        });
+
+        await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldTakeAutoSubmitFromTheCascade()
+    {
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitOtpInputParams { Length = 1, AutoSubmit = true } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitOtpInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
     }
 }

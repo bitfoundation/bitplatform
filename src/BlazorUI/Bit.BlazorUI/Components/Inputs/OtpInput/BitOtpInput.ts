@@ -104,6 +104,18 @@ namespace BitBlazorUI {
             active.blur?.();
         }
 
+        /**
+         * Submits the form the component sits in the way pressing Enter would. requestSubmit rather than
+         * submit, since only the former runs the constraint validation and raises the submit event, which
+         * is the one an EditForm listens to.
+         */
+        public static submit(root: HTMLElement) {
+            const form = root?.closest('form');
+            if (!form || typeof form.requestSubmit !== 'function') return;
+
+            form.requestSubmit();
+        }
+
         public static dispose(id: string) {
             const ac = OtpInput.abortControllers[id];
             if (!ac) return;

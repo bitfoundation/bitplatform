@@ -43,6 +43,13 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
     public bool? AutoShift { get; set; }
 
     /// <summary>
+    /// Submits the form the component sits in as soon as the code is complete, the way pressing Enter would.
+    /// <br />
+    /// <see cref="BitOtpInput.AutoSubmit"/>.
+    /// </summary>
+    public bool? AutoSubmit { get; set; }
+
+    /// <summary>
     /// Removes the focus from the inputs as soon as the code is complete, which is what dismisses the
     /// virtual keyboard of a phone once there is nothing left to type.
     /// <br />
@@ -291,6 +298,11 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
         if (AutoShift.HasValue && bitOtpInput.HasNotBeenSet(nameof(AutoShift)))
         {
             bitOtpInput.AutoShift = AutoShift.Value;
+        }
+
+        if (AutoSubmit.HasValue && bitOtpInput.HasNotBeenSet(nameof(AutoSubmit)))
+        {
+            bitOtpInput.AutoSubmit = AutoSubmit.Value;
         }
 
         if (BlurOnFill.HasValue && bitOtpInput.HasNotBeenSet(nameof(BlurOnFill)))

@@ -416,9 +416,18 @@
 //the focus ring and the disabled/invalid overrides are declared after the variants on purpose: they are
 //as specific as the variant rules, so only the source order keeps a focused input from painting the
 //accent color over an error, or a disabled component from keeping its variant colors.
-.bit-otp .bit-otp-inp {
+//the Text variant is excluded so that it gets the underline treatment below instead: a ring drawn around a box
+//that is only an underline would bring back the very frame the variant is there to leave out, and applying
+//the ring only to take its shadow away again would still leave its forced-colors outline behind.
+.bit-otp:not(.bit-otp-txt) .bit-otp-inp {
     &:focus-visible {
         @include focus-ring(var(--bit-OtpInput-focus-color, var(--bit-otp-clr-focus)));
+    }
+}
+
+.bit-otp.bit-otp-txt .bit-otp-inp {
+    &:focus-visible {
+        @include focus-underline-ring(var(--bit-OtpInput-focus-color, var(--bit-otp-clr-focus)));
     }
 }
 
@@ -485,8 +494,15 @@
 
         &:focus-visible {
             border-color: var(--bit-OtpInput-invalid-color, #{$clr-err});
-            @include focus-ring(var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus}));
         }
+    }
+
+    &:not(.bit-otp-txt) .bit-otp-inp:focus-visible {
+        @include focus-ring(var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus}));
+    }
+
+    &.bit-otp-txt .bit-otp-inp:focus-visible {
+        @include focus-underline-ring(var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus}));
     }
 }
 
