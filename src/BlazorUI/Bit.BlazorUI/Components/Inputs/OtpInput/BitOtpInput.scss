@@ -156,7 +156,13 @@
     //asked for explicitly, otherwise the code would be drawn in the default font of the browser while
     //the label above it follows the theme.
     font-size: inherit;
-    font-family: inherit;
+    //the family is read here rather than only inherited from the root, so that a font-family written onto
+    //an element between the root and the box (a `* { font-family: ... }` reset lands on the wrapper of the
+    //inputs too, and an inherited value always loses to one set on the element itself) cannot keep the
+    //public variable from reaching the one element that draws the code. The fallback is the inherit
+    //keyword, so a component that sets no variable of its own is left exactly where it was: following
+    //whatever it inherits.
+    font-family: var(--bit-OtpInput-font-family, inherit);
     text-align: center;
     box-sizing: border-box;
     -moz-appearance: textfield;
