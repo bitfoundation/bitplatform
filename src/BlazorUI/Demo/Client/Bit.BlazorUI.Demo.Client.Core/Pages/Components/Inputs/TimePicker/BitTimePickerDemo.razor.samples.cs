@@ -153,7 +153,7 @@ private TimeSpan? actionsTime;";
 
     private readonly string example11RazorCode = @"
 <BitTimePicker Label=""Meeting time""
-               Description=""Rounded to the nearest quarter hour.""
+               Description=""When the meeting starts, in your local time.""
                Placeholder=""Select a time..."" />
 
 <BitTimePicker Label=""Handover time""
@@ -235,7 +235,7 @@ private void HandleInvalidSubmit()
                DecreaseHourTitle=""One hour earlier""
                IncreaseMinuteTitle=""One minute later""
                DecreaseMinuteTitle=""One minute earlier""
-               AriaDescription=""Press A or P to switch between morning and afternoon.""
+               AriaDescription=""Type the first letter of the AM or PM designator to switch between morning and afternoon.""
                Placeholder=""Select a time..."" />";
 
     private readonly string example14RazorCode = @"

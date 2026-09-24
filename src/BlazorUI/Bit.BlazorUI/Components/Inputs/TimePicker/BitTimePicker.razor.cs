@@ -1317,8 +1317,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
                 // The half of the day is set from the keyboard the way every desktop clock field does it,
                 // with the first letter of the designator of the culture - "a"/"p" in English, and whatever
                 // the culture writes AM and PM with elsewhere - so reaching the other half does not mean
-                // tabbing over to the two buttons that show it.
-                if (TimeFormat == BitTimeFormat.TwelveHours && e.Key.Length == 1)
+                // tabbing over to the two buttons that show it. A modified key (Ctrl+A, Cmd+P, ...) is a
+                // shortcut of the browser or the page, not a designator.
+                if (TimeFormat == BitTimeFormat.TwelveHours && e.Key.Length == 1 && e.CtrlKey is false && e.MetaKey is false && e.AltKey is false)
                 {
                     var pm = MatchesMeridiem(e.Key, pm: true);
 
