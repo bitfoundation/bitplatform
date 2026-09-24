@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -2036,5 +2037,318 @@ public partial class BitCarouselTests : BunitTestContext
         component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
         Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldLeaveKeysToAFocusedControlInsideASlide()
+    {
+        // A field (or a slider, a list, ...) inside a slide moves its caret or its own selection with the
+        // arrow keys, so the carousel stays where it is while such a control holds the focus.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isKeyConsumerFocused", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var root = component.Find(".bit-csl");
+
+        root.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        root.KeyDown(new KeyboardEventArgs { Key = "End" });
+
+        Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNotAskAboutKeysItDoesNotNavigateWith()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var root = component.Find(".bit-csl");
+
+        // The up/down arrows are not the keys of a horizontal carousel, and neither is a letter.
+        root.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        root.KeyDown(new KeyboardEventArgs { Key = "a" });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.isKeyConsumerFocused"));
+        Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldHandTheFocusOverWhenANextPrevButtonHidesItself()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+
+        // A move that leaves the button in place keeps the focus where it is.
+        component.Find(".bit-csl-lbt").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
+        Assert.AreEqual(0, FocusCalls());
+
+        // The move onto the last page hides the button that made it, so the focus goes to the other one.
+        component.Find(".bit-csl-lbt").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
+        component.WaitForAssertion(() => Assert.AreEqual(1, FocusCalls()));
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldEndTheDragWhenThePointerIsCancelled()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var container = component.Find(".bit-csl-cnt");
+
+        await container.PointerDownAsync(new PointerEventArgs { ClientX = 200, ClientY = 100 });
+        await container.TriggerEventAsync("onpointercancel", new PointerEventArgs());
+
+        // A pointer that is no longer pressed does not drag the carousel when it moves on.
+        await container.PointerMoveAsync(new PointerEventArgs { ClientX = 50, ClientY = 100 });
+
+        Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldRegisterTheDragThresholdForSwallowingTheClickThatEndsADrag()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.DragThreshold, 35);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Utils.registerPreventPointerDown");
+
+            Assert.AreEqual(true, invocation.Arguments[1]);
+            Assert.AreEqual(35, invocation.Arguments[2]);
+        });
+    }
+
+    [TestMethod]
+    public void BitCarouselParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCarousel)}", BitCarouselParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitCarouselParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitCarouselParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitCarouselParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldApplyCascadingParametersFromBitParams()
+    {
+        var component = RenderCarouselInBitParams(new BitCarouselParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Vertical = true,
+            InfiniteScrolling = true,
+            DotAriaLabel = "Page",
+            Gap = "12px",
+            AnimationDuration = 1,
+        });
+
+        var root = component.Find(".bit-csl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-csl-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-csl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-csl-vrt"));
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-gap:12px");
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-dur-full:1s");
+
+        var carousel = component.FindComponent<BitCarousel>().Instance;
+
+        Assert.IsTrue(carousel.InfiniteScrolling);
+
+        component.WaitForAssertion(() => Assert.AreEqual("Page 1", component.FindAll(".bit-csl-dot")[0].GetAttribute("aria-label")));
+    }
+
+    [TestMethod]
+    public void BitCarouselDirectParametersShouldOverrideCascadingParameters()
+    {
+        var component = RenderCarouselInBitParams(new BitCarouselParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            HideDots = true,
+        }, builder =>
+        {
+            builder.AddAttribute(10, nameof(BitCarousel.Color), BitColor.Error);
+            builder.AddAttribute(11, nameof(BitCarousel.HideDots), false);
+        });
+
+        var root = component.Find(".bit-csl");
+
+        // What the carousel set for itself wins, and only what it left unset comes from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-csl-err"));
+        Assert.IsFalse(root.ClassList.Contains("bit-csl-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-csl-lg"));
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+    }
+
+    [TestMethod]
+    public void BitCarouselParamsUpdateParametersShouldSetAllProperties()
+    {
+        var responsiveOptions = new[] { new BitCarouselResponsiveOption { Breakpoint = 600, VisibleItemsCount = 1 } };
+        var classes = new BitCarouselClassStyles { Root = "root-class" };
+        var styles = new BitCarouselClassStyles { Root = "color: red;" };
+        var goLeftIcon = BitIconInfo.Css("left");
+        var goRightIcon = BitIconInfo.Css("right");
+        var pauseIcon = BitIconInfo.Css("pause");
+        var playIcon = BitIconInfo.Css("play");
+        RenderFragment<int> dotTemplate = index => builder => builder.AddContent(0, index);
+
+        var @params = new BitCarouselParams
+        {
+            Accent = BitColorKind.Secondary,
+            AnimationDuration = 1.5,
+            AutoPlay = true,
+            AutoPlayInterval = 3000,
+            AutoPlayReverse = true,
+            Classes = classes,
+            Color = BitColor.Warning,
+            DotAriaLabel = "Page",
+            DotsAriaLabel = "Pages",
+            DotTemplate = dotTemplate,
+            DragThreshold = 40,
+            Fade = true,
+            Gap = "1rem",
+            GoLeftAriaLabel = "Forwards",
+            GoLeftIcon = goLeftIcon,
+            GoLeftIconName = "Forward",
+            GoRightAriaLabel = "Backwards",
+            GoRightIcon = goRightIcon,
+            GoRightIconName = "Back",
+            HideDots = true,
+            HideNextPrev = true,
+            InfiniteScrolling = true,
+            ItemAriaLabelFormat = "Photo {0}",
+            NoDrag = true,
+            NoKeyboard = true,
+            PauseButtonAriaLabel = "Stop",
+            PauseIcon = pauseIcon,
+            PauseIconName = "Pause",
+            PauseOnFocus = false,
+            PauseOnHover = false,
+            PlayButtonAriaLabel = "Start",
+            PlayIcon = playIcon,
+            PlayIconName = "Play",
+            ResponsiveOptions = responsiveOptions,
+            ScrollItemsCount = 2,
+            ShowPlayPause = true,
+            Size = BitSize.Small,
+            StopOnInteraction = true,
+            StopOnLastSlide = true,
+            Styles = styles,
+            Vertical = true,
+            VisibleItemsCount = 3,
+            VisibleItemsCountXs = 1,
+            VisibleItemsCountSm = 2,
+            VisibleItemsCountMd = 3,
+            VisibleItemsCountLg = 4,
+            VisibleItemsCountXl = 5,
+            VisibleItemsCountXxl = 6,
+            Wheel = true,
+        };
+
+        var carousel = new BitCarousel();
+
+        @params.UpdateParameters(carousel);
+
+        Assert.AreEqual(BitColorKind.Secondary, carousel.Accent);
+        Assert.AreEqual(1.5, carousel.AnimationDuration);
+        Assert.IsTrue(carousel.AutoPlay);
+        Assert.AreEqual(3000, carousel.AutoPlayInterval);
+        Assert.IsTrue(carousel.AutoPlayReverse);
+        Assert.AreSame(classes, carousel.Classes);
+        Assert.AreEqual(BitColor.Warning, carousel.Color);
+        Assert.AreEqual("Page", carousel.DotAriaLabel);
+        Assert.AreEqual("Pages", carousel.DotsAriaLabel);
+        Assert.AreSame(dotTemplate, carousel.DotTemplate);
+        Assert.AreEqual(40, carousel.DragThreshold);
+        Assert.IsTrue(carousel.Fade);
+        Assert.AreEqual("1rem", carousel.Gap);
+        Assert.AreEqual("Forwards", carousel.GoLeftAriaLabel);
+        Assert.AreSame(goLeftIcon, carousel.GoLeftIcon);
+        Assert.AreEqual("Forward", carousel.GoLeftIconName);
+        Assert.AreEqual("Backwards", carousel.GoRightAriaLabel);
+        Assert.AreSame(goRightIcon, carousel.GoRightIcon);
+        Assert.AreEqual("Back", carousel.GoRightIconName);
+        Assert.IsTrue(carousel.HideDots);
+        Assert.IsTrue(carousel.HideNextPrev);
+        Assert.IsTrue(carousel.InfiniteScrolling);
+        Assert.AreEqual("Photo {0}", carousel.ItemAriaLabelFormat);
+        Assert.IsTrue(carousel.NoDrag);
+        Assert.IsTrue(carousel.NoKeyboard);
+        Assert.AreEqual("Stop", carousel.PauseButtonAriaLabel);
+        Assert.AreSame(pauseIcon, carousel.PauseIcon);
+        Assert.AreEqual("Pause", carousel.PauseIconName);
+        Assert.IsFalse(carousel.PauseOnFocus);
+        Assert.IsFalse(carousel.PauseOnHover);
+        Assert.AreEqual("Start", carousel.PlayButtonAriaLabel);
+        Assert.AreSame(playIcon, carousel.PlayIcon);
+        Assert.AreEqual("Play", carousel.PlayIconName);
+        Assert.AreSame(responsiveOptions, carousel.ResponsiveOptions);
+        Assert.AreEqual(2, carousel.ScrollItemsCount);
+        Assert.IsTrue(carousel.ShowPlayPause);
+        Assert.AreEqual(BitSize.Small, carousel.Size);
+        Assert.IsTrue(carousel.StopOnInteraction);
+        Assert.IsTrue(carousel.StopOnLastSlide);
+        Assert.AreSame(styles, carousel.Styles);
+        Assert.IsTrue(carousel.Vertical);
+        Assert.AreEqual(3, carousel.VisibleItemsCount);
+        Assert.AreEqual(1, carousel.VisibleItemsCountXs);
+        Assert.AreEqual(2, carousel.VisibleItemsCountSm);
+        Assert.AreEqual(3, carousel.VisibleItemsCountMd);
+        Assert.AreEqual(4, carousel.VisibleItemsCountLg);
+        Assert.AreEqual(5, carousel.VisibleItemsCountXl);
+        Assert.AreEqual(6, carousel.VisibleItemsCountXxl);
+        Assert.IsTrue(carousel.Wheel);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldRenderWithDefaultsOutsideBitParams()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        var root = component.Find(".bit-csl");
+
+        Assert.IsNull(component.Instance.Carousel.CascadingParameters);
+        Assert.IsFalse(root.ClassList.Contains("bit-csl-vrt"));
+        Assert.IsFalse(root.ClassList.Contains("bit-csl-lg"));
+    }
+
+    private IRenderedComponent<BitParams> RenderCarouselInBitParams(BitCarouselParams @params, Action<Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder>? addAttributes = null)
+    {
+        return RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCarousel>(0);
+                addAttributes?.Invoke(builder);
+                builder.AddAttribute(20, nameof(BitCarousel.ChildContent), (RenderFragment)(items =>
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        items.OpenComponent<BitCarouselItem>(0);
+                        items.CloseComponent();
+                    }
+                }));
+                builder.CloseComponent();
+            });
+        });
     }
 }

@@ -198,6 +198,39 @@
             }
         }
 
+        // True when the focus sits on something inside the given container that consumes the arrow keys
+        // (and Home/End) on its own: an editable field moves its caret with them, and a slider, a list, a
+        // radio group or a grid moves its own selection. A container that navigates with the same keys
+        // (a carousel, for one) asks first, so a key meant for the control inside it is not also taken as
+        // a move of the whole container. The container itself does not count, and neither does an element
+        // outside of it.
+        public static isKeyConsumerFocused(container: HTMLElement) {
+            try {
+                if (!container) return false;
+
+                const active = document.activeElement as HTMLElement | null;
+                if (!active || active === container || !container.contains(active)) return false;
+
+                if (active.isContentEditable) return true;
+
+                const tag = active.tagName;
+                if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+                if (tag === 'INPUT') {
+                    const type = ((active as HTMLInputElement).type || '').toLowerCase();
+                    if (['button', 'submit', 'reset', 'checkbox', 'image', 'file', 'color'].indexOf(type) < 0) return true;
+                }
+
+                const owner = active.closest('[role="slider"],[role="spinbutton"],[role="textbox"],[role="searchbox"],[role="combobox"],' +
+                                             '[role="listbox"],[role="menu"],[role="menubar"],[role="tablist"],[role="radiogroup"],' +
+                                             '[role="grid"],[role="treegrid"],[role="tree"],[role="scrollbar"]');
+
+                return owner != null && owner !== container && container.contains(owner);
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.isKeyConsumerFocused:", e);
+                return false;
+            }
+        }
+
         // Whether the pointer of the device is one that can actually hover, which the interactions that
         // are driven by hovering have to know: a touch screen reports a mouseover for a tap, so a popup
         // opening on hover would fight the tap that is also meant to toggle it.
@@ -833,21 +866,31 @@
         // input inside it from being selected with the pointer). The event itself is always left to
         // travel on: Blazor dispatches pointerdown from a single listener on the document, so
         // stopping it here would take it away from every Blazor handler in the tree, including the
-        // ones of the components sitting inside the element. Calling it again updates the active
-        // flag in place, so no separate unregister call is needed - the listener is
-        // garbage-collected with the element itself.
-        public static registerPreventPointerDown(element: HTMLElement, active: boolean) {
+        // ones of the components sitting inside the element. Calling it again updates the flags in
+        // place, so no separate unregister call is needed - the listeners are garbage-collected with
+        // the element itself.
+        // While it is active, the native drag of a link (or of anything else draggable) inside the
+        // element is cancelled too, since it would swallow the pointer events of the drag the element
+        // performs itself. And with a positive clickThreshold, the click that ends a drag which
+        // travelled further than that is swallowed before anything else sees it, so letting go of a
+        // slide that was dragged over a link (or a button) does not also follow it.
+        public static registerPreventPointerDown(element: HTMLElement, active: boolean, clickThreshold?: number) {
             if (!element) return;
 
             try {
                 const el = element as any;
                 el.__bitPreventPointerDown = active;
+                el.__bitPreventPointerDownClickThreshold = clickThreshold || 0;
 
                 if (el.__bitPreventPointerDownRegistered) return;
                 el.__bitPreventPointerDownRegistered = true;
 
                 element.addEventListener('pointerdown', (e: PointerEvent) => {
-                    if (!(element as any).__bitPreventPointerDown) return;
+                    const el = element as any;
+                    el.__bitPointerDownX = e.clientX;
+                    el.__bitPointerDownY = e.clientY;
+
+                    if (!el.__bitPreventPointerDown) return;
 
                     if (e.target instanceof Element) {
                         // The lookup is bounded by the element itself, since a control the element
@@ -862,6 +905,32 @@
 
                     e.preventDefault();
                 });
+
+                element.addEventListener('dragstart', (e: DragEvent) => {
+                    if (!(element as any).__bitPreventPointerDown) return;
+
+                    e.preventDefault();
+                });
+
+                element.addEventListener('click', (e: MouseEvent) => {
+                    const el = element as any;
+                    const threshold = el.__bitPreventPointerDownClickThreshold as number;
+
+                    if (!el.__bitPreventPointerDown || !(threshold > 0)) return;
+                    if (el.__bitPointerDownX === undefined) return;
+
+                    // A click raised from the keyboard carries no pointer travel of its own, so only a
+                    // click that ends a pointer drag longer than the threshold is taken away.
+                    if (e.detail === 0) return;
+
+                    const dx = e.clientX - el.__bitPointerDownX;
+                    const dy = e.clientY - el.__bitPointerDownY;
+
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) <= threshold) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, true);
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventPointerDown:", e); }
         }
 

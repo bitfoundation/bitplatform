@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -47,6 +49,13 @@ public partial class BitCarousel : BitComponentBase
     private string _goRightButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
     private ElementReference _carouselContainer = default!;
+    private ElementReference _goLeftButtonRef = default!;
+    private ElementReference _goRightButtonRef = default!;
+
+    // A next/prev button hides itself at the end it cannot move any further towards, which would drop
+    // the keyboard focus it holds on the body. The control the focus is handed to instead is kept here
+    // until the render that hides the button has landed.
+    private ElementReference? _pendingFocus;
 
     // The one size the carousel is laid out against: the box the slides live in. Both places it can
     // arrive from (the resize observer and the measurement of ResetDimensionsAsync) look at that same
@@ -75,6 +84,19 @@ public partial class BitCarousel : BitComponentBase
     // The element the controls of the carousel act on. Naming it lets every one of them point at it with
     // aria-controls, so the relation between a control and the slides it moves is spelled out.
     internal string _ContainerId => $"{_Id}-cnt";
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the carousel component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple carousel components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCarouselParams.ParamName)]
+    public BitCarouselParams? CascadingParameters { get; set; }
 
 
 
@@ -140,7 +162,7 @@ public partial class BitCarousel : BitComponentBase
     /// The general color of the carousel.
     /// </summary>
     /// <remarks>
-    /// It colors the dot of the current page and the next/prev and play/pause buttons.
+    /// It colors the dot of the current page, the next/prev and play/pause buttons, and the focus ring.
     /// <br />
     /// When not set, the carousel falls back to <see cref="Accent"/>, and to the primary color of the theme
     /// when that is not set either.
@@ -184,7 +206,9 @@ public partial class BitCarousel : BitComponentBase
     /// </summary>
     /// <remarks>
     /// A drag that travels further across the other axis than along the one the carousel scrolls is left
-    /// alone, so scrolling a page by dragging over a carousel does not flip its slides.
+    /// alone, so scrolling a page by dragging over a carousel does not flip its slides. The click that ends
+    /// a drag longer than this is swallowed, so letting go of a slide over a link or a button inside it
+    /// does not also follow it.
     /// </remarks>
     [Parameter] public int DragThreshold { get; set; } = 20;
 
@@ -289,7 +313,8 @@ public partial class BitCarousel : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Each button also hides itself at the end it cannot move any further towards, unless
-    /// <see cref="InfiniteScrolling"/> is enabled.
+    /// <see cref="InfiniteScrolling"/> is enabled. A button that hides itself this way hands its keyboard
+    /// focus over to the other one (or to the carousel), so the focus is never dropped on the page.
     /// </remarks>
     [Parameter] public bool HideNextPrev { get; set; }
 
@@ -322,6 +347,9 @@ public partial class BitCarousel : BitComponentBase
     /// A carousel is normally focusable so it can be operated with the arrow keys (and with Home and End),
     /// which is the only way to reach a slide for someone who cannot use a pointer. Only turn this off when
     /// the same navigation is offered somewhere else on the page.
+    /// <br />
+    /// The keys are left alone while the focus is on a control inside a slide that uses them itself (a text
+    /// field, a slider, a list, a radio group, ...), so typing into a slide never moves the carousel.
     /// </remarks>
     [Parameter] public bool NoKeyboard { get; set; }
 
@@ -741,8 +769,11 @@ public partial class BitCarousel : BitComponentBase
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCarouselParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
 
         ClampCounts();
@@ -759,7 +790,7 @@ public partial class BitCarousel : BitComponentBase
         // What the carousel takes away from the browser is kept apart from where its slides sit, so
         // turning the wheel navigation on or off costs a flag on a listener rather than a round trip
         // to measure the carousel and a re-layout of every one of its slides.
-        var preventSignature = FormattableString.Invariant($"{Vertical}|{NoKeyboard}|{NoDrag}|{Wheel}|{IsEnabled}");
+        var preventSignature = FormattableString.Invariant($"{Vertical}|{NoKeyboard}|{NoDrag}|{Wheel}|{IsEnabled}|{DragThreshold}");
 
         if (_preventSignature != preventSignature)
         {
@@ -812,6 +843,13 @@ public partial class BitCarousel : BitComponentBase
             }
         }
 
+        if (_pendingFocus is { } focusTarget)
+        {
+            _pendingFocus = null;
+
+            await focusTarget.FocusAsync();
+        }
+
         await base.OnAfterRenderAsync(firstRender);
     }
 
@@ -826,7 +864,9 @@ public partial class BitCarousel : BitComponentBase
         // Dragging a slide must not start the browser's own drag of an image inside it, but it is
         // suppressed in the browser rather than with Blazor's static preventDefault directive, so a
         // pointerdown on the next/prev buttons is left alone and they can still take the focus.
-        await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled);
+        // The same threshold that turns a drag into a move also tells a drag from a click, so letting go
+        // of a slide that was dragged over a link or a button inside it does not also follow it.
+        await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled, Math.Max(1, DragThreshold));
 
         // Keeping the wheel to the carousel is suppressed in the browser as well, since the listener
         // Blazor's preventDefault directive goes through is a passive one before net10.0, which makes
@@ -1149,6 +1189,39 @@ public partial class BitCarousel : BitComponentBase
         HandleInteraction();
 
         await GoRight();
+    }
+
+    // The buttons are handled apart from the keys, the drag and the wheel that also go left and right,
+    // since only a button can hide itself from under the focus it holds.
+    private async Task HandleGoLeftButtonClick()
+    {
+        await HandleGoLeft();
+
+        KeepFocusOnControls(_goLeftButtonStyle, _goRightButtonStyle, _goRightButtonRef);
+    }
+
+    private async Task HandleGoRightButtonClick()
+    {
+        await HandleGoRight();
+
+        KeepFocusOnControls(_goRightButtonStyle, _goLeftButtonStyle, _goLeftButtonRef);
+    }
+
+    // A button that reached its end is hidden, and a hidden element cannot keep the focus, so it is
+    // handed over to the other button (which is the one still going somewhere) or, when that one is
+    // gone as well, to the carousel itself, instead of falling back to the start of the page.
+    private void KeepFocusOnControls(string clickedStyle, string otherStyle, ElementReference other)
+    {
+        if (clickedStyle.HasNoValue()) return;
+
+        if (otherStyle.HasNoValue())
+        {
+            _pendingFocus = other;
+        }
+        else if (NoKeyboard is false && IsEnabled)
+        {
+            _pendingFocus = RootElement;
+        }
     }
 
     private async Task HandleGotoPage(int index)
@@ -1484,6 +1557,16 @@ public partial class BitCarousel : BitComponentBase
         // with it, so only the plain keys are acted on.
         if (e.CtrlKey || e.AltKey || e.MetaKey || e.ShiftKey) return;
 
+        var isNavigationKey = e.Key is "Home" or "End" || (Vertical ? e.Key is "ArrowUp" or "ArrowDown"
+                                                                    : e.Key is "ArrowLeft" or "ArrowRight");
+
+        if (isNavigationKey is false) return;
+
+        // A key typed into a field inside a slide (or pressed on a slider, a list or a radio group in
+        // it) belongs to that control, which moves its caret or its selection with it, so the carousel
+        // does not move along with it.
+        if (await _js.BitUtilsIsKeyConsumerFocused(RootElement)) return;
+
         switch (e.Key)
         {
             case "ArrowRight" when Vertical is false:
@@ -1588,6 +1671,9 @@ public partial class BitCarousel : BitComponentBase
         await _js.BitUtilsSetStyle(_carouselContainer, "cursor", "grabbing");
     }
 
+    // A pointer that is cancelled (the browser took the gesture over, or a native drag started) never
+    // reports its release, so the drag is ended here as well instead of being left armed for the next
+    // move of a pointer that is no longer pressed.
     private async Task HandlePointerUp(PointerEventArgs e)
     {
         if (_isPointerDown is false) return;

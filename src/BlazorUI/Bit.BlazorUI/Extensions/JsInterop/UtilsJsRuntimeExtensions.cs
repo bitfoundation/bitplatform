@@ -67,6 +67,12 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask<bool> BitUtilsIsKeyConsumerFocused(this IJSRuntime jsRuntime, ElementReference container)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isKeyConsumerFocused", container);
+    }
+
+
     internal static ValueTask<bool> BitUtilsIsHoverDevice(this IJSRuntime jsRuntime)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isHoverDevice");
@@ -231,9 +237,9 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsRegisterPreventPointerDown(this IJSRuntime jsRuntime, ElementReference element, bool active)
+    internal static ValueTask BitUtilsRegisterPreventPointerDown(this IJSRuntime jsRuntime, ElementReference element, bool active, int clickThreshold = 0)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventPointerDown", element, active);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventPointerDown", element, active, clickThreshold);
     }
 
 

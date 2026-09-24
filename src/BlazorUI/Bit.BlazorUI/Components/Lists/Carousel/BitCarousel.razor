@@ -72,6 +72,7 @@
          @onwheel="HandleWheel"
          @onpointerup="HandlePointerUp"
          @onpointerleave="HandlePointerUp"
+         @onpointercancel="HandlePointerUp"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
          aria-atomic="false"
@@ -91,7 +92,8 @@
             var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? (Vertical ? "ChevronUp" : "ChevronRight bit-ico-r180"));
 
             RenderFragment goLeftButton =
-                @<button @onclick="HandleGoLeft"
+                @<button @ref="_goLeftButtonRef"
+                         @onclick="HandleGoLeftButtonClick"
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoLeftAriaLabel()"
@@ -104,7 +106,8 @@
                 </button>;
 
             RenderFragment goRightButton =
-                @<button @onclick="HandleGoRight"
+                @<button @ref="_goRightButtonRef"
+                         @onclick="HandleGoRightButtonClick"
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoRightAriaLabel()"

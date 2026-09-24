@@ -1,10 +1,33 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// carousel and one set on the Style of an instance re-skins that one alone:
+//   --bit-Carousel-height                      height of the carousel                              (default: spacing(25))
+//   --bit-Carousel-gap                         space between the slides; the Gap parameter wins    (default: 0)
+//   --bit-Carousel-focus-color                 focus ring color of the carousel and its controls   (default: $clr-pri-focus)
+//   --bit-Carousel-button-color                next/prev and play/pause glyph color                (default: $clr-fg-pri / the Color role's main color)
+//   --bit-Carousel-button-hover-color          the same glyphs on hover                            (default: $clr-fg-pri-hover / the Color role's hover color)
+//   --bit-Carousel-button-background           next/prev button background                         (default: transparent)
+//   --bit-Carousel-button-hover-background     next/prev button background on hover                (default: the rest background)
+//   --bit-Carousel-button-opacity              next/prev and play/pause opacity at rest            (default: 0.5)
+//   --bit-Carousel-button-hover-opacity        their opacity on hover                              (default: 0.9)
+//   --bit-Carousel-button-size                 next/prev glyph size                                (default: per size, from the type ramp)
+//   --bit-Carousel-button-width                next/prev hit area across the scrolling axis        (default: 10%)
+//   --bit-Carousel-dot-color                   dot color                                           (default: $clr-bg-ter)
+//   --bit-Carousel-dot-hover-color             dot color on hover                                  (default: $clr-bg-ter-hover)
+//   --bit-Carousel-dot-current-color           current dot color                                   (default: the Accent / Color role's main color)
+//   --bit-Carousel-dot-current-hover-color     current dot color on hover                          (default: the Accent / Color role's hover color)
+//   --bit-Carousel-dot-size                    dot diameter                                        (default: per size)
+//   --bit-Carousel-dot-current-width           current dot width, for a pill shaped indicator      (default: the dot size)
+//   --bit-Carousel-dot-radius                  dot corner radius                                   (default: $shp-radius-full)
+//   --bit-Carousel-dots-gap                    space between the dots                              (default: the room that keeps them 24px apart)
+//   --bit-Carousel-dots-margin                 space between the slides and the dots row           (default: spacing(1.25))
+
 .bit-csl {
     display: flex;
     position: relative;
-    height: spacing(25);
     flex-direction: column;
+    height: var(--bit-Carousel-height, #{spacing(25)});
 
     // The dot of the current page takes the accent (or the Color) of the carousel, and the buttons take
     // the neutral foreground so they stay legible over whatever the slides hold. The uncolored carousel
@@ -13,11 +36,17 @@
     --bit-csl-clr-hover: #{$clr-pri-hover};
     --bit-csl-btn: #{$clr-fg-pri};
     --bit-csl-btn-hover: #{$clr-fg-pri-hover};
-    --bit-csl-dot: #{$clr-bg-ter};
-    --bit-csl-dot-hover: #{$clr-bg-ter-hover};
-    --bit-csl-gap: 0px;
     --bit-csl-dot-size: #{spacing(1.25)};
-    --bit-csl-btn-size: #{spacing(3)};
+    --bit-csl-btn-size: #{$tg-fs-2xl};
+
+    // The space between the slides. It is declared here rather than read with a fallback where it is
+    // used, so a carousel nested in another does not inherit the gap of the outer one, and the Gap
+    // parameter, which arrives inline on this same element, still wins over the public variable.
+    --bit-csl-gap: var(--bit-Carousel-gap, 0px);
+
+    // The dot size that is actually drawn, which everything laid out around a dot is measured from.
+    --bit-csl-dotsz: var(--bit-Carousel-dot-size, var(--bit-csl-dot-size));
+    --bit-csl-focus: var(--bit-Carousel-focus-color, #{$clr-pri-focus});
 
     // The duration of the slide/fade of the pages. The AnimationDuration parameter arrives inline as
     // the -full token and the transitions read this derived one, following the -full pattern of
@@ -26,7 +55,7 @@
     --bit-csl-dur: var(--bit-csl-dur-full, 0.5s);
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-csl-focus));
     }
 }
 
@@ -89,30 +118,30 @@
     border: 0;
     padding: 0;
     z-index: 1;
-    opacity: 0.5;
     display: flex;
     cursor: pointer;
-    background: 0 0;
     text-align: center;
     align-items: center;
     justify-content: center;
-    color: var(--bit-csl-btn);
-    font-size: var(--bit-csl-btn-size);
-    transition: opacity $mot-duration $mot-easing;
+    color: var(--bit-Carousel-button-color, var(--bit-csl-btn));
+    opacity: var(--bit-Carousel-button-opacity, 0.5);
+    background-color: var(--bit-Carousel-button-background, transparent);
+    transition: opacity $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             outline: 0;
-            opacity: 0.9;
             text-decoration: none;
-            color: var(--bit-csl-btn-hover);
+            opacity: var(--bit-Carousel-button-hover-opacity, 0.9);
+            color: var(--bit-Carousel-button-hover-color, var(--bit-csl-btn-hover));
+            background-color: var(--bit-Carousel-button-hover-background, var(--bit-Carousel-button-background, transparent));
         }
     }
 
     &:focus-visible {
         opacity: 1;
 
-        @include focus-ring;
+        @include focus-ring(var(--bit-csl-focus));
     }
 
     &:disabled {
@@ -128,9 +157,10 @@
 .bit-csl-rbt {
     top: 0;
     bottom: 0;
-    width: 10%;
     z-index: 2;
     position: absolute;
+    width: var(--bit-Carousel-button-width, 10%);
+    font-size: var(--bit-Carousel-button-size, var(--bit-csl-btn-size));
 }
 
 .bit-csl-lbt {
@@ -164,7 +194,7 @@
         left: 0;
         right: 0;
         width: 100%;
-        height: 10%;
+        height: var(--bit-Carousel-button-width, 10%);
     }
 
     .bit-csl-lbt {
@@ -185,13 +215,23 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: spacing(0.5);
-    margin-top: spacing(1.25);
+    gap: var(--bit-Carousel-dots-gap, var(--bit-csl-dots-gap));
+    margin-top: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
+
+    // The dots are spaced so their centers sit at least 24px apart, which is the spacing exception of
+    // the "target size (minimum)" success criterion of WCAG 2.2 for targets smaller than 24px. The
+    // 24px is the criterion's own CSS pixel measure, so it is not scaled with the spacing density.
+    --bit-csl-dots-gap: max(#{spacing(0.5)}, calc(24px - var(--bit-csl-dotsz)));
 }
 
+// The play/pause glyph follows the dots it sits next to, and its box is kept at the 24px minimum
+// target size however small that glyph gets.
 .bit-csl-ppb {
     position: relative;
-    font-size: calc(var(--bit-csl-dot-size) + #{spacing(0.5)});
+    min-width: 24px;
+    min-height: 24px;
+    border-radius: $shp-radius-full;
+    font-size: calc(var(--bit-csl-dotsz) + #{spacing(0.5)});
 }
 
 // The dots group scopes the accessible label to the dots alone (the play/pause button lives outside
@@ -202,28 +242,29 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: spacing(0.5);
+    gap: var(--bit-Carousel-dots-gap, var(--bit-csl-dots-gap));
 }
 
 .bit-csl-dot {
     border: 0;
     padding: 0;
     cursor: pointer;
-    border-radius: 50%;
+    flex-shrink: 0;
     display: inline-block;
-    width: var(--bit-csl-dot-size);
-    height: var(--bit-csl-dot-size);
-    background-color: var(--bit-csl-dot);
-    transition: background-color $mot-duration-long $mot-easing;
+    width: var(--bit-csl-dotsz);
+    height: var(--bit-csl-dotsz);
+    border-radius: var(--bit-Carousel-dot-radius, #{$shp-radius-full});
+    background-color: var(--bit-Carousel-dot-color, #{$clr-bg-ter});
+    transition: background-color $mot-duration-long $mot-easing, width $mot-duration-long $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-csl-dot-hover);
+            background-color: var(--bit-Carousel-dot-hover-color, #{$clr-bg-ter-hover});
         }
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-csl-focus));
     }
 
     &:disabled {
@@ -242,14 +283,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--bit-csl-btn);
     background-color: transparent;
+    color: var(--bit-Carousel-button-color, var(--bit-csl-btn));
     transition: color $mot-duration-long $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             background-color: transparent;
-            color: var(--bit-csl-btn-hover);
+            color: var(--bit-Carousel-button-hover-color, var(--bit-csl-btn-hover));
         }
     }
 
@@ -260,23 +301,29 @@
 }
 
 .bit-csl-cud {
-    background-color: var(--bit-csl-clr);
+    background-color: var(--bit-Carousel-dot-current-color, var(--bit-csl-clr));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-csl-clr-hover);
+            background-color: var(--bit-Carousel-dot-current-hover-color, var(--bit-csl-clr-hover));
         }
     }
 }
 
+// Only a plain dot is widened: a templated one keeps the width of its content (and whatever width the
+// Dots / CurrentDot classes give it). The :where keeps the rule as light as the one sizing every dot.
+.bit-csl-cud:where(:not(.bit-csl-dtt)) {
+    width: var(--bit-Carousel-dot-current-width, var(--bit-csl-dotsz));
+}
+
 .bit-csl-dtt.bit-csl-cud {
     background-color: transparent;
-    color: var(--bit-csl-clr);
+    color: var(--bit-Carousel-dot-current-color, var(--bit-csl-clr));
 
     @media (hover: hover) {
         &:hover {
             background-color: transparent;
-            color: var(--bit-csl-clr-hover);
+            color: var(--bit-Carousel-dot-current-hover-color, var(--bit-csl-clr-hover));
         }
     }
 }
@@ -284,17 +331,17 @@
 
 .bit-csl-sm {
     --bit-csl-dot-size: #{spacing(1)};
-    --bit-csl-btn-size: #{spacing(2)};
+    --bit-csl-btn-size: #{$tg-fs-md};
 }
 
 .bit-csl-md {
     --bit-csl-dot-size: #{spacing(1.25)};
-    --bit-csl-btn-size: #{spacing(3)};
+    --bit-csl-btn-size: #{$tg-fs-2xl};
 }
 
 .bit-csl-lg {
     --bit-csl-dot-size: #{spacing(1.75)};
-    --bit-csl-btn-size: #{spacing(4)};
+    --bit-csl-btn-size: #{$tg-fs-4xl};
 }
 
 
@@ -321,12 +368,38 @@
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They sit
 // after the accent classes, so a carousel that sets both Color and Accent renders with its Color. The
-// buttons take the role color as well, so the whole chrome of the carousel reads as that role.
+// buttons and the focus ring take the role color as well, so the whole chrome of the carousel reads as
+// that role.
 @each $role, $tokens in $bit-color-roles {
     .bit-csl-#{$role} {
         --bit-csl-clr: #{role($tokens, main)};
         --bit-csl-clr-hover: #{role($tokens, hover)};
         --bit-csl-btn: #{role($tokens, main)};
         --bit-csl-btn-hover: #{role($tokens, hover)};
+        --bit-csl-focus: var(--bit-Carousel-focus-color, #{role($tokens, focus)});
+    }
+}
+
+
+// Windows High Contrast / forced-colors: every background an author paints is stripped, which would
+// leave the dots invisible and the current one indistinguishable from the rest. The dots are outlined
+// in the system text color and the current one is filled with the system highlight instead.
+@media (forced-colors: active) {
+    .bit-csl-dot {
+        border: 1px solid ButtonText;
+    }
+
+    .bit-csl-cud {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+
+    .bit-csl-dtt {
+        border: 0;
+    }
+
+    .bit-csl-dtt.bit-csl-cud {
+        color: Highlight;
+        background-color: transparent;
     }
 }
