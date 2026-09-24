@@ -49,6 +49,9 @@ namespace BitBlazorUI {
             dropDirection: BitDropDirection,
             isRtl: boolean,
             scrollContainerId: string,
+            // The height in pixels of everything the callout renders around its scroll container, which comes
+            // off the room that container is given. A NEGATIVE value has the callout measure it itself, which
+            // is what a consumer whose chrome is sized with overridable custom properties passes.
             scrollOffset: number,
             headerId: string,
             footerId: string,
@@ -296,6 +299,18 @@ namespace BitBlazorUI {
                 calloutWidth = width;
             }
 
+            // A negative offset asks the callout to MEASURE the space its scrollable content cannot use
+            // instead of being told it in pixels: everything it renders around that content, less the header
+            // and the footer that are measured separately just above. A consumer whose chrome is sized with
+            // publicly overridable custom properties - BitDropdown's search box and select all row - has no
+            // number it could pass, since the one it hard-coded would only be the default of a height the
+            // author of a theme or of an instance is free to change.
+            if (scrollOffset < 0) {
+                scrollOffset = scrollContainerId
+                    ? Math.max(0, callout.offsetHeight - (scrollContainer as HTMLElement).offsetHeight - headerHeight - footerHeight)
+                    : 0;
+            }
+
             if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
                 callout.style.opacity = '1';
                 callout.style.transform = 'translate(0,0)';
@@ -418,7 +433,13 @@ namespace BitBlazorUI {
                 callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
                 scrollContainer.style.maxHeight = cap(Math.max(0, available - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
             } else if (dropDirection == BitDropDirection.TopAndBottom) {
-                if (calloutHeight <= distanceToBottom || distanceToBottom >= distanceToTop) {
+                // A callout measuring nothing is one whose content has not arrived yet - a list still
+                // being fetched - and "nothing fits below" is true however little room there is down
+                // there, which would pin it to a side that cannot show it once it fills. With no height
+                // to go on, the side with more room is the one to take.
+                const fitsBelow = calloutHeight > 0 && calloutHeight <= distanceToBottom;
+
+                if (fitsBelow || distanceToBottom >= distanceToTop) {
                     callout.style.top = (componentY + componentHeight + offset - fixedRect.top) + 'px';
                     scrollContainer.style.maxHeight = cap(Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 } else {
@@ -741,7 +762,9 @@ namespace BitBlazorUI {
         public static updateScrollOffset(calloutId: string, scrollOffset: number) {
             const params = Callouts._params.get(calloutId);
             if (params == null) return;
-            if (params.scrollOffset === scrollOffset) return;
+            // A negative offset is not a value to compare but a request to measure again (see position), and
+            // the caller only asks when what it renders around the scrollable content has actually changed.
+            if (scrollOffset >= 0 && params.scrollOffset === scrollOffset) return;
 
             params.scrollOffset = scrollOffset;
 

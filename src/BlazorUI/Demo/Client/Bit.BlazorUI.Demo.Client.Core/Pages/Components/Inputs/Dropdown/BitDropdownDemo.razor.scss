@@ -7,6 +7,39 @@
         max-width: 18rem;
     }
 
+    // The Option API has no virtualization example of its own (see the section's own prose for why), but
+    // the three tabs are read by switching between them, so a short section here would shift every section
+    // below it as the reader switches. The note therefore stands as tall as the example stack the other two
+    // tabs render in its place - three labelled groups of dropdowns, ~54rem - and holds the explanation.
+    .virtualize-note {
+        display: flex;
+        min-height: 54rem;
+        align-items: center;
+        justify-content: center;
+        padding: rem2(24px);
+        border-radius: $bit-shape-radius-surface;
+        border: rem2(1px) dashed $bit-color-border-secondary;
+        background-color: $bit-color-background-secondary;
+
+        .virtualize-note-body {
+            max-width: 34rem;
+
+            > p {
+                margin: 0;
+                color: $bit-color-foreground-secondary;
+
+                + p {
+                    margin-top: rem2(12px);
+                }
+            }
+        }
+
+        .virtualize-note-title {
+            margin-bottom: rem2(12px);
+            font-weight: $bit-typography-fw-semibold;
+        }
+    }
+
     .custom-class {
         margin-inline: 1rem;
         box-shadow: dodgerblue 0 0 0.5rem;
