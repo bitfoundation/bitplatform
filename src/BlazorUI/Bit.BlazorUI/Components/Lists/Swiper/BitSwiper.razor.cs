@@ -45,6 +45,8 @@ public partial class BitSwiper : BitComponentBase
     private int _internalScrollItemsCount = 1;
     private System.Timers.Timer? _autoPlayTimer;
     private string _directionStyle = string.Empty;
+    private bool _stateReported;
+    private string? _announcement;
 
     // Nothing is known about how far the swiper reaches until the browser has measured it, and a button
     // that flashed into view only to hide itself on the first measurement would move the items under it.
@@ -231,6 +233,9 @@ public partial class BitSwiper : BitComponentBase
     /// It is only used for the items that were not given an <see cref="BitComponentBase.AriaLabel"/> of
     /// their own, which is what the carousel pattern of the ARIA authoring practices asks for when a slide
     /// has nothing better to be called.
+    /// <br />
+    /// The accessible name of an item (its own, or the one this format gives it) is also what the swiper
+    /// announces to screen readers when it comes to stand on that item, except while it plays on its own.
     /// </remarks>
     [Parameter] public string? ItemAriaLabelFormat { get; set; }
 
@@ -715,6 +720,16 @@ public partial class BitSwiper : BitComponentBase
         SetNavigationButtonsVisibility();
         UpdateItemsCurrentState();
 
+        // Scrolling the swiper changes nothing in the DOM a screen reader would pick up on its own, so the
+        // item it comes to stand on is announced through a live region. The first report only says where
+        // the swiper was laid out, which is not news, so it is not announced.
+        if (_stateReported && previousIndex != _index && _index >= 0 && _index < _allItems.Count)
+        {
+            _announcement = _allItems[_index].GetAriaLabel();
+        }
+
+        _stateReported = true;
+
         // The end of the swiper is what the auto scrolling hinges on, so the timer is re-evaluated here: a
         // swiper that only just received enough items to have somewhere to go starts, and one whose items
         // were taken away stops.
@@ -963,6 +978,7 @@ public partial class BitSwiper : BitComponentBase
             },
             Duration = Math.Max(0, AnimationDuration),
             Threshold = Math.Max(1, DragThreshold),
+            Rewind = Rewind,
             ScrollCount = _internalScrollItemsCount,
 
             // Only read while the swiper is being set up, so an update that carries it along never moves a
@@ -974,7 +990,7 @@ public partial class BitSwiper : BitComponentBase
     private string ComputeOptionsSignature()
     {
         return FormattableString.Invariant(
-            $"{Vertical}|{NoDrag}|{Wheel}|{IsEnabled}|{Snap}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}");
+            $"{Vertical}|{NoDrag}|{Wheel}|{IsEnabled}|{Snap}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}|{Rewind}");
     }
 
     private async Task RegisterPreventKeysAsync()

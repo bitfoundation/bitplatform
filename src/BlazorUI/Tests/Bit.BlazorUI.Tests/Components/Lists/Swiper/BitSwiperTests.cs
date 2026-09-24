@@ -559,6 +559,57 @@ public class BitSwiperTests : BunitTestContext
         Assert.IsTrue((items[1].GetAttribute("style") ?? string.Empty).Contains("outline:1px solid red"));
     }
 
+    [TestMethod]
+    public async Task BitSwiperShouldAnnounceTheItemItMovesTo()
+    {
+        var component = RenderComponent<BitSwiperTest>();
+
+        var live = component.Find(".bit-swp-sro");
+
+        Assert.AreEqual("polite", live.GetAttribute("aria-live"));
+        Assert.AreEqual("true", live.GetAttribute("aria-atomic"));
+
+        // the first report only says where the swiper was laid out, which is not worth announcing
+        await PushState(component, index: 0);
+        Assert.AreEqual(string.Empty, component.Find(".bit-swp-sro").TextContent);
+
+        await PushState(component, index: 1, atStart: false);
+        Assert.AreEqual("2 of 3", component.Find(".bit-swp-sro").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldAnnounceTheAccessibleNameOfTheItem()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemAriaLabelFormat, "Photo {0} of {1}");
+        });
+
+        await PushState(component, index: 0);
+        await PushState(component, index: 2, atStart: false, atEnd: true);
+
+        Assert.AreEqual("Photo 3 of 3", component.Find(".bit-swp-sro").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldSilenceTheAnnouncementsWhileItPlays()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        Assert.IsTrue(component.Instance.Swiper.IsPlaying);
+        Assert.AreEqual("off", component.Find(".bit-swp-sro").GetAttribute("aria-live"));
+
+        await component.InvokeAsync(component.Instance.Swiper.Pause);
+
+        Assert.AreEqual("polite", component.Find(".bit-swp-sro").GetAttribute("aria-live"));
+    }
+
     #endregion
 
 
@@ -1219,6 +1270,7 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.DragThreshold, 12);
             parameters.Add(p => p.ScrollItemsCount, 2);
             parameters.Add(p => p.AnimationDuration, 0.25);
+            parameters.Add(p => p.Rewind, true);
         });
 
         var options = LastInvocation("BitBlazorUI.Swiper.setup").Arguments[4]!;
@@ -1232,6 +1284,9 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual(0.25, ReadOption(options, "Duration"));
         Assert.AreEqual(12, ReadOption(options, "Threshold"));
         Assert.AreEqual(2, ReadOption(options, "ScrollCount"));
+
+        // the browser keeps the focus off a button that is about to hide, which a rewinding swiper never does
+        Assert.AreEqual(true, ReadOption(options, "Rewind"));
 
         // DefaultItem is 1 based, and reaches the browser as the zero based index it lays the swiper out on
         Assert.AreEqual(2, ReadOption(options, "Start"));

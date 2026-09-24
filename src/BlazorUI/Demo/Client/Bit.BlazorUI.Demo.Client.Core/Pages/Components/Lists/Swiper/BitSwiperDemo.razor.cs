@@ -120,7 +120,7 @@ public partial class BitSwiperDemo
             Name = "ItemAriaLabelFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible label of an item of the swiper, as a composite format string whose {0} is the 1 based position of the item and whose {1} is the number of items (\"{0} of {1}\" by default)."
+            Description = "The accessible label of an item of the swiper, as a composite format string whose {0} is the 1 based position of the item and whose {1} is the number of items (\"{0} of {1}\" by default). Used for items without their own AriaLabel, and announced when the swiper moves to the item."
         },
         new()
         {
@@ -645,7 +645,7 @@ public partial class BitSwiperDemo
         new() { Name = "--bit-Swiper-button-background", DefaultValue = "transparent", Description = "Background of the next/prev strips, for buttons that have to stand out over busy items." },
         new() { Name = "--bit-Swiper-button-hover-background", DefaultValue = "The rest background", Description = "Background of the next/prev strips on hover." },
         new() { Name = "--bit-Swiper-button-opacity", DefaultValue = "0.7", Description = "Opacity of the buttons at rest; hover and focus bring them to 1. Keep it high enough for a 3:1 contrast." },
-        new() { Name = "--bit-Swiper-button-width", DefaultValue = "10%", Description = "Width of the next/prev strips (their height on a vertical swiper)." },
+        new() { Name = "--bit-Swiper-button-width", DefaultValue = "10%", Description = "Width of the next/prev strips (their height on a vertical swiper), never below the 24px pointer target." },
         new() { Name = "--bit-Swiper-button-size", DefaultValue = "Per Size (3 spacing units at Medium)", Description = "Glyph size of the next/prev buttons." },
         new() { Name = "--bit-Swiper-dot-size", DefaultValue = "Per Size (1.25 spacing units at Medium)", Description = "Diameter of a dot. Its hit area never drops below the 24px WCAG target." },
         new() { Name = "--bit-Swiper-dot-current-width", DefaultValue = "The dot size", Description = "Width of the current dot; a larger value turns it into a pill." },

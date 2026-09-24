@@ -272,8 +272,9 @@
     <DemoExample Title="Accessibility" RazorCode="@example10RazorCode" Id="example10">
         <div>
             Built on the ARIA carousel pattern: a focusable region of labelled slides, real buttons with
-            <b>aria-controls</b>, the play/pause button first in tab order, and dots with a 24px pointer target. Arrow
-            keys are left to text fields, sliders and lists inside the items. Every label is settable:
+            <b>aria-controls</b>, the play/pause button first in tab order, and dots with a 24px pointer target. The item
+            it moves to is announced (silenced while it autoplays), a button that hides at an end hands its focus to
+            the swiper, and arrow keys are left to text fields, sliders and lists inside the items. Every label is settable:
         </div>
         <ul>
             <li><b>AriaLabel</b> names the region.</li>

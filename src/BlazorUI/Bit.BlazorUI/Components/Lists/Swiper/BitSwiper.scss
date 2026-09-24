@@ -12,7 +12,7 @@
 //   --bit-Swiper-button-hover-background     background of the next/prev buttons on hover   (default: the rest background)
 //   --bit-Swiper-button-opacity              opacity of the buttons at rest                 (default: .7)
 //   --bit-Swiper-button-width                width of the next/prev strips (their height on
-//                                            a vertical swiper)                             (default: 10%)
+//                                            a vertical swiper, never below 24px)           (default: 10%)
 //   --bit-Swiper-button-size                 glyph size of the next/prev buttons            (default: per Size)
 //   --bit-Swiper-dot-size                    diameter of a dot                              (default: per Size)
 //   --bit-Swiper-dot-current-width           width of the current dot, for a pill-shaped
@@ -158,6 +158,19 @@ $swp-target: 24px;
     scroll-snap-align: end;
 }
 
+// The live region that announces the item the swiper comes to stand on, kept out of sight.
+.bit-swp-sro {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 // A vertical swiper is laid out over its own height, so it needs one; this is the default, which any
 // height set through the Style parameter, a class or the public variable replaces.
 .bit-swp-vrt {
@@ -223,6 +236,8 @@ $swp-target: 24px;
     z-index: 2;
     position: absolute;
     width: var(--bit-Swiper-button-width, 10%);
+    // A percentage of a narrow swiper is less than a pointer target, so the strip never gets narrower than one.
+    min-width: $swp-target;
     font-size: var(--bit-Swiper-button-size, var(--bit-swp-btn-size-def));
     background-color: var(--bit-Swiper-button-background, transparent);
 
@@ -262,7 +277,9 @@ $swp-target: 24px;
         bottom: unset;
         inset-inline: 0;
         width: 100%;
+        min-width: 0;
         height: var(--bit-Swiper-button-width, 10%);
+        min-height: $swp-target;
     }
 
     .bit-swp-rbt {

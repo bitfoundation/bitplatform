@@ -10,6 +10,7 @@ namespace BitBlazorUI {
         align: number;   // 0 = start, 0.5 = center, 1 = end
         duration: number;  // seconds
         threshold: number; // pixels the pointer has to travel before a drag starts
+        rewind: boolean;   // the next/prev buttons stay at the ends
         scrollCount: number;
         start: number;     // the item the swiper is laid out on, read only at setup
     }
@@ -786,6 +787,8 @@ namespace BitBlazorUI {
 
             this.lastKey = key;
 
+            this.keepFocus(state);
+
             try {
                 // The call is not awaited (the swiper has nothing to do with what comes back), so the
                 // rejection of a swiper that went away mid-flight is picked up here rather than being
@@ -793,6 +796,43 @@ namespace BitBlazorUI {
                 this.dotnetObj.invokeMethodAsync('OnStateChange', state)
                     .catch(e => console.error("BitBlazorUI.Swiper.notify:", e));
             } catch (e) { console.error("BitBlazorUI.Swiper.notify:", e); }
+        }
+
+        // A next/prev button hides itself at the end it cannot move any further towards, and a button that
+        // disappears while it holds the keyboard focus drops it on the body of the page, leaving someone who
+        // was pressing it with nowhere to continue from. So the focus is moved on before the button hides:
+        // onto the swiper itself, which the arrow keys keep navigating, or onto the other button when the
+        // swiper does not take the focus.
+        private keepFocus(state: SwiperState) {
+            if (this.options.rewind && state.scrollable) return;
+
+            const active = document.activeElement;
+
+            // Only the buttons of this swiper, not those of a swiper nested inside one of its items.
+            if (active instanceof HTMLElement === false || active.parentElement?.parentElement !== this.root) return;
+
+            const next = active.classList.contains('bit-swp-rbt');
+            const prev = active.classList.contains('bit-swp-lbt');
+
+            if (next === false && prev === false) return;
+
+            const hides = state.scrollable === false || (next ? state.atEnd : state.atStart);
+
+            if (hides === false) return;
+
+            let target: HTMLElement | null = null;
+
+            if (this.root.hasAttribute('tabindex')) {
+                target = this.root;
+            } else {
+                const otherHides = state.scrollable === false || (next ? state.atStart : state.atEnd);
+
+                if (otherHides === false) {
+                    target = this.root.querySelector<HTMLElement>(next ? ':scope > .bit-swp-vwp > .bit-swp-lbt' : ':scope > .bit-swp-vwp > .bit-swp-rbt');
+                }
+            }
+
+            try { target?.focus({ preventScroll: true }); } catch (e) { }
         }
 
         private state(): SwiperState {
