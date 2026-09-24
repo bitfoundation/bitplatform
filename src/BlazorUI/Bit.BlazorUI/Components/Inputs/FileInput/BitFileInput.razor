@@ -150,7 +150,7 @@
                             </div>
                             @if (file.IsValid is false)
                             {
-                                <div style="@Styles?.ErrorMessage" class="bit-fin-msg @Classes?.ErrorMessage">
+                                <div id="@GetMessageId(file)" style="@Styles?.ErrorMessage" class="bit-fin-msg @Classes?.ErrorMessage">
                                     @file.Message
                                 </div>
                             }
@@ -159,7 +159,9 @@
                         {
                             @* the accessible name carries the whole path when there is one, since a flattened
                                folder can hold the same name more than once and "Remove readme.md" would name
-                               none of them. *@
+                               none of them. The error message of an invalid file describes the button, since a
+                               keyboard user tabbing from one remove button to the next would otherwise never
+                               hear why the file was rejected - which is exactly what decides whether to remove it. *@
                             <button @ref="_removeRefs[file.FileId]"
                                     @onclick="() => HandleRemoveClick(file)"
                                     type="button"
@@ -167,6 +169,7 @@
                                     tabindex="@TabIndex"
                                     disabled="@(IsEnabled is false)"
                                     aria-label="@($"{removeTitle} {(folder.HasValue() ? file.RelativePath : file.Name)}")"
+                                    aria-describedby="@(file.IsValid ? null : GetMessageId(file))"
                                     style="@Styles?.RemoveButton"
                                     class="bit-fin-rbt @Classes?.RemoveButton">
                                 <i style="@Styles?.RemoveIcon" class="@removeIcon?.GetCssClasses() @Classes?.RemoveIcon" aria-hidden="true" />

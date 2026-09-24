@@ -65,9 +65,7 @@ private bool allowPaste = true;";
     private readonly string example8RazorCode = @"
 <BitFileInput Label=""Browse images"" Accept=""image/*"" />
 
-<BitFileInput Label=""Browse or drop a file"" AllowedExtensions=""@(["".gif"", "".jpg"", "".png"", "".bmp""])"" />
-
-<BitFileInput Label=""Browse or drop a file"" AllowedExtensions=""@([""image/*"", ""application/pdf""])"" />
+<BitFileInput Label=""Browse or drop a file"" AllowedExtensions=""@(["".pdf"", ""docx"", ""image/*""])"" />
 
 <BitFileInput Label=""Take a photo"" Accept=""image/*"" Capture=""environment"" />";
 
@@ -430,9 +428,10 @@ private async Task HashTheFirstFile()
 }";
 
     private readonly string example16RazorCode = @"
-<BitFileInput Label=""Browse or drop a file""
-              AriaLabel=""Select a document to attach""
-              Description=""Tab to the button, then press Enter or Space."" />";
+<BitFileInput Label=""Browse or drop files""
+              AriaLabel=""Select documents to attach""
+              Multiple ShowRemoveButton MaxSize=""1024 * 1024""
+              Description=""Up to 1 MB each. Tab to the button, then press Enter or Space."" />";
 
     private readonly string example17RazorCode = @"
 <BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" />

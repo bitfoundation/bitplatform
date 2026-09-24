@@ -721,6 +721,9 @@ public partial class BitFileInput : BitComponentBase
     // the extension the file list renders unshrunk beside the stem, which together spell the name back out.
     private static string GetFileExtension(string name) => BitFileInputInfo.GetExtension(name);
 
+    // the id of an invalid file's error message, which its remove button is described by.
+    private string GetMessageId(BitFileInputInfo file) => $"FileInput-{UniqueId}-{file.FileId}-message";
+
     private async Task UpdateDropZone()
     {
         var dragClass = GetDragClass();

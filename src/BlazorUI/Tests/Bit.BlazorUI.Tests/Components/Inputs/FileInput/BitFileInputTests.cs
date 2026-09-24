@@ -651,6 +651,30 @@ public class BitFileInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitFileInputShouldDescribeTheRemoveButtonOfAnInvalidFileWithItsMessage()
+    {
+        SetupFiles([new() { Name = "small.txt", Size = 5, FileId = "1" },
+                    new() { Name = "big.txt", Size = 50, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MinSize, 10);
+            parameters.Add(p => p.MinSizeErrorMessage, "too small");
+            parameters.Add(p => p.ShowRemoveButton, true);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var removeButtons = component.FindAll(".bit-fin-rbt");
+        var describedBy = removeButtons[0].GetAttribute("aria-describedby");
+
+        Assert.IsFalse(string.IsNullOrEmpty(describedBy));
+        Assert.AreEqual("too small", component.Find($"[id='{describedBy}']").TextContent.Trim());
+        Assert.IsFalse(removeButtons[1].HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
     public void BitFileInputShouldRespectAllowDuplicatesWithDuplicateErrorMessage()
     {
         SetupFiles([new() { Name = "file.txt", Size = 10, LastModified = 1, FileId = "1" },

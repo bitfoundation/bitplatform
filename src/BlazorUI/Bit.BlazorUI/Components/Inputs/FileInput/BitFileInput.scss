@@ -277,7 +277,9 @@
     overflow: hidden;
     align-items: center;
     flex-flow: row nowrap;
-    font-weight: $tg-fw-light;
+    // regular rather than light: a file name is small text that is read rather than glanced at, and a thin
+    // stroke at the xs and sm steps of the ramp loses legibility well before its color loses contrast.
+    font-weight: $tg-fw-regular;
     justify-content: space-between;
     color: var(--bit-FileInput-file-name-color, #{$clr-fg-pri});
     margin-top: var(--bit-FileInput-item-gap, #{spacing(0.375)});
@@ -296,11 +298,13 @@
         }
     }
 
+    // the message wraps instead of being ellipsized: unlike a file name, whose full text is one hover away,
+    // the reason a file was rejected has nowhere else to be read, and cutting it off mid-sentence would hide
+    // the one thing the user needs to fix the selection.
     .bit-fin-msg {
         width: 100%;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
+        margin-top: spacing(0.25);
+        overflow-wrap: anywhere;
     }
 }
 
