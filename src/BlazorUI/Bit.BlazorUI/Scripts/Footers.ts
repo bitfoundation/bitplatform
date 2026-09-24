@@ -32,9 +32,10 @@ namespace BitBlazorUI {
         // Slides the footer out of the view while the page is scrolled down and brings it back while it is
         // scrolled up (the classic "reveal" behavior of an app bar). The state lives here and only crosses
         // the interop boundary when it actually flips, so a scroll never costs more than a comparison.
-        // It also keeps the bottom scroll padding of the scroller in step with the height of the footer,
-        // so nothing scrolled to lands underneath a pinned one.
-        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, reveal: boolean, scrollTarget: string | null, scrollPadding: boolean) {
+        // It also reports whether there is content left underneath the footer (the "elevate on scroll"
+        // shadow, which fades out at the end of the scroller) and keeps the bottom scroll padding of the
+        // scroller in step with the height of the footer, so nothing scrolled to lands underneath a pinned one.
+        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean) {
             Footers.dispose(id);
 
             const element = document.getElementById(id);
@@ -68,6 +69,7 @@ namespace BitBlazorUI {
             const offset = Math.max(0, revealOffset || 0);
 
             let hidden = false;
+            let overlapping = false;
             let lastY = Footers.scrollTop(target.current);
 
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.
@@ -140,8 +142,20 @@ namespace BitBlazorUI {
                 dotnetObj.invokeMethodAsync('OnRevealChange', hidden).catch(() => { });
             };
 
+            const applyOverlapping = (next: boolean) => {
+                if (!elevate || next === overlapping) return;
+
+                overlapping = next;
+
+                dotnetObj.invokeMethodAsync('OnOverlapChange', overlapping).catch(() => { });
+            };
+
             const evaluate = () => {
                 frame.handle = 0;
+
+                const end = Footers.atEnd(target.current);
+
+                applyOverlapping(!end);
 
                 if (!reveal) return;
 
@@ -159,7 +173,7 @@ namespace BitBlazorUI {
                 // make room for yet, and at the end the footer is the content the user scrolled down to
                 // reach. The offset is what keeps a footer from flickering away on the first few pixels
                 // of a scroll that has barely started.
-                if (y <= offset || Footers.atEnd(target.current)) {
+                if (y <= offset || end) {
                     next = false;
                     lastY = y;
                 }
@@ -254,6 +268,11 @@ namespace BitBlazorUI {
             Footers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearPadding, frame });
 
             applyPadding();
+
+            // Whether there is content left underneath the footer is known before any scroll happens (a
+            // page taller than the viewport starts with its end out of the view), so the states are settled
+            // once up front instead of waiting for a scroll that may never come.
+            evaluate();
         }
 
         public static dispose(id: string) {

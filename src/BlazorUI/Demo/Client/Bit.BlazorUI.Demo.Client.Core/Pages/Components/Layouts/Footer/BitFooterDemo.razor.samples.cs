@@ -212,6 +212,36 @@ private bool isFooterRevealed = true;";
 
     private readonly string example8RazorCode = @"
 <style>
+    .scroll-demo {
+        height: 10rem;
+        overflow: auto;
+        border: 1px solid gray;
+    }
+
+    .scroll-demo-row {
+        padding: 0.5rem 1rem;
+    }
+</style>
+
+
+<div>Scroll to the end of the box: <b>@(isFooterOverlapping ? ""content below"" : ""at the end"")</b></div>
+
+<div class=""scroll-demo"">
+    @for (var i = 1; i <= 12; i++)
+    {
+        <div class=""scroll-demo-row"">Row @i</div>
+    }
+    <BitFooter Sticky ElevateOnScroll
+               Color=""BitColor.PrimaryBackground""
+               OnOverlapChanged=""v => isFooterOverlapping = v"">
+        I lose my shadow at the end
+    </BitFooter>
+</div>";
+    private readonly string example8CsharpCode = @"
+private bool isFooterOverlapping;";
+
+    private readonly string example9RazorCode = @"
+<style>
     .fixed-demo {
         height: 10rem;
         overflow: hidden;
@@ -244,10 +274,10 @@ private bool isFooterRevealed = true;";
         <BitButton Color=""BitColor.Error"" Size=""BitSize.Small"">Delete</BitButton>
     </BitFooter>
 </div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isSelectionMode;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .translucent-demo {
         height: 10rem;
@@ -273,7 +303,7 @@ private bool isSelectionMode;";
     <BitFooter Fixed Translucent Bordered Color=""BitColor.PrimaryBackground"">I'm a translucent Footer</BitFooter>
 </div>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -311,7 +341,7 @@ private bool isSelectionMode;";
     <BitFooter Sticky Elevated ScrollPadding Height=""56"" Color=""BitColor.SecondaryBackground"">Keeps the next action visible</BitFooter>
 </div>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .footer-links {
         gap: 1rem;
@@ -334,7 +364,7 @@ private bool isSelectionMode;";
     </nav>
 </BitFooter>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitParams Parameters=""@footerParams"">
     <BitFooter>Takes the color, variant and border from the cascade</BitFooter>
 
@@ -342,7 +372,7 @@ private bool isSelectionMode;";
 </BitParams>
 
 <BitFooter>Outside the cascade, back to the defaults</BitFooter>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly BitFooterParams[] footerParams =
 [
     new()
@@ -353,7 +383,7 @@ private readonly BitFooterParams[] footerParams =
     }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitFooter Color=""BitColor.Primary"">Primary</BitFooter>
 <BitFooter Color=""BitColor.Secondary"">Secondary</BitFooter>
 <BitFooter Color=""BitColor.Tertiary"">Tertiary</BitFooter>
@@ -375,14 +405,14 @@ private readonly BitFooterParams[] footerParams =
 <BitFooter Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Outline"">SecondaryBorder</BitFooter>
 <BitFooter Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitFooter>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitFooter Size=""BitSize.Small"" Bordered>Small</BitFooter>
 
 <BitFooter Size=""BitSize.Medium"" Bordered>Medium</BitFooter>
 
 <BitFooter Size=""BitSize.Large"" Bordered>Large</BitFooter>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         color: white;
@@ -425,7 +455,7 @@ private readonly BitFooterParams[] footerParams =
     <BitFooter Variant=""BitVariant.Outline"">The ancestor re-skins this one too</BitFooter>
 </div>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitFooter Dir=""BitDir.Rtl"" Alignment=""BitAlignment.SpaceBetween"" Bordered>
     <BitTag Text=""یک"" />
     <BitTag Text=""دو"" />

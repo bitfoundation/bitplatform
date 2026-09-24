@@ -242,7 +242,29 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Hidden" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Elevate on scroll" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <b>ElevateOnScroll</b> shadows a Fixed or Sticky footer only while content is left underneath it, and fades the
+            shadow out at the end of the scroll. <b>OnOverlapChanged</b> and <b>IsOverlapping</b> report the state;
+            <b>Elevated</b> takes precedence.
+        </div>
+        <br />
+        <div>Scroll to the end of the box: <b>@(isFooterOverlapping ? "content below" : "at the end")</b></div>
+        <br />
+        <div class="scroll-demo">
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Row @i</div>
+            }
+            <BitFooter Sticky ElevateOnScroll
+                       Color="BitColor.PrimaryBackground"
+                       OnOverlapChanged="v => isFooterOverlapping = v">
+                I lose my shadow at the end
+            </BitFooter>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Hidden" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>Hidden</b> slides the footer away on demand (a contextual action bar, for example). Unlike <b>Visibility</b>
             it animates and keeps its room, and a hidden footer is <b>inert</b>: nothing in it can be clicked or focused.
@@ -264,7 +286,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Translucent" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Translucent" RazorCode="@example10RazorCode" Id="example10">
         <div><b>Translucent</b> softens the background and blurs what scrolls behind it (Fill variant only).</div>
         <br />
         <div class="fixed-demo translucent-demo">
@@ -276,7 +298,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" Id="example11">
         <div>
             A <b>footer</b> element outside article, aside, main, nav and section is the page's <b>contentinfo</b> landmark.
             Give any additional footer an <b>AriaLabel</b> (no need to say "footer") so the landmarks can be told apart.
@@ -318,7 +340,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Usage" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Usage" RazorCode="@example12RazorCode" Id="example12">
         <div>A complete site footer: credit and legal links split across a centered column, wrapping on narrow screens.</div>
         <br />
         <div class="container">
@@ -337,7 +359,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>BitParams</b> hands a <b>BitFooterParams</b> to every footer under it. The values are defaults, not overrides:
             a parameter a footer sets itself wins.
@@ -358,7 +380,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
         <div>Every theme color works with every variant. Without one, the footer uses the theme's primary background and foreground.</div>
         <br />
         <div class="container">
@@ -430,7 +452,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
         <div>The size sets the paddings around the content.</div>
         <br />
         <div class="container">
@@ -446,7 +468,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach the root and the content
             container by name.
@@ -495,7 +517,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>Use the <b>Dir</b> parameter to change the direction of the footer, which flips the alignment of its content.</div>
         <br />
         <div class="container">

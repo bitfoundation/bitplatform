@@ -249,10 +249,22 @@
     box-shadow: var(--bit-Footer-shadow, #{$box-shadow-appbar-bottom});
 }
 
+// A shadow that comes and goes with the scroll has to fade, or the footer snaps between flat and lifted
+// on the last pixel before the end of the scroller.
+.bit-ftr-esc {
+    transition: box-shadow $mot-duration $mot-easing;
+}
+
 
 .bit-ftr-anm {
     will-change: transform;
     transition: transform $mot-duration $mot-easing;
+}
+
+// Both a transform and a shadow can be in flight on the same footer, so the two transitions are
+// merged rather than left to override one another.
+.bit-ftr-anm.bit-ftr-esc {
+    transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing;
 }
 
 // translateY is used rather than a bottom offset so the slide runs on the compositor, and it hides the
@@ -287,7 +299,8 @@
         padding: 0;
     }
 
-    .bit-ftr-anm {
+    .bit-ftr-anm,
+    .bit-ftr-esc {
         transition: none;
     }
 

@@ -9,13 +9,14 @@ namespace Bit.BlazorUI;
 /// It renders a semantic <c>footer</c> element and lays its content out in a horizontal line whose color, variant,
 /// size, alignment, wrapping and gutters are all parameters. It can stay in the flow of the page or be pinned to the
 /// bottom of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page is scrolled
-/// up (<see cref="Reveal"/>), or slid out of the way on demand (<see cref="Hidden"/>) - and a pinned footer can reserve
+/// up (<see cref="Reveal"/>), shadowed only while content passes underneath it (<see cref="ElevateOnScroll"/>), or slid out of the way on demand (<see cref="Hidden"/>) - and a pinned footer can reserve
 /// its own height at the bottom of the scrolling area so nothing scrolled to lands underneath it (<see cref="ScrollPadding"/>).
 /// </remarks>
 public partial class BitFooter : BitComponentBase
 {
     private bool _hidden;
     private bool _slidable;
+    private bool _overlapping;
     private bool _settingUp;
     private bool _setupPending;
     private string? _attachedId;
@@ -99,6 +100,22 @@ public partial class BitFooter : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Keeps the BitFooter flat while the scrolling area sits at its end and lets it cast its shadow only while
+    /// there is content left underneath it.
+    /// </summary>
+    /// <remarks>
+    /// This is the footer counterpart of the elevate on scroll of a header: a pinned footer that is always shadowed
+    /// looks detached from a page that has already been read to the end, and one with no shadow at all gives no hint
+    /// that more content is passing behind it. The shadow fades out as the scroll reaches the end.
+    /// <br />
+    /// It only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> footer, since a footer in the normal
+    /// flow covers nothing. <see cref="Elevated"/> takes precedence over the shadow it adds, but
+    /// <see cref="OnOverlapChanged"/> and <see cref="IsOverlapping"/> keep reporting the state either way.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ElevateOnScroll { get; set; }
+
+    /// <summary>
     /// Renders the BitFooter with a shadow cast upwards, to lift it above the content it overlaps.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -180,6 +197,15 @@ public partial class BitFooter : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool NoGutter { get; set; }
+
+    /// <summary>
+    /// Callback for when the overlap state of the footer changes. The provided value is true while there is content
+    /// left underneath the footer (the scrolling area is not at its end).
+    /// </summary>
+    /// <remarks>
+    /// Only invoked while <see cref="ElevateOnScroll"/> is enabled.
+    /// </remarks>
+    [Parameter] public EventCallback<bool> OnOverlapChanged { get; set; }
 
     /// <summary>
     /// Callback for when the reveal state of the footer changes. The provided value is true when the footer is revealed.
@@ -328,6 +354,12 @@ public partial class BitFooter : BitComponentBase
     /// </remarks>
     public bool IsRevealed => _hidden is false;
 
+    /// <summary>
+    /// Gets a value indicating whether there is content left underneath the footer (its scrolling area is not at its end).
+    /// It is always false unless <see cref="ElevateOnScroll"/> is enabled.
+    /// </summary>
+    public bool IsOverlapping => _overlapping;
+
 
 
     /// <summary>
@@ -349,6 +381,27 @@ public partial class BitFooter : BitComponentBase
         ClassBuilder.Reset();
 
         await OnRevealChanged.InvokeAsync(hidden is false);
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Called by the scroll script of the footer when the scrolling area reaches or leaves its end.
+    /// <br />
+    /// <strong>This method is not intended to be called from application code.</strong>
+    /// </summary>
+    [JSInvokable("OnOverlapChange")]
+    public async Task _OnOverlapChange(bool overlapping)
+    {
+        if (IsDisposed) return;
+
+        if (_overlapping == overlapping) return;
+
+        _overlapping = overlapping;
+
+        ClassBuilder.Reset();
+
+        await OnOverlapChanged.InvokeAsync(overlapping);
 
         StateHasChanged();
     }
@@ -442,7 +495,11 @@ public partial class BitFooter : BitComponentBase
 
         ClassBuilder.Register(() => Bordered ? "bit-ftr-brd" : string.Empty);
 
-        ClassBuilder.Register(() => Elevated ? "bit-ftr-elv" : string.Empty);
+        // The transition is only wanted where the shadow comes and goes with the scroll, so a plain Elevated
+        // footer does not animate the shadow a theme switch or a class change hands it.
+        ClassBuilder.Register(() => (ElevateOnScroll && Elevated is false) ? "bit-ftr-esc" : string.Empty);
+
+        ClassBuilder.Register(() => (Elevated || (ElevateOnScroll && _overlapping)) ? "bit-ftr-elv" : string.Empty);
 
         ClassBuilder.Register(() => NoGutter ? "bit-ftr-ngt" : string.Empty);
 
@@ -536,13 +593,13 @@ public partial class BitFooter : BitComponentBase
         // Only a pinned footer has anything to slide over or to cover at the bottom of the scrolling area, so the
         // scroll listener is attached for those alone. Toggling any of these parameters at runtime attaches or
         // detaches it accordingly.
-        var shouldAttach = (Reveal || ScrollPadding) && IsPinned;
+        var shouldAttach = (Reveal || ElevateOnScroll || ScrollPadding) && IsPinned;
 
         // Everything the script is handed at setup time is part of the signature, so a change of any of it sets
         // the listener up again - including the id, which is what the script keys its registration by, and which
         // would otherwise leave the listeners behind on the element that id no longer names.
         var revealOffset = Math.Max(0, RevealOffset.GetValueOrDefault());
-        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{Reveal}|{ScrollTarget}|{ScrollPadding}" : null;
+        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{Reveal}|{ElevateOnScroll}|{ScrollTarget}|{ScrollPadding}" : null;
 
         if (signature == _attachedSignature) return;
 
@@ -560,11 +617,25 @@ public partial class BitFooter : BitComponentBase
             _attachedSignature = null;
         }
 
+        // The registration is changing, and a new one starts from a revealed footer with nothing underneath it and
+        // only reports the states that differ from that. The scroll driven states are cleared first, so a footer
+        // that is detached (or re-attached with different settings) never stays stuck in a state the old
+        // registration left it in - and anything the new one reports while being set up is kept.
+        if (_hidden || _overlapping)
+        {
+            _hidden = false;
+            _overlapping = false;
+
+            ClassBuilder.Reset();
+
+            StateHasChanged();
+        }
+
         if (shouldAttach)
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            await _js.BitFootersSetup(_Id, _dotnetObj, revealOffset, Reveal, ScrollTarget, ScrollPadding);
+            await _js.BitFootersSetup(_Id, _dotnetObj, revealOffset, Reveal, ElevateOnScroll, ScrollTarget, ScrollPadding);
 
             if (IsDisposed)
             {
@@ -584,17 +655,6 @@ public partial class BitFooter : BitComponentBase
             // leaves them as they were and the next render tries to set the listener up again.
             _attachedId = _Id;
             _attachedSignature = signature;
-        }
-
-        // A footer that is no longer driven by the scroll (detached, or still attached for its scroll padding
-        // alone) must not stay stuck in the hidden state the scroll left it in.
-        if (_hidden && (shouldAttach is false || Reveal is false))
-        {
-            _hidden = false;
-
-            ClassBuilder.Reset();
-
-            StateHasChanged();
         }
     }
 

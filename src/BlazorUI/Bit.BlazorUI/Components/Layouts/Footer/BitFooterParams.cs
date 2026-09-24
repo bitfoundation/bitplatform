@@ -47,6 +47,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Keeps the footer flat at the end of its scrolling area and shadowed while content is left underneath it.
+    /// </summary>
+    public bool? ElevateOnScroll { get; set; }
+
+    /// <summary>
     /// Renders the footer with a shadow cast upwards.
     /// </summary>
     public bool? Elevated { get; set; }
@@ -186,6 +191,13 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
         if (Color.HasValue && bitFooter.HasNotBeenSet(nameof(Color)))
         {
             bitFooter.Color = Color.Value;
+
+            bitFooter.ClassBuilder.Reset();
+        }
+
+        if (ElevateOnScroll.HasValue && bitFooter.HasNotBeenSet(nameof(ElevateOnScroll)))
+        {
+            bitFooter.ElevateOnScroll = ElevateOnScroll.Value;
 
             bitFooter.ClassBuilder.Reset();
         }

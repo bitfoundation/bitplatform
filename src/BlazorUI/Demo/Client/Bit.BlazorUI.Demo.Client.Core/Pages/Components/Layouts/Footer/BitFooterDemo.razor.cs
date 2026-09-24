@@ -54,6 +54,13 @@ public partial class BitFooterDemo
         },
         new()
         {
+            Name = "ElevateOnScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shadows a Fixed or Sticky footer only while there is content left underneath it, and fades the shadow out at the end of the scrolling area. Elevated takes precedence.",
+        },
+        new()
+        {
             Name = "Elevated",
             Type = "bool",
             DefaultValue = "false",
@@ -100,6 +107,13 @@ public partial class BitFooterDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Removes the default paddings around the content of the BitFooter, so it can span the full width of the footer.",
+        },
+        new()
+        {
+            Name = "OnOverlapChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "Callback for when the overlap state of the footer changes. The provided value is true while there is content left underneath the footer. Only invoked while ElevateOnScroll is enabled.",
         },
         new()
         {
@@ -199,6 +213,13 @@ public partial class BitFooterDemo
     [
         new()
         {
+            Name = "IsOverlapping",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gets a value indicating whether there is content left underneath the footer (its scrolling area is not at its end). It is always false unless ElevateOnScroll is enabled.",
+        },
+        new()
+        {
             Name = "IsRevealed",
             Type = "bool",
             DefaultValue = "true",
@@ -266,7 +287,7 @@ public partial class BitFooterDemo
         {
             Name = "--bit-Footer-shadow",
             DefaultValue = "--bit-shd-appbar-bottom",
-            Description = "Shadow of an Elevated footer.",
+            Description = "Shadow of an Elevated (or ElevateOnScroll) footer.",
         },
         new()
         {
@@ -382,6 +403,7 @@ public partial class BitFooterDemo
 
 
     private bool isFooterRevealed = true;
+    private bool isFooterOverlapping;
     private bool isSelectionMode;
 
     private readonly BitFooterParams[] footerParams =
