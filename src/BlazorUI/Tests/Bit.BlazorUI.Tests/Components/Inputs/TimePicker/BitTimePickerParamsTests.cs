@@ -150,6 +150,8 @@ public class BitTimePickerParamsTests : BunitTestContext
         {
             AllowTextInput = true,
             AriaDescription = "Cascaded aria description",
+            AutoAdvance = true,
+            AutoClose = true,
             AutoFocus = false,
             CalloutAriaLabel = "Cascaded callout",
             ClearButtonText = "Cascaded clear",
@@ -168,14 +170,18 @@ public class BitTimePickerParamsTests : BunitTestContext
             IconName = "AlarmClock",
             IconLocation = BitIconLocation.Left,
             InvalidErrorMessage = "Cascaded invalid",
+            InvertMouseWheel = true,
             Label = "Cascaded label",
             MaxTime = new TimeSpan(18, 0, 0),
             MinTime = new TimeSpan(8, 0, 0),
             MinuteInputAriaLabel = "Cascaded minute",
             MinuteStep = 15,
+            NoMouseWheel = true,
+            Now = new TimeSpan(10, 15, 0),
             NowButtonText = "Cascaded now",
             OutOfRangeErrorMessage = "Cascaded out of range",
             Placeholder = "Cascaded placeholder",
+            Prefix = "Cascaded prefix",
             Responsive = true,
             SecondInputAriaLabel = "Cascaded second",
             SecondStep = 30,
@@ -186,7 +192,9 @@ public class BitTimePickerParamsTests : BunitTestContext
             ShowSeconds = true,
             Size = BitSize.Small,
             StartingValue = new TimeSpan(9, 30, 0),
+            Suffix = "Cascaded suffix",
             TimeFormat = BitTimeFormat.TwelveHours,
+            TimeZone = TimeZoneInfo.Utc,
             Underlined = true,
             ValueFormat = "hh-mm.ss",
             AriaLabel = "Cascaded aria label",
@@ -203,6 +211,8 @@ public class BitTimePickerParamsTests : BunitTestContext
 
         Assert.IsTrue(instance.AllowTextInput);
         Assert.AreEqual("Cascaded aria description", instance.AriaDescription);
+        Assert.IsTrue(instance.AutoAdvance);
+        Assert.IsTrue(instance.AutoClose);
         Assert.IsFalse(instance.AutoFocus);
         Assert.AreEqual("Cascaded callout", instance.CalloutAriaLabel);
         Assert.AreEqual("Cascaded clear", instance.ClearButtonText);
@@ -221,6 +231,12 @@ public class BitTimePickerParamsTests : BunitTestContext
         Assert.AreEqual("AlarmClock", instance.IconName);
         Assert.AreEqual(BitIconLocation.Left, instance.IconLocation);
         Assert.AreEqual("Cascaded invalid", instance.InvalidErrorMessage);
+        Assert.IsTrue(instance.InvertMouseWheel);
+        Assert.IsTrue(instance.NoMouseWheel);
+        Assert.AreEqual(new TimeSpan(10, 15, 0), instance.Now);
+        Assert.AreEqual("Cascaded prefix", instance.Prefix);
+        Assert.AreEqual("Cascaded suffix", instance.Suffix);
+        Assert.AreEqual(TimeZoneInfo.Utc, instance.TimeZone);
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreEqual(new TimeSpan(18, 0, 0), instance.MaxTime);
         Assert.AreEqual(new TimeSpan(8, 0, 0), instance.MinTime);

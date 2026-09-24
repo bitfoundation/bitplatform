@@ -25,6 +25,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private string _errorId = string.Empty;
     private string _descriptionId = string.Empty;
     private string _ariaDescriptionId = string.Empty;
+    private string _prefixId = string.Empty;
+    private string _suffixId = string.Empty;
     private ElementReference _calloutRef = default!;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
@@ -32,6 +34,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
+    private int? _typedDigit;
+    private int _typedDigitCount;
+    private TimeUnit? _focusedUnit;
 
 
     private enum TimeUnit { Hour, Minute, Second }
@@ -60,6 +65,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         }
         set
         {
+            var typedDigit = TakeTypedDigit();
+
             if (IsInteractive is false) return;
             if (int.TryParse(value, out int val) is false) return;
 
@@ -93,6 +100,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             _hour = allowed;
 
             _ = UpdateCurrentValue();
+
+            AdvanceAfterTyping(TimeUnit.Hour, typedDigit, TimeFormat == BitTimeFormat.TwelveHours ? 12 : 23);
         }
     }
 
@@ -102,6 +111,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         get => _minute?.ToString("D2");
         set
         {
+            var typedDigit = TakeTypedDigit();
+
             if (IsInteractive is false) return;
             if (int.TryParse(value, out int val) is false) return;
 
@@ -117,6 +128,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             _minute = allowed;
 
             _ = UpdateCurrentValue();
+
+            AdvanceAfterTyping(TimeUnit.Minute, typedDigit, 59);
         }
     }
 
@@ -126,6 +139,10 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         get => _second?.ToString("D2");
         set
         {
+            // Taken off even though the last input has nowhere to advance to, so a digit typed here is not
+            // left pending for the next input event.
+            _ = TakeTypedDigit();
+
             if (IsInteractive is false) return;
             if (int.TryParse(value, out int val) is false) return;
 
@@ -207,12 +224,30 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
+    /// Moves the focus on to the next time input once the one being typed into cannot take another digit -
+    /// after two digits, or after one no second digit could extend (a 3 in the hour of a 24-hour picker).
+    /// </summary>
+    /// <remarks>
+    /// The hour hands on to the minute, and the minute to the second when <see cref="ShowSeconds"/> is set, so a
+    /// whole time is typed as one run of digits. The last input keeps the focus.
+    /// </remarks>
+    [Parameter] public bool AutoAdvance { get; set; }
+
+    /// <summary>
+    /// Closes the callout once a selection is complete, which is when the now button has set the whole time
+    /// at once. The spin buttons and the time inputs change one part at a time, so they leave it open.
+    /// A standalone picker has no callout to close, so it ignores this.
+    /// </summary>
+    [Parameter] public bool AutoClose { get; set; }
+
+    /// <summary>
     /// Whether the input of the TimePicker gets the focus as soon as it renders for the first time.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
-    /// Aria label for time picker popup for screen reader users.
+    /// Aria label for time picker popup for screen reader users. A standalone picker with a
+    /// <see cref="Label"/> or <see cref="LabelTemplate"/> is named by that label instead.
     /// </summary>
     [Parameter] public string CalloutAriaLabel { get; set; } = "Clock";
 
@@ -537,6 +572,12 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string? InvalidErrorMessage { get; set; }
 
     /// <summary>
+    /// Reverses the direction the mouse wheel moves a time input in.
+    /// </summary>
+    /// <inheritdoc cref="NoMouseWheel" path="/remarks"/>
+    [Parameter] public bool InvertMouseWheel { get; set; }
+
+    /// <summary>
     /// Whether or not this TimePicker is open
     /// </summary>
     [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
@@ -582,6 +623,22 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// to it. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int MinuteStep { get; set; } = 1;
+
+    /// <summary>
+    /// Disables changing the time inputs with the mouse wheel entirely.
+    /// </summary>
+    /// <remarks>
+    /// By default Shift+wheel over a focused time input moves it by its step - the same move the spin buttons
+    /// make. The wheel alone is left to scroll the page, and a merely hovered input never reacts to it.
+    /// </remarks>
+    [Parameter] public bool NoMouseWheel { get; set; }
+
+    /// <summary>
+    /// The current time of day the picker works with in place of the clock's, for the now button and for
+    /// <see cref="DisablePast"/> and <see cref="DisableFuture"/>. Mostly useful to pin "now" down in tests and
+    /// demos; left unset, the clock is read in the <see cref="TimeZone"/> of the picker.
+    /// </summary>
+    [Parameter] public TimeSpan? Now { get; set; }
 
     /// <summary>
     /// The text of the now button, shown when <see cref="ShowNowButton"/> is set.
@@ -638,6 +695,16 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// Placeholder text for the TimePicker.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// The text displayed flush with the start of the field, before the input. It is not part of the value.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>
+    /// The custom content displayed at the start of the field, which replaces <see cref="Prefix"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
 
     /// <summary>
     /// Enables the responsive mode in small screens
@@ -719,9 +786,26 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public TimeSpan? StartingValue { get; set; }
 
     /// <summary>
+    /// The text displayed flush with the end of the field, after the icon. It is not part of the value.
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// The custom content displayed at the end of the field, which replaces <see cref="Suffix"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+
+    /// <summary>
     /// The time format of the time-picker, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
+
+    /// <summary>
+    /// The time zone the clock is read in for the now button and for <see cref="DisablePast"/> and
+    /// <see cref="DisableFuture"/>. Defaults to the local time zone - which, in a server-side rendered app, is
+    /// the server's rather than the user's.
+    /// </summary>
+    [Parameter] public TimeZoneInfo? TimeZone { get; set; }
 
     /// <summary>
     /// Whether or not the Text field of the TimePicker is underlined.
@@ -882,6 +966,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         _errorId = $"{_timePickerId}-error";
         _descriptionId = $"{_timePickerId}-description";
         _ariaDescriptionId = $"{_timePickerId}-aria-description";
+        _prefixId = $"{_timePickerId}-prefix";
+        _suffixId = $"{_timePickerId}-suffix";
 
         SetDefaultValue();
 
@@ -1192,6 +1278,12 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     // field, the way a dialog is accepted rather than dismissed.
     private async Task HandleOnTimeInputKeyDown(KeyboardEventArgs e, TimeUnit unit)
     {
+        // Recorded before anything is awaited, so it is in place by the time the input event of the same key
+        // reaches the setter of the part.
+        _typedDigit = e.Key is { Length: 1 } && char.IsAsciiDigit(e.Key[0]) && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false
+            ? e.Key[0] - '0'
+            : null;
+
         if (IsEnabled is false) return;
 
         // Closing is not a change, so it stays open to a picker that only shows its value.
@@ -1438,7 +1530,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsInteractive is false) return;
 
-        var now = DateTime.Now.TimeOfDay;
+        var now = GetNow();
 
         // The button picks the time the picker itself could have been moved to: the current time snapped to
         // the nearest the constraints accept. Each part is judged against the parts already picked rather than
@@ -1461,6 +1553,22 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         _second = second;
 
         await UpdateCurrentValue();
+
+        // The button sets every part at once, so the selection it makes is already complete.
+        if (AutoClose && Standalone is false)
+        {
+            await CloseCallout();
+        }
+    }
+
+    // The time of day the picker takes for "now": the one the application pinned down, otherwise the clock read
+    // in the time zone of the picker - which is not the server's own local time just because that is where the
+    // component happens to run.
+    private TimeSpan GetNow()
+    {
+        if (Now.HasValue) return NormalizeToDay(Now.Value);
+
+        return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZone ?? TimeZoneInfo.Local).TimeOfDay;
     }
 
     private async Task HandleOnClearClick()
@@ -1524,26 +1632,88 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         return _hour.Value < 12; // am is 00:00 to 11:59
     }
 
-    private async Task HandleOnHourFocus()
+    private Task HandleOnHourFocus() => HandleOnTimeInputFocus(TimeUnit.Hour, _inputHourRef);
+
+    private Task HandleOnMinuteFocus() => HandleOnTimeInputFocus(TimeUnit.Minute, _inputMinuteRef);
+
+    private Task HandleOnSecondFocus() => HandleOnTimeInputFocus(TimeUnit.Second, _inputSecondRef);
+
+    // Every input starts its own run of digits, however it was reached - by Tab, by the pointer, or by the
+    // advance of the one before it.
+    private async Task HandleOnTimeInputFocus(TimeUnit unit, ElementReference input)
     {
+        _focusedUnit = unit;
+        _typedDigitCount = 0;
+
         if (IsEnabled is false) return;
 
-        await _js.BitUtilsSelectText(_inputHourRef);
+        await _js.BitUtilsSelectText(input);
     }
 
-    private async Task HandleOnMinuteFocus()
+    private void HandleOnTimeInputBlur()
     {
-        if (IsEnabled is false) return;
-
-        await _js.BitUtilsSelectText(_inputMinuteRef);
+        _focusedUnit = null;
     }
 
-    private async Task HandleOnSecondFocus()
+    // The digit the last keydown typed, taken once by the input event it produces. A number input also changes
+    // with the arrow keys and the wheel, which are no typing, so only a change announced by a digit key counts
+    // towards the advance.
+    private int? TakeTypedDigit()
     {
-        if (IsEnabled is false) return;
-
-        await _js.BitUtilsSelectText(_inputSecondRef);
+        var digit = _typedDigit;
+        _typedDigit = null;
+        return digit;
     }
+
+    // A part is complete once another digit could not extend it: after its second digit, or after a first one
+    // that no second could keep in range - a 3 in the hour of a 24-hour picker is already 03.
+    private void AdvanceAfterTyping(TimeUnit unit, int? typedDigit, int max)
+    {
+        if (AutoAdvance is false || typedDigit.HasValue is false) return;
+
+        _typedDigitCount++;
+
+        if (_typedDigitCount < 2 && typedDigit.Value * 10 <= max) return;
+
+        _typedDigitCount = 0;
+
+        ElementReference? next = unit switch
+        {
+            TimeUnit.Hour => _inputMinuteRef,
+            TimeUnit.Minute when ShowSeconds => _inputSecondRef,
+            _ => null
+        };
+
+        if (next.HasValue is false) return;
+
+        _ = FocusTimeInput(next.Value);
+    }
+
+    private async Task FocusTimeInput(ElementReference input)
+    {
+        if (IsRendered is false || IsDisposed) return;
+
+        try
+        {
+            await input.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task HandleOnTimeInputWheel(WheelEventArgs e, TimeUnit unit)
+    {
+        if (IsWheelSpinEnabled is false) return;
+
+        // The wheel only moves the input the user is actually on. Reacting to a merely hovered one - or to a
+        // scroll that carries no modifier - would silently change the time while the page is being scrolled.
+        if (e.ShiftKey is false || _focusedUnit != unit || e.DeltaY == 0) return;
+
+        await ChangeTime((e.DeltaY < 0) != InvertMouseWheel, unit);
+    }
+
+    // Rendered onto the time inputs as a data attribute rather than pushed over interop, so the script that has
+    // to cancel the browser's own Shift+wheel scrolling reads the current state straight off the element.
+    private bool IsWheelSpinEnabled => IsInteractive && NoMouseWheel is false;
 
     private async Task ChangeTime(bool isNext, TimeUnit unit)
     {
@@ -1821,6 +1991,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private bool HasActions => ShowNowButton || ShowClearButton;
 
+    private bool StandaloneHasLabel => Standalone && (LabelTemplate is not null || Label.HasValue());
+
     // The element carrying _descriptionId is only rendered when there is something to put in it, so the
     // id is only referenced when it points at something.
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
@@ -1838,15 +2010,22 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     // Every piece of text that describes the field rather than names it, in reading order: what is wrong
     // with the value first, then the visible helper text, then the one written for a screen reader alone.
+    // The text addons of the field come last: a "UTC" beside the time is context a sighted user reads along
+    // with it. A template is arbitrary markup, which is left to its author to label.
+    // A standalone picker renders no field, so it has no addons to point at.
     private string? DescribedBy
     {
         get
         {
+            var hasField = Standalone is false;
+
             var ids = string.Join(' ', new[]
             {
                 HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null,
-                AriaDescription.HasValue() ? _ariaDescriptionId : null
+                AriaDescription.HasValue() ? _ariaDescriptionId : null,
+                hasField && PrefixTemplate is null && Prefix.HasValue() ? _prefixId : null,
+                hasField && SuffixTemplate is null && Suffix.HasValue() ? _suffixId : null
             }.Where(id => id.HasValue()));
 
             return ids.HasValue() ? ids : null;
@@ -1999,7 +2178,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     // can be picked: a bound of 10:30:45 would leave 10:30 in the past on a picker that cannot pick seconds.
     private TimeSpan NowBound()
     {
-        var now = DateTime.Now.TimeOfDay;
+        var now = GetNow();
 
         return ShowSeconds
             ? new TimeSpan(now.Hours, now.Minutes, now.Seconds)

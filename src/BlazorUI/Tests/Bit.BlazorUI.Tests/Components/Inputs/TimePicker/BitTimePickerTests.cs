@@ -2769,4 +2769,449 @@ public class BitTimePickerTests : BunitTestContext
     }
 
     #endregion
+
+    #region standalone naming
+
+    [TestMethod]
+    public void BitTimePickerShouldNameAStandaloneGroupByItsLabel()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Label, "Meeting time");
+            parameters.Add(p => p.CalloutAriaLabel, "Clock");
+        });
+
+        var group = component.Find(".bit-tpc-cac");
+        var labelId = component.Find(".bit-tpc-lbl").Id;
+
+        // The hour input's own aria-label outranks the label pointing at it, so the group is where the
+        // visible name of the field is announced from.
+        Assert.AreEqual(labelId, group.GetAttribute("aria-labelledby"));
+        Assert.IsFalse(group.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldFallBackToTheCalloutAriaLabelWithoutALabel()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.CalloutAriaLabel, "Clock");
+        });
+
+        var group = component.Find(".bit-tpc-cac");
+
+        Assert.AreEqual("Clock", group.GetAttribute("aria-label"));
+        Assert.IsFalse(group.HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldKeepTheCalloutAriaLabelOnAFloatingDialog()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Meeting time");
+            parameters.Add(p => p.CalloutAriaLabel, "Clock");
+        });
+
+        var dialog = component.Find(".bit-tpc-cac");
+
+        Assert.AreEqual("Clock", dialog.GetAttribute("aria-label"));
+        Assert.IsFalse(dialog.HasAttribute("aria-labelledby"));
+    }
+
+    #endregion
+
+    #region prefix & suffix
+
+    [TestMethod]
+    public void BitTimePickerShouldRenderPrefixAndSuffixAndDescribeTheFieldWithThem()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Prefix, "Starts at");
+            parameters.Add(p => p.Suffix, "UTC");
+            parameters.Add(p => p.Styles, new() { Prefix = "color: red;" });
+            parameters.Add(p => p.Classes, new() { SuffixContainer = "my-suffix" });
+        });
+
+        var prefix = component.Find(".bit-tpc-pre");
+        var suffix = component.Find(".bit-tpc-suf");
+
+        Assert.AreEqual("Starts at", prefix.TextContent.Trim());
+        Assert.AreEqual("UTC", suffix.TextContent.Trim());
+        Assert.AreEqual("color: red;", prefix.QuerySelector("span")!.GetAttribute("style"));
+        Assert.IsTrue(suffix.ClassList.Contains("my-suffix"));
+
+        // Both sit inside the framed part of the field, around the input.
+        Assert.IsNotNull(component.Find(".bit-tpc-icn > .bit-tpc-pre"));
+        Assert.IsNotNull(component.Find(".bit-tpc-icn > .bit-tpc-suf"));
+
+        // A zone beside the time is context a sighted user reads along with it.
+        var describedBy = component.Find(".bit-tpc-inp").GetAttribute("aria-describedby");
+        Assert.AreEqual($"{prefix.Id} {suffix.Id}", describedBy);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldRenderPrefixAndSuffixTemplates()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Prefix, "ignored");
+            parameters.Add(p => p.PrefixTemplate, b => b.AddMarkupContent(0, "<b class=\"pfx\">P</b>"));
+            parameters.Add(p => p.SuffixTemplate, b => b.AddMarkupContent(0, "<b class=\"sfx\">S</b>"));
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-pre").Count);
+        Assert.IsNotNull(component.Find(".bit-tpc-icn > .pfx"));
+        Assert.IsNotNull(component.Find(".bit-tpc-icn > .sfx"));
+
+        // A template is arbitrary markup, left to its author to label.
+        Assert.IsFalse(component.Find(".bit-tpc-inp").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldNotRenderPrefixAndSuffixWhenStandalone()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Prefix, "Starts at");
+            parameters.Add(p => p.Suffix, "UTC");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-pre").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-suf").Count);
+        Assert.IsFalse(component.FindAll(".bit-tpc-tin")[0].HasAttribute("aria-describedby"));
+    }
+
+    #endregion
+
+    #region now, time zone & auto close
+
+    [TestMethod]
+    public void BitTimePickerShouldTakeTheNowButtonTimeFromTheNowParameter()
+    {
+        TimeSpan? value = null;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.Now, new TimeSpan(10, 15, 42));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-tpc-abn").Click();
+
+        // The seconds are dropped on a picker that does not show them.
+        Assert.AreEqual(new TimeSpan(10, 15, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldBoundTheFutureByTheNowParameter()
+    {
+        TimeSpan? value = new TimeSpan(7, 0, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.DisableFuture, true);
+            parameters.Add(p => p.Now, new TimeSpan(8, 30, 0));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // A typed hour past now snaps back to the last one that is not in the future.
+        component.FindAll(".bit-tpc-tin")[0].Input("10");
+
+        Assert.AreEqual(new TimeSpan(8, 0, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldReadTheClockInItsTimeZone()
+    {
+        TimeSpan? value = null;
+
+        var zone = TimeZoneInfo.CreateCustomTimeZone("bit-test-plus-7", TimeSpan.FromHours(7), "+7", "+7");
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.TimeZone, zone);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var expected = DateTime.UtcNow.AddHours(7).TimeOfDay;
+
+        component.Find(".bit-tpc-abn").Click();
+
+        Assert.IsNotNull(value);
+
+        var difference = Math.Abs((value.Value - new TimeSpan(expected.Hours, expected.Minutes, 0)).TotalMinutes);
+        Assert.IsTrue(difference <= 1 || difference >= 24 * 60 - 1, $"{value} is not the time of day in the zone ({expected}).");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTimePickerShouldCloseAfterTheNowButtonOnlyWithAutoClose(bool autoClose)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var isOpen = true;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoClose, autoClose);
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.Now, new TimeSpan(10, 0, 0));
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-tpc-abn").Click();
+
+        Assert.AreEqual(autoClose is false, isOpen);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldStayOpenWhileSpinningWithAutoClose()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var isOpen = true;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoClose, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.FindAll(".bit-tpc-tbt")[0].Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.IsTrue(isOpen);
+    }
+
+    #endregion
+
+    #region mouse wheel
+
+    private static WheelEventArgs ShiftWheel(double deltaY) => new() { ShiftKey = true, DeltaY = deltaY };
+
+    [TestMethod]
+    public void BitTimePickerShouldSpinAFocusedTimeInputWithShiftWheel()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.MinuteStep, 15);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var minuteInput = component.FindAll(".bit-tpc-tin")[1];
+        minuteInput.Focus();
+        minuteInput.TriggerEvent("onwheel", ShiftWheel(-100));
+
+        Assert.AreEqual(new TimeSpan(10, 45, 0), value);
+
+        component.FindAll(".bit-tpc-tin")[1].TriggerEvent("onwheel", ShiftWheel(100));
+
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldIgnoreTheWheelWithoutShiftOrFocus()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var hourInput = component.FindAll(".bit-tpc-tin")[0];
+
+        // Hovered only: scrolling the page past it must not change the time.
+        hourInput.TriggerEvent("onwheel", ShiftWheel(-100));
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+
+        // Focused, but a plain wheel is the page's to scroll with.
+        hourInput.Focus();
+        component.FindAll(".bit-tpc-tin")[0].TriggerEvent("onwheel", new WheelEventArgs { DeltaY = -100 });
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+
+        // Focus that has moved on takes the wheel with it.
+        component.FindAll(".bit-tpc-tin")[0].Blur();
+        component.FindAll(".bit-tpc-tin")[0].TriggerEvent("onwheel", ShiftWheel(-100));
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldInvertTheWheel()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.InvertMouseWheel, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var hourInput = component.FindAll(".bit-tpc-tin")[0];
+        hourInput.Focus();
+        hourInput.TriggerEvent("onwheel", ShiftWheel(-100));
+
+        Assert.AreEqual(new TimeSpan(9, 30, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldNotSpinWithTheWheelWhenDisabledByNoMouseWheel()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.NoMouseWheel, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var hourInput = component.FindAll(".bit-tpc-tin")[0];
+
+        // The script cancels the browser's own Shift+wheel scrolling only while the input takes the wheel.
+        Assert.IsFalse(hourInput.HasAttribute("data-bit-wheel"));
+
+        hourInput.Focus();
+        hourInput.TriggerEvent("onwheel", ShiftWheel(-100));
+
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldMarkTheTimeInputsThatTakeTheWheel()
+    {
+        var component = RenderComponent<BitTimePicker>();
+
+        Assert.IsTrue(component.FindAll(".bit-tpc-tin").All(i => i.GetAttribute("data-bit-wheel") == "1"));
+
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+
+        Assert.IsTrue(component.FindAll(".bit-tpc-tin").All(i => i.HasAttribute("data-bit-wheel") is false));
+    }
+
+    #endregion
+
+    #region auto advance
+
+    private int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+
+    private static void TypeDigit(IRenderedComponent<BitTimePicker> component, int index, string digit, string value)
+    {
+        component.FindAll(".bit-tpc-tin")[index].KeyDown(new KeyboardEventArgs { Key = digit });
+        component.FindAll(".bit-tpc-tin")[index].Input(value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldAdvanceAfterTheSecondTypedDigit()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoAdvance, true);
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        component.FindAll(".bit-tpc-tin")[0].Focus();
+        var before = FocusCalls();
+
+        TypeDigit(component, 0, "1", "1");
+        Assert.AreEqual(before, FocusCalls(), "A 1 can still become 10 to 19, so the hour keeps the focus.");
+
+        TypeDigit(component, 0, "5", "015");
+        Assert.AreEqual(before + 1, FocusCalls());
+        Assert.AreEqual(new TimeSpan(15, 0, 0), component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(BitTimeFormat.TwentyFourHours, "3", true),
+        DataRow(BitTimeFormat.TwentyFourHours, "2", false),
+        DataRow(BitTimeFormat.TwelveHours, "2", true),
+        DataRow(BitTimeFormat.TwelveHours, "1", false)
+    ]
+    public void BitTimePickerShouldAdvanceAfterAFirstDigitNoSecondCouldExtend(BitTimeFormat format, string digit, bool advances)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoAdvance, true);
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.TimeFormat, format);
+        });
+
+        component.FindAll(".bit-tpc-tin")[0].Focus();
+        var before = FocusCalls();
+
+        TypeDigit(component, 0, digit, digit);
+
+        Assert.AreEqual(advances ? before + 1 : before, FocusCalls());
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldNotAdvanceWithoutAutoAdvanceOrFromTheLastInput()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        component.FindAll(".bit-tpc-tin")[0].Focus();
+        var before = FocusCalls();
+
+        TypeDigit(component, 0, "9", "9");
+        Assert.AreEqual(before, FocusCalls());
+
+        component.Render(parameters => parameters.Add(p => p.AutoAdvance, true));
+
+        // Without the seconds, the minute is the last input: there is nowhere to advance to.
+        component.FindAll(".bit-tpc-tin")[1].Focus();
+        before = FocusCalls();
+
+        TypeDigit(component, 1, "7", "7");
+        Assert.AreEqual(before, FocusCalls());
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldNotAdvanceOnAChangeThatWasNotTyped()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoAdvance, true);
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
+        });
+
+        component.FindAll(".bit-tpc-tin")[0].Focus();
+        var before = FocusCalls();
+
+        // The arrow keys step a number input natively, which reaches the part as an input event of its own.
+        component.FindAll(".bit-tpc-tin")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        component.FindAll(".bit-tpc-tin")[0].Input("11");
+
+        Assert.AreEqual(before, FocusCalls());
+    }
+
+    #endregion
 }

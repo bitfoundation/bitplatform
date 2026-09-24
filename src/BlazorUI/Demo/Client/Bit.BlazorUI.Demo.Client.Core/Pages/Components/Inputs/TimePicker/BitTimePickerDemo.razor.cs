@@ -41,6 +41,20 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "AutoAdvance",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Moves the focus on to the next time input once the one being typed into cannot take another digit - after two digits, or after one no second digit could extend (a 3 in the hour of a 24-hour picker).",
+        },
+        new()
+        {
+            Name = "AutoClose",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Closes the callout once the now button has set the whole time. The spin buttons and the time inputs change one part at a time, so they leave it open.",
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -51,7 +65,7 @@ public partial class BitTimePickerDemo
             Name = "CalloutAriaLabel",
             Type = "string",
             DefaultValue = "Clock",
-            Description = "Aria label for time picker popup for screen reader users."
+            Description = "Aria label for time picker popup for screen reader users. A standalone picker with a Label is named by that label instead."
         },
         new()
         {
@@ -445,6 +459,13 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "InvertMouseWheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the direction the mouse wheel moves a time input in.",
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -491,6 +512,20 @@ public partial class BitTimePickerDemo
             Type = "int",
             DefaultValue = "1",
             Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the minute of MinTime, and at the top of the hour where there is none, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
+        },
+        new()
+        {
+            Name = "NoMouseWheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables changing the time inputs with the mouse wheel. By default Shift+wheel over a focused time input moves it by its step; the wheel alone scrolls the page.",
+        },
+        new()
+        {
+            Name = "Now",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The current time of day the picker uses in place of the clock's, for the now button, DisablePast and DisableFuture. Mostly useful to pin \"now\" down in tests and demos.",
         },
         new()
         {
@@ -560,6 +595,20 @@ public partial class BitTimePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Placeholder text for the TimePicker.",
+        },
+        new()
+        {
+            Name = "Prefix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text displayed flush with the start of the field, before the input. It is not part of the value.",
+        },
+        new()
+        {
+            Name = "PrefixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content displayed at the start of the field, which replaces Prefix.",
         },
         new()
         {
@@ -651,12 +700,33 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Suffix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text displayed flush with the end of the field, after the icon. It is not part of the value.",
+        },
+        new()
+        {
+            Name = "SuffixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content displayed at the end of the field, which replaces Suffix.",
+        },
+        new()
+        {
             Name = "TimeFormat",
             Type = "BitTimeFormat",
             DefaultValue = "BitTimeFormat.TwentyFourHours",
             Description = "The time format of the time-picker, 24H or 12H.",
             LinkType = LinkType.Link,
             Href = "#time-format-enum",
+        },
+        new()
+        {
+            Name = "TimeZone",
+            Type = "TimeZoneInfo?",
+            DefaultValue = "null",
+            Description = "The time zone the clock is read in for the now button, DisablePast and DisableFuture. Defaults to the local time zone - the server's, in a server-side rendered app.",
         },
         new()
         {
@@ -873,6 +943,20 @@ public partial class BitTimePickerDemo
                 },
                 new()
                 {
+                    Name = "PrefixContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the prefix container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the prefix text of the BitTimePicker."
+                },
+                new()
+                {
                     Name = "Input",
                     Type = "string?",
                     DefaultValue = "null",
@@ -884,6 +968,20 @@ public partial class BitTimePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "SuffixContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the suffix container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Suffix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the suffix text of the BitTimePicker."
                 },
                 new()
                 {
@@ -1264,6 +1362,12 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "--bit-TimePicker-hover-border-color",
+            DefaultValue = "--bit-clr-brd-pri-hover / --bit-clr-brd-pri-active",
+            Description = "Border of the hovered and the pressed field. An invalid field keeps its error color.",
+        },
+        new()
+        {
             Name = "--bit-TimePicker-border-width",
             DefaultValue = "--bit-shp-border-width",
             Description = "Stroke of that border.",
@@ -1303,6 +1407,30 @@ public partial class BitTimePickerDemo
             Name = "--bit-TimePicker-icon-size",
             DefaultValue = "per Size, --bit-siz-icon-*",
             Description = "Size of the field icon and of the clear button glyph.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-prefix-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the prefix addon.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-prefix-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the prefix addon.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-suffix-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the suffix addon.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-suffix-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the suffix addon.",
         },
         new()
         {
@@ -1381,6 +1509,12 @@ public partial class BitTimePickerDemo
             Name = "--bit-TimePicker-callout-shadow",
             DefaultValue = "--bit-shd-popup",
             Description = "Elevation of the popup.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-overlay-background",
+            DefaultValue = "transparent",
+            Description = "The layer behind an open popup - a scrim for the Responsive sheet, for example.",
         },
         new()
         {

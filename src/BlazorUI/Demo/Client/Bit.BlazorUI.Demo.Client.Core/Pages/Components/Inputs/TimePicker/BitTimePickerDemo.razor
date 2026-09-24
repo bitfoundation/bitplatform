@@ -7,7 +7,7 @@
             Description="A BitTimePicker offers a drop-down control that's optimized for picking a single time value using hour and minute spin buttons, with optional seconds, 12/24-hour formats, culture-aware formatting, min/max limits, custom allowed-time rules, and full keyboard and screen reader support." />
 
 <DemoPage Name="TimePicker"
-          Description="A BitTimePicker offers a drop-down control that's optimized for picking a single time value using hour and minute spin buttons. The time it holds is a TimeSpan of the day, written and read in the format of the current culture, and every part of it can be set with the pointer or the keyboard alike. You can customize the picker to fit your scenario, for example by changing the time format, showing the seconds, stepping in intervals, limiting the selectable range or the exact values that can be picked, rendering it inline instead of in a callout, or letting users type the time directly."
+          Description="A BitTimePicker picks a time of day (a TimeSpan) with hour, minute and optional second spin inputs, in a callout or inline. It is culture-aware, supports 12/24-hour clocks, steps, ranges and allowed-value rules, typed input, and full keyboard, mouse-wheel and screen reader operation."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -17,9 +17,8 @@
           GitHubDemoUrl="Inputs/TimePicker/BitTimePickerDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div>
-            The states a picker can be in. <code>ReadOnly</code> keeps the value visible, focusable and posted with
-            the form while refusing every change of it; <code>IsEnabled</code> set to <code>false</code> takes it out
-            of the form and out of the tab order as well.
+            The basic states. <code>ReadOnly</code> keeps the value focusable and posted but refuses changes;
+            <code>IsEnabled="false"</code> also takes it out of the form and the tab order.
         </div>
         <br />
         <div class="example-content">
@@ -37,14 +36,9 @@
 
     <DemoExample Title="Time format & seconds" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            <code>TimeFormat</code> switches between the 24-hour and the 12-hour clock, and <code>ShowSeconds</code>
-            adds a third spin section. The value itself is always a time of day: half past five in the afternoon is
-            17:30 whichever format shows it, and a picker without the seconds still carries the seconds of the value
-            it was given - stepping the hour of 10:30:45 gives 11:30:45.
-            <br /><br />
-            In the 12-hour format the AM/PM buttons say which half of the day the time is in. Typing an hour keeps
-            that half - typing 5 into an afternoon time means 17:00, not a silent jump to the morning - while the
-            spin buttons move the time itself, so stepping past noon moves the AM/PM state with it.
+            <code>TimeFormat</code> picks the 24- or 12-hour clock; <code>ShowSeconds</code> adds a seconds input. The
+            value is always a time of day (5:30 PM is 17:30). In 12-hour mode a typed hour stays in the current half
+            of the day, while the spin buttons carry AM/PM across noon.
         </div>
         <br />
         <div class="example-content">
@@ -69,11 +63,9 @@
 
     <DemoExample Title="Text input" RazorCode="@example3RazorCode" Id="example3">
         <div class="example-desc">
-            <code>AllowTextInput</code> lets the time be typed into the field. A typed time does not have to be
-            written the way the picker writes one: the spellings of the culture are accepted in either clock format,
-            with or without the seconds, so <b>2:05 PM</b> lands in a 24-hour picker as 14:05 and is rewritten in its
-            own format. Anything that is not a time of day - or one the range and the allowed-value rules refuse - is
-            reported by the form validation.
+            <code>AllowTextInput</code> lets the time be typed into the field. Either clock format is accepted, with or
+            without seconds (<b>2:05 PM</b> becomes 14:05 in a 24-hour picker); anything else, or a time the rules
+            refuse, fails validation.
         </div>
         <div class="example-content">
             <BitTimePicker AllowTextInput Label="Start time" />
@@ -87,11 +79,9 @@
 
     <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            <code>IconName</code> replaces the clock of the field and <code>IconLocation</code> moves it to either
-            side. The icons inside the callout are customizable too: <code>IncreaseHourIconName</code>,
-            <code>DecreaseHourIconName</code> and their minute and second counterparts replace the arrows of the spin
-            buttons, and <code>CloseButtonIconName</code> the icon of the close button. Each has an <code>Icon</code>
-            twin (<code>IncreaseHourIcon</code>, …) taking the CSS classes of an external icon library instead.
+            <code>IconName</code> and <code>IconLocation</code> set the field icon. <code>IncreaseHourIconName</code>,
+            <code>DecreaseHourIconName</code> (and the minute/second twins) and <code>CloseButtonIconName</code> set
+            the callout icons.
         </div>
         <br />
         <div class="example-content">
@@ -114,19 +104,10 @@
 
     <DemoExample Title="Formatting & culture" RazorCode="@example5RazorCode" Id="example5">
         <div class="example-desc">
-            Left alone, the picker writes and reads a time the way its culture does: the pattern of the culture,
-            rewritten into the clock format of the picker and extended with the seconds when
-            <code>ShowSeconds</code> is set, with every part padded so the field spells the time the same way the
-            two-digit inputs do. <code>Culture</code> takes any <code>CultureInfo</code>, which also supplies the
-            AM/PM designators and - for a culture that reads right to left - the direction of the layout, without an
-            explicit <code>Dir</code>. See the
-            <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs" Target="_blank">
-                CultureInfoHelper
-            </BitLink> class for the Farsi culture used below.
-            <br /><br />
-            <code>ValueFormat</code> replaces that with a pattern of standard .NET time format specifiers, which is
-            then the only spelling a typed time may use as well: an application asking for a format of its own gets
-            it taken literally, in both directions.
+            By default the time is written in the pattern of the <code>Culture</code>, which also supplies the AM/PM
+            designators and, for a right-to-left culture, the layout direction (see
+            <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs" Target="_blank">CultureInfoHelper</BitLink>).
+            <code>ValueFormat</code> sets a .NET time format instead, used for both display and typed input.
         </div>
         <div class="example-content">
             <BitTimePicker Label="ValueFormat (hh-mm.ss)" Placeholder="Select a time..." ValueFormat="hh-mm.ss" />
@@ -140,15 +121,9 @@
 
     <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <code>@@bind-Value</code> two-way binds the selected time to a <code>TimeSpan?</code>. The value is a time
-            of day, so a span of a day or more - or a negative one - is read as the time of day it lands on. A
-            one-way bound <code>Value</code> paired with <code>OnChange</code> keeps the value under the control of
-            the application.
-            <br /><br />
-            Two parameters seed a picker, and they are not the same thing: <code>DefaultValue</code> is a value, so
-            the picker starts out holding it and showing it; <code>StartingValue</code> is only where the first
-            change lands, so the picker stays empty and its inputs stay blank until something is picked - stepping
-            the hour of the third picker below selects 10:30 rather than 01:00.
+            <code>@@bind-Value</code> binds a <code>TimeSpan?</code> (spans outside a day wrap into one).
+            <code>DefaultValue</code> starts the picker with a value; <code>StartingValue</code> leaves it empty but
+            makes the first change land near it (stepping the hour below gives 10:30, not 01:00).
         </div>
         <br />
         <div class="example-content">
@@ -165,10 +140,8 @@
 
     <DemoExample Title="Standalone" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            <code>Standalone</code> renders the time picking part inline, without the field and the callout. It still
-            carries its value in a hidden input, so it posts and validates in a form like any other input - and since
-            it is part of the page rather than a popup over it, it is not announced as a dialog, its label points at
-            the hour input, and that is where the focus lands.
+            <code>Standalone</code> renders the picker inline, without the field and callout. It still posts and
+            validates in a form, and is announced as a group named by its label.
         </div>
         <br />
         <div class="example-content">
@@ -188,17 +161,11 @@
 
     <DemoExample Title="Selectable range" RazorCode="@example8RazorCode" Id="example8">
         <div>
-            <code>MinTime</code> and <code>MaxTime</code> bound the selectable range: the spin buttons clamp into it,
-            and a typed time outside it is rejected with the <code>OutOfRangeErrorMessage</code> text. The
-            <code>AllowedHours</code>, <code>AllowedMinutes</code> and <code>AllowedSeconds</code> predicates add an
-            arbitrary rule on top - the spin buttons skip what they reject, a typed number snaps to the nearest
-            accepted one, and a time entered as text that lands on a rejected value is reported with the
-            <code>DisallowedTimeErrorMessage</code> text. Both bounds are times of day, so one outside of a day is
-            pulled back into one, and where a bound and a predicate disagree the bound wins.
-            <br /><br />
-            <code>DisablePast</code> and <code>DisableFuture</code> add the current time as a bound of their own,
-            taken to the precision the picker shows so the minute that is running can still be picked. Where they
-            overlap with <code>MinTime</code> and <code>MaxTime</code>, the narrower of the two wins.
+            <code>MinTime</code>/<code>MaxTime</code> bound the range. <code>AllowedHours</code>,
+            <code>AllowedMinutes</code> and <code>AllowedSeconds</code> add rules on top: the controls skip what they
+            reject and typed text that hits one fails validation. <code>DisablePast</code>/<code>DisableFuture</code>
+            bound by the current time, read in <code>TimeZone</code> (the local zone by default - the server's, in a
+            server-rendered app) or pinned by <code>Now</code>.
         </div>
         <br />
         <div class="example-content">
@@ -221,18 +188,20 @@
                            DisableFuture
                            ShowNowButton
                            Placeholder="Select a time..." />
+            <br />
+            <BitTimePicker Label="Later today in UTC (TimeZone)"
+                           DisablePast
+                           ShowNowButton
+                           TimeZone="TimeZoneInfo.Utc"
+                           Placeholder="Select a time..." />
         </div>
     </DemoExample>
 
     <DemoExample Title="Steps" RazorCode="@example9RazorCode" Id="example9">
         <div>
-            <code>HourStep</code>, <code>MinuteStep</code> and <code>SecondStep</code> lay a grid over their range
-            that every value the controls produce sits on - the spin buttons, <b>PageUp</b> and <b>PageDown</b>, and
-            the now button all land on it. The grid starts at the matching part of <code>MinTime</code>, and at the
-            top of the range where there is none, so a picker whose range begins at 09:07 can still be set to 09:07.
-            A value that arrives off the grid is kept and shown as it is; the first press of a spin button then moves
-            it onto the nearest grid point in the direction it was pressed. A typed time is not held to the grid -
-            a step is the granularity the controls move in, not a validation rule.
+            <code>HourStep</code>, <code>MinuteStep</code> and <code>SecondStep</code> set the grid the spin buttons,
+            <b>PageUp</b>/<b>PageDown</b>, the wheel and the now button move on, anchored at <code>MinTime</code>. A
+            typed time is not held to it: a step is a granularity, not a validation rule.
         </div>
         <br />
         <div class="example-content">
@@ -253,21 +222,17 @@
 
     <DemoExample Title="Action buttons" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            The callout can carry action buttons: <code>ShowNowButton</code> selects the current time of day - the
-            time the picker itself could have stepped to, snapped to the steps and the allowed values and pulled into
-            the bounds - <code>ShowClearButton</code> clears the value (disabled while there is nothing to clear, and
-            reported by <code>OnClear</code>), and <code>ShowCloseButton</code> adds a dismiss button in its corner.
-            <code>NowButtonText</code>, <code>ClearButtonText</code> and <code>CloseButtonTitle</code> caption them.
-            <br /><br />
-            <code>ShowInputClearButton</code> puts the same clear action in the field itself, where it appears only
-            once a time is selected and can be reached without opening the callout first.
+            <code>ShowNowButton</code> picks the current time (snapped to the rules), <code>ShowClearButton</code>
+            clears the value and <code>ShowCloseButton</code> adds a dismiss button; <code>AutoClose</code> closes the
+            callout after the now button. <code>ShowInputClearButton</code> puts a clear button in the field itself.
         </div>
         <br />
         <div class="example-content">
             <BitTimePicker @bind-Value="@actionsTime"
                            ShowNowButton
                            ShowClearButton
-                           Label="Now & Clear buttons"
+                           AutoClose
+                           Label="Now & Clear buttons (AutoClose)"
                            Placeholder="Select a time..." />
             <div>Selected time: @actionsTime.ToString()</div>
             <br /><br />
@@ -288,17 +253,11 @@
 
     <DemoExample Title="Validation & helper text" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
-            <code>Description</code> renders helper text under the field and ties it to the input through
-            <code>aria-describedby</code>, so a screen reader reads it along with the picker.
-            <code>ErrorMessage</code> renders text in its place and marks the picker invalid; <code>Invalid</code>
-            marks it invalid on its own, for a rejection the application decided about (a server response, a rule
-            spanning two fields) that no <code>EditContext</code> knows of.
-            <br /><br />
-            Inside an <code>EditForm</code> the picker validates with the data annotations of its model. Each of the
-            three ways a typed time can be refused carries its own message: <code>InvalidErrorMessage</code> for text
-            that is not a time at all, <code>OutOfRangeErrorMessage</code> for one outside the bounds, and
-            <code>DisallowedTimeErrorMessage</code> for one the predicates reject - each falling back to a message
-            naming the field.
+            <code>Description</code> adds helper text tied to the input via <code>aria-describedby</code>.
+            <code>ErrorMessage</code> shows an app-side error and marks the picker invalid (<code>Invalid</code> does
+            the latter alone). In an <code>EditForm</code>, <code>InvalidErrorMessage</code>,
+            <code>OutOfRangeErrorMessage</code> and <code>DisallowedTimeErrorMessage</code> word the three ways a
+            typed time is refused.
         </div>
         <br />
         <div class="example-content">
@@ -345,17 +304,15 @@
 
     <DemoExample Title="Appearance" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            <code>Underlined</code> trades the box of the field for a single rule under it, and <code>HasBorder</code>
-            set to <code>false</code> takes the box away altogether - for a picker sitting inside a container of its
-            own. <code>DropDirection</code> decides where the callout may open: <code>TopAndBottom</code> keeps it
-            above or below the field, <code>All</code> lets it take whichever side has the room.
-            <br /><br />
-            <code>Responsive</code> turns the callout into a full-width panel that slides down from the top of small
-            screens and can be dismissed by swiping it up. <code>ShowCloseButton</code> pairs well with it, giving
-            the panel an obvious way out.
+            <code>Prefix</code>/<code>Suffix</code> (or their templates) add addons flush with the field ends; their
+            text is read as part of the field's description. <code>Underlined</code> and
+            <code>HasBorder="false"</code> change the frame, <code>DropDirection</code> where the callout opens, and
+            <code>Responsive</code> turns it into a swipe-to-dismiss sheet on small screens.
         </div>
         <br />
         <div class="example-content">
+            <BitTimePicker Label="Prefix & suffix" Prefix="Starts at" Suffix="UTC" Placeholder="Select a time..." />
+            <br />
             <BitTimePicker Label="Underlined" Underlined Placeholder="Select a time..." />
             <br />
             <BitTimePicker Label="No border" HasBorder="false" Placeholder="Select a time..." />
@@ -372,43 +329,27 @@
     </DemoExample>
 
     <DemoExample Title="Keyboard & accessibility" RazorCode="@example13RazorCode" Id="example13">
-        <div>
-            The whole time can be set without leaving the keyboard, and every part of the picker carries a label a
-            screen reader can announce:
-        </div>
-        <br />
         <ul>
-            <li><b>Enter</b>, <b>Space</b> or <b>&darr;</b> on the field opens the picker (an editable field keeps
-                <b>Enter</b> and <b>Space</b> for typing and opens with <b>&darr;</b> only); <b>Esc</b> or
-                <b>Alt</b>+<b>&uarr;</b> closes it and puts the focus back on the field, while <b>Tab</b> closes it
-                and carries on to the next control.</li>
-            <li>Unless the field is editable, opening the picker moves the focus onto the hour input, and <b>Tab</b>
-                moves on between the time inputs, the AM/PM pair, and the action buttons.</li>
-            <li><b>&uarr;</b> / <b>&darr;</b> on a time input change it by one, and a number typed into it snaps to
-                the nearest selectable value.</li>
-            <li><b>PageUp</b> / <b>PageDown</b> make the same move the spin buttons make - by the step of the picker,
-                wrapping around the clock and skipping over what the allowed-value predicates reject.</li>
-            <li><b>Home</b> / <b>End</b> jump to the first and the last value the input can be set to (the ends of
-                the current half of the day for the hour of a 12-hour picker), and <b>Enter</b> takes the time that
-                is on the inputs, closes the picker and puts the focus back on the field.</li>
-            <li>In the 12-hour format, the first letter of either designator of the culture (<b>a</b> and <b>p</b> in
-                English) sets the half of the day from any of the time inputs.</li>
+            <li><b>Enter</b>, <b>Space</b> or <b>&darr;</b> opens the picker (<b>&darr;</b> only on an editable field)
+                and focuses the hour; <b>Esc</b> or <b>Alt</b>+<b>&uarr;</b> closes it back onto the field, <b>Tab</b>
+                closes it and moves on.</li>
+            <li><b>&uarr;</b>/<b>&darr;</b> change a time input by one, <b>PageUp</b>/<b>PageDown</b> by its step,
+                <b>Home</b>/<b>End</b> jump to its ends, and <b>Enter</b> accepts and closes.</li>
+            <li>12-hour pickers take the first letter of the culture's designators (<b>a</b>/<b>p</b>) from any input.</li>
+            <li><code>AutoAdvance</code> moves on to the next input once a part is complete, so <b>1</b><b>4</b><b>3</b><b>0</b>
+                types 14:30.</li>
+            <li><b>Shift</b>+wheel over a focused time input steps it (<code>NoMouseWheel</code> turns it off,
+                <code>InvertMouseWheel</code> reverses it).</li>
         </ul>
-        <br />
         <div>
-            <code>CalloutAriaLabel</code> names the popup, which is a modal dialog while it floats over the page and
-            plain page content when the picker is standalone; <code>HourInputAriaLabel</code>,
-            <code>MinuteInputAriaLabel</code> and <code>SecondInputAriaLabel</code> name the time inputs; the
-            <code>IncreaseHourTitle</code>-style parameters caption the spin buttons for the tooltip and the screen
-            reader alike; and the AM/PM buttons report their state through <code>aria-pressed</code>. The selected
-            time is announced as a whole by a live region whenever any part of it changes, so the buttons that set
-            all of it at once - now, clear, AM/PM - never change it silently. <code>AriaDescription</code> carries an
-            instruction for a screen reader alone, and <code>AutoFocus</code> puts the focus on the field as soon as
-            the picker renders.
+            <code>CalloutAriaLabel</code>, <code>HourInputAriaLabel</code>-style and <code>IncreaseHourTitle</code>-style
+            parameters name the parts; AM/PM report <code>aria-pressed</code>; a live region announces the whole time
+            on every change. <code>AriaDescription</code> adds screen-reader-only help.
         </div>
         <br />
         <div class="example-content">
             <BitTimePicker Label="Try it with the keyboard"
+                           AutoAdvance
                            TimeFormat="BitTimeFormat.TwelveHours"
                            CalloutAriaLabel="Pick a meeting time"
                            HourInputAriaLabel="Meeting hour"
@@ -424,10 +365,9 @@
 
     <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
-            <code>OnSelectTime</code> fires for every change made with the picker, <code>OnChange</code> for every
-            change of the bound value, <code>OnClear</code> for either clear button, <code>OnOpen</code> and
-            <code>OnClose</code> follow the callout, and <code>OnClick</code>, <code>OnFocusIn</code> and
-            <code>OnFocusOut</code> follow the field.
+            <code>OnSelectTime</code> (every change made with the picker), <code>OnChange</code> (the bound value),
+            <code>OnClear</code>, <code>OnOpen</code>/<code>OnClose</code>, and the field's <code>OnClick</code>,
+            <code>OnFocusIn</code> and <code>OnFocusOut</code>.
         </div>
         <br />
         <div class="example-content">
@@ -454,11 +394,8 @@
 
     <DemoExample Title="Programmatic control" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
-            Two-way bind <code>IsOpen</code> to drive the callout from the code, or call <code>OpenCallout</code> and
-            <code>DismissCallout</code> on a reference to the component - the first opens it exactly as clicking the
-            field would (moving the focus onto the hour input), the second closes it and leaves the focus wherever it
-            is. <code>OnOpen</code> and <code>OnClose</code> report every change of the state, whichever side asked
-            for it.
+            Bind <code>IsOpen</code>, or call <code>OpenCallout</code> (opens as a click would) and
+            <code>DismissCallout</code> (closes without moving the focus).
         </div>
         <br />
         <div class="example-content">
@@ -478,11 +415,9 @@
 
     <DemoExample Title="Templates" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
-            <code>LabelTemplate</code> replaces the label with any content (here an action button calling the public
-            <code>OpenCallout</code> method), <code>IconTemplate</code> the icon of the field,
-            <code>DescriptionTemplate</code> the helper text, and <code>CalloutHeaderTemplate</code> and
-            <code>CalloutFooterTemplate</code> add content above and below the time inputs - a title, a hint, or
-            preset buttons that set the value from the code.
+            <code>LabelTemplate</code>, <code>IconTemplate</code> and <code>DescriptionTemplate</code> replace their
+            parts; <code>CalloutHeaderTemplate</code>/<code>CalloutFooterTemplate</code> add content around the time
+            inputs, such as preset times.
         </div>
         <br />
         <div class="example-content">
@@ -515,13 +450,10 @@
 
     <DemoExample Title="CSS variables" RazorCode="@example17RazorCode" Id="example17">
         <div>
-            Every public <code>--bit-TimePicker-*</code> property is read off the root with a fallback and never
-            declared by the component, so it inherits: set one on <code>:root</code> to re-skin every picker of the
-            app, or on the <code>Style</code> of an instance to re-skin that one alone. Since the callout is moved to
-            the end of the document while it is open, the component carries the declarations of <code>Style</code>
-            and <code>Styles.Root</code> across to it by hand - one <code>Style</code> restyles the field and the
-            popup it opens together, while a value set on an ancestor other than <code>:root</code> reaches the field
-            only. The full list is in the <b>CSS variables</b> table at the bottom of this page.
+            The <code>--bit-TimePicker-*</code> properties inherit: set them on <code>:root</code> for every picker or
+            on <code>Style</code> for one. <code>Style</code>'s values are copied to the callout too, which leaves the
+            picker while open (so an ancestor other than <code>:root</code> reaches the field only). Full list in the
+            <b>CSS variables</b> table below.
         </div>
         <br />
         <div class="example-content">
@@ -535,6 +467,7 @@
                                   --bit-TimePicker-height: 3rem;
                                   --bit-TimePicker-padding: 1rem;
                                   --bit-TimePicker-border-color: teal;
+                                  --bit-TimePicker-hover-border-color: darkslategray;
                                   --bit-TimePicker-icon-color: teal;
                                   --bit-TimePicker-callout-radius: 1.5rem;
                                   --bit-TimePicker-callout-padding: 1.5rem;
@@ -553,13 +486,9 @@
 
     <DemoExample Title="Cascading parameters" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
         <div>
-            <b>BitParams</b> carries a <b>BitTimePickerParams</b> down to every TimePicker under it, so a form, a
-            panel or a whole page sets the shared configuration once instead of on every picker. What it carries is a
-            default and not an override: a picker that writes a parameter for itself keeps its own value, and only
-            what it left unset is filled in from the cascade. Each parameter is filled in on its own, so a picker can
-            take its <b>TimeFormat</b> from the cascade and its <b>MinuteStep</b> from its own markup. What stays on
-            the instance is what belongs to one field alone - its value and the callbacks reporting a change of it,
-            the open state of its callout, and the rejection it is currently showing.
+            <b>BitParams</b> with a <b>BitTimePickerParams</b> sets shared defaults for every TimePicker under it. A
+            parameter a picker sets itself wins, one by one. The value, its callbacks, <code>IsOpen</code> and the
+            error state stay per instance.
         </div>
         <br />
         <div class="example-content">
@@ -575,9 +504,8 @@
 
     <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
         <div>
-            Offering a range of specialized color variants with Primary being the default, providing visual cues for
-            specific actions or states within your application. The color applies to the selected AM/PM button, the
-            now and clear action buttons, and the focus indicator of the input.
+            <code>Color</code> (Primary by default) colors the selected AM/PM button, the now/clear buttons and the
+            focus indicator.
         </div>
         <br />
         <div class="example-content">
@@ -658,8 +586,7 @@
 
     <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21">
         <div>
-            The <code>Size</code> parameter scales the whole BitTimePicker - the input and its label, and the time inputs,
-            the separators and the spin buttons inside the callout - between three sizes, with Medium being the default.
+            <code>Size</code> scales the field, its label and the callout (Medium by default).
         </div>
         <br />
         <div class="example-content">

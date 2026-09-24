@@ -45,6 +45,17 @@
     {
         <div style="@Styles?.InputWrapper" class="bit-tpc-wrp @Classes?.InputWrapper" id="@_timePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
             <div style="@Styles?.InputContainer" class="bit-tpc-icn @Classes?.InputContainer">
+                @if (PrefixTemplate is not null)
+                {
+                    @PrefixTemplate
+                }
+                else if (Prefix.HasValue())
+                {
+                    <span id="@_prefixId" style="@Styles?.PrefixContainer" class="bit-tpc-pre @Classes?.PrefixContainer">
+                        <span style="@Styles?.Prefix" class="@Classes?.Prefix">@Prefix</span>
+                    </span>
+                }
+
                 <input @ref="InputElement" @attributes="InputHtmlAttributes"
                        @onfocus="@HandleOnFocus"
                        @oninput="@HandleOnChange"
@@ -99,6 +110,17 @@
                     var icon = BitIconInfo.From(Icon, IconName ?? "Clock");
                     <i style="@Styles?.Icon" class="bit-tpc-ico @icon?.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
                 }
+
+                @if (SuffixTemplate is not null)
+                {
+                    @SuffixTemplate
+                }
+                else if (Suffix.HasValue())
+                {
+                    <span id="@_suffixId" style="@Styles?.SuffixContainer" class="bit-tpc-suf @Classes?.SuffixContainer">
+                        <span style="@Styles?.Suffix" class="@Classes?.Suffix">@Suffix</span>
+                    </span>
+                }
             </div>
         </div>
     }
@@ -140,13 +162,18 @@
             of it off and the focus is held inside it; standalone it is a group of controls that is part of
             the page like any other, where role="dialog" would announce a dialog the user can never leave -
             and where a plain div would leave the label below naming nothing.
+            A standalone group is named by the visible label where there is one: the hour input carries an
+            aria-label of its own, which outranks the label pointing at it, so the group is the only place the
+            name of the field is still announced from.
         *@
         <div @onkeydown="HandleOnCalloutKeyDown"
              style="@Styles?.CalloutContainer"
              class="bit-tpc-cac @Classes?.CalloutContainer"
              role="@(Standalone ? "group" : "dialog")"
              aria-modal="@(Standalone ? null : "true")"
-             @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
+             @attributes=@CalloutHtmlAttributes
+             aria-label="@(StandaloneHasLabel ? null : CalloutAriaLabel)"
+             aria-labelledby="@(StandaloneHasLabel ? _labelId : null)">
 
             @if (CalloutHeaderTemplate is not null)
             {
@@ -173,6 +200,9 @@
                            @bind="@_hourView"
                            @bind:event="oninput"
                            @onfocus="HandleOnHourFocus"
+                           @onblur="HandleOnTimeInputBlur"
+                           @onwheel="e => HandleOnTimeInputWheel(e, TimeUnit.Hour)"
+                           data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
                            @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Hour)"
                            id="@_hourInputId"
                            min="@(TimeFormat == BitTimeFormat.TwelveHours ? "1" : "0")"
@@ -224,6 +254,9 @@
                            @bind="@_minuteView"
                            @bind:event="oninput"
                            @onfocus="HandleOnMinuteFocus"
+                           @onblur="HandleOnTimeInputBlur"
+                           @onwheel="e => HandleOnTimeInputWheel(e, TimeUnit.Minute)"
+                           data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
                            @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Minute)"
                            min="0"
                            max="59"
@@ -269,6 +302,9 @@
                                @bind="@_secondView"
                                @bind:event="oninput"
                                @onfocus="HandleOnSecondFocus"
+                               @onblur="HandleOnTimeInputBlur"
+                               @onwheel="e => HandleOnTimeInputWheel(e, TimeUnit.Second)"
+                               data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
                                @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Second)"
                                min="0"
                                max="59"

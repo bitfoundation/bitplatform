@@ -45,6 +45,12 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
     /// <inheritdoc cref="BitTimePicker.AriaDescription"/>
     public string? AriaDescription { get; set; }
 
+    /// <inheritdoc cref="BitTimePicker.AutoAdvance"/>
+    public bool? AutoAdvance { get; set; }
+
+    /// <inheritdoc cref="BitTimePicker.AutoClose"/>
+    public bool? AutoClose { get; set; }
+
     /// <inheritdoc cref="BitTimePicker.AutoFocus"/>
     public bool? AutoFocus { get; set; }
 
@@ -192,6 +198,9 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
     /// <inheritdoc cref="BitTimePicker.InvalidErrorMessage"/>
     public string? InvalidErrorMessage { get; set; }
 
+    /// <inheritdoc cref="BitTimePicker.InvertMouseWheel"/>
+    public bool? InvertMouseWheel { get; set; }
+
     /// <inheritdoc cref="BitTimePicker.Label"/>
     public string? Label { get; set; }
 
@@ -210,6 +219,12 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
     /// <inheritdoc cref="BitTimePicker.MinuteStep"/>
     public int? MinuteStep { get; set; }
 
+    /// <inheritdoc cref="BitTimePicker.NoMouseWheel"/>
+    public bool? NoMouseWheel { get; set; }
+
+    /// <inheritdoc cref="BitTimePicker.Now"/>
+    public TimeSpan? Now { get; set; }
+
     /// <inheritdoc cref="BitTimePicker.NowButtonText"/>
     public string? NowButtonText { get; set; }
 
@@ -218,6 +233,12 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
 
     /// <inheritdoc cref="BitTimePicker.Placeholder"/>
     public string? Placeholder { get; set; }
+
+    /// <inheritdoc cref="BitTimePicker.Prefix"/>
+    public string? Prefix { get; set; }
+
+    /// <inheritdoc cref="BitTimePicker.PrefixTemplate"/>
+    public RenderFragment? PrefixTemplate { get; set; }
 
     /// <inheritdoc cref="BitTimePicker.Responsive"/>
     public bool? Responsive { get; set; }
@@ -255,8 +276,17 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
     /// <inheritdoc cref="BitTimePicker.Styles"/>
     public BitTimePickerClassStyles? Styles { get; set; }
 
+    /// <inheritdoc cref="BitTimePicker.Suffix"/>
+    public string? Suffix { get; set; }
+
+    /// <inheritdoc cref="BitTimePicker.SuffixTemplate"/>
+    public RenderFragment? SuffixTemplate { get; set; }
+
     /// <inheritdoc cref="BitTimePicker.TimeFormat"/>
     public BitTimeFormat? TimeFormat { get; set; }
+
+    /// <inheritdoc cref="BitTimePicker.TimeZone"/>
+    public TimeZoneInfo? TimeZone { get; set; }
 
     /// <inheritdoc cref="BitTimePicker.Underlined"/>
     public bool? Underlined { get; set; }
@@ -306,6 +336,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
         if (AriaDescription.HasValue() && bitTimePicker.HasNotBeenSet(nameof(AriaDescription)))
         {
             bitTimePicker.AriaDescription = AriaDescription;
+        }
+
+        if (AutoAdvance.HasValue && bitTimePicker.HasNotBeenSet(nameof(AutoAdvance)))
+        {
+            bitTimePicker.AutoAdvance = AutoAdvance.Value;
+        }
+
+        if (AutoClose.HasValue && bitTimePicker.HasNotBeenSet(nameof(AutoClose)))
+        {
+            bitTimePicker.AutoClose = AutoClose.Value;
         }
 
         if (AutoFocus.HasValue && bitTimePicker.HasNotBeenSet(nameof(AutoFocus)))
@@ -573,6 +613,11 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.InvalidErrorMessage = InvalidErrorMessage;
         }
 
+        if (InvertMouseWheel.HasValue && bitTimePicker.HasNotBeenSet(nameof(InvertMouseWheel)))
+        {
+            bitTimePicker.InvertMouseWheel = InvertMouseWheel.Value;
+        }
+
         if (Label.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Label)))
         {
             bitTimePicker.Label = Label;
@@ -603,6 +648,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.MinuteStep = MinuteStep.Value;
         }
 
+        if (NoMouseWheel.HasValue && bitTimePicker.HasNotBeenSet(nameof(NoMouseWheel)))
+        {
+            bitTimePicker.NoMouseWheel = NoMouseWheel.Value;
+        }
+
+        if (Now.HasValue && bitTimePicker.HasNotBeenSet(nameof(Now)))
+        {
+            bitTimePicker.Now = Now.Value;
+        }
+
         if (NowButtonText.HasValue() && bitTimePicker.HasNotBeenSet(nameof(NowButtonText)))
         {
             bitTimePicker.NowButtonText = NowButtonText!;
@@ -616,6 +671,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
         if (Placeholder.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Placeholder)))
         {
             bitTimePicker.Placeholder = Placeholder;
+        }
+
+        if (Prefix.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Prefix)))
+        {
+            bitTimePicker.Prefix = Prefix;
+        }
+
+        if (PrefixTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(PrefixTemplate)))
+        {
+            bitTimePicker.PrefixTemplate = PrefixTemplate;
         }
 
         if (Responsive.HasValue && bitTimePicker.HasNotBeenSet(nameof(Responsive)))
@@ -684,9 +749,24 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.StyleBuilder.Reset();
         }
 
+        if (Suffix.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Suffix)))
+        {
+            bitTimePicker.Suffix = Suffix;
+        }
+
+        if (SuffixTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(SuffixTemplate)))
+        {
+            bitTimePicker.SuffixTemplate = SuffixTemplate;
+        }
+
         if (TimeFormat.HasValue && bitTimePicker.HasNotBeenSet(nameof(TimeFormat)))
         {
             bitTimePicker.TimeFormat = TimeFormat.Value;
+        }
+
+        if (TimeZone is not null && bitTimePicker.HasNotBeenSet(nameof(TimeZone)))
+        {
+            bitTimePicker.TimeZone = TimeZone;
         }
 
         if (Underlined.HasValue && bitTimePicker.HasNotBeenSet(nameof(Underlined)))

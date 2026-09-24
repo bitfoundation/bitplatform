@@ -18,6 +18,8 @@
 //   --bit-TimePicker-placeholder-color        text color of the placeholder        (default: $clr-fg-sec)
 //   --bit-TimePicker-border-color             border of the input field, and the
 //                                             rule of the underlined variant       (default: $clr-brd-pri)
+//   --bit-TimePicker-hover-border-color       border of the hovered and the pressed
+//                                             field                                (default: $clr-brd-pri-hover / -active)
 //   --bit-TimePicker-border-width             stroke of that border                (default: $shp-border-width)
 //   --bit-TimePicker-radius                   corner radius of the input field     (default: $shp-radius-control)
 //   --bit-TimePicker-height                   height of the input field            (default: per Size, $siz-ctrl-*)
@@ -25,6 +27,10 @@
 //   --bit-TimePicker-font-size                text size of the input field         (default: per Size)
 //   --bit-TimePicker-icon-color               color of the field icon              (default: $clr-fg-sec)
 //   --bit-TimePicker-icon-size                size of the field icon               (default: per Size, $siz-icon-*)
+//   --bit-TimePicker-prefix-color             text of the prefix addon             (default: $clr-fg-pri)
+//   --bit-TimePicker-prefix-background        background of the prefix addon       (default: $clr-bg-sec)
+//   --bit-TimePicker-suffix-color             text of the suffix addon             (default: $clr-fg-pri)
+//   --bit-TimePicker-suffix-background        background of the suffix addon       (default: $clr-bg-sec)
 //   --bit-TimePicker-label-color              color of the label                   (default: $clr-fg-pri)
 //   --bit-TimePicker-label-font-size          text size of the label               (default: per Size)
 //   --bit-TimePicker-label-font-weight        weight of the label                  (default: $tg-fw-semibold)
@@ -39,6 +45,8 @@
 //   --bit-TimePicker-callout-radius           corner radius of the popup           (default: $shp-radius-popup)
 //   --bit-TimePicker-callout-padding          padding inside the popup             (default: spacing(2))
 //   --bit-TimePicker-callout-shadow           elevation of the popup               (default: $box-shadow-popup)
+//   --bit-TimePicker-overlay-background       the layer behind an open popup, a
+//                                             scrim for the responsive sheet       (default: transparent)
 //   --bit-TimePicker-gap                      space between the hour, minute and
 //                                             second groups                        (default: spacing(1))
 //   --bit-TimePicker-cell-size                width and height of a time input and
@@ -89,7 +97,9 @@
 
     &.bit-dis {
         .bit-tpc-lbl,
-        .bit-tpc-tdv {
+        .bit-tpc-tdv,
+        .bit-tpc-pre,
+        .bit-tpc-suf {
             color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
         }
 
@@ -159,11 +169,69 @@
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
-    padding: 0 var(--bit-TimePicker-padding, #{spacing(1)});
+    --bit-tpc-pad: var(--bit-TimePicker-padding, #{spacing(1)});
+    padding: 0 var(--bit-tpc-pad);
     box-sizing: border-box;
     border-radius: var(--bit-TimePicker-radius, #{$shp-radius-control});
     background-color: var(--bit-TimePicker-background, #{$clr-bg-pri});
     border: var(--bit-TimePicker-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TimePicker-border-color, #{$clr-brd-pri});
+    transition: border-color $mot-duration-short $mot-easing;
+}
+
+// The field says it can be operated before it is: its border darkens under the pointer and a little more
+// while it is pressed. An invalid field keeps the color that says why, and a disabled one takes no pointer.
+.bit-tpc:not(.bit-inv) {
+    @media (hover: hover) {
+        .bit-tpc-icn:hover {
+            border-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-hover});
+        }
+
+        &.bit-tpc-und .bit-tpc-wrp:hover {
+            border-bottom-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-hover});
+        }
+    }
+
+    .bit-tpc-icn:active {
+        border-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-active});
+    }
+
+    &.bit-tpc-und .bit-tpc-wrp:active {
+        border-bottom-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-active});
+    }
+}
+
+// The two addons sit flush with the ends of the field, so they reach over its inline padding, and are
+// themed apart: a zone suffix and a "Starts at" prefix are rarely the same kind of thing.
+.bit-tpc-pre,
+.bit-tpc-suf {
+    display: flex;
+    flex-shrink: 0;
+    align-self: stretch;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0 spacing(1.25);
+
+    span {
+        font-size: var(--bit-tpc-inp-fs);
+    }
+}
+
+.bit-tpc-pre {
+    margin-inline-end: var(--bit-tpc-pad);
+    margin-inline-start: calc(-1 * var(--bit-tpc-pad));
+    border-start-start-radius: inherit;
+    border-end-start-radius: inherit;
+    color: var(--bit-TimePicker-prefix-color, #{$clr-fg-pri});
+    background: var(--bit-TimePicker-prefix-background, #{$clr-bg-sec});
+}
+
+.bit-tpc-suf {
+    margin-inline-start: var(--bit-tpc-pad);
+    margin-inline-end: calc(-1 * var(--bit-tpc-pad));
+    border-start-end-radius: inherit;
+    border-end-end-radius: inherit;
+    color: var(--bit-TimePicker-suffix-color, #{$clr-fg-pri});
+    background: var(--bit-TimePicker-suffix-background, #{$clr-bg-sec});
 }
 
 .bit-tpc-ico {
@@ -276,6 +344,16 @@
     .bit-tpc-clr {
         order: -1;
     }
+
+    // The addons keep to their own ends of the field as well: the prefix takes the highest order, which a
+    // reversed row puts first, and the suffix the lowest, beyond the clear button.
+    .bit-tpc-pre {
+        order: 1;
+    }
+
+    .bit-tpc-suf {
+        order: -2;
+    }
 }
 
 .bit-tpc-foc:not(.bit-tpc-und) {
@@ -324,7 +402,7 @@
     display: none;
     position: fixed;
     z-index: $zindex-overlay;
-    background-color: transparent;
+    background-color: var(--bit-TimePicker-overlay-background, transparent);
 }
 
 .bit-tpc-cal {

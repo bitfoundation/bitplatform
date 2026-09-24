@@ -28,6 +28,16 @@ public class BitTimePickerClassStyles
     public string? InputContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the prefix container of the BitTimePicker.
+    /// </summary>
+    public string? PrefixContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the prefix text of the BitTimePicker.
+    /// </summary>
+    public string? Prefix { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the input of the BitTimePicker.
     /// </summary>
     public string? Input { get; set; }
@@ -36,6 +46,16 @@ public class BitTimePickerClassStyles
     /// Custom CSS classes/styles for the icon of the BitTimePicker.
     /// </summary>
     public string? Icon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the suffix container of the BitTimePicker.
+    /// </summary>
+    public string? SuffixContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the suffix text of the BitTimePicker.
+    /// </summary>
+    public string? Suffix { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the clear button rendered inside the input of the BitTimePicker.

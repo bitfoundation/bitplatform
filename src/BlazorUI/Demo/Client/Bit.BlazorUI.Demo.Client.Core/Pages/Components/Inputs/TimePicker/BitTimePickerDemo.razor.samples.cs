@@ -105,6 +105,12 @@ private TimeSpan? selectedTime = new(5, 12, 15);";
 <BitTimePicker Label=""Earlier today only (DisableFuture)""
                DisableFuture
                ShowNowButton
+               Placeholder=""Select a time..."" />
+
+<BitTimePicker Label=""Later today in UTC (TimeZone)""
+               DisablePast
+               ShowNowButton
+               TimeZone=""TimeZoneInfo.Utc""
                Placeholder=""Select a time..."" />";
 
     private readonly string example9RazorCode = @"
@@ -125,7 +131,8 @@ private TimeSpan? selectedTime = new(5, 12, 15);";
 <BitTimePicker @bind-Value=""@actionsTime""
                ShowNowButton
                ShowClearButton
-               Label=""Now & Clear buttons""
+               AutoClose
+               Label=""Now & Clear buttons (AutoClose)""
                Placeholder=""Select a time..."" />
 <div>Selected time: @actionsTime.ToString()</div>
 
@@ -202,6 +209,8 @@ private void HandleInvalidSubmit()
 }";
 
     private readonly string example12RazorCode = @"
+<BitTimePicker Label=""Prefix & suffix"" Prefix=""Starts at"" Suffix=""UTC"" Placeholder=""Select a time..."" />
+
 <BitTimePicker Label=""Underlined"" Underlined Placeholder=""Select a time..."" />
 
 <BitTimePicker Label=""No border"" HasBorder=""false"" Placeholder=""Select a time..."" />
@@ -217,6 +226,7 @@ private void HandleInvalidSubmit()
 
     private readonly string example13RazorCode = @"
 <BitTimePicker Label=""Try it with the keyboard""
+               AutoAdvance
                TimeFormat=""BitTimeFormat.TwelveHours""
                CalloutAriaLabel=""Pick a meeting time""
                HourInputAriaLabel=""Meeting hour""
@@ -341,6 +351,7 @@ private async Task OpenCallout()
                       --bit-TimePicker-height: 3rem;
                       --bit-TimePicker-padding: 1rem;
                       --bit-TimePicker-border-color: teal;
+                      --bit-TimePicker-hover-border-color: darkslategray;
                       --bit-TimePicker-icon-color: teal;
                       --bit-TimePicker-callout-radius: 1.5rem;
                       --bit-TimePicker-callout-padding: 1.5rem;
