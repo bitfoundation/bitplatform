@@ -35,13 +35,6 @@
     }
 }
 
-.dimensions-item {
-    gap: 1rem;
-    display: flex;
-    padding: 0.25rem 0;
-    justify-content: space-between;
-}
-
 // the public CSS variables inherit, so declaring them on any ancestor re-skins every file upload
 // underneath it - no ::deep and no selector reaching into the component is needed.
 .custom-vars {

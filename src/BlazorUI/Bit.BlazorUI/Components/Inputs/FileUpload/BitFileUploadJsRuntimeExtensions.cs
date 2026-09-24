@@ -62,11 +62,16 @@ internal static class BitFileUploadJsRuntimeExtensions
                                                                                   bool allowDrop,
                                                                                   bool allowPaste,
                                                                                   bool expandDirectories,
-                                                                                  string? dropZoneSelector)
+                                                                                  string? dropZoneSelector,
+                                                                                  string rejectClass,
+                                                                                  string? rejectStyle,
+                                                                                  string[]? acceptedMimeTypes,
+                                                                                  int remainingSlots)
     {
         return jsRuntime.Invoke<IJSObjectReference>("BitBlazorUI.FileUpload.setupDragDrop",
                                                     dragDropZoneElement, inputFileElement, dragClass, dragStyle,
-                                                    allowDrop, allowPaste, expandDirectories, dropZoneSelector);
+                                                    allowDrop, allowPaste, expandDirectories, dropZoneSelector,
+                                                    rejectClass, rejectStyle, acceptedMimeTypes, remainingSlots);
     }
 
     internal static ValueTask BitFileUploadBrowse(this IJSRuntime jsRuntime, ElementReference inputFileElement)

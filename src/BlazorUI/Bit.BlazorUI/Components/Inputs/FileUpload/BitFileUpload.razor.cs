@@ -7,9 +7,10 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileUpload wraps the HTML file input element(s) and uploads them to a given URL, with support for
-/// drag-and-drop onto the component or onto drop zones of the app's own, clipboard paste, folder and camera
-/// capture selection, image previews, chunked and resumable uploads, a concurrency limit, pause/cancel,
-/// automatic retries, validation, and server-side removal.
+/// drag-and-drop onto the component, a built-in drop area or drop zones of the app's own (flagging a drag the
+/// rules will refuse before it lands), clipboard paste, folder and camera capture selection, image previews,
+/// chunked and resumable uploads, a concurrency limit, pause/cancel, batch actions, automatic retries,
+/// validation, and server-side removal.
 /// </summary>
 public partial class BitFileUpload : BitComponentBase
 {
@@ -33,6 +34,10 @@ public partial class BitFileUpload : BitComponentBase
     private string? _dropZoneSelector;
     private string? _dragClass;
     private string? _dragStyle;
+    private string? _rejectClass;
+    private string? _rejectStyle;
+    private string[]? _acceptedMimeTypes;
+    private int _remainingSlots = -1;
     private string? _announcement;
     private bool _announcementMarker;
     private int _removingCount;
@@ -201,6 +206,11 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public string? CancelButtonTitle { get; set; }
 
     /// <summary>
+    /// The text of the "Cancel all" button of the batch actions (see <see cref="ShowBatchActions"/>).
+    /// </summary>
+    [Parameter] public string CancelAllText { get; set; } = "Cancel all";
+
+    /// <summary>
     /// The message shown for canceled file uploads.
     /// </summary>
     [Parameter] public string CanceledUploadMessage { get; set; } = "File upload canceled";
@@ -231,6 +241,12 @@ public partial class BitFileUpload : BitComponentBase
     /// Custom CSS classes for different parts of the BitFileUpload.
     /// </summary>
     [Parameter] public BitFileUploadClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The text of the "Clear" button of the batch actions (see <see cref="ShowBatchActions"/>), which resets
+    /// the component through <see cref="Reset"/>.
+    /// </summary>
+    [Parameter] public string ClearText { get; set; } = "Clear";
 
     /// <summary>
     /// The general color of the file upload, applied to the browse button, the drag-and-drop indicator,
@@ -336,6 +352,32 @@ public partial class BitFileUpload : BitComponentBase
     /// The text of the browse button. Setting it to an empty string hides the button altogether.
     /// </summary>
     [Parameter] public string Label { get; set; } = "Browse";
+
+    /// <summary>
+    /// The icon of the browse button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="LabelIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render an icon from external libraries like FontAwesome or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="LabelIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? LabelIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the browse button from the built-in Fluent UI icons.
+    /// Defaults to <c>CloudUpload</c> in the <see cref="ShowDropArea"/> mode, and to no icon otherwise.
+    /// </summary>
+    /// <remarks>
+    /// For external icon libraries, use <see cref="LabelIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? LabelIconName { get; set; }
+
+    /// <summary>
+    /// The position of the icon of the browse button relative to its text: before it (the default) or after it.
+    /// In the <see cref="ShowDropArea"/> mode the icon is stacked above or below the text instead.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitIconPosition? LabelIconPosition { get; set; }
 
     /// <summary>
     /// Custom Razor template rendered in place of the browse button, which also replaces the built-in
@@ -628,6 +670,22 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public Func<BitFileInfo, int, bool>? ShouldAutoRetry { get; set; }
 
     /// <summary>
+    /// Whether an action bar with "Upload all", "Cancel all" and "Clear" buttons is rendered under the file
+    /// list of picked files. The buttons keep their places, and one with nothing to act on is marked
+    /// aria-disabled rather than removed, so a keyboard user never loses the focus to it. The texts come from
+    /// <see cref="UploadAllText"/>, <see cref="CancelAllText"/> and <see cref="ClearText"/>.
+    /// </summary>
+    [Parameter] public bool ShowBatchActions { get; set; }
+
+    /// <summary>
+    /// Whether the browse button is rendered as a large drop area - a full-width dashed panel with an icon
+    /// over the <see cref="Label"/> - instead of a regular button. It is still a real button, so it is reached
+    /// with Tab and opens the file dialog with Enter or Space.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool ShowDropArea { get; set; }
+
+    /// <summary>
     /// Whether a thumbnail of every selected image is shown at the head of its file item, produced
     /// entirely in the browser from an object URL that is handed back as soon as the file is removed or
     /// the component is reset. The same URL is on the <see cref="BitFileInfo.PreviewUrl"/> of each file.
@@ -657,6 +715,11 @@ public partial class BitFileUpload : BitComponentBase
     /// The message shown for successful file uploads.
     /// </summary>
     [Parameter] public string SuccessfulUploadMessage { get; set; } = "File upload succeeded";
+
+    /// <summary>
+    /// The text of the "Upload all" button of the batch actions (see <see cref="ShowBatchActions"/>).
+    /// </summary>
+    [Parameter] public string UploadAllText { get; set; } = "Upload all";
 
     /// <summary>
     /// Gets or sets the icon to use for the upload button using custom CSS classes for external icon libraries.
@@ -1195,6 +1258,10 @@ public partial class BitFileUpload : BitComponentBase
             BitSize.Large => "bit-upl-lg",
             _ => "bit-upl-md"
         });
+
+        ClassBuilder.Register(() => ShowDropArea ? "bit-upl-dra" : string.Empty);
+
+        ClassBuilder.Register(() => LabelIconPosition is BitIconPosition.End ? "bit-upl-eni" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -1238,6 +1305,14 @@ public partial class BitFileUpload : BitComponentBase
     {
         if (firstRender is false)
         {
+            // the room MaxCount leaves changes with every selection and removal rather than only with the
+            // parameters, so the drop zone is brought up to date after each render; it only calls into
+            // JavaScript when something it judges a drag by has actually moved.
+            if (_dropZoneRef is not null)
+            {
+                await UpdateDropZone();
+            }
+
             await RestorePendingFocus();
             return;
         }
@@ -1250,9 +1325,14 @@ public partial class BitFileUpload : BitComponentBase
         _dropZoneSelector = DropZoneSelector;
         _dragClass = GetDragClass();
         _dragStyle = Styles?.Dragging;
+        _rejectClass = GetRejectClass();
+        _rejectStyle = Styles?.DraggingRejected;
+        _acceptedMimeTypes = GetDragAcceptedMimeTypes();
+        _remainingSlots = GetRemainingSlots();
 
         _dropZoneRef = await _js.BitFileUploadSetupDragDrop(RootElement, _inputRef, _dragClass, _dragStyle,
-                                                           _allowDrop, _allowPaste, _expandDirectories, _dropZoneSelector);
+                                                           _allowDrop, _allowPaste, _expandDirectories, _dropZoneSelector,
+                                                           _rejectClass, _rejectStyle, _acceptedMimeTypes, _remainingSlots);
 
         if (IsDisposed) return;
         if (_dropZoneRef is null) return;
@@ -1319,6 +1399,44 @@ public partial class BitFileUpload : BitComponentBase
         await RemoveFile(file);
     }
 
+    // an aria-disabled button still takes a click, so each handler asks for itself whether it has anything to do.
+    private async Task HandleUploadAll()
+    {
+        if (_CanUploadAll is false) return;
+
+        await Upload();
+    }
+
+    private async Task HandleCancelAll()
+    {
+        if (_CanCancelAll is false) return;
+
+        await CancelUpload();
+    }
+
+    private async Task HandleClear()
+    {
+        if (_CanClear is false) return;
+
+        // the whole list goes away with the action bar, so the focus returns to where a new selection starts.
+        RequestFocus(null, BitFileUploadFocusTarget.Upload);
+
+        await Reset();
+    }
+
+    private bool _HasPickedFiles => _files.Any(f => f.IsPreloaded is false && f.Status is not BitFileUploadStatus.Removed);
+
+    // "Upload all" is offered while a file that nobody has started yet - or that was paused, failed or was
+    // canceled - is waiting for it; a file already on the wire or in the queue has been asked already.
+    private bool _CanUploadAll => AutoUpload is false &&
+                                  _files.Any(f => f.IsQueued is false && f.Status is not BitFileUploadStatus.InProgress && HasPendingWork(f));
+
+    private bool _CanCancelAll => _files.Any(f => f.IsQueued || f.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused);
+
+    // clearing mid-transfer would throw away the uploads in flight, so "Clear" waits for the list to settle.
+    private bool _CanClear => IsRemoving is false && _HasPickedFiles &&
+                              _files.Any(f => f.IsQueued || f.Status is BitFileUploadStatus.InProgress) is false;
+
     internal bool IsFileTypeNotAllowed(BitFileInfo file)
     {
         if (AllowsAllFileTypes(AllowedExtensions)) return false;
@@ -1355,11 +1473,11 @@ public partial class BitFileUpload : BitComponentBase
         StateHasChanged();
     }
 
-    private void RequestFocus(BitFileInfo file, BitFileUploadFocusTarget target, BitFileInfo? fallback = null)
+    private void RequestFocus(BitFileInfo? file, BitFileUploadFocusTarget target, BitFileInfo? fallback = null)
     {
         _pendingFocus = true;
         _pendingFocusTarget = target;
-        _pendingFocusFileId = file.FileId;
+        _pendingFocusFileId = file?.FileId;
         _pendingFocusFallbackFileId = fallback?.FileId;
     }
 
@@ -1418,13 +1536,48 @@ public partial class BitFileUpload : BitComponentBase
 
     private string GetDragClass() => $"bit-upl-drg {Classes?.Dragging}".Trim();
 
+    private string GetRejectClass() => $"bit-upl-drj {Classes?.DraggingRejected}".Trim();
+
+    // What a drag in flight can be judged against. A browser exposes the MIME type of a dragged file but
+    // never its name until it is dropped, so the rule can only be checked mid-drag when every entry of it is
+    // a MIME type; an extension anywhere in it leaves the drag unjudged rather than guessed at.
+    private string[]? GetDragAcceptedMimeTypes()
+    {
+        if (AllowsAllFileTypes(AllowedExtensions)) return null;
+
+        var entries = GetNormalizedExtensions(AllowedExtensions).ToArray();
+
+        if (entries.Length == 0 || entries.Any(e => e.Contains('/') is false)) return null;
+
+        return entries;
+    }
+
+    // How many more files the list can take before MaxCount turns them away (-1 for no limit). A selection
+    // that does not append replaces everything picked here, so only the record's own files count against it.
+    private int GetRemainingSlots()
+    {
+        if (MaxCount <= 0) return -1;
+
+        var taken = _files.Count(f => f.Status is not BitFileUploadStatus.NotAllowed and not BitFileUploadStatus.Removed
+                                      && (Append || f.IsPreloaded));
+
+        return Math.Max(0, MaxCount - taken);
+    }
+
     private async Task UpdateDropZone()
     {
         var dragClass = GetDragClass();
         var dragStyle = Styles?.Dragging;
+        var rejectClass = GetRejectClass();
+        var rejectStyle = Styles?.DraggingRejected;
+        var acceptedMimeTypes = GetDragAcceptedMimeTypes();
+        var remainingSlots = GetRemainingSlots();
 
         if (_allowDrop == AllowDrop && _allowPaste == AllowPaste && _expandDirectories == Directory &&
-            _dropZoneSelector == DropZoneSelector && _dragClass == dragClass && _dragStyle == dragStyle) return;
+            _dropZoneSelector == DropZoneSelector && _dragClass == dragClass && _dragStyle == dragStyle &&
+            _rejectClass == rejectClass && _rejectStyle == rejectStyle && _remainingSlots == remainingSlots &&
+            (_acceptedMimeTypes ?? []).SequenceEqual(acceptedMimeTypes ?? [], StringComparer.Ordinal) &&
+            (_acceptedMimeTypes is null) == (acceptedMimeTypes is null)) return;
 
         _allowDrop = AllowDrop;
         _allowPaste = AllowPaste;
@@ -1432,11 +1585,16 @@ public partial class BitFileUpload : BitComponentBase
         _dropZoneSelector = DropZoneSelector;
         _dragClass = dragClass;
         _dragStyle = dragStyle;
+        _rejectClass = rejectClass;
+        _rejectStyle = rejectStyle;
+        _acceptedMimeTypes = acceptedMimeTypes;
+        _remainingSlots = remainingSlots;
 
         try
         {
             await _dropZoneRef.InvokeVoidAsync("update", _allowDrop, _allowPaste, _expandDirectories,
-                                               _dragClass, _dragStyle, _dropZoneSelector);
+                                               _dragClass, _dragStyle, _dropZoneSelector,
+                                               _rejectClass, _rejectStyle, _acceptedMimeTypes, _remainingSlots);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }

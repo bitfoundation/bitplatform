@@ -118,6 +118,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     public string? CancelButtonTitle { get; set; }
 
     /// <summary>
+    /// The text of the "Cancel all" button of the batch actions (see <see cref="ShowBatchActions"/>).
+    /// </summary>
+    public string? CancelAllText { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to use for the cancel upload button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="CancelIconName"/> when both are set.
     /// Defaults to the built-in Cancel icon when neither is set.
@@ -168,6 +173,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     /// Custom CSS classes for different parts of the BitFileUpload.
     /// </summary>
     public BitFileUploadClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The text of the "Clear" button of the batch actions (see <see cref="ShowBatchActions"/>).
+    /// </summary>
+    public string? ClearText { get; set; }
 
     /// <summary>
     /// The general color of the file upload, applied to the browse button, the drag-and-drop indicator,
@@ -259,6 +269,23 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     /// The text of the browse button. Setting it to an empty string hides the button altogether.
     /// </summary>
     public string? Label { get; set; }
+
+    /// <summary>
+    /// The icon of the browse button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="LabelIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? LabelIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the browse button from the built-in Fluent UI icons.
+    /// Defaults to <c>CloudUpload</c> in the <see cref="ShowDropArea"/> mode, and to no icon otherwise.
+    /// </summary>
+    public string? LabelIconName { get; set; }
+
+    /// <summary>
+    /// The position of the icon of the browse button relative to its text: before it (the default) or after it.
+    /// </summary>
+    public BitIconPosition? LabelIconPosition { get; set; }
 
     /// <summary>
     /// Maximum allowed number of files in the file list (0 for unlimited).
@@ -469,6 +496,16 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     public Func<BitFileInfo, int, bool>? ShouldAutoRetry { get; set; }
 
     /// <summary>
+    /// Whether an action bar with "Upload all", "Cancel all" and "Clear" buttons is rendered under the file list.
+    /// </summary>
+    public bool? ShowBatchActions { get; set; }
+
+    /// <summary>
+    /// Whether the browse button is rendered as a large drop area instead of a regular button.
+    /// </summary>
+    public bool? ShowDropArea { get; set; }
+
+    /// <summary>
     /// Whether a thumbnail of every selected image is shown at the head of its file item, produced
     /// entirely in the browser from an object URL that is handed back as soon as the file is removed or
     /// the component is reset. The same URL is on the <see cref="BitFileInfo.PreviewUrl"/> of each file.
@@ -497,6 +534,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     /// The message shown for successful file uploads.
     /// </summary>
     public string? SuccessfulUploadMessage { get; set; }
+
+    /// <summary>
+    /// The text of the "Upload all" button of the batch actions (see <see cref="ShowBatchActions"/>).
+    /// </summary>
+    public string? UploadAllText { get; set; }
 
     /// <summary>
     /// The tooltip of the upload button, which is also used as the prefix of its accessible label
@@ -693,6 +735,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.CancelButtonTitle = CancelButtonTitle;
         }
 
+        if (CancelAllText.HasValue() && bitFileUpload.HasNotBeenSet(nameof(CancelAllText)))
+        {
+            bitFileUpload.CancelAllText = CancelAllText!;
+        }
+
         if (CancelIcon is not null && bitFileUpload.HasNotBeenSet(nameof(CancelIcon)))
         {
             bitFileUpload.CancelIcon = CancelIcon;
@@ -730,6 +777,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.Classes = Classes;
 
             bitFileUpload.ClassBuilder.Reset();
+        }
+
+        if (ClearText.HasValue() && bitFileUpload.HasNotBeenSet(nameof(ClearText)))
+        {
+            bitFileUpload.ClearText = ClearText!;
         }
 
         if (Color.HasValue && bitFileUpload.HasNotBeenSet(nameof(Color)))
@@ -802,6 +854,23 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
         if (Label.HasValue() && bitFileUpload.HasNotBeenSet(nameof(Label)))
         {
             bitFileUpload.Label = Label!;
+        }
+
+        if (LabelIcon is not null && bitFileUpload.HasNotBeenSet(nameof(LabelIcon)))
+        {
+            bitFileUpload.LabelIcon = LabelIcon;
+        }
+
+        if (LabelIconName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(LabelIconName)))
+        {
+            bitFileUpload.LabelIconName = LabelIconName;
+        }
+
+        if (LabelIconPosition.HasValue && bitFileUpload.HasNotBeenSet(nameof(LabelIconPosition)))
+        {
+            bitFileUpload.LabelIconPosition = LabelIconPosition.Value;
+
+            bitFileUpload.ClassBuilder.Reset();
         }
 
         if (MaxCount.HasValue && bitFileUpload.HasNotBeenSet(nameof(MaxCount)))
@@ -949,6 +1018,18 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.ShouldAutoRetry = ShouldAutoRetry;
         }
 
+        if (ShowBatchActions.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowBatchActions)))
+        {
+            bitFileUpload.ShowBatchActions = ShowBatchActions.Value;
+        }
+
+        if (ShowDropArea.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowDropArea)))
+        {
+            bitFileUpload.ShowDropArea = ShowDropArea.Value;
+
+            bitFileUpload.ClassBuilder.Reset();
+        }
+
         if (ShowPreview.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowPreview)))
         {
             bitFileUpload.ShowPreview = ShowPreview.Value;
@@ -976,6 +1057,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
         if (SuccessfulUploadMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(SuccessfulUploadMessage)))
         {
             bitFileUpload.SuccessfulUploadMessage = SuccessfulUploadMessage!;
+        }
+
+        if (UploadAllText.HasValue() && bitFileUpload.HasNotBeenSet(nameof(UploadAllText)))
+        {
+            bitFileUpload.UploadAllText = UploadAllText!;
         }
 
         if (UploadButtonTitle.HasValue() && bitFileUpload.HasNotBeenSet(nameof(UploadButtonTitle)))

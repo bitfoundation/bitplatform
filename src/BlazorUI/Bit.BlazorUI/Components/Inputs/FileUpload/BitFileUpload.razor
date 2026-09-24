@@ -22,6 +22,13 @@
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
                 class="bit-upl-lbl @Classes?.Label">
+            @* the drop area is the one place a label reads better with a glyph than without, so it brings one
+               of its own; anywhere else the icon is opt-in. the text beside it already names the button. *@
+            @{ var labelIcon = BitIconInfo.From(LabelIcon, LabelIconName ?? (ShowDropArea ? "CloudUpload" : null)); }
+            @if (labelIcon is { IsEmpty: false })
+            {
+                <i style="@Styles?.LabelIcon" class="bit-upl-lic @labelIcon.GetCssClasses() @Classes?.LabelIcon" aria-hidden="true" />
+            }
             @Label
         </button>
     }
@@ -80,6 +87,46 @@
                     <_BitFileUploadItem @key="file.FileId" FileUpload="this" Item="file" />
                 }
             }
+        </div>
+    }
+
+    @* the batch buttons stay where they are for as long as the list has files picked here, and the ones with
+       nothing to act on right now are marked aria-disabled rather than taken out or natively disabled: the
+       state changes on its own as uploads settle, and a focused button that vanished - or turned disabled -
+       under the keyboard would drop the focus on the document body. *@
+    @if (ShowBatchActions && _HasPickedFiles)
+    {
+        var canUploadAll = _CanUploadAll;
+        var canCancelAll = _CanCancelAll;
+        var canClear = _CanClear;
+        <div style="@Styles?.BatchActions" class="bit-upl-bat @Classes?.BatchActions">
+            @if (AutoUpload is false)
+            {
+                <button @onclick="HandleUploadAll"
+                        type="button"
+                        disabled="@(IsEnabled is false)"
+                        aria-disabled="@(canUploadAll ? null : "true")"
+                        style="@Styles?.BatchActionButton"
+                        class="bit-upl-bab @Classes?.BatchActionButton">
+                    @UploadAllText
+                </button>
+            }
+            <button @onclick="HandleCancelAll"
+                    type="button"
+                    disabled="@(IsEnabled is false)"
+                    aria-disabled="@(canCancelAll ? null : "true")"
+                    style="@Styles?.BatchActionButton"
+                    class="bit-upl-bab @Classes?.BatchActionButton">
+                @CancelAllText
+            </button>
+            <button @onclick="HandleClear"
+                    type="button"
+                    disabled="@(IsEnabled is false)"
+                    aria-disabled="@(canClear ? null : "true")"
+                    style="@Styles?.BatchActionButton"
+                    class="bit-upl-bab @Classes?.BatchActionButton">
+                @ClearText
+            </button>
         </div>
     }
 

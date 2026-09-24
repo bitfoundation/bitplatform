@@ -3198,9 +3198,44 @@ public class BitFileUploadTests : BunitTestContext
         var invocation = Context.JSInterop.Invocations
                                 .Single(i => i.Identifier == "BitBlazorUI.FileUpload.setupDragDrop");
 
-        // the selector is the last argument of the setup, and it is what makes an element the app owns
-        // a drop zone of this component.
-        Assert.AreEqual("#zone", invocation.Arguments[^1]);
+        // the selector is what makes an element the app owns a drop zone of this component.
+        Assert.AreEqual("#zone", invocation.Arguments[7]);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldPassTheRejectStateToTheDragDropSetup()
+    {
+        RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AllowedExtensions, ["image/*", "application/pdf"]);
+            parameters.Add(p => p.MaxCount, 3);
+            parameters.Add(p => p.Classes, new() { DraggingRejected = "nope" });
+            parameters.Add(p => p.Styles, new() { DraggingRejected = "color:red" });
+        });
+
+        var args = Context.JSInterop.Invocations
+                                    .Single(i => i.Identifier == "BitBlazorUI.FileUpload.setupDragDrop").Arguments;
+
+        Assert.AreEqual("bit-upl-drj nope", args[8]);
+        Assert.AreEqual("color:red", args[9]);
+        CollectionAssert.AreEqual(new[] { "image/*", "application/pdf" }, (string[])args[10]!);
+        Assert.AreEqual(3, args[11]);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNotJudgeADragAgainstARuleWithExtensions()
+    {
+        RenderComponent<BitFileUpload>(parameters =>
+        {
+            // a dragged file shows its MIME type but not its name, so an extension cannot be checked mid-drag.
+            parameters.Add(p => p.AllowedExtensions, ["image/*", ".pdf"]);
+        });
+
+        var args = Context.JSInterop.Invocations
+                                    .Single(i => i.Identifier == "BitBlazorUI.FileUpload.setupDragDrop").Arguments;
+
+        Assert.IsNull(args[10]);
+        Assert.AreEqual(-1, args[11]);
     }
 
     [TestMethod]
@@ -3574,6 +3609,203 @@ public class BitFileUploadTests : BunitTestContext
         SelectFiles(com);
 
         StringAssert.StartsWith(com.Find(".bit-upl-lvr").TextContent, "1 file selected. 1 already attached.");
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderNoLabelIconByDefault()
+    {
+        var com = RenderComponent<BitFileUpload>();
+
+        Assert.AreEqual(0, com.FindAll(".bit-upl-lic").Count);
+    }
+
+    [TestMethod]
+    [DataRow(null, false)]
+    [DataRow(BitIconPosition.Start, false)]
+    [DataRow(BitIconPosition.End, true)]
+    public void BitFileUploadShouldRenderTheLabelIcon(BitIconPosition? position, bool isEnd)
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.LabelIconName, "Upload");
+            parameters.Add(p => p.LabelIconPosition, position);
+            parameters.Add(p => p.Classes, new() { LabelIcon = "my-icon" });
+        });
+
+        var icon = com.Find(".bit-upl-lbl .bit-upl-lic");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Upload"));
+        Assert.IsTrue(icon.ClassList.Contains("my-icon"));
+        // the text beside it already names the button.
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+        Assert.AreEqual(isEnd, com.Find(".bit-upl").ClassList.Contains("bit-upl-eni"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldPreferTheExternalLabelIcon()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.LabelIcon, BitIconInfo.Fa("solid upload"));
+            parameters.Add(p => p.LabelIconName, "Upload");
+        });
+
+        var icon = com.Find(".bit-upl-lic");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-upload"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Upload"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderTheDropArea()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowDropArea, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-upl").ClassList.Contains("bit-upl-dra"));
+        // the drop area brings a glyph of its own when none is configured, and it is still the one button.
+        Assert.IsTrue(com.Find("button.bit-upl-lbl .bit-upl-lic").ClassList.Contains("bit-icon--CloudUpload"));
+
+        com.Render(parameters => parameters.Add(p => p.LabelIconName, "Add"));
+
+        Assert.IsTrue(com.Find(".bit-upl-lic").ClassList.Contains("bit-icon--Add"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNotRenderTheBatchActionsByDefault()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderTheBatchActionsOnlyWhenThereIsSomethingToActOn()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 },
+                    new() { Name = "b.txt", Size = 100, FileId = "2", Index = 1 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowBatchActions, true);
+            parameters.Add(p => p.UploadAllText, "Send all");
+        });
+
+        // an empty list has nothing to act on.
+        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+
+        SelectFiles(com);
+
+        // the buttons keep their places, and the ones with nothing to do are only marked unavailable.
+        CollectionAssert.AreEqual(new[] { "Send all", "Cancel all", "Clear" },
+                                  com.FindAll(".bit-upl-bab").Select(b => b.TextContent.Trim()).ToArray());
+        CollectionAssert.AreEqual(new[] { false, true, false }, AriaDisabledStates(com));
+
+        com.FindAll(".bit-upl-bab")[0].Click();
+
+        // once everything is on its way only calling it off is left.
+        Assert.IsTrue(com.Instance.Files.All(f => f.Status == BitFileUploadStatus.InProgress));
+        CollectionAssert.AreEqual(new[] { true, false, true }, AriaDisabledStates(com));
+
+        // an unavailable button still takes the click, and does nothing with it.
+        com.FindAll(".bit-upl-bab")[2].Click();
+        Assert.AreEqual(2, com.Instance.Files.Count);
+
+        com.FindAll(".bit-upl-bab")[1].Click();
+
+        Assert.IsTrue(com.Instance.Files.All(f => f.Status == BitFileUploadStatus.Canceled));
+        // a canceled file can be retried, and a settled list cleared.
+        CollectionAssert.AreEqual(new[] { false, true, false }, AriaDisabledStates(com));
+
+        com.FindAll(".bit-upl-bab")[2].Click();
+
+        Assert.AreEqual(0, com.Instance.Files.Count);
+        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+
+        static bool[] AriaDisabledStates(IRenderedComponent<BitFileUpload> com)
+            => com.FindAll(".bit-upl-bab").Select(b => b.GetAttribute("aria-disabled") == "true").ToArray();
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNotOfferUploadAllWhenAutoUploading()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowBatchActions, true);
+            parameters.Add(p => p.AutoUpload, true);
+        });
+
+        SelectFiles(com);
+
+        // the selection already means upload, so there is no button to ask for it.
+        var buttons = com.FindAll(".bit-upl-bab").Select(b => b.TextContent.Trim()).ToArray();
+        CollectionAssert.AreEqual(new[] { "Cancel all", "Clear" }, buttons);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldDisableTheBatchActionsWhenDisabled()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowBatchActions, true);
+        });
+
+        SelectFiles(com);
+
+        com.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        Assert.IsTrue(com.FindAll(".bit-upl-bab").All(b => b.HasAttribute("disabled")));
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsShouldCascadeTheNewParameters()
+    {
+        var bitParams = new BitFileUploadParams
+        {
+            ShowDropArea = true,
+            ShowBatchActions = true,
+            LabelIconName = "Add",
+            LabelIconPosition = BitIconPosition.End,
+            UploadAllText = "U",
+            CancelAllText = "C",
+            ClearText = "X",
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { bitParams });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.AddAttribute(1, nameof(BitFileUpload.ClearText), "Own");
+                builder.CloseComponent();
+            });
+        });
+
+        var upload = com.FindComponent<BitFileUpload>().Instance;
+
+        Assert.IsTrue(upload.ShowDropArea);
+        Assert.IsTrue(upload.ShowBatchActions);
+        Assert.AreEqual("Add", upload.LabelIconName);
+        Assert.AreEqual(BitIconPosition.End, upload.LabelIconPosition);
+        Assert.AreEqual("U", upload.UploadAllText);
+        Assert.AreEqual("C", upload.CancelAllText);
+        // what the component sets for itself wins over the cascade.
+        Assert.AreEqual("Own", upload.ClearText);
+
+        var root = com.Find(".bit-upl");
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-dra"));
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-eni"));
     }
 
     private void SetupFiles(BitFileInfo[] files)

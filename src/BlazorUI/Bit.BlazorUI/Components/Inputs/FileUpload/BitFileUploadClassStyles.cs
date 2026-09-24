@@ -13,9 +13,21 @@ public class BitFileUploadClassStyles
     public string? Dragging { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles added on top of <see cref="Dragging"/> while the files dragged over the
+    /// BitFileUpload are known to be turned away - a MIME type the AllowedExtensions rule does not accept,
+    /// or more files than the MaxCount leaves room for.
+    /// </summary>
+    public string? DraggingRejected { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the browse button (label) of the BitFileUpload.
     /// </summary>
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the icon of the browse button of the BitFileUpload.
+    /// </summary>
+    public string? LabelIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the description (hint) of the BitFileUpload.
@@ -125,4 +137,14 @@ public class BitFileUploadClassStyles
     /// while that file is being removed from the server.
     /// </summary>
     public string? RemoveSpinner { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the batch action buttons of the BitFileUpload.
+    /// </summary>
+    public string? BatchActions { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each batch action button ("Upload all", "Cancel all", "Clear") of the BitFileUpload.
+    /// </summary>
+    public string? BatchActionButton { get; set; }
 }

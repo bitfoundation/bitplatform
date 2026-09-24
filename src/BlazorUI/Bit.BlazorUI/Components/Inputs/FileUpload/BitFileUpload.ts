@@ -96,10 +96,18 @@ namespace BitBlazorUI {
             allowDrop: boolean,
             allowPaste: boolean,
             expandDirectories: boolean,
-            dropZoneSelector: string | null) {
+            dropZoneSelector: string | null,
+            rejectClass: string = '',
+            rejectStyle: string | null = null,
+            acceptedMimeTypes: string[] | null = null,
+            remainingSlots: number = -1) {
 
             let dragCounter = 0;
             let dragClasses = dragClass.split(' ').filter(c => c.length > 0);
+            let rejectClasses = rejectClass.split(' ').filter(c => c.length > 0);
+            // whether the drag in flight is known to carry files the component is going to turn away, decided
+            // once when it enters, since what is being dragged does not change until it is dropped.
+            let isRejected = false;
             // the inline style every zone carried before the drag state was applied to it, so that the
             // element the app owns gets exactly its own style back rather than losing it.
             const originalStyles = new Map<HTMLElement, string | null>();
@@ -164,13 +172,47 @@ namespace BitBlazorUI {
                 return allowDrop && !inputElement.disabled && hasFiles(e);
             }
 
+            // a browser shows the kind and the MIME type of a dragged file but never its name until the drop,
+            // so only what those two can tell is judged here: a type the MIME-only rule does not accept, or
+            // more files than the MaxCount still has room for. anything unknown - a folder, a type the OS left
+            // blank - counts as accepted, and the validations have the final word once the files land anyway.
+            function judgeDrag(e: DragEvent) {
+                const items = e.dataTransfer?.items;
+                if (!items) return false;
+
+                const files = Array.prototype.filter.call(items, (i: DataTransferItem) => i.kind === 'file') as DataTransferItem[];
+                if (files.length === 0) return false;
+
+                if (remainingSlots >= 0) {
+                    const acceptsMany = inputElement.multiple || inputElement.webkitdirectory;
+                    const count = acceptsMany ? files.length : 1;
+                    if (count > remainingSlots) return true;
+                }
+
+                if (!acceptedMimeTypes || acceptedMimeTypes.length === 0) return false;
+
+                return files.some(f => {
+                    const type = (f.type || '').toLowerCase();
+                    if (!type) return false;
+
+                    return !acceptedMimeTypes!.some(a => {
+                        const entry = a.toLowerCase();
+                        return entry.endsWith('/*') ? type.startsWith(entry.substring(0, entry.length - 1)) : type === entry;
+                    });
+                });
+            }
+
             function paintZone(zone: HTMLElement) {
                 zone.classList.add(...dragClasses);
+                if (isRejected) {
+                    zone.classList.add(...rejectClasses);
+                }
 
-                if (!dragStyle) return;
+                const style = isRejected ? [dragStyle, rejectStyle].filter(s => s).join(';') : dragStyle;
+                if (!style) return;
                 const original = zone.getAttribute('style');
                 originalStyles.set(zone, original);
-                zone.setAttribute('style', [original, dragStyle].filter(s => s).join(';'));
+                zone.setAttribute('style', [original, style].filter(s => s).join(';'));
             }
 
             function applyDragStyling() {
@@ -201,8 +243,9 @@ namespace BitBlazorUI {
             function clearDragStyling() {
                 zones.forEach(zone => {
                     zone.classList.remove(...dragClasses);
+                    zone.classList.remove(...rejectClasses);
 
-                    if (!dragStyle) return;
+                    if (!originalStyles.has(zone)) return;
                     const original = originalStyles.get(zone);
                     if (original) {
                         zone.setAttribute('style', original);
@@ -215,12 +258,14 @@ namespace BitBlazorUI {
                 zones = [];
             }
 
-            function addDragState() {
+            function addDragState(e: DragEvent) {
                 dragCounter++;
                 if (dragCounter > 1) {
                     syncDragStyling();
                     return;
                 }
+
+                isRejected = judgeDrag(e);
 
                 applyDragStyling();
             }
@@ -240,7 +285,7 @@ namespace BitBlazorUI {
                 e.preventDefault();
                 if (!canAcceptDrop(e)) return;
 
-                addDragState();
+                addDragState(e);
             }
 
             function onDragOver(e: DragEvent) {
@@ -374,11 +419,19 @@ namespace BitBlazorUI {
                     newExpandDirectories: boolean,
                     newDragClass: string,
                     newDragStyle: string | null,
-                    newDropZoneSelector: string | null) => {
+                    newDropZoneSelector: string | null,
+                    newRejectClass: string = '',
+                    newRejectStyle: string | null = null,
+                    newAcceptedMimeTypes: string[] | null = null,
+                    newRemainingSlots: number = -1) => {
 
                     allowDrop = newAllowDrop;
                     allowPaste = newAllowPaste;
                     expandDirectories = newExpandDirectories;
+                    // what a drag is judged against only applies to the next one; the one in flight keeps
+                    // the verdict it entered with.
+                    acceptedMimeTypes = newAcceptedMimeTypes;
+                    remainingSlots = newRemainingSlots;
 
                     if (newDropZoneSelector !== dropZoneSelector) {
                         // the zones of the old selector are already wearing the drag state, and only they
@@ -395,7 +448,8 @@ namespace BitBlazorUI {
                         }
                     }
 
-                    if (newDragClass !== dragClass || newDragStyle !== dragStyle) {
+                    if (newDragClass !== dragClass || newDragStyle !== dragStyle ||
+                        newRejectClass !== rejectClass || newRejectStyle !== rejectStyle) {
                         // an ongoing drag is already showing the old class and style, which have to come off
                         // before they get replaced, otherwise nothing would ever take them off again.
                         const isDragging = dragCounter > 0;
@@ -406,6 +460,9 @@ namespace BitBlazorUI {
                         dragClass = newDragClass;
                         dragClasses = dragClass.split(' ').filter(c => c.length > 0);
                         dragStyle = newDragStyle;
+                        rejectClass = newRejectClass;
+                        rejectClasses = rejectClass.split(' ').filter(c => c.length > 0);
+                        rejectStyle = newRejectStyle;
 
                         if (isDragging) {
                             applyDragStyling();
