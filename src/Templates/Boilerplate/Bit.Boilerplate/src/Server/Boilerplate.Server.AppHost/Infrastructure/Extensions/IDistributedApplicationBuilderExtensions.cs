@@ -199,16 +199,12 @@ public static class IDistributedApplicationBuilderExtensions
         /// </summary>
         public IResourceBuilder<IResourceWithConnectionString> AddS3Storage()
         {
-            var accessKey = builder.AddParameter("rustfs-accessKey", new GenerateParameterDefault { MinLength = 22 }, secret: true);
-            var secretKey = builder.AddParameter("rustfs-secretKey", new GenerateParameterDefault { MinLength = 22 }, secret: true);
-
-            var rustFs = builder.AddRustFs("rustfs", accessKey, secretKey)
+            var rustFs = builder.AddRustFs("s3")
                 .WithDataVolume();
 
-            var endpoint = rustFs.GetEndpoint(RustFsResource.PrimaryEndpointName);
+            rustFs.AddBucket("files");
 
-            return builder.AddConnectionString("s3", ReferenceExpression.Create(
-                $"Endpoint={endpoint.Property(EndpointProperty.Url)};AccessKey={accessKey.Resource};SecretKey={secretKey.Resource};"));
+            return rustFs;
         }
         //#endif
 

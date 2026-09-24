@@ -20,7 +20,7 @@
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Aspire.Hosting.Azure.PostgreSQL" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="Aspire.Hosting.Azure.Storage" />
-        <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AspireIntegration.Hosting.RustFs" />
+        <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="CommunityToolkit.Aspire.Hosting.RustFs" />
     </ItemGroup>
 
     <ItemGroup>

@@ -214,7 +214,7 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
 {
     "ConnectionStrings": {
         "mssqldb": "Data Source=(localdb)\\mssqllocaldb; Initial Catalog=BoilerplateDb;...",
-        "s3": "Endpoint=http://localhost:9000;AccessKey=rustfsadmin;SecretKey=P@ssw0rd;",
+        "s3": "Endpoint=http://localhost:9000;BucketName=files;AccessKey=rustfsadmin;SecretKey=P@ssw0rd;",
         "smtp": "Endpoint=smtp://smtp.ethereal.email:587;UserName=..."
     },
     "AI": {

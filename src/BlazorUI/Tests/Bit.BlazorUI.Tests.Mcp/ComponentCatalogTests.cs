@@ -326,11 +326,19 @@ public class ComponentCatalogTests : McpTestBase
     /// read the whole answer still has no way to learn that one object can set the defaults of
     /// every instance under it.
     /// </para>
+    /// <para>
+    /// A generic component's params class is generic too, and the name has to be the one that both
+    /// compiles in the snippet and resolves as the <c>typeName</c> the same line says to pass -
+    /// <c>BitDropdownParams&lt;TItem, TValue&gt;</c> rather than the <c>BitDropdownParams`2</c>
+    /// reflection calls it.
+    /// </para>
     /// </summary>
     [TestMethod]
     [DataRow("BitActionButton", "BitActionButtonParams")]
     [DataRow("BitText", "BitTextParams")]
     [DataRow("BitStack", "BitStackParams")]
+    [DataRow("BitChoiceGroup", "BitChoiceGroupParams")]
+    [DataRow("BitDropdown", "BitDropdownParams<TItem, TValue>")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
@@ -348,7 +356,7 @@ public class ComponentCatalogTests : McpTestBase
 
         // The line is only worth its cost where it is true: a component with no params class of its
         // own must not carry it.
-        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDropdown" });
+        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitTextField" });
 
         Assert.DoesNotContain("## Cascading parameters", without, "A component that takes no params object claims one.");
     }

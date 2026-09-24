@@ -23,6 +23,19 @@
     var hasChipRemoveButtons = Chips && IsEnabled && ReadOnly is false &&
                                _selectedItems.Take(GetDisplayedItemsCount()).Any(GetIsEnabled);
 
+    // The combobox role, and the state that goes with it, belong on the element the keyboard actually
+    // lands on - which is the field itself only while it has nothing focusable inside it. The ComboBox
+    // mode has an input, so the role moves onto it: a field that keeps a tab stop of its own around an
+    // input is two tab stops for one control, and the element a screen reader then describes is a plain
+    // text box that reports neither that it has a list nor whether that list is showing.
+    var comboboxOnField = Combo is false;
+
+    // The ComboBox input of the responsive panel takes the focus while that panel is on the screen, and
+    // the combobox role goes with it: the field's own input is behind the panel and its overlay, so
+    // leaving it a combobox would point a second one at the same listbox and leave a tab stop on an
+    // element the user cannot see.
+    var comboboxOnFieldInput = Combo && _isResponsiveMode is false;
+
     RenderFragment emptyContent =
         @* The empty state is not an option, so it is marked presentational to keep it out of the
            options of the listbox it is rendered in; its text stays exposed either way. *@
@@ -100,34 +113,30 @@
         </label>
     }
 
-    @* The combobox is the interactive element of this input, so it is the one InputElement points at:
-       the inherited FocusAsync of BitInputBase then focuses what a user would focus by hand. *@
-       
-    @* The combobox role is on this element, so the autocomplete behavior of the ComboBox mode has
-       to be reported here and not only on the input it wraps. *@
+    @* The field is the interactive element of a dropdown that is not typed into, so it is the one
+       InputElement points at and the one FocusAsync (overridden for the ComboBox mode) focuses. *@
     <div @ref="InputElement"
          @onclick="HandleOnClick"
          @onkeydown="HandleOnTriggerKeyDown"
          @onfocusin="HandleOnFocusIn"
          @onfocusout="HandleOnFocusOut"
          title="@Title"
-         role="combobox"
          id="@_dropdownId"
          style="@Styles?.Container"
          class="bit-drp-wrp @Classes?.Container"
-         autofocus="@AutoFocus"
-         tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
-         aria-haspopup="listbox"
-         aria-autocomplete="@(Combo ? "list" : null)"
-         aria-required="@(Required ? "true" : null)"
-         aria-readonly="@(ReadOnly ? "true" : null)"
-         aria-invalid="@(ValueInvalid is true ? "true" : null)"
-         aria-disabled="@(IsEnabled is false ? "true" : null)"
-         aria-expanded=@(IsOpen ? "true" : "false")
-         aria-label="@AriaLabel"
-         aria-labelledby="@(AriaLabel.HasValue() ? null : GetDropdownAriaLabelledby())"
-         aria-describedby="@(HasDescription ? _descriptionId : null)"
-         aria-controls="@(IsOpen? _scrollContainerId : null)">
+         role="@(comboboxOnField ? "combobox" : null)"
+         autofocus="@(comboboxOnField && AutoFocus)"
+         tabindex="@(IsEnabled && comboboxOnField ? (TabIndex ?? "0") : "-1")"
+         aria-haspopup="@(comboboxOnField ? "listbox" : null)"
+         aria-required="@(comboboxOnField && Required ? "true" : null)"
+         aria-readonly="@(comboboxOnField && ReadOnly ? "true" : null)"
+         aria-invalid="@(comboboxOnField && IsInvalid ? "true" : null)"
+         aria-disabled="@(comboboxOnField && IsEnabled is false ? "true" : null)"
+         aria-expanded="@(comboboxOnField ? (IsOpen ? "true" : "false") : null)"
+         aria-label="@(comboboxOnField ? AriaLabel : null)"
+         aria-labelledby="@(comboboxOnField && AriaLabel.HasNoValue() ? GetDropdownAriaLabelledby() : null)"
+         aria-describedby="@(comboboxOnField ? DescribedBy : null)"
+         aria-controls="@(comboboxOnField && IsOpen ? _scrollContainerId : null)">
 
         @if (PrefixTemplate is not null)
         {
@@ -190,11 +199,16 @@
                         @* The chip only shows how many selections it stands for. The ones it hides are named
                            in its title for the pointer, and take its place in the accessible name so that
                            the combobox (which is named after this container) still reports them all. *@
+                        @* aria-label is not exposed on an element with no role of its own, so the items the
+                           chip stands for are RENDERED for a screen reader rather than asserted in an
+                           attribute: the counter is hidden from it and the names take its place, both in
+                           the accessible name of the combobox (computed from this subtree) and in the
+                           content a reader walks through. The pointer gets them from the title. *@
                         <span style="@Styles?.OverflowChip"
                               class="bit-drp-chp bit-drp-ovf @Classes?.OverflowChip"
-                              title="@GetOverflowItemsText()"
-                              aria-label="@GetOverflowItemsText()">
-                            @GetOverflowText()
+                              title="@GetOverflowItemsText()">
+                            <span aria-hidden="true">@GetOverflowText()</span>
+                            <span class="bit-drp-vhd">@GetOverflowItemsText()</span>
                         </span>
                     }
                 }
@@ -203,6 +217,16 @@
                     @if (TextTemplate is not null)
                     {
                         @TextTemplate(this)
+                    }
+                    else if (GetOverflowItemsCount() > 0)
+                    {
+                        @* Past the display limit the text is a count of the selection, which is all a
+                           screen reader would otherwise be told the field holds - and the names of what
+                           is selected are exactly what it is for. They are rendered in its place the
+                           same way the overflow chip renders the ones it stands for, and the pointer
+                           gets them from the title. *@
+                        <span aria-hidden="true" title="@GetSelectedItemsText()">@GetText()</span>
+                        <span class="bit-drp-vhd">@GetSelectedItemsText()</span>
                     }
                     else
                     {
@@ -231,13 +255,16 @@
                    aria-labelledby is read whatever its hidden state, so it names the combobox while
                    staying out of the content a screen reader walks through - where the chips already
                    carry the same text. *@
-                <span id="@_dropdownTextContainerId" style="display:none" hidden>@GetChipsAriaText()</span>
+                <span id="@_dropdownTextContainerId" style="display:none" hidden>@GetSelectedItemsText()</span>
             }
 
             @if (Combo)
             {
-                @* An input does not inherit the accessible name of the combobox element around
-                   it, so without an AriaLabel it is named after the label by hand. *@
+                @* The combobox of this mode: the element the focus lands on, so it is the one that
+                   reports the list and whether it is showing. An input does not inherit the accessible
+                   name of anything around it, so without an AriaLabel it is named after the label by
+                   hand. Its readonly and disabled states are the native attributes, which is what the
+                   aria- pair would only be restating. *@
                 <input @ref="_comboBoxInputRef"
                        @onkeydown="@HandleOnKeyDown"
                        @oninput="@HandleOnComboInput"
@@ -247,14 +274,21 @@
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
+                       role="@(comboboxOnFieldInput ? "combobox" : null)"
                        value="@_comboInputText"
                        readonly="@ReadOnly"
+                       autofocus="@AutoFocus"
+                       tabindex="@(comboboxOnFieldInput ? TabIndex : "-1")"
                        aria-label="@AriaLabel"
                        aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
-                       aria-describedby="@(HasDescription ? _descriptionId : null)"
-                       aria-autocomplete="list"
-                       aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
-                       aria-controls="@(IsOpen ? _scrollContainerId : null)"
+                       aria-describedby="@DescribedBy"
+                       aria-haspopup="@(comboboxOnFieldInput ? "listbox" : null)"
+                       aria-autocomplete="@(comboboxOnFieldInput ? "list" : null)"
+                       aria-required="@(Required ? "true" : null)"
+                       aria-invalid="@(IsInvalid ? "true" : null)"
+                       aria-expanded="@(comboboxOnFieldInput ? (IsOpen ? "true" : "false") : null)"
+                       aria-activedescendant="@(comboboxOnFieldInput && IsOpen ? GetCommitTargetId() : null)"
+                       aria-controls="@(comboboxOnFieldInput && IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
                        disabled="@(IsEnabled is false)" />
@@ -322,6 +356,27 @@
         }
     </select>
 
+    @if (HasErrorMessage)
+    {
+        @* What is wrong with the selection is the first thing to read under the field, so it comes
+           before the description. It carries no live role of its own - the region at the end of the
+           component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-drp-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">
+                    @ErrorMessage
+                </span>
+            }
+        </div>
+    }
+
     @if (HasDescription)
     {
         @* Named by the combobox through aria-describedby, so it is read as part of the dropdown
@@ -342,6 +397,13 @@
         </span>
     }
 
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the text written for a screen reader alone has to
+           live in an element of its own. It is only ever read as part of the dropdown. *@
+        <span id="@_ariaDescriptionId" class="bit-drp-vhd">@AriaDescription</span>
+    }
+
     @* A search silently changes the length of a list a screen reader user cannot see, so the new
        result count is announced. The container is always rendered because a live region has to be in
        the accessibility tree before its text changes for the change to be announced; only the text
@@ -350,7 +412,14 @@
        live region inside a hidden element announces nothing - which the loading state, the one state
        that changes while the callout may well be closed, depends on. *@
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
-        @if (IsLoading)
+        @* The rejection wins over everything else here: the rest say what the dropdown is doing, this
+           says what is wrong with what it holds. Text only, never ErrorMessageTemplate, for the same
+           reason LoadingTemplate is left out below. *@
+        @if (ErrorMessage.HasValue())
+        {
+            @ErrorMessage
+        }
+        else if (IsLoading)
         {
             @* Text only, never LoadingTemplate: the template is arbitrary markup meant to be seen -
                a spinner, an image, something interactive - and rendering it a second time here would
@@ -375,8 +444,10 @@
     </div>
 </div>
 
+@* Like the callout, the overlay is a sibling of the root element and is reparented to the body while it
+   is open, so the public variables it reads are copied onto it by hand - see GetOverlayStyles. *@
 <div @onclick="CloseCalloutAndRestoreFocus"
-     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+     style="@GetOverlayStyles()"
      id="@_overlayId"
      class="bit-drp-ovl @Classes?.Overlay"></div>
 
@@ -391,7 +462,7 @@
      id="@_calloutId"
      tabindex="0"
      dir="@Dir?.ToString().ToLower()"
-     style="@Styles?.Callout"
+     style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()">
 
     @if (Responsive)
@@ -440,11 +511,14 @@
                    style="@Styles?.SearchBoxIcon"
                    class="@searchBoxIconCss @Classes?.SearchBoxIcon" />
             </div>
+            @* aria-controls names the list this box filters: the box sits outside the listbox and would
+               otherwise be a field that narrows nothing a screen reader can tie it to. *@
             <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleOnSearchBoxInput" @onchange="@HandleOnSearchBoxChange"
                    type="text"
                    role="searchbox"
                    value="@_searchInputText"
                    aria-label="@(SearchBoxAriaLabel ?? "Search text")"
+                   aria-controls="@_scrollContainerId"
                    placeholder="@SearchBoxPlaceholder"
                    style="@Styles?.SearchBoxInput"
                    class="bit-drp-sin @Classes?.SearchBoxInput" />
@@ -476,18 +550,23 @@
     {
         <div style="@Styles?.ResponsiveComboInputContainer"
              class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
-            @* An input does not inherit the accessible name of the combobox element around
-               it, so without an AriaLabel it is named after the label by hand. *@
+            @* The input of the responsive panel, which takes the focus - and with it the combobox role
+               and its state - from the one in the field for as long as the panel is on the screen. *@
             <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput" @onchange="@HandleOnComboChange" @onfocusin="HandleComboInputFocusIn" @onfocusout="HandleComboInputFocusOut"
                    style="@Styles?.ComboBoxInput"
                    class="bit-drp-icb @Classes?.ComboBoxInput"
                    type="text"
+                   role="combobox"
                    value="@_comboInputText"
                    readonly="@ReadOnly"
                    aria-label="@AriaLabel"
                    aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
-                   aria-describedby="@(HasDescription ? _descriptionId : null)"
+                   aria-describedby="@DescribedBy"
+                   aria-haspopup="listbox"
                    aria-autocomplete="list"
+                   aria-required="@(Required ? "true" : null)"
+                   aria-invalid="@(IsInvalid ? "true" : null)"
+                   aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
                    aria-controls="@(IsOpen ? _scrollContainerId : null)"
                    placeholder="@Placeholder"
@@ -521,7 +600,9 @@
             var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
             <div style="@Styles?.SelectAllContainer"
                  class="@selectAllClasses @Classes?.SelectAllContainer">
-                @* Reached with the arrow keys like the options below it, so it stays out of the tab order too. *@
+                @* Reached with the arrow keys like the options below it, so it stays out of the tab order too.
+                   It sits outside the listbox it commands, so nothing but its aria-controls says which
+                   list it is the select all of. *@
                 <button @onclick="HandleOnSelectAllClick"
                         type="button"
                         role="checkbox"
@@ -529,7 +610,8 @@
                         style="@Styles?.SelectAllButton"
                         class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
                         disabled="@(IsEnabled is false || ReadOnly)"
-                        aria-checked="@selectAllAriaChecked">
+                        aria-checked="@selectAllAriaChecked"
+                        aria-controls="@_scrollContainerId">
                     <div style="@Styles?.SelectAllCheckBox"
                          class="bit-drp-chb @Classes?.SelectAllCheckBox">
                         <i aria-hidden="true"
