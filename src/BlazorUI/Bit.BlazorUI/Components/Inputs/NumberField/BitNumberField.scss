@@ -1,72 +1,169 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// number field and one set on the Style of an instance re-skins that one alone:
+//   --bit-NumberField-color                     color of the value text                      (default: $clr-fg-pri)
+//   --bit-NumberField-placeholder-color         color of the placeholder                     (default: $clr-fg-sec)
+//   --bit-NumberField-background                fill of the field                            (default: per Background, $clr-bg-*)
+//   --bit-NumberField-border-color              border color at rest                         (default: per Border, $clr-brd-*)
+//   --bit-NumberField-hover-border-color        border color under a hovering pointer        (default: per Border, $clr-brd-*-hover)
+//   --bit-NumberField-border-width              thickness of that border, and of the
+//                                               bottom rule of the Underlined variant        (default: $shp-border-width)
+//   --bit-NumberField-radius                    corner radius of the field                   (default: $shp-radius-control)
+//   --bit-NumberField-focus-color               color of the focus indicator                 (default: per Accent, the role's focus color)
+//   --bit-NumberField-height                    height of the field                          (default: per Size, $siz-ctrl-*)
+//   --bit-NumberField-padding-inline            room between the border and the value        (default: per Size, in step with BitTextField)
+//   --bit-NumberField-font-size                 size of the value text                       (default: per Size, from the type ramp)
+//   --bit-NumberField-label-color               color of the label                           (default: $clr-fg-pri)
+//   --bit-NumberField-label-font-size           size of the label                            (default: per Size, from the type ramp)
+//   --bit-NumberField-label-font-weight         weight of the label                          (default: $tg-fw-semibold)
+//   --bit-NumberField-required-color            color of the asterisk of a required field    (default: $clr-req)
+//   --bit-NumberField-description-color         color of the hint under the field            (default: $clr-fg-pri)
+//   --bit-NumberField-description-font-size     size of that hint, and of the error message  (default: $tg-fs-2xs)
+//   --bit-NumberField-error-color               color of the error message, and of the
+//                                               border and focus ring of an invalid field    (default: $clr-err)
+//   --bit-NumberField-icon-color                color of the field's own icon                (default: $clr-fg-pri, the Accent while focused)
+//   --bit-NumberField-icon-size                 size of that icon                            (default: per Size, $siz-icon-*)
+//   --bit-NumberField-affix-color               color of the prefix and the suffix           (default: $clr-fg-pri, the Accent while focused)
+//   --bit-NumberField-affix-background          fill behind the prefix and the suffix        (default: $clr-bg-sec)
+//   --bit-NumberField-button-color              glyph color of the spin and clear buttons    (default: $clr-fg-pri / $clr-fg-sec)
+//   --bit-NumberField-button-hover-color        the same while hovered                       (default: $clr-fg-pri-hover)
+//   --bit-NumberField-button-hover-background   fill of a hovered spin or clear button       (default: $clr-bg-pri-hover)
+//   --bit-NumberField-button-active-color       glyph color of a pressed button              (default: $clr-fg-pri-active)
+//   --bit-NumberField-button-active-background  fill of a pressed spin or clear button       (default: $clr-bg-pri-active)
+//   --bit-NumberField-button-inert-color        glyph color of a button that is disabled or
+//                                               sitting on the bound it steps towards        (default: $clr-fg-dis)
+//   --bit-NumberField-button-width              width of a spin button and of the clear
+//                                               button                                       (default: per Size and Mode)
+//   --bit-NumberField-button-icon-size          size of the glyph inside those buttons       (default: per Size, from the type ramp)
+//   --bit-NumberField-loading-color             color of the busy indicator                  (default: the Accent)
+//   --bit-NumberField-disabled-color            text, label, hint and glyph color of a
+//                                               disabled field                               (default: $clr-fg-dis)
+//   --bit-NumberField-disabled-background       fill of a disabled field                     (default: $clr-bg-dis)
+
 .bit-nfl {
     display: flex;
     font-weight: $tg-fw-regular;
     align-items: center;
-    font-size: $tg-fs-xs;
     column-gap: spacing(1.25);
     font-family: $tg-font-family;
+    // On the root as well as on the input, so that whatever a prefix, suffix or label template renders is
+    // sized with the field rather than with the page around it.
+    font-size: var(--bit-NumberField-font-size, var(--bit-nfl-fontsize));
+
+    // The medium size is the default one, so its values sit on the root instead of only on .bit-nfl-md.
+    --bit-nfl-height: #{$siz-ctrl-md};
+    --bit-nfl-fontsize: #{$tg-fs-sm};
+    --bit-nfl-label-fontsize: #{$tg-fs-sm};
+    --bit-nfl-icon-size: #{$siz-icon-md};
+    --bit-nfl-btn-width: #{$siz-ctrl-md};
+    --bit-nfl-stack-width: #{spacing(3)};
+    --bit-nfl-btn-icon-size: #{$tg-fs-xs};
+    --bit-nfl-pad-x: #{spacing(1)};
 
     &.bit-dis {
         .bit-nfl-lct {
-            color: $clr-fg-dis;
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-nfl-lbl {
-            color: $clr-fg-dis;
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-nfl-cnt {
             border: none;
             cursor: default;
             background: none;
-            color: $clr-fg-dis;
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-nfl-inp {
             border: none;
             cursor: default;
-            color: $clr-fg-dis;
-            background: $clr-bg-dis;
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
+            background: var(--bit-NumberField-disabled-background, #{$clr-bg-dis});
         }
 
         .bit-nfl-pre,
         .bit-nfl-suf {
-            color: $clr-fg-dis;
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
+        }
+
+        .bit-nfl-lic {
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-nfl-des span {
-            color: $clr-fg-dis;
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
         }
 
+        .bit-nfl-lod {
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
+        }
+
+        // The buttons take the disabled fill so the row still reads as one field; they draw no border of
+        // their own at rest, so the disabled state does not invent one either.
         .bit-nfl-aup,
         .bit-nfl-adn,
+        .bit-nfl-sbn,
         .bit-nfl-cbt {
+            border: none;
             cursor: default;
             pointer-events: none;
-            color: $clr-fg-dis;
-            background: $clr-bg-dis;
-            border: $shp-border-width $shp-border-style $clr-brd-dis;
+            color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
+            background: var(--bit-NumberField-disabled-background, #{$clr-bg-dis});
         }
     }
 
     &.bit-inv {
         .bit-nfl-cnt {
-            border-color: $clr-err;
+            border-color: var(--bit-NumberField-error-color, #{$clr-err});
         }
 
         // The underlined variant is excluded so it gets only the bottom-rule treatment below -
         // applying the full ring would leave its forced-colors outline behind.
         &.bit-nfl-fcs:not(.bit-nfl-und) .bit-nfl-cnt {
-            @include focus-ring($clr-err-focus);
+            @include focus-ring(var(--bit-NumberField-error-color, #{$clr-err-focus}));
         }
 
         &.bit-nfl-fcs.bit-nfl-und .bit-nfl-cnt {
-            @include focus-underline-ring($clr-err-focus);
+            @include focus-underline-ring(var(--bit-NumberField-error-color, #{$clr-err-focus}));
         }
     }
 
+}
+
+.bit-nfl-sm {
+    --bit-nfl-height: #{$siz-ctrl-sm};
+    --bit-nfl-fontsize: #{$tg-fs-xs};
+    --bit-nfl-label-fontsize: #{$tg-fs-xs};
+    --bit-nfl-icon-size: #{$siz-icon-sm};
+    --bit-nfl-btn-width: #{$siz-ctrl-sm};
+    --bit-nfl-stack-width: #{spacing(2.75)};
+    --bit-nfl-btn-icon-size: #{$tg-fs-2xs};
+    --bit-nfl-pad-x: #{spacing(0.75)};
+}
+
+.bit-nfl-md {
+    --bit-nfl-height: #{$siz-ctrl-md};
+    --bit-nfl-fontsize: #{$tg-fs-sm};
+    --bit-nfl-label-fontsize: #{$tg-fs-sm};
+    --bit-nfl-icon-size: #{$siz-icon-md};
+    --bit-nfl-btn-width: #{$siz-ctrl-md};
+    --bit-nfl-stack-width: #{spacing(3)};
+    --bit-nfl-btn-icon-size: #{$tg-fs-xs};
+    --bit-nfl-pad-x: #{spacing(1)};
+}
+
+.bit-nfl-lg {
+    --bit-nfl-height: #{$siz-ctrl-lg};
+    --bit-nfl-fontsize: #{$tg-fs-md};
+    --bit-nfl-label-fontsize: #{$tg-fs-md};
+    --bit-nfl-icon-size: #{$siz-icon-lg};
+    --bit-nfl-btn-width: #{$siz-ctrl-lg};
+    --bit-nfl-stack-width: #{spacing(3.5)};
+    --bit-nfl-btn-icon-size: #{$tg-fs-sm};
+    --bit-nfl-pad-x: #{spacing(1.25)};
 }
 
 .bit-nfl-ltp {
@@ -88,43 +185,73 @@
 }
 
 .bit-nfl-lct {
-    height: $siz-ctrl-md;
     align-items: center;
     display: inline-flex;
     flex-flow: row nowrap;
     justify-content: flex-start;
+    min-height: var(--bit-NumberField-height, var(--bit-nfl-height));
 }
 
 .bit-nfl-lic {
-    font-size: $tg-fs-xl;
     padding: 0 spacing(0.625);
+    color: var(--bit-NumberField-icon-color, #{$clr-fg-pri});
+    font-size: var(--bit-NumberField-icon-size, var(--bit-nfl-icon-size));
+    transition: color $mot-duration-short $mot-easing;
 }
 
 .bit-nfl-lbl {
     box-shadow: none;
-    font-weight: $tg-fw-semibold;
     white-space: nowrap;
     box-sizing: border-box;
-    font-size: $tg-fs-sm;
     padding: spacing(0.625) 0;
     line-height: spacing(2.5);
-    color: $clr-fg-pri;
+    color: var(--bit-NumberField-label-color, #{$clr-fg-pri});
+    font-size: var(--bit-NumberField-label-font-size, var(--bit-nfl-label-fontsize));
+    font-weight: var(--bit-NumberField-label-font-weight, #{$tg-fw-semibold});
 }
 
 .bit-nfl-cnt {
     width: 100%;
     display: flex;
-    height: $siz-ctrl-md;
     position: relative;
     align-items: center;
     box-sizing: border-box;
-    border-radius: $shp-radius-control;
-    background-color: var(--bit-nfl-clr-bg);
-    border: $shp-border-width $shp-border-style var(--bit-nfl-clr-brd);
+    height: var(--bit-NumberField-height, var(--bit-nfl-height));
+    border-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    background-color: var(--bit-NumberField-background, var(--bit-nfl-clr-bg));
+    border: var(--bit-NumberField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-NumberField-border-color, var(--bit-nfl-clr-brd));
+    transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 }
 
 .bit-nfl-hdi {
     width: max-content;
+}
+
+// The border answers a hovering pointer, as the frame of every other text input in the library does, but
+// only on a field there is something to type into: not a disabled or a read-only one, not the stepper-only
+// HideInput one (whose input is hidden, and so read-only too), not one whose border is invisible, and never
+// over the accent of the focus ring or the red of an invalid field.
+@media (hover: hover) {
+    .bit-nfl:not(.bit-dis, .bit-inv, .bit-nfl-fcs, .bit-nfl-brn) .bit-nfl-cnt:not(:has(> .bit-nfl-inp:read-only)):hover {
+        border-color: var(--bit-NumberField-hover-border-color, var(--bit-nfl-clr-brd-hover));
+    }
+}
+
+// Two stacked buttons split the height of the field between them, which at the default 32px leaves each of
+// them 16px tall - under the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8), and well under what a
+// finger can hit. On a coarse pointer the field grows so that each half clears it; a mouse keeps the
+// compact stack that the layout is there for.
+@media (pointer: coarse) {
+    .bit-nfl-mcp .bit-nfl-cnt {
+        height: max(var(--bit-NumberField-height, var(--bit-nfl-height)), #{spacing(6)});
+    }
+}
+
+// On a fine pointer the stack stays compact because the input beside it achieves the same thing at a
+// full-sized target, which is the equivalent-control exception SC 2.5.8 allows for. HideInput takes that
+// input away, so there the pair has to clear the minimum on every pointer.
+.bit-nfl-mcp .bit-nfl-hdi {
+    height: max(var(--bit-NumberField-height, var(--bit-nfl-height)), #{spacing(6)});
 }
 
 .bit-nfl-inp {
@@ -143,14 +270,19 @@
     font-family: inherit;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: $tg-fs-sm;
     background: none transparent;
-    color: $clr-fg-pri;
-    padding: 0 spacing(1) 0 spacing(1.125);
-    border-start-start-radius: $shp-radius-control;
-    border-end-start-radius: $shp-radius-control;
+    color: var(--bit-NumberField-color, #{$clr-fg-pri});
+    font-size: var(--bit-NumberField-font-size, var(--bit-nfl-fontsize));
+    padding-inline: var(--bit-NumberField-padding-inline, var(--bit-nfl-pad-x));
+    padding-block: 0;
+    border-start-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    border-end-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
     border-start-end-radius: 0;
     border-end-end-radius: 0;
+
+    &::placeholder {
+        color: var(--bit-NumberField-placeholder-color, #{$clr-fg-sec});
+    }
 }
 
 .bit-nfl-cbt {
@@ -158,9 +290,8 @@
     border: none;
     cursor: pointer;
     font-weight: $tg-fw-regular;
-    width: $siz-ctrl-md;
     user-select: none;
-    color: $clr-fg-sec;
+    touch-action: manipulation;
     position: relative;
     text-align: center;
     outline: transparent;
@@ -168,13 +299,16 @@
     display: inline-block;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     background-color: transparent;
+    color: var(--bit-NumberField-button-color, #{$clr-fg-sec});
+    width: var(--bit-NumberField-button-width, var(--bit-nfl-btn-width));
+    font-size: var(--bit-NumberField-font-size, var(--bit-nfl-fontsize));
     border-start-start-radius: 0;
     border-end-start-radius: 0;
-    border-start-end-radius: $shp-radius-control;
-    border-end-end-radius: $shp-radius-control;
+    border-start-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    border-end-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     i {
         width: unset;
@@ -182,16 +316,38 @@
         height: spacing(2);
         text-align: center;
         margin: 0 spacing(0.5);
-        font-size: $tg-fs-xs;
         line-height: spacing(2);
+        font-size: var(--bit-NumberField-button-icon-size, var(--bit-nfl-btn-icon-size));
     }
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            color: var(--bit-NumberField-button-hover-color, #{$clr-fg-pri-hover});
+            background-color: var(--bit-NumberField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
+
+    &:active {
+        color: var(--bit-NumberField-button-active-color, #{$clr-fg-pri-active});
+        background-color: var(--bit-NumberField-button-active-background, #{$clr-bg-pri-active});
+    }
+
+    // The rounded end above belongs to the button only while it really is the end of the field. Anything
+    // rendered after it - the spin buttons, the icon, the suffix - puts it in the middle of the row, where
+    // the corner would show up as a stray pill the moment the button is hovered or held.
+    &:not(:last-child) {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+    }
+}
+
+.bit-nfl-lod {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    padding-inline: spacing(0.5);
+    color: var(--bit-NumberField-loading-color, var(--bit-nfl-clr));
 }
 
 .bit-nfl-cin {
@@ -202,6 +358,16 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+
+    // Same reasoning as the clear button: the stack only keeps the rounded end of the field while it is
+    // the end of it. An icon or a suffix after it moves it into the middle of the row.
+    &:not(:last-child) {
+        .bit-nfl-aup,
+        .bit-nfl-adn {
+            border-start-end-radius: 0;
+            border-end-end-radius: 0;
+        }
+    }
 }
 
 .bit-nfl-aup,
@@ -213,26 +379,40 @@
     display: block;
     cursor: default;
     user-select: none;
+    // Tapping + a few times in a row is how a stepper is used on a phone, and without this the second tap
+    // is taken for a double-tap zoom; holding it down is the continuous spin, not a request for the
+    // long-press callout.
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
     position: relative;
     text-align: center;
-    width: spacing(2.875);
     text-decoration: none;
     box-sizing: border-box;
     background-color: transparent;
-    color: $clr-fg-pri;
-    border-radius: $shp-radius-control;
+    color: var(--bit-NumberField-button-color, #{$clr-fg-pri});
+    border-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            color: var(--bit-NumberField-button-hover-color, #{$clr-fg-pri-hover});
+            background-color: var(--bit-NumberField-button-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    // A button that is held down spins the value continuously, so it stays pressed for as long as the
+    // user keeps stepping - which is exactly when the feedback matters, and the one state a stepper is
+    // expected to show. It is not scoped to (hover: hover): on a touch screen this is the only feedback
+    // there is. The bound-reached state below turns it off again, along with the hover.
+    &:active {
+        color: var(--bit-NumberField-button-active-color, #{$clr-fg-pri-active});
+        background-color: var(--bit-NumberField-button-active-background, #{$clr-bg-pri-active});
     }
 
     // In HideInput mode the spin buttons become keyboard focusable (there is no input left to focus),
     // so they need a visible focus indicator of their own.
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-NumberField-focus-color, var(--bit-nfl-clr-focus)));
     }
 
     // The buttons are also disabled while the field is read-only, where the root does not carry the
@@ -240,7 +420,13 @@
     &:disabled {
         cursor: default;
         pointer-events: none;
-        color: $clr-fg-dis;
+        color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
+
+        // Colors are replaced wholesale in forced-colors mode, so the dimmed foreground that says
+        // "inert" everywhere else would come back as ordinary text there.
+        @media (forced-colors: active) {
+            color: GrayText;
+        }
     }
 }
 
@@ -249,31 +435,67 @@
 // place in the tab order and its focus ring, and only loses its affordance and its hover feedback.
 .bit-nfl-sbb {
     cursor: default;
-    color: $clr-fg-dis;
+    color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-dis;
+            color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
             background-color: transparent;
         }
+    }
+
+    &:active {
+        color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
+        background-color: transparent;
+    }
+
+    @media (forced-colors: active) {
+        color: GrayText;
     }
 }
 
 .bit-nfl-aup {
     height: 50%;
     border-radius: 0;
-    border-start-end-radius: $shp-radius-control;
+    width: var(--bit-NumberField-button-width, var(--bit-nfl-stack-width));
+    border-start-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
 }
 
 .bit-nfl-adn {
     height: 50%;
     border-radius: 0;
-    border-end-end-radius: $shp-radius-control;
+    width: var(--bit-NumberField-button-width, var(--bit-nfl-stack-width));
+    border-end-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
 }
 
 .bit-nfl-sbn {
     height: 100%;
-    width: $siz-ctrl-md;
+    border-radius: 0;
+    width: var(--bit-NumberField-button-width, var(--bit-nfl-btn-width));
+
+    // The rounded corners belong to the button only where it really is the end of the field: the
+    // decrement button of the Spread layout at the start, the trailing button of either layout at the
+    // end. The Inline pair's first button sits in the middle of the row, where a corner of its own
+    // would show as a stray pill as soon as it is hovered or held.
+    &:first-child {
+        border-start-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+        border-end-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    }
+
+    &:last-child {
+        border-start-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    }
+}
+
+.bit-nfl-hdi:not(:has(.bit-nfl-pre)) .bit-nfl-act {
+    .bit-nfl-aup {
+        border-start-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    }
+
+    .bit-nfl-adn {
+        border-end-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    }
 }
 
 .bit-nfl-aic {
@@ -289,32 +511,28 @@
     width: 100%;
     flex-shrink: 0;
     height: spacing(2);
-    font-size: $tg-fs-2xs;
     line-height: spacing(2);
-}
-
-.bit-nfl-sbi {
-    font-size: $tg-fs-xs;
+    font-size: var(--bit-NumberField-button-icon-size, var(--bit-nfl-btn-icon-size));
 }
 
 .bit-nfl-fcs {
     .bit-nfl-lic {
-        color: var(--bit-nfl-clr);
+        color: var(--bit-NumberField-icon-color, var(--bit-nfl-clr));
     }
 
     .bit-nfl-pre,
     .bit-nfl-suf {
-        color: var(--bit-nfl-clr);
+        color: var(--bit-NumberField-affix-color, var(--bit-nfl-clr));
     }
 
     // The underlined variant is excluded so it gets only the bottom-rule treatment below - applying
     // the ring mixin and negating its box-shadow would still leave its forced-colors outline behind.
     &:not(.bit-nfl-und) .bit-nfl-cnt {
-        @include focus-ring(var(--bit-nfl-clr-focus));
+        @include focus-ring(var(--bit-NumberField-focus-color, var(--bit-nfl-clr-focus)));
     }
 
     &.bit-nfl-und .bit-nfl-cnt {
-        @include focus-underline-ring(var(--bit-nfl-clr-focus));
+        @include focus-underline-ring(var(--bit-NumberField-focus-color, var(--bit-nfl-clr-focus)));
     }
 }
 
@@ -326,14 +544,28 @@
     align-items: center;
     white-space: nowrap;
     padding: 0 spacing(1.25);
-    min-height: spacing(3.75);
-    color: $clr-fg-pri;
-    background: $clr-bg-sec;
+    color: var(--bit-NumberField-affix-color, #{$clr-fg-pri});
+    background: var(--bit-NumberField-affix-background, #{$clr-bg-sec});
+    transition: color $mot-duration-short $mot-easing;
 
     span {
-        font-size: $tg-fs-sm;
         padding-bottom: spacing(0.125);
+        font-size: var(--bit-NumberField-font-size, var(--bit-nfl-fontsize));
     }
+}
+
+// The prefix and the suffix carry a fill of their own and sit flush against the ends of the field, so
+// without a corner they draw a square block over its rounded end - barely visible at the Fluent radius,
+// glaring at the Material one or at a pill. They only take the corner while they really are at an end;
+// anything rendered past them (a spin button of the Spread layout) owns it instead.
+.bit-nfl-pre:first-child {
+    border-start-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    border-end-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+}
+
+.bit-nfl-suf:last-child {
+    border-start-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    border-end-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
 }
 
 .bit-nfl-dsc {
@@ -351,8 +583,8 @@
 .bit-nfl-req {
     .bit-nfl-lbl::after {
         content: "*";
-        color: $clr-req;
         margin-inline-start: spacing(0.625);
+        color: var(--bit-NumberField-required-color, #{$clr-req});
     }
 }
 
@@ -361,9 +593,9 @@
         content: "*";
         position: absolute;
         top: spacing(-0.625);
-        font-size: $tg-fs-sm;
-        color: $clr-req;
+        font-size: var(--bit-NumberField-font-size, var(--bit-nfl-fontsize));
         inset-inline-end: spacing(-1.25);
+        color: var(--bit-NumberField-required-color, #{$clr-req});
     }
 }
 
@@ -380,7 +612,30 @@
 .bit-nfl-und {
     .bit-nfl-cnt {
         border-radius: 0;
-        border-width: 0 0 $shp-border-width 0;
+        border-width: 0 0 var(--bit-NumberField-border-width, #{$shp-border-width}) 0;
+    }
+
+    // The field itself is square in this variant, so nothing sitting against its edges keeps a corner
+    // either - a rounded prefix or spin button against a straight bottom rule reads as a misalignment.
+    .bit-nfl-inp,
+    .bit-nfl-pre,
+    .bit-nfl-suf,
+    .bit-nfl-cbt,
+    .bit-nfl-sbn,
+    .bit-nfl-aup,
+    .bit-nfl-adn {
+        border-radius: 0;
+    }
+}
+
+.bit-nfl-erm {
+    width: 100%;
+    overflow-wrap: break-word;
+    color: var(--bit-NumberField-error-color, #{$clr-err});
+    font-size: var(--bit-NumberField-description-font-size, #{$tg-fs-2xs});
+
+    span {
+        color: var(--bit-NumberField-error-color, #{$clr-err});
     }
 }
 
@@ -388,15 +643,16 @@
     width: 100%;
 
     span {
-        color: $clr-fg-pri;
-        font-size: $tg-fs-2xs;
+        color: var(--bit-NumberField-description-color, #{$clr-fg-pri});
+        font-size: var(--bit-NumberField-description-font-size, #{$tg-fs-2xs});
     }
 }
 
-// A description is a third child of the root flex box, which the column label layouts stack under the
-// field on their own. The row layouts (label beside the field) have to wrap it onto a line of its own
-// instead, which means the field gives up its fixed full width and simply fills the rest of the first
-// line. The wrapping is scoped to the layouts that need it so a description-less field is untouched.
+// A description (and an error message) is a further child of the root flex box, which the column label
+// layouts stack under the field on their own. The row layouts (label beside the field) have to wrap them
+// onto a line of their own instead, which means the field gives up its fixed full width and simply fills
+// the rest of the first line. The wrapping is scoped to the layouts that need it so a field carrying
+// neither is untouched.
 .bit-nfl-hds {
     &.bit-nfl-lst,
     &.bit-nfl-led {
@@ -407,7 +663,8 @@
             flex: 1 1 0;
         }
 
-        .bit-nfl-des {
+        .bit-nfl-des,
+        .bit-nfl-erm {
             flex: 0 0 100%;
         }
     }
@@ -419,8 +676,12 @@
             order: 1;
         }
 
-        .bit-nfl-cnt {
+        .bit-nfl-erm {
             order: 2;
+        }
+
+        .bit-nfl-cnt {
+            order: 3;
         }
     }
 }
@@ -531,14 +792,17 @@
 
 .bit-nfl-brp {
     --bit-nfl-clr-brd: #{$clr-brd-pri};
+    --bit-nfl-clr-brd-hover: #{$clr-brd-pri-hover};
 }
 
 .bit-nfl-brs {
     --bit-nfl-clr-brd: #{$clr-brd-sec};
+    --bit-nfl-clr-brd-hover: #{$clr-brd-sec-hover};
 }
 
 .bit-nfl-brt {
     --bit-nfl-clr-brd: #{$clr-brd-ter};
+    --bit-nfl-clr-brd-hover: #{$clr-brd-ter-hover};
 }
 
 .bit-nfl-brn {

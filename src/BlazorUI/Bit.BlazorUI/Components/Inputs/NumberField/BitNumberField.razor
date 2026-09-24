@@ -17,6 +17,10 @@
     // become the only way to operate the component and must be reachable by keyboard.
     var spinTabIndex = HideInput ? 0 : -1;
 
+    // Each button changes the value of the spinbutton, which aria-controls lets a screen reader say (and
+    // jump to). A hidden input is not exposed at all, so there is nothing to point at in HideInput mode.
+    var spinControls = HideInput ? null : _inputId;
+
     // A read-only field cannot be spun either, so the buttons say so instead of looking operable and
     // then doing nothing - the same reasoning that keeps the clear button hidden while read-only.
     var spinDisabled = IsEnabled is false || ReadOnly;
@@ -34,18 +38,6 @@
     var incrementBlockedClass = incrementBlocked ? " bit-nfl-sbb" : "";
     var decrementBlockedClass = decrementBlocked ? " bit-nfl-sbb" : "";
 
-    var hasDescription = Description.HasValue() || DescriptionTemplate is not null;
-
-    var ariaDescriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
-
-    // The visible description and the screen-reader-only one are both legitimate, and a field can carry
-    // either or both, so aria-describedby references whichever are present (in reading order).
-    var describedById = string.Join(' ', new[] { hasDescription ? _descriptionId : null, ariaDescriptionId }
-                                        .Where(id => id.HasValue()));
-    if (describedById.HasNoValue())
-    {
-        describedById = null;
-    }
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -56,16 +48,18 @@
     @if (Label.HasValue() || LabelTemplate is not null)
     {
         <div style="@Styles?.LabelContainer" class="bit-nfl-lct @Classes?.LabelContainer">
+            @* The `for` is dropped in HideInput mode: it would point at a hidden input, which nothing can
+               associate a label with. The two buttons are named by the group that references this label. *@
             @if (LabelTemplate is not null)
             {
-                <label id="@_labelId" for="@_inputId">
+                <label id="@_labelId" for="@(HideInput ? null : _inputId)">
                     @LabelTemplate
                 </label>
             }
             else if (Label.HasValue())
             {
                 <label id="@_labelId"
-                       for="@_inputId"
+                       for="@(HideInput ? null : _inputId)"
                        style="@Styles?.Label"
                        class="bit-nfl-lbl @Classes?.Label">
                     @Label
@@ -74,13 +68,25 @@
         </div>
     }
 
+    @* Without the input there is no element carrying the value and its name, so the two buttons are tied
+       together into a group and the label of the field names the group instead. With the input present the
+       box is a plain wrapper: naming it as well would have a screen reader read the field twice. And
+       aria-labelledby takes precedence over aria-label, so the group points at the visible label only
+       while no name of its own was given - the same rule LabelledBy applies to the input.
+       Where the field sits in a set of them belongs on whatever is exposed: the input normally, but in
+       HideInput mode the input is hidden from assistive technologies altogether and the group around it
+       is all that is left to carry the position - and, for the same reason, what the hint, the error
+       message and the prefix/suffix have to be announced through. *@
     <div title="@Title"
          @onclick="HandleOnInputContainerClick"
          style="@Styles?.InputContainer"
          class="bit-nfl-cnt@(HideInput ? " bit-nfl-hdi" : "") @Classes?.InputContainer"
-         aria-label="@AriaLabel"
-         aria-setsize="@AriaSetSize"
-         aria-posinset="@AriaPositionInSet">
+         role="@(HideInput ? "group" : null)"
+         aria-label="@(HideInput ? AriaLabel : null)"
+         aria-labelledby="@(HideInput ? LabelledBy : null)"
+         aria-setsize="@(HideInput ? AriaSetSize : null)"
+         aria-posinset="@(HideInput ? AriaPositionInSet : null)"
+         aria-describedby="@(HideInput ? AriaDescribedBy : null)">
         @if (PrefixTemplate is not null)
         {
             @PrefixTemplate
@@ -88,22 +94,24 @@
         else if (Prefix.HasValue())
         {
             <div style="@Styles?.PrefixContainer" class="bit-nfl-pre @Classes?.PrefixContainer">
-                <span style="@Styles?.Prefix" class="@Classes?.Prefix">
+                <span id="@_prefixId" style="@Styles?.Prefix" class="@Classes?.Prefix">
                     @Prefix
                 </span>
             </div>
         }
 
-        @if (Mode == BitSpinButtonMode.Spread)
+        @if (EffectiveMode == BitSpinButtonMode.Spread)
         {
             <button @ref="_buttonDecrement"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
-                    @onpointerdown="() => HandleOnPointerDown(false)"
+                    @onpointercancel="HandleOnPointerUpOrOut"
+                    @onpointerdown="(e) => HandleOnPointerDown(e, false)"
                     @onpointerdown:preventDefault
-                    @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
+                    @onclick="(e) => HandleOnButtonClick(e, false)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    aria-controls="@spinControls"
                     style="@Styles?.DecrementButton"
                     class="bit-nfl-sbn@(decrementBlockedClass) @Classes?.DecrementButton"
                     disabled="@spinDisabled"
@@ -113,7 +121,7 @@
                 <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                     <i style="@Styles?.DecrementIcon"
                        aria-hidden="true"
-                       class="bit-nfl-bic bit-nfl-sbi @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
+                       class="bit-nfl-bic @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
                 </span>
             </button>
         }
@@ -123,20 +131,20 @@
             @* A hidden input only carries the value (e.g. for form posting); constraint, interaction
                and aria attributes have no effect on it. *@
             <input @ref="InputElement" @attributes="@InputHtmlAttributes"
-                   form=""
                    name="@Name"
                    id="@_inputId"
                    value="@CurrentValueAsString"
                    disabled="@(IsEnabled is false)"
                    type="hidden" />
-
-            @* Without the spinbutton input there is nothing left to announce the value: a hidden input
-               is not exposed to assistive technologies. A visually hidden live region takes over, so a
-               screen reader user pressing the buttons still hears what the value became. *@
-            <span class="bit-nfl-dsc bit-nfl-lvr" role="status" aria-live="polite" aria-atomic="true">@GetDisplayValueAsString()</span>
         }
         else
         {
+            @* Two notes on the aria attributes below. aria-labelledby takes precedence over aria-label, so
+               pointing at the visible label while a name of its own was given would quietly throw that name
+               away - LabelledBy is what keeps the two from colliding, and the visible label goes on naming
+               the input through the for/id pair either way. And the spinbutton role replaces the native role
+               of the input, so the required state is written out rather than left to the required attribute
+               that role supersedes. *@
             <input @ref="InputElement" @attributes="@InputHtmlAttributes"
                    @onblur="HandleOnBlur"
                    @onclick="HandleOnClick"
@@ -149,7 +157,6 @@
                    @bind-value:get="@GetDisplayValueAsString()"
                    @bind-value:set="@HandleOnStringValueSet"
                    @bind-value:event="@(Immediate ? "oninput" : "onchange")"
-                   form=""
                    name="@Name"
                    id="@_inputId"
                    readonly="@(ReadOnly || IsInputReadOnly)"
@@ -159,18 +166,28 @@
                    inputmode="@_inputMode"
                    placeholder="@Placeholder"
                    aria-label="@AriaLabel"
-                   aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                   aria-setsize="@AriaSetSize"
+                   aria-posinset="@AriaPositionInSet"
+                   aria-labelledby="@LabelledBy"
                    disabled="@(IsEnabled is false)"
-                   class="bit-nfl-inp@(Mode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
+                   class="bit-nfl-inp@(EffectiveMode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
                    autocomplete="@(AutoComplete ?? "off")"
                    type="text"
                    role="spinbutton"
                    aria-valuemin="@GetAriaValueMin()"
                    aria-valuemax="@GetAriaValueMax()"
-                   aria-describedby="@describedById"
+                   aria-describedby="@AriaDescribedBy"
                    aria-valuenow="@GetAriaValueNow()"
                    aria-valuetext="@GetAriaValueText()"
-                   aria-disabled="@(IsEnabled is false ? "true" : null)" />
+                   aria-invalid="@AriaInvalid"
+                   aria-busy="@AriaBusy"
+                   spellcheck="@SpellCheck"
+                   autocorrect="@AutoCorrect"
+                   autocapitalize="@AutoCapitalize"
+                   enterkeyhint="@EffectiveEnterKeyHint"
+                   aria-readonly="@AriaReadOnly"
+                   aria-required="@AriaRequired"
+                   aria-disabled="@AriaDisabled" />
 
             @if (ShowClearButton && ReadOnly is false && HasVisibleText())
             {
@@ -181,23 +198,51 @@
                         tabindex="-1"
                         aria-label="@(ClearButtonAriaLabel ?? "Clear value")"
                         disabled="@(IsEnabled is false)">
-                    <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    @if (ClearButtonTemplate is not null)
+                    {
+                        @ClearButtonTemplate
+                    }
+                    else
+                    {
+                        <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    }
                 </button>
             }
+
         }
 
-        @if (Mode == BitSpinButtonMode.Compact)
+        @if (Loading)
+        {
+            @* The indicator is hidden from assistive technologies: what it means is already carried by the
+               aria-busy of the input and announced by the live region at the end of the component. *@
+            <div style="@Styles?.Loading"
+                 class="bit-nfl-lod @Classes?.Loading"
+                 aria-hidden="true">
+                @if (LoadingTemplate is not null)
+                {
+                    @LoadingTemplate
+                }
+                else
+                {
+                    <BitSpinnerLoading Role="none" CustomSize="@LoadingSize" CustomColor="currentColor" />
+                }
+            </div>
+        }
+
+        @if (EffectiveMode == BitSpinButtonMode.Compact)
         {
             <span style="@Styles?.ButtonsContainer" class="bit-nfl-act @Classes?.ButtonsContainer">
                 <button @ref="_buttonIncrement"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
-                        @onpointerdown="() => HandleOnPointerDown(true)"
+                        @onpointercancel="HandleOnPointerUpOrOut"
+                        @onpointerdown="(e) => HandleOnPointerDown(e, true)"
                         @onpointerdown:preventDefault
-                        @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
+                        @onclick="(e) => HandleOnButtonClick(e, true)"
                         type="button"
                         tabindex="@spinTabIndex"
-                        data-is-focusable="@(HideInput ? "true" : "false")"
+                        aria-controls="@spinControls"
+                        autofocus="@(HideInput && AutoFocus)"
                         style="@Styles?.IncrementButton"
                         class="bit-nfl-aup@(incrementBlockedClass) @Classes?.IncrementButton"
                         disabled="@spinDisabled"
@@ -214,12 +259,13 @@
                 <button @ref="_buttonDecrement"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
-                        @onpointerdown="() => HandleOnPointerDown(false)"
+                        @onpointercancel="HandleOnPointerUpOrOut"
+                        @onpointerdown="(e) => HandleOnPointerDown(e, false)"
                         @onpointerdown:preventDefault
-                        @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
+                        @onclick="(e) => HandleOnButtonClick(e, false)"
                         type="button"
                         tabindex="@spinTabIndex"
-                        data-is-focusable="@(HideInput ? "true" : "false")"
+                        aria-controls="@spinControls"
                         style="@Styles?.DecrementButton"
                         class="bit-nfl-adn@(decrementBlockedClass) @Classes?.DecrementButton"
                         disabled="@spinDisabled"
@@ -234,16 +280,18 @@
                 </button>
             </span>
         }
-        else if (Mode == BitSpinButtonMode.Inline)
+        else if (EffectiveMode == BitSpinButtonMode.Inline)
         {
             <button @ref="_buttonDecrement"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
-                    @onpointerdown="() => HandleOnPointerDown(false)"
+                    @onpointercancel="HandleOnPointerUpOrOut"
+                    @onpointerdown="(e) => HandleOnPointerDown(e, false)"
                     @onpointerdown:preventDefault
-                    @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
+                    @onclick="(e) => HandleOnButtonClick(e, false)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    aria-controls="@spinControls"
                     style="@Styles?.DecrementButton"
                     class="bit-nfl-sbn@(decrementBlockedClass) @Classes?.DecrementButton"
                     disabled="@spinDisabled"
@@ -253,18 +301,21 @@
                 <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                     <i style="@Styles?.DecrementIcon"
                        aria-hidden="true"
-                       class="bit-nfl-bic bit-nfl-sbi @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
+                       class="bit-nfl-bic @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
                 </span>
             </button>
 
             <button @ref="_buttonIncrement"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
-                    @onpointerdown="() => HandleOnPointerDown(true)"
+                    @onpointercancel="HandleOnPointerUpOrOut"
+                    @onpointerdown="(e) => HandleOnPointerDown(e, true)"
                     @onpointerdown:preventDefault
-                    @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
+                    @onclick="(e) => HandleOnButtonClick(e, true)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    aria-controls="@spinControls"
+                    autofocus="@(HideInput && AutoFocus)"
                     style="@Styles?.IncrementButton"
                     class="bit-nfl-sbn@(incrementBlockedClass) @Classes?.IncrementButton"
                     disabled="@spinDisabled"
@@ -274,20 +325,23 @@
                 <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                     <i style="@Styles?.IncrementIcon"
                        aria-hidden="true"
-                       class="bit-nfl-bic bit-nfl-sbi @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
+                       class="bit-nfl-bic @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
                 </span>
             </button>
         }
-        else if (Mode == BitSpinButtonMode.Spread)
+        else if (EffectiveMode == BitSpinButtonMode.Spread)
         {
             <button @ref="_buttonIncrement"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
-                    @onpointerdown="() => HandleOnPointerDown(true)"
+                    @onpointercancel="HandleOnPointerUpOrOut"
+                    @onpointerdown="(e) => HandleOnPointerDown(e, true)"
                     @onpointerdown:preventDefault
-                    @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
+                    @onclick="(e) => HandleOnButtonClick(e, true)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    aria-controls="@spinControls"
+                    autofocus="@(HideInput && AutoFocus)"
                     style="@Styles?.IncrementButton"
                     class="bit-nfl-sbn@(incrementBlockedClass) @Classes?.IncrementButton"
                     disabled="@spinDisabled"
@@ -297,7 +351,7 @@
                 <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                     <i style="@Styles?.IncrementIcon"
                        aria-hidden="true"
-                       class="bit-nfl-bic bit-nfl-sbi @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
+                       class="bit-nfl-bic @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
                 </span>
             </button>
         }
@@ -318,14 +372,33 @@
         else if (Suffix.HasValue())
         {
             <div style="@Styles?.SuffixContainer" class="bit-nfl-suf @Classes?.SuffixContainer">
-                <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                <span id="@_suffixId" style="@Styles?.Suffix" class="@Classes?.Suffix">
                     @Suffix
                 </span>
             </div>
         }
     </div>
 
-    @if (hasDescription)
+    @if (HasErrorMessage)
+    {
+        @* What is wrong with the value is the first thing to read under the field, so it sits above the
+           description. It carries no live role of its own - the region at the end of the component is what
+           announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-nfl-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasDescription)
     {
         <div id="@_descriptionId"
              style="@Styles?.DescriptionContainer"
@@ -341,10 +414,16 @@
         </div>
     }
 
-    @if (ariaDescriptionId is not null)
+    @if (AriaDescription.HasValue())
     {
         @* aria-describedby takes an id reference, so the description text has to live in an element
            of its own. It is visually hidden and only exists for assistive technologies. *@
-        <span id="@ariaDescriptionId" class="bit-nfl-dsc">@AriaDescription</span>
+        <span id="@_ariaDescriptionId" class="bit-nfl-dsc">@AriaDescription</span>
     }
+
+    @* A status rather than an alert: whatever it says must not steal the focus or interrupt what is being
+       typed, only be announced once the reader is done with the current sentence. It is rendered whether or
+       not it has anything to say, because a live region that arrives with its text already in it is the one
+       thing screen readers are known to miss. *@
+    <span role="status" class="bit-nfl-dsc">@LiveText</span>
 </div>

@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 
 public partial class BitNumberFieldDemo
@@ -91,6 +93,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "Culture",
+            Type = "CultureInfo?",
+            DefaultValue = "null",
+            Description = "The culture the value is written and read in. Left unset, a NumberFormat renders in the culture of the current thread while the plain (unformatted) value is written and parsed with the invariant culture. Setting it pins both to one culture, so the field shows and accepts that culture's separators regardless of the thread. The aria-valuenow/valuemin/valuemax attributes stay invariant either way, and the culture's rendering is announced through aria-valuetext.",
+        },
+        new()
+        {
             Name = "DecrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -141,6 +150,27 @@ public partial class BitNumberFieldDemo
             Type = "Func<string?, string?>?",
             DefaultValue = "null",
             Description = "A custom function to normalize the raw input string before it gets parsed into the value. When provided, it takes precedence over NormalizeDigits and lets the developer plug in their own culture-specific or domain-specific transformation.",
+        },
+        new()
+        {
+            Name = "EnterKeyHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The action label of the enter key on a virtual keyboard (enterkeyhint), e.g. \"done\", \"next\", \"go\", \"search\" or \"send\". On a numeric soft keyboard the key is otherwise unlabeled.",
+        },
+        new()
+        {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "An error message rendered under the field, which also marks the field as invalid and is announced through a polite live region the moment it appears. It is the way to report what a validator outside of an EditContext found - a server-side check, a business rule - without having to build a form around the field.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template rendered in place of the ErrorMessage, marking the field invalid and referenced by the input through its aria-describedby attribute just the same.",
         },
         new()
         {
@@ -224,6 +254,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the field as invalid without a message of its own, for a rejection that is already explained elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field and renders aria-invalid exactly as a failing validation does.",
+        },
+        new()
+        {
             Name = "InvertMouseWheel",
             Type = "bool",
             DefaultValue = "false",
@@ -265,6 +302,27 @@ public partial class BitNumberFieldDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning. It is a string to support any numeric type of the field; an unparsable value falls back to the type's MinValue.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a busy indicator inside the field, which is what tells the user that something is running against the value - a price being recalculated, a quantity being checked against stock. The field stays editable while it is on, so the typing and the stepping are never interrupted by it.",
+        },
+        new()
+        {
+            Name = "LoadingAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "What a screen reader announces while Loading is on, in place of the default \"Loading\". It is announced whichever indicator is drawn, so a LoadingTemplate drawing a bare spinner of its own still tells an assistive technology that something is running.",
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the busy indicator, which replaces the default spinner.",
         },
         new()
         {
@@ -353,6 +411,12 @@ public partial class BitNumberFieldDemo
             Name = "OnEnter",
             Type = "EventCallback<KeyboardEventArgs>",
             Description = "Callback for when the Enter key is pressed on the input. It is invoked after the typed text has been committed, so the bound value it observes is already the one the user just entered.",
+        },
+        new()
+        {
+            Name = "OnEscape",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback for when the Escape key is pressed on the input. It is invoked before the field clears itself (which it only does while a clear button is shown), so a handler is free to take the key for something else.",
         },
         new()
         {
@@ -471,10 +535,26 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "ClearButtonTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template rendered inside the clear button in place of its icon. The button itself - its accessible name, its click and Escape handling - stays the same.",
+        },
+        new()
+        {
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to show the clear button whenever the field is showing something, resetting the value to null with a single click (most useful with nullable value types). \"Showing something\" covers a string the user typed that failed to parse as well as a real value, so the button is also there to wipe an entry that has to be corrected. It is not rendered while the field is read-only or empty. It stays out of the tab order (like the increment/decrement buttons), the Escape key being the keyboard equivalent of clicking it.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "Sets the preset size (Small, Medium, Large) of the number field: the height of the control, its type scale, the size of its icons and the width of its buttons all follow it, so a field lines up with the other controls of the same size around it (Medium by default).",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -610,6 +690,20 @@ public partial class BitNumberFieldDemo
                 },
                 new()
                 {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric field's error message."
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric field's error message container."
+                },
+                new()
+                {
                     Name = "IncrementButton",
                     Type = "string?",
                     DefaultValue = "null",
@@ -635,6 +729,13 @@ public partial class BitNumberFieldDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the number field's label."
+                },
+                new()
+                {
+                    Name = "Loading",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric field's busy indicator."
                 },
                 new()
                 {
@@ -844,6 +945,18 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Small", Description = "The small size.", Value = "0" },
+                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
+                new() { Name = "Large", Description = "The large size.", Value = "2" }
+            ]
+        },
+        new()
+        {
             Id = "bit-color",
             Name = "BitColor",
             Description = "Defines the general colors available in the bit BlazorUI.",
@@ -917,17 +1030,236 @@ public partial class BitNumberFieldDemo
     ];
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-NumberField-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the value text.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-placeholder-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the placeholder.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-background",
+            DefaultValue = "The Background color kind",
+            Description = "Fill of the field.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-border-color",
+            DefaultValue = "The Border color kind",
+            Description = "Border color at rest. An invalid field takes the error color instead.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-hover-border-color",
+            DefaultValue = "The hover color of the Border color kind",
+            Description = "Border color under a hovering pointer, on an editable field that is neither focused nor invalid.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of that border, and of the bottom rule of the Underlined variant.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the field, which its buttons follow.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-focus-color",
+            DefaultValue = "The Accent role's focus color",
+            Description = "Color of the keyboard focus indicator - the ring, or the thicker bottom rule of the Underlined variant.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-height",
+            DefaultValue = "Per Size, --bit-siz-ctrl-sm/md/lg",
+            Description = "Height of the field. On a coarse pointer the Compact mode grows past it so each of its stacked buttons clears the 24px minimum pointer target.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-padding-inline",
+            DefaultValue = "Per Size, in step with BitTextField",
+            Description = "Room between the border and the value.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Size of the value text, and of the prefix and suffix beside it.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the label.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-label-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Size of the label.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the label.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "Color of the asterisk of a required field.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-description-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the hint under the field.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-description-font-size",
+            DefaultValue = "--bit-tpg-fs-2xs",
+            Description = "Size of that hint, and of the error message.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-error-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Color of the error message, and of the border and focus indicator of an invalid field.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-icon-color",
+            DefaultValue = "--bit-clr-fg-pri, the Accent while focused",
+            Description = "Color of the field's own icon.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-icon-size",
+            DefaultValue = "Per Size, --bit-siz-icon-sm/md/lg",
+            Description = "Size of that icon.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-affix-color",
+            DefaultValue = "--bit-clr-fg-pri, the Accent while focused",
+            Description = "Color of the prefix and the suffix.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-affix-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Fill behind the prefix and the suffix.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-color",
+            DefaultValue = "--bit-clr-fg-pri (spin), --bit-clr-fg-sec (clear)",
+            Description = "Glyph color of the spin and clear buttons at rest.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-hover-color",
+            DefaultValue = "--bit-clr-fg-pri-hover",
+            Description = "The same while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Fill of a hovered spin or clear button.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-active-color",
+            DefaultValue = "--bit-clr-fg-pri-active",
+            Description = "Glyph color of a pressed button, i.e. one being held down to spin continuously.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Fill of a pressed spin or clear button.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-inert-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Glyph color of a button that is disabled or sitting on the bound it steps towards.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-width",
+            DefaultValue = "Per Size and Mode",
+            Description = "Width of a spin button and of the clear button. The stacked pair of the Compact mode is narrower than the single button of the other modes by default.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-icon-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Size of the glyph inside those buttons.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-loading-color",
+            DefaultValue = "the Accent",
+            Description = "Color of the busy indicator.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text, label, hint and glyph color of a disabled field.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Fill of a disabled field.",
+        },
+    ];
+
+
+    private readonly BitNumberFieldParams[] numberFieldParams =
+    [
+        new()
+        {
+            Min = "0",
+            Max = "500",
+            Step = "5",
+            Suffix = "cm",
+            Underlined = true,
+            ShowClearButton = true,
+            Accent = BitColor.Info,
+            Mode = BitSpinButtonMode.Compact,
+            Description = "Between 0 and 500, in steps of 5."
+        }
+    ];
+
+
     private int minValue;
-    private int maxValue;
     private int minMaxValue;
+
+    private int seatsValue = 2;
+    private bool loadingValue;
 
     private int stepValue;
     private double fractionalStepValue;
-    private int stepMinMaxValue;
-    private int fastSpinValue;
     private int pageStepValue;
 
-    private int snapValue;
     private int snapAnchoredValue = 2;
     private double snapFractionValue;
 
@@ -935,10 +1267,12 @@ public partial class BitNumberFieldDemo
     private double twoWayValue;
     private int? uncontrolledValue;
 
+    private double? germanValue;
+    private readonly CultureInfo germanCulture = CultureInfo.GetCultureInfo("de-DE");
+
     private int? immediateValue;
     private double? immediateDecimalValue;
     private int? debounceValue;
-    private int? throttleValue;
 
     private int clampValue;
     private int noClampValue;
@@ -949,10 +1283,10 @@ public partial class BitNumberFieldDemo
     private int onIncrementCounter;
     private int onDecrementCounter;
     private int onChangeCounter;
-    private int onClearCounter;
     private int clearedCounter;
     private int onKeyUpCounter;
     private int onClickCounter;
+    private int escapeCounter;
     private string? lastKey;
     private string? boundMessage;
     private string? enterMessage;
@@ -972,12 +1306,10 @@ public partial class BitNumberFieldDemo
 
     private bool invertMouseWheel;
 
-    private double precisionInputValue = 3.1415;
     private double negativePrecisionInputValue;
 
     private byte byteValue = 5;
     private long longValue = 1_000_000_000_000;
-    private double doubleValue = 1.5;
     private decimal decimalValue = 0.05m;
     private int signedValue = -5;
 
