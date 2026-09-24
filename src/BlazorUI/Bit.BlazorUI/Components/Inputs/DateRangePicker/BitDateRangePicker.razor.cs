@@ -4166,16 +4166,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // year grids and the navigation buttons are bounded by. Whole days rather than the instants above: a
     // day is picked at midnight, so measuring it against an instant a few hours into the day would disable
     // the very day the range started on - and a MaxRange shorter than a day would then have no day left to
-    // end on at all, while the hours inside that day are the time picker's to enforce.
+    // end on at all, while the hours inside that day are the time picker's to enforce. The day is the one
+    // the reachable instant falls on, not the start's day plus the whole days of MaxRange: a MaxRange of
+    // 1.5 days from 20:00 reaches 08:00 two days later, so that second day must stay pickable.
     private DateTime GetMaxEndDay()
     {
-        return GetDateTime(CurrentValue!.StartDate!.Value).Date.AddDays(Math.Floor(MaxRange!.Value.TotalDays));
+        return GetDateTime(CurrentValue!.StartDate!.Value).AddDays(MaxRange!.Value.TotalDays).Date;
     }
 
     /// <inheritdoc cref="GetMaxEndDay"/>
     private DateTime GetMinEndDay()
     {
-        return GetDateTime(CurrentValue!.StartDate!.Value).Date.AddDays(-Math.Floor(MaxRange!.Value.TotalDays));
+        return GetDateTime(CurrentValue!.StartDate!.Value).AddDays(-MaxRange!.Value.TotalDays).Date;
     }
 
     // Whether the day the range can end on is bounded at all right now: only while a start date is picked

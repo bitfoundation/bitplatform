@@ -4188,19 +4188,21 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerSubDayMaxRangeShouldLeaveOnlyTheStartDaySelectable()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var today = new DateTimeOffset(2024, 6, 12, 0, 0, 0, TimeSpan.Zero);
+        var today = new DateTimeOffset(2024, 6, 12, 12, 0, 0, TimeSpan.Zero);
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, today);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.MaxRange, TimeSpan.FromHours(6));
             parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = today });
         });
 
-        // A range that has to fit inside six hours cannot end on another day, so the grid must say so
-        // rather than accept the pick and silently rewrite the end date back to the start day.
+        // Six hours either side of noon stay inside June 12, so a range starting then cannot end on
+        // another day, and the grid must say so rather than accept the pick and silently rewrite the
+        // end date back to the start day.
         var enabled = component.FindAll(".bit-dtrp-dbt").Where(d => d.HasAttribute("disabled") is false).ToList();
 
         Assert.AreEqual(1, enabled.Count);
@@ -4229,5 +4231,31 @@ public class BitDateRangePickerTests : BunitTestContext
                                .ToList();
 
         CollectionAssert.AreEqual(new[] { "9", "10", "11", "12", "13", "14", "15" }, enabled);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerFractionalMaxRangeShouldReachTheDayItsInstantFallsOn()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var today = new DateTimeOffset(2024, 1, 10, 20, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.MaxRange, TimeSpan.FromHours(36));
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = today });
+        });
+
+        // 36 hours from Jan 10 20:00 reach Jan 12 08:00 forward and Jan 9 08:00 back, so both of those
+        // days stay pickable - a whole number of days counted from the start day would stop at Jan 11.
+        var enabled = component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")
+                               .Where(d => d.HasAttribute("disabled") is false)
+                               .Select(d => d.TextContent.Trim())
+                               .ToList();
+
+        CollectionAssert.AreEqual(new[] { "9", "10", "11", "12" }, enabled);
     }
 }
