@@ -376,6 +376,7 @@ public partial class BitCallout : BitComponentBase
 
     /// <summary>
     /// The vertical offset of the scroll container to consider in the positioning and height calculation of the callout.
+    /// A negative value has the callout measure that offset itself, as the height of everything it renders around the scroll container.
     /// </summary>
     [Parameter] public int? ScrollOffset { get; set; }
 
