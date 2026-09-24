@@ -252,6 +252,10 @@
                     A listbox rather than a plain drawing: the numbers are the options of the current view and the
                     pointer is the selection, which is what lets a screen reader read out what the dial is on and
                     the keyboard move it without every number having to be a tab stop of its own.
+
+                    A standalone picker has no field to carry the state of the value: the input it posts through
+                    is hidden from assistive technology, so the dial - the control the person actually operates -
+                    is what says the value is required and what says it was rejected.
                 *@
                 <div @ref="_clockRef"
                      @onkeydown="HandleOnClockKeyDown"
@@ -266,11 +270,6 @@
                      aria-labelledby="@(IsClockNamedByLabelTemplate ? $"{_labelId} {_clockLabelId}" : null)"
                      aria-disabled="@(IsEnabled ? null : "true")"
                      aria-readonly="@(ReadOnly ? "true" : null)"
-                     @*
-                         A standalone picker has no field to carry the state of the value: the input it posts
-                         through is hidden from assistive technology, so the dial - the control the person
-                         actually operates - is what says the value is required and what says it was rejected.
-                     *@
                      aria-required="@(Standalone && Required ? "true" : null)"
                      aria-invalid="@(Standalone && ValueInvalid is true ? "true" : null)"
                      aria-activedescendant="@_activeDescendantId"
