@@ -6,6 +6,18 @@
     flex-direction: column;
 }
 
+// The public CSS variables inherit, so one block on an ancestor re-skins every number field under it.
+// It sits outside ::deep because the wrapper is a plain element written in this page's own markup.
+.pill-field {
+    --bit-NumberField-radius: 999px;
+    --bit-NumberField-height: 2.75rem;
+    --bit-NumberField-background: #f3f1ff;
+    --bit-NumberField-border-color: #7c5cff;
+    --bit-NumberField-focus-color: #7c5cff;
+    --bit-NumberField-button-hover-background: #e6e0ff;
+    --bit-NumberField-label-color: #7c5cff;
+}
+
 ::deep {
     .custom-class {
         overflow: hidden;
