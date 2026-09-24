@@ -14,9 +14,11 @@
 
 /*
  * Public CSS variables, read off the element and never declared here, so a value set on :root re-skins every
- * circular time picker and one set on an ancestor re-skins the pickers under it. The callout is rendered as a
- * sibling of the root rather than inside it, so a variable that has to reach the dial goes on a shared
- * ancestor (or on :root) rather than on the Style of the instance - or, per instance, through Styles.Callout:
+ * circular time picker. A non-standalone callout is moved to the body when it opens - that is what keeps it
+ * clear of the clipping and stacking contexts of the page - and inherits from the body from then on, so a
+ * variable that has to reach the dial cannot be set on a wrapper around the picker: it goes on :root, or, per
+ * instance, on Styles.Callout. Styles.Root and a wrapper reach the field, the label and the icon only. A
+ * standalone picker has no callout, so there everything is reachable from the root:
  *   --bit-CircularTimePicker-color                        accent of the picker: the toolbar, the hand,
  *                                                         the pin, the selected number and the actions
  *                                                                                  (default: the Color role's main color)
@@ -473,10 +475,16 @@
     flex-direction: row;
     justify-content: center;
     min-width: var(--bit-ctp-tlb-minwidth);
-    // The inline part of the default padding is a variable of its own so the close button - which is laid
-    // over the corner of the bar - can reserve room at both ends without the read-out sliding off center,
-    // and without the rule having to be re-declared at a specificity that would beat the public variable.
-    padding: var(--bit-CircularTimePicker-toolbar-padding, #{spacing(2)} var(--bit-ctp-tlb-pad-inline, 0));
+    padding: var(--bit-CircularTimePicker-toolbar-padding, #{spacing(2)} 0);
+
+    // The room the close button needs - it is laid over the corner of the bar - is reserved with a spacer at
+    // either end rather than folded into the padding, so the read-out stays centered and never runs under the
+    // button even where the public padding variable has replaced the padding wholesale.
+    &::before,
+    &::after {
+        content: "";
+        flex: 0 0 var(--bit-ctp-tlb-pad-inline, 0);
+    }
     color: var(--bit-CircularTimePicker-toolbar-color, var(--bit-ctp-clr-text));
     background-color: var(--bit-CircularTimePicker-toolbar-background, var(--bit-ctp-clr));
 }
@@ -643,7 +651,7 @@ span.bit-ctp-txt {
 
         .bit-ctp-tlb {
             min-width: unset;
-            padding: spacing(2);
+            padding: var(--bit-CircularTimePicker-toolbar-padding, #{spacing(2)});
             flex-direction: column;
             justify-content: center;
         }

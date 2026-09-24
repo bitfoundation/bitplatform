@@ -598,7 +598,11 @@ private TimeSpan? classesValue;";
     private readonly string example25RazorCode = @"
 <div class=""custom-vars"">
     <BitCircularTimePicker Label=""Reservation"" Placeholder=""Select a time"" ShowNowButton ShowClearButton
-                           MinuteStep=""5"" TimeFormat=""BitTimeFormat.TwelveHours"" AmPmInClock />
+                           MinuteStep=""5"" TimeFormat=""BitTimeFormat.TwelveHours"" AmPmInClock
+                           Styles=""@(new() { Callout = ""--bit-CircularTimePicker-callout-radius: 1.25rem;"" +
+                                                       ""--bit-CircularTimePicker-clock-background: #f4efff;"" +
+                                                       ""--bit-CircularTimePicker-number-color: #3a2358;"" +
+                                                       ""--bit-CircularTimePicker-number-hover-background: #e4d8fb;"" })"" />
 </div>
 
 <BitCircularTimePicker Label=""Reservation"" Placeholder=""Select a time"" ShowSeconds
@@ -606,21 +610,22 @@ private TimeSpan? classesValue;";
                                          Callout = ""--bit-CircularTimePicker-color: seagreen;"" +
                                                    ""--bit-CircularTimePicker-clock-size: 14rem;"" +
                                                    ""--bit-CircularTimePicker-clock-background: #f0f7f2;"" +
-                                                   ""--bit-CircularTimePicker-number-color: #1f3d2b;"" })"" />";
+                                                   ""--bit-CircularTimePicker-number-color: #1f3d2b;"" +
+                                                   ""--bit-CircularTimePicker-toolbar-padding: 1rem 0.5rem;"" +
+                                                   ""--bit-CircularTimePicker-pointer-width: 3px;"" +
+                                                   ""--bit-CircularTimePicker-pin-size: 10px;"" })"" />";
     private readonly string example25CsharpCode = @"
-/* in the stylesheet of the page, or on :root to re-skin every picker of the app */
+/* in the stylesheet of the page. A wrapper reaches the field, the label and the icon: the callout is moved
+   to the body when it opens, so the variables of the dial go on Styles.Callout instead - or on :root, to
+   reach every picker of the app. */
 .custom-vars {
     --bit-CircularTimePicker-color: #6b3fa0;
-    --bit-CircularTimePicker-text-color: #fff;
     --bit-CircularTimePicker-focus-color: #b58cf0;
+    --bit-CircularTimePicker-label-color: #6b3fa0;
+    --bit-CircularTimePicker-border-color: #6b3fa0;
     --bit-CircularTimePicker-border-radius: 1rem;
-    --bit-CircularTimePicker-callout-radius: 1.25rem;
-    --bit-CircularTimePicker-clock-background: #f4efff;
-    --bit-CircularTimePicker-number-color: #3a2358;
-    --bit-CircularTimePicker-number-hover-background: #e4d8fb;
-    --bit-CircularTimePicker-toolbar-padding: 1rem 0.5rem;
-    --bit-CircularTimePicker-pointer-width: 3px;
-    --bit-CircularTimePicker-pin-size: 10px;
+    --bit-CircularTimePicker-input-background: #f4efff;
+    --bit-CircularTimePicker-input-color: #3a2358;
 }";
 
     private readonly string example26RazorCode = @"

@@ -11,21 +11,18 @@
     padding: rem2(5px);
 }
 
-// The public CSS variables of the picker, set on a wrapper so they reach both the field and the callout -
-// the callout is rendered as a sibling of the root, so it inherits from the same ancestor rather than from
-// the root itself.
+// The public CSS variables of the picker that reach the field, set on a wrapper around it. A wrapper only
+// reaches the field, the label and the icon: the callout is moved to the body when it opens, so from then on
+// it inherits from the body and not from here. The variables of the dial go on Styles.Callout, per instance,
+// which is what both pickers of the example do - on :root they would restyle every picker of the page.
 .custom-vars {
     --bit-CircularTimePicker-color: #6b3fa0;
-    --bit-CircularTimePicker-text-color: #fff;
     --bit-CircularTimePicker-focus-color: #b58cf0;
+    --bit-CircularTimePicker-label-color: #6b3fa0;
+    --bit-CircularTimePicker-border-color: #6b3fa0;
     --bit-CircularTimePicker-border-radius: 1rem;
-    --bit-CircularTimePicker-callout-radius: 1.25rem;
-    --bit-CircularTimePicker-clock-background: #f4efff;
-    --bit-CircularTimePicker-number-color: #3a2358;
-    --bit-CircularTimePicker-number-hover-background: #e4d8fb;
-    --bit-CircularTimePicker-toolbar-padding: 1rem 0.5rem;
-    --bit-CircularTimePicker-pointer-width: 3px;
-    --bit-CircularTimePicker-pin-size: 10px;
+    --bit-CircularTimePicker-input-background: #f4efff;
+    --bit-CircularTimePicker-input-color: #3a2358;
 }
 
 .event-log {

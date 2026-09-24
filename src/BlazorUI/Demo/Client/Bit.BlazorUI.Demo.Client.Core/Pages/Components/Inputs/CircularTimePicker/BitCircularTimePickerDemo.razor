@@ -748,21 +748,31 @@
             <b>CSS variables</b> table at the bottom of this page.
         </div><br />
         <div>
-            Set them on <b>:root</b> to re-skin every picker, or on any ancestor element to re-skin the ones under
-            it. The callout is rendered as a sibling of the root rather than inside it, so a variable that has to
-            reach the dial goes on a shared ancestor rather than on the <b>Style</b> of the instance - the picker
-            below is wrapped in a <b>div</b> that carries them:
+            Set them on <b>:root</b> to re-skin every picker of the application. The callout is moved to the
+            <b>body</b> when it opens - that is what keeps it clear of the clipping and stacking contexts of the
+            page - so from then on it inherits from the <b>body</b> and not from where the picker sits: a wrapper
+            around the picker reaches the field, the label and the icon, and never the dial. The picker below is
+            wrapped in a <b>div</b> that carries the field variables, and hands the variables of its dial to
+            <b>Styles.Callout</b> - the same block on <b>:root</b> would restyle every picker of the page:
         </div><br />
         <div class="custom-vars">
             <div class="example-content">
                 <BitCircularTimePicker Label="Reservation" Placeholder="Select a time" ShowNowButton ShowClearButton
-                                       MinuteStep="5" TimeFormat="BitTimeFormat.TwelveHours" AmPmInClock />
+                                       MinuteStep="5" TimeFormat="BitTimeFormat.TwelveHours" AmPmInClock
+                                       Styles="@(new()
+                                       {
+                                           Callout = "--bit-CircularTimePicker-callout-radius: 1.25rem;" +
+                                                     "--bit-CircularTimePicker-clock-background: #f4efff;" +
+                                                     "--bit-CircularTimePicker-number-color: #3a2358;" +
+                                                     "--bit-CircularTimePicker-number-hover-background: #e4d8fb;"
+                                       })" />
             </div>
         </div>
         <br /><br />
         <div>
-            Per instance, <b>Styles.Root</b> covers the field and <b>Styles.Callout</b> covers the dial, so the two
-            together restyle a single picker without a stylesheet:
+            Per instance, <b>Styles.Root</b> covers the field and <b>Styles.Callout</b> covers the dial - the callout
+            carries them with it when it moves - so the two together restyle a single picker, dial included, without
+            a stylesheet:
         </div><br />
         <div class="example-content">
             <BitCircularTimePicker Label="Reservation" Placeholder="Select a time" ShowSeconds
@@ -772,7 +782,10 @@
                                        Callout = "--bit-CircularTimePicker-color: seagreen;" +
                                                  "--bit-CircularTimePicker-clock-size: 14rem;" +
                                                  "--bit-CircularTimePicker-clock-background: #f0f7f2;" +
-                                                 "--bit-CircularTimePicker-number-color: #1f3d2b;"
+                                                 "--bit-CircularTimePicker-number-color: #1f3d2b;" +
+                                                 "--bit-CircularTimePicker-toolbar-padding: 1rem 0.5rem;" +
+                                                 "--bit-CircularTimePicker-pointer-width: 3px;" +
+                                                 "--bit-CircularTimePicker-pin-size: 10px;"
                                    })" />
         </div>
     </DemoExample>

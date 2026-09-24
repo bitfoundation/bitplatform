@@ -684,6 +684,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         // first: a second ArrowDown on an editable field, a click that lands on the picker again.
         if (IsOpen) return;
 
+        // An open settles the question an AutoClose wait was still holding open the same way a close does -
+        // a picker closed through the IsOpen parameter and opened again inside the wait would otherwise be
+        // shut by the timer of the selection before it.
+        CancelAutoClose();
+
         if (await AssignIsOpenInternal(true) is false) return;
 
         _view = GetInitialView();
@@ -1070,6 +1075,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         // during prerendering not even a JS runtime to call); an initial IsOpen is applied by OnAfterRenderAsync.
         if (_internalIsOpenChange || IsRendered is false || Standalone) return;
 
+        // The internal flows drop a queued AutoClose close in OpenCallout and CloseCallout; a change pushed
+        // in through the parameter goes through neither of them, so it is dropped here instead. Without it a
+        // picker closed and reopened inside the wait is shut by the timer the selection before it queued.
+        CancelAutoClose();
+
         _ = InvokeAsync(async () =>
         {
             if (isOpen)
@@ -1418,6 +1428,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsEnabled is false) return;
         if (_view == view) return;
         if (IsViewEditable(view) is false) return;
+
+        // Moving the dial on to another part means the selection the wait was queued against is being
+        // carried on with, so the close it had queued is dropped rather than left to take the clock away
+        // mid-edit. CommitView never does both, so the wait a completed selection starts is not touched.
+        CancelAutoClose();
 
         _view = view;
 
