@@ -555,7 +555,6 @@ public partial class BitStackDemo
 
     private bool isReversed;
     private bool isHorizontal;
-    private BitDir direction;
     private BitAlignment verticalAlign;
     private BitAlignment horizontalAlign;
 

@@ -93,8 +93,15 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
  * A breakpoint whose alignment means nothing on the axis it lands on is handed the initial value of the property, which
  * is the guaranteed-invalid one, so the two fallbacks below are what such a breakpoint - and a stack that was told no
  * alignment at all - ends up being laid out by.
+ *
+ * The base of the direction is always written onto the element, but the base of the two alignments only is when an
+ * alignment was asked for. Both are emptied here, below the inline style that replaces them when it is, since a stack
+ * told no alignment would otherwise read its base straight off the inline style of a responsive stack around it.
  */
 .bit-stc-rsp {
+    --bit-stc-ai: initial;
+    --bit-stc-jc: initial;
+
     --bit-stc-dir-xs: var(--bit-stc-dir);
     --bit-stc-dir-sm: var(--bit-stc-dir-xs);
     --bit-stc-dir-md: var(--bit-stc-dir-sm);

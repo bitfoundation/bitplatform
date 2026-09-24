@@ -48,41 +48,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Gap" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div class="example-desc">
-                <b>Gap</b> takes any CSS length (one for both axes, or two: vertical then horizontal) and defaults to the
-                theme spacing (<code>1rem</code>), which <code>--bit-Stack-gap</code> overrides app-wide.
-                <b>HorizontalGap</b> and <b>VerticalGap</b> replace it on one axis. It is a CSS gap, so there is never room
-                before the first child or after the last. For a visible divider, put a
-                <BitLink Href="/components/separator">BitSeparator</BitLink> between two children.
-            </div>
-            <div class="example-content">
-                <BitSlider Label="Gap between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@gap" />
-                <br />
-                <BitStack Gap="@($"{gap.ToString(CultureInfo.InvariantCulture)}rem")" Class="stack">
-                    <div class="item">Item 1</div>
-                    <div class="item">Item 2</div>
-                    <div class="item">Item 3</div>
-                </BitStack>
-                <br />
-                <div class="caption">Per axis (<code>HorizontalGap</code> 2rem, <code>VerticalGap</code> 0.25rem)</div>
-                <BitStack Horizontal Wrap HorizontalGap="2rem" VerticalGap="0.25rem" Class="stack">
-                    @for (int i = 1; i <= 12; i++)
-                    {
-                        <div class="item">Item @i</div>
-                    }
-                </BitStack>
-                <br />
-                <div class="caption">A <code>BitSeparator</code> drawn in the room the gap leaves</div>
-                <BitStack AutoHeight HorizontalAlign="BitAlignment.Stretch" Class="stack">
-                    <div class="item">Item 1</div>
-                    <BitSeparator />
-                    <div class="item">Item 2</div>
-                </BitStack>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Alignment" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Alignment" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div class="example-desc">
                 <b>HorizontalAlign</b> and <b>VerticalAlign</b> name the screen axis, not the flexbox property, so they keep
                 their meaning when the direction flips. The space distributions only apply along the children's axis and
@@ -90,19 +56,10 @@
                 shorthand. To push one child away from the rest, use a <BitLink Href="/components/spacer">BitSpacer</BitLink>.
             </div>
             <div class="example-content">
-                <BitStack Horizontal Wrap Gap="2rem">
+                <BitStack Horizontal>
                     <BitToggle @bind-Value="isHorizontal" Text="Horizontal" />
                     <BitToggle @bind-Value="isReversed" Text="Reversed" />
                 </BitStack>
-                <br />
-                <BitChoiceGroup @bind-Value="direction"
-                                Horizontal
-                                Label="Direction"
-                                TItem="BitChoiceGroupOption<BitDir>" TValue="BitDir">
-                    <BitChoiceGroupOption Text="LTR" Value="BitDir.Ltr" />
-                    <BitChoiceGroupOption Text="RTL" Value="BitDir.Rtl" />
-                    <BitChoiceGroupOption Text="Auto" Value="BitDir.Auto" />
-                </BitChoiceGroup>
                 <br />
                 <BitChoiceGroup @bind-Value="horizontalAlign"
                                 Horizontal
@@ -132,8 +89,7 @@
                     <BitChoiceGroupOption Text="Stretch" Value="BitAlignment.Stretch" />
                 </BitChoiceGroup>
                 <br />
-                <BitStack Dir="direction"
-                          Class="stack"
+                <BitStack Class="stack"
                           Reversed="isReversed"
                           Horizontal="isHorizontal"
                           VerticalAlign="verticalAlign"
@@ -151,7 +107,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Wrap" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Wrap" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div class="example-desc">
                 <b>Wrap</b> moves children that do not fit onto more rows instead of squeezing them; <b>WrapReverse</b> stacks
                 those rows from the far edge. <b>AlignContent</b> places the rows once there is more than one.
@@ -189,11 +145,45 @@
                     Per breakpoint: this row wraps below <code>md</code> (960px) and holds its single line from it upwards,
                     where what no longer fits is squeezed instead
                 </div>
-                <BitStack Horizontal Wrap WrapMd="false" Gap="0.5rem" Class="stack" AutoHeight>
+                <BitStack Horizontal Wrap WrapMd="false" Class="stack">
                     @for (int i = 1; i <= 16; i++)
                     {
                         <div class="square">@i</div>
                     }
+                </BitStack>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Gap" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div class="example-desc">
+                <b>Gap</b> takes any CSS length (one for both axes, or two: vertical then horizontal) and defaults to the
+                theme spacing (<code>1rem</code>), which <code>--bit-Stack-gap</code> overrides app-wide.
+                <b>HorizontalGap</b> and <b>VerticalGap</b> replace it on one axis. It is a CSS gap, so there is never room
+                before the first child or after the last. For a visible divider, put a
+                <BitLink Href="/components/separator">BitSeparator</BitLink> between two children.
+            </div>
+            <div class="example-content">
+                <BitSlider Label="Gap between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@gap" />
+                <br />
+                <BitStack Gap="@($"{gap.ToString(CultureInfo.InvariantCulture)}rem")" Class="stack">
+                    <div class="item">Item 1</div>
+                    <div class="item">Item 2</div>
+                    <div class="item">Item 3</div>
+                </BitStack>
+                <br />
+                <div class="caption">Per axis: <code>HorizontalGap</code> 2rem between the columns, <code>VerticalGap</code> 0.25rem between the rows</div>
+                <BitStack Horizontal Wrap HorizontalGap="2rem" VerticalGap="0.25rem" Class="stack">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <div class="item">Item @i</div>
+                    }
+                </BitStack>
+                <br />
+                <div class="caption">A <code>BitSeparator</code> drawn in the room the gap leaves</div>
+                <BitStack HorizontalAlign="BitAlignment.Stretch" Class="stack">
+                    <div class="item">Item 1</div>
+                    <BitSeparator />
+                    <div class="item">Item 2</div>
                 </BitStack>
             </div>
         </DemoExample>
@@ -222,9 +212,8 @@
                 </BitStack>
                 <br />
                 <div class="caption">
-                    One pair of alignments (<code>HorizontalAlign</code> SpaceBetween, <code>VerticalAlign</code> Center) at both
-                    directions: as a column the children are centered down the stack, since spreading them is meaningless across
-                    it; as a row they are spread along it and centered across it
+                    The alignments follow the direction: <code>HorizontalAlign</code> SpaceBetween spreads the row and is
+                    ignored by the column, <code>VerticalAlign</code> Center centers either one
                 </div>
                 <BitStack HorizontalMd
                           Class="stack"
@@ -240,7 +229,7 @@
                     Direction and spacing together: a column with a <code>0.25rem</code> gap below <code>md</code>, a row with
                     a <code>3rem</code> one from it upwards
                 </div>
-                <BitStack HorizontalMd Gap="0.25rem" GapMd="3rem" Class="stack" AutoHeight>
+                <BitStack HorizontalMd Gap="0.25rem" GapMd="3rem" Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
@@ -251,7 +240,7 @@
                     gives them at every width, while its columns open from <code>0.5rem</code> to <code>3rem</code> at
                     <code>md</code> and to <code>5rem</code> at <code>lg</code>
                 </div>
-                <BitStack Horizontal Wrap Gap="0.5rem" HorizontalGapMd="3rem" HorizontalGapLg="5rem" Class="stack" AutoHeight>
+                <BitStack Horizontal Wrap Gap="0.5rem" HorizontalGapMd="3rem" HorizontalGapLg="5rem" Class="stack">
                     @for (int i = 1; i <= 8; i++)
                     {
                         <div class="item">Item @i</div>
@@ -319,7 +308,7 @@
                 </BitStack>
                 <br />
                 <div class="caption">Eight squares in a row too narrow for them: squeezed to fit</div>
-                <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight Style="width:20rem">
+                <BitStack Horizontal Gap="0.5rem" Class="host" Style="width:20rem">
                     @for (int i = 1; i <= 8; i++)
                     {
                         <div class="square">@i</div>
@@ -327,7 +316,7 @@
                 </BitStack>
                 <br />
                 <div class="caption">NoShrinkContent: kept at their own size, and what no longer fits overflows</div>
-                <BitStack Horizontal NoShrinkContent Gap="0.5rem" Class="host" AutoHeight Style="width:20rem">
+                <BitStack Horizontal NoShrinkContent Gap="0.5rem" Class="host" Style="width:20rem">
                     @for (int i = 1; i <= 8; i++)
                     {
                         <div class="square">@i</div>

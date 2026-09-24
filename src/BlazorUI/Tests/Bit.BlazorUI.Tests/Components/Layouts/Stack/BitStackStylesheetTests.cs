@@ -55,6 +55,34 @@ public class BitStackStylesheetTests : BunitTestContext
         Assert.IsFalse(style.Contains("--bit-stc-dgap"));
     }
 
+    [TestMethod]
+    public void BitStackShouldNotLetAResponsiveStackInheritTheAlignmentOfTheOneAroundIt()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalMd, true);
+            parameters.Add(p => p.Alignment, BitAlignment.Center);
+            parameters.Add(p => p.ChildContent, builder =>
+            {
+                builder.OpenComponent<BitStack>(0);
+                builder.AddAttribute(1, nameof(BitStack.HorizontalMd), (bool?)true);
+                builder.CloseComponent();
+            });
+        });
+
+        var stacks = component.FindAll(".bit-stc-rsp");
+
+        // The outer stack hands its base alignment over inline, the inner one declares none - so it would read the
+        // outer one's through inheritance unless the class empties the base on every responsive stack.
+        StringAssert.Contains(stacks[0].GetAttribute("style")!, "--bit-stc-ai:center");
+        Assert.IsFalse(stacks[1].GetAttribute("style")!.Contains("--bit-stc-ai"));
+
+        var rsp = GetBlock(ReadStylesheet(), "\n.bit-stc-rsp {");
+
+        StringAssert.Contains(rsp, "--bit-stc-ai: initial;");
+        StringAssert.Contains(rsp, "--bit-stc-jc: initial;");
+    }
+
     private static string GetBlock(string stylesheet, string selector)
     {
         var start = stylesheet.IndexOf(selector, System.StringComparison.Ordinal);
