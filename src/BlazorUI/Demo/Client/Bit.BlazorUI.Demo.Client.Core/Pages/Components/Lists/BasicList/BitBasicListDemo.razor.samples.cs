@@ -3,16 +3,15 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.BasicList;
 public partial class BitBasicListDemo
 {
     private readonly string example1RazorCode = @"
-<BitBasicList Items=""fewPeople"" Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+<BitBasicList Items=""fewPeople"" Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;"">
     <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+        <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
             Name: <strong>@person.FirstName</strong>
         </div>
     </RowTemplate>
 </BitBasicList>
-
-
-<BitBasicList Items=""fruits"" Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 150px;"" />";
+<br />
+<BitBasicList Items=""fruits"" Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 150px;"" />";
     private readonly string example1CsharpCode = @"
 private readonly List<Person> fewPeople = [.. Enumerable.Range(0, 100).Select(i => new Person
 {
@@ -34,9 +33,9 @@ public class Person
 }";
 
     private readonly string example2RazorCode = @"
-<BitBasicList Items=""emptyPeople"" Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 150px;"">
+<BitBasicList Items=""emptyPeople"" Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 150px;"">
     <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+        <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
             Name: <strong>@person.FirstName</strong>
         </div>
     </RowTemplate>
@@ -59,16 +58,16 @@ public class Person
 }";
 
     private readonly string example3RazorCode = @"
-<BitBasicList Items=""fewPeople"" Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 300px;"">
+<BitBasicList Items=""fewPeople"" Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 300px;"">
     <HeaderTemplate>
         <BitStack Horizontal HorizontalAlign=""BitAlignment.SpaceBetween""
-                  Style=""padding: 0.5rem 1rem; background: #75737329; position: sticky; top: 0;"">
+                  Style=""padding: 0.5rem 1rem; background: var(--bit-clr-bg-sec); position: sticky; top: 0;"">
             <BitText Typography=""BitTypography.Subtitle1"">People</BitText>
             <BitTag Color=""BitColor.Info"">@fewPeople.Count</BitTag>
         </BitStack>
     </HeaderTemplate>
     <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+        <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
             Name: <strong>@person.FirstName</strong>
         </div>
     </RowTemplate>
@@ -97,21 +96,31 @@ public class Person
 
     private readonly string example4RazorCode = @"
 <BitToggleButton @bind-IsChecked=""isLoading"" Text=""@(isLoading ? ""Stop loading"" : ""Start loading"")"" />
-
-<BitBasicList Items=""fewPeople"" Loading=""isLoading""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 200px;"">
-    <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
-            Name: <strong>@person.FirstName</strong>
-        </div>
-    </RowTemplate>
-    <LoadingTemplate>
-        <BitStack Horizontal Alignment=""BitAlignment.Center"">
-            <BitRollingSquareLoading />
-            <BitText>Fetching people...</BitText>
-        </BitStack>
-    </LoadingTemplate>
-</BitBasicList>";
+<br /><br />
+<BitStack Horizontal Wrap>
+    <BitBasicList Items=""fewPeople"" Loading=""isLoading"" LoadingLabel=""Fetching people...""
+                  Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 200px; flex: 1 1 250px;"">
+        <RowTemplate Context=""person"">
+            <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
+                Name: <strong>@person.FirstName</strong>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+    <BitBasicList Items=""fewPeople"" Loading=""isLoading""
+                  Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 200px; flex: 1 1 250px;"">
+        <RowTemplate Context=""person"">
+            <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
+                Name: <strong>@person.FirstName</strong>
+            </div>
+        </RowTemplate>
+        <LoadingTemplate>
+            <BitStack Horizontal Alignment=""BitAlignment.Center"">
+                <BitRollingSquareLoading />
+                <BitText>Custom loading template</BitText>
+            </BitStack>
+        </LoadingTemplate>
+    </BitBasicList>
+</BitStack>";
     private readonly string example4CsharpCode = @"
 private bool isLoading;
 
@@ -133,15 +142,18 @@ public class Person
 
     private readonly string example5RazorCode = @"
 <BitBasicList Virtualize
+              ItemSize=""140""
+              OverscanCount=""5""
               Items=""lotsOfPeople""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+              Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;"">
     <RowTemplate Context=""person"">
-        <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <img width=""100"" height=""100"" src=""https://picsum.photos/100/100?random=@(person.Id)"">
-            <div style=""margin-left:3%; display: inline-block;"">
-                <p>Id: <strong>@person.Id</strong></p>
-                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                <p>Job: <strong>@person.Job</strong></p>
+        <div @key=""person.Id"" role=""listitem""
+             style=""height: 140px; box-sizing: border-box; display: flex; align-items: center; gap: 1rem; padding: 0 20px; border-bottom: 1px solid var(--bit-clr-brd-sec);"">
+            <img width=""100"" height=""100"" alt="""" src=""https://picsum.photos/100/100?random=@(person.Id)"">
+            <div>
+                <div>Id: <strong>@person.Id</strong></div>
+                <div>Full Name: <strong>@person.FirstName @person.LastName</strong></div>
+                <div>Job: <strong>@person.Job</strong></div>
             </div>
         </div>
     </RowTemplate>
@@ -165,60 +177,26 @@ public class Person
 
     private readonly string example6RazorCode = @"
 <BitBasicList Virtualize
-              ItemSize=""300""
-              OverscanCount=""5""
-              Items=""lotsOfPeople""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
-    <RowTemplate Context=""person"">
-        <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <img width=""100"" height=""100"" src=""https://picsum.photos/100/100?random=@(person.Id)"">
-            <div style=""margin-left:3%; display: inline-block;"">
-                <p>Id: <strong>@person.Id</strong></p>
-                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                <p>Job: <strong>@person.Job</strong></p>
-            </div>
-        </div>
-    </RowTemplate>
-</BitBasicList>";
-    private readonly string example6CsharpCode = @"
-private readonly List<Person> lotsOfPeople = [.. Enumerable.Range(0, 8000).Select(i => new Person
-{
-    Id = i + 1,
-    FirstName = $""Person {i + 1}"",
-    LastName = $""Person Family {i + 1}"",
-    Job = $""Programmer {i + 1}""
-})];
-
-public class Person
-{
-    public int Id { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Job { get; set; }
-}";
-
-    private readonly string example7RazorCode = @"
-<BitBasicList Virtualize
               ItemSize=""83""
               TItem=""ProductDto""
               ItemsProvider=""productsProvider""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+              Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;"">
     <RowTemplate Context=""product"">
-        <div @key=""product.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;"">
+        <div @key=""product.Id"" role=""listitem"" style=""border-bottom: 1px solid var(--bit-clr-brd-sec); padding: 5px 20px;"">
             <div>Id: <strong>@product.Id</strong></div>
             <div>Name: <strong>@product.Name</strong></div>
             <div>Price: <strong>@product.Price</strong></div>
         </div>
     </RowTemplate>
     <VirtualizePlaceholder>
-        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;"">
+        <div role=""listitem"" style=""border-bottom: 1px solid var(--bit-clr-brd-sec); padding: 5px 20px;"">
             <div>Id: <strong>Loading...</strong></div>
             <div>Name: <strong>Loading...</strong></div>
             <div>Price: <strong>Loading...</strong></div>
         </div>
     </VirtualizePlaceholder>
 </BitBasicList>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 [Inject] private HttpClient HttpClient { get; set; } = default!;
 [Inject] private NavigationManager NavManager { get; set; } = default!;
 
@@ -262,37 +240,39 @@ public class ProductDto
 [JsonSerializable(typeof(PagedResult<ProductDto>))]
 public partial class AppJsonContext : JsonSerializerContext { }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitBasicList Virtualize
               ItemSize=""32""
               TItem=""CategoryOrProductDto""
               ItemsProvider=""categoriesAndProductsProvider""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+              Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;"">
     @* Every row and the placeholder are 32px tall on purpose: the virtualization sizes its scroll
        region by a single item size, so rows of differing heights keep it correcting that size on
        every render and never let the list settle. *@
     <RowTemplate Context=""catOrProd"">
         @if (catOrProd.IsProduct)
         {
-            <div @key=""@($""{catOrProd.CategoryId}-{catOrProd.ProductId}"")"" style=""height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 10px; display: flex; flex-flow: row; align-items: center; white-space: nowrap; overflow: hidden;"">
+            <div @key=""@($""{catOrProd.CategoryId}-{catOrProd.ProductId}"")"" role=""listitem""
+                 style=""height: 32px; box-sizing: border-box; border-bottom: 1px solid var(--bit-clr-brd-sec); padding: 5px 10px; display: flex; flex-flow: row; align-items: center; white-space: nowrap; overflow: hidden;"">
                 <div style=""width: 240px; overflow: hidden; text-overflow: ellipsis;"">Name: <strong>@catOrProd.Name</strong></div>
                 <div>Price: <strong>@catOrProd.Price</strong></div>
             </div>
         }
         else
         {
-            <div @key=""catOrProd.CategoryId"" style=""height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 20px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; background-color: #75737329;"">
-                <div>@catOrProd.Name</div>
+            <div @key=""catOrProd.CategoryId"" role=""listitem""
+                 style=""height: 32px; box-sizing: border-box; border-bottom: 1px solid var(--bit-clr-brd-sec); padding: 5px 20px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; background-color: var(--bit-clr-bg-sec);"">
+                <strong>@catOrProd.Name</strong>
             </div>
         }
     </RowTemplate>
     <VirtualizePlaceholder>
-        <div style=""height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 20px; display: flex; align-items: center;"">
+        <div role=""listitem"" style=""height: 32px; box-sizing: border-box; border-bottom: 1px solid var(--bit-clr-brd-sec); padding: 5px 20px; display: flex; align-items: center;"">
             Loading...
         </div>
     </VirtualizePlaceholder>
 </BitBasicList>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 [Inject] private HttpClient HttpClient { get; set; } = default!;
 [Inject] private NavigationManager NavManager { get; set; } = default!;
 
@@ -337,115 +317,59 @@ public class CategoryOrProductDto
 [JsonSerializable(typeof(PagedResult<CategoryOrProductDto>))]
 public partial class AppJsonContext : JsonSerializerContext { }";
 
-    private readonly string example9RazorCode = @"
-<BitBasicList LoadMore
-              Items=""fewPeople""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 250px;"">
-    <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
-            Name: <strong>@person.FirstName</strong>
-        </div>
-    </RowTemplate>
-</BitBasicList>
+    private readonly string example8RazorCode = @"
+<BitStack Horizontal Wrap>
+    <BitBasicList LoadMore
+                  LoadMoreSize=""10""
+                  Items=""fewPeople""
+                  LoadMoreText=""Show 10 more""
+                  Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 250px; flex: 1 1 250px;"">
+        <RowTemplate Context=""person"">
+            <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
+                Name: <strong>@person.FirstName</strong>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
 
-
-<BitBasicList LoadMore
-              Items=""fewPeople""
-              LoadMoreText=""Bring more people here""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 250px;"">
-    <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
-            Name: <b>@person.FirstName</b>
-        </div>
-    </RowTemplate>
-</BitBasicList>
-
-
-<BitBasicList LoadMore
-              Items=""fewPeople""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 250px;"">
-    <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
-            Name: <b>@person.FirstName</b>
-        </div>
-    </RowTemplate>
-    <LoadMoreTemplate>
-        <BitStack FitHeight Horizontal Style=""padding:8px;cursor:pointer"">
-            <BitButton IconName=""@BitIconName.Download"" FullWidth>Load more people</BitButton>
-        </BitStack>
-    </LoadMoreTemplate>
-</BitBasicList>
-
-
-<BitBasicList LoadMore
-              Virtualize
-              Items=""lotsOfPeople""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 250px;"">
-    <RowTemplate Context=""person"">
-        <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            Full Name: <b>@person.FirstName @person.LastName</b>
-        </div>
-    </RowTemplate>
-</BitBasicList>
-
-
-<BitBasicList LoadMore
-              ItemsProvider=""loadMoreProvider""
-              OnLoadMore=""c => loadedCount = c""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 250px;"">
-    <RowTemplate Context=""person"">
-        <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            Full Name: <b>@person.FirstName @person.LastName</b>
-        </div>
-    </RowTemplate>
-    <LoadMoreTemplate Context=""isLoadingMore"">
-        @if (isLoadingMore is false)
-        {
-            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding:1rem;cursor:pointer"">
-                <BitIcon IconName=""@BitIconName.Download"" />
-                <BitText>Load more people</BitText>
+    <BitBasicList LoadMore
+                  ItemsProvider=""loadMoreProvider""
+                  OnLoadMore=""c => loadedCount = c""
+                  Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 250px; flex: 1 1 250px;"">
+        <RowTemplate Context=""person"">
+            <div @key=""person.Id"" role=""listitem"" style=""border-bottom: 1px solid var(--bit-clr-brd-sec); padding: 5px 20px; margin: 10px;"">
+                Full Name: <b>@person.FirstName @person.LastName</b>
+            </div>
+        </RowTemplate>
+        <LoadMoreTemplate Context=""isLoadingMore"">
+            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding: 1rem;"">
+                @if (isLoadingMore)
+                {
+                    <BitRollingSquareLoading />
+                    <BitText>Loading...</BitText>
+                }
+                else
+                {
+                    <BitIcon IconName=""@BitIconName.Download"" />
+                    <BitText>Load more people</BitText>
+                }
             </BitStack>
-        }
-        else
-        {
-            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"">
-                <BitRollingSquareLoading />
-                <BitText>Loading...</BitText>
-            </BitStack>
-        }
-    </LoadMoreTemplate>
-</BitBasicList>
+        </LoadMoreTemplate>
+    </BitBasicList>
 
-<div>Loaded so far: <b>@loadedCount</b></div>
-
-
-<BitBasicList LoadMore
-              Virtualize
-              ItemsProvider=""loadMoreVirtualizeProvider""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 250px;"">
-    <RowTemplate Context=""person"">
-        <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            Full Name: <b>@person.FirstName @person.LastName</b>
-        </div>
-    </RowTemplate>
-    <LoadMoreTemplate Context=""isLoadingMore"">
-        @if (isLoadingMore is false)
-        {
-            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding:1rem;cursor:pointer"">
-                <BitIcon IconName=""@BitIconName.Download"" />
-                <BitText>Load more people</BitText>
-            </BitStack>
-        }
-        else
-        {
-            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"">
-                <BitRollingSquareLoading />
-                <BitText>Loading...</BitText>
-            </BitStack>
-        }
-    </LoadMoreTemplate>
-</BitBasicList>";
-    private readonly string example9CsharpCode = @"
+    <BitBasicList LoadMore
+                  Virtualize
+                  ItemsProvider=""loadMoreVirtualizeProvider""
+                  Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 250px; flex: 1 1 250px;"">
+        <RowTemplate Context=""person"">
+            <div @key=""person.Id"" role=""listitem"" style=""border-bottom: 1px solid var(--bit-clr-brd-sec); padding: 5px 20px; margin: 10px;"">
+                Full Name: <b>@person.FirstName @person.LastName</b>
+            </div>
+        </RowTemplate>
+    </BitBasicList>
+</BitStack>
+<br />
+<div>Loaded so far (second list): <b>@loadedCount</b></div>";
+    private readonly string example8CsharpCode = @"
 private int loadedCount;
 
 private readonly List<Person> fewPeople = [.. Enumerable.Range(0, 100).Select(i => new Person
@@ -494,25 +418,25 @@ public class Person
     public string Job { get; set; }
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitBasicList LoadMore
               AutoLoad
               AutoLoadThreshold=""150""
               ItemsProvider=""autoLoadProvider""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 300px;"">
+              Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 300px;"">
     <RowTemplate Context=""person"">
-        <div @key=""person.Id"" style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+        <div @key=""person.Id"" role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
             Full Name: <b>@person.FirstName @person.LastName</b>
         </div>
     </RowTemplate>
     <LoadMoreTemplate>
-        <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding:1rem"">
+        <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding: 1rem;"">
             <BitRollingSquareLoading />
             <BitText>Loading more people...</BitText>
         </BitStack>
     </LoadMoreTemplate>
 </BitBasicList>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private readonly List<Person> lotsOfPeople = [.. Enumerable.Range(0, 8000).Select(i => new Person
 {
     Id = i + 1,
@@ -543,16 +467,16 @@ public class Person
     public string Job { get; set; }
 }";
 
-    private readonly string example11RazorCode = @"
-<BitBasicList Horizontal Items=""fewPeople"" Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+    private readonly string example10RazorCode = @"
+<BitBasicList Horizontal Items=""fewPeople"" Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;"">
     <RowTemplate Context=""person"">
-        <div style=""width: 150px; margin: 10px; padding: 10px; text-align: center; background-color: #75737329;"">
+        <div role=""listitem"" style=""width: 150px; margin: 10px; padding: 10px; text-align: center; background-color: var(--bit-clr-bg-sec);"">
             <div><strong>@person.FirstName</strong></div>
             <div>@person.Job</div>
         </div>
     </RowTemplate>
 </BitBasicList>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private readonly List<Person> fewPeople = [.. Enumerable.Range(0, 100).Select(i => new Person
 {
     Id = i + 1,
@@ -569,23 +493,22 @@ public class Person
     public string Job { get; set; }
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitStack Horizontal Wrap>
     <BitButton OnClick=""() => listRef?.ScrollToStartAsync(true) ?? Task.CompletedTask"">Scroll to start</BitButton>
     <BitButton OnClick=""() => listRef?.ScrollToEndAsync(true) ?? Task.CompletedTask"">Scroll to end</BitButton>
     <BitButton OnClick=""() => listRef?.ScrollToIndexAsync(50, true) ?? Task.CompletedTask"">Scroll to #51</BitButton>
     <BitButton OnClick=""AddPerson"">Add a person</BitButton>
 </BitStack>
-
-<BitBasicList @ref=""listRef"" Items=""mutablePeople""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 250px;"">
+<br />
+<BitBasicList @ref=""listRef"" Items=""mutablePeople"" Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 250px;"">
     <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+        <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
             <strong>@person.Id</strong> - @person.FirstName
         </div>
     </RowTemplate>
 </BitBasicList>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool scrollToEndPending;
 private BitBasicList<Person>? listRef;
 
@@ -639,35 +562,120 @@ public class Person
     public string Job { get; set; }
 }";
 
+    private readonly string example12RazorCode = @"
+<BitBasicList LoadMore
+              TabIndex=""0""
+              LoadMoreSize=""10""
+              AriaLabel=""Team members""
+              LoadingLabel=""Loading more team members...""
+              ItemsProvider=""accessibleProvider""
+              Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 250px;"">
+    <RowTemplate Context=""person"">
+        <div @key=""person.Id"" role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
+            @person.FirstName, @person.Job
+        </div>
+    </RowTemplate>
+</BitBasicList>";
+    private readonly string example12CsharpCode = @"
+private readonly List<Person> teamMembers = [.. Enumerable.Range(0, 25).Select(i => new Person
+{
+    Id = i + 1,
+    FirstName = $""Member {i + 1}"",
+    LastName = $""Member Family {i + 1}"",
+    Job = $""Engineer {i + 1}""
+})];
+
+private BitBasicListItemsProvider<Person> accessibleProvider = default!;
+
+protected override void OnInitialized()
+{
+    accessibleProvider = async req =>
+    {
+        await Task.Delay(800);
+
+        return BitBasicListItemsProviderResult.From([.. teamMembers.Skip(req.StartIndex).Take(req.Count)], teamMembers.Count);
+    };
+
+    base.OnInitialized();
+}
+
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Job { get; set; }
+}";
+
     private readonly string example13RazorCode = @"
-<style>
-    .custom-class .list-item {
-        gap: 0.5rem;
-        color: white;
-        display: flex;
-        padding: 1rem;
-        margin: 0.5rem;
-        flex-wrap: wrap;
-        border-radius: 0.25rem;
-        background-color: tomato;
+<BitParams Parameters=""@basicListParams"">
+    <div style=""display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));"">
+        <BitBasicList Items=""fewPeople"">
+            <RowTemplate Context=""person"">
+                <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
+                    @person.FirstName
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+
+        <BitBasicList Items=""fruits"" />
+
+        <BitBasicList Items=""fewPeople"" LoadMoreText=""Its own text"">
+            <RowTemplate Context=""person"">
+                <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
+                    @person.Job
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+    </div>
+</BitParams>";
+    private readonly string example13CsharpCode = @"
+private readonly BitBasicListParams[] basicListParams =
+[
+    new()
+    {
+        LoadMore = true,
+        LoadMoreSize = 5,
+        LoadMoreText = ""Show more"",
+        Style = ""height: 200px; border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;"",
     }
-</style>
+];
 
+private readonly List<Person> fewPeople = [.. Enumerable.Range(0, 100).Select(i => new Person
+{
+    Id = i + 1,
+    FirstName = $""Person {i + 1}"",
+    LastName = $""Person Family {i + 1}"",
+    Job = $""Programmer {i + 1}""
+})];
 
+private readonly List<string> fruits = [""Apple"", ""Apricot"", ""Banana"", ""Cherry"", ""Fig"",
+                                        ""Grape"", ""Lemon"", ""Mango"", ""Orange"", ""Peach""];
+
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Job { get; set; }
+}";
+
+    private readonly string example14RazorCode = @"
+<div>Class:</div><br />
 <BitBasicList Virtualize
               Items=""lotsOfPeople""
               Class=""custom-class""
-              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+              Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;"">
     <RowTemplate Context=""person"">
-        <div @key=""person.Id"" class=""list-item"">
+        <div @key=""person.Id"" role=""listitem"" class=""list-item"">
             <span>Id: <strong>@person.Id</strong></span>
             <span>Full Name: <strong>@person.FirstName</strong></span>
             <span>Job: <strong>@person.Job</strong></span>
         </div>
     </RowTemplate>
 </BitBasicList>
-
-
+<br /><br />
+<div>Styles:</div><br />
 <BitBasicList LoadMore
               Items=""fewPeople""
               Styles=""@(new() { Root = ""border: 1px solid tomato; border-radius: 4px; height: 250px;"",
@@ -675,12 +683,29 @@ public class Person
                                 LoadMoreText = ""color: tomato; font-weight: bold;"" })"">
     <HeaderTemplate>People</HeaderTemplate>
     <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+        <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
+            Name: <strong>@person.FirstName</strong>
+        </div>
+    </RowTemplate>
+</BitBasicList>
+<br /><br />
+<div>CSS variables:</div><br />
+<BitBasicList LoadMore
+              Items=""fewPeople""
+              Style=""--bit-BasicList-height: 200px;
+                     --bit-BasicList-load-more-color: white;
+                     --bit-BasicList-load-more-hover-color: white;
+                     --bit-BasicList-load-more-background: seagreen;
+                     --bit-BasicList-load-more-hover-background: darkgreen;
+                     --bit-BasicList-focus-color: seagreen;
+                     border: 1px solid seagreen; border-radius: 4px;"">
+    <RowTemplate Context=""person"">
+        <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
             Name: <strong>@person.FirstName</strong>
         </div>
     </RowTemplate>
 </BitBasicList>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private readonly List<Person> lotsOfPeople = [.. Enumerable.Range(0, 8000).Select(i => new Person
 {
     Id = i + 1,
@@ -704,18 +729,36 @@ public class Person
     public string LastName { get; set; }
     public string Job { get; set; }
 }";
+    private const string example14ScssCode = @"
+.custom-class {
+    .list-item {
+        gap: 0.5rem;
+        color: white;
+        display: flex;
+        padding: 1rem;
+        margin: 0.5rem;
+        flex-wrap: wrap;
+        border-radius: 0.25rem;
+        background-color: tomato;
+    }
+}";
 
-    private readonly string example14RazorCode = @"
-<BitBasicList Dir=""BitDir.Rtl"" Items=""fewPeopleRtl"" Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+    private readonly DemoCodeFile[] example14CodeFiles =
+    [
+        new("BitBasicListDemo.razor.scss", example14ScssCode),
+    ];
+
+    private readonly string example15RazorCode = @"
+<BitBasicList Dir=""BitDir.Rtl"" Items=""fewPeopleRtl"" Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;"">
     <RowTemplate Context=""person"">
-        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+        <div role=""listitem"" style=""padding: 5px 20px; margin: 10px; background-color: var(--bit-clr-bg-sec);"">
             <p>شناسه: <strong>@person.Id</strong></p>
             <p>نام کامل: <strong>@person.FirstName @person.LastName</strong></p>
             <p>شغل: <strong>@person.Job</strong></p>
         </div>
     </RowTemplate>
 </BitBasicList>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private readonly List<Person> fewPeopleRtl = [.. Enumerable.Range(0, 100).Select(i => new Person
 {
     Id = i + 1,

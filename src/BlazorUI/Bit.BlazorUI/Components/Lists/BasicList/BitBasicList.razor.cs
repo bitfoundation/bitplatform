@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -8,6 +10,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private int _loadMoreSkip = 0;
     private long _lastFetchTime;
     private bool _isLoadingMore;
+    private bool _loadMoreHasFocus;
+    private bool _focusRootPending;
+    private bool _focusHandedToRoot;
     private bool _loadMoreFinished;
     private bool _autoLoadRegistered;
     private bool _internalLoadMore;
@@ -30,22 +35,52 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the basic list component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple basic list components through the <see cref="BitParams"/> component.
+    /// <br />
+    /// None of the parameters it carries depends on the type of the items, so one <see cref="BitBasicListParams"/>
+    /// reaches every list under it, whatever the type of its items.
+    /// </remarks>
+    [CascadingParameter(Name = BitBasicListParams.ParamName)]
+    public BitBasicListParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Renders each item as its own text when no <see cref="RowTemplate"/> is provided, so a list of
     /// plain values shows up without a template of its own.
     /// </summary>
     /// <remarks>
     /// The text is wrapped in an element of its own so that each item stays a single element child of the
-    /// list, which is what <see cref="ScrollToIndexAsync"/> counts the items of the list by.
+    /// list, which is what <see cref="ScrollToIndexAsync"/> counts the items of the list by. That element is
+    /// a list item wherever the list keeps its default role, since a list is only announced with its count
+    /// where its children are list items.
     /// </remarks>
     private RenderFragment<TItem> _EffectiveRowTemplate => RowTemplate
         ?? (_defaultRowTemplate ??= item => builder =>
         {
             builder.OpenElement(0, "div");
-            builder.AddContent(1, item?.ToString());
+            builder.AddAttribute(1, "role", Role == "list" ? "listitem" : null);
+            builder.AddContent(2, item?.ToString());
             builder.CloseElement();
         });
 
     private bool _ShowLoading => Loading || (_isLoadingMore && _viewItems.Count == 0);
+
+    // A list is required to own list items, so the role is left off while the list shows its EmptyContent
+    // instead: an empty "list" is reported as an error by accessibility checkers and announced as an empty
+    // list before the content that explains why. The virtualized provider mode renders straight off the
+    // provider and never knows its count here, so it keeps the role; so does a list that is loading, whose
+    // aria-busy already tells that its items are on their way.
+    private string? _EffectiveRole => _ShowLoading is false
+                                      && _viewItems.Count == 0
+                                      && (Virtualize && ItemsProvider is not null && LoadMore is false) is false
+                                      ? null
+                                      : Role;
 
     private bool _ShowSentinel => LoadMore && AutoLoad && IsEnabled && _loadMoreFinished is false;
 
@@ -81,7 +116,8 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the list.
     /// </summary>
-    [Parameter] public BitBasicListClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitBasicListClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The custom content that will be rendered when there is no item to show.
@@ -195,6 +231,14 @@ public partial class BitBasicList<TItem> : BitComponentBase
     [Parameter] public bool Loading { get; set; }
 
     /// <summary>
+    /// The text shown next to the spinner of the default loading content and of the default LoadMore button
+    /// while a page loads, and announced to screen readers as the list starts loading.
+    /// <br />
+    /// The default value is <strong>Loading...</strong>.
+    /// </summary>
+    [Parameter] public string? LoadingLabel { get; set; } = "Loading...";
+
+    /// <summary>
     /// The template rendered while the list is loading its items.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
@@ -247,6 +291,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// The rows of the list are the markup of the <see cref="RowTemplate"/>, so a role of "list" only describes
     /// the element correctly where that template renders a row of role "listitem" (an <c>li</c> element, for
     /// one). Set this to null to leave the role off altogether where the rows carry a structure of their own.
+    /// <br />
+    /// The role is also left off while the list shows its <see cref="EmptyContent"/>, since a list is required
+    /// to own list items.
     /// </remarks>
     [Parameter] public string? Role { get; set; } = "list";
 
@@ -261,7 +308,8 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the list.
     /// </summary>
-    [Parameter] public BitBasicListClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitBasicListClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Enables virtualization in rendering the list.
@@ -422,8 +470,13 @@ public partial class BitBasicList<TItem> : BitComponentBase
         StyleBuilder.Register(() => (FitSize || FitHeight) ? "height:fit-content" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBasicListParams))]
     protected override async Task OnParametersSetAsync()
     {
+        // The cascade is applied first, since every parameter it may fill in (LoadMore, LoadMoreSize and
+        // Virtualize among them) is read right below to decide where the rendered items come from.
+        CascadingParameters?.UpdateParameters(this);
+
         // Every one of these decides where the rendered items come from, so a change in any of them has
         // to start the loading over rather than leave the list showing what the previous mode had loaded.
         var sourceChanged = _internalItems != Items
@@ -467,6 +520,17 @@ public partial class BitBasicList<TItem> : BitComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (IsDisposed) return;
+
+        if (_focusRootPending)
+        {
+            _focusRootPending = false;
+
+            try
+            {
+                await RootElement.FocusAsync();
+            }
+            catch (JSException) { } // the list may have been taken out of the DOM in the meantime
+        }
 
         if (_ShowSentinel)
         {
@@ -600,6 +664,16 @@ public partial class BitBasicList<TItem> : BitComponentBase
         }
 
         if (IsDisposed) return;
+
+        // The last page takes the LoadMore element away, and the keyboard focus it held would fall back to
+        // the start of the page with it. The focus is handed to the list itself instead, so the user stays
+        // on the items that were just loaded: the arrow keys scroll them and the next Tab moves on from there.
+        if (_loadMoreFinished && _loadMoreHasFocus)
+        {
+            _loadMoreHasFocus = false;
+            _focusHandedToRoot = true;
+            _focusRootPending = true;
+        }
 
         StateHasChanged();
 

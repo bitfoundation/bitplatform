@@ -4,8 +4,8 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     role="@Role"
-     tabindex="@TabIndex"
+     role="@_EffectiveRole"
+     tabindex="@(TabIndex ?? (_focusHandedToRoot ? "-1" : null))"
      aria-label="@AriaLabel"
      aria-busy="@(_isLoadingMore || Loading ? "true" : null)"
      style="@StyleBuilder.Value"
@@ -21,7 +21,8 @@
 
     @if (_ShowLoading)
     {
-        <div style="@Styles?.LoadingContent"
+        <div role="status"
+             style="@Styles?.LoadingContent"
              class="bit-bsl-ldc @Classes?.LoadingContent">
             @if (LoadingTemplate is not null)
             {
@@ -29,7 +30,8 @@
             }
             else
             {
-                <span>...</span>
+                <span class="bit-bsl-spn" aria-hidden="true"></span>
+                <span class="bit-bsl-ldt">@LoadingLabel</span>
             }
         </div>
     }
@@ -81,11 +83,13 @@
                cannot be nested inside another one, so the clickable wrapper of a template is a plain
                element carrying the button role rather than a real button element. *@
             <div role="button"
-                 tabindex="0"
-                 aria-disabled="@(_isLoadingMore || IsEnabled is false ? "true" : null)"
+                 tabindex="@(IsEnabled ? "0" : "-1")"
+                 aria-disabled="@(IsEnabled is false ? "true" : null)"
                  aria-busy="@(_isLoadingMore ? "true" : null)"
                  @onclick="() => LoadMoreItems(false)"
                  @onkeydown="HandleLoadMoreKeyDown"
+                 @onfocusin="() => _loadMoreHasFocus = true"
+                 @onfocusout="() => _loadMoreHasFocus = false"
                  style="@Styles?.LoadMoreButton"
                  class="bit-bsl-lmb @Classes?.LoadMoreButton">
                 @LoadMoreTemplate(_isLoadingMore)
@@ -93,17 +97,22 @@
         }
         else
         {
+            @* Loading a page only marks the button busy rather than disabling it: a disabled button drops the
+               keyboard focus it holds, which would send a keyboard user back to the start of the page. *@
             <button type="button"
                     aria-busy="@(_isLoadingMore ? "true" : null)"
-                    disabled="@(_isLoadingMore || IsEnabled is false)"
+                    disabled="@(IsEnabled is false)"
                     @onclick="() => LoadMoreItems(false)"
+                    @onfocusin="() => _loadMoreHasFocus = true"
+                    @onfocusout="() => _loadMoreHasFocus = false"
                     style="@Styles?.LoadMoreButton"
                     class="bit-bsl-lmb @Classes?.LoadMoreButton">
                 <div style="@Styles?.LoadMoreText"
                      class="bit-bsl-lmt @Classes?.LoadMoreText">
                     @if (_isLoadingMore)
                     {
-                        <span>...</span>
+                        <span class="bit-bsl-spn" aria-hidden="true"></span>
+                        <span>@LoadingLabel</span>
                     }
                     else
                     {
@@ -120,5 +129,13 @@
              class="bit-bsl-ftr @Classes?.Footer">
             @FooterTemplate
         </div>
+    }
+
+    @if (LoadMore)
+    {
+        @* Rendered last, so it never shifts the children ScrollToIndexAsync counts the items by, and
+           present for as long as the LoadMore mode is on, since a live region only announces the changes
+           made to it after it was rendered. The first page has the status of the loading content. *@
+        <div role="status" class="bit-bsl-sts">@(_isLoadingMore && _ShowLoading is false ? LoadingLabel : null)</div>
     }
 </div>
