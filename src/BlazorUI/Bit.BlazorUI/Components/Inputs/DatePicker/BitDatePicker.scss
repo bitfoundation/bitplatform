@@ -1,15 +1,105 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 @import "../../../Styles/color-role-maps.scss";
 
+// Public CSS variables, read off the element and never declared here, so a value set on :root re-skins every
+// DatePicker. The callout is rendered outside of the root and reparented to the body while it is open, so it
+// inherits nothing of an ancestor; the component copies the --bit-DatePicker-* declarations of Style and
+// Styles.Root onto it instead, so one Style restyles the field and its calendar together (Styles.Callout is
+// applied after the copy and wins).
+//
+// The field:
+//   --bit-DatePicker-label-color             text color of the label                        (default: $clr-fg-pri)
+//   --bit-DatePicker-label-font-size         text size of the label                         (default: per Size)
+//   --bit-DatePicker-required-color          color of the asterisk of a required label      (default: $clr-req)
+//   --bit-DatePicker-input-height            height of the field                            (default: per Size)
+//   --bit-DatePicker-input-font-size         text size of the field                         (default: per Size)
+//   --bit-DatePicker-input-color             text color of the field                        (default: $clr-fg-pri)
+//   --bit-DatePicker-input-background        background of the field                        (default: $clr-bg-pri)
+//   --bit-DatePicker-input-border-color      border color of the field at rest, which the
+//                                            open and the invalid states override           (default: $clr-brd-pri)
+//   --bit-DatePicker-input-radius            corner radius of the field and of its
+//                                            focus ring                                    (default: $shp-radius-control)
+//   --bit-DatePicker-input-padding           inline padding of the field                    (default: 0 spacing(1))
+//   --bit-DatePicker-icon-color              color of the calendar and clear icons          (default: $clr-fg-sec)
+//   --bit-DatePicker-icon-size               size of the calendar icon in the field         (default: per Size)
+//   --bit-DatePicker-focus-color             color of every focus ring the component draws  (default: the role's focus color)
+//   --bit-DatePicker-disabled-color          text color of anything disabled                (default: $clr-fg-dis)
+//   --bit-DatePicker-invalid-color           border of an invalid field, and the error
+//                                            message below it                               (default: $clr-err)
+//   --bit-DatePicker-description-color       text color of the description                  (default: $clr-fg-sec)
+//   --bit-DatePicker-description-font-size   text size of the description and of the
+//                                            error message                                  (default: $tg-fs-2xs)
+//
+// The callout and the pickers inside it:
+//   --bit-DatePicker-callout-background      background of the callout                      (default: $clr-bg-pri)
+//   --bit-DatePicker-callout-radius          corner radius of the callout                   (default: $shp-radius-popup)
+//   --bit-DatePicker-callout-shadow          elevation of the callout                       (default: $box-shadow-popup)
+//   --bit-DatePicker-padding                 padding of each picker pane                    (default: spacing(1.5))
+//   --bit-DatePicker-color                   text color of the cells and the headers        (default: $clr-fg-pri)
+//   --bit-DatePicker-divider-color           color of the rule between the panes and
+//                                            beside the week numbers                        (default: $clr-brd-sec)
+//   --bit-DatePicker-hover-background        background of a cell on hover                  (default: $clr-bg-pri-hover)
+//   --bit-DatePicker-active-background       background of a cell while pressed             (default: $clr-bg-pri-active)
+//   --bit-DatePicker-day-size                width and height of a day cell, which the
+//                                            week numbers, the weekday headers and the
+//                                            navigation buttons line up with                (default: per Size)
+//   --bit-DatePicker-day-font-size           text size of the day cells and of the
+//                                            headers that line up with them                 (default: per Size)
+//   --bit-DatePicker-day-radius              corner radius of a day cell                    (default: $shp-radius-control)
+//   --bit-DatePicker-outside-day-color       text color of a day of an adjacent month       (default: $clr-fg-sec)
+//   --bit-DatePicker-selected-background     background of the selected day                 (default: $clr-bg-sec)
+//   --bit-DatePicker-selected-color          text color of the selected day                 (default: the cell color)
+//   --bit-DatePicker-selected-border-color   color of the ring drawn around the selected
+//                                            day                                            (default: $clr-brd-pri)
+//   --bit-DatePicker-today-background        background of today, and of the highlighted
+//                                            current month                                  (default: the Color role's main color)
+//   --bit-DatePicker-today-color             text color of today                            (default: the Color role's on-color)
+//   --bit-DatePicker-today-hover-background  background of today on hover, and of the
+//                                            highlighted current month and the selected
+//                                            AM/PM button                                   (default: the Color role's hover color)
+//   --bit-DatePicker-today-active-background background of today while pressed, and of
+//                                            the selected AM/PM button                      (default: the Color role's active color)
+//   --bit-DatePicker-today-radius            corner radius of today                         (default: $shp-radius-full)
+//   --bit-DatePicker-highlighted-background  background of a HighlightedDates day           (default: $clr-bg-ter)
+//   --bit-DatePicker-week-number-color       text color of a week number                    (default: $clr-fg-sec)
+//   --bit-DatePicker-week-number-background  background of a week number                    (default: $clr-bg-sec)
+//   --bit-DatePicker-header-font-size        text size of the month, year and year-range
+//                                            titles above the grids                         (default: per Size)
+//   --bit-DatePicker-time-font-size          text size of the hour, minute and second
+//                                            fields and of the colons between them          (default: per Size)
+
 // The default size, declared as a mixin so both the root element and the callout - which is rendered
-// outside of it and therefore inherits nothing from it - can fall back to it.
+// outside of it and therefore inherits nothing from it - can fall back to it. The values an author can
+// override are named apart from the ones they feed (see the indirection on .bit-dtp below), so a size class
+// and a CSS variable never fight over the same property.
 @mixin dtp-size-medium {
-    --bit-dtp-inp-h: #{$siz-ctrl-md};
-    --bit-dtp-inp-fs: #{$tg-fs-sm};
-    --bit-dtp-cell-size: #{spacing(3.5)};
-    --bit-dtp-cell-fs: #{$tg-fs-xs};
-    --bit-dtp-lbl-fs: #{$tg-fs-sm};
+    --bit-dtp-inp-h-def: #{$siz-ctrl-md};
+    --bit-dtp-inp-fs-def: #{$tg-fs-sm};
+    --bit-dtp-ico-fs-def: #{$siz-icon-md};
+    --bit-dtp-cell-size-def: #{spacing(3.5)};
+    --bit-dtp-cell-fs-def: #{$tg-fs-xs};
+    --bit-dtp-lbl-fs-def: #{$tg-fs-sm};
+    --bit-dtp-hdr-fs-def: #{$tg-fs-sm};
+    --bit-dtp-time-fs-def: #{$tg-fs-lg};
+    --bit-dtp-mcell-w: #{spacing(6)};
+    --bit-dtp-mcell-h: #{spacing(5)};
+    --bit-dtp-tcell-size: #{spacing(3.75)};
+    --bit-dtp-pane-min-w: #{spacing(26)};
+}
+
+// The public overrides resolve once, on whichever of the two elements the parts live under, so every part
+// that lines up with a day - the week numbers, the empty cells, the weekday headers, the navigation
+// buttons - stays in step with the day cells.
+@mixin dtp-size-resolution {
+    --bit-dtp-inp-h: var(--bit-DatePicker-input-height, var(--bit-dtp-inp-h-def));
+    --bit-dtp-inp-fs: var(--bit-DatePicker-input-font-size, var(--bit-dtp-inp-fs-def));
+    --bit-dtp-ico-fs: var(--bit-DatePicker-icon-size, var(--bit-dtp-ico-fs-def));
+    --bit-dtp-cell-size: var(--bit-DatePicker-day-size, var(--bit-dtp-cell-size-def));
+    --bit-dtp-cell-fs: var(--bit-DatePicker-day-font-size, var(--bit-dtp-cell-fs-def));
+    --bit-dtp-lbl-fs: var(--bit-DatePicker-label-font-size, var(--bit-dtp-lbl-fs-def));
+    --bit-dtp-hdr-fs: var(--bit-DatePicker-header-font-size, var(--bit-dtp-hdr-fs-def));
+    --bit-dtp-time-fs: var(--bit-DatePicker-time-font-size, var(--bit-dtp-time-fs-def));
 }
 
 .bit-dtp {
@@ -23,28 +113,29 @@
     font-family: $tg-font-family;
 
     @include dtp-size-medium;
+    @include dtp-size-resolution;
 
     &.bit-dis {
         .bit-dtp-lbl {
-            color: $clr-fg-dis;
+            color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-dtp-icn {
             cursor: default;
             pointer-events: none;
-            color: $clr-fg-dis;
+            color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
             background: none $clr-bg-dis;
             border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
 
         .bit-dtp-ico {
             cursor: default;
-            color: $clr-fg-dis;
+            color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-dtp-inp {
             cursor: default;
-            color: $clr-fg-dis;
+            color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
             background: none $clr-bg-dis;
         }
 
@@ -55,30 +146,25 @@
         .bit-dtp-pkb,
         .bit-dtp-ptb,
         .bit-dtp-tdv {
-            color: $clr-fg-dis;
+            color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
         }
     }
 
     &.bit-inv {
         .bit-dtp-icn {
-            border-color: $clr-err;
+            border-color: var(--bit-DatePicker-invalid-color, #{$clr-err});
         }
 
         &.bit-dtp-und .bit-dtp-wrp {
             // Underlined variant drops the icon border, so surface the error cue on the
             // underline itself to keep the invalid state visible before focus.
-            border-bottom-color: $clr-err;
+            border-bottom-color: var(--bit-DatePicker-invalid-color, #{$clr-err});
         }
 
-        &.bit-dtp-foc:not(.bit-dtp-und) .bit-dtp-icn {
-            @include focus-ring($clr-err-focus);
-        }
-
-        &.bit-dtp-und.bit-dtp-foc .bit-dtp-icn {
-            @include focus-underline-ring($clr-err-focus);
-        }
+        // The focus ring follows the border into the error color, so a keyboard user is not shown two
+        // different states at once - inside the callout as well as on the field.
+        --bit-dtp-clr-focus: #{$clr-err-focus};
     }
-
 }
 
 // The callout does not sit inside the root element, so a direction the culture implies - which leaves
@@ -103,11 +189,37 @@
     padding: spacing(0.5) 0;
     font-size: var(--bit-dtp-lbl-fs);
     overflow-wrap: break-word;
-    color: $clr-fg-pri;
+    color: var(--bit-DatePicker-label-color, #{$clr-fg-pri});
 }
 
 .bit-dtp-wrp {
     position: relative;
+}
+
+// The rejection is colored like the border of the field it sits under, so the two follow one variable, and
+// it keeps that color while the picker is disabled: a message gone grey stops reading as the reason.
+.bit-dtp-erm {
+    display: block;
+    overflow-wrap: break-word;
+    padding-top: spacing(0.5);
+    font-size: var(--bit-DatePicker-description-font-size, #{$tg-fs-2xs});
+    color: var(--bit-DatePicker-invalid-color, #{$clr-err});
+
+    span {
+        color: inherit;
+    }
+}
+
+.bit-dtp-des {
+    display: block;
+    padding-top: spacing(0.5);
+}
+
+// The default description text only: a DescriptionTemplate renders markup the component knows nothing about.
+.bit-dtp-dtx {
+    overflow-wrap: break-word;
+    color: var(--bit-DatePicker-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-DatePicker-description-font-size, #{$tg-fs-2xs});
 }
 
 .bit-dtp-icn {
@@ -119,28 +231,30 @@
     height: var(--bit-dtp-inp-h);
     position: relative;
     align-items: center;
-    padding: 0 spacing(1);
+    padding: var(--bit-DatePicker-input-padding, 0 #{spacing(1)});
     flex-flow: row nowrap;
     box-sizing: border-box;
-    border-radius: $shp-radius-control;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: var(--bit-DatePicker-input-radius, #{$shp-radius-control});
+    background-color: var(--bit-DatePicker-input-background, #{$clr-bg-pri});
+    border: $shp-border-width $shp-border-style var(--bit-DatePicker-input-border-color, #{$clr-brd-pri});
 }
 
 .bit-dtp-ico {
     padding: 0;
     cursor: pointer;
-    color: $clr-fg-sec;
+    font-size: var(--bit-dtp-ico-fs);
+    color: var(--bit-DatePicker-icon-color, #{$clr-fg-sec});
 }
 
 .bit-dtp-clr {
     display: flex;
-    width: spacing(3.75);
-    height: spacing(3.75);
+    width: var(--bit-dtp-tcell-size);
+    height: var(--bit-dtp-tcell-size);
     justify-content: center;
     align-items: center;
     background-color: $clr-bg-sec;
     cursor: pointer;
+    border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
 
     i {
         speak: none;
@@ -148,13 +262,19 @@
         pointer-events: none;
         display: inline-block;
         font-size: $tg-fs-xs;
-        color: $clr-fg-sec;
+        color: var(--bit-DatePicker-icon-color, #{$clr-fg-sec});
     }
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    // The button sits inside the field, whose own ring is drawn around the whole of it, so this one is
+    // drawn without an offset - a gap would be filled with the background of the field behind it.
+    &:focus-visible {
+        @include focus-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)), 0);
     }
 }
 
@@ -174,7 +294,7 @@
     text-overflow: ellipsis;
     font-size: var(--bit-dtp-inp-fs);
     background: none transparent;
-    color: $clr-fg-pri;
+    color: var(--bit-DatePicker-input-color, #{$clr-fg-pri});
     font-family: $tg-font-family;
 }
 
@@ -195,7 +315,13 @@
 
 .bit-dtp-foc:not(.bit-dtp-und) {
     .bit-dtp-icn {
-        @include focus-ring;
+        @include focus-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)));
+    }
+}
+
+.bit-dtp-und.bit-dtp-foc {
+    .bit-dtp-icn {
+        @include focus-underline-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)));
     }
 }
 
@@ -223,12 +349,13 @@
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
-    box-shadow: $box-shadow-popup;
-    border-radius: $shp-radius-popup;
+    box-shadow: var(--bit-DatePicker-callout-shadow, #{$box-shadow-popup});
+    border-radius: var(--bit-DatePicker-callout-radius, #{$shp-radius-popup});
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: $mot-easing-decelerate;
 
     @include dtp-size-medium;
+    @include dtp-size-resolution;
 }
 
 .bit-dtp-cac {
@@ -236,8 +363,8 @@
     outline: none;
     position: relative;
     overflow: hidden auto;
-    border-radius: $shp-radius-popup;
-    background-color: $clr-bg-pri;
+    border-radius: var(--bit-DatePicker-callout-radius, #{$shp-radius-popup});
+    background-color: var(--bit-DatePicker-callout-background, #{$clr-bg-pri});
 }
 
 .bit-dtp-grp {
@@ -264,14 +391,21 @@
     margin: 0;
     display: flex;
     box-shadow: none;
-    padding: spacing(1.5);
-    min-width: spacing(26);
+    padding: var(--bit-DatePicker-padding, #{spacing(1.5)});
+    min-width: var(--bit-dtp-pane-min-w);
     box-sizing: content-box;
     flex-flow: column nowrap;
 }
 
+// Consecutive months of a MonthCount strip sit right next to each other, so only the first one pads
+// its inline start.
+.bit-dtp-dwp + .bit-dtp-dwp {
+    padding-inline-start: 0;
+}
+
 .bit-dtp-grd {
     display: flex;
+    flex-grow: 1;
     flex-flow: column nowrap;
 }
 
@@ -290,7 +424,7 @@
     border: none;
     aspect-ratio: 1;
     font-weight: $tg-fw-regular;
-    color: $clr-fg-pri;
+    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
     position: relative;
     text-align: center;
     font-size: var(--bit-dtp-cell-fs);
@@ -320,30 +454,36 @@
     line-height: spacing(3);
     justify-content: center;
     background-color: transparent;
-    color: $clr-fg-pri;
-    border-radius: $shp-radius-control;
+    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
+    border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
+    // Only what a state actually changes is transitioned, so the cell that is hovered or selected eases
+    // rather than snapping - and collapses to nothing under prefers-reduced-motion, which the duration
+    // token carries on its own.
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-active;
+        background-color: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
         pointer-events: none;
         background-color: transparent;
-        color: $clr-fg-dis;
+        color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
     }
 
-    // The day grid moves the focus with the arrow keys, so the focused day has to be visible as such -
-    // and above its neighbors, whose backgrounds would otherwise clip the ring.
+    // The day grid moves the focus with the arrow keys, so the focused day has to be visible as such - and
+    // above its neighbors, whose backgrounds would otherwise clip the ring. The ring is drawn without an
+    // offset: the cells of a week sit against one another, and a gap between the cell and its ring would
+    // be filled with the background of the day next to it.
     &:focus-visible {
         z-index: 1;
-        outline: $shp-border-width $shp-border-style $clr-brd-pri;
+        @include focus-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)), 0);
     }
 }
 
@@ -356,39 +496,41 @@
 
 .bit-dtp-dhl {
     font-weight: $tg-fw-semibold;
-    background-color: $clr-bg-ter;
+    background-color: var(--bit-DatePicker-highlighted-background, #{$clr-bg-ter});
 }
 
 .bit-dtp-dbs {
-    background-color: $clr-bg-sec;
+    color: var(--bit-DatePicker-selected-color, var(--bit-DatePicker-color, #{$clr-fg-pri}));
+    background-color: var(--bit-DatePicker-selected-background, #{$clr-bg-sec});
 
     &::after {
         inset: 0;
         content: "";
         position: absolute;
-        border: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-radius: inherit;
+        border: $shp-border-width $shp-border-style var(--bit-DatePicker-selected-border-color, #{$clr-brd-pri});
     }
 }
 
 .bit-dtp-dbo {
     font-weight: $tg-fw-regular;
-    color: $clr-fg-sec;
+    color: var(--bit-DatePicker-outside-day-color, #{$clr-fg-sec});
 }
 
 .bit-dtp-dtd {
     font-weight: $tg-fw-semibold;
-    border-radius: 50%;
-    color: var(--bit-dtp-clr-txt);
-    background-color: var(--bit-dtp-clr);
+    border-radius: var(--bit-DatePicker-today-radius, #{$shp-radius-full});
+    color: var(--bit-DatePicker-today-color, var(--bit-dtp-clr-txt));
+    background-color: var(--bit-DatePicker-today-background, var(--bit-dtp-clr));
 
     @media(hover: hover) {
         &:hover {
-            background-color: var(--bit-dtp-clr-hover);
+            background-color: var(--bit-DatePicker-today-hover-background, var(--bit-dtp-clr-hover));
         }
     }
 
     &:active {
-        background-color: var(--bit-dtp-clr-active);
+        background-color: var(--bit-DatePicker-today-active-background, var(--bit-dtp-clr-active));
     }
 }
 
@@ -402,9 +544,9 @@
     font-size: var(--bit-dtp-cell-fs);
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
-    color: $clr-fg-sec;
-    background-color: $clr-bg-sec;
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
+    color: var(--bit-DatePicker-week-number-color, #{$clr-fg-sec});
+    background-color: var(--bit-DatePicker-week-number-background, #{$clr-bg-sec});
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-DatePicker-divider-color, #{$clr-brd-sec});
 }
 
 .bit-dtp-pkh {
@@ -428,7 +570,7 @@
     overflow: hidden;
     font-weight: $tg-fw-semibold;
     text-align: start;
-    color: $clr-fg-pri;
+    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
     position: relative;
     white-space: nowrap;
     align-items: center;
@@ -438,18 +580,19 @@
     // Tightened from the 1.25 step so the longest month name clears the navigation buttons next to it
     // without the row having to run past the wrapper - see the header floor at the end of this file.
     padding: 0 spacing(0.75);
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-dtp-hdr-fs);
     line-height: var(--bit-dtp-cell-size);
     background-color: transparent;
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
 }
 
 .bit-dtp-ptb {
     cursor: pointer;
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
@@ -459,8 +602,12 @@
 
         .bit-dtp-cic,
         .bit-icon {
-            color: $clr-fg-dis;
+            color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
         }
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)), 0);
     }
 }
 
@@ -487,17 +634,18 @@
     line-height: var(--bit-dtp-cell-size);
     font-size: var(--bit-dtp-cell-fs);
     background-color: transparent;
-    color: $clr-fg-pri;
-    border-radius: $shp-radius-control;
+    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
+    border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-hover;
+        background-color: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
@@ -506,8 +654,13 @@
 
         .bit-dtp-cic,
         .bit-icon {
-            color: $clr-fg-dis;
+            color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
         }
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)), 0);
     }
 }
 
@@ -518,23 +671,24 @@
     overflow: visible;
     position: relative;
     text-align: center;
-    width: spacing(3.75);
     outline: transparent;
-    line-height: spacing(3.75);
-    font-size: $tg-fs-xs;
+    width: var(--bit-dtp-tcell-size);
+    line-height: var(--bit-dtp-tcell-size);
+    font-size: var(--bit-dtp-cell-fs);
     background-color: transparent;
-    color: $clr-fg-pri;
-    border-radius: $shp-radius-control;
+    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
+    border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
     aspect-ratio: 1;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-hover;
+        background-color: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
     }
 
     i {
@@ -547,19 +701,24 @@
     }
 
     &:disabled {
-        color: $clr-fg-dis;
+        color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
         pointer-events: none;
         background-color: transparent;
 
         i {
-            color: $clr-fg-dis;
+            color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
         }
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)), 0);
     }
 }
 
 .bit-dtp-dvd {
     top: 0;
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-DatePicker-divider-color, #{$clr-brd-sec});
 }
 
 .bit-dtp-mwp {
@@ -567,8 +726,8 @@
     display: flex;
     overflow: hidden;
     box-shadow: none;
-    padding: spacing(1.5);
-    min-width: spacing(26);
+    padding: var(--bit-DatePicker-padding, #{spacing(1.5)});
+    min-width: var(--bit-dtp-pane-min-w);
     box-sizing: content-box;
     flex-flow: column nowrap;
 }
@@ -583,7 +742,7 @@
     display: flex;
     overflow: hidden;
     box-shadow: none;
-    padding: spacing(1.5);
+    padding: var(--bit-DatePicker-padding, #{spacing(1.5)});
     box-sizing: content-box;
     flex-flow: column nowrap;
 }
@@ -603,50 +762,60 @@
     border: none;
     cursor: pointer;
     overflow: hidden;
-    width: spacing(6);
     position: relative;
     white-space: nowrap;
     outline: transparent;
-    max-width: spacing(7);
-    font-size: $tg-fs-xs;
-    line-height: spacing(5);
+    width: var(--bit-dtp-mcell-w);
+    max-width: var(--bit-dtp-mcell-w);
+    line-height: var(--bit-dtp-mcell-h);
+    font-size: var(--bit-dtp-cell-fs);
     text-overflow: ellipsis;
     background-color: transparent;
-    color: $clr-fg-pri;
-    border-radius: $shp-radius-control;
+    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
+    border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    &:active {
+        background-color: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
         pointer-events: none;
         background-color: transparent;
-        color: $clr-fg-dis;
+        color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)), 0);
     }
 }
 
 .bit-dtp-psm {
     font-weight: $tg-fw-semibold;
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-DatePicker-selected-background, #{$clr-bg-sec});
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
 
 .bit-dtp-pcm {
-    color: var(--bit-dtp-clr-txt);
-    background-color: var(--bit-dtp-clr);
+    color: var(--bit-DatePicker-today-color, var(--bit-dtp-clr-txt));
+    background-color: var(--bit-DatePicker-today-background, var(--bit-dtp-clr));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-dtp-clr-txt);
-            background-color: var(--bit-dtp-clr-hover);
+            color: var(--bit-DatePicker-today-color, var(--bit-dtp-clr-txt));
+            background-color: var(--bit-DatePicker-today-hover-background, var(--bit-dtp-clr-hover));
         }
     }
 }
@@ -676,9 +845,10 @@
 .bit-dtp-tdv {
     display: flex;
     align-items: center;
-    font-size: $tg-fs-xl;
+    font-size: var(--bit-dtp-time-fs);
     justify-content: center;
     font-weight: $tg-font-weight;
+    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
 }
 
 .bit-dtp-am-pm {
@@ -696,12 +866,13 @@
     cursor: pointer;
     text-align: center;
     align-items: center;
-    width: spacing(3.75);
+    width: var(--bit-dtp-tcell-size);
     box-sizing: border-box;
     justify-content: center;
     -moz-appearance: textfield; // Firefox
-    background-color: $clr-bg-pri;
-    font-size: $tg-fs-lg;
+    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
+    background-color: var(--bit-DatePicker-callout-background, #{$clr-bg-pri});
+    font-size: var(--bit-dtp-time-fs);
     font-weight: $tg-font-weight;
     overflow: hidden;
     aspect-ratio: 1;
@@ -713,25 +884,29 @@
     }
 
     &:focus {
-        @include focus-underline-ring;
+        @include focus-underline-ring(var(--bit-DatePicker-focus-color, var(--bit-dtp-clr-focus)));
         border: none;
     }
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
     }
 }
 
+// The two halves of the day are labelled buttons, so they carry the tracking and the case a design system
+// gives the label of an interactive control.
 .bit-dtp-bam,
 .bit-dtp-bpm {
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-dtp-cell-fs);
     font-weight: $tg-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 }
 
 .bit-dtp-bns {
-    color: var(--bit-dtp-clr-txt);
-    background-color: var(--bit-dtp-clr);
+    color: var(--bit-DatePicker-today-color, var(--bit-dtp-clr-txt));
+    background-color: var(--bit-DatePicker-today-background, var(--bit-dtp-clr));
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -739,12 +914,13 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-dtp-clr-hover);
+            color: var(--bit-DatePicker-today-color, var(--bit-dtp-clr-txt));
+            background-color: var(--bit-DatePicker-today-hover-background, var(--bit-dtp-clr-hover));
         }
     }
 
     &:active {
-        background-color: var(--bit-dtp-clr-active);
+        background-color: var(--bit-DatePicker-today-active-background, var(--bit-dtp-clr-active));
     }
 }
 
@@ -763,7 +939,7 @@
     .bit-dtp-wrp {
         width: 100%;
         display: flex;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-bottom: $shp-border-width $shp-border-style var(--bit-DatePicker-input-border-color, #{$clr-brd-pri});
     }
 
     .bit-dtp-icn {
@@ -775,12 +951,6 @@
     &.bit-dis {
         .bit-dtp-wrp {
             border-bottom-color: $clr-brd-dis;
-        }
-    }
-
-    &.bit-dtp-foc {
-        .bit-dtp-icn {
-            @include focus-underline-ring;
         }
     }
 
@@ -809,12 +979,13 @@
     z-index: unset;
     animation: none;
     position: relative;
+    box-shadow: var(--bit-DatePicker-callout-shadow, none);
 }
 
 .bit-dtp-req {
     .bit-dtp-lbl::after {
         content: "*";
-        color: $clr-req;
+        color: var(--bit-DatePicker-required-color, #{$clr-req});
         margin-inline-start: spacing(0.625);
     }
 }
@@ -878,6 +1049,7 @@
         }
 
         .bit-dtp-grp {
+            flex-wrap: wrap;
             justify-content: center;
         }
 
@@ -902,6 +1074,54 @@
 }
 
 
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, which strips every
+// background the picker paints - and with them today, the selection, the highlighted days and the
+// meridiem that is in force, all of which are conveyed by a background alone. Each is re-established with
+// a border or a system color, so the states stay distinguishable.
+@media (forced-colors: active) {
+    .bit-dtp-dbt,
+    .bit-dtp-pkb {
+        &:disabled {
+            color: GrayText;
+        }
+    }
+
+    // The hover and the active state of each of these paints a themed background of its own, from a rule of
+    // a higher specificity than this one, so each is answered with the same system pair - otherwise the
+    // palette is reinstated by a pointer resting on the cell.
+    .bit-dtp-dtd,
+    .bit-dtp-pcm,
+    .bit-dtp-bns {
+        &,
+        &:hover,
+        &:active {
+            color: HighlightText;
+            background-color: Highlight;
+            forced-color-adjust: none;
+        }
+    }
+
+    .bit-dtp-dbs::after {
+        border-color: CanvasText;
+    }
+
+    .bit-dtp-dhl {
+        outline: $shp-border-width dotted CanvasText;
+        outline-offset: calc(-1 * #{$shp-border-width});
+    }
+
+    // The open field is marked by the color of its border alone, which this palette replaces with the
+    // same one every other border has, so the underline of the field is thickened instead.
+    .bit-dtp-opn .bit-dtp-icn {
+        border-width: $shp-border-width-thick;
+    }
+
+    .bit-dtp-und.bit-dtp-opn .bit-dtp-wrp {
+        border-bottom-width: $shp-border-width-thick;
+    }
+}
+
+
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // They are applied to the root element and to the callout alike, since the callout is rendered
 // outside of the root and inherits nothing from it.
@@ -911,16 +1131,24 @@
         --bit-dtp-clr-txt: #{role($tokens, on)};
         --bit-dtp-clr-hover: #{role($tokens, hover)};
         --bit-dtp-clr-active: #{role($tokens, active)};
+        --bit-dtp-clr-focus: #{role($tokens, focus)};
     }
 }
 
 
 .bit-dtp-sm {
-    --bit-dtp-inp-h: #{$siz-ctrl-sm};
-    --bit-dtp-inp-fs: #{$tg-fs-xs};
-    --bit-dtp-cell-size: #{spacing(3)};
-    --bit-dtp-cell-fs: #{$tg-fs-xs};
-    --bit-dtp-lbl-fs: #{$tg-fs-xs};
+    --bit-dtp-inp-h-def: #{$siz-ctrl-sm};
+    --bit-dtp-inp-fs-def: #{$tg-fs-xs};
+    --bit-dtp-ico-fs-def: #{$siz-icon-sm};
+    --bit-dtp-cell-size-def: #{spacing(3)};
+    --bit-dtp-cell-fs-def: #{$tg-fs-xs};
+    --bit-dtp-lbl-fs-def: #{$tg-fs-xs};
+    --bit-dtp-hdr-fs-def: #{$tg-fs-xs};
+    --bit-dtp-time-fs-def: #{$tg-fs-md};
+    --bit-dtp-mcell-w: #{spacing(5.25)};
+    --bit-dtp-mcell-h: #{spacing(4.5)};
+    --bit-dtp-tcell-size: #{spacing(3.25)};
+    --bit-dtp-pane-min-w: #{spacing(23)};
 }
 
 .bit-dtp-md {
@@ -928,11 +1156,18 @@
 }
 
 .bit-dtp-lg {
-    --bit-dtp-inp-h: #{$siz-ctrl-lg};
-    --bit-dtp-inp-fs: #{$tg-fs-md};
-    --bit-dtp-cell-size: #{spacing(4.25)};
-    --bit-dtp-cell-fs: #{$tg-fs-sm};
-    --bit-dtp-lbl-fs: #{$tg-fs-md};
+    --bit-dtp-inp-h-def: #{$siz-ctrl-lg};
+    --bit-dtp-inp-fs-def: #{$tg-fs-md};
+    --bit-dtp-ico-fs-def: #{$siz-icon-lg};
+    --bit-dtp-cell-size-def: #{spacing(4.25)};
+    --bit-dtp-cell-fs-def: #{$tg-fs-sm};
+    --bit-dtp-lbl-fs-def: #{$tg-fs-md};
+    --bit-dtp-hdr-fs-def: #{$tg-fs-md};
+    --bit-dtp-time-fs-def: #{$tg-fs-xl};
+    --bit-dtp-mcell-w: #{spacing(7)};
+    --bit-dtp-mcell-h: #{spacing(6)};
+    --bit-dtp-tcell-size: #{spacing(4.5)};
+    --bit-dtp-pane-min-w: #{spacing(31)};
 }
 
 // --- month header floor ---

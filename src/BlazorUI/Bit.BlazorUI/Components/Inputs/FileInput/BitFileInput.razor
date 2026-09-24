@@ -13,14 +13,30 @@
     }
     else if (HideLabel is false)
     {
-        <button @onclick="Browse"
+        <button @ref="_labelRef"
+                @onclick="Browse"
                 type="button"
                 id="@_buttonId"
+                title="@Title"
+                tabindex="@TabIndex"
+                disabled="@(IsEnabled is false)"
                 aria-label="@AriaLabel"
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
                 class="bit-fin-lbl @Classes?.Label">
-            @(Label ?? "Browse")
+            @if (ShowDropZone)
+            {
+                @* the glyph is what turns the panel into something recognizable at a glance as a place to
+                   drop files; it is decorative, since the button already says the same thing in words. *@
+                var dropZoneIcon = BitIconInfo.From(DropZoneIcon, DropZoneIconName ?? "CloudUpload");
+
+                if (dropZoneIcon is not null)
+                {
+                    <i style="@Styles?.DropZoneIcon"
+                       class="bit-fin-dzi @dropZoneIcon.GetCssClasses() @Classes?.DropZoneIcon" aria-hidden="true" />
+                }
+            }
+            <span class="bit-fin-lbt">@(Label ?? "Browse")</span>
         </button>
     }
 
@@ -56,7 +72,16 @@
         var removeTitle = RemoveButtonTitle ?? "Remove";
         var removeIcon = ShowRemoveButton ? BitIconInfo.From(RemoveButtonIcon, RemoveButtonIconName ?? "Delete") : null;
 
-        <div role="list" style="@Styles?.FileList" class="bit-fin-fl @Classes?.FileList">
+        @* the list is named so that it is announced as the selected files rather than as one more
+           unlabelled list of the page when a screen reader user walks the landmarks and the lists. *@
+        @* a file list given a ceiling scrolls, and a scrollable box a keyboard has no way into is
+           unreachable for anyone who cannot use a pointer. The remove buttons are that way in whenever
+           they are rendered; without them - and without a template that brings its own - the list takes
+           the tab stop itself so the arrow keys can scroll it. *@
+        <div role="list"
+             tabindex="@(Files.Count > 0 && ShowRemoveButton is false && FileViewTemplate is null ? "0" : null)"
+             aria-label="@(FileListAriaLabel ?? "Selected files")"
+             style="@Styles?.FileList" class="bit-fin-fl @Classes?.FileList">
             @foreach (var file in Files)
             {
                 if (FileViewTemplate is not null)
@@ -68,45 +93,83 @@
                 }
                 else
                 {
+                    var folder = GetFolder(file);
+
                     <div @key="file.FileId"
                          role="listitem" style="@Styles?.FileItem" class="bit-fin-itm @GetFileElClass(file.IsValid) @Classes?.FileItem">
-                        @if (ShowPreview && file.PreviewUrl is not null)
+                        @if (ShowPreview)
                         {
-                            @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
-                               the alt is empty on purpose: the thumbnail is decorative and its name is already
-                               right next to it, so announcing it again would just repeat the same text. *@
-                            <img src="@file.PreviewUrl"
-                                 alt=""
-                                 draggable="false"
-                                 decoding="async"
-                                 style="@Styles?.Preview"
-                                 class="bit-fin-prv @Classes?.Preview" />
+                            if (file.PreviewUrl is not null)
+                            {
+                                @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
+                                   the alt is empty on purpose: the thumbnail is decorative and its name is already
+                                   right next to it, so announcing it again would just repeat the same text. *@
+                                @* lazily, since a folder selection can hold thousands of images and only
+                                   the handful in view is worth decoding. *@
+                                <img src="@file.PreviewUrl"
+                                     alt=""
+                                     draggable="false"
+                                     decoding="async"
+                                     loading="lazy"
+                                     style="@Styles?.Preview"
+                                     class="bit-fin-prv @Classes?.Preview" />
+                            }
+                            else
+                            {
+                                var fileIcon = GetFileIcon(file);
+
+                                @* the glyph stands in the thumbnail's slot for everything that has no preview, so the
+                                   names of a mixed list stay in one column instead of stepping in and out. *@
+                                if (fileIcon is not null)
+                                {
+                                    <div style="@Styles?.FileIcon" class="bit-fin-fio @Classes?.FileIcon">
+                                        <i class="@fileIcon.GetCssClasses()" aria-hidden="true" />
+                                    </div>
+                                }
+                            }
                         }
                         <div class="bit-fin-fic">
-                            <div title="@file.Name" class="bit-fin-fnc">
+                            <div title="@(folder.HasValue() ? file.RelativePath : file.Name)" class="bit-fin-fnc">
+                                @* the extension is split off so that it survives the ellipsis: a long name
+                                   truncated as one string ends in "..." and stops saying what kind of file it is,
+                                   which is the one thing a glance at a file list is for. *@
                                 <div style="@Styles?.FileName" class="bit-fin-fn @Classes?.FileName">
-                                    @file.Name
+                                    <span class="bit-fin-fnm">@GetFileStem(file.Name)</span><span class="bit-fin-fnx">@GetFileExtension(file.Name)</span>
                                 </div>
                             </div>
                             <div class="bit-fin-fsc">
                                 <span style="@Styles?.FileSize" class="bit-fin-fs @Classes?.FileSize">
                                     @(FileSizeFormatter is null ? FileSizeHumanizer.Humanize(file.Size) : FileSizeFormatter(file.Size))
                                 </span>
+                                @if (folder.HasValue())
+                                {
+                                    @* a folder selection flattens into one list, where two files can only be told
+                                       apart by where they came from, so the folder is printed beside the size. *@
+                                    <span style="@Styles?.FilePath" class="bit-fin-fp @Classes?.FilePath">@folder</span>
+                                }
                             </div>
                             @if (file.IsValid is false)
                             {
-                                <div style="@Styles?.ErrorMessage" class="bit-fin-msg @Classes?.ErrorMessage">
+                                <div id="@GetMessageId(file)" style="@Styles?.ErrorMessage" class="bit-fin-msg @Classes?.ErrorMessage">
                                     @file.Message
                                 </div>
                             }
                         </div>
                         @if (ShowRemoveButton)
                         {
-                            <button @onclick="() => RemoveFile(file)"
+                            @* the accessible name carries the whole path when there is one, since a flattened
+                               folder can hold the same name more than once and "Remove readme.md" would name
+                               none of them. The error message of an invalid file describes the button, since a
+                               keyboard user tabbing from one remove button to the next would otherwise never
+                               hear why the file was rejected - which is exactly what decides whether to remove it. *@
+                            <button @ref="_removeRefs[file.FileId]"
+                                    @onclick="() => HandleRemoveClick(file)"
                                     type="button"
                                     title="@removeTitle"
+                                    tabindex="@TabIndex"
                                     disabled="@(IsEnabled is false)"
-                                    aria-label="@($"{removeTitle} {file.Name}")"
+                                    aria-label="@($"{removeTitle} {(folder.HasValue() ? file.RelativePath : file.Name)}")"
+                                    aria-describedby="@(file.IsValid ? null : GetMessageId(file))"
                                     style="@Styles?.RemoveButton"
                                     class="bit-fin-rbt @Classes?.RemoveButton">
                                 <i style="@Styles?.RemoveIcon" class="@removeIcon?.GetCssClasses() @Classes?.RemoveIcon" aria-hidden="true" />

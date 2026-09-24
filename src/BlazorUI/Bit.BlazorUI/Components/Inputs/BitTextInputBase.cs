@@ -115,6 +115,14 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
 
 
+    /// <summary>
+    /// Drops any input event still waiting out its <see cref="DebounceTime"/> or <see cref="ThrottleTime"/>,
+    /// for a derived component that has just committed that text by other means.
+    /// </summary>
+    protected void ResetInputRateLimiter() => _rateLimiter.Reset();
+
+
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
