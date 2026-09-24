@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -31,6 +33,7 @@ public partial class BitSwiper : BitComponentBase
     private bool _hovered;
     private bool _stopped;
     private bool _focused;
+    private bool _keysOwnedByContent;
     private bool _isPaused;
     private bool _pageHidden;
     private bool _needsSetup;
@@ -66,6 +69,19 @@ public partial class BitSwiper : BitComponentBase
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
     [Inject] private BitPageVisibility _pageVisibility { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the swiper component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple swiper components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSwiperParams.ParamName)]
+    public BitSwiperParams? CascadingParameters { get; set; }
 
 
 
@@ -345,6 +361,17 @@ public partial class BitSwiper : BitComponentBase
     [Parameter] public string? PrevIconName { get; set; }
 
     /// <summary>
+    /// Wraps the manual navigation around: moving on from the end of the swiper goes back to its start, and
+    /// moving back from its start goes to its end.
+    /// </summary>
+    /// <remarks>
+    /// It covers the next/prev buttons (which then stay visible at both ends), the arrow keys and
+    /// <see cref="GoNext"/>/<see cref="GoPrev"/>. The wheel and the dragging stop at the ends either way, since a
+    /// scroll that jumps back to the start under the hand reads as a glitch rather than as a navigation.
+    /// </remarks>
+    [Parameter] public bool Rewind { get; set; }
+
+    /// <summary>
     /// Number of items that is going to be changed on navigation.
     /// </summary>
     /// <remarks>
@@ -551,12 +578,12 @@ public partial class BitSwiper : BitComponentBase
 
 
     /// <summary>
-    /// Navigates to the next swiper item.
+    /// Navigates to the next swiper item (back to the first one from the end when <see cref="Rewind"/> is enabled).
     /// </summary>
     public async Task GoNext() => await Go(true);
 
     /// <summary>
-    /// Navigates to the previous swiper item.
+    /// Navigates to the previous swiper item (on to the last one from the start when <see cref="Rewind"/> is enabled).
     /// </summary>
     public async Task GoPrev() => await Go(false);
 
@@ -703,6 +730,17 @@ public partial class BitSwiper : BitComponentBase
 
 
 
+    // Reported from the browser when the keyboard focus moves onto (or away from) something inside an item that
+    // takes the navigation keys for itself: a text field, a select, a slider, a listbox, and the like. The arrow
+    // keys belong to that control then, so the swiper leaves them alone instead of moving under the caret.
+    [JSInvokable("OnKeysOwnerChange")]
+    public void _OnKeysOwnerChange(bool ownedByContent)
+    {
+        _keysOwnedByContent = ownedByContent;
+    }
+
+
+
     internal void RegisterItem(BitSwiperItem item)
     {
         item.Index = _allItems.Count;
@@ -821,11 +859,17 @@ public partial class BitSwiper : BitComponentBase
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwiperParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         _directionStyle = Dir == BitDir.Rtl ? "direction:rtl;" : string.Empty;
 
         _internalScrollItemsCount = Math.Max(1, ScrollItemsCount);
+
+        // Rewind decides whether the buttons stay at the ends, so they are re-evaluated with the parameters.
+        SetNavigationButtonsVisibility();
 
         // Everything the browser side of the swiper is driven with is folded into one signature, so a
         // single comparison decides whether it has to be told about a change at all.
@@ -980,9 +1024,10 @@ public partial class BitSwiper : BitComponentBase
 
     private void SetNavigationButtonsVisibility()
     {
-        // A swiper everything already fits in has nowhere to go, so neither button is of any use on it.
-        _nextButtonStyle = (_scrollable is false || _atEnd) ? "display:none;" : string.Empty;
-        _prevButtonStyle = (_scrollable is false || _atStart) ? "display:none;" : string.Empty;
+        // A swiper everything already fits in has nowhere to go, so neither button is of any use on it. A
+        // rewinding one always has somewhere to go, so it keeps both of them at its ends.
+        _nextButtonStyle = (_scrollable is false || (_atEnd && Rewind is false)) ? "display:none;" : string.Empty;
+        _prevButtonStyle = (_scrollable is false || (_atStart && Rewind is false)) ? "display:none;" : string.Empty;
     }
 
     private void UpdateItemsCurrentState()
@@ -996,6 +1041,12 @@ public partial class BitSwiper : BitComponentBase
     private async Task Go(bool forward, int? count = null)
     {
         if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+
+        if (Rewind && _scrollable && (forward ? _atEnd : _atStart))
+        {
+            await _js.BitSwiperGoToEdge(_Id, forward is false);
+            return;
+        }
 
         await _js.BitSwiperGo(_Id, forward, count ?? _internalScrollItemsCount);
     }
@@ -1039,6 +1090,7 @@ public partial class BitSwiper : BitComponentBase
     {
         if (NoKeyboard) return;
         if (IsEnabled is false) return;
+        if (_keysOwnedByContent) return;
 
         // A swiper that swallowed a modified arrow key would take the browser shortcuts of the page with
         // it, so only the plain keys are acted on.

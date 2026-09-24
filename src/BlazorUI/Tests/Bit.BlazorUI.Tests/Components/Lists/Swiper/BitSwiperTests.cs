@@ -1050,6 +1050,92 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSwiperShouldLeaveTheArrowKeysToAControlInsideAnItem()
+    {
+        var component = RenderComponent<BitSwiperTest>();
+
+        // The browser reports that the focus moved onto a text field (or a slider, a listbox...) in an item.
+        await component.InvokeAsync(() => component.Instance.Swiper._OnKeysOwnerChange(true));
+
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "End" });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier.StartsWith("BitBlazorUI.Swiper.go")));
+
+        // Once the focus leaves it the keys belong to the swiper again.
+        await component.InvokeAsync(() => component.Instance.Swiper._OnKeysOwnerChange(false));
+
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldRewindFromTheEndWhenRequested()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.Rewind, true);
+        });
+
+        await PushState(component, atStart: false, atEnd: true);
+
+        component.Find(".bit-swp-rbt").Click();
+
+        // Moving on from the end goes back to the start instead of standing still.
+        Assert.AreEqual(false, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swiper.go"));
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldRewindFromTheStartWhenRequested()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.Rewind, true);
+        });
+
+        await PushState(component, atStart: true, atEnd: false);
+
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldKeepBothButtonsAtTheEndsWhenRewinding()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.Rewind, true);
+        });
+
+        await PushState(component, atStart: true, atEnd: false);
+
+        Assert.IsFalse((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.IsFalse((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+
+        // A swiper with nothing to scroll still has nowhere to go, rewinding or not.
+        await PushState(component, scrollable: false, atStart: true, atEnd: true);
+
+        Assert.IsTrue((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.IsTrue((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldNotRewindByDefault()
+    {
+        var component = RenderComponent<BitSwiperTest>();
+
+        await PushState(component, atStart: false, atEnd: true);
+
+        await component.InvokeAsync(component.Instance.Swiper.GoNext);
+
+        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swiper.goToEdge"));
+    }
+
+    [TestMethod]
     public async Task BitSwiperShouldHideEachButtonAtTheEndItCannotPass()
     {
         var component = RenderComponent<BitSwiperTest>();

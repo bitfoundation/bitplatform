@@ -117,6 +117,7 @@ namespace BitBlazorUI {
         private lastMoveTime = 0;
         private velocity = 0;
         private lastWheel = 0;
+        private keysOwned = false;
 
         constructor(
             id: string,
@@ -149,6 +150,9 @@ namespace BitBlazorUI {
 
             // Non-passive, since a wheel the swiper navigates with has to be taken from the page.
             container.addEventListener('wheel', this.onWheel, { signal, passive: false });
+
+            this.root.addEventListener('focusin', this.onFocusIn, { signal });
+            this.root.addEventListener('focusout', this.onFocusOut, { signal });
 
             try {
                 this.observer = new ResizeObserver(() => this.scheduleNotify());
@@ -680,6 +684,45 @@ namespace BitBlazorUI {
 
             this.dragging = false;
             this.pointerId = -1;
+        };
+
+        // A control inside an item that takes the navigation keys for itself: typing in a text field, moving a
+        // slider or walking a listbox with the arrow keys must not move the swiper under it.
+        private ownsKeys(target: EventTarget | null): boolean {
+            if (target instanceof HTMLElement === false) return false;
+
+            const el = target as HTMLElement;
+
+            if (el === this.root || this.root.contains(el) === false) return false;
+            if (el.isContentEditable) return true;
+            if (/^(input|textarea|select)$/i.test(el.tagName)) return true;
+
+            return el.closest('[role="slider"],[role="spinbutton"],[role="listbox"],[role="combobox"],[role="textbox"],' +
+                '[role="menu"],[role="menubar"],[role="tablist"],[role="tree"],[role="treegrid"],[role="grid"],' +
+                '[role="radiogroup"]') !== null;
+        }
+
+        private setKeysOwned(owned: boolean) {
+            if (this.keysOwned === owned) return;
+
+            this.keysOwned = owned;
+
+            try {
+                this.dotnetObj.invokeMethodAsync('OnKeysOwnerChange', owned)
+                    .catch(e => console.error("BitBlazorUI.Swiper.setKeysOwned:", e));
+            } catch (e) { console.error("BitBlazorUI.Swiper.setKeysOwned:", e); }
+        }
+
+        private onFocusIn = (e: FocusEvent) => {
+            this.setKeysOwned(this.ownsKeys(e.target));
+        };
+
+        private onFocusOut = (e: FocusEvent) => {
+            // A focus that moves on to another element inside the swiper is picked up by its focusin.
+            const next = e.relatedTarget;
+            if (next instanceof Node && this.root.contains(next)) return;
+
+            this.setKeysOwned(false);
         };
 
         private swallowClick = (e: MouseEvent) => {
