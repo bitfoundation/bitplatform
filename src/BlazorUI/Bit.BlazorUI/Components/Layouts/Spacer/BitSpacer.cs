@@ -9,6 +9,8 @@ namespace Bit.BlazorUI;
 /// It either creates a fixed amount of space (in pixels through Width/Height, in any CSS length through Gap,
 /// or from the spacing scale of the theme through Size) or a flexible space that absorbs whatever room is
 /// left over (optionally in proportion to other spacers through Grow).
+/// <br />
+/// It is hidden from assistive technologies unless it is given an AriaLabel, which renders it as a named separator.
 /// </summary>
 public partial class BitSpacer : BitComponentBase
 {
@@ -201,16 +203,20 @@ public partial class BitSpacer : BitComponentBase
     {
         builder.OpenElement(0, Element ?? "div");
 
-        // The spacer carries no content, so it is hidden from assistive technologies by default. It is added before
-        // the splatted attributes so an explicit aria-hidden in HtmlAttributes can still take it back.
-        builder.AddAttribute(1, "aria-hidden", AriaLabel.HasValue() ? null : "true");
-        builder.AddMultipleAttributes(2, RuntimeHelpers.TypeCheck(HtmlAttributes));
-        builder.AddAttribute(3, "id", _Id);
-        builder.AddAttribute(4, "aria-label", AriaLabel);
-        builder.AddAttribute(5, "style", StyleBuilder.Value);
-        builder.AddAttribute(6, "class", ClassBuilder.Value);
-        builder.AddAttribute(7, "dir", Dir?.ToString().ToLower());
-        builder.AddElementReferenceCapture(8, v => RootElement = v);
+        // The spacer carries no content, so it is hidden from assistive technologies by default. A labelled one is
+        // meant to be announced, and ARIA does not allow naming a generic element, so it becomes a separator between
+        // the groups on either side of it instead. Both are added before the splatted attributes so an explicit
+        // aria-hidden or role in HtmlAttributes can still take them back.
+        var isLabelled = AriaLabel.HasValue();
+        builder.AddAttribute(1, "aria-hidden", isLabelled ? null : "true");
+        builder.AddAttribute(2, "role", isLabelled ? "separator" : null);
+        builder.AddMultipleAttributes(3, RuntimeHelpers.TypeCheck(HtmlAttributes));
+        builder.AddAttribute(4, "id", _Id);
+        builder.AddAttribute(5, "aria-label", AriaLabel);
+        builder.AddAttribute(6, "style", StyleBuilder.Value);
+        builder.AddAttribute(7, "class", ClassBuilder.Value);
+        builder.AddAttribute(8, "dir", Dir?.ToString().ToLower());
+        builder.AddElementReferenceCapture(9, v => RootElement = v);
         builder.CloseElement();
 
         base.BuildRenderTree(builder);

@@ -470,9 +470,27 @@ public class BitSpacerTests : BunitTestContext
 
         var root = component.Find(".bit-spc");
 
-        // A labelled spacer is meant to be announced, so the default aria-hidden steps aside.
+        // A labelled spacer is meant to be announced, so the default aria-hidden steps aside and the element takes
+        // a role that allows a name, since a generic one cannot carry an aria-label.
         Assert.AreEqual("spacer", root.GetAttribute("aria-label"));
+        Assert.AreEqual("separator", root.GetAttribute("role"));
         Assert.IsFalse(root.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldRenderNoRoleWhenNotLabelled()
+    {
+        var component = RenderComponent<BitSpacer>();
+
+        Assert.IsFalse(component.Find(".bit-spc").HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldLetHtmlAttributesOverrideRole()
+    {
+        var component = RenderComponent<BitSpacerRoleOverrideTest>();
+
+        Assert.AreEqual("presentation", component.Find(".bit-spc").GetAttribute("role"));
     }
 
     [TestMethod]
