@@ -37,7 +37,7 @@ public partial class MainLayout
                 new() { Text = "FileInput", Url = "/components/fileinput", AdditionalUrls = ["/components/file-input"] },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
                 new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field", "/components/spinbutton", "/components/spin-button"], Description = "NumberInput" },
-                new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"] },
+                new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"], Description = "PinInput, VerificationCode, OneTimePassword" },
                 new() { Text = "Rating", Url = "/components/rating" },
                 new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"], Data = "AutoComplete" },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
