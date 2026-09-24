@@ -482,6 +482,31 @@ private BitAlignment alignContent;
 </div>";
 
     private readonly string example12RazorCode = @"
+<BitParams Parameters=""@stackParams"">
+    <BitStack Class=""stack"">
+        <div class=""item"">Item 1</div>
+        <div class=""item"">Item 2</div>
+        <div class=""item"">Item 3</div>
+    </BitStack>
+
+    <BitStack Horizontal=""false"" Class=""stack"">
+        <div class=""item"">Its own Horizontal=""false""</div>
+        <div class=""item"">The cascaded rest</div>
+    </BitStack>
+</BitParams>";
+    private readonly string example12CsharpCode = @"
+private readonly BitStackParams[] stackParams =
+[
+    new()
+    {
+        Horizontal = true,
+        Gap = ""0.5rem"",
+        VerticalAlign = BitAlignment.Center,
+        AutoHeight = true,
+    }
+];";
+
+    private readonly string example13RazorCode = @"
 <BitStack Horizontal Size=""BitSize.Small"" Class=""stack"" AutoHeight>
     <div class=""item"">Small</div>
     <div class=""item"">Small</div>
@@ -500,7 +525,7 @@ private BitAlignment alignContent;
     <div class=""item"">Large</div>
 </BitStack>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-stack {
         padding: 1rem;
@@ -519,9 +544,17 @@ private BitAlignment alignContent;
 <BitStack Horizontal AutoHeight Class=""custom-stack"">
     <div class=""item"">Class</div>
     <div class=""item"">on the stack</div>
-</BitStack>";
+</BitStack>
 
-    private readonly string example14RazorCode = @"
+<div style=""--bit-Stack-gap:0.25rem"">
+    <BitStack Horizontal AutoHeight Class=""stack"">
+        <div class=""item"">A tight</div>
+        <div class=""item"">default</div>
+        <div class=""item"">gap</div>
+    </BitStack>
+</div>";
+
+    private readonly string example15RazorCode = @"
 <BitStack Horizontal Dir=""BitDir.Rtl"" Class=""stack"">
     <div class=""item"">یک</div>
     <div class=""item"">دو</div>

@@ -29,8 +29,10 @@ public partial class BitStack : BitComponentBase
     // the spacing unit and the density of the current theme instead of a hardcoded length.
     private const string SizeVariable = "var(--bit-stc-size)";
 
-    // The gap of a stack that was told nothing about its spacing.
-    private const string DefaultGap = "1rem";
+    // The gap of a stack that was told nothing about its spacing: the public --bit-Stack-gap when it is set on the
+    // stack or on any of its ancestors, and the second step of the spacing scale of the theme otherwise. The
+    // stylesheet resolves it, since that fallback is a theme token the component has no business spelling out.
+    private const string DefaultGap = "var(--bit-stc-dgap)";
 
 
 
@@ -208,7 +210,8 @@ public partial class BitStack : BitComponentBase
     /// <summary>
     /// Gets or sets the spacing between the children of the stack, using any CSS length value.
     /// <br />
-    /// The default value is <strong>1rem</strong>.
+    /// The default value is the public <c>--bit-Stack-gap</c> custom property, and the second step of the spacing scale of the
+    /// theme (<strong>1rem</strong> with the default theme) where that is not set.
     /// </summary>
     /// <remarks>
     /// Takes one length for both axes (<c>0.5rem</c>, <c>8px</c>, <c>2%</c>, <c>var(--my-gap)</c>), or two - the vertical one
@@ -221,6 +224,10 @@ public partial class BitStack : BitComponentBase
     /// <see cref="HorizontalGap"/> and <see cref="VerticalGap"/> each replace it on their own axis, <see cref="GapXs"/> to
     /// <see cref="GapXxl"/> each replace it from their own breakpoint upwards, and it takes precedence over the
     /// <see cref="Size"/> picked from the spacing scale of the theme.
+    /// <br />
+    /// The default is what changes the spacing of every stack that was told nothing about it at once: <c>--bit-Stack-gap</c>
+    /// inherits, so setting it on <c>:root</c> retunes the whole application and setting it on an element retunes the stacks
+    /// inside it. It takes a single length, since the per axis parameters split the default into its two axes.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Gap { get; set; }

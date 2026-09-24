@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.Components.Layouts.Stack;
 [TestClass]
 public class BitStackTests : BunitTestContext
 {
-    private const string STYLE = "display:flex;flex-direction:column;gap:1rem;";
+    private const string STYLE = "display:flex;flex-direction:column;gap:var(--bit-stc-dgap);";
 
     private static readonly Dictionary<BitAlignment, string> _AlignmentMap = new()
     {
@@ -125,7 +125,7 @@ public class BitStackTests : BunitTestContext
         });
 
         // The custom style is appended after the generated one so it wins over it.
-        Assert.AreEqual("display:flex;flex-direction:column;gap:1rem;gap:5rem", component.Find(".bit-stc").GetAttribute("style"));
+        Assert.AreEqual("display:flex;flex-direction:column;gap:var(--bit-stc-dgap);gap:5rem", component.Find(".bit-stc").GetAttribute("style"));
     }
 
     [TestMethod,
@@ -418,7 +418,7 @@ public class BitStackTests : BunitTestContext
         var fd = horizontal ? "row" : "column";
         var cssClass = fillContent ? (horizontal ? " bit-stc-fch" : " bit-stc-fcv") : null;
 
-        component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""display:flex;flex-direction:{fd};gap:1rem"" id:ignore></div>");
+        component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""display:flex;flex-direction:{fd};gap:var(--bit-stc-dgap)"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -439,7 +439,7 @@ public class BitStackTests : BunitTestContext
         var fd = horizontal ? "row" : "column";
         var cssClass = horizontal ? "bit-stc-fch" : "bit-stc-fcv";
 
-        component.MarkupMatches(@$"<div class=""bit-stc {cssClass}"" style=""display:flex;flex-direction:{fd};gap:1rem"" id:ignore></div>");
+        component.MarkupMatches(@$"<div class=""bit-stc {cssClass}"" style=""display:flex;flex-direction:{fd};gap:var(--bit-stc-dgap)"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -637,7 +637,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Gap, gap);
         });
 
-        var style = gap.HasValue() ? $"gap:{gap}" : $"gap:1rem";
+        var style = gap.HasValue() ? $"gap:{gap}" : $"gap:var(--bit-stc-dgap)";
 
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;{style}"" class=""bit-stc"" id:ignore></div>");
     }
@@ -1043,7 +1043,7 @@ public class BitStackTests : BunitTestContext
         });
 
         // The three are longhands of one shorthand, and they read as one line in that order.
-        Assert.AreEqual("display:flex;flex-direction:column;gap:1rem;flex-grow:2;flex-shrink:3;flex-basis:0",
+        Assert.AreEqual("display:flex;flex-direction:column;gap:var(--bit-stc-dgap);flex-grow:2;flex-shrink:3;flex-basis:0",
                         component.Find(".bit-stc").GetAttribute("style"));
     }
 
@@ -1128,7 +1128,7 @@ public class BitStackTests : BunitTestContext
         var display = inline ? "inline-flex" : "flex";
         var cssClass = inline ? " bit-stc-inl" : null;
 
-        component.MarkupMatches(@$"<div style=""display:{display};flex-direction:column;gap:1rem"" class=""bit-stc{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:{display};flex-direction:column;gap:var(--bit-stc-dgap)"" class=""bit-stc{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -1143,7 +1143,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Inline, true);
         });
 
-        component.MarkupMatches(@$"<div style=""display:inline-flex;flex-direction:column;gap:1rem"" class=""bit-stc bit-stc-inl"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:inline-flex;flex-direction:column;gap:var(--bit-stc-dgap)"" class=""bit-stc bit-stc-inl"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -1176,7 +1176,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = horizontal ? "row" : "column";
 
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:var(--bit-stc-dgap)"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -1191,7 +1191,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Horizontal, true);
         });
 
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:row;gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:row;gap:var(--bit-stc-dgap)"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -1467,7 +1467,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = reversed ? "column-reverse" : "column";
 
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:var(--bit-stc-dgap)"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -1482,7 +1482,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Reversed, true);
         });
 
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column-reverse;gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column-reverse;gap:var(--bit-stc-dgap)"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -1595,7 +1595,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = $"{(horizontal ? "row" : "column")}{(reversed ? "-reverse" : null)}";
 
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:var(--bit-stc-dgap)"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -1627,7 +1627,7 @@ public class BitStackTests : BunitTestContext
                 if (IsCrossAlignment(cross)) style.Append($"align-items:{_AlignmentMap[cross]};");
                 if (IsMainAlignment(main)) style.Append($"justify-content:{_AlignmentMap[main]};");
 
-                component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem;{style}"" class=""bit-stc"" id:ignore></div>");
+                component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:var(--bit-stc-dgap);{style}"" class=""bit-stc"" id:ignore></div>");
             }
         }
     }
@@ -2132,7 +2132,7 @@ public class BitStackTests : BunitTestContext
 
         // A stack that keeps the same spacing at every width keeps its gap inline, where nothing reaches it.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
+        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
         Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-stc-gap"));
     }
 
@@ -2166,7 +2166,7 @@ public class BitStackTests : BunitTestContext
         // gap would outrank every media query, and the base of the chain is what a stack falls back to.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
         Assert.IsFalse(style.Contains(";gap:"));
-        StringAssert.Contains(style, "--bit-stc-gap:1rem");
+        StringAssert.Contains(style, "--bit-stc-gap:var(--bit-stc-dgap)");
         StringAssert.Contains(style, $"--bit-stc-gap-{breakpoint}:2rem");
     }
 
@@ -2253,7 +2253,7 @@ public class BitStackTests : BunitTestContext
 
         // Taking the last per breakpoint gap away hands the gap back to the element.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
+        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
     }
 
     [TestMethod,
@@ -2290,8 +2290,8 @@ public class BitStackTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsvg"));
         Assert.IsFalse(style.Contains(";gap:"));
         Assert.IsFalse(style.Contains("column-gap:"));
-        StringAssert.Contains(style, "--bit-stc-gap:1rem");
-        StringAssert.Contains(style, "--bit-stc-hgap:1rem");
+        StringAssert.Contains(style, "--bit-stc-gap:var(--bit-stc-dgap)");
+        StringAssert.Contains(style, "--bit-stc-hgap:var(--bit-stc-dgap)");
         StringAssert.Contains(style, $"--bit-stc-hgap-{breakpoint}:2rem");
     }
 
@@ -2326,7 +2326,7 @@ public class BitStackTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
         Assert.IsFalse(style.Contains(";gap:"));
         Assert.IsFalse(style.Contains("row-gap:"));
-        StringAssert.Contains(style, "--bit-stc-vgap:1rem");
+        StringAssert.Contains(style, "--bit-stc-vgap:var(--bit-stc-dgap)");
         StringAssert.Contains(style, $"--bit-stc-vgap-{breakpoint}:2rem");
     }
 
@@ -2476,7 +2476,7 @@ public class BitStackTests : BunitTestContext
         var root = component.Find(".bit-stc");
 
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
+        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
 
         component.Render(parameters =>
         {
@@ -2501,7 +2501,7 @@ public class BitStackTests : BunitTestContext
         // element, since neither of them has anything left to answer to the width of the window with.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
+        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
     }
 
     [TestMethod]
@@ -2547,7 +2547,7 @@ public class BitStackTests : BunitTestContext
         });
 
         // A fitted size is the more specific of the two, so it is written after the automatic one.
-        Assert.AreEqual("display:flex;flex-direction:column;gap:1rem;width:auto;height:auto;width:fit-content",
+        Assert.AreEqual("display:flex;flex-direction:column;gap:var(--bit-stc-dgap);width:auto;height:auto;width:fit-content",
                         component.Find(".bit-stc").GetAttribute("style"));
     }
 
@@ -2685,7 +2685,7 @@ public class BitStackTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
         StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
+        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
     }
 
     [TestMethod]
@@ -2816,15 +2816,15 @@ public class BitStackTests : BunitTestContext
         Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rsg"));
         Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rshg"));
         Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rsvg"));
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-gap:1rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap:1rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-gap:var(--bit-stc-dgap)");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap:var(--bit-stc-dgap)");
         StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xs:0.25rem");
         StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-sm:0.5rem");
         StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-lg:1.5rem");
         StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xl:2rem");
         StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xxl:2.5rem");
         Assert.IsFalse(stacks[5].GetAttribute("style")!.Contains("--bit-stc-hgap-md"));
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap:1rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap:var(--bit-stc-dgap)");
         StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-xs:0.125rem");
         StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-md:0.75rem");
         StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-lg:1rem");

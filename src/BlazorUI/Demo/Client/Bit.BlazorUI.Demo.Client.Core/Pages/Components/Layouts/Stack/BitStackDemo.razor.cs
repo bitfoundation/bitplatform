@@ -104,7 +104,7 @@ public partial class BitStackDemo
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack, using any CSS length value, 1rem by default. It takes one length for both axes, or two - the vertical one followed by the horizontal one - for a wrapping stack. HorizontalGap and VerticalGap each replace it on their own axis, GapXs to GapXxl each replace it from their own breakpoint upwards, and it takes precedence over the Size picked from the spacing scale of the theme."
+            Description = "Gets or sets the spacing between the children of the stack, using any CSS length value. Defaults to --bit-Stack-gap, or the theme spacing (1rem) where that is not set. It takes one length for both axes, or two - the vertical one followed by the horizontal one - for a wrapping stack. HorizontalGap and VerticalGap each replace it on their own axis, GapXs to GapXxl each replace it from their own breakpoint upwards, and it takes precedence over the Size picked from the spacing scale of the theme."
         },
         new()
         {
@@ -466,6 +466,16 @@ public partial class BitStackDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Stack-gap",
+            DefaultValue = "spacing(2) of the theme (1rem)",
+            Description = "Room between the children of every stack that sets no Gap or Size. A single length.",
+        },
+    ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -552,4 +562,15 @@ public partial class BitStackDemo
     private double stackHeight = 15;
     private bool isWrapReversed;
     private BitAlignment alignContent;
+
+    private readonly BitStackParams[] stackParams =
+    [
+        new()
+        {
+            Horizontal = true,
+            Gap = "0.5rem",
+            VerticalAlign = BitAlignment.Center,
+            AutoHeight = true,
+        }
+    ];
 }

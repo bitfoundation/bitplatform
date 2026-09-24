@@ -1,12 +1,19 @@
 ﻿@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+// Public CSS variables (they inherit, so :root, an ancestor and the Style of a stack are all places to set one):
+//   --bit-Stack-gap   room between the children of a stack that was told nothing about its spacing
+//                     (default: spacing(2) of the theme, 1rem with the default theme; a single length)
+
 $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-lg-min, 'xl': $mq-xl-min, 'xxl': $mq-xxl-min );
 
 // Almost everything a stack does is an inline style, so the root class only carries what has to hold for every
 // stack: the box it takes and the two alignments a stack that was told nothing falls back to. The direction, the
 // gap and the alignments that were asked for are written onto the element, where they outrank these.
 .bit-stc {
+    // Redeclared on every stack, so each one resolves the public default against its own ancestors and a nested
+    // stack is never handed the resolved value of its parent.
+    --bit-stc-dgap: var(--bit-Stack-gap, #{spacing(2)});
     width: 100%;
     height: 100%;
     box-sizing: border-box;
