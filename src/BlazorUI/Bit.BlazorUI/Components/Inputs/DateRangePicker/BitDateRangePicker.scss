@@ -106,12 +106,12 @@
 
     &.bit-dis {
         .bit-dtrp-lbl {
-            color: $clr-fg-dis;
+            color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-dtrp-icn {
             cursor: default;
-            color: $clr-fg-dis;
+            color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
             pointer-events: none;
             background: none $clr-bg-dis;
             border: $shp-border-width $shp-border-style $clr-brd-dis;
@@ -119,12 +119,12 @@
 
         .bit-dtrp-ico {
             cursor: default;
-            color: $clr-fg-dis;
+            color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-dtrp-inp {
             cursor: default;
-            color: $clr-fg-dis;
+            color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
             background: none $clr-bg-dis;
         }
 
@@ -626,7 +626,7 @@
 
         .bit-dtrp-cic,
         .bit-icon {
-            color: $clr-fg-dis;
+            color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
         }
     }
 }
@@ -722,12 +722,12 @@
     }
 
     &:disabled {
-        color: $clr-fg-dis;
+        color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
         pointer-events: none;
         background-color: transparent;
 
         i {
-            color: $clr-fg-dis;
+            color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
         }
     }
 }
@@ -1049,7 +1049,7 @@
     &:disabled {
         cursor: default;
         pointer-events: none;
-        color: $clr-fg-dis;
+        color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
     }
 
     &:focus-visible {

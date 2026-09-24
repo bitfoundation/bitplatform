@@ -887,7 +887,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label.
     /// </summary>
-    [Parameter] public BitSize? Size { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// The title and the aria-label of the start time-picker's increase-hour button.
@@ -1265,6 +1266,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         await OnApply.InvokeAsync(CurrentValue);
 
         await CloseCalloutAndRestoreFocus();
+
+        // A refused close (a one-way bound IsOpen) leaves the callout open without a transaction around it,
+        // so it is opened again on what was just committed - what the next close has to put back.
+        if (IsOpen)
+        {
+            CaptureValueSnapshot();
+        }
     }
 
     private async Task HandleOnCancelButtonClick()
@@ -1273,7 +1281,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         await OnCancel.InvokeAsync();
 
+        // Discarding the picks is what Cancel does, so it happens whether or not the close goes through -
+        // the close reverts nothing afterwards, since the snapshot is released with it.
+        RevertToValueSnapshot();
+
         await CloseCalloutAndRestoreFocus();
+
+        if (IsOpen)
+        {
+            CaptureValueSnapshot();
+        }
     }
 
     /// <summary>
