@@ -227,7 +227,7 @@
 
                 <ul>
                     <li><code>--bit-shd-sm</code>&hellip;<code>--bit-shd-2xl</code> - the callout shadows, by size</li>
-                    <li><code>--bit-shd-focus-ring</code> - the focus ring of a control that draws it in the default color. A control that asks for a focus color of its own - an invalid input, or any component with a <code>--bit-&lt;Component&gt;-focus-color</code> - composes the same two layers itself, since a composite token substitutes its <code>var()</code>s where it is declared and could not read a color set further down the tree. The width, the offset and the <code>--bit-clr-*-focus</code> colors reach both</li>
+                    <li><code>--bit-shd-focus-ring</code> - the focus ring of a control that draws it in the default color. A control that asks for a focus color of its own - an invalid input, or any component with a <code>--bit-&lt;Component&gt;-focus-color</code> - composes the same two layers itself, since a composite token substitutes its <code>var()</code>s where it is declared and could not read a color set further down the tree. Replacing this token therefore re-shapes only the default-colored rings; to restyle every ring, set the width, the offset and the <code>--bit-clr-*-focus</code> colors, which reach both</li>
                     <li><code>--bit-shd-1</code>&hellip;<code>--bit-shd-24</code> - the elevation steps</li>
                     <li><code>--bit-shd-{card,popup,dialog,sheet,tooltip,snackbar,appbar-top,appbar-bottom}</code> - the per-surface elevations that components actually consume (see <i>Family tokens</i> below)</li>
                 </ul>
@@ -1102,7 +1102,7 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
                         <b>Stronger contrast.</b> Under <code>prefers-contrast: more</code> the library does three things, all theme-agnostic (no hardcoded colors, so it applies to light, dark, and your own palettes alike):
                         <ul>
                             <li>borders thicken (<code>--bit-shp-brd-width</code> 1px &rarr; 2px)</li>
-                            <li>the focus indicator strengthens (<code>--bit-shp-focus-ring-width</code> 2px &rarr; 3px with a matching offset bump, flowing through <code>--bit-shd-focus-ring</code> to every focused control)</li>
+                            <li>the focus indicator strengthens (<code>--bit-shp-focus-ring-width</code> 2px &rarr; 3px with a matching offset bump, read by every focused control's ring, whether it comes from <code>--bit-shd-focus-ring</code> or is composed in a color of its own)</li>
                             <li>the two <i>subtlest</i> tiers are promoted a step - <code>--bit-clr-brd-ter</code> and <code>--bit-clr-fg-ter</code> are re-pointed at their <code>-sec</code> counterparts, which lifts the weakest pairs without touching the palette itself</li>
                         </ul>
                         Disabled and muted colors are deliberately <i>not</i> promoted: their meaning depends on staying subdued.
