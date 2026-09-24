@@ -1631,4 +1631,65 @@ public class BitHeaderTests : BunitTestContext
     </div>
 </header>");
     }
+
+    [TestMethod]
+    public void BitHeaderShouldNotRenderTheExtensionRowByDefault()
+    {
+        var component = RenderComponent<BitHeader>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRespectExtensionContent()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.AddChildContent("Title");
+            parameters.Add(p => p.ExtensionContent, "<nav>Tabs</nav>");
+        });
+
+        // The second row follows the main one inside the same header, so it shares its surface.
+        component.MarkupMatches(@"
+<header class=""bit-hdr bit-hdr-fil"" id:ignore>
+    <div class=""bit-hdr-gut"">
+        Title
+    </div>
+    <div class=""bit-hdr-ext"">
+        <nav>Tabs</nav>
+    </div>
+</header>");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRespectClassesAndStylesOfTheExtensionRow()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ExtensionContent, "Tabs");
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Extension = "extension-class" });
+            parameters.Add(p => p.Styles, new BitHeaderClassStyles { Extension = "color:blue" });
+        });
+
+        var extension = component.Find(".bit-hdr-ext");
+
+        Assert.IsTrue(extension.ClassList.Contains("extension-class"));
+        Assert.AreEqual("color:blue", extension.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRespectExtensionContentChangedDynamically()
+    {
+        var component = RenderComponent<BitHeader>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+
+        component.Render(parameters => parameters.Add(p => p.ExtensionContent, "Tabs"));
+
+        Assert.AreEqual("Tabs", component.Find(".bit-hdr-ext").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.ExtensionContent, (Microsoft.AspNetCore.Components.RenderFragment?)null));
+
+        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+    }
 }

@@ -74,6 +74,14 @@
     }
 }
 
+// The CSS variables example: set on an ancestor, the public variables re-skin every header under it.
+.brand-headers {
+    --bit-Header-background: #fdf4ff;
+    --bit-Header-color: #86198f;
+    --bit-Header-border-color: #d946ef;
+    --bit-Header-padding-inline: 2rem;
+}
+
 // The header and its container are rendered by BitHeader itself, so they carry its own scope and
 // only ::deep rules can reach the classes handed to it through Class and Classes.
 ::deep {

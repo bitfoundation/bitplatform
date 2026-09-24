@@ -7,7 +7,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// It renders a semantic <c>header</c> element and lays its content out in a horizontal line whose color, variant,
-/// size, alignment, wrapping, gutters and maximum width are all parameters. It can stay in the flow of the page or be
+/// size, alignment, wrapping, gutters and maximum width are all parameters, with an optional second row under it
+/// (<see cref="ExtensionContent"/>) for tabs or a search box. It can stay in the flow of the page or be
 /// pinned to the top of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page
 /// is scrolled up (<see cref="Reveal"/>), lifting itself off the content once the page is scrolled at all
 /// (<see cref="ElevateOnScroll"/>), or slid out of the way on demand (<see cref="Hidden"/>).
@@ -136,6 +137,19 @@ public partial class BitHeader : BitComponentBase
     public bool Elevated { get; set; }
 
     /// <summary>
+    /// Gets or sets the content of a second row rendered under the main row of the BitHeader, such as a row of
+    /// tabs, a search box or a breadcrumb.
+    /// </summary>
+    /// <remarks>
+    /// The row shares the surface of the header - its background, its border, its shadow and every scroll
+    /// behavior - and lines up with the main row: it takes the same inline gutter and the same
+    /// <see cref="MaxWidth"/>, and it has no block padding of its own, so a row of tabs sits right on the
+    /// bottom edge. Only the main row takes <see cref="Height"/>, <see cref="Alignment"/>, <see cref="Gap"/>
+    /// and <see cref="Wrap"/>; this one is a plain horizontal line whose content brings its own layout.
+    /// </remarks>
+    [Parameter] public RenderFragment? ExtensionContent { get; set; }
+
+    /// <summary>
     /// Renders the header with a fixed position at the top of the page.
     /// </summary>
     /// <remarks>
@@ -164,7 +178,8 @@ public partial class BitHeader : BitComponentBase
     /// Gets or sets the height of the BitHeader (in pixels).
     /// </summary>
     /// <remarks>
-    /// The height includes the paddings and the border of the header (the root element is a border-box).
+    /// The height includes the paddings and the border of the header (the root element is a border-box), and the
+    /// <see cref="ExtensionContent"/> row when there is one; the main row takes whatever that row leaves.
     /// <br />
     /// A header that really sits at the top of the screen - <see cref="Fixed"/>, or <see cref="Sticky"/>
     /// without an <see cref="Absolute"/> outranking it - adds the top safe area inset of the device on top of
