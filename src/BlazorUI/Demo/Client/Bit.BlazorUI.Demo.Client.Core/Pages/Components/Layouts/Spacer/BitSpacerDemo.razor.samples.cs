@@ -10,13 +10,13 @@ public partial class BitSpacerDemo
         padding: 0.5rem;
         align-items: center;
         box-sizing: border-box;
-        border: 1px solid gray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 
     .demo-box {
-        color: white;
+        color: var(--bit-clr-pri-text);
         white-space: nowrap;
-        background: #0078d4;
+        background: var(--bit-clr-pri);
         padding: 0.25rem 0.75rem;
     }
 </style>
@@ -64,7 +64,7 @@ public partial class BitSpacerDemo
         flex-flow: column;
         align-items: flex-start;
         box-sizing: border-box;
-        border: 1px solid gray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 </style>
 
