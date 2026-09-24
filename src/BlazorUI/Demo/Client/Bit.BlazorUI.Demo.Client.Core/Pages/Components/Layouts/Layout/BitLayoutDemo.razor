@@ -190,8 +190,8 @@
         <div>
             <b>StickyHeader</b>, <b>StickyFooter</b>, <b>StickyNavPanel</b> and <b>StickyAside</b> pin a section while its
             scrolling ancestor (this box, or the page) scrolls. A pinned bar gets the page background so content does not
-            show through it; the panels pin <b>HeaderHeight</b> below the top and scroll on their own. <b>ZIndex</b> sets
-            the stacking order of the pinned sections. Scroll the box.
+            show through it; the panels pin <b>HeaderHeight</b> below the top, leave <b>FooterHeight</b> for a sticky footer
+            and scroll on their own. <b>ZIndex</b> sets the stacking order of the pinned sections. Scroll the box.
         </div>
         <br />
         <BitStack Horizontal Wrap Gap="1rem">
@@ -203,6 +203,7 @@
         <br />
         <div class="container">
             <BitLayout HeaderHeight="40"
+                       FooterHeight="40"
                        NavPanelWidth="120"
                        AsideWidth="120"
                        StickyHeader="stickyHeader"
@@ -222,7 +223,7 @@
                     <div class="aside">Aside</div>
                 </Aside>
                 <Footer>
-                    <div class="footer">Footer</div>
+                    <div class="footer fill">Footer</div>
                 </Footer>
             </BitLayout>
         </div>

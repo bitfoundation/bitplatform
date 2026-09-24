@@ -110,6 +110,9 @@ public partial class BitLayout : BitComponentBase
     /// <remarks>
     /// The height includes the paddings and the border of the footer, which is a border-box.
     /// <br />
+    /// It is also the room a <see cref="StickyNavPanel"/> or a <see cref="StickyAside"/> leaves at the bottom of the
+    /// viewport for a <see cref="StickyFooter"/>, so the last items of a pinned panel never sit behind the footer.
+    /// <br />
     /// When not set, the footer takes the <c>--bit-Layout-footer-height</c> CSS variable, and is as tall as its own
     /// content without one.
     /// </remarks>
@@ -313,7 +316,8 @@ public partial class BitLayout : BitComponentBase
     /// This is the application shell: the chrome of the window never moves and the content under it scrolls, which
     /// is what a sticky section cannot do inside a box that does not scroll with the page. It needs the BitLayout to
     /// have a height to fill - <see cref="FullHeight"/>, or a parent of a definite height - since it is the leftover
-    /// of that height that becomes the scrollport.
+    /// of that height that becomes the scrollport. Together with <see cref="FullHeight"/> the layout is held at exactly
+    /// the height of the visible viewport rather than at least that tall, so it never grows with its content.
     /// <br />
     /// The nav panel and the aside scroll on their own too, so a panel with more items than fit stays reachable
     /// without the content beside it moving.
@@ -350,7 +354,8 @@ public partial class BitLayout : BitComponentBase
     /// <remarks>
     /// The aside is pinned <see cref="HeaderHeight"/> pixels from the top of the viewport, which is what keeps it
     /// clear of a <see cref="StickyHeader"/>, and it is given the rest of the viewport height with its own scrollbar,
-    /// so an aside taller than the screen is still reachable.
+    /// so an aside taller than the screen is still reachable. Under a <see cref="StickyFooter"/> it also leaves
+    /// <see cref="FooterHeight"/> pixels at the bottom, so its last items never sit behind the footer.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool StickyAside { get; set; }
@@ -383,7 +388,8 @@ public partial class BitLayout : BitComponentBase
     /// <remarks>
     /// The panel is pinned <see cref="HeaderHeight"/> pixels from the top of the viewport, which is what keeps it
     /// clear of a <see cref="StickyHeader"/>, and it is given the rest of the viewport height with its own scrollbar,
-    /// so a nav panel with more items than fit on the screen is still reachable.
+    /// so a nav panel with more items than fit on the screen is still reachable. Under a <see cref="StickyFooter"/> it
+    /// also leaves <see cref="FooterHeight"/> pixels at the bottom, so its last items never sit behind the footer.
     /// <br />
     /// A nav panel that already pins itself (as the BitNavPanel component does) needs none of this.
     /// </remarks>

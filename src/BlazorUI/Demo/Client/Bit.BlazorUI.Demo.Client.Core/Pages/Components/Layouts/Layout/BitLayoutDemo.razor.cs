@@ -53,7 +53,7 @@ public partial class BitLayoutDemo
             Name = "FooterHeight",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The height of the footer section in pixels, including its paddings and border. When not set, the footer is as tall as its own content.",
+            Description = "The height of the footer section in pixels, including its paddings and border. It is also the room a sticky nav panel or aside leaves at the bottom for a sticky footer. When not set, the footer is as tall as its own content.",
         },
         new()
         {
@@ -172,7 +172,7 @@ public partial class BitLayoutDemo
             Name = "ScrollableMain",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the header and the footer in place and gives the sections of the middle row a scrollport of their own, which is the shape of an application shell. It needs the BitLayout to have a height to fill: FullHeight, or a parent of a definite height.",
+            Description = "Keeps the header and the footer in place and gives the sections of the middle row a scrollport of their own, which is the shape of an application shell. It needs the BitLayout to have a height to fill: FullHeight (which then holds it at exactly the viewport height), or a parent of a definite height.",
         },
         new()
         {
@@ -193,7 +193,7 @@ public partial class BitLayoutDemo
             Name = "StickyAside",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables sticky positioning of the aside, pinned HeaderHeight pixels from the top of the viewport and given the rest of it with its own scrollbar.",
+            Description = "Enables sticky positioning of the aside, pinned HeaderHeight pixels from the top of the viewport and given the rest of it (less FooterHeight under a sticky footer) with its own scrollbar.",
         },
         new()
         {
@@ -214,7 +214,7 @@ public partial class BitLayoutDemo
             Name = "StickyNavPanel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables sticky positioning of the nav panel, pinned HeaderHeight pixels from the top of the viewport and given the rest of it with its own scrollbar.",
+            Description = "Enables sticky positioning of the nav panel, pinned HeaderHeight pixels from the top of the viewport and given the rest of it (less FooterHeight under a sticky footer) with its own scrollbar.",
         },
         new()
         {
@@ -364,7 +364,7 @@ public partial class BitLayoutDemo
         {
             Name = "--bit-Layout-footer-height",
             DefaultValue = "auto",
-            Description = "Height of the footer. The FooterHeight parameter wins over it.",
+            Description = "Height of the footer, and the room the pinned panels leave for a sticky footer. The FooterHeight parameter wins over it.",
         },
         new()
         {

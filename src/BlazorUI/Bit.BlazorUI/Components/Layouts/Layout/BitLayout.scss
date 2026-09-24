@@ -12,7 +12,8 @@
 //   --bit-Layout-border-width              thickness of the Bordered dividers            (default: $shp-border-width)
 //   --bit-Layout-header-height             height of the header, and the offset of the
 //                                          pinned panels                                 (default: auto; the HeaderHeight parameter wins)
-//   --bit-Layout-footer-height             height of the footer                          (default: auto; the FooterHeight parameter wins)
+//   --bit-Layout-footer-height             height of the footer, and the room the pinned
+//                                          panels leave for a pinned footer              (default: auto; the FooterHeight parameter wins)
 //   --bit-Layout-gap                       room between the sections of the middle row   (default: 0; the Gap parameter wins)
 //   --bit-Layout-padding                   padding of the main section                   (default: 0; the Padding parameter wins)
 //   --bit-Layout-z-index                   stacking order of the pinned sections         (default: $zindex-base; the ZIndex parameter wins)
@@ -178,6 +179,14 @@
     }
 }
 
+// FullHeight alone is only a minimum, so a layout whose parent has no definite height would grow with its
+// content and hand the scrolling back to the page. The shell is held at exactly the visible viewport instead,
+// which is the leftover the sections of the middle row need to become scrollports of their own.
+.bit-lyt-flh.bit-lyt-scm {
+    height: 100vh;
+    height: 100dvh;
+}
+
 // The root is kept at the height of its content so it does not stretch to a flex parent, which would leave
 // the sticky section nothing to travel in. scroll-padding is what keeps an anchor inside the layout - the skip
 // link first of all - from landing under the header it just scrolled past.
@@ -222,6 +231,14 @@
     max-height: calc(100dvh - var(--bit-lyt-hdr-h, 0px));
 }
 
+// A pinned footer is drawn over the bottom of a pinned panel, so the panel leaves it that room too: otherwise
+// its last items sit behind the footer, and a focus that lands on one of them is a focus nobody can see.
+.bit-lyt-sft.bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
+.bit-lyt-sft.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd {
+    max-height: calc(100vh - var(--bit-lyt-hdr-h, 0px) - var(--bit-lyt-ftr-h, 0px));
+    max-height: calc(100dvh - var(--bit-lyt-hdr-h, 0px) - var(--bit-lyt-ftr-h, 0px));
+}
+
 // A panel that already spans the full height of the layout has no header above it to stay clear of.
 .bit-lyt-fhp.bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
 .bit-lyt-fhp.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd {
@@ -229,6 +246,16 @@
     align-self: start;
     max-height: 100vh;
     max-height: 100dvh;
+}
+
+// Under ScrollableMain every panel is already a scrollport of its own inside a root that never scrolls, so a
+// sticky one (say, turned on for the whole app through BitParams) has nothing to stick to: it keeps the full
+// height of the row instead of being cut down to the viewport and shrunk to its own content.
+.bit-lyt-scm.bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
+.bit-lyt-scm.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd {
+    position: static;
+    max-height: none;
+    align-self: stretch;
 }
 
 .bit-lyt-brd {
@@ -359,7 +386,8 @@
         min-height: auto;
     }
 
-    .bit-lyt-scm {
+    .bit-lyt-scm,
+    .bit-lyt-flh.bit-lyt-scm {
         height: auto;
         overflow: visible;
     }
@@ -368,6 +396,10 @@
     .bit-lyt-sft > .bit-lyt-ftr,
     .bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
     .bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd,
+    .bit-lyt-sft.bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
+    .bit-lyt-sft.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd,
+    .bit-lyt-fhp.bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
+    .bit-lyt-fhp.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd,
     .bit-lyt-scm > .bit-lyt-man > .bit-lyt-nmn,
     .bit-lyt-scm > .bit-lyt-man > .bit-lyt-mcn,
     .bit-lyt-scm > .bit-lyt-man > .bit-lyt-asd {

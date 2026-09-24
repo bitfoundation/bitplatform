@@ -177,6 +177,7 @@ private bool fullHeightPanels;";
 </BitStack>
 
 <BitLayout HeaderHeight=""40""
+           FooterHeight=""40""
            NavPanelWidth=""120""
            AsideWidth=""120""
            StickyHeader=""stickyHeader""
@@ -196,7 +197,7 @@ private bool fullHeightPanels;";
         <div class=""aside"">Aside</div>
     </Aside>
     <Footer>
-        <div class=""footer"">Footer</div>
+        <div class=""footer fill"">Footer</div>
     </Footer>
 </BitLayout>";
     private readonly string example7CsharpCode = @"
