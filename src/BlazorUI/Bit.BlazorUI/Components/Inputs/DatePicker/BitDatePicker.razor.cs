@@ -1346,10 +1346,35 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return true;
         }
 
-        var parsed = DateTime.TryParseExact(value, GetParseFormats(), _culture, DateTimeStyles.None, out DateTime parsedValue);
+        // ICU cultures (every culture on Linux and in the browser) separate the time from its designator with
+        // a narrow no-break space (U+202F) that nobody types, so the typed text and the formats are both read
+        // with every space separator as a plain space.
+        var parsed = DateTime.TryParseExact(NormalizeSpaces(value!),
+                                            GetParseFormats().Select(NormalizeSpaces).ToArray(),
+                                            _culture,
+                                            DateTimeStyles.None,
+                                            out DateTime parsedValue);
 
         if (parsed)
         {
+            if (Mode != BitDatePickerMode.MonthPicker && ShowTimePicker)
+            {
+                if (IsTypedWithoutTime(value!))
+                {
+                    // A day typed on its own has no time in it, not a time of midnight: it keeps the time the
+                    // picker is showing, brought into what that day's bounds allow, the way picking the day
+                    // in the calendar would.
+                    parsedValue = parsedValue.Date + GetTimeOfDayForTypedDay(parsedValue.Date);
+                }
+                else if (ShowSeconds is false)
+                {
+                    // Without a seconds field the picker never produces a second, so typed seconds are
+                    // dropped - otherwise 17:00:45 would pass a bound of 17:00 it is read against to the
+                    // minute, and be stored past it.
+                    parsedValue = parsedValue.AddSeconds(-parsedValue.Second).AddMilliseconds(-parsedValue.Millisecond);
+                }
+            }
+
             // A typed month is a whole month, whose first day can fall before MinDate (or whose last day
             // after MaxDate) while the month itself is still selectable, so it is pulled into the range the
             // same way SelectMonth pulls a month clicked in the calendar. The typed time of day survives it.
@@ -1437,9 +1462,27 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (DateFormatAriaDescription.HasNoValue()) return null;
 
         // A description the application put on the input itself is the one that stands.
-        if (InputHtmlAttributes?.ContainsKey("aria-describedby") is true) return null;
+        if (GetSplattedInputAttribute("aria-describedby").HasValue()) return null;
 
         return string.Format(_culture, DateFormatAriaDescription, DateFormat ?? GetDefaultDateFormat());
+    }
+
+    // An attribute the application splatted onto the input. The input writes its own aria-* after the splat,
+    // and a null written over a splatted attribute does not leave it alone - it removes it - so a name the
+    // component also writes is resolved against what the page wrote rather than overwritten with a null.
+    // HTML attribute names are case insensitive, and so is the deduplication the render tree does.
+    private string? GetSplattedInputAttribute(string name)
+    {
+        if (InputHtmlAttributes is null || InputHtmlAttributes.Count == 0) return null;
+
+        if (InputHtmlAttributes.TryGetValue(name, out var value)) return value?.ToString();
+
+        foreach (var attribute in InputHtmlAttributes)
+        {
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return attribute.Value?.ToString();
+        }
+
+        return null;
     }
 
     // The pattern of the time of day, in the clock format of the component, built out of the patterns
@@ -1485,6 +1528,40 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         formats.Add(date);
 
         return [.. formats];
+    }
+
+    // Whether the typed text is the day on its own, which GetParseFormats accepts beside the full format of a
+    // picker that also offers a time.
+    private bool IsTypedWithoutTime(string text)
+    {
+        if (DateFormat.HasValue()) return false;
+
+        return DateTime.TryParseExact(NormalizeSpaces(text),
+                                      NormalizeSpaces(_culture.DateTimeFormat.ShortDatePattern),
+                                      _culture,
+                                      DateTimeStyles.None,
+                                      out _);
+    }
+
+    // The time of day a day typed without one takes: the one the time picker shows, held to the bounds of that
+    // day - the bound itself where it falls outside them, as ClampTimeToBounds does.
+    private TimeSpan GetTimeOfDayForTypedDay(DateTime day)
+    {
+        var time = new TimeSpan(_hour, _minute, ShowSeconds ? _second : 0);
+
+        var (min, max) = GetTimeBounds(day);
+
+        if (min.HasValue && time < min.Value) return min.Value;
+        if (max.HasValue && time > max.Value) return max.Value;
+
+        return time;
+    }
+
+    private static string NormalizeSpaces(string text)
+    {
+        if (text.Any(c => c != ' ' && char.GetUnicodeCategory(c) == UnicodeCategory.SpaceSeparator) is false) return text;
+
+        return new string([.. text.Select(c => char.GetUnicodeCategory(c) == UnicodeCategory.SpaceSeparator ? ' ' : c)]);
     }
 
 
@@ -3419,7 +3496,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, IsHourAllowed) ?? _hour;
 
         // Stepping onto the hour a bound falls in can leave the minute past the bound, so it comes along -
-        // and the second with it.
+        // and the second with it. It is brought inside the bound first, for the reason HandleOnTimeInputChange
+        // gives: the nearest allowed minute is measured around the clock, and from past the bound that can be
+        // the far end of the hour rather than the bound itself.
+        ClampTimeToBounds();
+
         _minute = BitTimeSteps.FindNearestAllowed(_minute, 60, IsMinuteAllowed) ?? _minute;
         _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
 
@@ -3430,6 +3511,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task ChangeMinute(bool isNext)
     {
         _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, IsMinuteAllowed) ?? _minute;
+
+        ClampTimeToBounds();
 
         _second = BitTimeSteps.FindNearestAllowed(_second, 60, IsSecondAllowed) ?? _second;
 

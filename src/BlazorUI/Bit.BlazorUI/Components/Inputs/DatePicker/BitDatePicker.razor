@@ -68,7 +68,7 @@
                        readonly=@(AllowTextInput is false || ReadOnly)
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _dialogId : null)"
-                       aria-describedby="@(formatDescription.HasValue() ? _formatHintId : null)"
+                       aria-describedby="@(formatDescription.HasValue() ? _formatHintId : GetSplattedInputAttribute("aria-describedby"))"
                        aria-labelledby="@((LabelTemplate is not null || Label.HasValue()) ? _labelId : null)"
                        style="@Styles?.Input"
                        class="bit-dtp-inp@(AllowTextInput ? " bit-dtp-ein" : null) @Classes?.Input" />
