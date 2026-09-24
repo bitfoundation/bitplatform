@@ -346,8 +346,10 @@
         input as soon as the callout opens - with the pointer and with Enter or Space on the keyboard alike - so
         typing filters right away. A clear button appears in the search input as soon as there is something to clear,
         which follows the text being typed rather than the term that has been applied: a search waiting to be committed
-        (or held back by a debounce) can be taken back the moment it is typed. The search term is discarded whenever the
-        callout closes, so the next opening always starts from the full list.
+        (or held back by a debounce) can be taken back the moment it is typed. Arrowing into the list never leaves the
+        term behind: the next character typed, and <b>Backspace</b> with it, goes back to the search box and keeps
+        filtering, so a search box replaces the typeahead rather than competing with it. The search term is discarded
+        whenever the callout closes, so the next opening always starts from the full list.
     </div>
     <br /><br />
     <div class="example-content">
@@ -514,6 +516,11 @@
         turns red and reports itself as invalid to assistive technologies when its field has an error, and renders a
         <b>ValidationMessage</b> like any other input. This example requires a value in the single select dropdown and
         keeps the number of selected items of the multi select one within a range.
+        <br /><br />
+        For a rejection the app decided on its own - a server response, a rule spanning two fields -
+        <b>ErrorMessage</b> shows the reason under the field, marks the dropdown invalid, ties the message to it with
+        <b>aria-describedby</b> and announces it right away instead of on the next focus. <b>Invalid</b> gives the
+        same look and the same <b>aria-invalid</b> attribute with no message to show.
     </div>
     <br />
     <div class="example-content">
@@ -548,6 +555,22 @@
         {
             <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
         }
+
+        <br />
+
+        <BitDropdown @bind-Value="stockValue"
+                     Label="Category"
+                     Items="GetBasicItems()"
+                     Placeholder="Select an item"
+                     ErrorMessage="@StockError" />
+
+        <br />
+
+        <BitDropdown Invalid
+                     Label="Invalid with no message"
+                     Items="GetBasicItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item" />
     </div>
 </DemoExample>
 
@@ -906,7 +929,9 @@
         how many of them the closed dropdown shows: with <b>Chips</b> the extra ones collapse into an overflow chip
         whose text comes from <b>OverflowTextFormat</b> (<b>"+{0}"</b> by default), and without chips the joined list
         is replaced by the summary of <b>SelectedItemsTextFormat</b> (<b>"{0} items selected"</b> by default) as soon
-        as the limit is passed. Nothing is removed from the selection - only the way it is displayed changes.
+        as the limit is passed. Nothing is removed from the selection - only the way it is displayed changes: the
+        items the counter stands for keep naming the dropdown for a screen reader, and the pointer reads them in its
+        tooltip.
         <br /><br />
         <b>AutoClearSearch</b> covers the other half of a multi select session: the callout stays open after a pick, so
         by default the next item has to be found through the filter left over from the previous one. Enabling it clears
@@ -1046,40 +1071,65 @@
 
 <DemoExample Title="Keyboard navigation" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
     <div>
-        The dropdown is fully operable with the keyboard, following the ARIA authoring practices for a combobox:
-        <b>Enter</b>, <b>Space</b> and the arrow keys open the callout and put the focus on the selected item (or the
-        first one), <b>ArrowUp</b> and <b>ArrowDown</b> move between the items, <b>Home</b> and <b>End</b> jump to the
-        first and the last one - from the closed dropdown too, so reaching the end of a long list never takes an
-        opening key followed by a second one - <b>PageUp</b> and <b>PageDown</b> jump several items at a time, <b>Enter</b> and <b>Space</b>
-        select the focused item, <b>Escape</b> and <b>Alt+ArrowUp</b> close the callout and return the focus to the
-        dropdown, and <b>Tab</b> closes it and moves on - from the trigger just as much as from inside the callout, so a
-        popup revealed without the focus is never left behind when the focus leaves the dropdown.
-        <b>Alt+ArrowDown</b> is the exception among the openers: it
-        reveals the list without moving the focus into it, so the trigger keeps it and the plain arrows can walk the
-        list afterwards. Opening the callout with a mouse click focuses the selected
-        item as well, so the keyboard can take over at any point. In multi select mode <b>Ctrl+A</b> (or <b>Cmd+A</b>)
-        selects every item the current search shows - or clears them when they are all selected already -
-        while inside the search and ComboBox inputs the shortcut keeps its native select-the-text behavior.
-        Typing printable characters runs a typeahead: the accumulated characters jump to the
-        item starting with them, repeating one character cycles through the items starting with it, and the buffer
-        resets after a short pause. The arrow keys wrap around by default, so <b>ArrowDown</b> on the last item comes
-        back to the first one; <b>NoWrapNavigation</b> stops them at the ends instead, which suits a long list where
-        the jump from one end to the other is more likely to read as the focus having been lost than as a move that
-        was asked for - the typeahead keeps wrapping either way, since it looks for the item that matches rather
-        than for the one that comes next. Disabled and hidden items are skipped throughout. In virtualize mode only the
-        rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
-        match against. The options themselves stay out of the tab order, as the options of a listbox should: they are
-        reached with the arrow keys, and <b>Tab</b> leaves the whole dropdown rather than walking through the list.
-        In ComboBox mode the keys that belong to the typed text - the printable characters, <b>Backspace</b>,
-        <b>Delete</b>, <b>ArrowLeft</b> and <b>ArrowRight</b> - return the focus to the input and act on it
-        there, so arrowing into the list never strands the user away from the term they are typing.
-        However the callout is dismissed - a key, a click outside it, the close button of the responsive panel or
-        a swipe - the focus comes back to the dropdown (to the ComboBox input when there is one) instead of
-        being dropped at the top of the page along with the element that was holding it.
-        <b>ClearOnEscape</b> gives <b>Escape</b> one more job once it has nothing left to dismiss: a press with the
-        callout already closed (and, in the ComboBox mode, with nothing typed) clears the selection, which is what a
-        keyboard user otherwise has to reach the clear button for. See the <BitLink Href="#example8">Clear button</BitLink>
-        section.
+        The dropdown follows the ARIA authoring practices for a combobox and is fully operable with the keyboard.
+        Disabled and hidden items are skipped throughout.
+        <ul>
+            <li>
+                <b>Enter</b>, <b>Space</b>, <b>ArrowUp</b>, <b>ArrowDown</b> - open the callout and put the focus on
+                the selected item, or the first one.
+            </li>
+            <li>
+                <b>Alt+ArrowDown</b> - reveals the list <i>without</i> moving the focus into it, so the trigger keeps
+                it and the plain arrows can walk the list afterwards.
+            </li>
+            <li>
+                <b>ArrowUp</b> / <b>ArrowDown</b> - move between the items, wrapping around the ends unless
+                <b>NoWrapNavigation</b> stops them there, which suits a long list where the jump from one end to the
+                other reads more like the focus having been lost than like a move that was asked for.
+            </li>
+            <li><b>Home</b> / <b>End</b> - jump to the first and the last item, from the closed dropdown as well.</li>
+            <li><b>PageUp</b> / <b>PageDown</b> - jump several items at a time.</li>
+            <li><b>Enter</b>, <b>Space</b> - select the focused item.</li>
+            <li>
+                <b>Escape</b>, <b>Alt+ArrowUp</b> - close the callout and return the focus to the dropdown. With
+                <b>ClearOnEscape</b>, a further <b>Escape</b> on an already closed callout (and, in the ComboBox mode,
+                with nothing typed) clears the selection - see the
+                <BitLink Href="#example8">Clear button</BitLink> section.
+            </li>
+            <li>
+                <b>Tab</b> - closes the callout and moves on, from the trigger just as much as from inside it, so a
+                popup revealed without the focus is never left behind when the focus leaves the dropdown.
+            </li>
+            <li>
+                <b>Ctrl+A</b> / <b>Cmd+A</b> - in multi select mode selects every item the current search shows, or
+                clears them when they are all selected already. Inside the search and ComboBox inputs it keeps its
+                native select-the-text behavior.
+            </li>
+            <li>
+                <b>Printable characters</b> - run a typeahead on a dropdown with no text field of its own: the
+                accumulated characters jump to the item starting with them, repeating one character cycles through
+                those items, and the buffer resets after a short pause. A <b>ShowSearchBox</b> or ComboBox dropdown
+                filters instead. The typeahead wraps even with <b>NoWrapNavigation</b>, since it looks for the item
+                that matches rather than for the one that comes next, and in virtualize mode it only sees the items
+                that are actually rendered.
+            </li>
+            <li>
+                <b>Backspace</b>, <b>Delete</b>, <b>ArrowLeft</b>, <b>ArrowRight</b> - belong to the typed text, so
+                they return the focus to the ComboBox input (or to the search box) and act on it there: arrowing into
+                the list never strands the user away from the term they are typing. <b>Space</b> is the one key that
+                stays behind, since on a list that is only searched it is the toggle of the focused item.
+            </li>
+        </ul>
+        The whole dropdown is one tab stop in every mode: the combobox role, and the expanded state that goes with it,
+        sit on whichever element the keyboard actually lands on - the field itself, or the editable input of the
+        ComboBox mode, which takes the field's place in the tab order instead of adding a second stop to it. The
+        options stay out of the tab order as the options of a listbox should, and the row the arrow keys have reached
+        carries a focus outline in the focus color, drawn inside the row so the scrolling list cannot clip it, while
+        the field keeps its own ring in the ComboBox mode, where the element actually holding the focus is the input
+        inside it. However the callout is dismissed - a key, a click outside it, the close button of the responsive
+        panel or a swipe - the focus comes back to the dropdown instead of being dropped at the top of the page along
+        with the element that was holding it. Opening the callout with a mouse click focuses the selected item too, so
+        the keyboard can take over at any point.
     </div>
     <br />
     <div class="example-content">
@@ -1571,7 +1621,8 @@
         with the control instead of leaving it as text that merely happens to sit underneath. In the ComboBox mode the
         editable input is described by it as well, since that is the element the user is actually typing into.
         <b>DescriptionTemplate</b> replaces it with any content - a link, an icon, a warning that changes with the
-        selection - and is tied to the dropdown in exactly the same way.
+        selection - and is tied to the dropdown in exactly the same way. <b>AriaDescription</b> adds a second,
+        visually hidden line for the instruction that would be too long to show, read after the visible one.
     </div>
     <br />
     <div class="example-content">
@@ -1579,7 +1630,8 @@
                      Items="GetBasicItems()"
                      DefaultValue="@string.Empty"
                      Placeholder="Select an item"
-                     Description="Only the categories you have access to are listed." />
+                     Description="Only the categories you have access to are listed."
+                     AriaDescription="The list is refreshed every morning; ask an administrator for access to the rest." />
         <br /><br />
         <BitDropdown Combo
                      Label="ComboBox"
@@ -1602,7 +1654,46 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
+<DemoExample Title="Cascading parameters" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
+    <div>
+        The <b>BitParams</b> component carries a <b>BitDropdownParams</b> down to every dropdown under it, so a form
+        sets the search box, the clear button and the placeholder once instead of at every field in it. What it carries
+        is a default and not an override: a dropdown that sets a parameter for itself keeps its own value, and only
+        what it left unset is filled in from the cascade - which is what lets one field step out of the section it is
+        in without the section having to know about it. The params object is closed over the same type arguments as the
+        dropdowns it feeds (<code>BitDropdownParams&lt;BitDropdownItem&lt;string&gt;, string&gt;</code> here), so
+        one <b>BitParams</b> can carry one object per pair of type arguments and each dropdown picks the one
+        that matches its own. The selection itself (<b>Value</b>,
+        <b>Values</b> and <b>IsOpen</b>), the validation state and everything that is written as markup or as a handler
+        - the templates, the <b>Options</b> content and the event callbacks - are left out of the params object on
+        purpose: they belong to a single dropdown rather than to a group of them.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitParams Parameters="dropdownParams">
+            <BitDropdown Label="Category"
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty" />
+            <br /><br />
+            <BitDropdown Label="Tags"
+                         MultiSelect
+                         Items="GetBasicItems()"
+                         DefaultValues="@(Array.Empty<string>())" />
+            <br /><br />
+            <BitDropdown Label="Its own placeholder"
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Pick one of these" />
+        </BitParams>
+        <br /><br />
+        <BitDropdown Label="Outside the cascade"
+                     Items="GetBasicItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
     <div>
         The <b>Color</b> parameter paints the accents of the dropdown - the focus border, the search box
         underline and icon, the group headers and the check boxes of the multi select items - in one of the theme
@@ -1677,7 +1768,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
     <div>
         Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
         <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
@@ -1762,7 +1853,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34" PreventRenderForMcpClient>
     <div>
         The <b>Size</b> parameter scales the whole component in one step, <b>Medium</b> being the default: the height
         and the font size of the dropdown, of its search box and of the items in the callout all follow the chosen size.
@@ -1792,7 +1883,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example35RazorCode" CsharpCode="@example35CsharpCode" Id="example35" PreventRenderForMcpClient>
     <div>
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
@@ -1800,6 +1891,10 @@
         container, the items and everything else listed in the class-styles reference below. Because the callout is
         rendered outside the root element, styling it through <b>Styles.Callout</b> or <b>Classes.Callout</b> is the way
         to reach it rather than a descendant selector on the root.
+        <br /><br />
+        Above all of them sit the public <b>--bit-Dropdown-*</b> CSS variables listed further down this page: one
+        declaration retunes a decision everywhere it is used - the field, its chips and the list at once - and the
+        ones written into <b>Style</b> are carried over to the callout, which no selector on the root could reach.
     </div>
     <br /><br />
     <div class="example-content">
@@ -1838,10 +1933,36 @@
                                         Container = "custom-container",
                                         ItemButton = "custom-item-button",
                                         ScrollContainer = "custom-scroll-container" })" />
+        <br /><br /><br /><br />
+        <div>CSS variables:</div><br />
+        <BitDropdown Chips MultiSelect
+                     Label="Accent"
+                     Items="GetBasicItems()"
+                     Placeholder="Select items"
+                     DefaultValues="@(new[] { "f-app", "f-ban" })"
+                     Style="--bit-Dropdown-accent-color: #d1495b;
+                            --bit-Dropdown-accent-text-color: white;
+                            --bit-Dropdown-focus-color: #d1495b;
+                            --bit-Dropdown-radius: 1rem;
+                            --bit-Dropdown-callout-radius: 1rem;
+                            --bit-Dropdown-chip-border-color: #d1495b;
+                            --bit-Dropdown-chip-background: color-mix(in srgb, #d1495b 18%, transparent);
+                            --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);
+                            --bit-Dropdown-item-selected-background: #d1495b;
+                            --bit-Dropdown-item-selected-color: white;" />
+        <br />
+        <BitDropdown Label="Density"
+                     Items="GetBasicItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     Style="--bit-Dropdown-min-height: 1.5rem;
+                            --bit-Dropdown-font-size: 0.75rem;
+                            --bit-Dropdown-item-height: 1.75rem;
+                            --bit-Dropdown-item-font-size: 0.75rem;" />
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example35RazorCode" CsharpCode="@example35CsharpCode" Id="example35" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example36RazorCode" CsharpCode="@example36CsharpCode" Id="example36" PreventRenderForMcpClient>
     <div>
         Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
         Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the
