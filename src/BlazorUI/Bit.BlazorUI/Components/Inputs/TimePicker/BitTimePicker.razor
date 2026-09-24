@@ -202,6 +202,12 @@
                             disabled="@(IsInteractive is false)">
                         <i style="@Styles?.IncreaseHourIcon" class="@increaseHourIcon?.GetCssClasses() @Classes?.IncreaseHourIcon" aria-hidden="true" />
                     </button>
+                    @*
+                        The required attribute sits on the hidden input of a standalone picker, so the part that is
+                        actually operated has to state it for itself. A standalone picker has no field to describe
+                        either, so the helper and error text are tied to the first of its inputs - the part the
+                        person operates.
+                    *@
                     <input @ref="_inputHourRef"
                            @bind="@_hourView"
                            @bind:event="oninput"
@@ -219,11 +225,7 @@
                            aria-label="@HourInputAriaLabel"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(Standalone && IsInvalid ? "true" : null)"
-                           @* The required attribute sits on the hidden input of a standalone picker, so
-                              the part that is actually operated has to state it for itself. *@
                            aria-required="@(Standalone && Required ? "true" : null)"
-                           @* A standalone picker has no field to describe, so the helper and error text
-                              are tied to the first of its inputs - the part the person operates. *@
                            aria-describedby="@(Standalone ? describedBy : null)"
                            style="@Styles?.HourInput"
                            class="bit-tpc-tin @Classes?.HourInput"
