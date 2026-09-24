@@ -1300,6 +1300,169 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldTypeTheMinute()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.StartView, BitCircularTimePickerView.Minute);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "4");
+        Assert.AreEqual(new TimeSpan(9, 4, 0), component.Instance.Value);
+
+        // the second digit joins the first one
+        await KeyDown(component, "5");
+        Assert.AreEqual(new TimeSpan(9, 45, 0), component.Instance.Value);
+
+        // a number is at most two digits, so a third one starts over
+        await KeyDown(component, "7");
+        Assert.AreEqual(new TimeSpan(9, 7, 0), component.Instance.Value);
+
+        // a digit that takes the number past the sixty minutes of the ring starts a number of its own
+        await KeyDown(component, "8");
+        Assert.AreEqual(new TimeSpan(9, 8, 0), component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldTypeTheHourOfTheDialFormat()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "2");
+        await KeyDown(component, "1");
+        Assert.AreEqual(21, component.Instance.Value!.Value.Hours);
+
+        var twelveHour = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(15, 0, 0));
+        });
+
+        // the 12-hour dial reads the number in the half of the day it is showing
+        await KeyDown(twelveHour, "1");
+        await KeyDown(twelveHour, "1");
+        Assert.AreEqual(23, twelveHour.Instance.Value!.Value.Hours);
+
+        // "13" is no hour of that dial, so the "3" is read as a number of its own
+        await KeyDown(twelveHour, "1");
+        await KeyDown(twelveHour, "3");
+        Assert.AreEqual(15, twelveHour.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldStartANewNumberOnTheNextView()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "4");
+        await KeyDown(component, "Enter");
+        await KeyDown(component, "5");
+
+        // the "4" was the hour, so the "5" is a minute of its own rather than the second digit of 45
+        Assert.AreEqual(new TimeSpan(4, 5, 0), component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldNotTypeARefusedValue()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.AllowedHours, h => h != 7);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "7");
+
+        Assert.AreEqual(9, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldNotTypeIntoAReadOnlyPicker()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "5");
+
+        Assert.AreEqual(9, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerAAndPShouldPickTheHalfOfTheDay()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(15, 0, 0));
+        });
+
+        await KeyDown(component, "a");
+        Assert.AreEqual(3, component.Instance.Value!.Value.Hours);
+
+        await KeyDown(component, "P");
+        Assert.AreEqual(15, component.Instance.Value!.Value.Hours);
+
+        // a key held with a modifier is a shortcut, not a letter typed at the dial
+        await component.InvokeAsync(() => component.Find(".bit-ctp-clf")
+            .KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true }));
+        Assert.AreEqual(15, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerMeridiemKeysShouldFollowTheDesignatorsOfTheCulture()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.AMDesignator = "vm";
+        culture.DateTimeFormat.PMDesignator = "nm";
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(15, 0, 0));
+        });
+
+        await KeyDown(component, "v");
+        Assert.AreEqual(3, component.Instance.Value!.Value.Hours);
+
+        await KeyDown(component, "n");
+        Assert.AreEqual(15, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerMeridiemKeysShouldDoNothingOnTheTwentyFourHourDial()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(15, 0, 0));
+        });
+
+        await KeyDown(component, "a");
+
+        Assert.AreEqual(15, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
     public async Task BitCircularTimePickerWheelShouldLeaveAnUnfocusedOrUnshiftedDialAlone()
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
@@ -1612,6 +1775,49 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         Assert.IsNull(value);
         Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public async Task BitCircularTimePickerClearShouldHandTheFocusToTheDial(bool standalone)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, standalone);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(10, 30, 0));
+        });
+
+        var focusCalls = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        await component.InvokeAsync(() => component.Find(".bit-ctp-abn").Click());
+
+        // the button disables itself on the empty value, which would drop the focus onto the document
+        Assert.IsTrue(component.Find(".bit-ctp-abn").HasAttribute("disabled"));
+
+        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(focusCalls + 1, invocations.Count);
+        Assert.AreNotEqual(component.Instance.InputElement.Id, ((ElementReference)invocations.Last().Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerNowShouldKeepTheHiddenSecondsInsideTheConstraints()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.AllowedSeconds, s => s >= 30);
+        });
+
+        await component.InvokeAsync(() => component.Find(".bit-ctp-abn").Click());
+
+        // the seconds are not shown, so they go to the first one the constraints allow rather than to a zero
+        // they rule out
+        Assert.AreEqual(30, component.Instance.Value!.Value.Seconds);
     }
 
     [TestMethod]

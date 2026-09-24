@@ -30,6 +30,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private string? _abortControllerId;
     private bool _internalIsOpenChange;
     private bool _cascadeApplied;
+    private long _typeAheadAt;
+    private string _typeAhead = string.Empty;
+    private BitCircularTimePickerView _typeAheadView;
     private CancellationTokenSource? _autoCloseCts;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
@@ -1031,13 +1034,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private async Task HandleOnLabelClick()
     {
         if (Standalone is false) return;
-        if (IsEnabled is false || IsRendered is false || IsDisposed) return;
+        if (IsEnabled is false) return;
 
-        try
-        {
-            await _clockRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await FocusDial();
     }
 
     private void OnSetCulture()
@@ -1513,7 +1512,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _minute = minute;
 
-        var second = HasSeconds ? FindNearestAllowedSecond(now.Seconds) : 0;
+        // A picker without the seconds sets them to zero, unless the range starts later inside the very minute
+        // it has landed on - a minimum of 10:30:30 - where they go up to the first second it allows rather than
+        // leaving the value half a minute outside of the range the dial itself keeps to.
+        var second = HasSeconds ? FindNearestAllowedSecond(now.Seconds) : FindNearestAllowedSecond(0, 1);
 
         if (second.HasValue is false)
         {
@@ -1547,6 +1549,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await ChangeView(GetInitialView());
 
         await OnClear.InvokeAsync();
+
+        // The button disables itself on the empty value it has just made, and a focused button that becomes
+        // disabled drops the focus onto the document - out of the dialog and back to the top of the tab order.
+        // The dial is where the picker starts over from, so the focus is handed to it instead.
+        await FocusDial();
     }
 
     // Where an empty picker begins: the parts of the starting value, so the first change made to it lands
@@ -1828,7 +1835,105 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 // actually been given a value.
                 if (IsInteractive && CurrentPart.HasValue) await CommitView();
                 break;
+
+            default:
+                if (e.CtrlKey || e.AltKey || e.MetaKey || e.Key.Length != 1) break;
+
+                if (char.IsAsciiDigit(e.Key[0]))
+                {
+                    await TypeAhead(e.Key[0]);
+                }
+                else if (TryReadMeridiemKey(e.Key, out var isAm))
+                {
+                    await SetMeridiem(isAm);
+                }
+                break;
         }
+    }
+
+    // The type-ahead of the listbox: the digits typed within a second of each other are read as one number,
+    // so "4" "5" lands on 45 in a single move instead of nine presses of PageUp. A digit that would take the
+    // number past what the view holds - the "3" after a "1" on the 12-hour dial - starts a number of its own,
+    // which is what lets a person who typed the wrong first digit simply type the right one.
+    private async Task TypeAhead(char digit)
+    {
+        if (IsInteractive is false) return;
+
+        var now = Environment.TickCount64;
+
+        // A number belongs to the ring it was typed on, so the digits typed before the dial moved on - the "4"
+        // an Enter then settled as the hour - never join the first one typed on the next ring.
+        _typeAhead = (now - _typeAheadAt > TypeAheadTimeout || _typeAhead.Length >= 2 || _typeAheadView != _view)
+            ? digit.ToString()
+            : _typeAhead + digit;
+
+        _typeAheadAt = now;
+        _typeAheadView = _view;
+
+        // Seeded before the number is read, as for a keyboard step: the half of the day a typed hour lands in
+        // is the half the starting value is in.
+        SeedFromStartingValue();
+
+        var value = ReadTypedPart(_typeAhead);
+
+        if (value.HasValue is false && _typeAhead.Length > 1)
+        {
+            _typeAhead = digit.ToString();
+            value = ReadTypedPart(_typeAhead);
+        }
+
+        if (value.HasValue is false)
+        {
+            UndoSeed();
+            return;
+        }
+
+        await (_view switch
+        {
+            BitCircularTimePickerView.Hour => SetHour(value.Value),
+            BitCircularTimePickerView.Minute => SetMinute(value.Value),
+            _ => SetSecond(value.Value)
+        });
+    }
+
+    // A typed number as a value of the current view, or nothing when the view has no such number: the 12-hour
+    // dial reads 1-12 in the half it is showing, the 24-hour one 0-23, and the minutes and the seconds 0-59.
+    // Whether the value is one the constraints allow is left to the setter, the same as for every other path.
+    private int? ReadTypedPart(string typed)
+    {
+        var number = int.Parse(typed, CultureInfo.InvariantCulture);
+
+        if (IsHourView is false) return number <= 59 ? number : null;
+
+        if (TimeFormat == BitTimeFormat.TwentyFourHours) return number <= 23 ? number : null;
+
+        if (number is < 1 or > 12) return null;
+
+        return IsAm() ? number % 12 : (number % 12) + 12;
+    }
+
+    // "a" and "p" pick the half of the day on a 12-hour dial, the way a native time field takes them, and so
+    // does the first letter of the designator of the culture where the two designators do not share one.
+    private bool TryReadMeridiemKey(string key, out bool isAm)
+    {
+        isAm = false;
+
+        if (TimeFormat != BitTimeFormat.TwelveHours) return false;
+
+        var am = _culture.DateTimeFormat.AMDesignator;
+        var pm = _culture.DateTimeFormat.PMDesignator;
+
+        bool IsSameLetter(string a, string b) => string.Compare(a, b, _culture, CompareOptions.IgnoreCase) == 0;
+
+        var isDistinct = am.HasValue() && pm.HasValue() && IsSameLetter(am[..1], pm[..1]) is false;
+
+        if ((isDistinct && IsSameLetter(key, am[..1])) || IsSameLetter(key, "a"))
+        {
+            isAm = true;
+            return true;
+        }
+
+        return (isDistinct && IsSameLetter(key, pm[..1])) || IsSameLetter(key, "p");
     }
 
     // Escape dismisses the picker from anywhere inside the callout. It is handled on the callout rather than
@@ -1964,7 +2069,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // is editable, where the text the person came to type has to keep it.
     private async Task FocusClock()
     {
-        if (AllowTextInput || IsRendered is false || IsDisposed) return;
+        if (AllowTextInput) return;
+
+        await FocusDial();
+    }
+
+    private async Task FocusDial()
+    {
+        if (IsRendered is false || IsDisposed) return;
 
         try
         {
@@ -2232,6 +2344,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // The stylesheet keeps both radii in the same proportion to the dial at every size (the midpoint works out
     // between 0.69 and 0.71 of the radius across the three of them), so the one boundary holds for all of them.
     private const double InnerRingThreshold = 0.70;
+
+    // How long, in milliseconds, a typed digit waits for the next one to join it (see TypeAhead) - the pause
+    // the APG listbox pattern suggests for its type-ahead.
+    private const int TypeAheadTimeout = 1000;
 
     private BitCircularTimePickerView GetInitialView()
     {

@@ -255,7 +255,8 @@ private async Task OpenCallout()
                        Placeholder=""Select a time""
                        CalloutAriaLabel=""Pick a meeting time""
                        HourButtonTitle=""Meeting hour""
-                       MinuteButtonTitle=""Meeting minute"" />";
+                       MinuteButtonTitle=""Meeting minute""
+                       TimeFormat=""BitTimeFormat.TwelveHours"" />";
 
     private readonly string example18RazorCode = @"
 <EditForm Model=""formValidationCircularTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -554,6 +555,18 @@ private readonly BitCircularTimePickerParams[] bookingPickerParams =
     .custom-clear-button {
         color: blueviolet;
     }
+
+    /* A wrapper reaches the field, the label and the icon. The callout is moved to the body when it opens,
+       so the variables of the dial go on Styles.Callout - or on :root, to reach every picker of the app. */
+    .custom-vars {
+        --bit-CircularTimePicker-color: #6b3fa0;
+        --bit-CircularTimePicker-focus-color: #b58cf0;
+        --bit-CircularTimePicker-label-color: #6b3fa0;
+        --bit-CircularTimePicker-border-color: #6b3fa0;
+        --bit-CircularTimePicker-border-radius: 1rem;
+        --bit-CircularTimePicker-input-background: #f4efff;
+        --bit-CircularTimePicker-input-color: #3a2358;
+    }
 </style>
 
 
@@ -591,11 +604,9 @@ private readonly BitCircularTimePickerParams[] bookingPickerParams =
                                           ClockSelectedNumber = ""custom-clock-selected-number"",
                                           ClockDisabledNumber = ""custom-clock-disabled-number"",
                                           ClockPointerThumbMinute = ""custom-clock-pointer-thumb-minute"",
-                                          ClearButton = ""custom-clear-button"" })"" />";
-    private readonly string example24CsharpCode = @"
-private TimeSpan? classesValue;";
+                                          ClearButton = ""custom-clear-button"" })"" />
 
-    private readonly string example25RazorCode = @"
+
 <div class=""custom-vars"">
     <BitCircularTimePicker Label=""Reservation"" Placeholder=""Select a time"" ShowNowButton ShowClearButton
                            MinuteStep=""5"" TimeFormat=""BitTimeFormat.TwelveHours"" AmPmInClock
@@ -614,21 +625,10 @@ private TimeSpan? classesValue;";
                                                    ""--bit-CircularTimePicker-toolbar-padding: 1rem 0.5rem;"" +
                                                    ""--bit-CircularTimePicker-pointer-width: 3px;"" +
                                                    ""--bit-CircularTimePicker-pin-size: 10px;"" })"" />";
-    private readonly string example25CsharpCode = @"
-/* in the stylesheet of the page. A wrapper reaches the field, the label and the icon: the callout is moved
-   to the body when it opens, so the variables of the dial go on Styles.Callout instead - or on :root, to
-   reach every picker of the app. */
-.custom-vars {
-    --bit-CircularTimePicker-color: #6b3fa0;
-    --bit-CircularTimePicker-focus-color: #b58cf0;
-    --bit-CircularTimePicker-label-color: #6b3fa0;
-    --bit-CircularTimePicker-border-color: #6b3fa0;
-    --bit-CircularTimePicker-border-radius: 1rem;
-    --bit-CircularTimePicker-input-background: #f4efff;
-    --bit-CircularTimePicker-input-color: #3a2358;
-}";
+    private readonly string example24CsharpCode = @"
+private TimeSpan? classesValue;";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example25RazorCode = @"
 <BitCircularTimePicker Dir=""BitDir.Rtl""
                        Label=""ساعت""
                        Placeholder=""یک ساعت انتخاب کنید""

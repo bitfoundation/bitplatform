@@ -420,6 +420,8 @@
             <li><b>&uarr;</b> / <b>&rarr;</b> and <b>&darr;</b> / <b>&larr;</b> move the pointer by one step,
                 <b>PageUp</b> / <b>PageDown</b> by five.</li>
             <li><b>Home</b> and <b>End</b> jump to the first and the last selectable value.</li>
+            <li>Digits type the value: <b>4</b> <b>5</b> within a second lands on 45. On a 12-hour dial <b>A</b>
+                and <b>P</b> switch the half of the day.</li>
             <li><b>Enter</b> or <b>Space</b> settles the current view - moving on to the next part, and closing an
                 <b>AutoClose</b> picker once the time is complete.</li>
             <li><b>Shift</b> + the mouse wheel over the focused dial moves it by one step as well. Both conditions
@@ -441,7 +443,7 @@
         <div class="example-content">
             <BitCircularTimePicker Label="Try it with the keyboard" Placeholder="Select a time"
                                    CalloutAriaLabel="Pick a meeting time" HourButtonTitle="Meeting hour"
-                                   MinuteButtonTitle="Meeting minute" />
+                                   MinuteButtonTitle="Meeting minute" TimeFormat="BitTimeFormat.TwelveHours" />
         </div>
     </DemoExample>
 
@@ -739,21 +741,12 @@
                                        ClearButton = "custom-clear-button"
                                    })" />
         </div>
-    </DemoExample>
-
-    <DemoExample Title="CSS variables" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
+        <br /><br /><br />
         <div>
-            Every visual property of the picker reads a public CSS variable first, so a whole application can be
-            re-skinned from one rule without touching a single component. The full list is in the
-            <b>CSS variables</b> table at the bottom of this page.
-        </div><br />
-        <div>
-            Set them on <b>:root</b> to re-skin every picker of the application. The callout is moved to the
-            <b>body</b> when it opens - that is what keeps it clear of the clipping and stacking contexts of the
-            page - so from then on it inherits from the <b>body</b> and not from where the picker sits: a wrapper
-            around the picker reaches the field, the label and the icon, and never the dial. The picker below is
-            wrapped in a <b>div</b> that carries the field variables, and hands the variables of its dial to
-            <b>Styles.Callout</b> - the same block on <b>:root</b> would restyle every picker of the page:
+            <b>CSS variables</b> (listed in the table at the bottom of this page) restyle the picker without a
+            selector. On <b>:root</b> they re-skin every picker of the app. The callout moves to the <b>body</b> when
+            it opens, so a wrapper around the picker reaches the field, the label and the icon but never the dial -
+            its variables go on <b>Styles.Callout</b> instead:
         </div><br />
         <div class="custom-vars">
             <div class="example-content">
@@ -768,12 +761,8 @@
                                        })" />
             </div>
         </div>
-        <br /><br />
-        <div>
-            Per instance, <b>Styles.Root</b> covers the field and <b>Styles.Callout</b> covers the dial - the callout
-            carries them with it when it moves - so the two together restyle a single picker, dial included, without
-            a stylesheet:
-        </div><br />
+        <br />
+        <div>Per instance, <b>Styles.Root</b> covers the field and <b>Styles.Callout</b> the dial:</div><br />
         <div class="example-content">
             <BitCircularTimePicker Label="Reservation" Placeholder="Select a time" ShowSeconds
                                    Styles="@(new()
@@ -790,7 +779,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26">
+    <DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25">
         <div>
             <b>Dir</b> flips the field, the label and the toolbar into a right-to-left layout, and reaches the callout
             as well even though it is rendered outside the root element. The dial itself keeps running clockwise, and
