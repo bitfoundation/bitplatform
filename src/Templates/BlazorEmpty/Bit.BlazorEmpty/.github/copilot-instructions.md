@@ -24,7 +24,7 @@
 
 **RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
 or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
-you **MUST** use the deepwiki's `ask_wiki_question` mcp tool to find the correct implementation and usage patterns of `bitfoundation/bitplatform` deep wiki before writing or changing any code.
+you **MUST** use the BlazorUI's mcp tools to find the correct implementation and usage patterns of bit BlazorUI components before writing or changing any code.
 
 **End of RULE 1**
 
