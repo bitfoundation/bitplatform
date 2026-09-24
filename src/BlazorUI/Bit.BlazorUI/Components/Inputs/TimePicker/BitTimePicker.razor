@@ -9,6 +9,8 @@
     var increaseSecondIcon = BitIconInfo.From(IncreaseSecondIcon, IncreaseSecondIconName ?? "ChevronDownSmall bit-ico-r180");
     var decreaseSecondIcon = BitIconInfo.From(DecreaseSecondIcon, DecreaseSecondIconName ?? "ChevronDownSmall");
     var closeIcon = BitIconInfo.From(CloseButtonIcon, CloseButtonIconName ?? "Cancel");
+    var clearIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
+    var describedBy = DescribedBy;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -64,9 +66,29 @@
                        aria-readonly="@(ReadOnly ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _calloutId : null)"
+                       aria-invalid="@(IsInvalid ? "true" : null)"
+                       aria-describedby="@describedBy"
                        aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                        style="@Styles?.Input"
                        class="bit-tpc-inp@(AllowTextInput ? " bit-tpc-ein" : null) @Classes?.Input" />
+
+                @*
+                    The clear button sits inside the field, so the click that presses it also lands on the
+                    field: it is stopped there, since taking the value back is not a request to open the
+                    popup that picks a new one.
+                *@
+                @if (ShowsInputClearButton)
+                {
+                    <button @onclick="HandleOnInputClearClick" @onclick:stopPropagation
+                            type="button"
+                            title="@ClearButtonTitle"
+                            aria-label="@ClearButtonTitle"
+                            style="@Styles?.InputClearButton"
+                            class="bit-tpc-clr @Classes?.InputClearButton"
+                            disabled="@(IsInteractive is false)">
+                        <i style="@Styles?.InputClearButtonIcon" class="@clearIcon?.GetCssClasses() @Classes?.InputClearButtonIcon" aria-hidden="true" />
+                    </button>
+                }
 
                 @if (IconTemplate is not null)
                 {
@@ -103,14 +125,14 @@
     @if (Standalone is false)
     {
         <div @onclick="CloseCallout"
-             style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+             style="@GetOverlayStyles()"
              id="@_overlayId"
              class="bit-tpc-ovl @Classes?.Overlay"></div>
     }
 
     <div @ref="_calloutRef"
          id="@_calloutId"
-         style="@Styles?.Callout"
+         style="@GetCalloutStyles()"
          class="@GetCalloutCssClasses()"
          dir="@Dir?.ToString().ToLower()">
         @*
@@ -160,6 +182,13 @@
                            readonly="@ReadOnly"
                            aria-label="@HourInputAriaLabel"
                            aria-readonly="@(ReadOnly ? "true" : null)"
+                           aria-invalid="@(Standalone && IsInvalid ? "true" : null)"
+                           @* The required attribute sits on the hidden input of a standalone picker, so
+                              the part that is actually operated has to state it for itself. *@
+                           aria-required="@(Standalone && Required ? "true" : null)"
+                           @* A standalone picker has no field to describe, so the helper and error text
+                              are tied to the first of its inputs - the part the person operates. *@
+                           aria-describedby="@(Standalone ? describedBy : null)"
                            style="@Styles?.HourInput"
                            class="bit-tpc-tin @Classes?.HourInput"
                            autocomplete="@BitAutoCompleteValue.NewPassword"
@@ -272,9 +301,10 @@
             {
                 var isAm = IsAm();
                 <div style="@Styles?.AmPmContainer" class="bit-tpc-tpr bit-tpc-am-pm @Classes?.AmPmContainer">
+                    @* No title: it would repeat the designator the button already spells out, which
+                       a screen reader then reads a second time as the description of the button. *@
                     <button @onclick="HandleOnAmClick"
                             type="button"
-                            title="@_culture.DateTimeFormat.AMDesignator"
                             aria-pressed="@(isAm is true ? "true" : "false")"
                             style="@Styles?.AmButton"
                             class="bit-tpc-tbt bit-tpc-bam @(isAm is true ? "bit-tpc-bns" : string.Empty) @Classes?.AmButton"
@@ -284,7 +314,6 @@
 
                     <button @onclick="HandleOnPmClick"
                             type="button"
-                            title="@_culture.DateTimeFormat.PMDesignator"
                             aria-pressed="@(isAm is false ? "true" : "false")"
                             style="@Styles?.PmButton"
                             class="bit-tpc-tbt bit-tpc-bpm @(isAm is false ? "bit-tpc-bns" : string.Empty) @Classes?.PmButton"
@@ -313,7 +342,7 @@
                                 type="button"
                                 style="@Styles?.ClearButton"
                                 class="bit-tpc-abn @Classes?.ClearButton"
-                                disabled="@(IsInteractive is false || CurrentValue.HasValue is false)">
+                                disabled="@(IsInteractive is false || HasValueToClear is false)">
                             @ClearButtonText
                         </button>
                     }
@@ -326,13 +355,6 @@
                     @CalloutFooterTemplate
                 </div>
             }
-
-            @*
-                The time on the inputs, announced as a whole whenever any part of it changes: a screen
-                reader follows the input that was operated by itself, but the buttons that set the whole
-                time at once - now, clear, the meridiem - would otherwise change it silently.
-            *@
-            <div class="bit-tpc-lve" aria-live="polite" aria-atomic="true">@CurrentValueAsString</div>
 
             @if (ShowCloseButton && Standalone is false)
             {
@@ -347,4 +369,70 @@
             }
         </div>
     </div>
+
+    @*
+        The time the picker holds, announced as a whole whenever any part of it changes: a screen reader
+        follows the input that was operated by itself, but everything that sets the whole time at once -
+        the now, clear and meridiem buttons, the clear button of the field - would otherwise change it
+        silently. It sits on the root rather than inside the callout, which is hidden while the callout is
+        closed and moved to the end of the document while it is open: a region in either state announces
+        nothing.
+    *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-tpc-vhd">
+        @* The rejection wins over the time: the time says what the picker holds, this says what is wrong
+           with it. Text only, never ErrorMessageTemplate, which is arbitrary markup meant to be seen -
+           rendering it a second time here would duplicate its ids and its handlers. *@
+        @if (ErrorMessage.HasValue())
+        {
+            @ErrorMessage
+        }
+        else
+        {
+            @CurrentValueAsString
+        }
+    </div>
+
+    @if (HasErrorMessage)
+    {
+        @* What is wrong with the value is the first thing to read under the field, so it comes before the
+           helper text. It carries no live role of its own: the region above is what announces it, so it is
+           never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-tpc-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasDescription)
+    {
+        @* Described by the field through aria-describedby, so it is read as part of the picker rather than
+           as text that only happens to sit under it. *@
+        <div id="@_descriptionId"
+             style="@Styles?.DescriptionContainer"
+             class="bit-tpc-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Description" class="@Classes?.Description">@Description</span>
+            }
+        </div>
+    }
+
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the text written for a screen reader alone has to be
+           in the document to be pointed at - out of sight, but not out of the accessibility tree. *@
+        <span id="@_ariaDescriptionId" class="bit-tpc-vhd">@AriaDescription</span>
+    }
 </div>

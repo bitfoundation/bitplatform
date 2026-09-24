@@ -2304,10 +2304,14 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
         });
 
-        var live = component.Find(".bit-tpc-lve");
+        var live = component.Find("div.bit-tpc-vhd[aria-live]");
 
         Assert.AreEqual("polite", live.GetAttribute("aria-live"));
         Assert.AreEqual("10:30", live.TextContent.Trim());
+
+        // It sits on the root, not inside the callout: a region that is hidden while the callout is
+        // closed - and moved to the end of the document while it is open - announces nothing.
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-cal [aria-live]").Count);
     }
 
     [TestMethod]
@@ -2335,6 +2339,324 @@ public class BitTimePickerTests : BunitTestContext
     #endregion
 
 
+
+    #region description, error & public css variables
+
+    [TestMethod]
+    public void BitTimePickerShouldRenderTheDescriptionAndDescribeTheInputWithIt()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Description, "On the quarter hour.");
+        });
+
+        var description = component.Find(".bit-tpc-des");
+        var input = component.Find(".bit-tpc-inp");
+
+        Assert.AreEqual("On the quarter hour.", description.TextContent.Trim());
+        Assert.AreEqual(description.Id, input.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldRenderTheDescriptionTemplate()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.DescriptionTemplate, builder => builder.AddMarkupContent(0, "<b>hint</b>"));
+        });
+
+        component.Find(".bit-tpc-des").InnerHtml.MarkupMatches("<b>hint</b>");
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldNotRenderADescriptionElementWithoutADescription()
+    {
+        var component = RenderComponent<BitTimePicker>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-des").Count);
+        Assert.IsNull(component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldMarkItselfInvalidForAnErrorMessage()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "That slot is taken.");
+        });
+
+        Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("That slot is taken.", component.Find(".bit-tpc-erm").TextContent.Trim());
+        Assert.AreEqual("true", component.Find(".bit-tpc-inp").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldRenderTheErrorMessageTemplate()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageTemplate, builder => builder.AddMarkupContent(0, "<b>nope</b>"));
+        });
+
+        component.Find(".bit-tpc-erm").InnerHtml.MarkupMatches("<b>nope</b>");
+        Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldMarkItselfInvalidForTheInvalidParameter()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-tpc-inp").GetAttribute("aria-invalid"));
+        // Invalid on its own says the value is wrong without saying what is wrong with it.
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-erm").Count);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldNotMarkItselfInvalidByDefault()
+    {
+        var component = RenderComponent<BitTimePicker>();
+
+        Assert.IsFalse(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
+        Assert.IsNull(component.Find(".bit-tpc-inp").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldDescribeTheInputWithTheErrorTheDescriptionAndTheAriaDescription()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "wrong");
+            parameters.Add(p => p.Description, "hint");
+            parameters.Add(p => p.AriaDescription, "for a screen reader");
+        });
+
+        var describedBy = component.Find(".bit-tpc-inp").GetAttribute("aria-describedby");
+        var errorId = component.Find(".bit-tpc-erm").Id;
+        var descriptionId = component.Find(".bit-tpc-des").Id;
+        var ariaDescriptionId = component.Find("span.bit-tpc-vhd").Id;
+
+        // In reading order: what is wrong first, then the visible hint, then the invisible one.
+        Assert.AreEqual($"{errorId} {descriptionId} {ariaDescriptionId}", describedBy);
+        Assert.AreEqual("for a screen reader", component.Find("span.bit-tpc-vhd").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldAnnounceTheErrorMessageInsteadOfTheTimeInTheLiveRegion()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
+        });
+
+        var live = component.Find("div.bit-tpc-vhd[aria-live]");
+
+        Assert.AreEqual("10:30", live.TextContent.Trim());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "That slot is taken.");
+        });
+
+        // What is wrong with the value wins over what the value is.
+        Assert.AreEqual("That slot is taken.", component.Find("div.bit-tpc-vhd[aria-live]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTimePickerStandaloneShouldDescribeTheHourInputInsteadOfTheHiddenOne()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Description, "hint");
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        var hourInput = component.Find(".bit-tpc-tin");
+
+        Assert.AreEqual(component.Find(".bit-tpc-des").Id, hourInput.GetAttribute("aria-describedby"));
+        Assert.AreEqual("true", hourInput.GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldCarryThePublicCssVariablesOverToTheCalloutAndTheOverlay()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "margin:1rem;--bit-TimePicker-color:teal;");
+            parameters.Add(p => p.Styles, new BitTimePickerClassStyles { Root = "--bit-TimePicker-radius:2rem;" });
+        });
+
+        var callout = component.Find(".bit-tpc-cal").GetAttribute("style");
+        var overlay = component.Find(".bit-tpc-ovl").GetAttribute("style");
+
+        StringAssert.Contains(callout, "--bit-TimePicker-color:teal");
+        StringAssert.Contains(callout, "--bit-TimePicker-radius:2rem");
+        StringAssert.Contains(overlay, "--bit-TimePicker-color:teal");
+        StringAssert.Contains(overlay, "--bit-TimePicker-radius:2rem");
+
+        // Only the public custom properties are copied; nothing else of the root style is.
+        Assert.IsFalse(callout.Contains("margin:1rem"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerCalloutStylesShouldWinOverTheCopiedVariables()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-TimePicker-color:teal;");
+            parameters.Add(p => p.Styles, new BitTimePickerClassStyles { Callout = "--bit-TimePicker-color:tomato;" });
+        });
+
+        var callout = component.Find(".bit-tpc-cal").GetAttribute("style");
+
+        StringAssert.EndsWith(callout, "--bit-TimePicker-color:tomato;");
+    }
+
+    #endregion
+
+    #region input clear button
+
+    [TestMethod]
+    public void BitTimePickerShouldNotRenderTheInputClearButtonWithoutAValue()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowInputClearButton, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldClearTheValueFromTheInputClearButton()
+    {
+        var cleared = false;
+        TimeSpan? value = new TimeSpan(14, 30, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowInputClearButton, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnClear, () => cleared = true);
+        });
+
+        component.Find(".bit-tpc-clr").Click();
+
+        Assert.IsTrue(cleared);
+        Assert.IsNull(value);
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);
+    }
+
+    [TestMethod,
+        DataRow(true, false, true),
+        DataRow(false, true, true),
+        DataRow(false, false, false)
+    ]
+    public void BitTimePickerShouldNotRenderTheInputClearButtonWhenItCannotBeUsed(bool readOnly, bool standalone, bool isEnabled)
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowInputClearButton, true);
+            parameters.Add(p => p.Value, new TimeSpan(14, 30, 0));
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.Standalone, standalone);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldClearTheTextItRefusedFromTheInputClearButton()
+    {
+        var component = RenderComponent<BitTimePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowInputClearButton, true);
+            parameters.Add(p => p.InvalidErrorMessage, "not a time");
+        });
+
+        component.Find(".bit-tpc-inp").Input("nonsense");
+
+        // Text the picker refused produces no value, so the button has to go by the text on the field.
+        Assert.IsNull(component.Instance.TestModel.Time);
+        Assert.AreEqual("nonsense", component.Find(".bit-tpc-inp").GetAttribute("value"));
+
+        component.Find(".bit-tpc-clr").Click();
+
+        Assert.IsTrue(string.IsNullOrEmpty(component.Find(".bit-tpc-inp").GetAttribute("value")));
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);
+
+        // The message the rejected text produced goes with it; the field is empty now, not unreadable.
+        Assert.IsFalse(component.Find(".validation-message").TextContent.Contains("not a time"));
+    }
+
+    #endregion
+
+    #region meridiem keys
+
+    [TestMethod,
+        DataRow("p", 14),
+        DataRow("P", 14),
+        DataRow("a", 2)
+    ]
+    public void BitTimePickerShouldSetTheHalfOfTheDayFromTheKeyboard(string key, int expectedHour)
+    {
+        TimeSpan? value = new TimeSpan(2, 15, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-tpc-tin").KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(new TimeSpan(expectedHour, 15, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldIgnoreTheMeridiemKeysInTheTwentyFourHourFormat()
+    {
+        TimeSpan? value = new TimeSpan(2, 15, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwentyFourHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-tpc-tin").KeyDown(new KeyboardEventArgs { Key = "p" });
+
+        Assert.AreEqual(new TimeSpan(2, 15, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldNotSetTheHalfOfTheDayWhileReadOnly()
+    {
+        TimeSpan? value = new TimeSpan(2, 15, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-tpc-tin").KeyDown(new KeyboardEventArgs { Key = "p" });
+
+        Assert.AreEqual(new TimeSpan(2, 15, 0), value);
+    }
+
+    #endregion
 
     #region validation
 
