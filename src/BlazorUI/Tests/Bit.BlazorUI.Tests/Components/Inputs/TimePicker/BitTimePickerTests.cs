@@ -2052,14 +2052,194 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
+        // Five steps at a time, wrapping around the clock face like every other move of the picker.
         component.FindAll(".bit-tpc-tin")[0].KeyDown("PageUp");
-        Assert.AreEqual(new TimeSpan(12, 30, 0), value);
+        Assert.AreEqual(new TimeSpan(20, 30, 0), value);
 
         component.FindAll(".bit-tpc-tin")[0].KeyDown("PageDown");
         Assert.AreEqual(new TimeSpan(10, 30, 0), value);
 
         component.FindAll(".bit-tpc-tin")[1].KeyDown("PageUp");
         Assert.AreEqual(new TimeSpan(10, 45, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldStepATimeInputWithTheArrowKeysByItsStep()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(22, 45, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.MinuteStep, 15);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-tpc-tin")[1].KeyDown("ArrowUp");
+        Assert.AreEqual(new TimeSpan(22, 0, 0), value);
+
+        component.FindAll(".bit-tpc-tin")[1].KeyDown("ArrowDown");
+        Assert.AreEqual(new TimeSpan(22, 45, 0), value);
+
+        // The spin buttons wrap around the end of the clock face, and so do the arrows.
+        component.FindAll(".bit-tpc-tin")[0].KeyDown("ArrowUp");
+        component.FindAll(".bit-tpc-tin")[0].KeyDown("ArrowUp");
+        Assert.AreEqual(new TimeSpan(0, 45, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldCarryTheHourAcrossNoonWithTheArrowKeysInTwelveHourFormat()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(11, 0, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // 11 AM is followed by noon, not by the midnight the 12 of the clock face would read as in the morning.
+        component.FindAll(".bit-tpc-tin")[0].KeyDown("ArrowUp");
+        Assert.AreEqual(new TimeSpan(12, 0, 0), value);
+
+        component.FindAll(".bit-tpc-tin")[0].KeyDown("ArrowDown");
+        Assert.AreEqual(new TimeSpan(11, 0, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldCloseWithAltArrowUpFromATimeInputWithoutStepping()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+        var isOpen = false;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-tpc-wrp").Click();
+        Assert.IsTrue(isOpen);
+
+        component.FindAll(".bit-tpc-tin")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+
+        component.FindAll(".bit-tpc-tin")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldNotChangeATimeInputWithTheArrowKeysWhenReadOnly()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-tpc-tin")[0].KeyDown("ArrowUp");
+        component.FindAll(".bit-tpc-tin")[1].KeyDown("ArrowDown");
+
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldKeepTheSpinButtonsOutOfTheTabOrder()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowSeconds, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+        });
+
+        var spinButtons = component.FindAll(".bit-tpc-tbt:not(.bit-tpc-bam):not(.bit-tpc-bpm)");
+
+        Assert.AreEqual(6, spinButtons.Count);
+        Assert.IsTrue(spinButtons.All(b => b.GetAttribute("tabindex") == "-1"));
+
+        // The AM/PM buttons are the only pointer-free way to see which half is picked, so they stay reachable.
+        Assert.IsNull(component.Find(".bit-tpc-bam").GetAttribute("tabindex"));
+        Assert.IsNull(component.Find(".bit-tpc-bpm").GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow("14:30", 14, 30),
+        DataRow("2:30 PM", 14, 30),
+        DataRow(" 09:05 ", 9, 5)
+    ]
+    public async Task BitTimePickerShouldTakeAPastedTime(string text, int hour, int minute)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = null;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnPaste(text));
+
+        Assert.AreEqual(new TimeSpan(hour, minute, 0), value);
+    }
+
+    [TestMethod]
+    public async Task BitTimePickerShouldSnapAPastedTimeOntoTheConstraints()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = null;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.MinuteStep, 15);
+            parameters.Add(p => p.MaxTime, new TimeSpan(17, 0, 0));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // Seconds a picker does not show are dropped, and the minute lands on the step like a typed one does.
+        await component.InvokeAsync(() => component.Instance._OnPaste("10:14:59"));
+        Assert.AreEqual(new TimeSpan(10, 15, 0), value);
+
+        await component.InvokeAsync(() => component.Instance._OnPaste("19:00"));
+        Assert.AreEqual(new TimeSpan(17, 0, 0), value);
+    }
+
+    [TestMethod]
+    public async Task BitTimePickerShouldIgnoreAPasteThatIsNoTimeOrOnAReadOnlyPicker()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnPaste("tomorrow"));
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+
+        await component.InvokeAsync(() => component.Instance._OnPaste("14:30"));
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
     }
 
     [TestMethod]

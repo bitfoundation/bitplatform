@@ -330,11 +330,13 @@
 
     <DemoExample Title="Keyboard & accessibility" RazorCode="@example13RazorCode" Id="example13">
         <ul>
-            <li><b>Enter</b>, <b>Space</b> or <b>&darr;</b> opens the picker (<b>&darr;</b> only on an editable field)
+            <li><b>Enter</b>, <b>Space</b> or <b>&darr;</b> opens the picker (only <b>&darr;</b> on an editable field)
                 and focuses the hour; <b>Esc</b> or <b>Alt</b>+<b>&uarr;</b> closes it back onto the field, <b>Tab</b>
-                closes it and moves on.</li>
-            <li><b>&uarr;</b>/<b>&darr;</b> change a time input by one, <b>PageUp</b>/<b>PageDown</b> by its step,
-                <b>Home</b>/<b>End</b> jump to its ends, and <b>Enter</b> accepts and closes.</li>
+                from the field closes it and moves on.</li>
+            <li><b>&uarr;</b>/<b>&darr;</b> step a time input as its spin buttons do (by its step, wrapping, AM/PM
+                crossing noon), <b>PageUp</b>/<b>PageDown</b> by five steps, <b>Home</b>/<b>End</b> jump to its ends,
+                and <b>Enter</b> accepts and closes. <b>Tab</b> skips the spin buttons.</li>
+            <li>Pasting a whole time (<b>14:30</b>, <b>2:30 PM</b>) into any time input sets it.</li>
             <li>12-hour pickers take the first letter of the culture's designators (<b>a</b>/<b>p</b>) from any input.</li>
             <li><code>AutoAdvance</code> moves on to the next input once a part is complete, so <b>1</b><b>4</b><b>3</b><b>0</b>
                 types 14:30.</li>

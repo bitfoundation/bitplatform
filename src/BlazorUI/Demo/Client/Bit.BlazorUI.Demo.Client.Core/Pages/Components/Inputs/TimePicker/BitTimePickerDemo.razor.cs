@@ -332,7 +332,7 @@ public partial class BitTimePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at the hour of MinTime, and at midnight where there is none, that every hour the buttons produce sits on. A time entered as text is not held to it.",
+            Description = "The step, in hours, the spin buttons and the arrow keys move the hour by. A step greater than 1 lays a grid over the day, starting at the hour of MinTime, and at midnight where there is none, that every hour they produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -511,7 +511,7 @@ public partial class BitTimePickerDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the minute of MinTime, and at the top of the hour where there is none, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
+            Description = "The step, in minutes, the spin buttons and the arrow keys move the minute by. A step greater than 1 lays a grid over the hour, starting at the minute of MinTime, and at the top of the hour where there is none, that every minute they produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
         },
         new()
         {
@@ -629,7 +629,7 @@ public partial class BitTimePickerDemo
             Name = "SecondStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in seconds, the spin buttons move the second by. A step greater than 1 lays a grid over the minute, starting at the second of MinTime, and at the top of the minute where there is none, that every second the buttons produce sits on. A time entered as text is not held to it.",
+            Description = "The step, in seconds, the spin buttons and the arrow keys move the second by. A step greater than 1 lays a grid over the minute, starting at the second of MinTime, and at the top of the minute where there is none, that every second they produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -1334,7 +1334,7 @@ public partial class BitTimePickerDemo
         {
             Name = "--bit-TimePicker-invalid-color",
             DefaultValue = "--bit-clr-err",
-            Description = "Border and underline of an invalid field, and the color of the ErrorMessage text. The focus ring keeps its own error color.",
+            Description = "Border and underline of an invalid field (the frame of an invalid Standalone picker), and the color of the ErrorMessage text. The focus ring keeps its own error color.",
         },
         new()
         {

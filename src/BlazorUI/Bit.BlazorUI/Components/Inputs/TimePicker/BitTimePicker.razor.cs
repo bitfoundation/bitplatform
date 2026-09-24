@@ -859,6 +859,29 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         await InvokeAsync(StateHasChanged);
     }
 
+    // A whole time pasted into one of the time inputs, which is read the way a typed time is - in either clock
+    // format, with or without its seconds - and then lands on the nearest time the controls could have been
+    // moved to, exactly as a part typed into its own input does. Text that is no time is ignored.
+    [JSInvokable("OnPaste")]
+    public async Task _OnPaste(string? text)
+    {
+        if (IsInteractive is false) return;
+        if (text.HasNoValue()) return;
+
+        if (DateTime.TryParseExact(text!.Trim(), GetParseFormats(), _culture, DateTimeStyles.AllowWhiteSpaces, out var parsed) is false) return;
+
+        var time = parsed.TimeOfDay;
+
+        _hour = time.Hours;
+        _minute = time.Minutes;
+        // A picker that does not show the seconds should not hold a hidden value the input cannot display.
+        _second = ShowSeconds ? time.Seconds : 0;
+
+        await UpdateCurrentValue();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
 
 
     /// <summary>
@@ -1021,7 +1044,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             // can land on, so there are no field keys to cancel the defaults of.
             _abortControllerId = await _js.BitTimePickerSetup(_calloutRef,
                                                              Standalone ? null : InputElement,
-                                                             Standalone is false);
+                                                             Standalone is false,
+                                                             _dotnetObj);
 
             // The setup is a round trip, so the picker can be gone by the time the controller id comes back -
             // at a point where DisposeAsync had nothing to abort yet. The listeners it registered would
@@ -1271,11 +1295,13 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         }
     }
 
-    // The keys the spin button pattern asks for on top of what a number input already does itself (the arrow
-    // keys, which move it by one): PageUp and PageDown move it by the step of the picker - the same move the
-    // spin buttons make, wrapping around and skipping what is not allowed - and Home and End jump to the ends
-    // of what can be selected. Enter takes the time that is on the inputs and puts the focus back on the
-    // field, the way a dialog is accepted rather than dismissed.
+    // The keys of the spin button pattern. The arrow keys make the move the spin buttons make - one step,
+    // wrapping around and skipping what is not allowed - rather than the one the number input would make by
+    // itself, which stops at its min and max and, on the clock face of a 12-hour hour, reads the 12 it lands on
+    // from 11 as the top of the same half of the day: 11 AM would step up to midnight. PageUp and PageDown make
+    // a larger move of several steps, and Home and End jump to the ends of what can be selected. Enter takes
+    // the time that is on the inputs and puts the focus back on the field, the way a dialog is accepted rather
+    // than dismissed.
     private async Task HandleOnTimeInputKeyDown(KeyboardEventArgs e, TimeUnit unit)
     {
         // Recorded before anything is awaited, so it is in place by the time the input event of the same key
@@ -1286,23 +1312,34 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         if (IsEnabled is false) return;
 
-        // Closing is not a change, so it stays open to a picker that only shows its value.
-        if (e.Key == "Enter")
+        // Closing is not a change, so it stays open to a picker that only shows its value. Alt+Up closes the
+        // popup from inside it as it does from the field, and with Alt held neither arrow is a step.
+        if (e.Key == "Enter" || (e.AltKey && e.Key == "ArrowUp"))
         {
             await CloseCallout();
             return;
         }
 
+        if (e.AltKey && e.Key == "ArrowDown") return;
+
         if (IsInteractive is false) return;
 
         switch (e.Key)
         {
-            case "PageUp":
+            case "ArrowUp":
                 await ChangeTime(isNext: true, unit);
                 break;
 
-            case "PageDown":
+            case "ArrowDown":
                 await ChangeTime(isNext: false, unit);
+                break;
+
+            case "PageUp":
+                await ChangeTime(isNext: true, unit, PAGE_STEPS);
+                break;
+
+            case "PageDown":
+                await ChangeTime(isNext: false, unit, PAGE_STEPS);
                 break;
 
             case "Home":
@@ -1721,23 +1758,29 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     // to cancel the browser's own Shift+wheel scrolling reads the current state straight off the element.
     private bool IsWheelSpinEnabled => IsInteractive && NoMouseWheel is false;
 
-    private async Task ChangeTime(bool isNext, TimeUnit unit)
+    // How many steps PageUp and PageDown move a time input by: the larger move of the spin button pattern.
+    private const int PAGE_STEPS = 5;
+
+    private async Task ChangeTime(bool isNext, TimeUnit unit, int steps = 1)
     {
         SeedFromStartingValue();
 
-        switch (unit)
+        for (var i = 0; i < steps; i++)
         {
-            case TimeUnit.Hour:
-                _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, IsHourAllowed) ?? _hour;
-                break;
+            switch (unit)
+            {
+                case TimeUnit.Hour:
+                    _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, IsHourAllowed) ?? _hour;
+                    break;
 
-            case TimeUnit.Minute:
-                _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, IsMinuteAllowed) ?? _minute;
-                break;
+                case TimeUnit.Minute:
+                    _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, IsMinuteAllowed) ?? _minute;
+                    break;
 
-            case TimeUnit.Second:
-                _second = BitTimeSteps.StepToAllowed(_second, isNext, 60, IsSecondAllowed) ?? _second;
-                break;
+                case TimeUnit.Second:
+                    _second = BitTimeSteps.StepToAllowed(_second, isNext, 60, IsSecondAllowed) ?? _second;
+                    break;
+            }
         }
 
         await UpdateCurrentValue();

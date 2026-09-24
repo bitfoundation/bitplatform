@@ -12,7 +12,8 @@
 //   --bit-TimePicker-active-color             accent of the pressed AM/PM button   (default: the Color role's active color)
 //   --bit-TimePicker-focus-color              color of the keyboard focus ring     (default: the Color role's focus color)
 //   --bit-TimePicker-invalid-color            border and underline of an invalid
-//                                             field, and its error text            (default: $clr-err)
+//                                             field (the frame of a standalone
+//                                             one), and its error text             (default: $clr-err)
 //   --bit-TimePicker-background               background of the input field        (default: $clr-bg-pri)
 //   --bit-TimePicker-text-color               text color of the input field        (default: $clr-fg-pri)
 //   --bit-TimePicker-placeholder-color        text color of the placeholder        (default: $clr-fg-sec)
@@ -140,6 +141,12 @@
 
         &.bit-tpc-und.bit-tpc-foc .bit-tpc-icn {
             @include focus-underline-ring($clr-err-focus);
+        }
+
+        // A standalone picker has no field to turn red, so its frame says it instead - inset, so the
+        // layout does not move when the state comes and goes.
+        &.bit-tpc-sta .bit-tpc-cac {
+            box-shadow: inset 0 0 0 var(--bit-TimePicker-border-width, #{$shp-border-width}) var(--bit-TimePicker-invalid-color, #{$clr-err});
         }
     }
 }
@@ -333,9 +340,10 @@
         flex-direction: row-reverse;
     }
 
+    // Logical, like the padding it replaces: in a right-to-left picker the icon is still at the start.
     .bit-tpc-ico {
-        padding-left: 0;
-        padding-right: spacing(1);
+        padding-inline-start: 0;
+        padding-inline-end: spacing(1);
     }
 
     // The row is reversed to put the icon before the input, but the clear button belongs at the far end

@@ -182,12 +182,18 @@
                 </div>
             }
 
+            @*
+                The spin buttons are out of the tab order, as in the spin button pattern: the input beside each
+                pair is the spin button, and its arrow keys make the very move the pair makes. Tabbing through
+                them would only put two more stops around every part of the time.
+            *@
             <div style="@Styles?.TimeInputContainer" class="bit-tpc-tic @Classes?.TimeInputContainer">
                 <div style="@Styles?.HourInputContainer" class="bit-tpc-tpr @Classes?.HourInputContainer">
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Hour)"
                             @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Hour)"
+                            tabindex="-1"
                             type="button"
                             title="@IncreaseHourTitle"
                             aria-label="@IncreaseHourTitle"
@@ -227,6 +233,7 @@
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Hour)"
                             @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Hour)"
+                            tabindex="-1"
                             type="button"
                             title="@DecreaseHourTitle"
                             aria-label="@DecreaseHourTitle"
@@ -242,6 +249,7 @@
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Minute)"
                             @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Minute)"
+                            tabindex="-1"
                             type="button"
                             title="@IncreaseMinuteTitle"
                             aria-label="@IncreaseMinuteTitle"
@@ -273,6 +281,7 @@
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Minute)"
                             @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Minute)"
+                            tabindex="-1"
                             type="button"
                             title="@DecreaseMinuteTitle"
                             aria-label="@DecreaseMinuteTitle"
@@ -290,6 +299,7 @@
                                 @onpointerout="HandleOnPointerUpOrOut"
                                 @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Second)"
                                 @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Second)"
+                                tabindex="-1"
                                 type="button"
                                 title="@IncreaseSecondTitle"
                                 aria-label="@IncreaseSecondTitle"
@@ -321,6 +331,7 @@
                                 @onpointerout="HandleOnPointerUpOrOut"
                                 @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Second)"
                                 @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Second)"
+                                tabindex="-1"
                                 type="button"
                                 title="@DecreaseSecondTitle"
                                 aria-label="@DecreaseSecondTitle"
