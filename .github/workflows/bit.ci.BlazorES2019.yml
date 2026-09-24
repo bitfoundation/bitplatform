@@ -2,6 +2,7 @@ name: bit platform CI - BlazorES2019
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
     - 'src/BlazorES2019/**'

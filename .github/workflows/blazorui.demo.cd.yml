@@ -164,19 +164,19 @@ jobs:
       continue-on-error: true
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
-          dnx vpk@1.2.0 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+          dnx vpk@1.2.158 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
     - name: Publish
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}" -p:CompressionEnabled=false -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
-          dnx vpk@1.2.0 -- pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
+          dnx vpk@1.2.158 -- pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
 
     # The update feed behind WindowsUpdateSettings.FilesUrl.
     - name: Upload releases to R2
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
-          dnx vpk@1.2.0 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+          dnx vpk@1.2.158 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
 
 
   build_blazor_hybrid_android:
