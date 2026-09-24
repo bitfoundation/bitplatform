@@ -267,8 +267,9 @@
     <DemoExample Title="AutoPlay" RazorCode="@example8RazorCode" Id="example8">
         <div>
             <b>AutoPlay</b> advances every <b>AutoPlayInterval</b> milliseconds. It pauses while the pointer or the keyboard focus
-            is inside (<b>PauseOnHover</b>, <b>PauseOnFocus</b>) and while the tab is hidden. <b>ShowPlayPause</b> adds the
-            pause control WCAG asks of moving content, and <b>StopOnInteraction</b> stops for good once navigated by hand.
+            is inside (<b>PauseOnHover</b>, <b>PauseOnFocus</b>) and while the tab is hidden, and starts paused when reduced
+            motion is requested (unless <b>ForceAnimation</b>). <b>ShowPlayPause</b> adds the pause control WCAG asks of moving
+            content, and <b>StopOnInteraction</b> stops for good once navigated by hand.
         </div>
         <br />
         <div>
@@ -351,16 +352,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Public API" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Binding & public API" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            Drive it through a <b>@@ref</b>: <b>GoNext</b>, <b>GoPrev</b> and <b>GoTo</b> (1 based) navigate, <b>Pause</b>,
-            <b>Resume</b> and <b>TogglePlay</b> drive the autoplay, and <b>Refresh</b> re-measures it. <b>CurrentPage</b> (zero
-            based), <b>PagesCount</b>, <b>ItemsCount</b>, <b>IsPlaying</b> and <b>IsPaused</b> report its state, <b>OnChange</b>
-            reports each move, and <b>DefaultPage</b> (1 based) picks the page it starts on.
+            <b>@@bind-SelectedPage</b> (1 based) keeps the page in sync both ways, here with a BitPagination; <b>DefaultPage</b>
+            only picks the page an unbound carousel starts on. Through a <b>@@ref</b>, <b>GoNext</b>, <b>GoPrev</b> and
+            <b>GoTo</b> navigate, <b>Pause</b>, <b>Resume</b> and <b>TogglePlay</b> drive the autoplay, and <b>Refresh</b>
+            re-measures it; <b>CurrentPage</b> (zero based), <b>PagesCount</b>, <b>ItemsCount</b>, <b>IsPlaying</b> and
+            <b>IsPaused</b> report its state. <b>OnChange</b> reports each move with the zero based page index.
         </div>
         <br />
         <div>
-            <BitCarousel HideNextPrev DefaultPage="2" @ref="carousel" OnChange="v => currentPage = v">
+            <BitCarousel HideNextPrev @ref="carousel" @bind-SelectedPage="selectedPage" OnChange="v => changedIndex = v">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
                     <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
@@ -384,21 +386,18 @@
                     <BitButton OnClick="GoPrev">&lt; Prev</BitButton>
                     <BitButton OnClick="GoNext">Next &gt;</BitButton>
                 </div>
-                <div class="goto-container">
-                    <BitButton Class="goto-button" OnClick="GoTo">GoTo</BitButton>
-                    <BitNumberField @bind-Value="number" Min="1" Max="4" Mode="BitSpinButtonMode.Compact" />
-                </div>
+                <BitPagination Count="4" @bind-SelectedPage="selectedPage" />
             </div>
             <br />
-            <div>Current page: @currentPage</div>
+            <div>SelectedPage: @selectedPage, last OnChange index: @changedIndex</div>
         </div>
     </DemoExample>
 
     <DemoExample Title="Dots & thumbnails" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             <b>DotTemplate</b> fills each dot (it receives the zero based page index), which then sizes to its content and keeps
-            its label and its aria-current marker, which also styles the current one. For a strip outside the carousel, call
-            <b>GoTo</b> and track <b>OnChange</b>.
+            its label and its aria-current marker, which also styles the current one. For a strip outside the carousel, bind
+            <b>SelectedPage</b>.
         </div>
         <br />
         <div>
@@ -439,7 +438,7 @@
             <div>External thumbnail strip:</div>
             <br />
             <div>
-                <BitCarousel @ref="thumbsCarousel" HideDots InfiniteScrolling OnChange="v => thumbsCurrentPage = v">
+                <BitCarousel HideDots InfiniteScrolling @bind-SelectedPage="thumbsPage">
                     <BitCarouselItem>
                         <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     </BitCarouselItem>
@@ -456,13 +455,13 @@
                 <div class="thumbs-container">
                     @for (int i = 0; i < 4; i++)
                     {
-                        var index = i;
+                        var page = i + 1;
                         <button type="button"
-                                aria-label="@($"Slide {index + 1}")"
-                                aria-current="@(thumbsCurrentPage == index ? "true" : null)"
-                                class="thumb-button @(thumbsCurrentPage == index ? "thumb-button-current" : null)"
-                                @onclick="() => thumbsCarousel.GoTo(index + 1)">
-                            <img alt="" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(index + 1).jpg" />
+                                aria-label="@($"Slide {page}")"
+                                aria-current="@(thumbsPage == page ? "true" : null)"
+                                class="thumb-button @(thumbsPage == page ? "thumb-button-current" : null)"
+                                @onclick="() => thumbsPage = page">
+                            <img alt="" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(page).jpg" />
                         </button>
                     }
                 </div>

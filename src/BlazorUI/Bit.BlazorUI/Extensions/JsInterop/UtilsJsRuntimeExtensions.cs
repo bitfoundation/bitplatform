@@ -73,6 +73,12 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask<bool> BitUtilsPrefersReducedMotion(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.prefersReducedMotion", element);
+    }
+
+
     internal static ValueTask<bool> BitUtilsIsHoverDevice(this IJSRuntime jsRuntime)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isHoverDevice");

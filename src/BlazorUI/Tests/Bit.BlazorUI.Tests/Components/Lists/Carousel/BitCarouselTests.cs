@@ -454,6 +454,88 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCarouselShouldStartOnTheBoundSelectedPage()
+    {
+        var component = RenderComponent<BitCarouselBindingTest>(parameters =>
+        {
+            parameters.Add(p => p.Page, 2);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
+        Assert.AreEqual(2, component.Instance.Page);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldWriteTheStartPageBackToAnUnsetSelectedPage()
+    {
+        var component = RenderComponent<BitCarouselBindingTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Page));
+        Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNavigateWhenTheSelectedPageChanges()
+    {
+        var component = RenderComponent<BitCarouselBindingTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Page));
+
+        component.Render(parameters => parameters.Add(p => p.Page, 3));
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
+        Assert.AreEqual(3, component.Instance.Page);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldWriteEveryMoveBackToTheSelectedPage()
+    {
+        var component = RenderComponent<BitCarouselBindingTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Page));
+
+        await component.InvokeAsync(component.Instance.Carousel.GoNext);
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Page));
+        Assert.AreEqual(1, component.Instance.Carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldClampAnOutOfRangeSelectedPageAndWriteItBack()
+    {
+        var component = RenderComponent<BitCarouselBindingTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Page));
+
+        component.Render(parameters => parameters.Add(p => p.Page, 99));
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Page));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNotSnapBackAOneWaySelectedPage()
+    {
+        var component = RenderComponent<BitCarousel>(parameters =>
+        {
+            parameters.Add(p => p.SelectedPage, 2);
+            parameters.AddChildContent<BitCarouselItem>();
+            parameters.AddChildContent<BitCarouselItem>();
+            parameters.AddChildContent<BitCarouselItem>();
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.CurrentPage));
+
+        component.InvokeAsync(component.Instance.GoNext);
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.CurrentPage));
+
+        // The parent hands the same one-way value in again; the carousel stays where it was moved to.
+        component.Render(parameters => parameters.Add(p => p.SelectedPage, 2));
+
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+    }
+
+    [TestMethod]
     public void BitCarouselShouldRespectClassesAndStyles()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
@@ -2022,6 +2104,29 @@ public partial class BitCarouselTests : BunitTestContext
         });
 
         Assert.IsFalse(component.Instance.Carousel.IsPlaying);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldStartTheAutoPlayPausedUnderReducedMotion()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.ShowPlayPause, true);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPaused));
+        Assert.IsFalse(carousel.IsPlaying);
+        Assert.AreEqual("Start automatic slide show", component.Find(".bit-csl-ppb").GetAttribute("aria-label"));
+
+        // The play/pause button still starts it.
+        component.Find(".bit-csl-ppb").Click();
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
     }
 
     [TestMethod]

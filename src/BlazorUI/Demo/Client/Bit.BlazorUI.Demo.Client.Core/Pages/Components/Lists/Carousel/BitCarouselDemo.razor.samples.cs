@@ -307,7 +307,7 @@ public partial class BitCarouselDemo
 </BitCarousel>";
 
     private readonly string example10RazorCode = @"
-<BitCarousel HideNextPrev DefaultPage=""2"" @ref=""carousel"" OnChange=""v => currentPage = v"">
+<BitCarousel HideNextPrev @ref=""carousel"" @bind-SelectedPage=""selectedPage"" OnChange=""v => changedIndex = v"">
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
@@ -329,13 +329,12 @@ public partial class BitCarouselDemo
 <BitButton OnClick=""GoPrev"">&lt; Prev</BitButton>
 <BitButton OnClick=""GoNext"">Next &gt;</BitButton>
 
-<BitButton OnClick=""GoTo"">GoTo</BitButton>
-<BitNumberField @bind-Value=""number"" Min=""1"" Max=""4"" Mode=""BitSpinButtonMode.Compact"" />
+<BitPagination Count=""4"" @bind-SelectedPage=""selectedPage"" />
 
-<div>Current page: @currentPage</div>";
+<div>SelectedPage: @selectedPage, last OnChange index: @changedIndex</div>";
     private readonly string example10CsharpCode = @"
-private int number = 1;
-private int currentPage = 1;
+private int selectedPage = 2;
+private int changedIndex;
 private BitCarousel carousel = default!;
 
 private async Task GoNext()
@@ -346,11 +345,6 @@ private async Task GoNext()
 private async Task GoPrev()
 {
     await carousel.GoPrev();
-}
-
-private async Task GoTo()
-{
-    await carousel.GoTo(number);
 }";
 
     private readonly string example11RazorCode = @"
@@ -426,7 +420,7 @@ private async Task GoTo()
     </ChildContent>
 </BitCarousel>
 
-<BitCarousel @ref=""thumbsCarousel"" HideDots InfiniteScrolling OnChange=""v => thumbsCurrentPage = v"">
+<BitCarousel HideDots InfiniteScrolling @bind-SelectedPage=""thumbsPage"">
     <BitCarouselItem>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
     </BitCarouselItem>
@@ -443,19 +437,18 @@ private async Task GoTo()
 <div class=""thumbs-container"">
     @for (int i = 0; i < 4; i++)
     {
-        var index = i;
+        var page = i + 1;
         <button type=""button""
-                aria-label=""@($""Slide {index + 1}"")""
-                aria-current=""@(thumbsCurrentPage == index ? ""true"" : null)""
-                class=""thumb-button @(thumbsCurrentPage == index ? ""thumb-button-current"" : null)""
-                @onclick=""() => thumbsCarousel.GoTo(index + 1)"">
-            <img alt="""" src=""img@(index + 1).jpg"" />
+                aria-label=""@($""Slide {page}"")""
+                aria-current=""@(thumbsPage == page ? ""true"" : null)""
+                class=""thumb-button @(thumbsPage == page ? ""thumb-button-current"" : null)""
+                @onclick=""() => thumbsPage = page"">
+            <img alt="""" src=""img@(page).jpg"" />
         </button>
     }
 </div>";
     private readonly string example11CsharpCode = @"
-private int thumbsCurrentPage;
-private BitCarousel thumbsCarousel = default!;";
+private int thumbsPage = 1;";
 
     private readonly string example12RazorCode = @"
 <style>

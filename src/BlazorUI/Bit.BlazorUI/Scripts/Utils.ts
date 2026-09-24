@@ -198,6 +198,22 @@
             }
         }
 
+        // True when the reader has asked for less motion ('prefers-reduced-motion: reduce') and the given
+        // element has not been opted back into it: an element inside a subtree marked with bit-fam (which is
+        // what BitComponentBase.ForceAnimation renders) keeps its motion, the same way the stylesheets
+        // restore the motion tokens there.
+        public static prefersReducedMotion(element: HTMLElement) {
+            try {
+                if (typeof window.matchMedia !== "function") return false;
+                if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+
+                return !(element && element.closest && element.closest(".bit-fam"));
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.prefersReducedMotion:", e);
+                return false;
+            }
+        }
+
         // True when the focus sits on something inside the given container that consumes the arrow keys
         // (and Home/End) on its own: an editable field moves its caret with them, and a slider, a list, a
         // radio group or a grid moves its own selection. A container that navigates with the same keys

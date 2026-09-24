@@ -21,6 +21,8 @@ public partial class BitCarousel : BitComponentBase
 {
     private int _pagesCount;
     private int _currentPage;
+    private int _appliedSelectedPage;
+    private int? _pendingSelectedPage;
     private double _pointerX;
     private double _pointerY;
     private bool _hovered;
@@ -134,6 +136,10 @@ public partial class BitCarousel : BitComponentBase
     /// <br />
     /// A carousel that reaches its last page rewinds to the first one, unless <see cref="StopOnLastSlide"/>
     /// says to stop there.
+    /// <br />
+    /// When the system or the browser reports 'prefers-reduced-motion: reduce', the rotation starts paused
+    /// (<see cref="IsPaused"/> is true) until it is started with the play/pause button or <see cref="Resume"/>,
+    /// unless <see cref="BitComponentBase.ForceAnimation"/> opts the carousel back into motion.
     /// </remarks>
     [Parameter] public bool AutoPlay { get; set; }
 
@@ -431,6 +437,19 @@ public partial class BitCarousel : BitComponentBase
     [Parameter] public int ScrollItemsCount { get; set; } = 1;
 
     /// <summary>
+    /// The page (1 based, like <see cref="GoTo(int)"/>) the carousel is showing, bindable two ways with
+    /// <c>@bind-SelectedPage</c>.
+    /// </summary>
+    /// <remarks>
+    /// Setting it moves the carousel there (animated, the way <see cref="GoTo(int)"/> does), and every move of
+    /// the carousel writes the new page back. On the first render it takes the place of <see cref="DefaultPage"/>.
+    /// A value outside of the range of the carousel is clamped to its first or last page and written back, and
+    /// 0 (the default) leaves the page to <see cref="DefaultPage"/>.
+    /// </remarks>
+    [Parameter, TwoWayBound]
+    public int SelectedPage { get; set; }
+
+    /// <summary>
     /// Renders a play/pause button next to the dots, so the auto scrolling can be stopped and started again.
     /// </summary>
     /// <remarks>
@@ -544,6 +563,9 @@ public partial class BitCarousel : BitComponentBase
     /// <summary>
     /// The zero based index of the page the carousel is currently showing.
     /// </summary>
+    /// <remarks>
+    /// It is <see cref="SelectedPage"/> minus one, read straight off the carousel.
+    /// </remarks>
     public int CurrentPage => _currentPage;
 
     /// <summary>
@@ -561,7 +583,8 @@ public partial class BitCarousel : BitComponentBase
     public bool IsPlaying => _autoPlayTimer?.Enabled ?? false;
 
     /// <summary>
-    /// Whether the auto scrolling has been paused through <see cref="Pause"/> or the play/pause button.
+    /// Whether the auto scrolling has been paused through <see cref="Pause"/> or the play/pause button, or
+    /// started paused because reduced motion was requested (see <see cref="AutoPlay"/>).
     /// </summary>
     public bool IsPaused => _isPaused || _stopped;
 
@@ -778,6 +801,19 @@ public partial class BitCarousel : BitComponentBase
 
         ClampCounts();
 
+        // A page handed in from outside is only acted on when it differs from the last one the carousel
+        // saw (or wrote back itself), so the echo of its own write back through @bind is not a request to
+        // move. Before the first layout it is simply where the carousel starts (see ResetDimensionsAsync).
+        if (SelectedPageHasBeenSet && SelectedPage > 0 && SelectedPage != _appliedSelectedPage)
+        {
+            _appliedSelectedPage = SelectedPage;
+
+            if (_defaultPageApplied)
+            {
+                _pendingSelectedPage = SelectedPage;
+            }
+        }
+
         var signature = ComputeLayoutSignature();
 
         if (_layoutSignature != signature)
@@ -824,6 +860,14 @@ public partial class BitCarousel : BitComponentBase
 
             await _pageVisibility.Init();
 
+            // A reader who asked the system for less motion is not handed a slide show that starts moving on
+            // its own: the rotation starts paused, and the play/pause button (or Resume) starts it. A
+            // carousel opted back into motion with ForceAnimation (itself or through an ancestor) plays.
+            if (AutoPlay && await _js.BitUtilsPrefersReducedMotion(RootElement))
+            {
+                _isPaused = true;
+            }
+
             UpdateAutoPlayTimer();
         }
         else
@@ -840,6 +884,19 @@ public partial class BitCarousel : BitComponentBase
                 _needsRegister = false;
 
                 await RegisterPreventDefaultsAsync();
+            }
+
+            // A page requested through SelectedPage is navigated to once the carousel is laid out and not
+            // in the middle of another move; a move that is under way asks for a render when it is over.
+            if (_pendingSelectedPage is { } page && _navigating is false && _needsReset is false)
+            {
+                _pendingSelectedPage = null;
+
+                await GotoPage(page - 1);
+
+                // A page the carousel was already on (or one clamped onto it) does not move it, so the
+                // clamped value is written back here rather than by the move.
+                await SyncSelectedPage();
             }
         }
 
@@ -1030,7 +1087,9 @@ public partial class BitCarousel : BitComponentBase
         {
             _defaultPageApplied = true;
 
-            first = Math.Clamp(DefaultPage - 1, 0, Math.Max(0, _pagesCount - 1)) * scroll;
+            var startPage = _appliedSelectedPage > 0 ? _appliedSelectedPage : DefaultPage;
+
+            first = Math.Clamp(startPage - 1, 0, Math.Max(0, _pagesCount - 1)) * scroll;
         }
 
         if (first < 0 || first >= itemsCount) first = 0;
@@ -1116,7 +1175,34 @@ public partial class BitCarousel : BitComponentBase
             }
         }
 
+        // A re-layout can land the carousel on another page (a breakpoint that changed how many pages there
+        // are), which the bound page follows, the same way it follows a move.
+        await SyncSelectedPage();
+
         StateHasChanged();
+    }
+
+    // Writes the page the carousel is on back to SelectedPage. The value is recorded as seen before it is
+    // handed out, so the echo that comes back through @bind is not taken as a request to move; a
+    // one-way bound page that cannot be written keeps the value it was given instead, so it does not
+    // snap the carousel back the next time the parent renders.
+    private async Task SyncSelectedPage()
+    {
+        if (_pagesCount < 1) return;
+        if (_pendingSelectedPage.HasValue) return;
+
+        var page = _currentPage + 1;
+
+        if (SelectedPage == page) return;
+
+        var previous = _appliedSelectedPage;
+
+        _appliedSelectedPage = page;
+
+        if (await AssignSelectedPage(page) is false)
+        {
+            _appliedSelectedPage = previous;
+        }
     }
 
     private void UpdateItemsCurrentState()
@@ -1362,7 +1448,7 @@ public partial class BitCarousel : BitComponentBase
 
                 // A re-layout that arrived in the middle of the move was put off until it was over, and
                 // this is where it is over, so it is asked for a render of its own to be picked up in.
-                if (_needsReset) StateHasChanged();
+                if (_needsReset || _pendingSelectedPage.HasValue) StateHasChanged();
             }
 
             return;
@@ -1430,7 +1516,7 @@ public partial class BitCarousel : BitComponentBase
 
             // A re-layout that arrived in the middle of the move was put off until it was over, and this
             // is where it is over, so it is asked for a render of its own to be picked up in.
-            if (_needsReset) StateHasChanged();
+            if (_needsReset || _pendingSelectedPage.HasValue) StateHasChanged();
         }
     }
 
@@ -1472,6 +1558,8 @@ public partial class BitCarousel : BitComponentBase
 
         if (previousPage != _currentPage)
         {
+            await SyncSelectedPage();
+
             await OnChange.InvokeAsync(_currentPage);
         }
     }

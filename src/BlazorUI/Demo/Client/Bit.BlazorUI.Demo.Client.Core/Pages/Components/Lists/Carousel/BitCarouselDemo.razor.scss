@@ -36,16 +36,8 @@
     gap: 1rem;
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
-}
-
-.goto-container {
-    display: flex;
-    justify-content: space-around;
-}
-
-::deep .goto-button {
-    margin-right: rem2(10px);
 }
 
 ::deep .item {

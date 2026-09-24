@@ -25,7 +25,7 @@ public partial class BitCarouselDemo
             Name = "AutoPlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables/disables the auto scrolling of the slides."
+            Description = "Enables/disables the auto scrolling of the slides. It pauses while hovered, focused or in a hidden tab, and starts paused under prefers-reduced-motion unless ForceAnimation is set."
         },
         new()
         {
@@ -292,6 +292,13 @@ public partial class BitCarouselDemo
             Type = "int",
             DefaultValue = "1",
             Description = "Number of items that is going to be changed on navigation. It is clamped to VisibleItemsCount, and a non-infinite carousel moves by fewer items near its ends so its first and last pages always stay full. Together with VisibleItemsCount it also decides where the carousel stops, which is what the dots stand for and what OnChange reports."
+        },
+        new()
+        {
+            Name = "SelectedPage",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The page (1 based, like GoTo) the carousel is showing, bindable two ways with @bind-SelectedPage. Setting it moves the carousel there, every move writes it back, and it takes the place of DefaultPage on the first render. Out of range values are clamped and written back.",
         },
         new()
         {
@@ -658,7 +665,7 @@ public partial class BitCarouselDemo
         {
             Name = "CurrentPage",
             Type = "int",
-            Description = "The zero based index of the page the carousel is currently showing.",
+            Description = "The zero based index of the page the carousel is currently showing (SelectedPage minus one).",
         },
         new()
         {
@@ -682,7 +689,7 @@ public partial class BitCarouselDemo
         {
             Name = "IsPaused",
             Type = "bool",
-            Description = "Whether the auto scrolling has been paused through Pause or the play/pause button.",
+            Description = "Whether the auto scrolling has been paused through Pause or the play/pause button, or started paused under reduced motion.",
         },
         new()
         {
@@ -856,12 +863,11 @@ public partial class BitCarouselDemo
 
 
 
-    private int number = 1;
-    private int currentPage = 1;
+    private int selectedPage = 2;
+    private int changedIndex;
     private BitCarousel carousel = default!;
 
-    private int thumbsCurrentPage;
-    private BitCarousel thumbsCarousel = default!;
+    private int thumbsPage = 1;
 
     private readonly BitCarouselParams[] carouselParams =
     [
@@ -882,10 +888,5 @@ public partial class BitCarouselDemo
     private async Task GoPrev()
     {
         await carousel.GoPrev();
-    }
-
-    private async Task GoTo()
-    {
-        await carousel.GoTo(number);
     }
 }
