@@ -30,142 +30,137 @@
         background-color: mediumseagreen;
     }
 
+    // Classes.Dragging lands on the root while files hover over it, so the hand-built panel inside
+    // gets its drag feedback from an ancestor rule rather than from the component's own drop indicator.
     .custom-drop-zone .browse-file {
-        border-style: dashed;
-        border-color: #0072CE;
-        background-color: #eaf4fd;
+        border-color: var(--bit-clr-pri);
+        background-color: var(--bit-clr-bg-sec-hover);
     }
 }
 
 .event-log {
-    margin-top: 8px;
-    padding: 8px;
-    background-color: #e8f5e9;
-    border-radius: 4px;
-    color: #2e7d32;
-    font-weight: 500;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    color: var(--bit-clr-suc-text);
+    background-color: var(--bit-clr-suc);
 }
 
 .api-buttons {
+    gap: 0.75rem;
     display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
 }
 
+// A hand-built LabelTemplate: a real button, so Tab reaches it and Enter or Space opens the dialog
+// exactly as they do on the browse button it replaces. Every color is read off a theme token, so the
+// panel follows the four presets and both schemes instead of only looking right in the light one.
 .browse-file {
-    border: 1px solid #D2D2D7;
-    border-radius: 2px;
-    padding: 24px;
-    width: 420px;
-    height: 200px;
+    gap: 0.5rem;
+    width: 100%;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 50px;
     cursor: pointer;
+    padding: 1.5rem;
+    text-align: center;
+    align-items: center;
+    font-family: inherit;
+    justify-content: center;
+    flex-flow: column nowrap;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-pri);
+    border-radius: var(--bit-shp-radius-surface);
+    border: 2px dashed var(--bit-clr-brd-pri);
 
     &:hover {
-        border-color: #0072CE;
-        background-color: #f8f9fa;
+        border-color: var(--bit-clr-pri);
+        background-color: var(--bit-clr-bg-sec);
     }
-}
 
-.browse-file-header {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
+    &:focus-visible {
+        outline: 2px solid var(--bit-clr-pri-focus);
+        outline-offset: 2px;
+    }
 
     i {
-        font-size: 24px;
-        font-weight: 700;
-        color: #0072CE;
-    }
-
-    strong {
-        color: #0072CE;
+        font-size: 1.5rem;
+        color: var(--bit-clr-pri);
     }
 }
 
-.browse-file-footer {
+.browse-file-title {
+    font-size: 1rem;
+}
+
+.browse-file-hint {
+    font-size: 0.75rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+// A hand-built FileViewTemplate: one compact row per file, with the constraints stated once under the
+// panel instead of repeated on every row the way a per-file footer would.
+.file-row {
+    gap: 0.75rem;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
     align-items: center;
-    font-size: 12px;
-    color: #78787D;
-}
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
+    border-radius: var(--bit-shp-radius-surface);
+    border: 1px solid var(--bit-clr-brd-pri);
 
-.file-list {
-    border: 1px solid #D2D2D7;
-    border-radius: 2px;
-    padding: 24px;
-    width: 420px;
-    height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.file-list-header {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.file-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.file-info-main {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 12px;
-
-    i {
-        font-size: 24px;
+    > i {
+        font-size: 1.5rem;
+        color: var(--bit-clr-fg-sec);
     }
 }
 
-.file-info-name {
+.file-row-invalid {
+    border-color: var(--bit-clr-err);
+}
+
+.file-row-data {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.file-row-name {
+    overflow: hidden;
     font-weight: 600;
-    margin-bottom: 4px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.file-info-data {
-    width: 275px;
+.file-row-meta {
+    font-size: 0.75rem;
+    color: var(--bit-clr-fg-sec);
 }
 
-.file-info-btns {
+.file-row-error {
+    font-size: 0.75rem;
+    color: var(--bit-clr-err);
+}
+
+.file-row-remove {
+    width: 2rem;
+    height: 2rem;
     display: flex;
-    justify-content: space-between;
-    gap: 8px;
+    flex-shrink: 0;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: var(--bit-clr-err);
+    background-color: transparent;
+    border-radius: var(--bit-shp-radius-button);
 
-    i {
-        display: block;
-        cursor: pointer;
+    &:hover {
+        background-color: var(--bit-clr-bg-ter);
     }
 
-    .remove-ico {
-        color: #F9423A;
-
-        &:hover {
-            color: #d32f2f;
-        }
+    &:focus-visible {
+        outline: 2px solid var(--bit-clr-pri-focus);
+        outline-offset: -2px;
     }
-}
-
-.file-info-e-msg {
-    margin-top: 12px;
-    color: #F9423A;
-}
-
-.file-list-footer {
-    font-size: 12px;
-    color: #78787D;
 }

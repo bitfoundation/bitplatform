@@ -21,22 +21,21 @@
         ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
         : (includeWasm ? AppRenderMode.Current : AppRenderMode.BlazorServer);
 
-    // The theme the visitor picked, mirrored into a cookie by the client (see PersistCookie below)
-    // because localStorage - where the client script keeps the same value - cannot be read from here.
-    // Without it every prerendered response painted a hardcoded dark, and anyone on light watched the
-    // whole page flip once the client came up.
-    var themePreference = HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName];
-    // Everything the document declares about its theme, in one call: bit-theme="<name>" for a
-    // concrete choice (tampered values are rejected and treated as "nothing stored"), or the
-    // bit-theme-system marker, which the inline script <BitThemeHead> emits resolves before first
-    // paint - plus the setup below. The same options object is what <BitThemeHead> is handed, so the
-    // two halves cannot disagree about which theme this response paints.
+    // Everything the document declares about its theme, in one call: the bit-theme-system marker,
+    // which the inline script <BitThemeHead> emits resolves before first paint - plus the setup
+    // below. The same options object is what <BitThemeHead> is handed, so the two halves cannot
+    // disagree about which theme this response paints.
+    // No persisted preference is handed in, deliberately: this markup is cached by the CDN in front of
+    // the site and served to every visitor, so it must not carry any one visitor's theme. Reading the
+    // preference cookie here once got one visitor's Material cached and painted for everyone after
+    // them. The visitor's choice lives in localStorage instead, which the inline script reads before
+    // first paint - so the page is still painted in the right theme, from markup that is the same for
+    // everyone.
     var themeOptions = new BitThemeSsrOptions
     {
-        // The client keeps the chosen theme in localStorage AND in the cookie read above, which is
-        // what lets the server render the right theme in the first place.
+        // The client keeps the chosen theme in localStorage only - no cookie mirror, since nothing
+        // on the server reads one (see above).
         Persist = true,
-        PersistCookie = true,
         // Theme toggles cross-fade via the View Transitions API (skipped automatically on
         // unsupported browsers / prefers-reduced-motion).
         ViewTransition = true,
@@ -46,12 +45,12 @@
         ThemeColorMeta = BitCss.Var.Color.Background.Primary.Main,
         // The site dresses in Fluent 2 by default, so the two names the OS-following resolution picks
         // between are the Fluent 2 pair rather than the core light / dark Fluent ones. A visitor who
-        // has already picked a design system in the header is painted from their cookie instead and
-        // never reaches this.
+        // has already picked a design system in the header is painted from their localStorage instead
+        // and never reaches this.
         LightTheme = BitThemePresets.Fluent2Light,
         DarkTheme = BitThemePresets.Fluent2Dark,
     };
-    var rootThemeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(themePreference, themeOptions);
+    var rootThemeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(null, themeOptions);
 }
 
 <!DOCTYPE html>
@@ -63,35 +62,29 @@
        falls out of that window is sniffed instead. *@
     <meta charset="utf-8" />
     @* First script in the document, and the whole of the theme's first paint: the inline script that
-       re-resolves bit-theme from localStorage / the preference cookie before anything is painted (the
-       attributes above are already correct for a visitor whose cookie reached us, so this is what
-       covers the rest - following the OS, which the server cannot read, and a localStorage value
-       newer than the cookie), and the theme-color meta tag the browser paints its chrome from, in the
-       surface color of the theme this response renders. Handed the same preference and options as the
-       attributes above. BitThemeSurfaces is the one table of every registered preset: the core
+       resolves bit-theme from localStorage - or, with nothing stored, from the OS - before anything
+       is painted, and the theme-color meta tag the browser paints its chrome from, corrected to the
+       theme the script resolved. Handed the same options as the attributes above, and likewise no
+       persisted preference. BitThemeSurfaces is the one table of every registered preset: the core
        Fluent family, plus the Fluent 2 / Material / Cupertino surfaces Bit.BlazorUI.Extras adds to
        it when its assembly loads - which AddBitBlazorUIExtrasServices has seen to by now. It is
        also the default, and is spelled out here only to show where the colors come from. *@
-    <BitThemeHead PersistedPreference="@themePreference"
-                  LightTheme="@themeOptions.LightTheme"
+    <BitThemeHead LightTheme="@themeOptions.LightTheme"
                   DarkTheme="@themeOptions.DarkTheme"
                   ThemeColors="@BitThemeSurfaces.BackgroundPrimary" />
     @* The accent counterpart of the script above, as one component: emits the inline script that,
-       before anything is painted, re-resolves bit-accent from localStorage / the accent cookie and
-       injects the palette snapshot the StoredCss strategy keeps in localStorage - which is what
-       keeps the accent correct even when this markup comes out of a cache (e.g. a CDN) that served
-       it to a visitor whose cookie never reached the server. Kept AFTER the theme script above: the
+       before anything is painted, re-resolves bit-accent from localStorage and injects the palette
+       snapshot the StoredCss strategy keeps there - which is what keeps the accent correct although
+       this markup comes out of the CDN's cache, the same for every visitor. Kept AFTER the theme script above: the
        snapshot's rules split on the bit-theme attribute that script sets, so painting must not
        start before it has run, which the parser guarantees for styles that come later in <head>.
        The configuration comes from the BitAccentColorConfig registered in DI (see
        AddClientSharedServices, which this server also runs) - the same one the app's
        AccentColorSwitcher chrome instances configure the shared service with (the snapshot only
        gets stored while the service runs StoredCss); this component only emits the matching head
-       half. PersistedAccent is the accent counterpart of the theme cookie read above: with the
-       StoredCss strategy it is what lets an origin-rendered response paint the accent itself,
-       instead of leaving the first paint to the snapshot the inline script above restores (which
-       only exists once the visitor has picked an accent on this device). *@
-    <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
+       half. No PersistedAccent, for the reason no theme preference is read above: markup painted
+       with one visitor's accent would be cached and served to everyone. *@
+    <BitAccentColorHead />
     <ResourcePreloader />
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />

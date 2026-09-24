@@ -35,6 +35,14 @@ public class BitThemeBoxShadows
     public string? S22 { get; set; }
     public string? S23 { get; set; }
     public string? S24 { get; set; }
+
+    /// <summary>
+    /// The focus ring drawn in the default focus color (<c>--bit-shd-focus-ring</c>). Replacing it re-shapes only the rings
+    /// that use that color: a control that draws its ring in a color of its own (an invalid input, a colored variant, or a
+    /// component's <c>--bit-&lt;Component&gt;-focus-color</c>) composes the two layers itself, since this composite substitutes
+    /// its <c>var()</c>s where it is declared. To restyle every ring, set <see cref="BitThemeShapes.FocusRingWidth"/>,
+    /// <see cref="BitThemeShapes.FocusRingOffset"/> and the <c>--bit-clr-*-focus</c> colors, which reach both.
+    /// </summary>
     public string? FocusRing { get; set; }
 
     /// <summary>The resting elevation of a card (<c>--bit-shd-card</c>).</summary>
