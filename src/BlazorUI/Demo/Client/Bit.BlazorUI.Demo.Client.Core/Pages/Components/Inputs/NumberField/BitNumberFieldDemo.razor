@@ -178,7 +178,9 @@
         <div>
             <b>TValue</b> accepts every .NET numeric type - byte, sbyte, short, ushort, int, uint, long, ulong, float, double
             and decimal - plus their nullable variants. Spinning clamps at the bounds of the type, so a byte never overflows
-            past 255, and the arithmetic runs in a type wide enough that no intermediate step can overflow either: a
+            past 255, and a number typed past the range of an integral type or decimal - 300 into a byte, 40000 into a
+            short - clamps there just as one typed outside an explicit Min/Max does. The
+            arithmetic runs in a type wide enough that no intermediate step can overflow either: a
             <b>ulong</b> keeps working past long.MaxValue and a <b>decimal</b> keeps its full precision.
             The type also picks the mobile keyboard - a decimal keypad for the fractional types, a numeric one for the rest.
             Neither offers a minus sign on every platform, so a field that must accept negative values on touch should ask for

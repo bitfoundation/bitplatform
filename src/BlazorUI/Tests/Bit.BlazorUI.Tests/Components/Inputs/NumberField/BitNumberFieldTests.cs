@@ -3145,4 +3145,209 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-nfl-aup").HasAttribute("autofocus"));
         Assert.IsFalse(component.Find(".bit-nfl-adn").HasAttribute("autofocus"));
     }
+
+    [TestMethod]
+    public void BitNumberFieldShouldClampTextThatOverflowsTheValueType()
+    {
+        // byte, sbyte, short, ushort, uint and ulong have no fast path in BindConverter, so their
+        // TypeConverter is what parses the text - and it THROWS on a number out of range instead of
+        // reporting a failure. A number typed past the end of the type's range is out of range like
+        // any other, so it clamps there rather than taking the field (or the app) down.
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (byte)5);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "300" });
+        Assert.AreEqual((byte)255, component.Instance.Value);
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "-5" });
+        Assert.AreEqual((byte)0, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldReportTextThatIsNotANumberOnATypeConverterType()
+    {
+        // The same converter throws for text that is no number at all, which must come back as the
+        // ordinary parse failure every other type reports: the value is left alone and the typed text
+        // stays in the input to be corrected.
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (byte)7);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "abc" });
+
+        Assert.AreEqual((byte)7, component.Instance.Value);
+        Assert.AreEqual("abc", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldNoClampShouldRejectTextThatDoesNotFitTheValueType()
+    {
+        // NoClamp asks for an out-of-range value to reach the validator instead of being corrected,
+        // but a number the type cannot hold cannot be handed to one either, so it stays a parse error.
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.NoClamp, true);
+            parameters.Add(p => p.DefaultValue, (byte)7);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "300" });
+
+        Assert.AreEqual((byte)7, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldReportTheValueInAriaValueNowForANonNullableType()
+    {
+        // AriaValueNow is a TValue?, which for a non-nullable TValue is that very type and so is never
+        // null: a null check would answer with its default - 0 - for every field not bound to a
+        // nullable type, whatever the field actually holds.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 42);
+        });
+
+        Assert.AreEqual("42", component.Find("input").GetAttribute("aria-valuenow"));
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "7" });
+
+        Assert.AreEqual("7", component.Find("input").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldImmediateShouldKeepTheTypedTextWhileItsCommitIsPending()
+    {
+        // The input's value is bound, so every render writes the component's value back into the
+        // element. While a DebounceTime waits the commit out that is still the value from before the
+        // keystroke, and writing it back would wipe what is being typed.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 3000);
+        });
+
+        component.Find("input").Focus();
+        component.Find("input").Input(new ChangeEventArgs { Value = "12" });
+
+        component.Render();
+
+        Assert.AreEqual("12", component.Find("input").GetAttribute("value"));
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldShowTheCommittedValueAgainOnceTheFieldIsLeft()
+    {
+        // ... and the text kept visible for that pending commit is history the moment the field is
+        // left, where the committed (and possibly formatted) value is what must show.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 3000);
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        component.Find("input").Focus();
+        component.Find("input").Input(new ChangeEventArgs { Value = "12" });
+        component.Find("input").FocusOut();
+
+        Assert.AreEqual("5", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldClampTextThatOverflowsAFastPathType()
+    {
+        // short, int and long go through BindConverter's fast paths, which report an overflow as a
+        // plain false rather than throwing - they must clamp exactly like the TypeConverter-backed types.
+        var component = RenderComponent<BitNumberField<short>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (short)5);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "40000" });
+        Assert.AreEqual(short.MaxValue, component.Instance.Value);
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "-40000" });
+        Assert.AreEqual(short.MinValue, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldClampOverflowingTextThatCarriesDigitGroupSpaces()
+    {
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (byte)5);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "3 000" });
+
+        Assert.AreEqual((byte)255, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldStillRejectAFractionInsideTheRangeOfAnIntegralType()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "1.5" });
+
+        Assert.AreEqual(5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldImmediateShouldCommitThePendingTypedTextBeforeAStep()
+    {
+        // Text typed in Immediate mode whose DebounceTime has not run out yet is what the input shows,
+        // and a step taken meanwhile applies to it - and is not undone when the debounce fires later.
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("12");
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 200);
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        var input = component.Find("input");
+        input.Focus();
+        input.Input(new ChangeEventArgs { Value = "12" });
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.AreEqual(13, component.Instance.Value);
+
+        await Task.Delay(500);
+
+        Assert.AreEqual(13, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldCommitRetypedTextThatMatchesTheValueBeforeTheLastStep()
+    {
+        // After a step has rendered, text the user types is theirs even when it happens to equal what
+        // the input showed before that step.
+        var liveValue = Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true);
+        liveValue.SetResult("5");
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        var input = component.Find("input");
+        input.Focus();
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.AreEqual(6, component.Instance.Value);
+
+        // the user retypes "5" (no event is raised for it outside the Immediate mode) and steps again
+        liveValue.SetResult("5");
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.AreEqual(6, component.Instance.Value);
+    }
 }

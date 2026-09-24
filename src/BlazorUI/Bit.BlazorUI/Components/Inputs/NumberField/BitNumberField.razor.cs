@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -41,6 +41,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private readonly TValue _zeroValue;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
+    private bool _isSpinButtonPressed;
+    private bool _isSelfValueChangePending;
+    private string? _uncommittedImmediateText;
+    private int _selfValueChangeVersion;
     private CancellationTokenSource _continuousChangeValueCts = new();
 
 
@@ -891,6 +895,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        // A step the component took itself has reached the input by now, so reading the live text is
+        // meaningful again (see CommitPendingInputValue).
+        _isSelfValueChangePending = false;
+
         await RegisterPreventKeys();
     }
 
@@ -994,7 +1002,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // that branch always parses invariant; the plain text is parsed in the culture it was written in.
         var parseCulture = NumberFormat is null ? ValueCulture : CultureInfo.InvariantCulture;
 
-        if (BindConverter.TryConvertTo(value, parseCulture, out result) is false)
+        if (TryConvertToValue(value, parseCulture, out result) is false)
         {
             // A number carrying whitespace between its digit groups ("1 234", or the non-breaking and
             // narrow no-break spaces that spreadsheets and web pages use for grouping) is a perfectly
@@ -1003,12 +1011,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // is not a plain number starts parsing, and no separator whose meaning differs per culture
             // is reinterpreted.
             var unspaced = RemoveWhiteSpace(value);
-            if (string.Equals(unspaced, value, StringComparison.Ordinal) ||
-                unspaced.HasNoValue() ||
-                BindConverter.TryConvertTo(unspaced, parseCulture, out result) is false)
+            var canRetryUnspaced = string.Equals(unspaced, value, StringComparison.Ordinal) is false && unspaced.HasValue();
+            if (canRetryUnspaced is false || TryConvertToValue(unspaced, parseCulture, out result) is false)
             {
-                parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
-                return false;
+                // A number too large or too small for the value type is clamped to the end of its range
+                // it ran past, exactly as a number outside an explicit Min/Max is - the type's own range
+                // is the bound the field can never let the value escape. NoClamp is what asks for an
+                // out-of-range value to be reported instead, and a value that does not fit the type
+                // cannot be handed to a validator either, so there it stays a parse error.
+                if (NoClamp || TryGetTypeBoundOf(canRetryUnspaced ? unspaced : value, parseCulture, out result!) is false)
+                {
+                    parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+                    return false;
+                }
             }
         }
 
@@ -1142,7 +1157,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private string? GetAriaValueNow()
     {
-        var value = AriaValueNow ?? CurrentValue;
+        // AriaValueNow is a TValue?, which for a non-nullable TValue (int, double, ...) is that very
+        // type and so is never null. Falling back on a null check would therefore answer with its
+        // default - 0 - for every field not bound to a nullable type, making aria-valuenow report zero
+        // no matter what the field holds. Whether the parameter was given at all is the real question.
+        var value = HasNotBeenSet(nameof(AriaValueNow)) ? CurrentValue : AriaValueNow;
 
         return value is null ? null : BindConverter.FormatValue(value, CultureInfo.InvariantCulture)?.ToString();
     }
@@ -1186,6 +1205,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// still corresponds to the current value; otherwise the regular formatted value is used.
     /// </summary>
     private string? GetDisplayValueAsString()
+    {
+        // Text typed but not committed yet (Immediate with a DebounceTime/ThrottleTime) is what the
+        // input is showing, and what every render has to keep showing until its commit lands.
+        if (_uncommittedImmediateText is not null && _hasFocus) return _uncommittedImmediateText;
+
+        return GetCommittedDisplayValueAsString();
+    }
+
+    /// <summary>
+    /// The text of the committed value, which is what the input shows whenever nothing typed is
+    /// waiting on its commit (see <see cref="GetDisplayValueAsString"/>).
+    /// </summary>
+    private string? GetCommittedDisplayValueAsString()
     {
         if (_displayValue is not null
             && NumberFormat is null
@@ -1409,6 +1441,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (Immediate)
         {
+            // The input's value is bound, so every render of this component writes the value the
+            // component holds back into the element. While a DebounceTime or ThrottleTime waits the
+            // commit out, that is still the value from before the keystroke - and writing it back
+            // wipes what is being typed, leaving only what was typed since the last render. Keeping
+            // the text until its own commit lands makes those renders write back exactly what the
+            // user has in front of them.
+            _uncommittedImmediateText = value;
+
             await HandleOnStringValueInputAsync(args);
         }
         else
@@ -1619,9 +1659,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         ClearPreservedDisplayValue();
 
+        _uncommittedImmediateText = null;
+
         var previous = CurrentValue;
 
         CurrentValue = CheckMinAndMax(bound);
+
+        _selfValueChangeVersion++;
+        _isSelfValueChangePending = true;
 
         StateHasChanged();
 
@@ -1647,6 +1692,22 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
     /// <summary>
+    /// Commits the text of an input or change event, which is where the text kept visible for a
+    /// pending commit (see <see cref="HandleOnStringValueSet"/>) stops being needed. A commit
+    /// carrying older text than what has been typed since leaves it in place, so those newer
+    /// keystrokes are not wiped by the render this commit causes.
+    /// </summary>
+    protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
+    {
+        if (string.Equals(e.Value?.ToString(), _uncommittedImmediateText, StringComparison.Ordinal))
+        {
+            _uncommittedImmediateText = null;
+        }
+
+        await base.HandleOnStringValueChangeAsync(e);
+    }
+
+    /// <summary>
     /// Commits the text currently sitting in the input element before a step is applied. Without the
     /// Immediate mode, typed text only commits on blur/Enter, so stepping right after typing would
     /// otherwise apply to the stale previous value instead of what the user currently sees.
@@ -1655,6 +1716,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private async Task CommitPendingInputValue()
     {
+        // A step this component has just taken may not be on screen yet: the render that carries it is
+        // a round trip of its own in a Server circuit. The text read back here would then be the value
+        // from BEFORE that step, and committing it would undo it - a user spinning with the arrow keys
+        // (or the buttons) faster than that round trip would silently lose steps. Nothing can have been
+        // typed in that gap either, so the read waits until the step has been rendered.
+        if (_isSelfValueChangePending) return;
+
+        // Reading the input is a round trip of its own, and the component can step again while it is
+        // in flight (each key arrives as its own event). A read that overlaps a step of this component
+        // describes a value that is already out of date, so it is discarded rather than committed.
+        var version = _selfValueChangeVersion;
+
         string? liveValue = null;
         try
         {
@@ -1664,10 +1737,20 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         catch (InvalidOperationException) { } // JS interop is unavailable during prerendering
         catch (JSException) { } // the element is gone or the property read failed, the last committed value is used
 
-        if (liveValue.HasValue() && string.Equals(liveValue, GetDisplayValueAsString(), StringComparison.Ordinal) is false)
-        {
-            await SetCurrentValueAsStringAsync(liveValue);
-        }
+        if (liveValue.HasNoValue() || version != _selfValueChangeVersion) return;
+
+        // Compared against the COMMITTED value's text, not what the input is kept showing: text typed
+        // in Immediate mode whose DebounceTime/ThrottleTime has not run out yet is exactly what the
+        // input shows, and it is the very text that has to be committed before the step applies.
+        if (string.Equals(liveValue, GetCommittedDisplayValueAsString(), StringComparison.Ordinal)) return;
+
+        _uncommittedImmediateText = null;
+
+        // Committed here and now, the text must not be committed a second time when the pending
+        // debounce/throttle fires - that would overwrite the step about to be applied on top of it.
+        ResetInputRateLimiter();
+
+        await SetCurrentValueAsStringAsync(liveValue);
     }
 
     private async Task HandleOnBlur(FocusEventArgs e)
@@ -1694,6 +1777,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         if (IsEnabled is false) return;
 
         _hasFocus = false;
+
+        _uncommittedImmediateText = null;
 
         // The text kept visible only to keep the caret usable while typing (Immediate mode) has served
         // its purpose; leaving the field is the commit point where the canonical value must show.
@@ -1726,6 +1811,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task HandleOnPointerDown(bool isIncrement)
     {
         if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+
+        // The release is what ends the press, and it can arrive before this handler is done: everything
+        // below awaits at least one interop round trip, and the pointerup event is dispatched in that
+        // gap. Recording the press here - and clearing it in HandleOnPointerUpOrOut - is what lets the
+        // continuous spin below see a release that has already happened. Without it a quick click
+        // cancels a token source that is then replaced by a fresh one, leaving a spin nothing can stop.
+        _isSpinButtonPressed = true;
 
         // Focus belongs on the input: it is the element carrying the spinbutton role and its value, so
         // keeping it focused is what lets a screen reader announce each change and lets the user carry
@@ -1762,6 +1854,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (IsDisposed) return;
 
+        // A click short enough to be released while the awaits above were pending is over: the single
+        // step it asked for has been taken and there is nothing left to hold down.
+        if (_isSpinButtonPressed is false) return;
+
         ResetCts();
 
         // The press-and-hold spin is deliberately not awaited: it lives as long as the button is held,
@@ -1789,6 +1885,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void HandleOnPointerUpOrOut()
     {
+        _isSpinButtonPressed = false;
+
         ResetCts();
     }
 
@@ -1840,6 +1938,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task ClearValue()
     {
         ClearPreservedDisplayValue();
+
+        _uncommittedImmediateText = null;
 
         await HandleOnStringValueChangeAsync(new() { Value = string.Empty });
     }
@@ -1981,7 +2081,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // user-typed display text is no longer relevant and the formatted value should be shown.
         ClearPreservedDisplayValue();
 
+        _uncommittedImmediateText = null;
+
         CurrentValue = result;
+
+        // The new value only reaches the input with the render below, which is what
+        // CommitPendingInputValue waits for before trusting the text it reads back.
+        _selfValueChangeVersion++;
+        _isSelfValueChangePending = true;
 
         StateHasChanged();
 
@@ -1995,6 +2102,75 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _continuousChangeValueCts?.Cancel();
         _continuousChangeValueCts?.Dispose();
         _continuousChangeValueCts = new();
+    }
+
+    /// <summary>
+    /// Converts a string into the value type, reporting a failure rather than raising one.
+    /// <see cref="BindConverter"/> only has a fast path for a handful of types (short, int, long,
+    /// float, double, decimal, ...); every other one - byte, sbyte, ushort, uint and ulong - goes
+    /// through the type's <see cref="System.ComponentModel.TypeConverter"/>, which THROWS on text it
+    /// cannot convert instead of returning false. Left to escape, that exception is raised while the
+    /// component is rendering, which takes the whole field (and, without an error boundary around it,
+    /// the app) down over nothing worse than a number typed into a field.
+    /// </summary>
+    private static bool TryConvertToValue(string? value, CultureInfo culture, out TValue? result)
+    {
+        try
+        {
+            return BindConverter.TryConvertTo(value, culture, out result);
+        }
+        catch (Exception)
+        {
+            result = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// The value a number that does not fit the type at all commits to: the end of the type's range it
+    /// ran past. Typing 300 into a byte field is the same kind of out-of-range input as typing 300 into
+    /// a field with Max=255, so it clamps the same way rather than being rejected as unreadable.
+    /// The number is compared against the range itself rather than inferred from how the conversion
+    /// failed: the fast paths of <see cref="BindConverter"/> (short, int, long) report an overflow as a
+    /// plain false, indistinguishable from text that is not a number, while the TypeConverter-backed
+    /// types throw. Text that failed for another reason (a fraction typed into an integral field) is
+    /// inside the range, so it is still reported as unparsable.
+    /// </summary>
+    private bool TryGetTypeBoundOf(string? value, CultureInfo culture, out TValue result)
+    {
+        result = default!;
+
+        // float and double read a number past their range as infinity instead of failing, so only the
+        // integral types and decimal can be overflowed by what is typed.
+        if (_typeOfValue == typeof(float) || _typeOfValue == typeof(double)) return false;
+
+        const NumberStyles styles = NumberStyles.Float | NumberStyles.AllowThousands;
+
+        var max = GetTypeMaxValue();
+        var min = GetTypeMinValue();
+
+        bool isAbove, isBelow;
+        if (decimal.TryParse(value, styles, culture, out var number))
+        {
+            isAbove = number > Convert.ToDecimal(max, CultureInfo.InvariantCulture);
+            isBelow = number < Convert.ToDecimal(min, CultureInfo.InvariantCulture);
+        }
+        else if (double.TryParse(value, styles, culture, out var huge) && double.IsFinite(huge))
+        {
+            // Beyond decimal's range, which is beyond the range of every type handled here.
+            isAbove = huge > 0;
+            isBelow = huge < 0;
+        }
+        else
+        {
+            return false;
+        }
+
+        if (isAbove is false && isBelow is false) return false;
+
+        result = isAbove ? max : min;
+
+        return true;
     }
 
     private TValue GetTypeMaxValue()
@@ -2227,7 +2403,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     internal void OnSetMin()
     {
         var min = CleanValue(NormalizeNumericParameter(Min));
-        if (BindConverter.TryConvertTo(min, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        if (TryConvertToValue(min, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
             _min = result;
             _hasExplicitMin = true;
@@ -2245,7 +2421,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     internal void OnSetMax()
     {
         var max = CleanValue(NormalizeNumericParameter(Max));
-        if (BindConverter.TryConvertTo(max, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        if (TryConvertToValue(max, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
             _max = result;
             _hasExplicitMax = true;
@@ -2260,7 +2436,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     internal void OnSetStep()
     {
         var step = CleanValue(NormalizeNumericParameter(Step));
-        if (BindConverter.TryConvertTo(step, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        if (TryConvertToValue(step, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
             _step = result;
         }
@@ -2280,7 +2456,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     internal void OnSetPageStep()
     {
         var pageStep = CleanValue(NormalizeNumericParameter(PageStep));
-        if (BindConverter.TryConvertTo(pageStep, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        if (TryConvertToValue(pageStep, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
             _pageStep = result;
             _hasPageStep = true;
