@@ -3,14 +3,15 @@
 @import "../../../Styles/color-role-maps.scss";
 
 // Public CSS variables, read off the element and never declared here, so a value set on :root re-skins every
-// DatePicker. A DatePicker is two elements rather than one - the field and the callout, which is rendered
-// outside of the root and reparented to the body while it is open - so an override meant for a single
-// instance goes on Style for the field and on Styles.Callout for the calendar inside the callout; one set on
-// :root or on a shared ancestor reaches both.
+// DatePicker. The callout is rendered outside of the root and reparented to the body while it is open, so it
+// inherits nothing of an ancestor; the component copies the --bit-DatePicker-* declarations of Style and
+// Styles.Root onto it instead, so one Style restyles the field and its calendar together (Styles.Callout is
+// applied after the copy and wins).
 //
 // The field:
 //   --bit-DatePicker-label-color             text color of the label                        (default: $clr-fg-pri)
 //   --bit-DatePicker-label-font-size         text size of the label                         (default: per Size)
+//   --bit-DatePicker-required-color          color of the asterisk of a required label      (default: $clr-req)
 //   --bit-DatePicker-input-height            height of the field                            (default: per Size)
 //   --bit-DatePicker-input-font-size         text size of the field                         (default: per Size)
 //   --bit-DatePicker-input-color             text color of the field                        (default: $clr-fg-pri)
@@ -21,8 +22,14 @@
 //                                            focus ring                                    (default: $shp-radius-control)
 //   --bit-DatePicker-input-padding           inline padding of the field                    (default: 0 spacing(1))
 //   --bit-DatePicker-icon-color              color of the calendar and clear icons          (default: $clr-fg-sec)
+//   --bit-DatePicker-icon-size               size of the calendar icon in the field         (default: per Size)
 //   --bit-DatePicker-focus-color             color of every focus ring the component draws  (default: the role's focus color)
 //   --bit-DatePicker-disabled-color          text color of anything disabled                (default: $clr-fg-dis)
+//   --bit-DatePicker-invalid-color           border of an invalid field, and the error
+//                                            message below it                               (default: $clr-err)
+//   --bit-DatePicker-description-color       text color of the description                  (default: $clr-fg-sec)
+//   --bit-DatePicker-description-font-size   text size of the description and of the
+//                                            error message                                  (default: $tg-fs-2xs)
 //
 // The callout and the pickers inside it:
 //   --bit-DatePicker-callout-background      background of the callout                      (default: $clr-bg-pri)
@@ -69,6 +76,7 @@
 @mixin dtp-size-medium {
     --bit-dtp-inp-h-def: #{$siz-ctrl-md};
     --bit-dtp-inp-fs-def: #{$tg-fs-sm};
+    --bit-dtp-ico-fs-def: #{$siz-icon-md};
     --bit-dtp-cell-size-def: #{spacing(3.5)};
     --bit-dtp-cell-fs-def: #{$tg-fs-xs};
     --bit-dtp-lbl-fs-def: #{$tg-fs-sm};
@@ -86,6 +94,7 @@
 @mixin dtp-size-resolution {
     --bit-dtp-inp-h: var(--bit-DatePicker-input-height, var(--bit-dtp-inp-h-def));
     --bit-dtp-inp-fs: var(--bit-DatePicker-input-font-size, var(--bit-dtp-inp-fs-def));
+    --bit-dtp-ico-fs: var(--bit-DatePicker-icon-size, var(--bit-dtp-ico-fs-def));
     --bit-dtp-cell-size: var(--bit-DatePicker-day-size, var(--bit-dtp-cell-size-def));
     --bit-dtp-cell-fs: var(--bit-DatePicker-day-font-size, var(--bit-dtp-cell-fs-def));
     --bit-dtp-lbl-fs: var(--bit-DatePicker-label-font-size, var(--bit-dtp-lbl-fs-def));
@@ -143,13 +152,13 @@
 
     &.bit-inv {
         .bit-dtp-icn {
-            border-color: $clr-err;
+            border-color: var(--bit-DatePicker-invalid-color, #{$clr-err});
         }
 
         &.bit-dtp-und .bit-dtp-wrp {
             // Underlined variant drops the icon border, so surface the error cue on the
             // underline itself to keep the invalid state visible before focus.
-            border-bottom-color: $clr-err;
+            border-bottom-color: var(--bit-DatePicker-invalid-color, #{$clr-err});
         }
 
         // The focus ring follows the border into the error color, so a keyboard user is not shown two
@@ -187,6 +196,32 @@
     position: relative;
 }
 
+// The rejection is colored like the border of the field it sits under, so the two follow one variable, and
+// it keeps that color while the picker is disabled: a message gone grey stops reading as the reason.
+.bit-dtp-erm {
+    display: block;
+    overflow-wrap: break-word;
+    padding-top: spacing(0.5);
+    font-size: var(--bit-DatePicker-description-font-size, #{$tg-fs-2xs});
+    color: var(--bit-DatePicker-invalid-color, #{$clr-err});
+
+    span {
+        color: inherit;
+    }
+}
+
+.bit-dtp-des {
+    display: block;
+    padding-top: spacing(0.5);
+}
+
+// The default description text only: a DescriptionTemplate renders markup the component knows nothing about.
+.bit-dtp-dtx {
+    overflow-wrap: break-word;
+    color: var(--bit-DatePicker-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-DatePicker-description-font-size, #{$tg-fs-2xs});
+}
+
 .bit-dtp-icn {
     margin: 0;
     display: flex;
@@ -207,6 +242,7 @@
 .bit-dtp-ico {
     padding: 0;
     cursor: pointer;
+    font-size: var(--bit-dtp-ico-fs);
     color: var(--bit-DatePicker-icon-color, #{$clr-fg-sec});
 }
 
@@ -858,10 +894,14 @@
     }
 }
 
+// The two halves of the day are labelled buttons, so they carry the tracking and the case a design system
+// gives the label of an interactive control.
 .bit-dtp-bam,
 .bit-dtp-bpm {
     font-size: var(--bit-dtp-cell-fs);
     font-weight: $tg-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 }
 
 .bit-dtp-bns {
@@ -945,7 +985,7 @@
 .bit-dtp-req {
     .bit-dtp-lbl::after {
         content: "*";
-        color: $clr-req;
+        color: var(--bit-DatePicker-required-color, #{$clr-req});
         margin-inline-start: spacing(0.625);
     }
 }
@@ -1099,6 +1139,7 @@
 .bit-dtp-sm {
     --bit-dtp-inp-h-def: #{$siz-ctrl-sm};
     --bit-dtp-inp-fs-def: #{$tg-fs-xs};
+    --bit-dtp-ico-fs-def: #{$siz-icon-sm};
     --bit-dtp-cell-size-def: #{spacing(3)};
     --bit-dtp-cell-fs-def: #{$tg-fs-xs};
     --bit-dtp-lbl-fs-def: #{$tg-fs-xs};
@@ -1117,6 +1158,7 @@
 .bit-dtp-lg {
     --bit-dtp-inp-h-def: #{$siz-ctrl-lg};
     --bit-dtp-inp-fs-def: #{$tg-fs-md};
+    --bit-dtp-ico-fs-def: #{$siz-icon-lg};
     --bit-dtp-cell-size-def: #{spacing(4.25)};
     --bit-dtp-cell-fs-def: #{$tg-fs-sm};
     --bit-dtp-lbl-fs-def: #{$tg-fs-md};

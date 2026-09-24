@@ -53,6 +53,12 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     public bool? AllowTextInput { get; set; }
 
     /// <summary>
+    /// Detailed description of the DatePicker for the benefit of screen readers, read after
+    /// <see cref="Description"/>.
+    /// </summary>
+    public string? AriaDescription { get; set; }
+
+    /// <summary>
     /// Whether the DatePicker closes automatically after selecting the date.
     /// It has no effect while the time picker is shown, where the callout stays open so the time of the
     /// selected day can be set as well.
@@ -164,6 +170,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     /// Custom template to render the day cells of the DatePicker.
     /// </summary>
     public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
+
+    /// <summary>
+    /// The helper text rendered below the DatePicker, also tied to its input as its accessible description.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// The custom template for the description of the DatePicker, which replaces <see cref="Description"/>.
+    /// </summary>
+    public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
     /// The custom validation error message for a typed value that the DatePicker does not allow to be
@@ -857,6 +873,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.AllowTextInput = AllowTextInput.Value;
         }
 
+        if (AriaDescription.HasValue() && bitDatePicker.HasNotBeenSet(nameof(AriaDescription)))
+        {
+            bitDatePicker.AriaDescription = AriaDescription;
+        }
+
         if (AutoClose.HasValue && bitDatePicker.HasNotBeenSet(nameof(AutoClose)))
         {
             bitDatePicker.AutoClose = AutoClose.Value;
@@ -963,6 +984,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         if (DayCellTemplate is not null && bitDatePicker.HasNotBeenSet(nameof(DayCellTemplate)))
         {
             bitDatePicker.DayCellTemplate = DayCellTemplate;
+        }
+
+        if (Description.HasValue() && bitDatePicker.HasNotBeenSet(nameof(Description)))
+        {
+            bitDatePicker.Description = Description;
+        }
+
+        if (DescriptionTemplate is not null && bitDatePicker.HasNotBeenSet(nameof(DescriptionTemplate)))
+        {
+            bitDatePicker.DescriptionTemplate = DescriptionTemplate;
         }
 
         if (DisabledDateErrorMessage.HasValue() && bitDatePicker.HasNotBeenSet(nameof(DisabledDateErrorMessage)))

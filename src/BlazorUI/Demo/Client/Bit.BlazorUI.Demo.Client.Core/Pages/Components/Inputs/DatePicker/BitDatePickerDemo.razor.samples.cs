@@ -236,33 +236,37 @@ private DateTimeOffset? timeZoneDate2;";
                HighlightSelectedMonth />";
 
     private readonly string example13RazorCode = @"
-<BitDatePicker Label=""Basic MonthPicker""
-               Placeholder=""Select a month""
-               Mode=""BitDatePickerMode.MonthPicker"" />
-
 <BitDatePicker @bind-Value=""monthPickerDate""
+               Label=""MonthPicker""
                Placeholder=""Select a month""
-               Label=""MonthPicker with binding""
                Mode=""BitDatePickerMode.MonthPicker"" />
-<div>Selected Date: @(monthPickerDate?.ToString(""yyyy/MM/dd HH:mm:ss"") ?? ""None"")</div>
+<div>Selected date: @(monthPickerDate?.ToString(""yyyy/MM/dd"") ?? ""None"")</div>
 
-<BitDatePicker Placeholder=""Select a month""
-               Label=""MonthPicker with Min/Max""
-               Mode=""BitDatePickerMode.MonthPicker""
-               MaxDate=""DateTimeOffset.Now.AddMonths(6)""
-               MinDate=""DateTimeOffset.Now.AddMonths(-6)"" />
-
-<BitDatePicker HighlightCurrentMonth
-               HighlightSelectedMonth
+<BitDatePicker Label=""MonthPicker with Min/Max and highlighting""
                Placeholder=""Select a month""
                Mode=""BitDatePickerMode.MonthPicker""
-               Label=""MonthPicker with highlighting"" />
+               HighlightCurrentMonth
+               HighlightSelectedMonth
+               MinDate=""DateTimeOffset.Now.AddMonths(-6)""
+               MaxDate=""DateTimeOffset.Now.AddMonths(6)"" />
+
+<BitDatePicker @bind-Value=""yearPickerDate""
+               Label=""YearPicker (year of birth)""
+               Placeholder=""Select a year""
+               Mode=""BitDatePickerMode.YearPicker""
+               DisableFuture />
+<div>Selected date: @(yearPickerDate?.ToString(""yyyy/MM/dd"") ?? ""None"")</div>
 
 <BitDatePicker Standalone
                Label=""Standalone MonthPicker""
-               Mode=""BitDatePickerMode.MonthPicker"" />";
+               Mode=""BitDatePickerMode.MonthPicker"" />
+
+<BitDatePicker Standalone
+               Label=""Standalone YearPicker""
+               Mode=""BitDatePickerMode.YearPicker"" />";
     private readonly string example13CsharpCode = @"
-private DateTimeOffset? monthPickerDate;";
+private DateTimeOffset? monthPickerDate;
+private DateTimeOffset? yearPickerDate;";
 
     private readonly string example14RazorCode = @"
 <BitDatePicker Label=""Basic"" ReadOnly @bind-Value=""readOnlyDate"" />
@@ -438,7 +442,7 @@ private int closeCount;";
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitDatePicker @bind-Value=""validationModel.Date"" />
+    <BitDatePicker Label=""Required date"" @bind-Value=""validationModel.Date"" />
     <ValidationMessage For=""@(() => validationModel.Date)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
@@ -446,7 +450,23 @@ private int closeCount;";
                OnClick=""() => { validationModel = new(); SuccessMessage = string.Empty; }"">
         Reset
     </BitButton>
-</EditForm>";
+</EditForm>
+
+@if (string.IsNullOrEmpty(SuccessMessage) is false)
+{
+    <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
+}
+
+
+<BitDatePicker Label=""Appointment""
+               Description=""Pick a weekday - we are closed on weekends.""
+               ErrorMessage=""@appointmentError""
+               OnChange=""CheckAppointment"" />
+
+<BitDatePicker Label=""Invalid""
+               Invalid
+               Description=""Marked invalid by the app.""
+               AriaDescription=""Dates are stored in UTC."" />";
     private readonly string example19CsharpCode = @"
 public class BitDatePickerValidationModel
 {
@@ -457,8 +477,28 @@ public class BitDatePickerValidationModel
 private string SuccessMessage = string.Empty;
 private BitDatePickerValidationModel validationModel = new();
 
-private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
+private async Task HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}
+
+private string? appointmentError;
+
+// Stands in for a check only the server can make.
+private void CheckAppointment(DateTimeOffset? date)
+{
+    appointmentError = date?.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+        ? ""We are closed on weekends - pick a weekday.""
+        : null;
+}";
 
     private readonly string example20RazorCode = @"
 <BitDatePicker @ref=""programmaticPicker"" @bind-IsOpen=""isCalloutOpen"" Label=""Controlled callout"" />
@@ -493,14 +533,13 @@ private BitDatePicker? programmaticPicker;";
                Style=""--bit-DatePicker-input-radius: 1rem;
                       --bit-DatePicker-input-border-color: mediumpurple;
                       --bit-DatePicker-icon-color: mediumpurple;
-                      --bit-DatePicker-focus-color: mediumpurple;""
-               Styles=""@(new() { Callout = ""--bit-DatePicker-callout-radius: 1rem;"" +
-                                            ""--bit-DatePicker-day-radius: 0.5rem;"" +
-                                            ""--bit-DatePicker-today-radius: 0.5rem;"" +
-                                            ""--bit-DatePicker-today-background: mediumpurple;"" +
-                                            ""--bit-DatePicker-selected-background: #ede7f6;"" +
-                                            ""--bit-DatePicker-highlighted-background: #d1c4e9;"" +
-                                            ""--bit-DatePicker-focus-color: mediumpurple;"" })"" />
+                      --bit-DatePicker-focus-color: mediumpurple;
+                      --bit-DatePicker-callout-radius: 1rem;
+                      --bit-DatePicker-day-radius: 0.5rem;
+                      --bit-DatePicker-today-radius: 0.5rem;
+                      --bit-DatePicker-today-background: mediumpurple;
+                      --bit-DatePicker-selected-background: #ede7f6;
+                      --bit-DatePicker-highlighted-background: #d1c4e9;"" />
 
 <BitDatePicker Label=""Roomier calendar, same field""
                ShowTimePicker

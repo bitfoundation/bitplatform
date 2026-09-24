@@ -68,7 +68,8 @@
                        readonly=@(AllowTextInput is false || ReadOnly)
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _dialogId : null)"
-                       aria-describedby="@(formatDescription.HasValue() ? _formatHintId : GetSplattedInputAttribute("aria-describedby"))"
+                       aria-describedby="@GetDescribedBy(formatDescription)"
+                       aria-invalid="@(HasError ? "true" : GetSplattedInputAttribute("aria-invalid"))"
                        aria-labelledby="@((LabelTemplate is not null || Label.HasValue()) ? _labelId : null)"
                        style="@Styles?.Input"
                        class="bit-dtp-inp@(AllowTextInput ? " bit-dtp-ein" : null) @Classes?.Input" />
@@ -126,12 +127,22 @@
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
+    @if (Standalone is false)
+    {
+        @RenderMessages()
+    }
+
+    @* The rejection the app asserted is announced the moment it shows up. The region is always rendered,
+       since a live region has to be in the accessibility tree before its text changes to be heard; text
+       only, never ErrorMessageTemplate, which is arbitrary markup meant to be seen. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-dtp-sdt">@ErrorMessage</div>
+
 </div>
 
 @if (Standalone is false)
 {
     <div @onclick="CloseCallout"
-         style="display:@(IsOpen ? "block;" : "none;") @Styles?.Overlay"
+         style="@GetOverlayStyles()"
          id="@_overlayId"
      class="bit-dtp-ovl @Classes?.Overlay"></div>
 }
@@ -142,7 +153,7 @@
 <div id="@_calloutId"
      @onkeydown="HandleOnCalloutKeyDown"
      dir="@Dir?.ToString().ToLower()"
-     style="@Styles?.Callout"
+     style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()">
     @* The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
        off and the focus is held inside it; standalone it is a group of controls that is part of the page like
@@ -152,6 +163,7 @@
          id="@_dialogId"
          role="@(Standalone ? "group" : "dialog")"
          aria-modal="@(Standalone ? null : "true")"
+         aria-describedby="@(Standalone ? GetDescribedBy(null) : null)"
          @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
         @if (CalloutHeaderTemplate is not null)
         {
@@ -168,7 +180,7 @@
                 var today = GetToday();
                 var todayYear = _culture.Calendar.GetYear(today);
                 var todayMonth = _culture.Calendar.GetMonth(today);
-                var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
+                var showTimePicker = ShowTimePickerInternal && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
             }
 
             @if (ShowDayPicker())
@@ -416,7 +428,7 @@
                 }
 
                 <div style="@Styles?.YearMonthPickerWrapper" class="bit-dtp-mwp @Classes?.YearMonthPickerWrapper">
-                    @if (_showMonthPicker)
+                    @if (ShowMonthGrid)
                     {
                         var prevDisabled = IsEnabled is false || CanChangeYear(false) is false;
                         var nextDisabled = IsEnabled is false || CanChangeYear(true) is false;
@@ -479,7 +491,7 @@
                                        style="@Styles?.NextYearNavIcon"
                                        class="bit-dtp-cic @nextYearNavIconCss @Classes?.NextYearNavIcon" />
                                 </button>
-                                @if (_showTimePickerAsOverlayInternal && ShowTimePicker)
+                                @if (_showTimePickerAsOverlayInternal && ShowTimePickerInternal)
                                 {
                                     <button @onclick="@ToggleTimePickerOverlay"
                                             tabindex="0"
@@ -512,8 +524,10 @@
                                         if (month > monthsInYear) continue;
 
                                         var monthName = _culture.DateTimeFormat.GetMonthName(month);
-                                        var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
-                                        var selected = month == _currentMonth;
+                                        var disabled = IsEnabled is false || IsMonthDisabled(month);
+                                        @* In the MonthPicker mode a month is selected by the value; beside the day
+                                           picker the month grid navigates, and the month on display is its selection. *@
+                                        var selected = Mode == BitDatePickerMode.MonthPicker ? IsSelectedMonth(month) : month == _currentMonth;
                                         <button @onclick="async () => await SelectMonth(month)"
                                                 @onkeydown="e => HandleMonthKeyDown(e, month)"
                                                 type="button"
@@ -550,18 +564,31 @@
                         var prevTitle = string.Format(GoToPrevYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1);
                         var nextTitle = string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12);
                         <div style="@Styles?.YearPickerHeader" class="bit-dtp-pkh @Classes?.YearPickerHeader">
-                            <button @onclick="ToggleBetweenMonthAndYearPicker"
-                                    type="button"
-                                    aria-atomic="true"
-                                    aria-live="polite"
-                                    title="@toggleTitle"
-                                    aria-label="@toggleTitle"
-                                    disabled="@(IsEnabled is false)"
-                                    aria-disabled="@(IsEnabled is false ? "true" : null)"
-                                    style="@Styles?.MonthPickerToggleButton"
-                                    class="bit-dtp-ptb @Classes?.MonthPickerToggleButton">
-                                @_yearPickerStartYear - @_yearPickerEndYear
-                            </button>
+                            @if (Mode == BitDatePickerMode.YearPicker)
+                            {
+                                @* The year grid is all a YearPicker has, so its title has nothing to toggle to. *@
+                                <div style="@Styles?.MonthPickerToggleButton"
+                                     class="bit-dtp-pkt @Classes?.MonthPickerToggleButton"
+                                     aria-live="polite"
+                                     aria-atomic="true">
+                                    @_yearPickerStartYear - @_yearPickerEndYear
+                                </div>
+                            }
+                            else
+                            {
+                                <button @onclick="ToggleBetweenMonthAndYearPicker"
+                                        type="button"
+                                        aria-atomic="true"
+                                        aria-live="polite"
+                                        title="@toggleTitle"
+                                        aria-label="@toggleTitle"
+                                        disabled="@(IsEnabled is false)"
+                                        aria-disabled="@(IsEnabled is false ? "true" : null)"
+                                        style="@Styles?.MonthPickerToggleButton"
+                                        class="bit-dtp-ptb @Classes?.MonthPickerToggleButton">
+                                    @_yearPickerStartYear - @_yearPickerEndYear
+                                </button>
+                            }
                             <div style="@Styles?.YearPickerNavWrapper" class="bit-dtp-nbc @Classes?.YearPickerNavWrapper">
                                 <button @onclick="() => HandleYearRangeChange(false)"
                                         type="button"
@@ -616,8 +643,9 @@
                                     @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
                                     {
                                         var year = _yearPickerStartYear + (rowIndex * 4) + cellIndex;
-                                        var disabled = IsEnabled is false || IsYearOutOfMinAndMaxDate(year);
-                                        var selected = year == _currentYear;
+                                        var disabled = IsEnabled is false || IsYearDisabled(year);
+                                        var isYearPicker = Mode == BitDatePickerMode.YearPicker;
+                                        var selected = isYearPicker ? IsSelectedYear(year) : year == _currentYear;
                                         <button @onclick="() => SelectYear(year)"
                                                 @onkeydown="e => HandleYearKeyDown(e, year)"
                                                 type="button"
@@ -629,7 +657,7 @@
                                                 aria-disabled="@(disabled ? "true" : null)"
                                                 aria-selected="@(selected ? "true" : "false")"
                                                 style="@Styles?.YearButton"
-                                                class="bit-dtp-pkb @Classes?.YearButton">
+                                                class="bit-dtp-pkb@(isYearPicker && selected ? " bit-dtp-psm" : null) @Classes?.YearButton">
                                             @if (YearCellTemplate is not null)
                                             {
                                                 @YearCellTemplate(year)
@@ -889,3 +917,50 @@
         }
     </div>
 </div>
+
+@* A standalone calendar sits below the root, so its messages follow the calendar rather than splitting the
+   label from it. *@
+@if (Standalone)
+{
+    @RenderMessages()
+}
+
+@code {
+    // What is wrong with the value comes first, then the helper text, then the text meant for a screen reader
+    // alone - the order the field reads them out in through aria-describedby.
+    private RenderFragment RenderMessages() => __builder =>
+    {
+        @if (HasErrorMessage)
+        {
+            <div id="@_errorId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetOutsideRootStyles(Styles?.ErrorMessageContainer)" class="bit-dtp-erm @Classes?.ErrorMessageContainer">
+                @if (ErrorMessageTemplate is not null)
+                {
+                    @ErrorMessageTemplate
+                }
+                else
+                {
+                    <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+                }
+            </div>
+        }
+
+        @if (HasDescription)
+        {
+            <div id="@_descriptionId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetOutsideRootStyles(Styles?.DescriptionContainer)" class="bit-dtp-des @Classes?.DescriptionContainer">
+                @if (DescriptionTemplate is not null)
+                {
+                    @DescriptionTemplate
+                }
+                else
+                {
+                    <span style="@Styles?.Description" class="bit-dtp-dtx @Classes?.Description">@Description</span>
+                }
+            </div>
+        }
+
+        @if (AriaDescription.HasValue())
+        {
+            <span id="@_ariaDescriptionId" class="bit-dtp-sdt">@AriaDescription</span>
+        }
+    };
+}

@@ -38,6 +38,26 @@ public class BitDatePickerClassStyles
     public string? Icon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the error message container of the BitDatePicker.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the error message of the BitDatePicker.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the description container of the BitDatePicker.
+    /// </summary>
+    public string? DescriptionContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the description of the BitDatePicker.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the overlay of the BitDatePicker.
     /// </summary>
     public string? Overlay { get; set; }

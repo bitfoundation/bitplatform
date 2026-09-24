@@ -57,6 +57,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Detailed description of the DatePicker for screen readers alone, rendered visually hidden and referenced by the input's aria-describedby after Description."
+        },
+        new()
+        {
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "true",
@@ -205,6 +212,20 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The helper text rendered below the DatePicker, also tied to its input as its accessible description."
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for the description, which replaces Description and is tied to the input the same way."
+        },
+        new()
+        {
             Name = "DisabledDateErrorMessage",
             Type = "string?",
             DefaultValue = "null",
@@ -253,6 +274,20 @@ public partial class BitDatePickerDemo
             Description = "Determines the allowed drop directions of the callout.",
             LinkType = LinkType.Link,
             Href = "#drop-direction-enum"
+        },
+        new()
+        {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message shown below the DatePicker for a rejection the app decided on its own (a server response, a cross-field rule). It marks the DatePicker invalid, is referenced by the input's aria-describedby and is announced as it appears."
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the error message, which replaces ErrorMessage and marks the DatePicker invalid the same way."
         },
         new()
         {
@@ -446,6 +481,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the DatePicker invalid without an EditContext having said so: the same look and aria-invalid a failing validation gives it. ErrorMessage implies it."
+        },
+        new()
+        {
             Name = "InvalidErrorMessage",
             Type = "string?",
             DefaultValue = "null",
@@ -540,7 +582,7 @@ public partial class BitDatePickerDemo
             Name = "Mode",
             Type = "BitDatePickerMode",
             DefaultValue = "BitDatePickerMode.DatePicker",
-            Description = "The selection mode of the DatePicker (DatePicker or MonthPicker).",
+            Description = "The selection mode: a day (DatePicker), a month (MonthPicker) or a year (YearPicker). A month or a year lands on its first day the Min/Max range and the day rules allow; the time picker is only offered in the DatePicker mode.",
             LinkType = LinkType.Link,
             Href = "#datepicker-mode-enum"
         },
@@ -1180,6 +1222,34 @@ public partial class BitDatePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "DescriptionContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the description container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the description of the BitDatePicker."
                 },
                 new()
                 {
@@ -1955,8 +2025,14 @@ public partial class BitDatePickerDemo
                 new()
                 {
                     Name = "MonthPicker",
-                    Description = "Month picker mode allowing selection of only month and year. The day is automatically set to the 1st of the selected month.",
+                    Description = "Month picker mode allowing selection of only month and year. The day is automatically set to the first selectable day of the selected month.",
                     Value = "1"
+                },
+                new()
+                {
+                    Name = "YearPicker",
+                    Description = "Year picker mode allowing selection of only the year. The day is automatically set to the first selectable day of the selected year.",
+                    Value = "2"
                 }
             ]
         }
@@ -1977,6 +2053,12 @@ public partial class BitDatePickerDemo
             Name = "--bit-DatePicker-label-font-size",
             DefaultValue = "per Size",
             Description = "Text size of the label.",
+        },
+        new()
+        {
+            Name = "--bit-DatePicker-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "Color of the asterisk after the label of a required picker.",
         },
         new()
         {
@@ -2028,6 +2110,12 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "--bit-DatePicker-icon-size",
+            DefaultValue = "per Size (--bit-siz-icon-sm/md/lg)",
+            Description = "Size of the calendar icon in the field.",
+        },
+        new()
+        {
             Name = "--bit-DatePicker-focus-color",
             DefaultValue = "the Color role's focus color",
             Description = "Color of every focus ring the component draws - on the field and on the cells and buttons inside the callout.",
@@ -2037,6 +2125,24 @@ public partial class BitDatePickerDemo
             Name = "--bit-DatePicker-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
             Description = "Text color of anything disabled: the label, the field, a day, a month, a year, a navigation button.",
+        },
+        new()
+        {
+            Name = "--bit-DatePicker-invalid-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Border of an invalid field, and the error message below it.",
+        },
+        new()
+        {
+            Name = "--bit-DatePicker-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text color of the description.",
+        },
+        new()
+        {
+            Name = "--bit-DatePicker-description-font-size",
+            DefaultValue = "--bit-tpg-fs-2xs",
+            Description = "Text size of the description and of the error message.",
         },
         new()
         {
@@ -2201,6 +2307,7 @@ public partial class BitDatePickerDemo
 
     private DateTimeOffset? classesValue;
     private DateTimeOffset? monthPickerDate;
+    private DateTimeOffset? yearPickerDate;
     private DateTimeOffset? selectedDateTime;
     private DateTimeOffset? changedDate;
 
@@ -2258,6 +2365,15 @@ public partial class BitDatePickerDemo
     private BitDatePickerValidationModel validationModel = new();
     private string SuccessMessage = string.Empty;
 
+
+    private string? appointmentError;
+
+    private void CheckAppointment(DateTimeOffset? date)
+    {
+        appointmentError = date?.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+            ? "We are closed on weekends - pick a weekday."
+            : null;
+    }
 
     private async Task HandleValidSubmit()
     {
