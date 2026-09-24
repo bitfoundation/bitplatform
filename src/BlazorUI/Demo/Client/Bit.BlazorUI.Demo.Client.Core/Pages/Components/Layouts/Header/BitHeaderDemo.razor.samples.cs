@@ -168,7 +168,7 @@ public partial class BitHeaderDemo
 </style>
 
 
-<div>Scroll inside the box to hide and reveal the header: <b>@(isHeaderRevealed ? ""revealed"" : ""hidden"")</b></div>
+<div>Scroll inside the box: <b>@(isHeaderRevealed ? ""revealed"" : ""hidden"")</b></div>
 
 <div class=""scroll-demo"">
     <BitHeader Sticky Reveal Elevated
@@ -477,7 +477,7 @@ private readonly BitHeaderParams[] headerParams =
 
     private readonly string example18RazorCode = @"
 <BitHeader Bordered Elevated
-           Style=""--bit-Header-background: #1e293b; --bit-Header-color: #f8fafc; --bit-Header-border-color: #38bdf8; --bit-Header-border-width: 3px; --bit-Header-min-height: 4rem;"">
+           Style=""--bit-Header-background: #1e293b; --bit-Header-color: #f8fafc; --bit-Header-border-color: #38bdf8; --bit-Header-border-width: 3px; --bit-Header-border-radius: 0.75rem; --bit-Header-min-height: 4rem;"">
     On the instance
 </BitHeader>
 

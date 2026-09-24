@@ -7,6 +7,7 @@
 //   --bit-Header-border-color           border of the Outline variant, and the
 //                                       divider of a Bordered header                 (default: per Color, $clr-brd-pri)
 //   --bit-Header-border-width           thickness of that border and divider         (default: $shp-border-width)
+//   --bit-Header-border-radius          corners of the surface (a floating header)   (default: 0)
 //   --bit-Header-padding-block          room above and below the main row            (default: per Size)
 //   --bit-Header-padding-inline         room on the two sides of both rows           (default: per Size)
 //   --bit-Header-min-height             minimum height of the main row               (default: none)
@@ -35,6 +36,9 @@
     font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
     z-index: var(--bit-Header-z-index, #{$zindex-base});
+    // A bar that spans the page has square corners; a floating one (inset from the edges of a page or a
+    // card) rounds them through the variable, which also rounds the border of the Outline variant.
+    border-radius: var(--bit-Header-border-radius, 0);
 
     // The uncolored header keeps the plain page surface it always had: the Fill variant below resolves
     // --bit-hdr-bg/-on to these, and the borderless variants resolve --bit-hdr-fg/-brd to the neutral
@@ -286,20 +290,18 @@
 }
 
 
+// The shadow is part of the slide as well (see .bit-hdr-hdn), so the two transitions always travel together.
 .bit-hdr-anm {
     will-change: transform;
-    transition: transform $mot-duration $mot-easing;
-}
-
-// Both a transform and a shadow can be in flight on the same header, so the two transitions are
-// merged rather than left to override one another.
-.bit-hdr-anm.bit-hdr-esc {
     transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing;
 }
 
 // translateY is used rather than a top offset so the slide runs on the compositor, and it hides the
 // header in both directions without any RTL specific rule.
+// A shadow is cast outside the box, so translating the box by its own height would leave the shadow of an
+// elevated header hanging below the top edge of the screen as a faint line. It fades out with the slide.
 .bit-hdr-hdn {
+    box-shadow: none;
     transform: translateY(-100%);
 }
 

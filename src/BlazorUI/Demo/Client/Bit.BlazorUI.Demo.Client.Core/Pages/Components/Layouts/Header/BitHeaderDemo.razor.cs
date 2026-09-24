@@ -141,7 +141,7 @@ public partial class BitHeaderDemo
             Name = "Reveal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Slides the header out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky header, since the others have nothing to slide over.",
+            Description = "Slides the header out of the view while the page is scrolled down and brings it back while the page is scrolled up. It comes back when anything inside it takes the focus, and stays while it holds the keyboard focus. It only has an effect on a Fixed or Sticky header, since the others have nothing to slide over.",
         },
         new()
         {
@@ -393,6 +393,12 @@ public partial class BitHeaderDemo
             Name = "--bit-Header-border-width",
             DefaultValue = "--bit-shp-brd-width",
             Description = "Thickness of that border and divider.",
+        },
+        new()
+        {
+            Name = "--bit-Header-border-radius",
+            DefaultValue = "0",
+            Description = "Corners of the surface, for a floating header inset from the edges of its page or card.",
         },
         new()
         {

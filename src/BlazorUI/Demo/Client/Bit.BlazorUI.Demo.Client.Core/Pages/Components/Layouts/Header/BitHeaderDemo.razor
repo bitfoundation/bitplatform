@@ -5,7 +5,7 @@
             Description="The BitHeader component renders the bar at the top of a site or an application, with theme colors, variants, sizes, alignment, wrapping, a second row, pinned positioning, scroll driven reveal and elevation, a skip link and public CSS variables." />
 
 <DemoPage Name="Header"
-          Description="BitHeader is the bar at the top of a site or an application (an app bar, a top bar): a semantic header element - the banner landmark - holding a brand, navigation, search or account actions in a horizontal line, with an optional second row for tabs. It can stay in the flow or be pinned to the top, hide on scroll down, elevate once the page has scrolled, slide away on demand, and carries a skip link and scroll padding for keyboard users."
+          Description="BitHeader is the bar at the top of a site or an application (an app bar): a semantic header element - the banner landmark - holding a brand, navigation and actions in one line, with an optional second row for tabs. It can be pinned to the top, hide on scroll down, elevate once scrolled, slide away on demand, and carries a skip link and scroll padding for keyboard users."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -217,7 +217,7 @@
     <DemoExample Title="Reveal" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             <b>Reveal</b> hides a Fixed or Sticky header while scrolling down and brings it back on scroll up or when anything inside it
-            takes the focus. <b>RevealOffset</b> keeps it until the scroll has passed that many pixels. <b>OnRevealChanged</b> and
+            takes the focus - and keeps it while it holds the keyboard focus. <b>RevealOffset</b> keeps it until the scroll has passed that many pixels. <b>OnRevealChanged</b> and
             <b>IsRevealed</b> report the state.
         </div>
         <br />
@@ -534,7 +534,7 @@
         <br />
         <div class="container">
             <BitHeader Bordered Elevated
-                       Style="--bit-Header-background: #1e293b; --bit-Header-color: #f8fafc; --bit-Header-border-color: #38bdf8; --bit-Header-border-width: 3px; --bit-Header-min-height: 4rem;">
+                       Style="--bit-Header-background: #1e293b; --bit-Header-color: #f8fafc; --bit-Header-border-color: #38bdf8; --bit-Header-border-width: 3px; --bit-Header-border-radius: 0.75rem; --bit-Header-min-height: 4rem;">
                 On the instance
             </BitHeader>
         </div>

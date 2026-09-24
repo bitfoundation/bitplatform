@@ -200,7 +200,9 @@ public partial class BitHeader : BitComponentBase
     /// workflow (a distraction free reading mode, a full screen media view) needs.
     /// <br />
     /// A hidden header is also marked <c>inert</c>, so nothing inside it can be clicked or reached with the keyboard
-    /// while it is out of the view. Unlike <see cref="BitComponentBase.Visibility"/>, which switches the header off at
+    /// while it is out of the view - and a focus left inside it drops to the body of the page, so an action that
+    /// hides the header from within it should move the focus somewhere meaningful first.
+    /// Unlike <see cref="BitComponentBase.Visibility"/>, which switches the header off at
     /// once, this slides it in and out and keeps the room it occupies in the layout.
     /// <br />
     /// It only slides over a <see cref="Fixed"/> or <see cref="Sticky"/> header; a header in the normal flow is
@@ -255,7 +257,8 @@ public partial class BitHeader : BitComponentBase
     /// The header is always revealed at the very top of the scrolling area.
     /// <br />
     /// Unlike <see cref="Hidden"/>, a header rolled up by the scroll stays reachable: it comes back as soon as
-    /// anything inside it takes the focus, so a keyboard user is never stranded on a control they cannot see.
+    /// anything inside it takes the focus, and it does not roll up again while it holds the keyboard focus, so a
+    /// keyboard user is never stranded on a control they cannot see.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reveal { get; set; }
