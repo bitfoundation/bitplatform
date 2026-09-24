@@ -9,15 +9,17 @@ namespace Bit.BlazorUI;
 /// It renders a semantic <c>footer</c> element and lays its content out in a horizontal line whose color, variant,
 /// size, alignment, wrapping and gutters are all parameters. It can stay in the flow of the page or be pinned to the
 /// bottom of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page is scrolled
-/// up (<see cref="Reveal"/>), or slid out of the way on demand (<see cref="Hidden"/>).
+/// up (<see cref="Reveal"/>), or slid out of the way on demand (<see cref="Hidden"/>) - and a pinned footer can reserve
+/// its own height at the bottom of the scrolling area so nothing scrolled to lands underneath it (<see cref="ScrollPadding"/>).
 /// </remarks>
 public partial class BitFooter : BitComponentBase
 {
     private bool _hidden;
     private bool _slidable;
-    private bool _revealAttached;
+    private bool _settingUp;
+    private bool _setupPending;
     private string? _attachedId;
-    private int _attachedRevealOffset = -1;
+    private string? _attachedSignature;
     private DotNetObjectReference<BitFooter>? _dotnetObj;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -161,6 +163,19 @@ public partial class BitFooter : BitComponentBase
     public bool Hidden { get; set; }
 
     /// <summary>
+    /// Gets or sets the maximum width of the content of the BitFooter, which is then centered in the footer.
+    /// </summary>
+    /// <remarks>
+    /// Takes any CSS length (for example <c>1200px</c> or <c>75rem</c>). The footer itself keeps spanning the
+    /// full width - its background, its border and its shadow still run edge to edge - while its content lines
+    /// up with the rest of a page whose body is centered in a column of the same width.
+    /// <br />
+    /// When not set, the content spans the whole width of the footer.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? MaxWidth { get; set; }
+
+    /// <summary>
     /// Removes the default paddings around the content of the BitFooter, so it can span the full width of the footer.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -181,6 +196,9 @@ public partial class BitFooter : BitComponentBase
     /// This only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> footer, since a footer in the normal
     /// flow has nothing to slide over, and an <see cref="Absolute"/> one scrolls away with its container anyway.
     /// The footer is always revealed at the very top and at the very end of the page.
+    /// <br />
+    /// Unlike <see cref="Hidden"/>, a footer slid away by the scroll stays reachable: it comes back as soon as
+    /// anything inside it takes the focus, so a keyboard user is never stranded on a control they cannot see.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reveal { get; set; }
@@ -196,6 +214,36 @@ public partial class BitFooter : BitComponentBase
     /// When not set (or set to 0), the footer starts hiding as soon as the scroll goes down.
     /// </remarks>
     [Parameter] public int? RevealOffset { get; set; }
+
+    /// <summary>
+    /// Reserves the height of the BitFooter at the bottom of the scrolling area, so nothing scrolled to ever
+    /// lands underneath a pinned footer.
+    /// </summary>
+    /// <remarks>
+    /// A footer pinned over the content covers the bottom of it, and a browser that scrolls something into the
+    /// view - tabbing to the next control, following an anchor, honouring a call to scrollIntoView - stops with
+    /// that thing hidden behind the footer (WCAG 2.4.11, Focus Not Obscured). This sets the bottom scroll padding
+    /// of the scrolling area to the height of the footer, which is what makes those scrolls stop short of it, and
+    /// keeps it in step while the footer changes size.
+    /// <br />
+    /// It only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> footer, since a footer in the
+    /// normal flow covers nothing. The scrolling area is the one the footer reacts to, so
+    /// <see cref="ScrollTarget"/> applies here as well.
+    /// </remarks>
+    [Parameter] public bool ScrollPadding { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CSS selector of the element whose scrolling drives the BitFooter.
+    /// </summary>
+    /// <remarks>
+    /// By default the footer finds its own scrolling area by walking up from itself, which covers the page
+    /// and any pane the footer sits inside. A footer that does not sit inside the box it has to react to -
+    /// an app shell whose bar and scrolling content are siblings - names that box here instead.
+    /// <br />
+    /// A selector that matches nothing falls back to the walk, so a target rendered later never leaves the
+    /// footer without a scrolling area at all.
+    /// </remarks>
+    [Parameter] public string? ScrollTarget { get; set; }
 
     /// <summary>
     /// The size of the BitFooter, which determines the paddings around its content.
@@ -307,6 +355,13 @@ public partial class BitFooter : BitComponentBase
 
 
 
+    // The footer really sits at the bottom of the screen only when it is fixed, or sticky without an Absolute
+    // that outranks it - which is what the safe area inset, the scroll listener and the scroll padding all
+    // key off, since an absolute footer is pinned to its container and scrolls away with it.
+    private bool IsPinned => Fixed || (Sticky && Absolute is false);
+
+
+
     protected override string RootElementClass => "bit-ftr";
 
     protected override void RegisterCssClasses()
@@ -409,12 +464,14 @@ public partial class BitFooter : BitComponentBase
         // height is the footer, the inset is the room the device asks for underneath it. env() resolves to
         // the 0px fallback wherever there is no inset, which leaves the plain height untouched.
         StyleBuilder.Register(() => Height.HasValue
-                                    ? ((Fixed || Sticky)
+                                    ? (IsPinned
                                         ? $"height:calc({Height}px + env(safe-area-inset-bottom, 0px))"
                                         : $"height:{Height}px")
                                     : string.Empty);
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-ftr-gap:{Gap}" : string.Empty);
+
+        StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-ftr-max-width:{MaxWidth}" : string.Empty);
     }
 
 
@@ -444,63 +501,100 @@ public partial class BitFooter : BitComponentBase
 
         if (IsDisposed) return;
 
-        // Only a positioned footer has anything to slide over, so the scroll listener is attached for
-        // those alone. Toggling any of these parameters at runtime attaches or detaches it accordingly.
-        // The attached flag keeps every other render (including the ones the reveal itself causes) from
-        // tearing the listener down and setting it up again.
-        // Absolute is skipped: it scrolls away with its container, and the position classes give it
-        // precedence over Sticky, so a footer rendered as bit-ftr-abs has nothing to reveal itself over.
-        var shouldAttach = Reveal && (Fixed || (Sticky && Absolute is false));
-
-        // The offset is read by the script when it is set up, so a change of it has to set the listener
-        // up again. -1 is not a reachable offset (it is clamped at 0), which keeps the detached state
-        // from ever comparing equal to an attached one.
-        var revealOffset = shouldAttach ? Math.Max(0, RevealOffset.GetValueOrDefault()) : -1;
-
-        // The script looks the footer up by id and keeps its listeners keyed by it, so an Id changed at
-        // runtime would leave them behind on the element that id no longer names. That stale registration
-        // is taken down first, and only then is the listener set up again under the new id.
-        var attachedToAnotherId = _revealAttached && _attachedId != _Id;
-
-        if (shouldAttach == _revealAttached && revealOffset == _attachedRevealOffset && attachedToAnotherId is false) return;
-
-        if (attachedToAnotherId)
+        // Setting the listener up is a disposal and a setup with the bookkeeping of the attached id and signature
+        // in between, so a render arriving while one of those awaits is in flight would interleave with it and
+        // could leave the flags naming a registration that is not the one on the element anymore. A render that
+        // finds the sequence running only leaves a mark, and the call in flight runs it again afterwards, reading
+        // the parameters and the id as they are by then.
+        if (_settingUp)
         {
-            await _js.BitFootersDispose(_attachedId!);
+            _setupPending = true;
+            return;
+        }
+
+        _settingUp = true;
+
+        try
+        {
+            do
+            {
+                _setupPending = false;
+
+                await SetupScrollListener();
+            }
+            while (_setupPending && IsDisposed is false);
+        }
+        finally
+        {
+            // Released even when the interop threw, so the flag cannot keep every later render out of the setup.
+            _settingUp = false;
+        }
+    }
+
+    private async Task SetupScrollListener()
+    {
+        // Only a pinned footer has anything to slide over or to cover at the bottom of the scrolling area, so the
+        // scroll listener is attached for those alone. Toggling any of these parameters at runtime attaches or
+        // detaches it accordingly.
+        var shouldAttach = (Reveal || ScrollPadding) && IsPinned;
+
+        // Everything the script is handed at setup time is part of the signature, so a change of any of it sets
+        // the listener up again - including the id, which is what the script keys its registration by, and which
+        // would otherwise leave the listeners behind on the element that id no longer names.
+        var revealOffset = Math.Max(0, RevealOffset.GetValueOrDefault());
+        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{Reveal}|{ScrollTarget}|{ScrollPadding}" : null;
+
+        if (signature == _attachedSignature) return;
+
+        if (_attachedId is not null)
+        {
+            await _js.BitFootersDispose(_attachedId);
+
+            // The component can go away while that call is in flight, and its own disposal has released
+            // the reference and taken the listeners off the element by the time this resumes. Going on
+            // from here would hand the script a disposed reference and leave behind a registration that
+            // nothing is left to dispose.
+            if (IsDisposed) return;
 
             _attachedId = null;
-            _revealAttached = false;
+            _attachedSignature = null;
         }
 
         if (shouldAttach)
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            await _js.BitFootersSetup(_Id, _dotnetObj, revealOffset);
+            await _js.BitFootersSetup(_Id, _dotnetObj, revealOffset, Reveal, ScrollTarget, ScrollPadding);
+
+            if (IsDisposed)
+            {
+                try
+                {
+                    // The disposal of the component may have run its own cleanup before the setup above
+                    // came back, in which case the registration just made is the one it could not see.
+                    // Disposing an id that is not registered anymore is a no-op, so this is safe either way.
+                    await _js.BitFootersDispose(_Id);
+                }
+                catch (JSDisconnectedException) { } // we can ignore this exception here
+
+                return;
+            }
 
             // The flags are only moved once the interop call has gone through, so a call that failed
             // leaves them as they were and the next render tries to set the listener up again.
-            _revealAttached = true;
             _attachedId = _Id;
-            _attachedRevealOffset = revealOffset;
+            _attachedSignature = signature;
         }
-        else
+
+        // A footer that is no longer driven by the scroll (detached, or still attached for its scroll padding
+        // alone) must not stay stuck in the hidden state the scroll left it in.
+        if (_hidden && (shouldAttach is false || Reveal is false))
         {
-            await _js.BitFootersDispose(_Id);
+            _hidden = false;
 
-            _revealAttached = false;
-            _attachedId = null;
-            _attachedRevealOffset = revealOffset;
+            ClassBuilder.Reset();
 
-            // The footer is no longer driven by the script, so it must not stay stuck in the hidden state.
-            if (_hidden)
-            {
-                _hidden = false;
-
-                ClassBuilder.Reset();
-
-                StateHasChanged();
-            }
+            StateHasChanged();
         }
     }
 
