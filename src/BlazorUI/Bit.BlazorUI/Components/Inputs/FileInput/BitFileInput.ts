@@ -1,7 +1,3 @@
-// the Blazor runtime's own global, which is what turns a File into something .NET can read as a stream
-// instead of as one byte array held whole in memory on both sides.
-declare const DotNet: { createJSStreamReference(value: Blob | ArrayBuffer): any };
-
 namespace BitBlazorUI {
     export class FileInput {
         private static readonly IMAGE_SIZE_CONCURRENCY = 8;
@@ -296,9 +292,12 @@ namespace BitBlazorUI {
                 throw new Error(`File not found: ${fileId}`);
             }
 
-            // the File is a Blob, so the runtime reads it in chunks straight off the disk - nothing of it is
-            // ever held in the page, which is what makes a file larger than the tab's memory readable at all.
-            return DotNet.createJSStreamReference(item.file);
+            // the File is handed back as it is: the runtime wraps whatever a call typed as an
+            // IJSStreamReference returns, and wrapping it here as well would hand that wrapper - which is
+            // neither a blob nor a typed array - to the runtime's own wrapping and throw.
+            // As a Blob it is then read in chunks straight off the disk, nothing of it ever held in the
+            // page, which is what makes a file larger than the tab's memory readable at all.
+            return item.file;
         }
 
         public static reset(id: string, inputElement: HTMLInputElement) {

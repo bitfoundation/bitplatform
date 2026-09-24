@@ -157,14 +157,15 @@
                         </div>
                         @if (ShowRemoveButton)
                         {
+                            @* the accessible name carries the whole path when there is one, since a flattened
+                               folder can hold the same name more than once and "Remove readme.md" would name
+                               none of them. *@
                             <button @ref="_removeRefs[file.FileId]"
                                     @onclick="() => HandleRemoveClick(file)"
                                     type="button"
                                     title="@removeTitle"
                                     tabindex="@TabIndex"
                                     disabled="@(IsEnabled is false)"
-                                    @* the whole path when there is one, since a flattened folder can hold the
-                                       same name more than once and "Remove readme.md" would name none of them. *@
                                     aria-label="@($"{removeTitle} {(folder.HasValue() ? file.RelativePath : file.Name)}")"
                                     style="@Styles?.RemoveButton"
                                     class="bit-fin-rbt @Classes?.RemoveButton">
