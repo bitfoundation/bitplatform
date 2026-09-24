@@ -1,4 +1,17 @@
-﻿.example-content {
+﻿.event-log {
+    gap: 0.125rem;
+    display: flex;
+    min-height: 2rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    flex-flow: column nowrap;
+    font-family: monospace;
+    font-size: 0.8125rem;
+    color: var(--bit-clr-fg-sec);
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.example-content {
     width: 18rem;
     display: flex;
     flex-flow: column wrap;
