@@ -363,7 +363,7 @@ jobs:
         dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
 
     - name: Install sql server
-      uses: potatoqualitee/mssqlsuite@2291d923e83859edd871679c05b379037376761f # v1.12
+      uses: potatoqualitee/mssqlsuite@bc850f242e5fe551e36cea6fa4bed608c58fa489 # v2
       with:
         version: 2025
         install: sqlengine

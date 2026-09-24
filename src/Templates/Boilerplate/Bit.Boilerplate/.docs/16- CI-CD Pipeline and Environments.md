@@ -356,7 +356,7 @@ This is the **core deployment workflow** that handles building and deploying all
      -p:Version="1.0.0" -p:Environment=Production
    
    # Create installer with Velopack
-   dnx vpk@1.2.0 -- pack \
+   dnx vpk@1.2.158 -- pack \
      -u com.company.app \           # Application ID
      -v 1.0.0 \                     # Version
      -p .\publish-result \          # Published files location

@@ -5,9 +5,6 @@ using Aspire.Hosting.Azure;
 //#if (redis == true)
 using Azure.Provisioning.RedisEnterprise;
 //#endif
-//#if (filesStorage == "S3")
-using Aspire.Hosting.RustFs;
-//#endif
 
 namespace Aspire.Hosting;
 
