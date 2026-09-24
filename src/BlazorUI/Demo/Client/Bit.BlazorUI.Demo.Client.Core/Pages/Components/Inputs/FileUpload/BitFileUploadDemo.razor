@@ -14,7 +14,7 @@
           CssVariables="componentCssVariables"
           GitHubUrl="Inputs/FileUpload/BitFileUpload.razor"
           GitHubDemoUrl="Inputs/FileUpload/BitFileUploadDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
         <div>
             Browse, drop a file on the component, or paste one while it has the focus. Each file gets an item with
             an upload button that sends it to the <b>UploadUrl</b>, then a progress bar with pause and cancel, and
@@ -24,7 +24,7 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" />
     </DemoExample>
 
-    <DemoExample Title="Label & description" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Label & description" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
         <div>
             <b>LabelIconName</b> (or <b>LabelIcon</b> for an external library) adds an icon to the browse button,
             placed by <b>LabelIconPosition</b>. <b>Description</b> - or <b>DescriptionTemplate</b> for markup - puts
@@ -78,7 +78,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Removable" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Removable" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" CodeFiles="@example4CodeFiles" Id="example4">
         <div>
             <b>ShowRemoveButton</b> adds a remove button to each settled item. A file that never reached the server is
             just dropped; an uploaded one is deleted through a DELETE to the <b>RemoveUrl</b> (name in the query
@@ -89,7 +89,7 @@
                        ShowRemoveButton RemoveUrl="@RemoveUrl" />
     </DemoExample>
 
-    <DemoExample Title="Selection behavior" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Selection behavior" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" CodeFiles="@example5CodeFiles" Id="example5">
         <div>
             <b>Multiple</b> takes several files at once, <b>AutoUpload</b> sends them as soon as they arrive,
             <b>Append</b> adds a new selection to the list instead of replacing it, and <b>AutoReset</b> empties the
@@ -110,7 +110,7 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" AutoReset />
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Validation" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" CodeFiles="@example6CodeFiles" Id="example6">
         <div>
             Rules run when a file arrives, however it arrives; a rejected file stays in the list with its reason and is
             never sent. <b>MaxSize</b> / <b>MinSize</b> bound each file, <b>MaxTotalSize</b> and <b>MaxCount</b> the
@@ -147,7 +147,7 @@
                        Description="Accept only: the dialog filters, a dropped file of any type is still taken." />
     </DemoExample>
 
-    <DemoExample Title="Directory & Capture" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Directory & Capture" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" CodeFiles="@example7CodeFiles" Id="example7">
         <div>
             <b>Directory</b> picks - or accepts a drop of - a whole folder, subfolders included, with every file still
             validated. <b>Capture</b> opens the camera on a mobile device: <b>"user"</b> for the front one,
@@ -164,7 +164,7 @@
                        Description="Opens the front camera on a mobile device." />
     </DemoExample>
 
-    <DemoExample Title="Preview & image dimensions" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Preview & image dimensions" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" CodeFiles="@example8CodeFiles" Id="example8">
         <div>
             <b>ShowPreview</b> shows a thumbnail of each image, made in the browser and released on removal, and a
             type glyph for anything else. <b>ReadImageDimensions</b> fills <b>Width</b> / <b>Height</b> before
@@ -180,7 +180,7 @@
                        Description="Images between 200x200 and 4000x4000 pixels." />
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
         <div>
             <b>OnChange</b>, <b>OnInvalid</b>, <b>OnUploading</b> (set per-file headers here), <b>OnProgress</b>,
             <b>OnUploadComplete</b> / <b>OnUploadFailed</b>, <b>OnRemoveComplete</b> / <b>OnRemoveFailed</b> and
@@ -199,7 +199,7 @@
         <div>@onUploadFailedText</div>
     </DemoExample>
 
-    <DemoExample Title="Chunked" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Chunked" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" CodeFiles="@example10CodeFiles" Id="example10">
         <div>
             <b>ChunkedUpload</b> sends each file as a series of requests, so a pause or a failure resumes from the last
             chunk. <b>ChunkSize</b> fixes the slice; <b>AutoChunkSize</b> adapts it to the connection (512 KB - 10 MB).
@@ -214,7 +214,7 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" ChunkedUpload AutoChunkSize />
     </DemoExample>
 
-    <DemoExample Title="Http requests" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Http requests" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" CodeFiles="@example11CodeFiles" Id="example11">
         <div>
             Headers, query strings and extra form fields for the upload and remove requests are fixed at selection
             time.
@@ -275,7 +275,7 @@
                        RetryButtonTitle="Try again" />
     </DemoExample>
 
-    <DemoExample Title="ConcurrentUploads" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="ConcurrentUploads" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
         <div>
             <b>ConcurrentUploads</b> caps how many files are on the wire at once; the rest wait in order, show the
             <b>QueuedUploadMessage</b> and can be canceled before their turn. 0 (the default) starts them all.
@@ -287,7 +287,7 @@
                        ConcurrentUploads="1" QueuedUploadMessage="In the queue…" />
     </DemoExample>
 
-    <DemoExample Title="Batch actions" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Batch actions" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" CodeFiles="@example14CodeFiles" Id="example14">
         <div>
             <b>ShowBatchActions</b> adds <b>Upload all</b>, <b>Cancel all</b> and <b>Clear</b> buttons under the
             list. They keep their places as uploads settle - an idle one is only marked unavailable - so keyboard
@@ -303,7 +303,7 @@
                        UploadAllText="Send everything" CancelAllText="Stop everything" ClearText="Start over" />
     </DemoExample>
 
-    <DemoExample Title="Progress & file list" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Progress & file list" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" CodeFiles="@example15CodeFiles" Id="example15">
         <div>
             <b>OverallUploadProgress</b>, <b>TotalUploadSpeed</b> and <b>OverallRemainingTime</b> summarize the batch,
             and each file has its own <b>UploadSpeed</b> and <b>RemainingTime</b> (null while not on the wire). Re-read
@@ -358,7 +358,7 @@
         }
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <DemoExample Title="Templates" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" CodeFiles="@example16CodeFiles" Id="example16">
         <div>
             <b>LabelTemplate</b> replaces the browse button - and its drop indicator, so bring your own through
             <b>Classes.Dragging</b> - and <b>FileViewTemplate</b> replaces each item, with the <b>BitFileInfo</b> as
@@ -445,7 +445,7 @@
         <BitButton OnClick="HandleUploadOnClick">Upload</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Public API" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="Public API" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" CodeFiles="@example17CodeFiles" Id="example17">
         <div>
             <b>Browse</b>, <b>Upload</b>, <b>PauseUpload</b>, <b>CancelUpload</b>, <b>RemoveFile</b> and <b>Reset</b>
             drive the component from code, each on one file or - with no argument - on all of them. Pause keeps the
@@ -466,7 +466,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Preloaded files" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <DemoExample Title="Preloaded files" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" CodeFiles="@example18CodeFiles" Id="example18">
         <div>
             <b>PreloadedFiles</b> lists the files a record already has on the server. They are never uploaded, show
             the <b>PreloadedFileMessage</b>, count towards <b>MaxCount</b> / <b>MaxTotalSize</b>, survive
@@ -483,7 +483,7 @@
         <BitButton OnClick="LoadAttachments">Reload the record</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+    <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" CodeFiles="@example19CodeFiles" Id="example19">
         <div>
             Every control is a real button with a visible focus ring, and each item action is labelled with its file
             name. The list is named by <b>FileListAriaLabel</b>, progress bars expose their value, and a live region
@@ -500,7 +500,7 @@
                        AnnouncementProvider="@AnnounceUploads" />
     </DemoExample>
 
-    <DemoExample Title="Variant" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+    <DemoExample Title="Variant" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" CodeFiles="@example20CodeFiles" Id="example20">
         <div>
             <b>Variant</b> sets how much of the <BitLink Href="#example22">Color</BitLink> the browse button carries:
             <b>Fill</b> (default), <b>Outline</b> or <b>Text</b>. Disabled, every variant takes the neutral disabled look.
@@ -519,7 +519,7 @@
         <BitFileUpload Label="Disabled drop area" UploadUrl="@UploadUrl" ShowDropArea IsEnabled="false" />
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+    <DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" CodeFiles="@example21CodeFiles" Id="example21">
         <div>
             <b>BitParams</b> hands a <b>BitFileUploadParams</b> to every file upload under it as defaults: a parameter
             an uploader sets itself wins, everything it leaves unset comes from the cascade.
@@ -539,7 +539,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+    <DemoExample Title="Color" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" CodeFiles="@example22CodeFiles" Id="example22">
         <div>
             <b>Color</b> drives the browse button, the drop indicator, the progress bars, the hovered actions and the
             focus rings together.
@@ -575,7 +575,7 @@
         <BitFileUpload Label="Drop files here" UploadUrl="@UploadUrl" ShowDropArea Color="BitColor.Success" />
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" CodeFiles="@example23CodeFiles" Id="example23">
         <div>
             <b>LabelIcon</b>, <b>UploadIcon</b>, <b>RetryIcon</b>, <b>PauseIcon</b>, <b>CancelIcon</b> and
             <b>RemoveIcon</b> take a <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> or a raw class string from
@@ -630,7 +630,7 @@
                        RemoveIcon="@BitIconInfo.Bi("trash")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+    <DemoExample Title="Size" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" CodeFiles="@example24CodeFiles" Id="example24">
         <div>
             <b>Size</b> scales the browse button, the items, the action buttons, the icons and the thumbnails together;
             <b>Medium</b> is the default.
@@ -643,7 +643,7 @@
         <BitFileUpload Label="Large" UploadUrl="@UploadUrl" Size="BitSize.Large" LabelIconName="Upload" ShowRemoveButton RemoveUrl="@RemoveUrl" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
+    <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" CodeFiles="@example25CodeFiles" Id="example25">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach every part, and
             their <b>Dragging</b> / <b>DraggingRejected</b> entries apply only during a drag.
@@ -701,7 +701,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
+    <DemoExample Title="RTL" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" CodeFiles="@example26CodeFiles" Id="example26">
         <div>
             <b>Dir="BitDir.Rtl"</b> mirrors the whole layout; the localizable texts complete it.
         </div>

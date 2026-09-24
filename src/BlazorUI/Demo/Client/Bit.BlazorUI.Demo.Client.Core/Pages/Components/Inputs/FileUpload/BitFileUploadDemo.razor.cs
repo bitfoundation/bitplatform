@@ -2037,10 +2037,112 @@ public partial class BitFileUploadDemo
 
 
 
+    // The server half of the samples. The component only sends the files; an endpoint has to store them, so
+    // every example carries the ASP.NET Core controller it talks to, cut down to the endpoints its own markup
+    // calls. The pieces below are put together per example: a header, the endpoints, and the shared footer.
+    private const string serverControllerHeader = @"
+using Microsoft.AspNetCore.Mvc;
+
+// registered with builder.Services.AddControllers() and app.MapControllers() in Program.cs.
+[ApiController]
+public class FileUploadController(IWebHostEnvironment env) : ControllerBase
+{";
+
+    private const string serverControllerCorsHeader = @"
+using Microsoft.AspNetCore.Mvc;
+
+// registered with builder.Services.AddControllers() and app.MapControllers() in Program.cs.
+// WithCredentials only matters when these endpoints live on another origin than the app: the CORS policy
+// then has to name that origin (WithOrigins) and AllowCredentials(), since a wildcard origin is refused
+// for a request that carries credentials.
+[ApiController]
+public class FileUploadController(IWebHostEnvironment env) : ControllerBase
+{";
+
+    private const string serverUploadEndpoint = @"
+    // one request per file: its content in the ""file"" form field (see UploadFormFieldName) and the id
+    // the component gave it in the BIT_FILE_ID header.
+    [HttpPost(""/Upload"")]
+    [RequestSizeLimit(100 * 1024 * 1024)] // Kestrel refuses a body over 30 MB unless told otherwise
+    public async Task<IActionResult> Upload(IFormFile file,
+                                            [FromHeader(Name = ""BIT_FILE_ID"")] string fileId,
+                                            CancellationToken cancellationToken)
+    {
+        await using var target = System.IO.File.Create(GetFilePath(fileId, file.FileName));
+        await file.CopyToAsync(target, cancellationToken);
+
+        return Ok();
+    }
+";
+
+    private const string serverChunkedUploadEndpoint = @"
+    // one request per chunk, each saying where it belongs: BIT_CHUNK_FROM is its first byte (the same
+    // range is also in the standard Content-Range header). Writing it there rather than appending it is
+    // what keeps a chunk sent again by a retry or a resume from being stored twice.
+    [HttpPost(""/ChunkedUpload"")]
+    [RequestSizeLimit(11 * 1024 * 1024)] // AutoChunkSize never picks a chunk over 10 MB
+    public async Task<IActionResult> ChunkedUpload(IFormFile file,
+                                                   [FromHeader(Name = ""BIT_FILE_ID"")] string fileId,
+                                                   [FromHeader(Name = ""BIT_CHUNK_FROM"")] long chunkFrom,
+                                                   CancellationToken cancellationToken)
+    {
+        // the first chunk starts the file over, dropping whatever an earlier attempt left behind.
+        var mode = chunkFrom == 0 ? FileMode.Create : FileMode.OpenOrCreate;
+
+        await using var target = new FileStream(GetFilePath(fileId, file.FileName), mode, FileAccess.Write);
+        target.Seek(chunkFrom, SeekOrigin.Begin);
+        await file.CopyToAsync(target, cancellationToken);
+
+        return Ok();
+    }
+";
+
+    private const string serverRemoveEndpoint = @"
+    // the name comes in the query string, the id in the BIT_FILE_ID header. A delete is idempotent: a file
+    // that is not there is already in the state asked for, and a 404 would show up as a failed removal.
+    [HttpDelete(""/Remove"")]
+    public IActionResult Remove([FromQuery] string fileName,
+                                [FromHeader(Name = ""BIT_FILE_ID"")] string fileId)
+    {
+        System.IO.File.Delete(GetFilePath(fileId, fileName));
+
+        return Ok();
+    }
+";
+
+    private const string serverControllerFooter = @"
+    // a file is stored under its id and its name, since those two are all a remove request carries - and
+    // the id keeps two files of the same name apart. Both come from the client, so only their file-name
+    // part is ever used, never a path of their own.
+    private string GetFilePath(string fileId, string fileName)
+    {
+        var folder = Path.Combine(env.ContentRootPath, ""Uploads"");
+        Directory.CreateDirectory(folder);
+
+        return Path.Combine(folder, $""{Path.GetFileName(fileId)}-{Path.GetFileName(fileName)}"");
+    }
+}";
+
+    private const string serverControllerName = "FileUploadController.cs";
+
+    // One DemoCodeFile per controller rather than one per example that shows it, so the examples
+    // calling the same endpoints share the same reference.
+    private static readonly DemoCodeFile uploadServerFile =
+        new(serverControllerName, serverControllerHeader + serverUploadEndpoint + serverControllerFooter);
+    private static readonly DemoCodeFile uploadRemoveServerFile =
+        new(serverControllerName, serverControllerHeader + serverUploadEndpoint + serverRemoveEndpoint + serverControllerFooter);
+    private static readonly DemoCodeFile chunkedServerFile =
+        new(serverControllerName, serverControllerHeader + serverChunkedUploadEndpoint + serverControllerFooter);
+    private static readonly DemoCodeFile uploadChunkedRemoveServerFile =
+        new(serverControllerName, serverControllerHeader + serverUploadEndpoint + serverChunkedUploadEndpoint + serverRemoveEndpoint + serverControllerFooter);
+
+
+
     private readonly string example1RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" />";
     private readonly string example1CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
+    private readonly DemoCodeFile[] example1CodeFiles = [uploadServerFile];
 
     private readonly string example2RazorCode = @"
 <BitFileUpload Label=""Upload a document"" UploadUrl=""@UploadUrl"" LabelIconName=""Upload""
@@ -2056,6 +2158,7 @@ private string UploadUrl = ""/Upload"";";
 </BitFileUpload>";
     private readonly string example2CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
+    private readonly DemoCodeFile[] example2CodeFiles = [uploadServerFile];
 
     private readonly string example3RazorCode = @"
 <BitFileUpload Label=""Drag and drop files here, or click to browse"" UploadUrl=""@UploadUrl"" ShowDropArea Multiple
@@ -2099,6 +2202,7 @@ private string UploadUrl = ""/Upload"";";
     private readonly DemoCodeFile[] example3CodeFiles =
     [
         new("BitFileUploadDemo.razor.scss", example3ScssCode),
+        uploadServerFile,
     ];
 
     private readonly string example4RazorCode = @"
@@ -2107,6 +2211,7 @@ private string UploadUrl = ""/Upload"";";
     private readonly string example4CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
+    private readonly DemoCodeFile[] example4CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example5RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple AutoUpload />
@@ -2118,6 +2223,7 @@ private string RemoveUrl = ""/Remove"";";
     private readonly string example5CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
+    private readonly DemoCodeFile[] example5CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example6RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" MaxSize=""1024 * 1024 * 1""
@@ -2149,6 +2255,7 @@ private static string? ValidateEmptyFile(BitFileInfo file)
 {
     return file.Size == 0 ? ""Empty files cannot be uploaded."" : null;
 }";
+    private readonly DemoCodeFile[] example6CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example7RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop a folder"" UploadUrl=""@UploadUrl"" Directory Multiple
@@ -2161,6 +2268,7 @@ private static string? ValidateEmptyFile(BitFileInfo file)
                Description=""Opens the front camera on a mobile device."" />";
     private readonly string example7CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
+    private readonly DemoCodeFile[] example7CodeFiles = [uploadServerFile];
 
     private readonly string example8RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple ShowPreview
@@ -2186,6 +2294,7 @@ private static string? ValidateImageDimensions(BitFileInfo file)
 
     return null;
 }";
+    private readonly DemoCodeFile[] example8CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example9RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple MaxSize=""1024 * 1024 * 1""
@@ -2202,6 +2311,28 @@ private string UploadUrl = ""/Upload"";
 private string onInvalidText = string.Empty;
 private string onUploadFailedText = string.Empty;
 private string onAllUploadsCompleteText = ""No File"";";
+    private const string example9UploadEndpoint = @"
+    // key1 is the header OnUploading set on this one file. Whatever the endpoint answers becomes the
+    // Message of the file, and its status code the ResponseStatus that OnUploadFailed reports.
+    [HttpPost(""/Upload"")]
+    [RequestSizeLimit(100 * 1024 * 1024)] // Kestrel refuses a body over 30 MB unless told otherwise
+    public async Task<IActionResult> Upload(IFormFile file,
+                                            [FromHeader(Name = ""BIT_FILE_ID"")] string fileId,
+                                            [FromHeader(Name = ""key1"")] string? key1,
+                                            CancellationToken cancellationToken)
+    {
+        if (key1 is null) return BadRequest(""The key1 header is missing."");
+
+        await using var target = System.IO.File.Create(GetFilePath(fileId, file.FileName));
+        await file.CopyToAsync(target, cancellationToken);
+
+        return Ok($""{file.FileName} stored with key1 = {key1}."");
+    }
+";
+    private readonly DemoCodeFile[] example9CodeFiles =
+    [
+        new(serverControllerName, serverControllerHeader + example9UploadEndpoint + serverControllerFooter),
+    ];
 
     private readonly string example10RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" ChunkedUpload />
@@ -2209,6 +2340,7 @@ private string onAllUploadsCompleteText = ""No File"";";
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" ChunkedUpload AutoChunkSize />";
     private readonly string example10CsharpCode = @"
 private string ChunkedUploadUrl = ""/ChunkedUpload"";";
+    private readonly DemoCodeFile[] example10CodeFiles = [chunkedServerFile];
 
     private readonly string example11RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" RemoveUrl=""@RemoveUrl"" ShowRemoveButton
@@ -2245,6 +2377,64 @@ private Task<Dictionary<string, string>> GetFreshAuthHeaders()
 
     return Task.FromResult(new Dictionary<string, string> { { ""Authorization"", $""Bearer token-{tokenRequestCount}"" } });
 }";
+    private const string example11Endpoints = @"
+    // the extras of the upload request arrive like those of any other request: qs1 in the query string
+    // (UploadRequestQueryStrings), header1 as a header (UploadRequestHttpHeaders), and folder as a form
+    // field beside the file (UploadRequestFormFields).
+    [HttpPost(""/Upload"")]
+    [RequestSizeLimit(100 * 1024 * 1024)] // Kestrel refuses a body over 30 MB unless told otherwise
+    public async Task<IActionResult> Upload(IFormFile file,
+                                            [FromHeader(Name = ""BIT_FILE_ID"")] string fileId,
+                                            [FromQuery] string? qs1,
+                                            [FromHeader(Name = ""header1"")] string? header1,
+                                            [FromForm] string? folder,
+                                            CancellationToken cancellationToken)
+    {
+        await using var target = System.IO.File.Create(GetFilePath(fileId, file.FileName));
+        await file.CopyToAsync(target, cancellationToken);
+
+        return Ok($""qs1 = {qs1}, header1 = {header1}, folder = {folder}"");
+    }
+
+    // UploadRequestHttpHeadersProvider runs before every chunk, so each one arrives with a fresh token.
+    // In a real app the authentication middleware validates it and the action carries [Authorize].
+    [HttpPost(""/ChunkedUpload"")]
+    [RequestSizeLimit(11 * 1024 * 1024)] // AutoChunkSize never picks a chunk over 10 MB
+    public async Task<IActionResult> ChunkedUpload(IFormFile file,
+                                                   [FromHeader(Name = ""BIT_FILE_ID"")] string fileId,
+                                                   [FromHeader(Name = ""BIT_CHUNK_FROM"")] long chunkFrom,
+                                                   [FromHeader(Name = ""Authorization"")] string? authorization,
+                                                   CancellationToken cancellationToken)
+    {
+        if (authorization?.StartsWith(""Bearer "") is not true) return Unauthorized();
+
+        // the first chunk starts the file over, dropping whatever an earlier attempt left behind.
+        var mode = chunkFrom == 0 ? FileMode.Create : FileMode.OpenOrCreate;
+
+        await using var target = new FileStream(GetFilePath(fileId, file.FileName), mode, FileAccess.Write);
+        target.Seek(chunkFrom, SeekOrigin.Begin);
+        await file.CopyToAsync(target, cancellationToken);
+
+        return Ok();
+    }
+
+    // qs2 (RemoveRequestQueryStrings) comes beside the fileName the component adds itself, and header2
+    // (RemoveRequestHttpHeaders) beside BIT_FILE_ID.
+    [HttpDelete(""/Remove"")]
+    public IActionResult Remove([FromQuery] string fileName,
+                                [FromHeader(Name = ""BIT_FILE_ID"")] string fileId,
+                                [FromQuery] string? qs2,
+                                [FromHeader(Name = ""header2"")] string? header2)
+    {
+        System.IO.File.Delete(GetFilePath(fileId, fileName));
+
+        return Ok();
+    }
+";
+    private readonly DemoCodeFile[] example11CodeFiles =
+    [
+        new(serverControllerName, serverControllerCorsHeader + example11Endpoints + serverControllerFooter),
+    ];
 
     private readonly string example12RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@NonExistingUploadUrl""
@@ -2257,6 +2447,7 @@ private Task<Dictionary<string, string>> GetFreshAuthHeaders()
                AutoRetryDelayProvider=""@BackOff""
                RetryButtonTitle=""Try again"" />";
     private readonly string example12CsharpCode = @"
+// an endpoint the server does not map, so every upload fails with a 404.
 private string NonExistingUploadUrl = ""/MissingUploadEndpoint"";
 
 // 1s, 2s, 4s, ... with a little jitter, so a batch that failed together does not come back together.
@@ -2272,6 +2463,7 @@ private static TimeSpan? BackOff(BitFileInfo file, int attempt)
                ConcurrentUploads=""1"" QueuedUploadMessage=""In the queue…"" />";
     private readonly string example13CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
+    private readonly DemoCodeFile[] example13CodeFiles = [uploadServerFile];
 
     private readonly string example14RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple Append
@@ -2284,6 +2476,7 @@ private string UploadUrl = ""/Upload"";";
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";
 private string ChunkedUploadUrl = ""/ChunkedUpload"";";
+    private readonly DemoCodeFile[] example14CodeFiles = [uploadChunkedRemoveServerFile];
 
     private readonly string example15RazorCode = @"
 <BitFileUpload @ref=""speedFileUpload"" Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple
@@ -2340,6 +2533,7 @@ private IEnumerable<BitFileInfo> SpeedFiles =>
 // so the summary is read back from the Files property instead of from the argument.
 private IEnumerable<BitFileInfo> HiddenViewFiles =>
     hiddenViewFileUpload?.Files.Where(f => f.Status != BitFileUploadStatus.Removed) ?? [];";
+    private readonly DemoCodeFile[] example15CodeFiles = [uploadServerFile];
 
     private readonly string example16RazorCode = @"
 <style>
@@ -2627,6 +2821,7 @@ private string GetUploadMessageStr(BitFileInfo file) => file.Status switch
     BitFileUploadStatus.NotAllowed => file.Message ?? bitFileUpload.NotAllowedExtensionErrorMessage,
     _ => string.Empty,
 };";
+    private readonly DemoCodeFile[] example16CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example17RazorCode = @"
 <BitFileUpload @ref=""bitFileUploadWithBrowseFile"" HideLabel Multiple
@@ -2647,6 +2842,7 @@ private async Task HandleBrowseFileOnClick()
 {
     await bitFileUploadWithBrowseFile.Browse();
 }";
+    private readonly DemoCodeFile[] example17CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example18RazorCode = @"
 <BitFileUpload Label=""Add more attachments"" UploadUrl=""@UploadUrl"" RemoveUrl=""@RemoveUrl""
@@ -2687,6 +2883,7 @@ private void LoadAttachments()
 // what to save: the ones the user deleted have come back marked as removed.
 private IEnumerable<BitFileInfo> RemainingAttachments =>
     attachments?.Where(f => f.Status != BitFileUploadStatus.Removed) ?? [];";
+    private readonly DemoCodeFile[] example18CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example19RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
@@ -2706,6 +2903,7 @@ private static string? AnnounceUploads(IReadOnlyList<BitFileInfo> files)
 
     return $""{files.Count} attachment(s), {completed} uploaded so far."";
 }";
+    private readonly DemoCodeFile[] example19CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example20RazorCode = @"
 <BitChoiceGroup @bind-Value=""variant"" Horizontal TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
@@ -2722,6 +2920,7 @@ private static string? AnnounceUploads(IReadOnlyList<BitFileInfo> files)
     private readonly string example20CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private BitVariant variant = BitVariant.Fill;";
+    private readonly DemoCodeFile[] example20CodeFiles = [uploadServerFile];
 
     private readonly string example21RazorCode = @"
 <BitParams Parameters=""@fileUploadParams"">
@@ -2752,6 +2951,7 @@ private readonly BitFileUploadParams[] fileUploadParams =
         Description = ""Up to 5 MB per file."",
     }
 ];";
+    private readonly DemoCodeFile[] example21CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example22RazorCode = @"
 <BitFileUpload Label=""Primary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Primary"" />
@@ -2776,6 +2976,7 @@ private readonly BitFileUploadParams[] fileUploadParams =
 <BitFileUpload Label=""Drop files here"" UploadUrl=""@UploadUrl"" ShowDropArea Color=""BitColor.Success"" />";
     private readonly string example22CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
+    private readonly DemoCodeFile[] example22CodeFiles = [uploadServerFile];
 
     private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
@@ -2826,6 +3027,7 @@ private string UploadUrl = ""/Upload"";";
     private readonly string example23CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
+    private readonly DemoCodeFile[] example23CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example24RazorCode = @"
 <BitFileUpload Label=""Small"" UploadUrl=""@UploadUrl"" Size=""BitSize.Small"" LabelIconName=""Upload"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
@@ -2836,6 +3038,7 @@ private string RemoveUrl = ""/Remove"";";
     private readonly string example24CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
+    private readonly DemoCodeFile[] example24CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example25RazorCode = @"
 <style>
@@ -2921,6 +3124,7 @@ private string RemoveUrl = ""/Remove"";";
     private readonly string example25CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
+    private readonly DemoCodeFile[] example25CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example26RazorCode = @"
 <div dir=""rtl"">
@@ -2944,4 +3148,5 @@ private string RemoveUrl = ""/Remove"";";
     private readonly string example26CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
+    private readonly DemoCodeFile[] example26CodeFiles = [uploadRemoveServerFile];
 }
