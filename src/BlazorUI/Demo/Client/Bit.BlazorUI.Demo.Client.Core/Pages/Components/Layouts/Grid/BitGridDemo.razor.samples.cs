@@ -9,9 +9,10 @@ public partial class BitGridDemo
         min-height: 56px;
         font-size: 0.75rem;
         text-align: center;
-        border-radius: 2px;
         align-content: center;
-        border: 1px solid gray;
+        border-radius: var(--bit-shp-radius-sm);
+        background: var(--bit-clr-bg-sec);
+        border: 1px solid var(--bit-clr-brd-pri);
     }
 </style>
 
@@ -141,6 +142,21 @@ public partial class BitGridDemo
 </BitGrid>";
 
     private readonly string example6RazorCode = @"
+<style>
+    .grid-item.tall {
+        min-height: 128px;
+    }
+
+    .grid-item.medium {
+        min-height: 88px;
+    }
+
+    .tall-grid {
+        height: 320px;
+    }
+</style>
+
+
 <BitChoiceGroup @bind-Value=""horizontalAlign""
                 Horizontal
                 Label=""HorizontalAlign""
@@ -292,6 +308,18 @@ private double horizontalSpacing = 0.5;";
 private double minItemWidth = 10;";
 
     private readonly string example10RazorCode = @"
+<style>
+    .resizable {
+        resize: horizontal;
+        overflow: auto;
+        max-width: 100%;
+        min-width: 200px;
+        padding: 0.5rem;
+        border: 1px dashed var(--bit-clr-brd-pri);
+    }
+</style>
+
+
 <div class=""resizable"">
     <div>Container: follows this box</div>
 
@@ -339,6 +367,14 @@ private double minItemWidth = 10;";
 </BitGrid>";
 
     private readonly string example12RazorCode = @"
+<style>
+    .grid-item.nested {
+        min-height: 40px;
+        border-style: dashed;
+    }
+</style>
+
+
 <BitGrid>
     <BitGridItem Class=""grid-item"" ColumnSpan=""8"">
         <div>Span 8, holding a grid of its own</div>
@@ -428,6 +464,15 @@ private readonly IBitComponentParams[] gridParams =
 ];";
 
     private readonly string example16RazorCode = @"
+<style>
+    .grid-item.custom-item {
+        border-color: transparent;
+        color: var(--bit-clr-pri-text);
+        background: var(--bit-clr-pri);
+    }
+</style>
+
+
 <BitGrid Columns=""4"" Style=""border: 1px solid var(--bit-clr-brd-pri); padding: 0.5rem;"">
     <BitGridItem Class=""grid-item custom-item"">Class</BitGridItem>
     <BitGridItem Class=""grid-item"" Style=""background: var(--bit-clr-inf); color: var(--bit-clr-inf-text);"">Style</BitGridItem>
