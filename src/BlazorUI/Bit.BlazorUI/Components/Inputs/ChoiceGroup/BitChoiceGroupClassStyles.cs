@@ -29,8 +29,16 @@ public class BitChoiceGroupClassStyles
 
     /// <summary>
     /// Custom CSS classes/styles for the checked item of the BitChoiceGroup.
+    /// Applied on top of <see cref="ItemContainer"/>, so it only has to state what the checked state changes.
     /// </summary>
     public string? ItemChecked { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for a disabled item of the BitChoiceGroup, whether the item itself or the
+    /// whole group is disabled. Applied on top of <see cref="ItemContainer"/>, so it only has to state what
+    /// the disabled state changes.
+    /// </summary>
+    public string? ItemDisabled { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the container of each item of the BitChoiceGroup.

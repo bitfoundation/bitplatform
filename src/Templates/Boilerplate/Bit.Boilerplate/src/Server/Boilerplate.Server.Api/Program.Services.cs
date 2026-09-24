@@ -138,10 +138,6 @@ public static partial class Program
                 : GetConnectionStringValue(azureBlobStorageConnectionString, "AccountKey");
             return AzureBlobStorage.FromSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
-            //#if (aspire == false)
-            // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "RUSTFS_ACCESS_KEY=rustfsadmin" -e "RUSTFS_SECRET_KEY=P@ssw0rd" -e "RUSTFS_CONSOLE_ADDRESS=:9001" -v rustfs-data:/data rustfs/rustfs`
-            // Open RustFS console at http://127.0.0.1:9001/rustfs/console/
-            //#endif
             var s3ConnectionString = configuration.GetRequiredConnectionString("s3")!;
             var s3Endpoint = GetConnectionStringValue(s3ConnectionString, "Endpoint");
             var s3AccessKey = GetConnectionStringValue(s3ConnectionString, "AccessKey");
