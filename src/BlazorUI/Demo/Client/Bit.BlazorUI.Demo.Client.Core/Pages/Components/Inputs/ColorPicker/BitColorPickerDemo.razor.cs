@@ -361,23 +361,23 @@ public partial class BitColorPickerDemo
                 new() { Name = "SaturationAreaRoleDescription", Type = "string", DefaultValue = "2D slider", Description = "What that area calls itself through aria-roledescription, so that both axes it is driven on are announced." },
                 new() { Name = "SaturationValueFormat", Type = "string", DefaultValue = "{0}, Saturation {1}%, Brightness {2}%, {3}", Description = "What that area announces its value as. {0} the color description, {1} the saturation, {2} the brightness, {3} the hex." },
                 new() { Name = "HueLabel", Type = "string", DefaultValue = "Hue", Description = "The accessible name of the hue slider, and the tooltip of the hue channel field." },
-                new() { Name = "HueValueFormat", Type = "string", DefaultValue = "Hue {0} degrees", Description = "What the hue slider announces its value as, unit included. {0} the hue in degrees." },
+                new() { Name = "HueValueFormat", Type = "string", DefaultValue = "Hue {0} degrees, {1}", Description = "What the hue slider announces its value as, unit included. {0} the hue in degrees, {1} the name of that hue (in English)." },
                 new() { Name = "HueFieldLabel", Type = "string", DefaultValue = "H", Description = "The caption under the hue channel field, which has to fit the width of one field." },
                 new() { Name = "AlphaLabel", Type = "string", DefaultValue = "Alpha", Description = "The accessible name of the alpha slider, and the tooltip of the alpha field." },
                 new() { Name = "AlphaValueFormat", Type = "string", DefaultValue = "Alpha {0}%", Description = "What the alpha slider announces its value as. {0} the alpha as a percentage." },
                 new() { Name = "AlphaFieldLabel", Type = "string", DefaultValue = "A%", Description = "The caption under the alpha percentage field." },
                 new() { Name = "HexFieldLabel", Type = "string", DefaultValue = "Hex", Description = "The caption under the hexadecimal field." },
-                new() { Name = "RedLabel", Type = "string", DefaultValue = "Red", Description = "The tooltip and accessible name of the red channel field." },
+                new() { Name = "RedLabel", Type = "string", DefaultValue = "Red", Description = "The tooltip of the red channel field, which screen readers read as its description." },
                 new() { Name = "RedFieldLabel", Type = "string", DefaultValue = "R", Description = "The caption under the red channel field." },
-                new() { Name = "GreenLabel", Type = "string", DefaultValue = "Green", Description = "The tooltip and accessible name of the green channel field." },
+                new() { Name = "GreenLabel", Type = "string", DefaultValue = "Green", Description = "The tooltip of the green channel field, which screen readers read as its description." },
                 new() { Name = "GreenFieldLabel", Type = "string", DefaultValue = "G", Description = "The caption under the green channel field." },
-                new() { Name = "BlueLabel", Type = "string", DefaultValue = "Blue", Description = "The tooltip and accessible name of the blue channel field." },
+                new() { Name = "BlueLabel", Type = "string", DefaultValue = "Blue", Description = "The tooltip of the blue channel field, which screen readers read as its description." },
                 new() { Name = "BlueFieldLabel", Type = "string", DefaultValue = "B", Description = "The caption under the blue channel field." },
-                new() { Name = "SaturationLabel", Type = "string", DefaultValue = "Saturation", Description = "The tooltip and accessible name of the saturation channel field." },
+                new() { Name = "SaturationLabel", Type = "string", DefaultValue = "Saturation", Description = "The tooltip of the saturation channel field, which screen readers read as its description." },
                 new() { Name = "SaturationFieldLabel", Type = "string", DefaultValue = "S", Description = "The caption under the saturation channel field." },
-                new() { Name = "LightnessLabel", Type = "string", DefaultValue = "Lightness", Description = "The tooltip and accessible name of the lightness channel field of the HSL mode." },
+                new() { Name = "LightnessLabel", Type = "string", DefaultValue = "Lightness", Description = "The tooltip of the lightness channel field of the HSL mode, which screen readers read as its description." },
                 new() { Name = "LightnessFieldLabel", Type = "string", DefaultValue = "L", Description = "The caption under the lightness channel field." },
-                new() { Name = "BrightnessLabel", Type = "string", DefaultValue = "Brightness", Description = "The tooltip and accessible name of the brightness channel field of the HSV mode." },
+                new() { Name = "BrightnessLabel", Type = "string", DefaultValue = "Brightness", Description = "The tooltip of the brightness channel field of the HSV mode, which screen readers read as its description." },
                 new() { Name = "BrightnessFieldLabel", Type = "string", DefaultValue = "V", Description = "The caption under the brightness channel field." },
                 new() { Name = "PickerLabelFormat", Type = "string", DefaultValue = "Color picker, {0}, Red {1} Green {2} Blue {3} selected.", Description = "What the picker calls itself when it has neither an AriaLabel nor a Label. {0} the color description, {1} red, {2} green, {3} blue." },
                 new() { Name = "PickerLabelWithAlphaFormat", Type = "string", DefaultValue = "Color picker, {0}, Red {1} Green {2} Blue {3} and Alpha {4}% selected.", Description = "The same, for a picker whose alpha slider is shown. {4} is the alpha as a percentage." },
@@ -867,6 +867,7 @@ public partial class BitColorPickerDemo
     private string paletteOnlyColor = "#E24A4A";
     private string tintColor = "#4A9BE2";
     private string fieldsOnlyColor = "rgba(126,74,226,1)";
+    private string popoverColor = "#4A9BE2";
 
     private readonly BitColorPickerParams[] colorPickerParams =
     [

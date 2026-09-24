@@ -249,7 +249,22 @@ private static readonly BitColorPickerTexts persianTexts = new()
 
 <BitColorPicker ShowSaturationArea=""false"" ShowHueSlider=""false"" ShowInputs ShowInputsModeSwitch ShowPreview ShowAlphaSlider
                 @bind-Color=""fieldsOnlyColor"" />
-<div>Color: @fieldsOnlyColor</div>";
+<div>Color: @fieldsOnlyColor</div>
+
+<BitCallout AutoFocus>
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"" AriaLabel=""@($""Text color, {popoverColor}"")"">
+            <span style=""display:inline-block;width:1rem;height:1rem;border:1px solid;border-radius:2px;background:@popoverColor""></span>
+            &nbsp;@popoverColor
+        </BitButton>
+    </Anchor>
+    <Content>
+        <BitColorPicker ShowInputs Presets=""brandPresets""
+                        Label=""Text color""
+                        Style=""--bit-ColorPicker-padding: 0.75rem;""
+                        @bind-Color=""popoverColor"" />
+    </Content>
+</BitCallout>";
     private readonly string example11CsharpCode = @"
 private static readonly string[] brandPresets =
 [
@@ -259,7 +274,8 @@ private static readonly string[] brandPresets =
 
 private string paletteOnlyColor = ""#E24A4A"";
 private string tintColor = ""#4A9BE2"";
-private string fieldsOnlyColor = ""rgba(126,74,226,1)"";";
+private string fieldsOnlyColor = ""rgba(126,74,226,1)"";
+private string popoverColor = ""#4A9BE2"";";
 
     private readonly string example12RazorCode = @"
 <BitParams Parameters=""@colorPickerParams"">

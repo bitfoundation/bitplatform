@@ -626,8 +626,12 @@ public class BitColorPickerTests : BunitTestContext
     [TestMethod,
         DataRow("#00FF00", "#00FF00", 1.0),
         DataRow("#0f0", "#00FF00", 1.0),
-        DataRow("00FF00", "#FFFFFF", 1.0),
+        DataRow("00FF00", "#00FF00", 1.0),
+        DataRow(" 0f0 ", "#00FF00", 1.0),
+        DataRow("00FF0080", "#00FF00", 0.5),
         DataRow("#00FF0080", "#00FF00", 0.5),
+        DataRow("tomato", "#FF6347", 1.0),
+        DataRow("00FF0", "#FFFFFF", 1.0),
         DataRow("nonsense", "#FFFFFF", 1.0)
     ]
     public void BitColorPickerShouldCommitTheHexField(string typed, string expectedHex, double expectedAlpha)
@@ -1692,7 +1696,7 @@ public class BitColorPickerTests : BunitTestContext
         var alpha = com.Find(".bit-clp-asd .bit-clp-inp");
 
         Assert.AreEqual("Hue", hue.GetAttribute("aria-label"));
-        Assert.AreEqual("Hue 210 degrees", hue.GetAttribute("aria-valuetext"));
+        Assert.AreEqual("Hue 210 degrees, blue", hue.GetAttribute("aria-valuetext"));
         Assert.AreEqual("Alpha", alpha.GetAttribute("aria-label"));
         Assert.AreEqual("Alpha 25%", alpha.GetAttribute("aria-valuetext"));
     }

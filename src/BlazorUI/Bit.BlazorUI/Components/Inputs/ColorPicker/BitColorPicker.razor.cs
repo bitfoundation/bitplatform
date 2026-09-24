@@ -745,7 +745,15 @@ public partial class BitColorPicker : BitComponentBase
     /// What the hue slider announces. A bare number would be read as a position on an unnamed scale, so the
     /// unit the scale is actually in - degrees around the color wheel - is spelled out with it.
     /// </summary>
-    private string _HueValueText => string.Format(CultureInfo.InvariantCulture, _Texts.HueValueFormat, Math.Round(_color.Hsv.Hue));
+    private string _HueValueText
+    {
+        get
+        {
+            var hue = _color.Hsv.Hue;
+
+            return string.Format(CultureInfo.InvariantCulture, _Texts.HueValueFormat, Math.Round(hue), BitInternalColor.HueDescription(hue));
+        }
+    }
 
     private string _AlphaValueText => string.Format(CultureInfo.InvariantCulture, _Texts.AlphaValueFormat, _AlphaPercentValue);
 
@@ -1115,10 +1123,11 @@ public partial class BitColorPicker : BitComponentBase
         if (_IsInteractive is false) return;
 
         var text = args.Value as string;
+        var color = NormalizeHexField(text);
 
         // A field left in a state that is not a color simply does not commit, and the current color is put
         // back into it - which is less surprising than resetting the picker to white.
-        if (BitInternalColor.IsValid(text) is false)
+        if (BitInternalColor.IsValid(color) is false)
         {
             await RestoreInputAsync(_hexInputRef, text, _HexValue);
             return;
@@ -1126,11 +1135,26 @@ public partial class BitColorPicker : BitComponentBase
 
         // Parsed onto the current alpha, so typing a six-digit hex into a semi-transparent color does not
         // silently make it opaque; an eight-digit one still brings its own alpha with it.
-        _color.Parse(text, _color.A);
+        _color.Parse(color, _color.A);
 
         await ChangeAsync(final: true);
 
         await RestoreInputAsync(_hexInputRef, text, _HexValue);
+    }
+
+    /// <summary>
+    /// What the hexadecimal field is read as. The field is captioned "Hex", so the digits alone - the form a
+    /// hex is usually copied out of a design tool in - are taken as one rather than refused for the missing
+    /// '#'. Only a run of three, four, six or eight hex digits is completed: anything else - a keyword, an
+    /// rgb() - is passed on as typed, so the field still takes every notation the picker reads.
+    /// </summary>
+    private static string? NormalizeHexField(string? text)
+    {
+        var trimmed = text?.Trim();
+
+        if (trimmed is not { Length: 3 or 4 or 6 or 8 }) return trimmed;
+
+        return trimmed.All(char.IsAsciiHexDigit) ? $"#{trimmed}" : trimmed;
     }
 
     private async Task HandleOnChannelInput(ChangeEventArgs args, int channel)

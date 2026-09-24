@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Every piece of text the <see cref="BitColorPicker"/> writes for itself: the accessible names of its
@@ -43,11 +43,12 @@ public class BitColorPickerTexts
 
     /// <summary>
     /// What the hue slider announces its value as. A bare number would be read as a position on an unnamed
-    /// scale, so the unit the scale is in - degrees around the color wheel - is spelled out with it.
+    /// scale, so the unit the scale is in - degrees around the color wheel - is spelled out with it, and so
+    /// is the color those degrees point at, which is what someone dragging the slider is looking for.
     /// <br />
-    /// <c>{0}</c> the hue in degrees.
+    /// <c>{0}</c> the hue in degrees, <c>{1}</c> the name of that hue in English ("blue").
     /// </summary>
-    public string HueValueFormat { get; set; } = "Hue {0} degrees";
+    public string HueValueFormat { get; set; } = "Hue {0} degrees, {1}";
 
     /// <summary>
     /// The accessible name of the alpha slider, and the tooltip of the alpha field.
@@ -72,7 +73,7 @@ public class BitColorPickerTexts
     public string HexFieldLabel { get; set; } = "Hex";
 
     /// <summary>
-    /// The tooltip and accessible name of the red channel field.
+    /// The tooltip of the red channel field, which screen readers read as its description.
     /// </summary>
     public string RedLabel { get; set; } = "Red";
 
@@ -82,7 +83,7 @@ public class BitColorPickerTexts
     public string RedFieldLabel { get; set; } = "R";
 
     /// <summary>
-    /// The tooltip and accessible name of the green channel field.
+    /// The tooltip of the green channel field, which screen readers read as its description.
     /// </summary>
     public string GreenLabel { get; set; } = "Green";
 
@@ -92,7 +93,7 @@ public class BitColorPickerTexts
     public string GreenFieldLabel { get; set; } = "G";
 
     /// <summary>
-    /// The tooltip and accessible name of the blue channel field.
+    /// The tooltip of the blue channel field, which screen readers read as its description.
     /// </summary>
     public string BlueLabel { get; set; } = "Blue";
 
@@ -107,7 +108,7 @@ public class BitColorPickerTexts
     public string HueFieldLabel { get; set; } = "H";
 
     /// <summary>
-    /// The tooltip and accessible name of the saturation channel field.
+    /// The tooltip of the saturation channel field, which screen readers read as its description.
     /// </summary>
     public string SaturationLabel { get; set; } = "Saturation";
 
@@ -117,7 +118,7 @@ public class BitColorPickerTexts
     public string SaturationFieldLabel { get; set; } = "S";
 
     /// <summary>
-    /// The tooltip and accessible name of the lightness channel field of the HSL mode.
+    /// The tooltip of the lightness channel field of the HSL mode, which screen readers read as its description.
     /// </summary>
     public string LightnessLabel { get; set; } = "Lightness";
 
@@ -127,7 +128,7 @@ public class BitColorPickerTexts
     public string LightnessFieldLabel { get; set; } = "L";
 
     /// <summary>
-    /// The tooltip and accessible name of the brightness channel field of the HSV mode.
+    /// The tooltip of the brightness channel field of the HSV mode, which screen readers read as its description.
     /// </summary>
     public string BrightnessLabel { get; set; } = "Brightness";
 
