@@ -4269,6 +4269,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             classes.Add("bit-dtrp-sta");
         }
 
+        if (ReadOnly)
+        {
+            // The callout is rendered outside of the root element, so it needs its own read-only marker to
+            // stop the days, the presets and the time buttons from advertising a change that is ignored.
+            classes.Add("bit-dtrp-rol");
+        }
+
         if (Classes?.Callout is not null)
         {
             classes.Add(Classes.Callout);
@@ -4285,6 +4292,76 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         return string.Join(' ', classes).Trim();
+    }
+
+    // The public custom properties of the component, which are what its stylesheet reads with a fallback
+    // (see BitDateRangePicker.scss). Nothing else in a style string is copied to the callout.
+    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-DateRangePicker-";
+
+    private string? _publicCssVariables;
+    private string? _lastRootStyle;
+    private string? _lastStylesRoot;
+
+    // The callout and the overlay are rendered outside the root element - and reparented to the body while the
+    // callout is open - so they inherit nothing an author sets on the picker: neither the Style of the instance
+    // nor a custom property declared on an ancestor of it (only :root and body stay ancestors of them once they
+    // have moved). The public --bit-DateRangePicker-* declarations are therefore carried across by hand, so ONE
+    // Style on the component restyles the field and the calendar it opens together, the way it reads as if it would.
+    private string? GetPublicCssVariables()
+    {
+        var style = Style;
+        var stylesRoot = Styles?.Root;
+
+        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
+        // re-rendered on every hover over a day while a range is being picked.
+        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
+            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
+        {
+            return _publicCssVariables;
+        }
+
+        _lastRootStyle = style;
+        _lastStylesRoot = stylesRoot;
+
+        StringBuilder? builder = null;
+
+        AppendPublicCssVariables(ref builder, style);
+        AppendPublicCssVariables(ref builder, stylesRoot);
+
+        _publicCssVariables = builder?.ToString();
+
+        return _publicCssVariables;
+    }
+
+    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
+    private string? GetCalloutStyles()
+    {
+        var variables = GetPublicCssVariables();
+        var stylesCallout = Styles?.Callout;
+
+        if (variables.HasNoValue()) return stylesCallout;
+        if (stylesCallout.HasNoValue()) return variables;
+
+        return variables + stylesCallout;
+    }
+
+    // Styles.Overlay is appended last for the same reason Styles.Callout is. The display is written here
+    // rather than in the stylesheet because it is what the component toggles the layer with.
+    private string GetOverlayStyles()
+    {
+        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
+    }
+
+    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
+    {
+        if (style.HasNoValue()) return;
+
+        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
+
+            (builder ??= new StringBuilder()).Append(declaration).Append(';');
+        }
     }
 
 

@@ -7,7 +7,7 @@
             Description="A BitDateRangePicker is a drop-down calendar for picking a start and an end date, with preset shortcuts, up to three months side by side, optional time selection, range limits, disabled days, an optional Apply/Cancel commit step and full globalization support." />
 
 <DemoPage Name="DateRangePicker"
-          Description="A BitDateRangePicker offers a drop-down control that’s optimized for picking two dates from a calendar view where contextual information like the day of the week or fullness of the calendar is important. The first click sets the start of the range, the second one closes it, and the days in between are highlighted while the pointer moves. Up to three months can be shown side by side and the most common ranges offered as one-click presets. The calendar can be constrained (MinDate, MaxDate, MinRange, MaxRange, disabled days), extended with a start/end time picker, turned into a transaction that commits on an Apply button, rendered inline, sized in three steps, navigated entirely from the keyboard and localized to any culture and time zone."
+          Description="A BitDateRangePicker is a drop-down calendar for picking a start and an end date, where context such as the day of the week matters. It offers one-click presets, up to three months side by side, range limits and disabled days, an optional time picker, an optional Apply/Cancel step, an inline mode, full keyboard support and any culture or time zone."
           Parameters="componentParameters"
           CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
@@ -16,17 +16,12 @@
           GitHubDemoUrl="Inputs/DateRangePicker/BitDateRangePickerDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div class="example-desc">
-            A read-only field that opens a calendar: the first click starts the range, the second closes it, a third
-            starts over. Opening the callout moves the keyboard focus onto the day grid, unless the field is editable
-            and the range may still be typed.
-            <br /><br />
-            <b>Label</b>, <b>Placeholder</b>, <b>Required</b> and <b>IsEnabled</b> behave as on any input.
-            <b>ShowWeekNumbers</b>, <b>HighlightCurrentMonth</b>, <b>HighlightSelectedMonth</b>, <b>IsMonthPickerVisible</b>
-            and <b>ShowTimePicker</b> shape the calendar; <b>IconName</b>, <b>IconLocation</b>, <b>Underlined</b>,
-            <b>HasBorder</b> and <b>DropDirection</b> shape the field and where its callout opens.
-            <b>ShowClearButton</b> adds a reset button once a range is set, <b>AutoClose</b> keeps the callout open after
-            the second pick, and <b>StartingValue</b> decides the month and the times the calendar opens on while the
-            value is empty.
+            The first click starts the range, the second ends it, a third starts over. The common field and calendar
+            options: <b>Label</b>, <b>Placeholder</b>, <b>Required</b>, <b>IsEnabled</b>, <b>ShowWeekNumbers</b>,
+            <b>HighlightCurrentMonth</b>/<b>HighlightSelectedMonth</b>, <b>ShowTimePicker</b>, <b>IconName</b>,
+            <b>IconLocation</b>, <b>Underlined</b>, <b>HasBorder</b>, <b>DropDirection</b>, <b>AutoClose</b>,
+            <b>ShowClearButton</b>, <b>IsMonthPickerVisible</b>, and <b>StartingValue</b> (the month and times shown while
+            the value is empty).
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Basic DateRangePicker" />
@@ -70,15 +65,10 @@
 
     <DemoExample Title="Presets" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div class="example-desc">
-            <b>Presets</b> puts the common ranges one click away, in a column beside the calendar. Each
-            <b>BitDateRangePickerPreset</b> carries its button text and either a fixed <b>Value</b> or a
-            <b>ValueProvider</b>, re-evaluated on every click - which is what keeps "Last 7 days" correct however long
-            the page has been open. It can also be disabled, titled and styled on its own.
-            <br /><br />
-            The applied preset stays highlighted until the range changes by any other means, <b>OnPresetSelect</b>
-            reports the click, and the callout closes on it exactly as it does on the second date. A preset whose range
-            breaks the calendar's restrictions is rejected rather than clamped: a shifted variant would not be the range
-            its button promised.
+            <b>Presets</b> puts common ranges one click away beside the calendar. A <b>BitDateRangePickerPreset</b> has a
+            fixed <b>Value</b> or a <b>ValueProvider</b> evaluated on each click (so "Last 7 days" never goes stale), and
+            can be disabled, titled and styled. The applied preset stays highlighted and <b>OnPresetSelect</b> reports it;
+            a preset breaking the calendar's restrictions is rejected, not clamped.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Common ranges" Presets="presets" @bind-Value="presetsValue"
@@ -95,16 +85,10 @@
 
     <DemoExample Title="Min & Max" RazorCode="@example3RazorCode" Id="example3">
         <div class="example-desc">
-            <b>MinDate</b> and <b>MaxDate</b> bound the whole calendar: days, months and years outside them are disabled and
-            the navigation buttons stop at the boundary. <b>MaxRange</b> and <b>MinRange</b> instead bound the length of the
-            selection itself - once the start date is picked, every day that would produce a range longer than
-            <b>MaxRange</b> or shorter than <b>MinRange</b> becomes unselectable. <b>MaxRange</b> bounds the day grid in whole days,
-            equally far either side of the picked start date, and also accounts for the hours and minutes, so the time
-            picker's spinners are disabled as soon as they would exceed it - and a <b>MaxRange</b> shorter than a day
-            leaves the day the range started on as the only one it can end on.
-            <b>DisablePast</b> and <b>DisableFuture</b> bound the calendar by today exactly as a <b>MinDate</b> or a
-            <b>MaxDate</b> of today would, without having to keep one up to date; where both apply, the narrower of
-            the two wins.
+            <b>MinDate</b>/<b>MaxDate</b> bound the calendar; <b>DisablePast</b>/<b>DisableFuture</b> do the same with
+            today (the narrower bound wins). <b>MinRange</b>/<b>MaxRange</b> bound the selection's length: once the start
+            is picked, days that would make it too short or too long are disabled, and <b>MaxRange</b> also limits the
+            time spinners.
         </div>
         <div class="example-content">
             <div>Min: Now.AddDays(-5)</div>
@@ -141,12 +125,9 @@
 
     <DemoExample Title="Disabled dates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div class="example-desc">
-            Beyond the min/max bounds, individual days can be blocked out. <b>DisabledDaysOfWeek</b> takes the recurring days
-            to disable (weekends, for example), <b>DisabledDates</b> takes an explicit list of dates (holidays, blackout days)
-            and <b>IsDateDisabled</b> takes a predicate for anything rule-based. Disabled days cannot be clicked and are
-            skipped by the keyboard navigation, but by default the range simply spans over them, so use them for days that
-            must not be a start or an end of the selection. When the range must not cover them at all, <b>ExcludeDisabledDates</b>
-            also disables every day whose range, measured from the already picked start date, would contain one.
+            <b>DisabledDaysOfWeek</b> (recurring), <b>DisabledDates</b> (a list) and <b>IsDateDisabled</b> (a predicate)
+            block days from being a start or an end; a range still spans over them unless <b>ExcludeDisabledDates</b> is
+            set, which also disables every day the range could only reach by covering one.
         </div>
         <br />
         <div class="example-content">
@@ -166,9 +147,8 @@
 
     <DemoExample Title="Highlighted dates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div class="example-desc">
-            <b>HighlightedDates</b> marks days that deserve attention without making them unselectable, and <b>GetDayClass</b>
-            attaches an arbitrary CSS class to any day cell, which makes it possible to color-code a calendar (busy days,
-            promotions, deadlines) from the application's own data.
+            <b>HighlightedDates</b> marks days without disabling them; <b>GetDayClass</b> adds a CSS class of your own to
+            any day, to color-code the calendar from application data.
         </div>
         <div class="example-content">
             <div>HighlightedDates: the next three days</div>
@@ -181,17 +161,10 @@
 
     <DemoExample Title="Calendar layout" RazorCode="@example6RazorCode" Id="example6">
         <div class="example-desc">
-            The shape of the day grid is configurable: <b>FirstDayOfWeek</b> overrides the first column of the week coming
-            from the culture, <b>ShowOutsideDays</b> hides the leading and trailing days of the adjacent months,
-            <b>FixedWeeks</b> always renders six week rows so the calendar keeps a constant height while navigating,
-            <b>WeekNumberRule</b> chooses how week numbers are computed, <b>Today</b> overrides the date the calendar
-            considers as today, which is useful for tests and for server-driven "current date" scenarios, and
-            <b>HighlightToday</b> turns off the accent on today's cell - the cell still reports itself as the current
-            date to a screen reader, so only the paint goes away.
-            <br /><br />
-            The chrome around the grid is optional too: <b>ShowMonthPickerAsOverlay</b> hides the month and year picker
-            until the month title is clicked instead of standing it beside the days, <b>ShowGoToToday</b> drops the
-            jump-to-today button, and <b>ShowCloseButton</b> adds a dismiss button to the callout's header.
+            Grid: <b>FirstDayOfWeek</b>, <b>ShowOutsideDays</b>, <b>FixedWeeks</b> (always six rows),
+            <b>WeekNumberRule</b>, <b>Today</b> (override the current date) and <b>HighlightToday</b> (paint only; screen
+            readers still hear it). Chrome: <b>ShowMonthPickerAsOverlay</b> (month picker behind the title),
+            <b>ShowGoToToday</b> and <b>ShowCloseButton</b>.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="FirstDayOfWeek: Monday" FirstDayOfWeek="DayOfWeek.Monday" />
@@ -217,12 +190,8 @@
 
     <DemoExample Title="Multiple months" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div class="example-desc">
-            <b>MonthCount</b> renders up to three consecutive months side by side, so a range across a month
-            boundary needs no navigating in between: the hover preview, the selection and the arrow keys all flow
-            across the grids. The strip moves as a whole - only the first month carries the "previous" button and
-            only the last the "next" one - and it falls back to a single month on a viewport too narrow for it.
-            <b>PagedNavigation</b> moves it by a whole page instead of a single month, so consecutive pages never
-            overlap.
+            <b>MonthCount</b> shows up to three months side by side; the preview, selection and arrow keys flow across
+            them, and a narrow viewport falls back to one. <b>PagedNavigation</b> moves a whole page at a time.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Two months" MonthCount="2" @bind-Value="monthCountValue" />
@@ -245,13 +214,10 @@
 
     <DemoExample Title="Time picker" RazorCode="@example8RazorCode" Id="example8">
         <div class="example-desc">
-            <b>ShowTimePicker</b> puts a start and an end time under the calendar, so the range carries a time of day
-            as well as a date. <b>TimeFormat</b> switches it between the 24-hour clock and a 12-hour one with the
-            culture's AM/PM designators. <b>HourStep</b> and <b>MinuteStep</b> lay a grid over the day that every time
-            the spin buttons produce sits on - a quarter-hour booking or a shift-based schedule says so this way - and
-            holding a spin button repeats it, after <b>ContinuousSpinDelay</b> and then every
-            <b>ContinuousSpinInterval</b>. <b>ShowTimePickerAsOverlay</b> puts the times on top of the calendar behind a
-            toggle instead of beside it, which is what a callout too narrow for both does on its own.
+            <b>ShowTimePicker</b> adds a start and an end time. <b>TimeFormat</b> picks the 24- or 12-hour clock;
+            <b>HourStep</b>/<b>MinuteStep</b> snap the spin buttons to a grid; holding a button repeats after
+            <b>ContinuousSpinDelay</b>, every <b>ContinuousSpinInterval</b>. <b>ShowTimePickerAsOverlay</b> puts the
+            times behind a toggle, as a narrow callout does on its own.
         </div>
         <div class="example-content">
             <BitDateRangePicker ShowTimePicker
@@ -276,12 +242,9 @@
 
     <DemoExample Title="Formatting" RazorCode="@example9RazorCode" Id="example9">
         <div class="example-desc">
-            <b>DateFormat</b> controls how each of the two dates is rendered (and parsed back, when text input is allowed),
-            while <b>ValueFormat</b> is the template that composes them into the single string shown in the input;
-            <code>{0}</code> is the start date and <code>{1}</code> is the end date. When no <b>DateFormat</b> is provided the culture's
-            short date pattern is used, extended with the time pattern whenever <b>ShowTimePicker</b> is enabled.
-            An end date that has not been picked yet is rendered as <code>---</code>, which <b>NoDateText</b> replaces with any
-            wording of its own, both when the value is written out and when it is typed back in.
+            <b>DateFormat</b> formats (and parses) each date - by default the culture's short date, plus the time with
+            <b>ShowTimePicker</b>. <b>ValueFormat</b> joins them: <code>{0}</code> is the start, <code>{1}</code> the end.
+            <b>NoDateText</b> replaces the <code>---</code> of a date not picked yet.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="DateFormat: 'dd=MM(yy)'" DateFormat="dd=MM(yy)" />
@@ -296,11 +259,9 @@
 
     <DemoExample Title="Text input" RazorCode="@example10RazorCode" Id="example10">
         <div class="example-desc">
-            <b>AllowTextInput</b> makes the field editable and parses the typed text back into a range. It must follow
-            the <b>ValueFormat</b> template with both dates in the <b>DateFormat</b> pattern; leaving the end date as
-            <code>---</code> keeps the range open-ended and a reversed pair is swapped. A typed range is held to every
-            restriction the calendar enforces, so nothing that could not be picked from the day grid slips in this way -
-            see <BitLink Href="#example20">Validation</BitLink> for the three messages that tell the failures apart.
+            <b>AllowTextInput</b> makes the field editable. Text must follow <b>ValueFormat</b> and <b>DateFormat</b>;
+            <code>---</code> leaves an end open and a reversed pair is swapped. Typed ranges obey every calendar
+            restriction (see <BitLink Href="#example20">Validation</BitLink> for the messages).
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Text input allowed"
@@ -342,17 +303,10 @@
 
     <DemoExample Title="Apply & Cancel" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div class="example-desc">
-            <b>AutoApply="false"</b> turns the callout into a transaction: it grows a <b>Cancel</b> and an
-            <b>Apply</b> button, and the range it was opened on is put back unless Apply commits the new one -
-            dismissing the callout any other way (Escape, the overlay, the close button) rolls it back too.
-            <b>Apply</b> stays disabled while only one end of the range is picked, and <b>AutoClose</b> is ignored,
-            since the callout has to stay open for it. <b>OnApply</b> and <b>OnCancel</b> report the outcome;
-            the buttons' wording comes from <b>ApplyButtonText</b> and <b>CancelButtonText</b>.
-            <br /><br />
-            The picks still reach the bound value as they are made - that is what the calendar, the presets and
-            the time picker all read - so an application watching <b>Value</b> sees the range being built and
-            then either kept or rolled back. A <b>Standalone</b> picker has no callout to commit, so it never
-            renders the buttons.
+            <b>AutoApply="false"</b> adds <b>Cancel</b> and <b>Apply</b> buttons: the range the callout opened on is
+            restored unless Apply commits the new one (Escape, the overlay or the close button roll back too). Apply is
+            disabled while the range is half-picked. <b>OnApply</b>/<b>OnCancel</b> report the outcome;
+            <b>ApplyButtonText</b>/<b>CancelButtonText</b> word the buttons. Picks still reach <b>Value</b> while open.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Pick, then apply"
@@ -398,15 +352,11 @@
 
     <DemoExample Title="Culture" RazorCode="@example14RazorCode" Id="example14">
         <div class="example-desc">
-            By default, BitDateRangePicker picks the current culture.
-            But you can provide your own instance of CultureInfo for any custom culture.
-            The whole calendar follows it: the calendar system (Gregorian, Persian, Hijri…), the month and day names,
-            the first day of the week, the AM/PM designators and the text direction.
-            <br />
-            You also can use our
+            <b>Culture</b> (the current UI culture by default) drives the calendar system, month and day names, first day
+            of the week, AM/PM designators and text direction. See
             <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs" Target="_blank">
                 CultureInfoHelper
-            </BitLink> class or check its code to see how to create a custom culture.
+            </BitLink> for building a custom one.
         </div>
         <br />
         <div class="example-content">
@@ -424,14 +374,10 @@
 
     <DemoExample Title="TimeZone" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div class="example-desc">
-            <b>TimeZone</b> specifies the time zone used to interpret and display the selected dates and times, so the
-            offsets of the produced <b>DateTimeOffset</b> values belong to that zone instead of the local one.
-            <br />
-            Remember using this feature in different runtimes needs more investigations, for example,
-            there are different data available based on the OS the code is running on or different settings
-            enabled for the project (like InvariantTimezone in the project file,
-            <BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
-                     Target="_blank">more info</BitLink>).
+            <b>TimeZone</b> is the zone the dates are shown and produced in, instead of the local one. Time-zone data
+            depends on the OS and on settings such as InvariantTimezone
+            (<BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
+                      Target="_blank">more info</BitLink>).
         </div>
         <br />
         <div>Default (local TimeZone):</div><br />
@@ -464,9 +410,8 @@
 
     <DemoExample Title="Standalone" RazorCode="@example16RazorCode" Id="example16">
         <div class="example-desc">
-            <b>Standalone</b> renders the calendar inline instead of inside a callout, dropping the input and the overlay.
-            It suits filter panels, dashboards and any layout where the calendar should always be visible; the value
-            binding, the constraints and the time picker all behave exactly as they do in the drop-down mode.
+            <b>Standalone</b> renders the calendar inline, without the field and callout - for filter panels and
+            dashboards. Everything else behaves as in the drop-down.
         </div>
         <div class="example-content-standalone">
             <BitDateRangePicker Label="Basic DatePicker" Standalone />
@@ -483,10 +428,9 @@
 
     <DemoExample Title="ReadOnly" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div class="example-desc">
-            <b>ReadOnly</b> keeps the component fully rendered and navigable - the callout still opens and the months can
-            still be browsed - but blocks every change: days cannot be selected, the time spinners are inert, the typed
-            text is ignored and the clear button is not rendered. Unlike <b>IsEnabled="false"</b>, the value is still
-            submitted with the form.
+            <b>ReadOnly</b> keeps the calendar opening and browsable but blocks every change: the days, presets and time
+            spinners stop reacting to the pointer, typed text is ignored and the clear button is hidden. Unlike
+            <b>IsEnabled="false"</b>, the value is still submitted with the form.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Basic" ReadOnly @bind-Value="readOnlyDateRange" />
@@ -503,10 +447,9 @@
 
     <DemoExample Title="Templates" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
         <div class="example-desc">
-            Every cell of the calendar can be rendered by the application. <b>LabelTemplate</b> and <b>IconTemplate</b>
-            replace the label and the input's icon, while <b>DayCellTemplate</b> and <b>MonthCellTemplate</b> receive
-            the date of the cell being rendered and <b>YearCellTemplate</b> receives its year number, so each can
-            decorate the cell with badges, colors or any other markup.
+            <b>LabelTemplate</b> and <b>IconTemplate</b> replace the label and the field's icon; <b>DayCellTemplate</b>,
+            <b>MonthCellTemplate</b> and <b>YearCellTemplate</b> render a calendar cell from its date (or year);
+            <b>CalloutHeaderTemplate</b> and <b>CalloutFooterTemplate</b> frame the callout.
         </div>
         <div class="example-content">
             <BitDateRangePicker>
@@ -558,9 +501,8 @@
 
     <DemoExample Title="Responsive" RazorCode="@example19RazorCode" Id="example19">
         <div class="example-desc">
-            <b>Responsive</b> turns the callout into a full-width panel that slides down from the top of the screen on small
-            viewports, enlarging the day cells and the time inputs for touch, and letting the panel be dismissed with a swipe.
-            On wider screens the component keeps its regular drop-down layout.
+            <b>Responsive</b> turns the callout into a full-width, swipe-to-dismiss panel with touch-sized cells on small
+            screens.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Responsive DateRangePicker"
@@ -572,15 +514,10 @@
 
     <DemoExample Title="Validation" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
         <div class="example-desc">
-            Inside an <b>EditForm</b> the DateRangePicker participates in the data annotations validation like any other
-            input: the field is marked invalid until the bound <b>BitDateRangePickerValue</b> satisfies the model's rules,
-            and the messages are reported through <b>ValidationMessage</b>. A custom validation attribute is the natural
-            place for range rules that the calendar itself cannot express.
-            <br /><br />
-            A range that reaches the component as text is checked against the calendar's own restrictions as well, and
-            the three ways it can fail each have their own message: <b>InvalidErrorMessage</b> for text that cannot be
-            read as a range, <b>DisabledDateErrorMessage</b> for a range that lands on a day the application has
-            blocked, and <b>OutOfRangeErrorMessage</b> for one that breaks the bounds or the min/max length.
+            Inside an <b>EditForm</b> the picker takes part in data-annotations validation like any input; a custom
+            attribute holds the range rules the calendar cannot express. Typed text is also checked against the
+            calendar's own restrictions, each failure with its own message: <b>InvalidErrorMessage</b> (unreadable),
+            <b>DisabledDateErrorMessage</b> (a blocked day) and <b>OutOfRangeErrorMessage</b> (bounds or min/max length).
         </div>
         <div class="example-content">
             <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
@@ -621,29 +558,19 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example21RazorCode" Id="example21">
         <div class="example-desc">
-            The field is a <code>combobox</code> that owns a modal <code>dialog</code>, and the calendar inside it is a
-            <code>grid</code>: the whole grid is one tab stop and the arrow keys move within it, so no keyboard user has
-            to tab past six weeks of days. The focus enters the callout when it opens, stays inside it while it is open
-            and returns to the field when it closes.
+            The field is a <code>combobox</code> opening a modal <code>dialog</code>; focus moves in on open, is trapped
+            while open and returns to the field on close. Each calendar is a <code>grid</code> with a single tab stop.
             <br /><br />
-            <b>In the day grid:</b> arrow keys move by a day or a week, <kbd>Home</kbd>/<kbd>End</kbd> to the ends of the
-            week, <kbd>PageUp</kbd>/<kbd>PageDown</kbd> by a month (with <kbd>Shift</kbd>, by a year),
-            <kbd>Enter</kbd>/<kbd>Space</kbd> picks, <kbd>Escape</kbd> closes. Disabled days are skipped rather than
-            landed on. The month and year grids answer the same keys, four cells to a row.
-            <b>In the field:</b> <kbd>ArrowDown</kbd> opens the calendar. <b>In the time picker:</b>
-            <kbd>PageUp</kbd>/<kbd>PageDown</kbd> step by <b>HourStep</b> and <b>MinuteStep</b>.
+            <b>Field:</b> <kbd>ArrowDown</kbd> opens. <b>Day grid:</b> arrows move by a day or a week,
+            <kbd>Home</kbd>/<kbd>End</kbd> to the week's ends, <kbd>PageUp</kbd>/<kbd>PageDown</kbd> by a month
+            (<kbd>Shift</kbd>: a year), <kbd>Enter</kbd>/<kbd>Space</kbd> picks, <kbd>Escape</kbd> closes; disabled days
+            are skipped and the arrows preview the range as the pointer does. Month and year grids take the same keys.
+            <b>Time picker:</b> <kbd>PageUp</kbd>/<kbd>PageDown</kbd> step by <b>HourStep</b>/<b>MinuteStep</b>.
             <br /><br />
-            While the start date is picked and the end date is not, the arrow keys paint the range they would produce
-            exactly as the pointer does. Every cell and button of the calendar draws the same focus ring, in the accent
-            of <b>Color</b>; Windows High Contrast re-establishes the states that are otherwise a background - the range,
-            its preview, today, the highlighted days - as borders and system colors; and the callout's entry animation
-            collapses under <code>prefers-reduced-motion</code>.
-            <br /><br />
-            Every control carries a name of its own, and all of them are parameters, so the whole component localizes
-            without a resource file: <b>CalloutAriaLabel</b>, <b>PresetsAriaLabel</b>, the <b>GoTo…Title</b> and
-            <b>…ButtonTitle</b> texts, the time picker's <b>…AriaLabel</b> texts, and <b>SelectedDateAriaAtomic</b>,
-            the template of the live region that announces the range as it is built. <b>AriaLabel</b> names the field
-            itself where no visible <b>Label</b> does.
+            Every text read by a screen reader is a parameter (<b>AriaLabel</b>, <b>CalloutAriaLabel</b>,
+            <b>PresetsAriaLabel</b>, the <b>…Title</b> and <b>…AriaLabel</b> texts, and <b>SelectedDateAriaAtomic</b> for
+            the live announcement), so it localizes without resources. High Contrast mode and
+            <code>prefers-reduced-motion</code> are honored.
         </div>
         <div class="example-content">
             <BitDateRangePicker AriaLabel="Stay dates"
@@ -665,13 +592,9 @@
 
     <DemoExample Title="Open state" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
         <div class="example-desc">
-            <b>IsOpen</b> is the open state of the callout and it is two-way bound, so the calendar can be opened and
-            closed from anywhere on the page as well as from the field. The same two moves are available on a component
-            reference as <b>OpenCallout</b> and <b>CloseCallout</b>.
-            <br /><br />
-            Bound one way only - an <b>IsOpen</b> the picker has no way to write back to - the picker stops closing
-            itself: the second pick still goes through, but the callout waits for the page to close it.
-            <b>OnOpen</b> and <b>OnClose</b> report every opening and closing whichever of the two caused it.
+            <b>@@bind-IsOpen</b> opens and closes the callout from anywhere on the page; a component reference offers
+            <b>OpenCallout</b> and <b>CloseCallout</b>. Bound one way, <b>IsOpen</b> stops the picker closing itself - the
+            page decides. <b>OnOpen</b> and <b>OnClose</b> report every change, whatever caused it.
         </div>
         <div class="example-content">
             <BitButton OnClick="() => isOpen = true">Open the calendar</BitButton>
@@ -691,12 +614,9 @@
 
     <DemoExample Title="Cascading parameters" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
         <div class="example-desc">
-            <b>BitParams</b> carries a <b>BitDateRangePickerParams</b> down to every picker under it, so a booking form or
-            a whole page settles the shared shape of its pickers - the culture, the bounds, the presets, the look - once
-            instead of on every one of them. What it carries is a default and not an override: a picker that writes a
-            parameter for itself keeps its own value and only what it left unset is filled in from the cascade, which is
-            what lets one picker step out of the group without the group having to know about it. Every parameter of the
-            component is on the params object, and each is filled in on its own.
+            <b>BitParams</b> hands a <b>BitDateRangePickerParams</b> to every picker below it, so shared settings (culture,
+            bounds, presets, look) are written once. They are defaults, not overrides: a parameter a picker sets itself
+            keeps its own value.
         </div>
         <div class="example-content">
             <BitParams Parameters="@dateRangePickerParams">
@@ -717,8 +637,8 @@
 
     <DemoExample Title="Color" RazorCode="@example24RazorCode" Id="example24">
         <div class="example-desc">
-            The <b>Color</b> parameter applies one of the theme colors to the accented parts of the calendar: the today cell,
-            the two ends of the selected range, the highlighted current month and the active AM/PM button.
+            <b>Color</b> sets the accent: today, the range and its ends, the selected preset, the highlighted current month, the active AM/PM
+            button, the Apply button, the open field and every focus ring.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Primary" Color="BitColor.Primary" ShowTimePicker />
@@ -837,9 +757,8 @@
 
     <DemoExample Title="Style & Class" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
         <div class="example-desc">
-            <b>Style</b> and <b>Class</b> reach the root element only, while <b>Styles</b> and <b>Classes</b> address every
-            part of the component individually - the input and its container, the callout, the day/month/year grids and each
-            of the time picker's buttons - so a fully custom look can be built without overriding the library's CSS.
+            <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach every part (field,
+            callout, grids, time picker buttons).
         </div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -898,34 +817,18 @@
         </div>
         <br /><br /><br />
         <div>
-            The picker also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> for what no
-            parameter covers. They inherit, so a value on <code>:root</code> or on any ancestor re-skins every picker
-            below it and one on the <b>Style</b> of an instance re-skins that one alone. The calendar is rendered in a
-            callout outside the root element, so the ones it reads (the day cells, the range colors, the dividers) have
-            to be set on an ancestor of the page or through <b>Styles.Callout</b> rather than on the picker itself.
+            The <BitLink Href="#css-variables-section">CSS variables</BitLink> cover what no parameter does. Set on
+            <code>:root</code>, they re-skin every picker; set in <b>Style</b>, one picker - the field and the calendar
+            it opens, which is copied the variables since it is rendered outside the root. <b>Styles.Callout</b> wins
+            over that copy on the calendar.
         </div>
-        <br />
-        <div>On the field, which is inside the root:</div>
         <br />
         <div class="example-content">
-            <BitDateRangePicker Label="Pill-shaped field"
-                                Style="--bit-DateRangePicker-input-radius: 2rem; --bit-DateRangePicker-input-border-width: 2px; --bit-DateRangePicker-icon-color: mediumvioletred;" />
-        </div>
-        <br /><br /><br />
-        <div>On the callout, through <b>Styles.Callout</b>:</div>
-        <br />
-        <div class="example-content">
-            <BitDateRangePicker Label="Roomier calendar"
-                                Styles="@(new() { Callout = "--bit-DateRangePicker-day-size: 2.5rem; --bit-DateRangePicker-day-radius: 50%; --bit-DateRangePicker-today-radius: 50%; --bit-DateRangePicker-range-radius: 1.25rem; --bit-DateRangePicker-calendar-padding: 1rem;" })" />
-        </div>
-        <br /><br /><br />
-        <div>Set once on an ancestor, inherited by the fields and the callouts of every picker inside it:</div>
-        <br />
-        <div class="example-content"
-             style="--bit-DateRangePicker-color: var(--bit-clr-suc); --bit-DateRangePicker-text-color: var(--bit-clr-suc-text); --bit-DateRangePicker-hover-color: var(--bit-clr-suc-hover); --bit-DateRangePicker-range-background: var(--bit-clr-suc-light); --bit-DateRangePicker-focus-color: var(--bit-clr-suc-focus); --bit-DateRangePicker-label-color: var(--bit-clr-suc);">
-            <BitDateRangePicker Label="Arrival" />
+            <BitDateRangePicker Label="One Style, field and calendar"
+                                Style="--bit-DateRangePicker-input-radius: 2rem; --bit-DateRangePicker-color: var(--bit-clr-suc); --bit-DateRangePicker-text-color: var(--bit-clr-suc-text); --bit-DateRangePicker-hover-color: var(--bit-clr-suc-hover); --bit-DateRangePicker-range-background: var(--bit-clr-suc-light); --bit-DateRangePicker-focus-color: var(--bit-clr-suc-focus); --bit-DateRangePicker-label-color: var(--bit-clr-suc);" />
             <br /><br />
-            <BitDateRangePicker Label="Departure" />
+            <BitDateRangePicker Label="Roomier calendar, through Styles.Callout"
+                                Styles="@(new() { Callout = "--bit-DateRangePicker-day-size: 2.5rem; --bit-DateRangePicker-day-radius: 50%; --bit-DateRangePicker-today-radius: 50%; --bit-DateRangePicker-range-radius: 1.25rem; --bit-DateRangePicker-calendar-padding: 1rem;" })" />
         </div>
     </DemoExample>
 

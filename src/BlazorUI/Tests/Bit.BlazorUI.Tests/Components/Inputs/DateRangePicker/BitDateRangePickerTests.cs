@@ -4258,4 +4258,58 @@ public class BitDateRangePickerTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "9", "10", "11", "12" }, enabled);
     }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldCarryItsPublicCssVariablesOntoTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "margin: 1rem; --bit-DateRangePicker-color: red;--bit-DateRangePicker-day-size:3rem");
+            parameters.Add(p => p.Styles, new BitDateRangePickerClassStyles
+            {
+                Root = "--bit-DateRangePicker-range-radius: 0; padding: 0;",
+                Callout = "--bit-DateRangePicker-color: blue;"
+            });
+        });
+
+        var calloutStyle = component.Find(".bit-dtrp-cal").GetAttribute("style");
+        var overlayStyle = component.Find(".bit-dtrp-ovl").GetAttribute("style");
+
+        // Only the public variables are copied - the rest of the root's style belongs to the root - and
+        // Styles.Callout comes last, so a value written for the callout still wins over the copy.
+        Assert.AreEqual("--bit-DateRangePicker-color: red;--bit-DateRangePicker-day-size:3rem;--bit-DateRangePicker-range-radius: 0;--bit-DateRangePicker-color: blue;", calloutStyle);
+        Assert.AreEqual("display:none;--bit-DateRangePicker-color: red;--bit-DateRangePicker-day-size:3rem;--bit-DateRangePicker-range-radius: 0;", overlayStyle);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerCalloutShouldKeepOnlyItsOwnStyleWithoutPublicCssVariables()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "margin: 1rem;");
+            parameters.Add(p => p.Styles, new BitDateRangePickerClassStyles { Callout = "color: red;" });
+        });
+
+        Assert.AreEqual("color: red;", component.Find(".bit-dtrp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitDateRangePickerCalloutShouldCarryTheReadOnlyMarker(bool readOnly)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+        });
+
+        Assert.AreEqual(readOnly, component.Find(".bit-dtrp-cal").ClassList.Contains("bit-dtrp-rol"));
+    }
 }

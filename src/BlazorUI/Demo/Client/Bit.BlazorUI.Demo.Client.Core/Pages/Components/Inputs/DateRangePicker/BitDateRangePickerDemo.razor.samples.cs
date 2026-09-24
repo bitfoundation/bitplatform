@@ -789,16 +789,11 @@ private readonly IBitComponentParams[] dateRangePickerParams =
 
 @* CSS variables *@
 
-<BitDateRangePicker Label=""Pill-shaped field""
-                    Style=""--bit-DateRangePicker-input-radius: 2rem; --bit-DateRangePicker-input-border-width: 2px; --bit-DateRangePicker-icon-color: mediumvioletred;"" />
+<BitDateRangePicker Label=""One Style, field and calendar""
+                    Style=""--bit-DateRangePicker-input-radius: 2rem; --bit-DateRangePicker-color: var(--bit-clr-suc); --bit-DateRangePicker-text-color: var(--bit-clr-suc-text); --bit-DateRangePicker-hover-color: var(--bit-clr-suc-hover); --bit-DateRangePicker-range-background: var(--bit-clr-suc-light); --bit-DateRangePicker-focus-color: var(--bit-clr-suc-focus); --bit-DateRangePicker-label-color: var(--bit-clr-suc);"" />
 
-<BitDateRangePicker Label=""Roomier calendar""
-                    Styles=""@(new() { Callout = ""--bit-DateRangePicker-day-size: 2.5rem; --bit-DateRangePicker-day-radius: 50%; --bit-DateRangePicker-today-radius: 50%; --bit-DateRangePicker-range-radius: 1.25rem; --bit-DateRangePicker-calendar-padding: 1rem;"" })"" />
-
-<div style=""--bit-DateRangePicker-color: var(--bit-clr-suc); --bit-DateRangePicker-text-color: var(--bit-clr-suc-text); --bit-DateRangePicker-hover-color: var(--bit-clr-suc-hover); --bit-DateRangePicker-range-background: var(--bit-clr-suc-light); --bit-DateRangePicker-focus-color: var(--bit-clr-suc-focus); --bit-DateRangePicker-label-color: var(--bit-clr-suc);"">
-    <BitDateRangePicker Label=""Arrival"" />
-    <BitDateRangePicker Label=""Departure"" />
-</div>";
+<BitDateRangePicker Label=""Roomier calendar, through Styles.Callout""
+                    Styles=""@(new() { Callout = ""--bit-DateRangePicker-day-size: 2.5rem; --bit-DateRangePicker-day-radius: 50%; --bit-DateRangePicker-today-radius: 50%; --bit-DateRangePicker-range-radius: 1.25rem; --bit-DateRangePicker-calendar-padding: 1rem;"" })"" />";
     private readonly string example27CsharpCode = @"
 private BitDateRangePickerValue? classesValue;";
 

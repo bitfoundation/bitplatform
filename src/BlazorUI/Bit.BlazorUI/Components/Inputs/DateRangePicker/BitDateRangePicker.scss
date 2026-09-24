@@ -4,8 +4,9 @@
 
 // Public custom properties of the DateRangePicker. Every one of them inherits, so it can be set on
 // :root for the whole application, on any ancestor for a region, or through the Style parameter for a
-// single picker. The calendar is rendered in a callout outside of the root element, so the ones the
-// callout reads have to come from :root or from an ancestor of the page - or through Styles.Callout.
+// single picker. The calendar is rendered in a callout that is reparented to the body while it is open,
+// so an ancestor reaches the field alone; the component copies the ones written in Style (and
+// Styles.Root) onto the callout itself, and Styles.Callout still has the last word there.
 //
 //   --bit-DateRangePicker-color                    accent: the range ends, today, the selected preset,
 //                                                  the active AM/PM button and the open field
@@ -147,14 +148,73 @@
             border-bottom-color: var(--bit-DateRangePicker-invalid-color, #{$clr-err});
         }
     }
-
-    &.bit-rtl {
-    }
 }
 
 // The callout is rendered outside of the root element, so it carries its own disabled marker.
 .bit-dtrp-cal.bit-dis {
     @include dtrp-disabled-content;
+}
+
+// Read-only keeps the calendar browsable - the navigation, the month and year pickers and the arrow keys all
+// still work - but nothing that would change the value reacts to the pointer, so none of it advertises a
+// change that is ignored. The callout carries the marker itself, since it is rendered outside the root.
+.bit-dtrp-cal.bit-dtrp-rol {
+    .bit-dtrp-dbt,
+    .bit-dtrp-prb,
+    .bit-dtrp-tbt,
+    .bit-dtrp-tin {
+        cursor: default;
+    }
+
+    @media (hover: hover) {
+        .bit-dtrp-dbt:hover,
+        .bit-dtrp-prb:hover,
+        .bit-dtrp-tbt:hover {
+            background-color: transparent;
+        }
+
+        // The filled cells keep their own fill, in the order the plain rules above paint them: they show
+        // the value, not a hover state.
+        .bit-dtrp-dhl:hover {
+            background-color: var(--bit-DateRangePicker-highlighted-background, #{$clr-bg-ter});
+        }
+
+        .bit-dtrp-dsb:hover {
+            color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
+            background-color: var(--bit-dtrp-clr-body);
+        }
+
+        .bit-dtrp-dtd:hover,
+        .bit-dtrp-dss:hover,
+        .bit-dtrp-dse:hover,
+        .bit-dtrp-prs:hover,
+        .bit-dtrp-bns:hover {
+            background-color: var(--bit-dtrp-clr);
+        }
+    }
+
+    .bit-dtrp-dbt:active,
+    .bit-dtrp-prb:active,
+    .bit-dtrp-tbt:active {
+        background-color: transparent;
+    }
+
+    .bit-dtrp-dhl:active {
+        background-color: var(--bit-DateRangePicker-highlighted-background, #{$clr-bg-ter});
+    }
+
+    .bit-dtrp-dsb:active {
+        color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
+        background-color: var(--bit-dtrp-clr-body);
+    }
+
+    .bit-dtrp-dtd:active,
+    .bit-dtrp-dss:active,
+    .bit-dtrp-dse:active,
+    .bit-dtrp-prs:active,
+    .bit-dtrp-bns:active {
+        background-color: var(--bit-dtrp-clr);
+    }
 }
 
 .bit-dtrp-cal.bit-dtrp-rtl {
@@ -1052,9 +1112,9 @@
         color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
     }
 
+    // The same ring, in the same accent, as every other control of the calendar.
     &:focus-visible {
-        @include focus-ring;
-        --bit-focus-ring-color: var(--bit-DateRangePicker-focus-color, #{$clr-pri-focus});
+        @include focus-ring(var(--bit-dtrp-clr-focus));
     }
 }
 
@@ -1221,37 +1281,21 @@
             width: spacing(5.5);
         }
 
-        .bit-dtrp-wlb {
-            //font-weight: bold;
-        }
-
         .bit-dtrp-grp {
             flex-wrap: wrap;
             justify-content: center;
         }
 
-        .bit-dtrp-tdv {
-            //font-size: spacing(7);
-        }
-
-        .bit-dtrp-tin {
-            width: 100%;
-            min-width: spacing(7);
-            max-width: spacing(12);
-            //font-size: spacing(5);
-        }
-
+        .bit-dtrp-tin,
         .bit-dtrp-tbt {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            //font-size: spacing(3);
         }
 
         .bit-dtrp-bam,
         .bit-dtrp-bpm {
             width: 100%;
-            //font-size: spacing(4);
             margin: spacing(0.25);
         }
 
