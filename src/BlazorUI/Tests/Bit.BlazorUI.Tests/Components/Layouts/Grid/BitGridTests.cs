@@ -182,14 +182,30 @@ public class BitGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitGridShouldDefaultTheSpacingOfBothAxes()
+    public void BitGridShouldLeaveTheDefaultSpacingToTheStylesheet()
     {
+        // An unset spacing declares no gap of its own, which is what lets the stylesheet resolve it from the
+        // --bit-Grid-* variables and the spacing unit (and density) of the theme.
         var component = RenderComponent<BitGrid>();
+
+        var style = component.Find(".bit-grd").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(style.Contains("--bit-grd-cgap:"));
+        Assert.IsFalse(style.Contains("--bit-grd-rgap:"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldDeclareOnlyTheAxisThatWasGivenASpacing()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalSpacing, "1rem");
+        });
 
         var style = component.Find(".bit-grd").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-grd-cgap:4px");
-        StringAssert.Contains(style, "--bit-grd-rgap:4px");
+        StringAssert.Contains(style, "--bit-grd-cgap:1rem");
+        Assert.IsFalse(style.Contains("--bit-grd-rgap:"));
     }
 
     [TestMethod]
@@ -407,17 +423,17 @@ public class BitGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitGridShouldFallBackToAValidLengthWhenTheSpacingIsBlank()
+    public void BitGridShouldFallBackToTheThemeSpacingWhenTheSpacingIsBlank()
     {
         var component = RenderComponent<BitGrid>(parameters =>
         {
             parameters.Add(p => p.Spacing, string.Empty);
         });
 
-        var style = component.Find(".bit-grd").GetAttribute("style");
+        var style = component.Find(".bit-grd").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-grd-cgap:0px");
-        StringAssert.Contains(style, "--bit-grd-rgap:0px");
+        Assert.IsFalse(style.Contains("--bit-grd-cgap:"));
+        Assert.IsFalse(style.Contains("--bit-grd-rgap:"));
     }
 
     [TestMethod]
@@ -938,6 +954,72 @@ public class BitGridTests : BunitTestContext
 
         Assert.IsTrue(classList.Contains("bit-grd-nwr"));
         Assert.IsTrue(classList.Contains("bit-grd-rev"));
+    }
+
+    [TestMethod]
+    [DataRow("ul")]
+    [DataRow("ol")]
+    [DataRow("menu")]
+    [DataRow("UL")]
+    public void BitGridRenderedAsAListShouldBeAListOfListItems(string element)
+    {
+        var component = RenderComponent<BitGridListTest>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        Assert.AreEqual("list", component.Find(".bit-grd").GetAttribute("role"));
+        Assert.AreEqual("LI", component.Find(".inferred").TagName);
+        Assert.AreEqual("SECTION", component.Find(".own").TagName);
+    }
+
+    [TestMethod]
+    public void BitGridShouldLetAnExplicitRoleReplaceTheListRole()
+    {
+        var component = RenderComponent<BitGridListTest>(parameters =>
+        {
+            parameters.Add(p => p.Element, "ul");
+            parameters.Add(p => p.Role, "tablist");
+        });
+
+        Assert.AreEqual("tablist", component.Find(".bit-grd").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("section")]
+    public void BitGridNotRenderedAsAListShouldKeepDivItems(string? element)
+    {
+        var component = RenderComponent<BitGridListTest>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        Assert.IsFalse(component.Find(".bit-grd").HasAttribute("role"));
+        Assert.AreEqual("DIV", component.Find(".inferred").TagName);
+    }
+
+    [TestMethod]
+    public void BitGridShouldKeepAnAriaLabelWrittenInTheMarkup()
+    {
+        // An unset AriaLabel used to be written as a null attribute, which drops the aria-label that was given
+        // through the markup.
+        var component = RenderComponent<BitGridAttributesTest>();
+
+        var root = component.Find(".bit-grd");
+
+        Assert.AreEqual("Products", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldRenderTheTabIndex()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        Assert.AreEqual("0", component.Find(".bit-grd").GetAttribute("tabindex"));
     }
 
     [TestMethod]

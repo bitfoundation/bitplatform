@@ -176,10 +176,15 @@ public partial class BitGrid : BitComponentBase
     /// The custom html element used for the root node. The default is "div".
     /// </summary>
     /// <remarks>
-    /// A grid of things that form a list is more meaningful as a <c>ul</c> whose children are rendered as <c>li</c>
-    /// through <see cref="BitGridItem.Element"/>, and a grid that is a region of the page can be a <c>section</c>.
-    /// The layout itself is unaffected: the element only changes the tag name, and therefore the semantics reported
-    /// to assistive technologies.
+    /// A grid of things that form a list is more meaningful as a <c>ul</c> or an <c>ol</c>, and a grid that is a
+    /// region of the page can be a <c>section</c> (paired with an <see cref="BitComponentBase.AriaLabel"/> that
+    /// names it). The layout itself is unaffected: the element only changes the tag name, and therefore the
+    /// semantics reported to assistive technologies.
+    /// <br />
+    /// A grid rendered as a <c>ul</c>, an <c>ol</c> or a <c>menu</c> loses its markers and its indent, is given an
+    /// explicit list role (some browsers drop the list semantics of a flex container), and renders its items as
+    /// <c>li</c> unless they name an <see cref="BitGridItem.Element"/> of their own. An explicit <c>role</c> among
+    /// the html attributes still replaces the list role.
     /// </remarks>
     [Parameter] public string? Element { get; set; }
 
@@ -226,7 +231,8 @@ public partial class BitGrid : BitComponentBase
     /// the gaps between its items are taken out, and that remainder is what the columns divide up. Widening the
     /// spacing therefore narrows the items instead of pushing them out of the row.
     /// <br />
-    /// When not set, <see cref="Spacing"/> is used for this axis too.
+    /// When not set, <see cref="Spacing"/> is used for this axis too, and when neither is set the
+    /// <c>--bit-Grid-horizontal-spacing</c> variable.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? HorizontalSpacing { get; set; }
@@ -345,7 +351,8 @@ public partial class BitGrid : BitComponentBase
     /// <summary>
     /// Defines the spacing between the children of the BitGrid on both axes.
     /// <br />
-    /// The default value is <strong>4px</strong>.
+    /// When not set, the spacing comes from the theme: half of its spacing unit (<strong>4px</strong> at the default
+    /// density), or the <c>--bit-Grid-spacing</c> CSS variable when an ancestor declares one.
     /// </summary>
     /// <remarks>
     /// Takes any CSS length (for example <c>0.5rem</c>, <c>8px</c> or <c>2%</c>), including a fluid one such as
@@ -358,9 +365,13 @@ public partial class BitGrid : BitComponentBase
     /// <br />
     /// This is the spacing of every breakpoint that is not overridden, and the per breakpoint spacings
     /// (<see cref="SpacingXs"/> to <see cref="SpacingXxl"/>) replace it from their own breakpoint upwards.
+    /// <br />
+    /// Leaving it unset is what lets the spacing follow the density of the theme and the
+    /// <c>--bit-Grid-spacing</c>, <c>--bit-Grid-horizontal-spacing</c> and <c>--bit-Grid-vertical-spacing</c>
+    /// variables, which set the gutter of every grid under the element that declares them.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public string Spacing { get; set; } = "4px";
+    public string? Spacing { get; set; }
 
     /// <summary>
     /// Defines the spacing between the children of the BitGrid on both axes from the extra small breakpoint (from 0px) upwards.
@@ -466,7 +477,8 @@ public partial class BitGrid : BitComponentBase
     /// Unlike <see cref="HorizontalSpacing"/> this has no effect on the width of the items: it only separates the
     /// rows a wrapping grid produces.
     /// <br />
-    /// When not set, <see cref="Spacing"/> is used for this axis too.
+    /// When not set, <see cref="Spacing"/> is used for this axis too, and when neither is set the
+    /// <c>--bit-Grid-vertical-spacing</c> variable.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? VerticalSpacing { get; set; }
@@ -595,8 +607,10 @@ public partial class BitGrid : BitComponentBase
         // of saying so, since only an item can ask to be hidden, so the default falls back to a single column.
         StyleBuilder.Register(() => $"--bit-grd-span:{Math.Max(1, Span).ToString(CultureInfo.InvariantCulture)}");
         StyleBuilder.Register(() => $"--bit-grd-cols:{Math.Max(1, Columns).ToString(CultureInfo.InvariantCulture)}");
-        StyleBuilder.Register(() => $"--bit-grd-cgap:{GetSpacing(HorizontalSpacing)}");
-        StyleBuilder.Register(() => $"--bit-grd-rgap:{GetSpacing(VerticalSpacing)}");
+        // A grid that was told nothing about its spacing declares none, and the stylesheet resolves the gap from
+        // the public variables and the spacing unit of the theme instead.
+        StyleBuilder.Register(() => GetSpacingVar("cgap", HorizontalSpacing));
+        StyleBuilder.Register(() => GetSpacingVar("rgap", VerticalSpacing));
 
         StyleBuilder.Register(() => MinItemWidth.HasValue() ? $"--bit-grd-mnw:{GetLength(MinItemWidth!)}" : string.Empty);
 
@@ -647,14 +661,32 @@ public partial class BitGrid : BitComponentBase
         builder.AddComponentParameter(3, "ChildContent", (RenderFragment)(rootBuilder =>
         {
             rootBuilder.OpenElement(0, Element ?? "div");
-            rootBuilder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
-            rootBuilder.AddAttribute(2, "id", _Id);
-            rootBuilder.AddAttribute(3, "aria-label", AriaLabel);
-            rootBuilder.AddAttribute(4, "style", StyleBuilder.Value);
-            rootBuilder.AddAttribute(5, "class", ClassBuilder.Value);
-            rootBuilder.AddAttribute(6, "dir", Dir?.ToString().ToLower());
-            rootBuilder.AddElementReferenceCapture(7, v => RootElement = v);
-            rootBuilder.AddContent(8, ChildContent);
+            // The list role is written before the splatted attributes, so a role given through HtmlAttributes
+            // still replaces it.
+            if (IsListElement)
+            {
+                rootBuilder.AddAttribute(1, "role", "list");
+            }
+            rootBuilder.AddMultipleAttributes(2, RuntimeHelpers.TypeCheck(HtmlAttributes));
+            rootBuilder.AddAttribute(3, "id", _Id);
+            // A null value still drops the attribute of the same name that came out of HtmlAttributes, so an
+            // unset parameter is only written when it carries a value and a splatted one is left alone otherwise.
+            if (AriaLabel is not null)
+            {
+                rootBuilder.AddAttribute(4, "aria-label", AriaLabel);
+            }
+            if (TabIndex is not null)
+            {
+                rootBuilder.AddAttribute(5, "tabindex", TabIndex);
+            }
+            rootBuilder.AddAttribute(6, "style", StyleBuilder.Value);
+            rootBuilder.AddAttribute(7, "class", ClassBuilder.Value);
+            if (Dir is not null)
+            {
+                rootBuilder.AddAttribute(8, "dir", Dir.Value.ToString().ToLowerInvariant());
+            }
+            rootBuilder.AddElementReferenceCapture(9, v => RootElement = v);
+            rootBuilder.AddContent(10, ChildContent);
             rootBuilder.CloseElement();
         }));
         builder.CloseComponent();
@@ -687,9 +719,19 @@ public partial class BitGrid : BitComponentBase
         var alignment => alignment
     };
 
-    private string GetSpacing(string? axisSpacing)
+    // A grid rendered as one of the list elements is a flex container, which is enough for some browsers to stop
+    // reporting it as a list, so the role is stated outright - and its items are rendered as the list items
+    // those elements require.
+    internal bool IsListElement => Element is not null
+                                && (Element.Equals("ul", StringComparison.OrdinalIgnoreCase)
+                                 || Element.Equals("ol", StringComparison.OrdinalIgnoreCase)
+                                 || Element.Equals("menu", StringComparison.OrdinalIgnoreCase));
+
+    private string GetSpacingVar(string name, string? axisSpacing)
     {
-        return GetLength(axisSpacing.HasValue() ? axisSpacing! : (Spacing.HasValue() ? Spacing : "0px"));
+        var value = axisSpacing.HasValue() ? axisSpacing : Spacing;
+
+        return value.HasValue() ? $"--bit-grd-{name}:{GetLength(value!)}" : string.Empty;
     }
 
     private static string GetLength(string value)

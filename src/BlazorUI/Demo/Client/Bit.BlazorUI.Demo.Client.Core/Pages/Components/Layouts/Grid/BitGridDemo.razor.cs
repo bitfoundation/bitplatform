@@ -90,7 +90,7 @@ public partial class BitGridDemo
             Name = "Element",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom html element used for the root node. The default is \"div\".",
+            Description = "The custom html element used for the root node (div by default). As a ul, ol or menu the grid gets role=\"list\", loses its bullets and indent, and renders its items as li.",
         },
         new()
         {
@@ -113,7 +113,7 @@ public partial class BitGridDemo
             Name = "HorizontalSpacing",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Defines the horizontal spacing between the children of the grid. It is taken out of the width of the row before the columns divide it up. Falls back to Spacing.",
+            Description = "Defines the horizontal spacing between the children of the grid. It is taken out of the width of the row before the columns divide it up. Falls back to Spacing, then to --bit-Grid-horizontal-spacing.",
         },
         new()
         {
@@ -181,9 +181,9 @@ public partial class BitGridDemo
         new()
         {
             Name = "Spacing",
-            Type = "string",
-            DefaultValue = "4px",
-            Description = "Defines the spacing between the children of the grid on both axes. HorizontalSpacing and VerticalSpacing each replace it on their own axis, and it is the spacing of every breakpoint that is not overridden.",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Defines the spacing between the children of the grid on both axes. HorizontalSpacing and VerticalSpacing each replace it on their own axis, and it is the spacing of every breakpoint that is not overridden. When not set, the --bit-Grid-spacing variable or half the theme spacing unit (4px at the default density) is used.",
         },
         new()
         {
@@ -248,7 +248,7 @@ public partial class BitGridDemo
             Name = "VerticalSpacing",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Defines the vertical spacing between the rows of the grid. Unlike HorizontalSpacing it has no effect on the width of the items. Falls back to Spacing.",
+            Description = "Defines the vertical spacing between the rows of the grid. Unlike HorizontalSpacing it has no effect on the width of the items. Falls back to Spacing, then to --bit-Grid-vertical-spacing.",
         },
         new()
         {
@@ -429,7 +429,7 @@ public partial class BitGridDemo
                     Name = "Element",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "The custom html element used for the root node. The default is \"div\".",
+                    Description = "The custom html element used for the root node: div by default, or li in a grid rendered as a ul, ol or menu.",
                 },
                 new()
                 {
@@ -678,6 +678,43 @@ public partial class BitGridDemo
     ];
 
 
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Grid-spacing",
+            DefaultValue = "half the theme spacing unit (4px)",
+            Description = "Room between the items on both axes of every grid that sets no Spacing of its own. Inherits, so it can be set on :root, an ancestor or a grid's Style.",
+        },
+        new()
+        {
+            Name = "--bit-Grid-horizontal-spacing",
+            DefaultValue = "--bit-Grid-spacing",
+            Description = "Room between the columns of every grid that sets no Spacing or HorizontalSpacing of its own.",
+        },
+        new()
+        {
+            Name = "--bit-Grid-vertical-spacing",
+            DefaultValue = "--bit-Grid-spacing",
+            Description = "Room between the rows of every grid that sets no Spacing or VerticalSpacing of its own.",
+        },
+    ];
+
+
+
+    private readonly IBitComponentParams[] gridParams =
+    [
+        new BitGridParams
+        {
+            Columns = 6,
+            Spacing = "0.5rem",
+        },
+        new BitGridItemParams
+        {
+            ColumnSpan = 2,
+        }
+    ];
 
     private double minItemWidth = 10;
     private double verticalSpacing = 0.5;
