@@ -10,11 +10,45 @@
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
 }
 
-.dimensions-item {
+.example-content {
     gap: 1rem;
     display: flex;
-    padding: 0.25rem 0;
-    justify-content: space-between;
+    flex-flow: column nowrap;
+}
+
+// every element a DropZoneSelector names carries Classes.Dragging while files are dragged over any of
+// the zones, which is the hook this card highlights itself with - no ::deep, since the class lands on
+// a plain element written right in this page.
+.drop-zone {
+    gap: 1rem;
+    display: flex;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    border: 2px dashed var(--bit-clr-brd-pri);
+    transition: border-color 0.2s, background-color 0.2s;
+
+    &.drop-zone-dragging {
+        border-color: var(--bit-clr-pri);
+        background-color: var(--bit-clr-bg-sec);
+    }
+}
+
+// the public CSS variables inherit, so declaring them on any ancestor re-skins every file upload
+// underneath it - no ::deep and no selector reaching into the component is needed.
+.custom-vars {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+    --bit-FileUpload-label-radius: 2rem;
+    --bit-FileUpload-label-background: #0f766e;
+    --bit-FileUpload-label-hover-background: #115e59;
+    --bit-FileUpload-item-radius: 1rem;
+    --bit-FileUpload-item-border-color: #99f6e4;
+    --bit-FileUpload-progress-color: #0f766e;
+    --bit-FileUpload-action-hover-color: #0f766e;
+    --bit-FileUpload-focus-color: #0f766e;
 }
 
 ::deep {
