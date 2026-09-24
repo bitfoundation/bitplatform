@@ -12,6 +12,14 @@ namespace BitBlazorUI {
         // virtualize mode to be rendered, before giving up and using whatever is rendered by then.
         private static readonly VIRTUALIZE_RENDER_FRAMES = 20;
 
+        // The budget for the jump that opens a virtualized list on its selection to hold its position
+        // against the list re-measuring itself under it. The list renders for the first time there, and
+        // that render is a server round trip under Blazor Server, so the wait is against the clock
+        // rather than a frame count; the frames are how long the position then has to stay put to
+        // count as settled. Neither is spent once it does.
+        private static readonly VIRTUALIZE_SETTLE_TIME = 1000;
+        private static readonly VIRTUALIZE_SETTLE_FRAMES = 10;
+
         // The number of items PageDown/PageUp move the focus by when the whole list is rendered (in
         // virtualize mode the jump is a scroll of one visible window instead, see _scrollFor).
         private static readonly PAGE_STEP = 10;
@@ -30,10 +38,13 @@ namespace BitBlazorUI {
         // search/combo input, where they keep their caret behavior.
         private static readonly CARET_KEYS = ['Home', 'End'];
 
-        // The keys that edit the text of the ComboBox input rather than navigate the list, so they
+        // The keys that CHANGE the text of the ComboBox input rather than navigate the list, so they
         // belong to the input even while the focus sits on an option. They are not in CALLOUT_KEYS,
         // so their default is not prevented and they still act on the input once it has the focus.
-        private static readonly TEXT_KEYS = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'];
+        private static readonly EDIT_KEYS = ['Backspace', 'Delete'];
+        // Those plus the ones that only move the caret, which belong to the ComboBox input for the same
+        // reason - the term is edited where it is, not by leaving the list and coming back to it.
+        private static readonly TEXT_KEYS = [...Dropdowns.EDIT_KEYS, 'ArrowLeft', 'ArrowRight'];
 
         // Attaches keydown listeners that only prevent the default behavior (e.g. page scrolling)
         // of the navigation keys. The actual keyboard logic runs in the Blazor keydown handlers,
@@ -99,7 +110,22 @@ namespace BitBlazorUI {
                     if (!isTextInput(e) && (isPrintable(e) || e.key === ' ' || Dropdowns.TEXT_KEYS.indexOf(e.key) > -1)) {
                         const combo = (callout.querySelector('.bit-drp-icb') ??
                                        root?.querySelector('.bit-drp-inp')) as HTMLElement | null;
-                        combo?.focus();
+                        if (combo) {
+                            combo.focus();
+                            return;
+                        }
+
+                        // A search box filters the same list, so the keys that edit text belong to it for
+                        // the same reason - typing after the arrow keys refines the search instead of
+                        // starting a type-ahead the search box has already made redundant (see
+                        // HandleOnCalloutKeyDown). Two keys are left out where the ComboBox input takes
+                        // them: the space bar, which on a dropdown that is not typed into is the toggle of
+                        // the focused option and has nothing to replace it, and the caret keys, which have
+                        // no caret to move on an option and would only pull the focus off the row the
+                        // arrow keys had reached.
+                        if (isPrintable(e) || Dropdowns.EDIT_KEYS.indexOf(e.key) > -1) {
+                            (callout.querySelector('.bit-drp-sin') as HTMLElement | null)?.focus();
+                        }
                     }
                 };
                 callout.addEventListener('keydown', handler);
@@ -117,6 +143,23 @@ namespace BitBlazorUI {
             Dropdowns._handlers.delete(id);
         }
 
+        // Focuses the search box of a callout and puts the caret at the given offset. It is what the
+        // character typed on a CLOSED dropdown lands in (see TypeIntoSearchBox): the caret is placed by
+        // hand because a browser that focuses an input by script may leave it in front of the value, which
+        // would have the next character typed ahead of the one that opened the list.
+        public static focusSearchBox(calloutId: string, caret: number) {
+            const input = document.getElementById(calloutId)?.querySelector('.bit-drp-sin') as HTMLInputElement | null;
+            if (!input) return;
+
+            input.focus();
+
+            try {
+                input.setSelectionRange(caret, caret);
+            } catch (e) {
+                // An input that does not support a text selection cannot be given a caret; it has the focus either way.
+            }
+        }
+
         public static async focusItem(calloutId: string, mode: string, char: string | null, virtualize: boolean,
                                       selectedIndex: number = -1, itemSize: number = 0, noWrap: boolean = false) {
             const callout = document.getElementById(calloutId);
@@ -127,7 +170,17 @@ namespace BitBlazorUI {
             const generation = (Dropdowns._focusGenerations.get(callout) ?? 0) + 1;
             Dropdowns._focusGenerations.set(callout, generation);
 
-            let items = Dropdowns._getItems(callout);
+            // Only the jump that opens a virtualized list on its selection waits for that list: it is the
+            // one whose rows are rendered by the very reveal it follows, and the one that has a row to
+            // reach. Everywhere else an empty list is an empty list, and a wait would only hold the focus
+            // back - or, on a list still being fetched, put it on a row the next window replaces.
+            let items = (virtualize && mode === 'selected' && selectedIndex > -1)
+                            ? await Dropdowns._waitForItems(callout)
+                            : Dropdowns._getItems(callout);
+
+            // A newer key press took over while the list was being waited for.
+            if (Dropdowns._focusGenerations.get(callout) !== generation) return;
+
             if (items.length === 0) return;
 
             let current = items.indexOf(document.activeElement as HTMLElement);
@@ -159,6 +212,42 @@ namespace BitBlazorUI {
             }
         }
 
+        // The callout is revealed by the call right before this one, and the rows of a virtualized list
+        // are rendered only once that reveal has been laid out - so an empty list on the first opening
+        // means "not yet" rather than "nothing to focus", and giving up on it is what would leave that
+        // first opening on the top of the list with the focus still on the trigger. A list that really
+        // is empty costs the frames below once and focuses nothing either way.
+        private static async _waitForItems(callout: HTMLElement) {
+            let items = Dropdowns._getItems(callout);
+
+            for (let i = 0; items.length === 0 && i < Dropdowns.VIRTUALIZE_RENDER_FRAMES; i++) {
+                await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+                items = Dropdowns._getItems(callout);
+            }
+
+            return items;
+        }
+
+        // The height one row actually takes, measured over two of them so that whatever sits between
+        // them is counted as well. ItemSize is what Virtualize is TOLD to expect and what it renders
+        // its first window at; the scroll below has to be measured in what the list ends up rendering
+        // at instead, or a theme whose rows are a different height lands it hundreds of rows away.
+        // Measured off the layout box and never off getBoundingClientRect: the callout scales in as it
+        // opens, so the painted rect of a row is short for the length of that animation - which is
+        // exactly when the first opening measures it - and the scroll would land short with it.
+        private static _measureItemSize(scroller: HTMLElement) {
+            const rows = scroller.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+            if (rows.length === 0) return 0;
+
+            if (rows.length > 1 && rows[0].offsetParent === rows[1].offsetParent) {
+                const pitch = rows[1].offsetTop - rows[0].offsetTop;
+                if (pitch > 0) return pitch;
+            }
+
+            return rows[0].offsetHeight;
+        }
+
         // The options plus the select all item, which is not an option (it is a checkbox outside of the
         // listbox) but still has to be reachable with the arrow keys.
         private static _getItems(callout: HTMLElement) {
@@ -177,7 +266,7 @@ namespace BitBlazorUI {
         // scroll have been rendered, mapping the mode to where the focus goes in the new window.
         private static async _scrollFor(callout: HTMLElement, scroller: HTMLElement, mode: string, items: HTMLElement[],
                                        selectedIndex: number = -1, itemSize: number = 0) {
-            const max = scroller.scrollHeight - scroller.clientHeight;
+            let max = scroller.scrollHeight - scroller.clientHeight;
 
             let top: number;
             let nextMode = mode;
@@ -191,9 +280,22 @@ namespace BitBlazorUI {
                 // the DOM to be found, so the list is scrolled to where its index says it is first. It is
                 // centred in the window rather than pinned to the top, which is what a native select does
                 // and what shows the items around the selection instead of only the ones after it.
-                if (selectedIndex < 0 || itemSize <= 0) return null;
+                if (selectedIndex < 0) return null;
 
-                top = (selectedIndex * itemSize) - ((scroller.clientHeight - itemSize) / 2);
+                const size = Dropdowns._measureItemSize(scroller) || itemSize;
+                if (size <= 0) return null;
+
+                top = (selectedIndex * size) - ((scroller.clientHeight - size) / 2);
+
+                // A list that is being opened for the first time is still growing to the height of the
+                // whole set, so the clamp below would cut the scroll off hundreds of rows short of the
+                // selection - which is what the very first opening would otherwise land on. Wait for it
+                // to be tall enough to hold the target before scrolling to it.
+                for (let i = 0; top > max && i < Dropdowns.VIRTUALIZE_RENDER_FRAMES; i++) {
+                    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+                    max = scroller.scrollHeight - scroller.clientHeight;
+                }
             } else if (mode === 'prevPage') {
                 top = scroller.scrollTop - scroller.clientHeight;
                 nextMode = 'first';
@@ -220,6 +322,33 @@ namespace BitBlazorUI {
             const before = windowOf(items);
 
             scroller.scrollTop = top;
+
+            // The jump that opens a list on its selection is the one that has to hold: the list is
+            // rendered for the first time under it, re-measures itself as the window it was scrolled
+            // to arrives, and the height it holds open for the rest of the set moves the scroll
+            // position with it - which is what would otherwise leave that first opening hundreds of
+            // rows above the selection. The position is asked for again until it stays, because the
+            // re-render it is racing is a round trip of its own under Blazor Server.
+            if (mode === 'selected') {
+                const deadline = performance.now() + Dropdowns.VIRTUALIZE_SETTLE_TIME;
+
+                for (let held = 0; held < Dropdowns.VIRTUALIZE_SETTLE_FRAMES && performance.now() < deadline;) {
+                    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+                    if (scroller.scrollTop === top) {
+                        held++;
+                        continue;
+                    }
+
+                    held = 0;
+
+                    // Anything shorter is a list still growing to the height of the whole set, which
+                    // there is nothing to ask for yet - the next frames are what it is waited for in.
+                    if (top <= scroller.scrollHeight - scroller.clientHeight) {
+                        scroller.scrollTop = top;
+                    }
+                }
+            }
 
             for (let i = 0; i < Dropdowns.VIRTUALIZE_RENDER_FRAMES; i++) {
                 await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));

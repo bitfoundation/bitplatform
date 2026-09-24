@@ -23,6 +23,18 @@ public partial class UserSession
     public bool Privileged { get; set; }
 
     /// <summary>
+    /// How this session signed in - <see cref="AppClaimTypes.METHOD"/>'s value, kept as the raw fact behind
+    /// <see cref="Trusted"/> so the rule can be changed later without a guess.
+    /// </summary>
+    public string? AuthenticationMethod { get; set; }
+
+    /// <summary>
+    /// Whether this session is itself hard to get into, which is what decides if a secret may be pushed to it: a
+    /// completed second factor, a social provider, or a passkey. A password, a one-time code or an OAuth grant is not.
+    /// </summary>
+    public bool Trusted { get; set; }
+
+    /// <summary>
     /// Unix Time Seconds
     /// </summary>
     public long StartedOn { get; set; }

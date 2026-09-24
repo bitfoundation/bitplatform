@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Bit.BlazorUI.Demo.Client.Core.Models;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
@@ -221,13 +222,17 @@ public static class BlazorUIMarkdown
             AppendFence(section, owned.Code, example.CsharpField, "csharp");
             AppendCodeFiles(section, owned.Files, example.CodeFilesField);
 
-            // Stopped at the cap rather than cut mid-sample: half a code block is not a smaller
-            // answer, it is a wrong one. What is left is named with the call that returns it.
-            if (builder.Length + section.Length > MaxLength && written > 0)
-            {
-                var remaining = matches.Skip(written).Select(e => e.Tab is null ? e.Title : $"{e.Tab} · {e.Title}").Distinct();
+            var remaining = matches.Skip(written).Select(e => e.Tab is null ? e.Title : $"{e.Tab} · {e.Title}").Distinct();
 
-                builder.AppendLine($"Stopped here to stay within one answer. Also available, one at a time via `GetBitBlazorUIComponentExamples(name: \"{component.Name}\", example: \"...\")`: {string.Join(", ", remaining)}.");
+            var notice = $"Stopped here to stay within one answer. Also available, one at a time via `GetBitBlazorUIComponentExamples(name: \"{component.Name}\", example: \"...\")`: {string.Join(", ", remaining)}.";
+
+            // Stopped at the cap rather than cut mid-sample: half a code block is not a smaller
+            // answer, it is a wrong one. The notice is counted in the cap it keeps the answer under
+            // - a page with enough sections to need it has enough of them to make it long, and a
+            // notice cut in half names neither what was left out nor the call that returns it.
+            if (builder.Length + section.Length + notice.Length > MaxLength && written > 0)
+            {
+                builder.AppendLine(notice);
 
                 return Truncate(builder.ToString());
             }
@@ -441,14 +446,43 @@ public static class BlazorUIMarkdown
     {
         if (component.CascadingParams is null) return;
 
-        var name = component.CascadingParams.Name;
+        // Written the way it is written in Razor rather than as reflection names it: a params
+        // class of a generic component is generic too, and `BitDropdownParams`2` neither compiles
+        // in the snippet below nor resolves as the typeName the same line tells the caller to pass.
+        var name = BlazorUITypeNames.Of(component.CascadingParams);
 
-        var count = component.CascadingParams
+        var carried = component.CascadingParams
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Count(p => p.CanWrite);
+            .Where(p => p.CanWrite)
+            .Select(p => p.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var baseName = component.CascadingParams.BaseType is { } baseType && baseType != typeof(object)
+            ? BlazorUITypeNames.Of(baseType)
+            : null;
+
+        // Read off the compiled component rather than off its table: the parameters a params object
+        // leaves out are the ones a reader would otherwise assume are there, and the type is what
+        // has the last word on which exist. Inherited ones are included - they are exactly the set
+        // in question, since a params object derives from BitComponentBaseParams and so carries the
+        // BitComponentBase half of them and nothing of what an input base adds.
+        var missing = component.ComponentType is null ? [] : component.ComponentType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.IsDefined(typeof(ParameterAttribute)) && carried.Contains(p.Name) is false)
+            .Select(p => p.Name)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        var inherits = baseName is null ? string.Empty : $" - its own and the `{baseName}` ones alike";
 
         builder.AppendLine("## Cascading parameters").AppendLine();
-        builder.AppendLine($"`{name}` carries {count} of this component's parameters again as nullables - its own and the inherited ones alike - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+        builder.AppendLine($"`{name}` carries {carried.Count} of this component's parameters again as nullables{inherits} - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+
+        if (missing.Length > 0)
+        {
+            builder.AppendLine($"Not on it, so they are written on the instance itself: {string.Join(", ", missing.Select(n => $"`{n}`"))}.").AppendLine();
+        }
     }
 
     /// <summary>

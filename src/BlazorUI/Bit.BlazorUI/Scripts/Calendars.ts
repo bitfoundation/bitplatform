@@ -49,8 +49,8 @@ namespace BitBlazorUI {
             Calendars._handlers.delete(id);
         }
 
-        public static focusCell(cellId: string) {
-            document.getElementById(cellId)?.focus();
+        public static focusCell(cellId: string, preventScroll?: boolean) {
+            document.getElementById(cellId)?.focus({ preventScroll: !!preventScroll });
         }
 
         // Which keys the browser has to be stopped from scrolling the page with depends on what holds the

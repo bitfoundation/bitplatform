@@ -1,4 +1,4 @@
-﻿(window as any)['bit-bswup.progress version'] = '10.6.2-pre-01';
+﻿(window as any)['bit-bswup.progress version'] = '10.6.2';
 
 // Default progress/splash UI for Bswup. This script registers the global
 // `bitBswupHandler` that bit-bswup.ts calls with every BswupMessage, and drives the

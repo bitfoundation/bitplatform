@@ -7,15 +7,16 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     private Action? unsubscribe;
 
     [AutoInject] private PubSubService pubSubService = default!;
-    [AutoInject] private PromptService promptService = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
+    [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
+    [AutoInject] private ElevatedAccessService elevatedAccessService = default!;
 
     public void OnInit()
     {
@@ -90,7 +91,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     /// <list type="bullet">
     /// <item>a plain renewal, when the current access token is expired or about to be (See AuthDelegatingHandler).</item>
     /// <item>raising the session to an <b>elevated (privileged)</b> one, by passing the token the user received by
-    /// e-mail / sms (See <see cref="RequestElevatedAccess"/>).</item>
+    /// e-mail / sms, or a WebAuthn assertion in its place (See <see cref="TryEnterElevatedAccessMode"/>).</item>
     /// <item><b>switching the active tenant</b>, by passing the id of the tenant to enter (See SwitchTenant).</item>
     /// </list>
     /// They all go through this one method because the server answers all of them from the same endpoint: it validates
@@ -105,7 +106,9 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     /// </para>
     /// </summary>
     /// <param name="requestedBy">Free text, for logs and error reports only. It has no effect on the request.</param>
+    /// <param name="webAuthnClientResponse">A passkey assertion offered in place of <paramref name="elevatedAccessToken"/>.</param>
     public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null, bool ignoreTransientException = false
+        , JsonElement? webAuthnClientResponse = null
         //#if (multitenant == true)
         , Guid? requestedTenantId = null // The id of the tenant the user is trying to switch into.
                                          //#endif
@@ -115,6 +118,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         // switch into, or an elevated access token - must get its own request, otherwise its arguments are silently
         // dropped and it is handed the result of somebody else's plain refresh (and told it succeeded).
         var hasRequestOfItsOwn = elevatedAccessToken is not null
+            || webAuthnClientResponse is not null
             //#if (multitenant == true)
             || requestedTenantId is not null
             //#endif
@@ -149,14 +153,19 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     if (string.IsNullOrWhiteSpace(refreshToken))
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                    var refreshTokenResponse = await identityController.Refresh(new()
-                    {
-                        RefreshToken = refreshToken,
-                        ElevatedAccessToken = elevatedAccessToken,
-                        //#if (multitenant == true)
-                        RequestedTenantId = requestedTenantId,
-                        //#endif
-                    }, default);
+                    // On Blazor Hybrid the assertion was produced against the local http server's origin, which the
+                    // server derives the relying party from.
+                    var refreshTokenResponse = await identityController
+                        .WithQueryIf(AppPlatform.IsBlazorHybrid && webAuthnClientResponse is not null, "origin", localHttpServer.Origin)
+                        .Refresh(new()
+                        {
+                            RefreshToken = refreshToken,
+                            ElevatedAccessToken = elevatedAccessToken,
+                            WebAuthnClientResponse = webAuthnClientResponse,
+                            //#if (multitenant == true)
+                            RequestedTenantId = requestedTenantId,
+                            //#endif
+                        }, default);
                     await StoreTokens(refreshTokenResponse);
                     currentTsc.TrySetResult(refreshTokenResponse.AccessToken!);
                 }
@@ -219,28 +228,18 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Makes sure the session satisfies <see cref="AuthPolicies.ELEVATED_ACCESS"/>, collecting the proof through
+    /// <see cref="ElevatedAccessService"/> if it doesn't. An already elevated session passes silently.
+    /// </summary>
     public async Task<bool> TryEnterElevatedAccessMode(CancellationToken cancellationToken)
     {
         var user = IAuthTokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
-        var hasElevatedAccess = await authorizationService.IsAuthorized(user, AuthPolicies.ELEVATED_ACCESS);
-        if (hasElevatedAccess)
+
+        if (await authorizationService.IsAuthorized(user, AuthPolicies.ELEVATED_ACCESS))
             return true;
 
-        try
-        {
-            await userController.SendElevatedAccessToken(cancellationToken);
-        }
-        catch (TooManyRequestsException exp)
-        {
-            exceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.NonInterrupting); // Let's show prompt anyway.
-        }
-
-        var token = await promptService.Show(localizer[nameof(AppStrings.EnterElevatedAccessToken)], title: "Boilerplate", otpInput: true);
-        if (string.IsNullOrWhiteSpace(token))
-            return false;
-
-        var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
-        return string.IsNullOrWhiteSpace(accessToken) is false;
+        return await elevatedAccessService.Show(cancellationToken);
     }
 
     //#if (multitenant == true)
