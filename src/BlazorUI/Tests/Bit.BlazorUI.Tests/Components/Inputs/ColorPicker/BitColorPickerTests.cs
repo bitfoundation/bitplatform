@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -626,8 +626,12 @@ public class BitColorPickerTests : BunitTestContext
     [TestMethod,
         DataRow("#00FF00", "#00FF00", 1.0),
         DataRow("#0f0", "#00FF00", 1.0),
-        DataRow("00FF00", "#FFFFFF", 1.0),
+        DataRow("00FF00", "#00FF00", 1.0),
+        DataRow(" 0f0 ", "#00FF00", 1.0),
+        DataRow("00FF0080", "#00FF00", 0.5),
         DataRow("#00FF0080", "#00FF00", 0.5),
+        DataRow("tomato", "#FF6347", 1.0),
+        DataRow("00FF0", "#FFFFFF", 1.0),
         DataRow("nonsense", "#FFFFFF", 1.0)
     ]
     public void BitColorPickerShouldCommitTheHexField(string typed, string expectedHex, double expectedAlpha)
@@ -1692,7 +1696,7 @@ public class BitColorPickerTests : BunitTestContext
         var alpha = com.Find(".bit-clp-asd .bit-clp-inp");
 
         Assert.AreEqual("Hue", hue.GetAttribute("aria-label"));
-        Assert.AreEqual("Hue 210 degrees", hue.GetAttribute("aria-valuetext"));
+        Assert.AreEqual("Hue 210 degrees, blue", hue.GetAttribute("aria-valuetext"));
         Assert.AreEqual("Alpha", alpha.GetAttribute("aria-label"));
         Assert.AreEqual("Alpha 25%", alpha.GetAttribute("aria-valuetext"));
     }
@@ -1821,5 +1825,589 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual("#00FF00", com.Instance.Color);
         Assert.AreEqual("#00FF00", picker.Hex);
         Assert.AreEqual(120, picker.Hsv.Hue);
+    }
+
+    // A read-only picker is showing a color, not refusing one: everything on it stays reachable so the color
+    // can be read out, and each control declares the state it is in rather than the one it is not.
+    [TestMethod]
+    public void BitColorPickerReadOnlyShouldStayReachableAndAnnounceItself()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.ColorPicker.isEyeDropperSupported").SetResult(true);
+
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowAlphaSlider, true);
+            parameters.Add(p => p.ShowEyeDropper, true);
+            parameters.Add(p => p.Presets, ["#FF0000"]);
+            parameters.Add(p => p.OnChange, () => { });
+        });
+
+        var hue = com.Find(".bit-clp-hsd .bit-clp-inp");
+        var alpha = com.Find(".bit-clp-asd .bit-clp-inp");
+        var preset = com.Find(".bit-clp-prt");
+        var eyeDropper = com.Find(".bit-clp-eyd");
+
+        // Nothing is natively disabled, which is what would have taken it out of the tab order and had it
+        // announced as unavailable.
+        Assert.IsFalse(hue.HasAttribute("disabled"));
+        Assert.IsFalse(alpha.HasAttribute("disabled"));
+        Assert.IsFalse(preset.HasAttribute("disabled"));
+        Assert.IsFalse(eyeDropper.HasAttribute("disabled"));
+        Assert.IsTrue(com.FindAll(".bit-clp-fin").All(f => f.HasAttribute("disabled") is false));
+
+        // A slider is read-only, a text field carries the native attribute for it, and a button that would
+        // change the color is the one thing there is nothing to read on.
+        Assert.AreEqual("true", com.Find(".bit-clp-rec").GetAttribute("aria-readonly"));
+        Assert.AreEqual("true", hue.GetAttribute("aria-readonly"));
+        Assert.AreEqual("true", alpha.GetAttribute("aria-readonly"));
+        Assert.IsTrue(com.FindAll(".bit-clp-fin").All(f => f.HasAttribute("readonly")));
+        Assert.AreEqual("true", preset.GetAttribute("aria-disabled"));
+        Assert.AreEqual("true", eyeDropper.GetAttribute("aria-disabled"));
+    }
+
+    // A native range has no read-only state to refuse an arrow key with, so the thumb has already moved by
+    // the time the handler runs. The renderer will not put it back - the value it last rendered has not
+    // changed - so the element is written to directly.
+    [TestMethod]
+    public void BitColorPickerReadOnlySliderShouldBePutBack()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowAlphaSlider, true);
+            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.OnChange, () => { });
+        });
+
+        com.Find(".bit-clp-hsd .bit-clp-inp").Input("180");
+        com.Find(".bit-clp-asd .bit-clp-inp").Input("0.5");
+
+        Assert.AreEqual("#FF0000", com.Instance.Hex);
+        Assert.AreEqual(1, com.Instance.Alpha);
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Count);
+    }
+
+    // The readout answers the question the color is being picked to settle, so it is read out with the
+    // control it is about instead of waiting to be found further down the panel.
+    [TestMethod]
+    public void BitColorPickerShouldDescribeTheSaturationAreaWithTheContrast()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowContrast, true);
+        });
+
+        var describedBy = com.Find(".bit-clp-rec").GetAttribute("aria-describedby");
+
+        Assert.IsNotNull(describedBy);
+        Assert.AreEqual(describedBy, com.Find(".bit-clp-cnr").GetAttribute("id"));
+
+        com.Render(parameters => parameters.Add(p => p.ShowContrast, false));
+
+        Assert.IsNull(com.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
+    }
+
+    // aria-label does not apply to a generic element, so the spelled-out readings of the contrast row would
+    // be dropped by the very assistive technologies they are written for.
+    [TestMethod]
+    public void BitColorPickerContrastReadingsShouldCarryARoleThatKeepsTheirLabels()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowContrast, true);
+        });
+
+        Assert.AreEqual("img", com.Find(".bit-clp-cnv").GetAttribute("role"));
+        Assert.IsTrue(com.FindAll(".bit-clp-cnb").All(b => b.GetAttribute("role") == "img"));
+    }
+
+    [TestMethod]
+    public void BitColorPickerParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitColorPickerParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitColorPickerParams.ParamName, @params.Name);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitColorPicker)}", BitColorPickerParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitColorPickerShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitColorPickerParams
+            {
+                Size = BitSize.Large,
+                ShowInputs = true,
+                ShowPreview = true,
+                ShowAlphaSlider = true,
+                Format = BitColorFormat.Rgba,
+                Presets = ["#FF0000", "#00FF00"],
+                DefaultInputsMode = BitColorInputsMode.Hsl,
+                Label = "Cascaded label",
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitColorPicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.IsTrue(com.Find(".bit-clp").ClassList.Contains("bit-clp-lg"));
+        Assert.AreEqual("Cascaded label", com.Find(".bit-clp-lbl").TextContent);
+        Assert.AreEqual(1, com.FindAll(".bit-clp-pre").Count);
+        Assert.AreEqual(1, com.FindAll(".bit-clp-asd").Count);
+        Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
+
+        // The cascaded DefaultInputsMode decides which fields are rendered, and the cascaded Format decides
+        // the notation the picker answers in from its very first render.
+        Assert.AreEqual(0, com.FindAll(".bit-clp-fhx").Count);
+        Assert.AreEqual("Hue", com.FindAll(".bit-clp-fin")[0].GetAttribute("title"));
+        Assert.AreEqual("rgba(255,255,255,1)", com.FindComponent<BitColorPicker>().Instance.Color);
+    }
+
+    [TestMethod]
+    public void BitColorPickerDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitColorPickerParams
+            {
+                Size = BitSize.Large,
+                ShowInputs = true,
+                ShowPreview = true,
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitColorPicker>(0);
+                builder.AddAttribute(1, nameof(BitColorPicker.Size), BitSize.Small);
+                builder.AddAttribute(2, nameof(BitColorPicker.ShowPreview), false);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.IsTrue(com.Find(".bit-clp").ClassList.Contains("bit-clp-sm"));
+        Assert.AreEqual(0, com.FindAll(".bit-clp-pre").Count);
+
+        // What the picker left unset is still filled in from the cascade.
+        Assert.AreEqual(4, com.FindAll(".bit-clp-fin").Count);
+    }
+
+    // Only the STARTING mode is cascaded, because the picker's own switch moves the mode: a cascaded
+    // InputsMode would be re-imposed on every render of the parent and put back what the user just moved.
+    [TestMethod]
+    public void BitColorPickerCascadedDefaultInputsModeShouldNotUndoTheInputsModeSwitch()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitColorPickerParams
+            {
+                ShowInputs = true,
+                ShowInputsModeSwitch = true,
+                DefaultInputsMode = BitColorInputsMode.Hsl,
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitColorPicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var picker = com.FindComponent<BitColorPicker>().Instance;
+
+        Assert.AreEqual(BitColorInputsMode.Hsl, picker.InputsMode);
+
+        com.Find(".bit-clp-swb").Click();
+
+        Assert.AreEqual(BitColorInputsMode.Hsv, picker.InputsMode);
+
+        // A render of the cascading parent is what used to put the cascaded mode back.
+        com.Render(parameters => parameters.Add(p => p.Parameters, paramsList));
+
+        Assert.AreEqual(BitColorInputsMode.Hsv, picker.InputsMode);
+    }
+
+    // A picker built out of nothing but its text fields is still focused in one call: the parts the focus
+    // normally lands on are all optional, and the fields are what is left.
+    [TestMethod]
+    public async Task BitColorPickerShouldFocusTheFieldsWhenNothingAboveThemIsRendered()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+
+        // The hexadecimal field is not always the first one either - a picker typed in HSL starts at the
+        // hue field instead.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+            parameters.Add(p => p.InputsMode, BitColorInputsMode.Hsl);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-clp-fhx").Count);
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    // A one-way bound Color leaves every field, swatch and slider natively disabled, and a disabled element
+    // cannot take the focus. The inputs mode switch can: it moves which numbers the color is read as.
+    [TestMethod]
+    public async Task BitColorPickerShouldFocusTheInputsModeSwitchWhenEverythingElseIsDisabled()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowInputsModeSwitch, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+
+        // With the switch gone there is nothing left that is focusable, and nothing is asked for.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+            parameters.Add(p => p.ShowInputsModeSwitch, false);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    // Almost everything the picker tells a screen reader is text it writes rather than text a consumer hands
+    // it, so Texts is what translates the component.
+    [TestMethod]
+    public void BitColorPickerShouldRespectTexts()
+    {
+        var texts = new BitColorPickerTexts
+        {
+            SaturationAreaLabel = "Sättigung und Helligkeit",
+            SaturationAreaRoleDescription = "2D-Regler",
+            HueLabel = "Farbton",
+            HueValueFormat = "Farbton {0} Grad",
+            AlphaLabel = "Deckkraft",
+            AlphaValueFormat = "Deckkraft {0}%",
+            AlphaFieldLabel = "D%",
+            HexFieldLabel = "Hex-Wert",
+            RedFieldLabel = "Rt",
+            RedLabel = "Rot",
+            PresetsLabel = "Farbvorlagen",
+            // A translation is free to leave a placeholder out, which is how the English color description
+            // is dropped from an announcement.
+            PickerLabelWithAlphaFormat = "Farbwähler: Rot {1} Grün {2} Blau {3}, Deckkraft {4}%.",
+        };
+
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Texts, texts);
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowAlphaSlider, true);
+            parameters.Add(p => p.Presets, ["#FF0000"]);
+            parameters.Add(p => p.Color, "#FF0000");
+        });
+
+        var area = com.Find(".bit-clp-rec");
+
+        Assert.AreEqual("Sättigung und Helligkeit", area.GetAttribute("aria-label"));
+        Assert.AreEqual("2D-Regler", area.GetAttribute("aria-roledescription"));
+        Assert.AreEqual("Farbton", com.Find(".bit-clp-hsd .bit-clp-inp").GetAttribute("aria-label"));
+        Assert.AreEqual("Farbton 0 Grad", com.Find(".bit-clp-hsd .bit-clp-inp").GetAttribute("aria-valuetext"));
+        Assert.AreEqual("Deckkraft 100%", com.Find(".bit-clp-asd .bit-clp-inp").GetAttribute("aria-valuetext"));
+        Assert.AreEqual("Farbvorlagen", com.Find(".bit-clp-prs").GetAttribute("aria-label"));
+
+        var captions = com.FindAll(".bit-clp-flb").Select(l => l.TextContent).ToList();
+
+        Assert.AreEqual("Hex-Wert", captions[0]);
+        Assert.AreEqual("Rt", captions[1]);
+        Assert.AreEqual("D%", captions[^1]);
+
+        // The id that ties a caption to its field is the invariant channel name, not the caption, so a
+        // translation cannot break the pairing.
+        Assert.AreEqual(com.FindAll(".bit-clp-fin")[1].GetAttribute("id"), com.FindAll(".bit-clp-flb")[1].GetAttribute("for"));
+
+        Assert.AreEqual("Farbwähler: Rot 255 Grün 0 Blau 0, Deckkraft 100%.", com.Find(".bit-clp").GetAttribute("aria-label"));
+    }
+
+    // A translation belongs to the application rather than to one picker in it.
+    [TestMethod]
+    public void BitColorPickerShouldTakeItsTextsFromTheCascade()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitColorPickerParams
+            {
+                Texts = new BitColorPickerTexts { SaturationAreaLabel = "Saturation et luminosité" }
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitColorPicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("Saturation et luminosité", com.Find(".bit-clp-rec").GetAttribute("aria-label"));
+    }
+
+    // AutoFocus only fires on the first render, so a picker revealed rather than rendered needs a way to ask
+    // for the focus later.
+    [TestMethod]
+    public async Task BitColorPickerShouldFocusTheSaturationArea()
+    {
+        var com = RenderComponent<BitColorPicker>();
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitColorPickerShouldNotFocusWhenDisabled()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+
+
+    // The gradient and the hue slider are the two parts that are on to begin with, and turning them off is
+    // what leaves a palette picker - the presets, the fields, or both - where a whole panel would not fit.
+    [TestMethod,
+        DataRow(true, true, 1, 1),
+        DataRow(false, true, 0, 1),
+        DataRow(true, false, 1, 0),
+        DataRow(false, false, 0, 0)
+    ]
+    public void BitColorPickerShouldRespectTheOptionalPanelParts(bool area, bool hue, int areas, int hues)
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowSaturationArea, area);
+            parameters.Add(p => p.ShowHueSlider, hue);
+        });
+
+        Assert.AreEqual(areas, com.FindAll(".bit-clp-rec").Count);
+        Assert.AreEqual(hues, com.FindAll(".bit-clp-hsd").Count);
+    }
+
+    // The row holding the sliders, the eyedropper and the preview is only drawn where it has something to
+    // hold, so a panel built without any of them does not keep the gap the row would have taken.
+    [TestMethod]
+    public void BitColorPickerShouldDropTheContentRowWhenItHoldsNothing()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+            parameters.Add(p => p.Presets, ["#FF0000", "#00FF00"]);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-clp-cnt").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-clp-sct").Count);
+        Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
+
+        // The color is unaffected by which parts are drawn: the parts are ways of choosing it, not where it
+        // is kept.
+        Assert.AreEqual("#FFFFFF", com.Instance.Hex);
+    }
+
+    // The preview is reason enough for the row on its own, since it is the only thing left that shows the
+    // color a palette picker is on.
+    [TestMethod]
+    public void BitColorPickerShouldKeepTheContentRowForThePreviewAlone()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowPreview, true);
+            parameters.Add(p => p.ShowHueSlider, false);
+            parameters.Add(p => p.ShowSaturationArea, false);
+        });
+
+        Assert.AreEqual(1, com.FindAll(".bit-clp-cnt").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-clp-sct").Count);
+        Assert.AreEqual(1, com.FindAll(".bit-clp-pre").Count);
+    }
+
+    // The contrast readout describes the first widget the panel renders, so the verdict is read out with the
+    // control the user is standing on rather than waiting at the bottom of the panel to be found.
+    [TestMethod]
+    public void BitColorPickerContrastShouldDescribeWhicheverWidgetComesFirst()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowContrast, true);
+            parameters.Add(p => p.ShowAlphaSlider, true);
+            parameters.Add(p => p.ShowSaturationArea, false);
+        });
+
+        var contrastId = com.Find(".bit-clp-cnr").GetAttribute("id");
+
+        Assert.AreEqual(contrastId, com.Find(".bit-clp-hsd .bit-clp-inp").GetAttribute("aria-describedby"));
+        Assert.IsNull(com.Find(".bit-clp-asd .bit-clp-inp").GetAttribute("aria-describedby"));
+
+        com.Render(parameters => parameters.Add(p => p.ShowHueSlider, false));
+
+        Assert.AreEqual(contrastId, com.Find(".bit-clp-asd .bit-clp-inp").GetAttribute("aria-describedby"));
+    }
+
+    // A picker built without the gradient is still focused in one call: the focus goes to whichever control
+    // is left first.
+    [TestMethod]
+    public async Task BitColorPickerShouldFocusWhicheverControlComesFirst()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowSaturationArea, false);
+            parameters.Add(p => p.Presets, ["#FF0000", "#00FF00"]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+
+        com.Render(parameters => parameters.Add(p => p.ShowHueSlider, false));
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    // A key pressed with a modifier on it belongs to the browser or to the operating system - Ctrl+Home goes
+    // to the top of the page - and the JavaScript side leaves those alone rather than preventing them.
+    [TestMethod,
+        DataRow("Home"),
+        DataRow("ArrowRight"),
+        DataRow("PageDown")
+    ]
+    public void BitColorPickerShouldLeaveTheModifiedKeysToTheBrowser(string key)
+    {
+        var changes = 0;
+
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Color, "hsv(210,60%,50%)");
+            parameters.Add(p => p.OnChange, () => changes++);
+        });
+
+        var area = com.Find(".bit-clp-rec");
+
+        area.KeyDown(new KeyboardEventArgs { Key = key, CtrlKey = true });
+        area.KeyDown(new KeyboardEventArgs { Key = key, AltKey = true });
+        area.KeyDown(new KeyboardEventArgs { Key = key, MetaKey = true });
+
+        Assert.AreEqual(0, changes);
+        Assert.AreEqual(60, (int)Math.Round(com.Instance.Hsv.Saturation * 100));
+        Assert.AreEqual(50, (int)Math.Round(com.Instance.Hsv.Value * 100));
+    }
+
+    // The drag listeners belong to the gradient rather than to the picker, so they are registered on the
+    // render it appears on and released on the one it goes - and the reference they report through goes with
+    // them, since the JavaScript side disposes it along with the controller that holds it.
+    [TestMethod]
+    public void BitColorPickerShouldFollowTheGradientWithItsDragListeners()
+    {
+        // The id the listeners are released by is what the setup call answers with, and a loose interop
+        // answers a string call with null - which is the one answer there is nothing to release for.
+        Context.JSInterop.Setup<string>("BitBlazorUI.ColorPicker.setup", _ => true).SetResult("controller-id");
+
+        var com = RenderComponent<BitColorPicker>();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"].Count);
+
+        com.Render(parameters => parameters.Add(p => p.ShowSaturationArea, false));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"].Count);
+
+        com.Render(parameters => parameters.Add(p => p.ShowSaturationArea, true));
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"].Count);
+    }
+
+    // A picker that never draws the gradient never registers anything to release either.
+    [TestMethod]
+    public void BitColorPickerShouldNotRegisterDragListenersWithoutTheGradient()
+    {
+        RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowSaturationArea, false);
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"].Count);
+    }
+
+    [TestMethod]
+    public void BitColorPickerShouldTakeThePanelPartsFromTheCascade()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitColorPickerParams
+            {
+                ShowHueSlider = false,
+                ShowSaturationArea = false,
+                Presets = ["#FF0000", "#00FF00"],
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitColorPicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-clp-rec").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-clp-hsd").Count);
+        Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
     }
 }
