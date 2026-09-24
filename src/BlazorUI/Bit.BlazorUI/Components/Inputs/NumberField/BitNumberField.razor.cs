@@ -41,6 +41,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private readonly TValue _zeroValue;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
+    private bool _announceValue;
     private bool _isSpinButtonPressed;
     private bool _isSelfValueChangePending;
     private string? _uncommittedImmediateText;
@@ -1041,7 +1042,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             var parsedValue = result;
 
-            result = Snap(result);
+            result = Snap(result!);
 
             // The precision rounding runs before the clamping, so that it cannot push the committed
             // value back out of the range afterwards (with Max=1.005 and Precision=2, rounding a
@@ -1354,11 +1355,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     // with its text already in it is regularly missed altogether. The region is therefore always rendered and
     // only its text comes and goes. In HideInput mode the value takes it over, since a hidden input is not
     // exposed to assistive technologies at all and nothing else would ever announce the spinning.
+    // The same goes for a step taken while the input is not focused (a tap on a touch screen, a button an
+    // assistive technology activated), until the input takes the focus back and announces the value itself.
     // An ErrorMessageTemplate has no text on this side of the DOM to read out, so the region says that the
     // value was rejected rather than staying silent and leaving the field sounding accepted.
     private string? LiveText => HasErrorMessage ? (ErrorMessage.HasValue() ? ErrorMessage : "Invalid input")
                               : Loading ? (LoadingAriaLabel ?? "Loading")
-                              : HideInput ? GetDisplayValueAsString()
+                              : HideInput || _announceValue ? GetDisplayValueAsString()
                               : null;
 
     private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
@@ -1649,6 +1652,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (IsSpinBlocked(isIncrement)) return;
 
+        // The activation leaves the focus on the button (or wherever the assistive technology keeps it),
+        // so the spinbutton is not the element being read and would change its value in silence.
+        if (_hasFocus is false) _announceValue = true;
+
         await ChangeValueAndInvokeEvents(isIncrement);
     }
 
@@ -1765,6 +1772,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         if (IsEnabled is false) return;
 
         _hasFocus = true;
+        _announceValue = false;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
         // The text selection is handled in HandleOnFocus; the focus event always accompanies
@@ -1808,7 +1816,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         await OnFocus.InvokeAsync(e);
     }
 
-    private async Task HandleOnPointerDown(bool isIncrement)
+    private async Task HandleOnPointerDown(PointerEventArgs e, bool isIncrement)
     {
         if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
@@ -1831,7 +1839,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
         else
         {
-            if (_hasFocus is false)
+            // A finger tapping a spin button of a field it is not typing into wants the value stepped, not
+            // the soft keyboard sliding up over half the screen - which is what focusing the input does on
+            // a touch device. The focus stays where it is, so the value is announced through the live
+            // region instead, the spinbutton not being focused to announce it itself.
+            if (_hasFocus is false && e.PointerType is "touch")
+            {
+                _announceValue = true;
+            }
+            else if (_hasFocus is false)
             {
                 await InputElement.FocusAsync();
             }

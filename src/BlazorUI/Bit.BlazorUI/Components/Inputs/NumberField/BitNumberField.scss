@@ -6,6 +6,7 @@
 //   --bit-NumberField-placeholder-color         color of the placeholder                     (default: $clr-fg-sec)
 //   --bit-NumberField-background                fill of the field                            (default: per Background, $clr-bg-*)
 //   --bit-NumberField-border-color              border color at rest                         (default: per Border, $clr-brd-*)
+//   --bit-NumberField-hover-border-color        border color under a hovering pointer        (default: per Border, $clr-brd-*-hover)
 //   --bit-NumberField-border-width              thickness of that border, and of the
 //                                               bottom rule of the Underlined variant        (default: $shp-border-width)
 //   --bit-NumberField-radius                    corner radius of the field                   (default: $shp-radius-control)
@@ -226,6 +227,16 @@
     width: max-content;
 }
 
+// The border answers a hovering pointer, as the frame of every other text input in the library does, but
+// only on a field there is something to type into: not a disabled or a read-only one, not the stepper-only
+// HideInput one (whose input is hidden, and so read-only too), not one whose border is invisible, and never
+// over the accent of the focus ring or the red of an invalid field.
+@media (hover: hover) {
+    .bit-nfl:not(.bit-dis, .bit-inv, .bit-nfl-fcs, .bit-nfl-brn) .bit-nfl-cnt:not(:has(> .bit-nfl-inp:read-only)):hover {
+        border-color: var(--bit-NumberField-hover-border-color, var(--bit-nfl-clr-brd-hover));
+    }
+}
+
 // Two stacked buttons split the height of the field between them, which at the default 32px leaves each of
 // them 16px tall - under the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8), and well under what a
 // finger can hit. On a coarse pointer the field grows so that each half clears it; a mouse keeps the
@@ -280,6 +291,7 @@
     cursor: pointer;
     font-weight: $tg-fw-regular;
     user-select: none;
+    touch-action: manipulation;
     position: relative;
     text-align: center;
     outline: transparent;
@@ -367,6 +379,11 @@
     display: block;
     cursor: default;
     user-select: none;
+    // Tapping + a few times in a row is how a stepper is used on a phone, and without this the second tap
+    // is taken for a double-tap zoom; holding it down is the continuous spin, not a request for the
+    // long-press callout.
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
     position: relative;
     text-align: center;
     text-decoration: none;
@@ -775,14 +792,17 @@
 
 .bit-nfl-brp {
     --bit-nfl-clr-brd: #{$clr-brd-pri};
+    --bit-nfl-clr-brd-hover: #{$clr-brd-pri-hover};
 }
 
 .bit-nfl-brs {
     --bit-nfl-clr-brd: #{$clr-brd-sec};
+    --bit-nfl-clr-brd-hover: #{$clr-brd-sec-hover};
 }
 
 .bit-nfl-brt {
     --bit-nfl-clr-brd: #{$clr-brd-ter};
+    --bit-nfl-clr-brd-hover: #{$clr-brd-ter-hover};
 }
 
 .bit-nfl-brn {

@@ -1058,6 +1058,12 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "--bit-NumberField-hover-border-color",
+            DefaultValue = "The hover color of the Border color kind",
+            Description = "Border color under a hovering pointer, on an editable field that is neither focused nor invalid.",
+        },
+        new()
+        {
             Name = "--bit-NumberField-border-width",
             DefaultValue = "--bit-shp-brd-width",
             Description = "Thickness of that border, and of the bottom rule of the Underlined variant.",

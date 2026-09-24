@@ -17,6 +17,10 @@
     // become the only way to operate the component and must be reachable by keyboard.
     var spinTabIndex = HideInput ? 0 : -1;
 
+    // Each button changes the value of the spinbutton, which aria-controls lets a screen reader say (and
+    // jump to). A hidden input is not exposed at all, so there is nothing to point at in HideInput mode.
+    var spinControls = HideInput ? null : _inputId;
+
     // A read-only field cannot be spun either, so the buttons say so instead of looking operable and
     // then doing nothing - the same reasoning that keeps the clear button hidden while read-only.
     var spinDisabled = IsEnabled is false || ReadOnly;
@@ -102,11 +106,12 @@
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointercancel="HandleOnPointerUpOrOut"
-                    @onpointerdown="() => HandleOnPointerDown(false)"
+                    @onpointerdown="(e) => HandleOnPointerDown(e, false)"
                     @onpointerdown:preventDefault
                     @onclick="(e) => HandleOnButtonClick(e, false)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    aria-controls="@spinControls"
                     style="@Styles?.DecrementButton"
                     class="bit-nfl-sbn@(decrementBlockedClass) @Classes?.DecrementButton"
                     disabled="@spinDisabled"
@@ -126,7 +131,6 @@
             @* A hidden input only carries the value (e.g. for form posting); constraint, interaction
                and aria attributes have no effect on it. *@
             <input @ref="InputElement" @attributes="@InputHtmlAttributes"
-                   form=""
                    name="@Name"
                    id="@_inputId"
                    value="@CurrentValueAsString"
@@ -153,7 +157,6 @@
                    @bind-value:get="@GetDisplayValueAsString()"
                    @bind-value:set="@HandleOnStringValueSet"
                    @bind-value:event="@(Immediate ? "oninput" : "onchange")"
-                   form=""
                    name="@Name"
                    id="@_inputId"
                    readonly="@(ReadOnly || IsInputReadOnly)"
@@ -233,11 +236,12 @@
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
                         @onpointercancel="HandleOnPointerUpOrOut"
-                        @onpointerdown="() => HandleOnPointerDown(true)"
+                        @onpointerdown="(e) => HandleOnPointerDown(e, true)"
                         @onpointerdown:preventDefault
                         @onclick="(e) => HandleOnButtonClick(e, true)"
                         type="button"
                         tabindex="@spinTabIndex"
+                        aria-controls="@spinControls"
                         autofocus="@(HideInput && AutoFocus)"
                         style="@Styles?.IncrementButton"
                         class="bit-nfl-aup@(incrementBlockedClass) @Classes?.IncrementButton"
@@ -256,11 +260,12 @@
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
                         @onpointercancel="HandleOnPointerUpOrOut"
-                        @onpointerdown="() => HandleOnPointerDown(false)"
+                        @onpointerdown="(e) => HandleOnPointerDown(e, false)"
                         @onpointerdown:preventDefault
                         @onclick="(e) => HandleOnButtonClick(e, false)"
                         type="button"
                         tabindex="@spinTabIndex"
+                        aria-controls="@spinControls"
                         style="@Styles?.DecrementButton"
                         class="bit-nfl-adn@(decrementBlockedClass) @Classes?.DecrementButton"
                         disabled="@spinDisabled"
@@ -281,11 +286,12 @@
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointercancel="HandleOnPointerUpOrOut"
-                    @onpointerdown="() => HandleOnPointerDown(false)"
+                    @onpointerdown="(e) => HandleOnPointerDown(e, false)"
                     @onpointerdown:preventDefault
                     @onclick="(e) => HandleOnButtonClick(e, false)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    aria-controls="@spinControls"
                     style="@Styles?.DecrementButton"
                     class="bit-nfl-sbn@(decrementBlockedClass) @Classes?.DecrementButton"
                     disabled="@spinDisabled"
@@ -303,11 +309,12 @@
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointercancel="HandleOnPointerUpOrOut"
-                    @onpointerdown="() => HandleOnPointerDown(true)"
+                    @onpointerdown="(e) => HandleOnPointerDown(e, true)"
                     @onpointerdown:preventDefault
                     @onclick="(e) => HandleOnButtonClick(e, true)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    aria-controls="@spinControls"
                     autofocus="@(HideInput && AutoFocus)"
                     style="@Styles?.IncrementButton"
                     class="bit-nfl-sbn@(incrementBlockedClass) @Classes?.IncrementButton"
@@ -328,11 +335,12 @@
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointercancel="HandleOnPointerUpOrOut"
-                    @onpointerdown="() => HandleOnPointerDown(true)"
+                    @onpointerdown="(e) => HandleOnPointerDown(e, true)"
                     @onpointerdown:preventDefault
                     @onclick="(e) => HandleOnButtonClick(e, true)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    aria-controls="@spinControls"
                     autofocus="@(HideInput && AutoFocus)"
                     style="@Styles?.IncrementButton"
                     class="bit-nfl-sbn@(incrementBlockedClass) @Classes?.IncrementButton"

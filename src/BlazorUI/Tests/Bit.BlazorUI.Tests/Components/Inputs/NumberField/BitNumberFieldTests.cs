@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
@@ -2154,6 +2155,96 @@ public class BitNumberFieldTests : BunitTestContext
         incrementButton.Click(new MouseEventArgs { Detail = 1 });
 
         Assert.AreEqual(2, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldTouchTapOnASpinButtonShouldNotFocusTheInputButAnnounceTheValue()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+        });
+
+        // Focusing the input on a touch device raises the soft keyboard, which a tap on + does not ask for.
+        component.Find(".bit-nfl-aup").PointerDown(new PointerEventArgs { PointerType = "touch" });
+        component.Find(".bit-nfl-aup").PointerUp(new PointerEventArgs { PointerType = "touch" });
+
+        Assert.AreEqual(2, component.Instance.Value);
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+
+        // The spinbutton is not focused to announce its new value itself, so the live region does.
+        Assert.AreEqual("2", component.Find("span[role=status]").TextContent.Trim());
+
+        // Once the input has the focus it announces its own value, and the region goes quiet again.
+        component.Find("input").FocusIn();
+
+        Assert.AreEqual(string.Empty, component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldMousePressOnASpinButtonShouldFocusTheInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+        });
+
+        component.Find(".bit-nfl-aup").PointerDown(new PointerEventArgs { PointerType = "mouse" });
+        component.Find(".bit-nfl-aup").PointerUp(new PointerEventArgs { PointerType = "mouse" });
+
+        Assert.AreEqual(2, component.Instance.Value);
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.AreEqual(string.Empty, component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldNonPointerActivationShouldAnnounceTheValueWhileTheInputIsNotFocused()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+        });
+
+        component.Find(".bit-nfl-aup").Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.AreEqual(2, component.Instance.Value);
+        Assert.AreEqual("2", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod, DataRow(false), DataRow(true)]
+    public void BitNumberFieldInputShouldBelongToItsEnclosingForm(bool hideInput)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, hideInput);
+            parameters.Add(p => p.Name, "quantity");
+        });
+
+        // An empty form attribute detaches an input from every form, so neither the value would post nor
+        // would Enter submit.
+        var input = component.Find("input");
+        Assert.IsFalse(input.HasAttribute("form"));
+        Assert.AreEqual("quantity", input.GetAttribute("name"));
+    }
+
+    [TestMethod, DataRow(false), DataRow(true)]
+    public void BitNumberFieldSpinButtonsShouldPointAriaControlsAtTheInput(bool hideInput)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, hideInput);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+        });
+
+        var inputId = component.Find("input").GetAttribute("id");
+
+        foreach (var button in component.FindAll("button.bit-nfl-sbn"))
+        {
+            Assert.AreEqual(hideInput ? null : inputId, button.GetAttribute("aria-controls"));
+        }
     }
 
     [TestMethod]

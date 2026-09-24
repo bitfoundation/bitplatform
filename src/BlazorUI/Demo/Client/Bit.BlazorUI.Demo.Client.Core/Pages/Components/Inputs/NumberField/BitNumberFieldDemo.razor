@@ -10,7 +10,7 @@
 
 <DemoPage Name="NumberField"
           SecondaryNames="@(["NumberInput"])"
-          Description="A NumberField (also known as a number input or spin button) is a text field dedicated to numbers. It binds to any .NET numeric type - byte, sbyte, short, ushort, int, uint, long, ulong, float, double and decimal, plus every nullable variant - and never lets the value escape the range of that type. On top of plain typing it offers what a professional numeric editor is expected to have: Min/Max bounds that either clamp the value or let it through for a validator to report, a custom Step with optional snapping to its grid, rounding precision, .NET number formatting - in the culture of your choosing - that never gets in the way of editing, increment/decrement buttons in three layouts with press-and-hold continuous spinning, a clear button, adornments and hints, the complete ARIA spinbutton keyboard set, Shift+mouse-wheel spinning, non-Latin digit input, and first-class EditForm integration."
+          Description="A NumberField (number input, spin button) edits a value of any .NET numeric type, with bounds, stepping and snapping, rounding, .NET formatting in any culture, spin buttons in three layouts, the full ARIA spinbutton keyboard set and EditForm validation."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -20,16 +20,10 @@
           GitHubDemoUrl="Inputs/NumberField/BitNumberFieldDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            <b>TValue</b> picks the numeric type of the field, and is inferred from a bound value. A nullable one lets the
-            field be genuinely empty, which is what you want whenever "no value yet" differs from zero.
-            <b>Label</b> names the field and is read out with it, <b>Placeholder</b> shows until something is entered, and
-            <b>Required</b> marks it as needing a value.
-            The value is committed on blur or Enter and parsed with the invariant culture, tolerating the whitespace between
-            digit groups that a number pasted from a spreadsheet carries; text that is not a number is reported through the
-            validation channel rather than silently dropped.
-            Focusing selects the whole text for a quick overwrite - <b>NoSelectOnFocus</b> turns that off.
-            The input is an ARIA <b>spinbutton</b>: Up/Down step by the <b>Step</b>, PageUp/PageDown by a larger jump,
-            Home/End go to the <b>Min</b>/<b>Max</b>.
+            <b>TValue</b> picks the numeric type (inferred from a bound value); a nullable one allows an empty field.
+            The value commits on blur or Enter and parses with the invariant culture; text that is not a number is reported
+            through validation, never dropped. Focus selects the text (<b>NoSelectOnFocus</b> turns that off).
+            Keyboard: Up/Down step, PageUp/PageDown jump, Home/End jump to the bounds.
         </div>
         <br />
         <div class="example-box">
@@ -47,9 +41,8 @@
 
     <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
-            The value binds one-way (the field reflects the source and its edits are discarded on the next render) or two-way
-            with <b>@@bind-Value</b>. There is also an uncontrolled mode: give the field a <b>DefaultValue</b> and listen to
-            <b>OnChange</b>, and it keeps the value itself instead of requiring a backing field.
+            One-way with <b>Value</b>, two-way with <b>@@bind-Value</b>, or uncontrolled with <b>DefaultValue</b> and
+            <b>OnChange</b>.
         </div>
         <br />
         <div class="example-box">
@@ -74,17 +67,11 @@
 
     <DemoExample Title="Spin buttons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>
-            <b>Mode</b> decides how the increment/decrement buttons render: <b>Compact</b> stacks them at the end of the
-            input, <b>Inline</b> puts them side by side, and <b>Spread</b> puts one on each side with the value centered -
-            the classic quantity picker. Left unset, no buttons render and the value is changed by typing, by the arrow keys
-            or by the wheel. Holding a button down spins continuously, after <b>ContinuousSpinDelay</b> and then every
-            <b>ContinuousSpinInterval</b> milliseconds; clicking one keeps the caret in the input, so the keyboard can take
-            over from where the mouse left off. <b>IncrementIconName</b>/<b>DecrementIconName</b> and
-            <b>IncrementTitle</b>/<b>DecrementTitle</b> decorate them.
-            <b>HideInput</b> drops the text box altogether and leaves a stepper (falling back to <b>Compact</b> when no mode is
-            given, since the buttons are then all there is): the buttons become the tab stops, respond to Enter and Space,
-            and the value is published through a hidden live region for screen readers while a hidden input keeps the field
-            posting with a plain HTML form.
+            <b>Mode</b> renders the buttons <b>Compact</b> (stacked), <b>Inline</b> (side by side) or <b>Spread</b> (one on each
+            side); unset, there are none. Holding a button spins after <b>ContinuousSpinDelay</b>, every
+            <b>ContinuousSpinInterval</b> ms. A mouse press keeps the caret in the input; a touch tap does not focus it, so no
+            soft keyboard pops up.
+            <b>HideInput</b> leaves a stepper only (Compact unless a <b>Mode</b> is given) whose buttons are the tab stops.
         </div>
         <br />
         <div class="example-box">
@@ -117,13 +104,9 @@
 
     <DemoExample Title="Min & Max" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            <b>Min</b> and <b>Max</b> bound the value: anything entered or spun outside the range is clamped to the nearest
-            bound. Unset, the natural range of the underlying type applies, so spinning can never overflow it. An explicit
-            bound also makes <b>Home</b>/<b>End</b> jump straight to it, is announced through aria-valuemin/aria-valuemax, and
-            turns the button that would step past it inert (marked <b>aria-disabled</b> rather than disabled, so it keeps its
-            place in the tab order and any focus it holds).
-            <b>NoClamp</b> lets a typed out-of-range number through so a validator can report it, exactly as a plain text input
-            would, while stepping and Home/End still stay inside the range.
+            <b>Min</b>/<b>Max</b> clamp typed and spun values; unset, the range of the type applies. An explicit bound enables
+            Home/End, sets aria-valuemin/max and makes the button that would pass it inert.
+            <b>NoClamp</b> lets a typed out-of-range value through for a validator to report; stepping still stays inside.
         </div>
         <br />
         <div class="example-box">
@@ -143,14 +126,9 @@
 
     <DemoExample Title="Step, precision & snapping" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
-            <b>Step</b> is the amount a spin adds or removes, whether it comes from a button, an arrow key or the wheel, and a
-            fractional one also implies the rounding precision of typed values. <b>PageStep</b> is what PageUp/PageDown jump by
-            (10 times the Step when unset). Stepping always applies to the number currently visible, so typing and immediately
-            pressing an arrow key steps from what was just typed.
-            <b>Precision</b> sets the rounding explicitly; a negative value rounds to a power of ten, so <b>-2</b> rounds to the
-            nearest hundred.
-            <b>SnapToStep</b> puts typed values on the same grid the stepping produces, anchored at the <b>Min</b> when there is
-            one. A Max that is not itself on the grid is then unreachable - with Step=3 and Max=10 the field stops at 9.
+            <b>Step</b> is what a spin adds; a fractional one also sets the rounding. <b>PageStep</b> is the PageUp/PageDown
+            jump (10 &times; Step by default). <b>Precision</b> rounds explicitly - negative rounds to tens, hundreds, ...
+            <b>SnapToStep</b> puts typed values on the step grid, anchored at <b>Min</b>.
         </div>
         <br />
         <div class="example-box">
@@ -176,15 +154,9 @@
 
     <DemoExample Title="Numeric types" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <b>TValue</b> accepts every .NET numeric type - byte, sbyte, short, ushort, int, uint, long, ulong, float, double
-            and decimal - plus their nullable variants. Spinning clamps at the bounds of the type, so a byte never overflows
-            past 255, and a number typed past the range of an integral type or decimal - 300 into a byte, 40000 into a
-            short - clamps there just as one typed outside an explicit Min/Max does. The
-            arithmetic runs in a type wide enough that no intermediate step can overflow either: a
-            <b>ulong</b> keeps working past long.MaxValue and a <b>decimal</b> keeps its full precision.
-            The type also picks the mobile keyboard - a decimal keypad for the fractional types, a numeric one for the rest.
-            Neither offers a minus sign on every platform, so a field that must accept negative values on touch should ask for
-            the full keyboard with <b>InputMode="BitInputMode.Text"</b>.
+            Every .NET numeric type and its nullable variant. A number past the type's range clamps to it (300 into a
+            <b>byte</b> gives 255). The type picks the mobile keypad; use <b>InputMode="BitInputMode.Text"</b> when negatives
+            must be typed on touch.
         </div>
         <br />
         <div class="example-box">
@@ -205,8 +177,7 @@
 
     <DemoExample Title="Label position & template" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            <b>LabelPosition</b> puts the label on any side of the input, and <b>LabelTemplate</b> replaces it with markup
-            of your own - which then has to carry the association with the input itself.
+            <b>LabelPosition</b> puts the label on any side; <b>LabelTemplate</b> replaces it with your own markup.
         </div>
         <br />
         <div class="example-box">
@@ -231,18 +202,10 @@
 
     <DemoExample Title="Description, error & loading" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
-            <b>Description</b> renders a hint under the field - the accepted range, the unit, why the value matters - which is
-            where a user looks before typing rather than after being told they got it wrong. The input references it through
-            <b>aria-describedby</b>, so it reaches everybody and not only the people who can see it.
-            <b>ErrorMessage</b> is its counterpart for a rejection: it paints the field, renders <b>aria-invalid</b>, and is
-            announced through a polite live region the moment it appears - the way to report a server-side or business-rule
-            failure without building an EditForm around the field. <b>Invalid</b> marks the field without a message, for a
-            rejection explained elsewhere.
-            <b>Loading</b> is the third thing a field says about itself: a busy indicator for work running against the value -
-            a price being recalculated, a quantity being checked against stock. The field stays editable, the input reports
-            <b>aria-busy</b>, and <b>LoadingAriaLabel</b> is what the live region announces.
-            <b>DescriptionTemplate</b>, <b>ErrorMessageTemplate</b> and <b>LoadingTemplate</b> take markup instead, and
-            <b>AriaDescription</b> adds an explanation for assistive technologies only.
+            <b>Description</b> is a hint under the field, <b>ErrorMessage</b> a rejection (paints the field, sets aria-invalid,
+            announced politely), <b>Invalid</b> a rejection without a message, and <b>Loading</b> a busy indicator that keeps
+            the field editable (<b>LoadingAriaLabel</b> is what is announced). Each has a template variant;
+            <b>AriaDescription</b> adds screen-reader-only text.
         </div>
         <br />
         <div class="example-box">
@@ -274,10 +237,7 @@
 
     <DemoExample Title="Appearance" RazorCode="@example9RazorCode" Id="example9">
         <div>
-            Three parameters adjust the frame without touching anything the field does.
-            <b>Underlined</b> replaces the border with a single bottom rule (the focus indicator follows suit), which suits
-            dense forms and inline editing. <b>NoBorder</b> removes it altogether, for a field inside a surface that already
-            provides one. <b>FullWidth</b> stretches the field to fill its container, which it otherwise does not do.
+            <b>Underlined</b> draws only a bottom rule, <b>NoBorder</b> removes the border, <b>FullWidth</b> fills the container.
         </div>
         <br />
         <div class="example-box">
@@ -295,12 +255,8 @@
 
     <DemoExample Title="Icon, prefix & suffix" RazorCode="@example10RazorCode" Id="example10">
         <div>
-            <b>IconName</b> puts a glyph inside the field - decorative by default, given a name for screen readers by
-            <b>IconAriaLabel</b>. <b>Prefix</b> and <b>Suffix</b> attach a unit or a currency symbol without it becoming part
-            of what the user types: they are never parsed and never part of the bound value, and the input points
-            aria-describedby at them so a screen reader still says what the number is counted in.
-            <b>PrefixTemplate</b> and <b>SuffixTemplate</b> take arbitrary markup instead, in which case the container and its
-            styling are yours to provide too.
+            <b>IconName</b> adds a glyph (named by <b>IconAriaLabel</b>). <b>Prefix</b>/<b>Suffix</b> show a unit or currency that
+            is never part of the value, and are read out with the field. <b>PrefixTemplate</b>/<b>SuffixTemplate</b> take markup.
         </div>
         <br />
         <div class="example-box">
@@ -323,12 +279,9 @@
 
     <DemoExample Title="Clear button" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
-            <b>ShowClearButton</b> renders an X inside the field whenever it is showing something, resetting the value to null
-            in one click. It follows what is in the input rather than the bound value, so it also appears for text that failed
-            to parse and has to be wiped, and it is never rendered on a read-only or empty field. It stays out of the tab
-            order, keeping the input the single tab stop - <b>Escape</b> is its keyboard equivalent.
-            <b>ClearButtonIconName</b> and <b>ClearButtonAriaLabel</b> localize it, <b>ClearButtonTemplate</b> replaces what
-            it renders without touching how it behaves, and <b>OnClear</b> reports it.
+            <b>ShowClearButton</b> shows an X whenever the input holds text, including text that failed to parse. It is not a
+            tab stop - <b>Escape</b> does the same. Customize with <b>ClearButtonIconName</b>, <b>ClearButtonAriaLabel</b> or
+            <b>ClearButtonTemplate</b>; <b>OnClear</b> reports it.
         </div>
         <br />
         <div class="example-box">
@@ -350,17 +303,9 @@
 
     <DemoExample Title="Number format & culture" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
-            <b>NumberFormat</b> formats the displayed value with the standard or custom .NET numeric format strings - <b>N0</b>
-            for grouping, <b>C0</b> for currency, <b>000000</b> for zero padding. The formatting is display only: the bound
-            value stays a plain number, and while the field is being edited the plain number is what you see, so there is never
-            a currency symbol or a run of zeros to type around. Typing a formatted number works too - the separators and
-            symbols are stripped before parsing, including the parentheses of accounting formats.
-            Value-scaling formats such as percent <b>P</b> are not suitable, since the scaled text cannot be parsed back.
-            <b>Culture</b> decides whose separators those are. Left unset, a format follows the culture of the current thread
-            while the plain value stays invariant, which is what keeps a typed <b>1.5</b> meaning the same thing everywhere;
-            setting it pins both, so the field reads and writes that culture's numbers no matter where it runs. The
-            aria-value* attributes stay plain invariant numbers either way, and what is on screen is announced through
-            aria-valuetext.
+            <b>NumberFormat</b> takes a .NET format string (<b>N0</b>, <b>C2</b>, <b>000000</b>) and is display-only: the bound value
+            stays a number and editing shows it plain. Scaling formats like <b>P</b> are not supported.
+            <b>Culture</b> pins the separators; unset, a format follows the thread culture and plain text stays invariant.
         </div>
         <br />
         <div class="example-box">
@@ -381,17 +326,9 @@
 
     <DemoExample Title="Input behavior" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
-            <b>Immediate</b> commits on every keystroke instead of on blur or Enter, with <b>DebounceTime</b> waiting out a
-            pause in the typing and <b>ThrottleTime</b> rate-limiting the commits. While typing, the text stays exactly as
-            typed for as long as it still represents the committed value, so an in-progress <b>1.</b> survives long enough to
-            be finished. Combining it with a <b>NumberFormat</b> is best avoided for fractional values.
-            <b>ReadOnly</b> stops typing, the buttons, the keys and the wheel alike, while the value stays focusable and
-            copyable; <b>IsInputReadOnly</b> blocks only the typing, leaving a stepper with a protected text box.
-            The wheel spins the value only while <b>Shift</b> is held and the field is focused, so page scrolling is never
-            captured and a merely hovered field is never rewritten - on either axis, since Shift turns the scroll horizontal
-            on macOS; <b>InvertMouseWheel</b> flips the direction and <b>NoMouseWheel</b> turns it off.
-            <b>EnterKeyHint</b> labels the enter key of a virtual keyboard ("done", "next", "go", ...), which a numeric soft
-            keyboard otherwise leaves blank; spell-checking and autocorrect are off throughout, a number being no word.
+            <b>Immediate</b> commits per keystroke (with <b>DebounceTime</b>/<b>ThrottleTime</b>). <b>ReadOnly</b> blocks every
+            change; <b>IsInputReadOnly</b> blocks only typing. Shift + wheel spins a focused field (<b>InvertMouseWheel</b>,
+            <b>NoMouseWheel</b>). <b>EnterKeyHint</b> labels the enter key of a virtual keyboard.
         </div>
         <br />
         <div class="example-box">
@@ -420,12 +357,8 @@
 
     <DemoExample Title="NormalizeDigits" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
-            <b>NormalizeDigits</b> maps non-Latin decimal digits (Persian "۱۲۳", Arabic "١٢٣") and the Arabic decimal separator
-            to their Latin equivalents before parsing, so the field accepts what the various Persian/Arabic keyboard layouts
-            emit. The same normalization applies to <b>Min</b>, <b>Max</b> and <b>Step</b>, so <b>Min="۱۰"</b> works, and the
-            typed digits stay visible as long as they represent the exact bound value.
-            <b>DigitsNormalizer</b> takes over with a function of your own - the one below also strips spaces and thousand
-            separators, Latin and Persian alike.
+            <b>NormalizeDigits</b> accepts Persian/Arabic digits and separators, in the input and in <b>Min</b>/<b>Max</b>/<b>Step</b>.
+            <b>DigitsNormalizer</b> plugs in your own function.
         </div>
         <br />
         <div class="example-box">
@@ -445,16 +378,9 @@
 
     <DemoExample Title="Events" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
-            <b>OnIncrement</b> and <b>OnDecrement</b> fire for every spin - button, arrow key, PageUp/PageDown or wheel - and
-            receive the new value, so a consumer never has to special-case the device the change came from. <b>OnChange</b>
-            fires whenever the committed value changes.
-            <b>OnMinReached</b>/<b>OnMaxReached</b> report the moment a step lands on an explicit bound, once per approach
-            rather than on every further attempt, which is the hook for explaining why the value stopped moving.
-            The raw input events are surfaced too: <b>OnKeyDown</b>/<b>OnKeyUp</b> report every key including the ones the
-            field consumes itself, <b>OnEnter</b> is raised after the typed text is committed (so the value it sees is the one
-            just entered), <b>OnEscape</b> before the field clears itself (so a surface the field sits on can take the key
-            instead), <b>OnClick</b> reports clicks, and focus is covered by <b>OnFocus</b>, <b>OnFocusIn</b>,
-            <b>OnFocusOut</b> and <b>OnBlur</b>.
+            <b>OnIncrement</b>/<b>OnDecrement</b> fire for every spin, whatever the device; <b>OnMinReached</b>/<b>OnMaxReached</b>
+            once per approach to an explicit bound. <b>OnEnter</b> runs after the typed text commits, <b>OnEscape</b> before
+            the field clears. Key, click and focus events are surfaced too.
         </div>
         <br />
         <div class="example-box">
@@ -494,14 +420,9 @@
 
     <DemoExample Title="Public API" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
-            Captured with <b>@@ref</b>, the component exposes the operations its own controls perform, so an external control -
-            a slider, a keypad, a barcode scanner - can drive the field without reimplementing its arithmetic.
-            <b>IncrementAsync</b> and <b>DecrementAsync</b> step by the <b>Step</b> with the bounds, the snapping, the rounding
-            and the callbacks all applied, and do nothing once the value sits on the bound they would move towards.
-            <b>ClearAsync</b> wipes whatever the field is showing and raises <b>OnClear</b> without requiring the clear button.
-            All three respect the disabled and read-only states and are safe to call from a background thread.
-            <b>FocusAsync</b> moves the caret into the field - or onto the increment button in <b>HideInput</b> mode, where a
-            hidden input cannot take it - and <b>InputElement</b> exposes the element reference.
+            <b>IncrementAsync</b>, <b>DecrementAsync</b> and <b>ClearAsync</b> do what the field's own controls do - bounds,
+            snapping and callbacks included - and are safe from any thread. <b>FocusAsync</b> focuses the input (the increment
+            button with <b>HideInput</b>).
         </div>
         <br />
         <div class="example-box">
@@ -520,15 +441,8 @@
 
     <DemoExample Title="Validation" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div>
-            The field integrates with <b>EditForm</b> and data annotations out of the box: messages show up for out-of-range or
-            missing values, the field takes the invalid styling, and aria-invalid is rendered automatically.
-            Text that is not a number at all goes through the same channel instead of being dropped - the rejected text stays
-            in the input to be corrected and the message comes from <b>ParsingErrorMessage</b>, whose <b>{0}</b> is filled with
-            the <b>DisplayName</b> or the bound field name.
-            Pair <b>NoClamp</b> with a <b>[Range]</b> annotation when the range is a business rule the user should be told
-            about rather than silently corrected to.
-            <b>NoValidate</b> detaches the field from the EditContext entirely, for a field that is a UI control rather than
-            part of the edited model.
+            Works with <b>EditForm</b> and data annotations. Unparsable text stays in the input with <b>ParsingErrorMessage</b>
+            (<b>{0}</b> is the <b>DisplayName</b>). Pair <b>NoClamp</b> with <b>[Range]</b> to report rather than correct.
         </div>
         <br />
         <div class="example-box">
@@ -569,23 +483,12 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example18RazorCode" Id="example18">
         <div>
-            The input is an ARIA <b>spinbutton</b> whose aria-valuenow, aria-valuemin, aria-valuemax and aria-valuetext stay in
-            sync with the value and the bounds. aria-valuemin/max appear only for an explicit <b>Min</b>/<b>Max</b> - the
-            extremes of the type would be noise - and aria-valuenow is left off entirely while the field is empty, which is how
-            ARIA says "no value yet". aria-valuetext is added only when the visible text differs from the raw number, as it
-            does with a <b>NumberFormat</b> or non-Latin digits; <b>AriaValueText</b> overrides the reading with a phrase.
-            The icon-only buttons always carry a name - <b>IncrementAriaLabel</b>, <b>DecrementAriaLabel</b> and
-            <b>ClearButtonAriaLabel</b> localize it - and stay out of the tab order, leaving the input as the single tab stop
-            that handles the whole spinbutton keyboard set. They still step the value when an assistive technology activates
-            them directly - a double tap in TalkBack or VoiceOver, a voice command - and not only under a real pointer. In <b>HideInput</b> mode they become the tab stops instead, are
-            tied together into a group named by the label, and the value is announced through a live region; the group also
-            carries the description, the error message and the prefix/suffix, which the hidden input cannot.
-            The spinbutton role replaces the native role of the input, and with it what the <b>Required</b> and
-            <b>ReadOnly</b> attributes would map into the accessibility tree on their own, so both states are written out as
-            aria-required and aria-readonly instead.
-            On a touch device the stacked <b>Compact</b> buttons grow so each one clears the 24px minimum pointer target, as
-            they do on any pointer in <b>HideInput</b> mode, where there is no input left to reach the same value with.
-            <b>AriaSetSize</b> and <b>AriaPositionInSet</b> place the field within a larger group of related fields.
+            The input is an ARIA <b>spinbutton</b>: aria-valuenow/min/max stay in sync, aria-valuetext is added when the text
+            differs from the number (<b>AriaValueText</b> overrides it), and aria-required/aria-readonly are written out.
+            The buttons are named (<b>IncrementAriaLabel</b>, <b>DecrementAriaLabel</b>, <b>ClearButtonAriaLabel</b>), point
+            aria-controls at the input, and step on an assistive technology's activation too; a step the input did not take
+            focus for is announced through a live region. On touch, Compact buttons grow to the 24px minimum target.
+            <b>AriaSetSize</b>/<b>AriaPositionInSet</b> place the field in a set.
         </div>
         <br />
         <div class="example-box">
@@ -605,13 +508,8 @@
 
     <DemoExample Title="Cascading parameters" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
         <div>
-            <b>BitParams</b> carries a <b>BitNumberFieldParams</b> down to every number field under it, so a form, a card or a
-            whole page sets the shared look and the shared numeric rules once instead of on every field.
-            What it carries is a default and not an override: a field that writes a parameter for itself keeps its own value,
-            and only what it left unset is filled in from the cascade - which is what lets one field step out of the group it is
-            in without the group having to know about it. Every parameter of the component other than the ones that belong to a
-            single field (its label, its value, its templates and its callbacks) is on the params object, and each is filled in
-            on its own, so a field can take its <b>Mode</b> from the cascade and its <b>Suffix</b> from its own markup.
+            <b>BitParams</b> with a <b>BitNumberFieldParams</b> sets defaults for every number field inside it. A field's own
+            parameters win; only unset ones are filled in.
         </div>
         <br />
         <div class="example-box">
@@ -627,9 +525,7 @@
 
     <DemoExample Title="Background" RazorCode="@example20RazorCode" Id="example20">
         <div>
-            <b>Background</b> picks the fill of the field from the theme's background color kinds (Primary by default), so it
-            can be tuned to the surface it sits on. <b>Transparent</b> is the one for a field that has to disappear into a
-            colored panel, a toolbar or a table cell - pair it with <b>NoBorder</b> or <b>Underlined</b>.
+            <b>Background</b> picks the fill (Primary by default); <b>Transparent</b> blends into a colored surface.
         </div>
         <br />
         <div class="example-box">
@@ -645,9 +541,8 @@
 
     <DemoExample Title="Border" RazorCode="@example21RazorCode" Id="example21">
         <div>
-            <b>Border</b> picks the color of the field's border from the theme's border color kinds (Primary by default).
-            <b>Transparent</b> keeps the border's one-pixel gutter - so the field neither shifts nor resizes - while making it
-            invisible, which is the difference between it and <b>NoBorder</b>.
+            <b>Border</b> picks the border color (Primary by default). <b>Transparent</b> hides it but keeps its space, unlike
+            <b>NoBorder</b>.
         </div>
         <br />
         <div class="example-box">
@@ -663,11 +558,8 @@
 
     <DemoExample Title="Accent" RazorCode="@example22RazorCode" Id="example22">
         <div>
-            <b>Accent</b> drives the focus indicator, the busy indicator, and the tint the icon, the prefix and the suffix take
-            on while the field is focused (Primary by default). It is what lets a field carry the meaning of what it is editing
-            - a Success accent on a healthy figure, a Warning one on a figure that needs attention - without a hand-written
-            style. A genuine validation failure still paints the field with the error color, so the two never contradict each
-            other. Click into the fields below to see each accent.
+            <b>Accent</b> colors the focus ring, the busy indicator, and the icon/prefix/suffix while focused. An invalid field
+            still shows the error color. Focus a field to see it.
         </div>
         <br />
         <div class="example-box">
@@ -709,8 +601,8 @@
 
     <DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23">
         <div>
-            <b>Icon</b>, <b>IncrementIcon</b>, <b>DecrementIcon</b> and <b>ClearButtonIcon</b> take a <b>BitIconInfo</b>, which
-            renders a glyph from any external icon set - FontAwesome, Bootstrap Icons, Material Icons - through its CSS classes.
+            <b>Icon</b>, <b>IncrementIcon</b>, <b>DecrementIcon</b> and <b>ClearButtonIcon</b> take a <b>BitIconInfo</b> for any
+            external icon set (FontAwesome, Bootstrap Icons, ...).
         </div>
         <br />
         <div class="example-box">
@@ -735,8 +627,7 @@
 
     <DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24">
         <div>
-            <b>Size</b> sets the height of the field, its type scale, the size of its icons and the width of its buttons at
-            once, so a field lines up with the other controls of the same size around it.
+            <b>Size</b> scales the height, text, icons and buttons together.
         </div>
         <br />
         <div class="example-box">
@@ -750,14 +641,9 @@
 
     <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" CodeFiles="@example25CodeFiles" Id="example25">
         <div>
-            The appearance is customizable at every level: the root <b>Style</b> and <b>Class</b>, the <b>Styles</b> and
-            <b>Classes</b> parameters that target each internal part (label, description, input container, input, buttons,
-            icons, prefix, suffix, error message) including the focus state through <b>Focused</b>, and the public
-            <b>--bit-NumberField-*</b> CSS variables listed in the API section below.
-            The variables are the first thing to reach for: they inherit, so one set on <b>:root</b> re-skins every number
-            field in the app and one written into an instance's <b>Style</b> re-skins that one alone, and they keep working
-            across the theme presets and both color schemes. Fall back to <b>Styles</b>/<b>Classes</b> only for what no
-            variable covers.
+            Reach for the <b>--bit-NumberField-*</b> CSS variables first (listed in the API section): they inherit, so set them
+            on <b>:root</b>, an ancestor or an instance's <b>Style</b>. <b>Style</b>/<b>Class</b> and
+            <b>Styles</b>/<b>Classes</b> (per part, plus <b>Focused</b>) cover the rest.
         </div>
         <br />
         <div class="example-box">
@@ -803,8 +689,7 @@
 
     <DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26">
         <div>
-            The field renders right-to-left through its <b>Dir</b> parameter or a cascading <b>BitDir.Rtl</b>: the label, the
-            buttons, the required indicator and the input padding all flip accordingly.
+            <b>Dir</b> or a cascading <b>BitDir.Rtl</b> mirrors the whole field.
         </div>
         <br />
         <div dir="rtl">
