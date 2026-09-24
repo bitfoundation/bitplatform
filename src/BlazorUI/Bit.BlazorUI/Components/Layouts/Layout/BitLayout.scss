@@ -1,5 +1,27 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// layout and one set on the Style of an instance re-skins that one (and the layouts nested inside it):
+//   --bit-Layout-background                background of the whole layout                (default: transparent)
+//   --bit-Layout-header-background         background of the header                      (default: transparent; $clr-bg-pri while pinned)
+//   --bit-Layout-footer-background         background of the footer                      (default: transparent; $clr-bg-pri while pinned)
+//   --bit-Layout-nav-panel-background      background of the nav panel                   (default: transparent)
+//   --bit-Layout-aside-background          background of the aside                       (default: transparent)
+//   --bit-Layout-main-background           background of the main section                (default: transparent)
+//   --bit-Layout-border-color              color of the Bordered dividers                (default: $clr-brd-pri)
+//   --bit-Layout-border-width              thickness of the Bordered dividers            (default: $shp-border-width)
+//   --bit-Layout-header-height             height of the header, and the offset of the
+//                                          pinned panels                                 (default: auto; the HeaderHeight parameter wins)
+//   --bit-Layout-footer-height             height of the footer                          (default: auto; the FooterHeight parameter wins)
+//   --bit-Layout-gap                       room between the sections of the middle row   (default: 0; the Gap parameter wins)
+//   --bit-Layout-padding                   padding of the main section                   (default: 0; the Padding parameter wins)
+//   --bit-Layout-z-index                   stacking order of the pinned sections         (default: $zindex-base; the ZIndex parameter wins)
+//
+// The private --bit-lyt-* values are declared on every root, which is what keeps a nested layout from inheriting
+// the ones the parameters of its outer layout set inline: each one resolves to its own parameter when there is
+// one (the inline style wins over this declaration) and to the public variable otherwise. A public variable that
+// is not set leaves the private one invalid, which is what lets every use below pick its own fallback.
+
 .bit-lyt {
     margin: 0;
     padding: 0;
@@ -10,7 +32,12 @@
     position: relative;
     box-sizing: border-box;
 
-    --bit-lyt-zin: #{$zindex-base};
+    --bit-lyt-hdr-h: var(--bit-Layout-header-height);
+    --bit-lyt-ftr-h: var(--bit-Layout-footer-height);
+    --bit-lyt-gap: var(--bit-Layout-gap);
+    --bit-lyt-pad: var(--bit-Layout-padding);
+    --bit-lyt-zin: var(--bit-Layout-z-index, #{$zindex-base});
+    --bit-lyt-brd: var(--bit-Layout-border-width, #{$shp-border-width}) #{$shp-border-style} var(--bit-Layout-border-color, #{$clr-brd-pri});
 
     &.bit-dis {
         color: $clr-fg-dis;
@@ -206,19 +233,19 @@
 
 .bit-lyt-brd {
     > .bit-lyt-hdr {
-        border-block-end: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-block-end: var(--bit-lyt-brd);
     }
 
     > .bit-lyt-ftr {
-        border-block-start: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-block-start: var(--bit-lyt-brd);
     }
 
     > .bit-lyt-man > .bit-lyt-nmn {
-        border-inline-end: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-inline-end: var(--bit-lyt-brd);
     }
 
     > .bit-lyt-man > .bit-lyt-asd {
-        border-inline-start: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-inline-start: var(--bit-lyt-brd);
     }
 }
 
@@ -228,17 +255,55 @@
 .bit-lyt-brd.bit-lyt-rnv {
     > .bit-lyt-man > .bit-lyt-nmn {
         border-inline-end: none;
-        border-inline-start: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-inline-start: var(--bit-lyt-brd);
     }
 
     > .bit-lyt-man > .bit-lyt-asd {
         border-inline-start: none;
-        border-inline-end: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-inline-end: var(--bit-lyt-brd);
     }
 }
 
-// Translated out of the view rather than hidden, so it keeps its place in the tab order and in the
-// accessibility tree and is still the first thing a keyboard user reaches, while costing a mouse user nothing.
+// The backgrounds are declared at zero specificity, so a class the app hands a section (Class, Classes) always
+// wins over them, pinned or not. A pinned bar passes over the content scrolling under it, so it is painted with
+// the page background unless it was given one of its own - a transparent one would show the text sliding
+// beneath it through the text of the bar.
+:where(.bit-lyt) {
+    background: var(--bit-Layout-background, transparent);
+}
+
+:where(.bit-lyt-hdr) {
+    background: var(--bit-Layout-header-background, transparent);
+}
+
+:where(.bit-lyt-ftr) {
+    background: var(--bit-Layout-footer-background, transparent);
+}
+
+:where(.bit-lyt-nmn) {
+    background: var(--bit-Layout-nav-panel-background, transparent);
+}
+
+:where(.bit-lyt-asd) {
+    background: var(--bit-Layout-aside-background, transparent);
+}
+
+:where(.bit-lyt-mcn) {
+    background: var(--bit-Layout-main-background, transparent);
+}
+
+:where(.bit-lyt-shd > .bit-lyt-hdr) {
+    background: var(--bit-Layout-header-background, #{$clr-bg-pri});
+}
+
+:where(.bit-lyt-sft > .bit-lyt-ftr) {
+    background: var(--bit-Layout-footer-background, #{$clr-bg-pri});
+}
+
+// Faded and slid out of the view rather than hidden, so it keeps its place in the tab order and in the
+// accessibility tree and is still the first thing a keyboard user reaches, while costing a mouse user nothing:
+// it takes no room, catches no pointer, and stays invisible even where the layout does not start at the top
+// of the page (a translate alone would park it in plain sight over whatever sits above the layout).
 // It sits above every pinned section of the layout: a focused element hidden behind a sticky header is
 // exactly what WCAG 2.4.11 is about, and the skip link is the first element to reach one.
 .bit-lyt-skp {
@@ -253,12 +318,20 @@
     background-color: $clr-bg-pri;
     line-height: $tg-line-height;
     font-family: $tg-font-family;
+    opacity: 0;
+    pointer-events: none;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-semibold;
+    transform: translateY(-100%);
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
-    transition: transform $mot-duration $mot-easing;
-    transform: translateY(-200%);
+    transition: transform $mot-duration $mot-easing, opacity $mot-duration $mot-easing;
 
     &:focus {
+        opacity: 1;
         transform: none;
+        pointer-events: auto;
     }
 
     &:focus-visible {

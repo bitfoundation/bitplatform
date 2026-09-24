@@ -21,6 +21,10 @@ namespace Bit.BlazorUI;
 /// The header runs across the top of everything by default, which is the shape of a web page;
 /// <see cref="FullHeightPanels"/> gives the shape of an application instead, with the panels running down the full
 /// height and the header between them.
+/// <br />
+/// Its look is set by the public <c>--bit-Layout-*</c> CSS variables (the backgrounds of the sections, the color and
+/// width of the dividers, and the sizes the parameters also set), which inherit, so one value on <c>:root</c>
+/// re-skins every layout of the app. A parameter set on the layout wins over its variable.
 /// </remarks>
 public partial class BitLayout : BitComponentBase
 {
@@ -106,7 +110,8 @@ public partial class BitLayout : BitComponentBase
     /// <remarks>
     /// The height includes the paddings and the border of the footer, which is a border-box.
     /// <br />
-    /// When not set, the footer is as tall as its own content.
+    /// When not set, the footer takes the <c>--bit-Layout-footer-height</c> CSS variable, and is as tall as its own
+    /// content without one.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? FooterHeight { get; set; }
@@ -155,8 +160,8 @@ public partial class BitLayout : BitComponentBase
     /// under <see cref="FullHeightPanels"/> it is a single length, and it separates the header and the footer from
     /// the main content as well.
     /// <br />
-    /// When not set, the three sections sit right next to each other, which is what a layout whose panels bring
-    /// their own paddings or dividers wants.
+    /// When not set, the <c>--bit-Layout-gap</c> CSS variable applies, and without one the three sections sit right
+    /// next to each other, which is what a layout whose panels bring their own paddings or dividers wants.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Gap { get; set; }
@@ -181,7 +186,8 @@ public partial class BitLayout : BitComponentBase
     /// It is also the offset a <see cref="StickyNavPanel"/> or a <see cref="StickyAside"/> pins itself at, so a panel
     /// pinned under a <see cref="StickyHeader"/> starts right below it instead of sliding underneath it.
     /// <br />
-    /// When not set, the header is as tall as its own content and the pinned panels stick to the top of the viewport.
+    /// When not set, the <c>--bit-Layout-header-height</c> CSS variable plays both parts; without one, the header is
+    /// as tall as its own content and the pinned panels stick to the top of the viewport.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? HeaderHeight { get; set; }
@@ -282,8 +288,8 @@ public partial class BitLayout : BitComponentBase
     /// Takes any CSS padding value (for example <c>1rem</c> or <c>16px 24px</c>). The main section is a border-box,
     /// so the padding is taken out of the width it already has rather than added to it.
     /// <br />
-    /// When not set, the main content spans its section edge to edge, which is what a page that brings its own
-    /// container wants.
+    /// When not set, the <c>--bit-Layout-padding</c> CSS variable applies, and without one the main content spans its
+    /// section edge to edge, which is what a page that brings its own container wants.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Padding { get; set; }
@@ -323,6 +329,8 @@ public partial class BitLayout : BitComponentBase
     /// before reaching the content. The link stays out of sight until it is focused, so it costs a mouse user nothing.
     /// <br />
     /// The main section is given a tabindex of -1 while this is on, so it can actually take the focus the link sends it.
+    /// Activating the link scrolls the main section into view and moves the focus onto it; the href names the current
+    /// page rather than a bare fragment, so the router of the app never reads it as a navigation to another page.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool SkipLink { get; set; }
@@ -395,7 +403,8 @@ public partial class BitLayout : BitComponentBase
     /// Only the sections that were pinned have a stacking order to speak of, so this is what decides whether a
     /// sticky header passes over or under the other layers of the application (a callout, a drawer, a dialog).
     /// <br />
-    /// When not set, the pinned sections take the base z-index of the theme, which sits below all of them. The
+    /// When not set, the pinned sections take the <c>--bit-Layout-z-index</c> CSS variable, or the base z-index of the
+    /// theme, which sits below all of those layers. The
     /// <see cref="SkipLink"/> is always drawn above them, since a focus that lands behind a pinned header is a
     /// focus nobody can see.
     /// </remarks>
@@ -404,10 +413,30 @@ public partial class BitLayout : BitComponentBase
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
+
     /// <summary>
     /// The id of the main section, which is what the skip link points at.
     /// </summary>
     internal string _MainId => $"{_Id}-main";
+
+    /// <summary>
+    /// The href of the skip link: the address of the current page, less any fragment it already has, followed by
+    /// the id of the main section.
+    /// </summary>
+    private string _SkipLinkHref
+    {
+        get
+        {
+            var uri = _navigationManager.Uri;
+            var hashIndex = uri.IndexOf('#');
+
+            return $"{(hashIndex < 0 ? uri : uri[..hashIndex])}#{_MainId}";
+        }
+    }
 
     /// <summary>
     /// The inline style of the main section: the width it leaves for the panels beside it, followed by the custom
@@ -528,5 +557,16 @@ public partial class BitLayout : BitComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
+    }
+
+
+
+    /// <summary>
+    /// Scrolls the main section into view and moves the focus onto it, so the next Tab carries on from the content
+    /// rather than from the header the link sits in.
+    /// </summary>
+    private async Task HandleSkipLinkClick()
+    {
+        await _js.BitUtilsScrollElementIntoView(_MainId, true);
     }
 }

@@ -1,5 +1,8 @@
+using System.Linq;
 using Bunit;
+using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Layout;
@@ -462,7 +465,7 @@ public class BitLayoutTests : BunitTestContext
         Assert.AreEqual("-1", mainContent.GetAttribute("tabindex"));
         Assert.IsTrue(mainContent.ClassList.Contains("custom-mcn"));
         StringAssert.Contains(mainContent.GetAttribute("style")!, "padding: 4px");
-        Assert.AreEqual("#inner-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
+        Assert.AreEqual("http://localhost/#inner-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
     }
 
     [TestMethod]
@@ -552,7 +555,9 @@ public class BitLayoutTests : BunitTestContext
 
         Assert.AreEqual("A", link.TagName);
         Assert.AreEqual("Skip to main content", link.TextContent.Trim());
-        Assert.AreEqual($"#{main.Id}", link.GetAttribute("href"));
+        // The href names the current page rather than a bare fragment, which the router would resolve
+        // against the base href of the app and read as a navigation to another page.
+        Assert.AreEqual($"http://localhost/#{main.Id}", link.GetAttribute("href"));
 
         // The main section only takes the focus the link sends it once it is focusable.
         Assert.AreEqual("-1", main.GetAttribute("tabindex"));
@@ -587,8 +592,40 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add(p => p.Id, "my-layout");
         });
 
-        Assert.AreEqual("#my-layout-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
+        Assert.AreEqual("http://localhost/#my-layout-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
         Assert.AreEqual("my-layout-main", component.Find(".bit-lyt-mcn").Id);
+    }
+
+    [TestMethod]
+    public void BitLayoutShouldPointTheSkipLinkAtTheCurrentPageWithoutItsOwnFragment()
+    {
+        Services.GetRequiredService<BunitNavigationManager>().NavigateTo("/docs/page?tab=2#intro");
+
+        var component = RenderComponent<BitLayout>(parameters =>
+        {
+            parameters.Add(p => p.SkipLink, true);
+            parameters.Add(p => p.Id, "app");
+        });
+
+        Assert.AreEqual("http://localhost/docs/page?tab=2#app-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitLayoutSkipLinkShouldScrollToAndFocusTheMainSection()
+    {
+        var component = RenderComponent<BitLayout>(parameters =>
+        {
+            parameters.Add(p => p.SkipLink, true);
+            parameters.Add(p => p.Id, "app");
+        });
+
+        component.Find(".bit-lyt-skp").Click();
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.scrollElementIntoView"].Single();
+
+        // The focus goes along with the scroll, so the next Tab carries on from the content.
+        Assert.AreEqual("app-main", invocation.Arguments[0]);
+        Assert.AreEqual(true, invocation.Arguments[1]);
     }
 
     [TestMethod]

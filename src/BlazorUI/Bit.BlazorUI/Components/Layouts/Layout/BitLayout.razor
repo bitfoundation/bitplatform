@@ -11,9 +11,17 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
     <CascadingValue Value="Dir">
+        @* A bare "#id" would be resolved against the base href of the app, which the router then reads as a
+           navigation to another page. The href names this very page instead, so the link still works where
+           nothing handles its click (static rendering), and the click handler moves the focus along with the
+           scroll, which a plain fragment navigation handled by the router does not. *@
         @if (SkipLink)
         {
-            <a href="@($"#{_MainId}")" style="@Styles?.SkipLink" class="bit-lyt-skp @Classes?.SkipLink">
+            <a href="@_SkipLinkHref"
+               @onclick="HandleSkipLinkClick"
+               @onclick:preventDefault
+               style="@Styles?.SkipLink"
+               class="bit-lyt-skp @Classes?.SkipLink">
                 @(SkipLinkText ?? "Skip to main content")
             </a>
         }
