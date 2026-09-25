@@ -32,8 +32,8 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 }
                 request.Headers.Authorization = string.IsNullOrWhiteSpace(accessToken) ? null : new AuthenticationHeaderValue("Bearer", accessToken);
             }
-
             //#if (multitenant == true)
+
             if (isInternalRequest)
             {
                 AddTenantToUrl(request);
