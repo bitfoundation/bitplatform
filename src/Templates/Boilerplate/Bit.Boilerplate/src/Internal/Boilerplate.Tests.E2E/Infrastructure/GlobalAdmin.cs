@@ -1,4 +1,4 @@
-﻿using OtpNet;
+using OtpNet;
 
 namespace Boilerplate.Tests.E2E.Infrastructure;
 
