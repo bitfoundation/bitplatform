@@ -10,7 +10,7 @@
     var hasLabel = LabelTemplate is not null || Label.HasValue();
     var hasDescription = DescriptionTemplate is not null || Description.HasValue();
     var isInteractive = IsEnabled && ReadOnly is false;
-    var showClearButton = ShowClearButton && isInteractive && (tagCount > 0 || _inputText.Length > 0);
+    var showClearButton = ShowClearButton && isInteractive && (HasRemovableTag() || _inputText.Length > 0);
 
     // The tags beyond the MaxDisplayedTags are folded away behind a chip that says how many they are,
     // which the reader unfolds the list with; the value itself is untouched, only how much of it is drawn.
@@ -27,7 +27,14 @@
     var displayedTagCount = GetDisplayedTagCount();
     var hiddenTagCount = tagCount - displayedTagCount;
 
-    var tagHint = GetTagAriaDescription();
+    // What the keyboard can do with the tag just reached. A tag the CanRemoveTag predicate holds in place
+    // answers to one gesture fewer, so it is described by a sentence of its own rather than being promised
+    // a removal that does nothing; where the two sentences are the same one element serves every chip.
+    var tagHint = GetTagAriaDescription(true);
+    var fixedTagHint = CanRemoveTag is null ? tagHint : GetTagAriaDescription(false);
+    var sameTagHint = string.Equals(tagHint, fixedTagHint, StringComparison.Ordinal);
+    var tagHintId = tagHint is null ? null : _hintId;
+    var fixedTagHintId = fixedTagHint is null ? null : (sameTagHint ? _hintId : _fixedHintId);
 
     // The element references are what the arrow key navigation moves the focus with; the array is
     // rebuilt whenever the number of drawn tags changes so that a stale reference is never focused.
@@ -48,8 +55,28 @@
 
     var suggestions = GetSuggestions();
 
-    // The same icon on every tag, so it is resolved once per render rather than once per chip.
+    // The sentence that says why the last tag was refused, and the one that says how many tags the field
+    // already holds: the first replaces the helper text while it stands, the second is only ever read out.
+    var invalidMessage = ShowInvalidMessage ? _invalidMessage : null;
+    var countDescription = GetTagCountDescription(tagCount);
+
+    // A tag picked up with its handle and never put anywhere - because the parent has since taken it
+    // away, because the fold has closed over it, or because the field no longer offers the reordering at
+    // all - is put back down: a chip that is lifted with nowhere to land is only a chip drawn askew.
+    if (_pickedUpTagIndex >= displayedTagCount || (_pickedUpTagIndex >= 0 && (isInteractive is false || AllowReorder is false)))
+    {
+        SetPickedUpTag(-1);
+    }
+
+    // The tag that is currently being carried, read once rather than once per chip: while it is in the
+    // air, every other handle is labelled by it rather than by the tag it belongs to.
+    var carriedTag = _pickedUpTagIndex >= 0 && tags is not null && _pickedUpTagIndex < tags.Count
+                   ? tags[_pickedUpTagIndex]
+                   : null;
+
+    // The same icons on every tag, so they are resolved once per render rather than once per chip.
     var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+    var reorderIcon = AllowReorder ? BitIconInfo.From(ReorderIcon, ReorderIconName ?? "GripperBarVertical") : null;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -87,7 +114,7 @@
         }
         else if (Prefix.HasValue())
         {
-            <div style="@Styles?.Prefix" class="bit-tgi-pre @Classes?.Prefix">@Prefix</div>
+            <div id="@_prefixId" style="@Styles?.Prefix" class="bit-tgi-pre @Classes?.Prefix">@Prefix</div>
         }
 
         @if (tagCount > 0)
@@ -107,6 +134,7 @@
                     var tag = tags![index];
                     var isTagFocused = _focusedTagIndex == index;
                     var isTagEditing = _editingTagIndex == index;
+                    var isTagRemovable = CanRemove(tag);
 
                     @* The tag itself is the focusable element rather than its dismiss button: a single
                        roving tab stop covers the whole list, which the arrow keys then walk through,
@@ -131,12 +159,44 @@
                          @ondrop:preventDefault="true"
                          role="listitem"
                          draggable="@(CanDragTag(index) ? "true" : null)"
+                         @* The chip is named by the tag it stands for rather than by everything it holds:
+                            the contents of a chip are the handle that moves it and the button that removes
+                            it as well as the word itself, so a chip reading "blazor" would be read out as
+                            "Move blazor, blazor, Remove blazor". A chip a TagTemplate draws as something
+                            other than its value - "Ada Lovelace" over ada@@example.com - is named through
+                            GetTagName, the template being markup nothing can read a name off. *@
+                         aria-label="@TagName(tag)"
                          aria-posinset="@(index + 1)"
                          aria-setsize="@tagCount"
-                         aria-describedby="@(tagHint is null ? null : _hintId)"
+                         aria-describedby="@(isTagRemovable ? tagHintId : fixedTagHintId)"
                          tabindex="@(isTagEditing ? "-1" : GetTagTabIndex(index, displayedTagCount))"
-                         style="@BuildTagStyle(tag, isTagFocused)"
-                         class="@BuildTagClass(tag, index, isTagFocused)">
+                         style="@BuildTagStyle(tag, index, isTagFocused, isTagRemovable)"
+                         class="@BuildTagClass(tag, index, isTagFocused, isTagRemovable)">
+                        @* Drawn only where there is somewhere to put the tag down: a handle on the only
+                           chip in the field picks a tag up and hands it back, which is chrome that does
+                           nothing on every chip that stands alone. *@
+                        @if (isInteractive && isTagEditing is false && AllowReorder && displayedTagCount > 1)
+                        {
+                            @* The handle that reorders a tag without a drag. Dragging a chip is the quick
+                               gesture, but it is one no touch screen, no switch and no head pointer can
+                               make, so the very same move is offered as two taps: one on the handle picks
+                               the tag up, one on the tag whose place it should take puts it down, and a
+                               second tap on the handle puts it back. Out of the tab order like the dismiss
+                               button, the keyboard reordering being Alt with the arrow keys. *@
+                            <button @onclick="() => HandleOnReorderClick(index)"
+                                    @onclick:stopPropagation="true"
+                                    @ondblclick:stopPropagation="true"
+                                    type="button"
+                                    tabindex="-1"
+                                    title="@(ReorderTitle ?? "Move")"
+                                    aria-pressed="@GetReorderPressed(index)"
+                                    aria-label="@GetReorderAriaLabel(tag, index, carriedTag)"
+                                    style="@Styles?.ReorderButton"
+                                    class="bit-tgi-rbt @Classes?.ReorderButton">
+                                <i style="@Styles?.ReorderIcon" class="bit-tgi-rdi @reorderIcon?.GetCssClasses() @Classes?.ReorderIcon" aria-hidden="true" />
+                            </button>
+                        }
+
                         @if (isTagEditing)
                         {
                             @* The little input that replaces the tag while it is being corrected in
@@ -150,6 +210,11 @@
                                main input - which a whole separated list may be pasted into at once - this
                                one carries it natively, and the browser stops the eleventh character
                                instead of the component silently cutting it off when the edit is committed. *@
+                            @* The InputMode, the EnterKeyHint and the SpellCheck belong to the values the
+                               field collects rather than to the one box they are typed into, so correcting
+                               a tag opens the same keyboard as adding one: an email field that offered the
+                               "@@" while a tag was added and a plain alphabet while the very same tag was
+                               corrected would be two fields in one. *@
                             <input @ref="_editInputRef"
                                    @oninput="HandleOnEditInput"
                                    @onkeydown="HandleOnEditKeyDown"
@@ -159,13 +224,16 @@
                                    @ondblclick:stopPropagation="true"
                                    type="text"
                                    autocorrect="off"
-                                   spellcheck="false"
                                    autocomplete="off"
                                    autocapitalize="none"
                                    value="@_editText"
+                                   size="@GetEditSize()"
+                                   inputmode="@_inputMode"
+                                   enterkeyhint="@_enterKeyHint"
                                    aria-label="@GetEditAriaLabel(tag)"
                                    style="@Styles?.EditInput"
                                    class="bit-tgi-eip @Classes?.EditInput"
+                                   spellcheck="@((SpellCheck ?? false).ToString().ToLower())"
                                    maxlength="@(MaxLength > 0 ? MaxLength : (int?)null)" />
                         }
                         else if (TagTemplate is not null)
@@ -180,7 +248,7 @@
                             <span title="@tag" style="@Styles?.TagText" class="bit-tgi-ttx @Classes?.TagText">@tag</span>
                         }
 
-                        @if (isInteractive && isTagEditing is false)
+                        @if (isInteractive && isTagEditing is false && isTagRemovable)
                         {
                             @* Out of the tab order on purpose: the tag holding it is the tab stop, and
                                the Delete/Backspace keys are what remove it from the keyboard. *@
@@ -218,9 +286,11 @@
             </button>
         }
 
-        @* autocomplete is turned off on purpose: the browser's own autofill would otherwise be offered
-           over the suggestion list of the field, and a value it saved for a single line text box is the
-           last tag that was typed rather than the list the field holds. *@
+        @* autocomplete is turned off unless the consumer asks for something else: the browser's own autofill
+           would otherwise be offered over the suggestion list of the field, and a value it saved for a single
+           line text box is the last tag that was typed rather than the list the field holds.
+           Spell checking is off for the same kind of reason - a tag is a value rather than a sentence - and
+           SpellCheck turns it back on for a field that does collect words. *@
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"
@@ -230,12 +300,13 @@
                type="text"
                id="@_inputId"
                autocorrect="off"
-               spellcheck="false"
                autocapitalize="none"
                readonly="@ReadOnly"
                value="@_inputText"
                style="@Styles?.Input"
                autofocus="@AutoFocus"
+               inputmode="@_inputMode"
+               enterkeyhint="@_enterKeyHint"
                placeholder="@GetPlaceholder()"
                disabled="@(IsEnabled is false)"
                class="bit-tgi-inp @Classes?.Input"
@@ -244,11 +315,26 @@
                data-no-trim="@(NoTrim ? "true" : null)"
                data-no-add-on-tab="@(NoAddOnTab ? "true" : null)"
                data-cancel-confirm-keys-on-empty="@CancelConfirmKeysOnEmpty.ToString().ToLower()"
-               aria-label="@(hasLabel ? null : AriaLabel)"
+               spellcheck="@((SpellCheck ?? false).ToString().ToLower())"
+               aria-label="@GetAriaLabel(hasLabel)"
+               aria-invalid="@GetAriaInvalid()"
                aria-required="@(Required ? "true" : null)"
-               aria-labelledby="@(hasLabel ? _labelId : null)"
-               aria-describedby="@(hasDescription ? _descriptionId : null)"
-               autocomplete="off" />
+               aria-labelledby="@GetLabelledBy(hasLabel)"
+               aria-describedby="@GetDescribedBy(hasDescription || invalidMessage is not null, countDescription is not null)"
+               autocomplete="@(AutoComplete ?? "off")" />
+
+        @* The field is waiting for something of its own - the suggestions being fetched for what is being
+           typed, most of the time. It is an indeterminate progressbar rather than a decoration: a spinner
+           that says nothing is a spinner a screen reader never learns about, and a progressbar with no
+           value is exactly the "busy, for how long nobody knows" this stands for. It never interrupts,
+           which is why it is not a live region. *@
+        @if (IsLoading)
+        {
+            <div role="progressbar"
+                 aria-label="@(LoadingAriaLabel ?? "Loading")"
+                 style="@Styles?.Spinner"
+                 class="bit-tgi-spn @Classes?.Spinner"></div>
+        }
 
         @if (showClearButton)
         {
@@ -273,14 +359,25 @@
         }
         else if (Suffix.HasValue())
         {
-            <div style="@Styles?.Suffix" class="bit-tgi-suf @Classes?.Suffix">@Suffix</div>
+            <div id="@_suffixId" style="@Styles?.Suffix" class="bit-tgi-suf @Classes?.Suffix">@Suffix</div>
         }
     </div>
 
-    @if (hasDescription || ShowCounter)
+    @if (hasDescription || invalidMessage is not null || ShowCounter)
     {
         <div class="bit-tgi-dsr">
-            @if (hasDescription)
+            @if (invalidMessage is not null)
+            {
+                @* The refusal takes the place of the helper text while it stands, and takes its id along
+                   with it: the field describes itself with whichever of the two is the answer to what was
+                   just done, and the input never points at an element that is not there. It is not hidden
+                   from screen readers - the live region says it once as it happens, and this is what a
+                   reader coming back to the field is told. *@
+                <div id="@_descriptionId"
+                     style="@Styles?.InvalidMessage"
+                     class="bit-tgi-dsc bit-tgi-ivm @Classes?.InvalidMessage">@invalidMessage</div>
+            }
+            else if (hasDescription)
             {
                 <div id="@_descriptionId"
                      style="@Styles?.Description"
@@ -307,12 +404,26 @@
         </div>
     }
 
+    @if (countDescription is not null)
+    {
+        @* How many tags the field already holds, referenced by the input rather than announced: the chips
+           sit away from the caret, so a reader landing in a field that is not empty is otherwise told only
+           that the input is. Read on arrival, and never while the field is being typed into. *@
+        <div id="@_countId" class="bit-tgi-cvs">@countDescription</div>
+    }
+
     @if (tagHint is not null)
     {
         @* What the keyboard can do with the tag that has just been reached, announced after it: a chip
            looks like nothing but a word, so the gestures it answers to are otherwise never discovered.
            It is referenced rather than drawn, the same sentence serving every tag. *@
         <div id="@_hintId" class="bit-tgi-vsh">@tagHint</div>
+    }
+
+    @if (sameTagHint is false && fixedTagHint is not null)
+    {
+        @* The same sentence for the tags CanRemoveTag holds in place, less the removal they do not answer to. *@
+        <div id="@_fixedHintId" class="bit-tgi-vsh">@fixedTagHint</div>
     }
 
     @if (suggestions.Count > 0)

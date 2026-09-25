@@ -7,11 +7,6 @@
     flex-direction: column;
 }
 
-.invalid-message {
-    font-size: 0.75rem;
-    color: var(--bit-clr-err);
-}
-
 ::deep {
     .custom-class {
         border-radius: 1rem;
