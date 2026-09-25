@@ -2210,4 +2210,13 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>We hebben een code naar {0} en {1} gestuurd.</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Kioskmodus</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Deze app is vergrendeld op het scherm: de Windows-toets, Alt+Tab, Taakbeheer en het sluiten van het venster zijn allemaal geblokkeerd. Gebruik de knop om af te sluiten.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>App afsluiten</value>
+  </data>
 </root>

@@ -34,10 +34,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -58,7 +63,7 @@ jobs:
 
     - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Butil/Bit.Butil.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+      run: dotnet build src/Butil/Bit.Butil.slnx -t:InstallNodejsDependencies -m:1 -f net11.0
 
     - name: dotnet build
       run: dotnet build src/Butil/Bit.Butil.slnx
@@ -78,8 +83,8 @@ jobs:
       env:
         BUTIL_MCP_ARTIFACTS_PATH: ${{ runner.temp }}/bit-butil-mcp-tests
       run: >
-        cd src/Butil &&
-        dotnet test tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj
+        cd src/Butil/tests/Bit.Butil.Tests.Mcp &&
+        dotnet test
         --no-build
         --report-trx --report-trx-filename butil-mcp.trx
 
@@ -91,13 +96,13 @@ jobs:
         path: '**/butil-mcp.trx'
         if-no-files-found: ignore
 
-    # Every render mode of the Blazor Web App harness host over HTTP, on net8.0/net9.0/net10.0: the prerendered
+    # Every render mode of the Blazor Web App harness host over HTTP, on net8.0/net9.0/net10.0/net11.0: the prerendered
     # pages, the served scripts, and every member of every service called during a static render. Browser, hybrid
     # and trimmed/AOT publish coverage are the stages below.
     - name: Hosting tests
       run: >
-        cd src/Butil &&
-        dotnet test tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj
+        cd src/Butil/tests/Bit.Butil.Tests.Hosting &&
+        dotnet test
         --no-build
         --report-trx --report-trx-filename butil-hosting.trx
 
@@ -119,13 +124,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - { host: standalone, framework: net10.0 }
+        - { host: standalone, framework: net11.0 }
+        - { host: server, framework: net11.0 }
+        - { host: server-noprerender, framework: net11.0 }
+        - { host: wasm, framework: net11.0 }
+        - { host: wasm-noprerender, framework: net11.0 }
+        - { host: auto, framework: net11.0 }
+        - { host: auto-noprerender, framework: net11.0 }
         - { host: server, framework: net10.0 }
-        - { host: server-noprerender, framework: net10.0 }
         - { host: wasm, framework: net10.0 }
-        - { host: wasm-noprerender, framework: net10.0 }
-        - { host: auto, framework: net10.0 }
-        - { host: auto-noprerender, framework: net10.0 }
         - { host: server, framework: net9.0 }
         - { host: wasm, framework: net9.0 }
         - { host: server, framework: net8.0 }
@@ -137,10 +144,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -165,7 +177,7 @@ jobs:
       run: dotnet build src/Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Butil/tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Butil/tests/Bit.Butil.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -175,8 +187,8 @@ jobs:
         BUTIL_E2E_SKIP_BUILD: 1
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Butil &&
-        dotnet test --project tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release --no-build
+        cd src/Butil/tests/Bit.Butil.Tests.E2E &&
+        dotnet test -c Release --no-build
         --report-trx --report-trx-filename butil-e2e-${{ matrix.host }}-${{ matrix.framework }}.trx
 
     - name: Upload test results
@@ -199,7 +211,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -236,8 +248,8 @@ jobs:
         BUTIL_E2E_CONFIGURATION: Release
         BUTIL_E2E_SKIP_BUILD: 1
       run: >
-        cd src/Butil &&
-        dotnet test --project tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release --no-build
+        cd src/Butil/tests/Bit.Butil.Tests.E2E &&
+        dotnet test -c Release --no-build
         --report-trx --report-trx-filename butil-e2e-hybrid.trx
 
     - name: Upload test results
@@ -272,7 +284,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -292,15 +304,15 @@ jobs:
       run: dotnet build src/Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Butil/tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Butil/tests/Bit.Butil.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published host
       env:
         BUTIL_E2E_HOST: wasm
         BUTIL_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/butil-harness-${{ matrix.name }}
       run: >
-        cd src/Butil &&
-        dotnet test --project tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release --no-build
+        cd src/Butil/tests/Bit.Butil.Tests.E2E &&
+        dotnet test -c Release --no-build
         --report-trx --report-trx-filename butil-publish-${{ matrix.name }}.trx
 
     - name: Upload test results

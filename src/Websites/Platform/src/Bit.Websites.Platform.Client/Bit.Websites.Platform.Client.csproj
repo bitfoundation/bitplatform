@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
+        <UseMonoRuntime>false</UseMonoRuntime>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-        <!-- Like WasmEnableSIMD below, these two are on the wasm SDK's relink-trigger list: any
+        <!-- These two are on the wasm SDK's relink-trigger list: any
              non-default value pulls the native tooling (ManagedToNativeGenerator & co) into every
              incremental build. Trim the runtime in Release only; dev keeps full icu/tz data. -->
         <InvariantTimezone Condition="'$(Configuration)' == 'Release'">true</InvariantTimezone>
@@ -18,10 +19,6 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
-        <!-- Disabling SIMD flips WasmBuildNative on, which drags the wasm native tooling
-             (ManagedToNativeGenerator & co) into every incremental build (~3s each). Only
-             production needs the SIMD-less runtime for old-browser support, so scope it to Release. -->
-        <WasmEnableSIMD Condition="'$(Configuration)' == 'Release'">false</WasmEnableSIMD>
         <BitMinifyAggressive>true</BitMinifyAggressive>
     </PropertyGroup>
 
@@ -30,28 +27,28 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.1.26425.128" />
     </ItemGroup>
 
     <ItemGroup>
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-        <PackageReference Include="Bit.Bswup" Version="10.6.2" />
-        <PackageReference Include="Bit.Butil" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI.Extras" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="10.6.2" />
-        <PackageReference Include="Bit.Minifier" Version="10.6.2" PrivateAssets="all" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.2">
+        <PackageReference Include="Bit.Bswup" Version="11.0.0-pre-01" />
+        <PackageReference Include="Bit.Butil" Version="11.0.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="11.0.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="11.0.0-pre-01" />
+        <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-01" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.2">
+        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0-rc.1.26425.128" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

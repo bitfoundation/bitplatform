@@ -2210,4 +2210,13 @@
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>کد را به {0} و {1} فرستادیم.</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>حالت کیوسک</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>این برنامه روی صفحه قفل شده است: کلید ویندوز، Alt+Tab، Task Manager و بستن پنجره همگی مسدود شده‌اند. برای خروج از دکمه استفاده کنید.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>خروج از برنامه</value>
+  </data>
 </root>

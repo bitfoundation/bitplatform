@@ -27,10 +27,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -51,7 +56,7 @@ jobs:
 
     - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -t:InstallNodejsDependencies -m:1 -f net11.0
 
     # BuildAllTfms=true opts back into net9.0 and net8.0, which the Debug configuration skips so that local
     # inner-loop builds only compile the TFM the demo and the tests actually run on.

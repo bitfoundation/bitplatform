@@ -1,11 +1,12 @@
-// bit version: 10.6.2
+// bit version: 11.0.0-pre-01
 
 self.assetsInclude = [];
 // The client's scoped-css bundle is in this app's asset manifest but is never served: in a
 // Blazor Web App the host project merges the client's scoped styles into its own
 // <HostAssembly>.styles.css. Precaching it would fail with a 404, so it's excluded here and
 // the two files the page actually loads are precached through externalAssets instead.
-self.assetsExclude = [/^Bit\.Bswup\.FullSample\.Client\.styles\.css$/, /weather\.json$/];
+// blazor.webassembly.js is in the manifest but a Blazor Web App never loads it, so precaching it 404s.
+self.assetsExclude = [/^Bit\.Bswup\.FullSample\.Client\.styles\.css$/, /weather\.json$/, /^_framework\/blazor\.webassembly\.js$/];
 self.defaultUrl = "/";
 self.prohibitedUrls = [];
 // self.assetsUrl is deliberately NOT set: since v-10-6-0 it defaults to a relative
