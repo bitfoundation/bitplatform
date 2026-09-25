@@ -46,9 +46,10 @@ public partial class ClientIpForwardingTests : AppTestBase
         if (signedIn)
             await SkipWithoutGlobalAdminCredentials();
 
-        var publicIps = await PublicIpProvider.Resolve(TestContext.CancellationToken);
-
         var page = await OpenApp(App.AdminPanel);
+
+        // The browser's, which is not this machine's when the browser runs on another one.
+        var publicIps = await PublicIpProvider.ResolveFromBrowser(page.Context);
 
         Guid? sessionId = null;
 
