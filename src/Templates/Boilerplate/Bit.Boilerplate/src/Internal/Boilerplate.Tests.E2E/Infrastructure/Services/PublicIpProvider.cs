@@ -23,6 +23,41 @@ public static class PublicIpProvider
         return resolved;
     }
 
+    /// <summary>
+    /// The browser's own address rather than this machine's, for a test that asks what a deployment saw of the browser.
+    /// They differ whenever the browser runs elsewhere (PLAYWRIGHT_SERVER_ENDPOINT): that machine shares the network's
+    /// IPv4 address behind NAT, but has an IPv6 address of its own. Asked from a blank page of the same context, which
+    /// carries no content security policy to stop the request and goes out the way the app's pages do.
+    /// </summary>
+    public static async Task<IReadOnlyCollection<string>> ResolveFromBrowser(IBrowserContext context)
+    {
+        var page = await context.NewPageAsync();
+
+        try
+        {
+            var addresses = await Task.WhenAll(ReadFromBrowser(page, "https://api.ipify.org"),
+                                               ReadFromBrowser(page, "https://api64.ipify.org"));
+
+            var resolved = addresses.OfType<string>().Distinct().ToArray();
+
+            Assert.IsGreaterThan(0, resolved.Length, "Neither api.ipify.org nor api64.ipify.org answered the browser, so there is nothing to compare a deployment's answer with.");
+
+            return resolved;
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    private static async Task<string?> ReadFromBrowser(IPage page, string url)
+    {
+        // Null for a family the browser cannot reach, as Read does for this process.
+        var text = await page.EvaluateAsync<string?>("url => fetch(url).then(response => response.ok ? response.text() : null).catch(() => null)", url);
+
+        return string.IsNullOrWhiteSpace(text) || IPAddress.TryParse(text.Trim(), out _) is false ? null : Normalize(text);
+    }
+
     /// <summary>A dual stack socket reports an IPv4 peer as ::ffff:a.b.c.d; a forwarded header carries the plain one.</summary>
     public static string Normalize(string address)
     {
