@@ -36,8 +36,19 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
 
 
+    // See BitInputBase.HasNotBeenSetOnInputBase: the record of this class is kept apart from the one of
+    // the base so that neither has to know when the other runs.
+    internal override bool HasNotBeenSetOnInputBase(string name)
+    {
+        return _assignedTextInputParameters.Contains(name) is false && base.HasNotBeenSetOnInputBase(name);
+    }
+
+    private readonly HashSet<string> _assignedTextInputParameters = [];
+
     public override Task SetParametersAsync(ParameterView parameters)
     {
+        _assignedTextInputParameters.Clear();
+
         var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>); ;
 
         foreach (var parameter in parametersDictionary!)
@@ -45,26 +56,31 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
             switch (parameter.Key)
             {
                 case nameof(AutoComplete):
+                    _assignedTextInputParameters.Add(nameof(AutoComplete));
                     AutoComplete = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(AutoFocus):
+                    _assignedTextInputParameters.Add(nameof(AutoFocus));
                     AutoFocus = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(DebounceTime):
+                    _assignedTextInputParameters.Add(nameof(DebounceTime));
                     DebounceTime = (int)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Immediate):
+                    _assignedTextInputParameters.Add(nameof(Immediate));
                     Immediate = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ThrottleTime):
+                    _assignedTextInputParameters.Add(nameof(ThrottleTime));
                     ThrottleTime = (int)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;

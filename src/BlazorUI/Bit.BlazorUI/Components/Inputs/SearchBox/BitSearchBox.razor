@@ -71,22 +71,29 @@
                    tabindex="@TabIndex"
                    readonly="@ReadOnly"
                    required="@Required"
+                   aria-required="@(Required ? "true" : null)"
                    value="@CurrentValue"
                    style="@Styles?.Input"
                    autofocus="@AutoFocus"
                    inputmode="@_inputMode"
                    aria-label="@AriaLabel"
                    placeholder="@Placeholder"
+                   aria-busy="@AriaBusy"
+                   aria-invalid="@AriaInvalid"
                    enterkeyhint="@_enterKeyHint"
+                   autocorrect="@GetAutoCorrect()"
+                   aria-labelledby="@LabelledBy"
                    disabled="@(IsEnabled is false)"
+                   autocapitalize="@AutoCapitalize"
+                   aria-describedby="@DescribedBy"
                    class="bit-srb-inp @Classes?.Input"
                    spellcheck="@(SpellCheck is null ? null : (SpellCheck.Value ? "true" : "false"))"
                    maxlength="@(MaxLength >= 0 ? MaxLength : null)"
-                   aria-labelledby="@(HasLabel ? _labelId : null)"
+                   aria-keyshortcuts="@FocusShortcut"
                    role="@(_hasSuggestSource ? "combobox" : "searchbox")"
                    aria-haspopup="@(_hasSuggestSource ? "listbox" : null)"
                    aria-controls="@(_hasSuggestSource ? _scrollContainerId : null)"
-                   aria-autocomplete="@(_hasSuggestSource ? "list" : null)"
+                   aria-autocomplete="@(_hasSuggestSource ? (AutoFillSuggestItem ? "both" : "list") : null)"
                    aria-expanded="@(_hasSuggestSource ? (_isOpen ? "true" : "false") : null)"
                    aria-activedescendant="@(_isOpen && _selectedIndex > -1 ? GetItemId(_selectedIndex) : null)"
                    autocomplete="@(AutoComplete ?? (_hasSuggestSource ? "off" : null))" />
@@ -104,7 +111,18 @@
                 </div>
             }
 
-            @if (HideClearButton is false && ReadOnly is false && HasValue)
+            @if (Loading)
+            {
+                @* The search the app itself is running, told where the clear button sits: the one slot of
+                   the field that is always visible, unlike the leading icon which collapses on focus.
+                   It is decoration - the live region at the end of the component is what says it out loud. *@
+                <div aria-hidden="true"
+                     style="@Styles?.LoadingSpinner"
+                     class="bit-srb-lsp @Classes?.LoadingSpinner">
+                    <div class="bit-srb-spn" />
+                </div>
+            }
+            else if (HideClearButton is false && ReadOnly is false && HasValue)
             {
                 @* Normally kept out of the tab order because escape already clears the field, which is
                    the faster way to do it from the keyboard. NoClearOnEscape takes that away, so the
@@ -132,25 +150,80 @@
 
         @if (ShowSearchButton)
         {
+            @* A visible label already names the button, so repeating it in an aria-label would only
+               override what is written on it with a second, unrelated string. *@
             <button @onclick="HandleOnSearchButtonClick"
                     type="button"
-                    title="@SearchButtonAriaLabel"
                     style="@Styles?.SearchButton"
-                    aria-label="@SearchButtonAriaLabel"
                     disabled="@(IsEnabled is false)"
-                    class="bit-srb-sbn @Classes?.SearchButton">
+                    class="bit-srb-sbn @Classes?.SearchButton"
+                    title="@(SearchButtonText.HasValue() ? null : SearchButtonAriaLabel)"
+                    aria-label="@(SearchButtonText.HasValue() ? null : SearchButtonAriaLabel)">
                 @if (SearchButtonTemplate is not null)
                 {
                     @SearchButtonTemplate
                 }
                 else
                 {
+                    @* The default glyph is a directional arrow and is marked as such, because it is the one
+                       the RTL layout has to mirror; an icon the app chose means the same thing both ways. *@
+                    var isDefaultSearchIcon = SearchButtonIcon is null && SearchButtonIconName is null;
                     var searchButtonIcon = BitIconInfo.From(SearchButtonIcon, SearchButtonIconName ?? "ChromeBackMirrored");
-                    <i style="@Styles?.SearchButtonIcon" class="@searchButtonIcon?.GetCssClasses() @Classes?.SearchButtonIcon" aria-hidden="true" />
+                    <i style="@Styles?.SearchButtonIcon" aria-hidden="true"
+                       class="@searchButtonIcon?.GetCssClasses() @(isDefaultSearchIcon ? "bit-srb-dsi" : null) @Classes?.SearchButtonIcon" />
+
+                    if (SearchButtonText.HasValue())
+                    {
+                        <span style="@Styles?.SearchButtonText" class="bit-srb-sbx @Classes?.SearchButtonText">@SearchButtonText</span>
+                    }
                 }
             </button>
         }
     </div>
+
+    @if (HasErrorMessage)
+    {
+        @* Above the description rather than below it: what is wrong with the value is the first thing to
+           read under the field. It carries no live role of its own - the region at the end of the
+           component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-srb-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasDescription)
+    {
+        @* A div rather than a span: a DescriptionTemplate is free to render block content, which is
+           not valid inside a span. *@
+        <div id="@_descriptionId"
+             style="@Styles?.DescriptionContainer"
+             class="bit-srb-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else if (Description.HasValue())
+            {
+                <span style="@Styles?.Description" class="@Classes?.Description">@Description</span>
+            }
+        </div>
+    }
+
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the description text has to live in an element of
+           its own. It is visually hidden and only exists for the assistive technologies. *@
+        <span id="@_ariaDescriptionId" class="bit-srb-ard">@AriaDescription</span>
+    }
 
     @* The only channel a screen reader has for the outcome of a search: how many suggestions were
        found, that there were none, or that the term is still too short to search at all. It lives
@@ -163,6 +236,13 @@
              class="bit-srb-lvr">@_announcement</div>
     }
 
+    @* A status rather than an alert: a rejection must not steal the focus or interrupt what is being
+       typed, only be announced once the reader is done with the current sentence. It is rendered whether
+       or not it has anything to say, because a live region that arrives with its text already in it is
+       the one thing screen readers are known to miss. It is kept apart from the suggest region above,
+       which is rewritten on every keystroke and would bury the rejection on the very next one. *@
+    <span role="status" class="bit-srb-elv">@LiveText</span>
+
 </div>
 
 @if (_hasSuggestSource)
@@ -171,6 +251,7 @@
     {
         <div @onclick="CloseCallout"
              id="@_overlayId"
+             aria-hidden="true"
              class="bit-srb-ovl @Classes?.Overlay"
              style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay" />
     }
@@ -180,7 +261,7 @@
     <div id="@_calloutId"
          style="@Styles?.Callout"
          dir="@Dir?.ToString().ToLower()"
-         class="bit-srb-cal@(DisableAnimation ? " bit-srb-nan" : null) @Classes?.Callout">
+         class="bit-srb-cal @_calloutSizeClass @_calloutColorClass @(ReadOnly ? "bit-srb-rol" : null) @(DisableAnimation ? "bit-srb-nan" : null) @Classes?.Callout">
 
         @if (CalloutHeaderTemplate is not null)
         {
@@ -226,7 +307,22 @@
                 }
             </div>
         }
-        else if (_searchTriggered && _viewSuggestedItems.Count == 0)
+        else if (_suggestFailed && HasSuggestFailedContent)
+        {
+            <div aria-hidden="true"
+                 style="@Styles?.SuggestFailed"
+                 class="bit-srb-fld @Classes?.SuggestFailed">
+                @if (SuggestFailedTemplate is not null)
+                {
+                    @SuggestFailedTemplate
+                }
+                else
+                {
+                    @SuggestFailedText
+                }
+            </div>
+        }
+        else if (_searchTriggered && _suggestFailed is false && _viewSuggestedItems.Count == 0)
         {
             @if (NoResultsTemplate is not null)
             {
@@ -255,7 +351,13 @@
             @foreach (var (text, index) in _viewSuggestedItems.Select((t, i) => (t, i)))
             {
                 var isSelected = index == _selectedIndex;
-                <div role="presentation" style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
+                @* Keyed by position rather than by text: the ids the aria-activedescendant of the input
+                   points at are built from the index, so a row has to keep the index it was rendered with. *@
+                <div @key="index" role="presentation" style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
+                    @* Read-only blocks picking a suggestion but not browsing the list, so the rows stay in
+                       the accessibility tree and stay reachable with the arrow keys - and say that they
+                       cannot be chosen, rather than silently swallowing the attempt. The native disabled
+                       attribute is deliberately not used: it would take them out of that tree altogether. *@
                     <button @onclick="() => HandleOnSuggestedItemClick(text)"
                             @onmousedown:preventDefault="true"
                             id="@GetItemId(index)"
@@ -263,6 +365,7 @@
                             type="button"
                             role="option"
                             title="@text"
+                            aria-disabled="@(ReadOnly ? "true" : null)"
                             style="@Styles?.SuggestItemButton"
                             aria-posinset="@(index + 1)"
                             aria-setsize="@_viewSuggestedItems.Count"
