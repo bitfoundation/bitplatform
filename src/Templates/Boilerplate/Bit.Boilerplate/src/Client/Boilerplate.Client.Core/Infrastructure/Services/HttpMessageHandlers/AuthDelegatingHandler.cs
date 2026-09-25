@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using System.Net.Http.Headers;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
@@ -32,6 +33,13 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 request.Headers.Authorization = string.IsNullOrWhiteSpace(accessToken) ? null : new AuthenticationHeaderValue("Bearer", accessToken);
             }
 
+            //#if (multitenant == true)
+            if (isInternalRequest)
+            {
+                AddTenantToUrl(request);
+            }
+            //#endif
+
             return await base.SendAsync(request, cancellationToken);
         }
         catch (KnownException _) when (_ is ForbiddenException or UnauthorizedException)
@@ -64,4 +72,28 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
             return await base.SendAsync(request, cancellationToken);
         }
     }
+    //#if (multitenant == true)
+
+    /// <summary>
+    /// The server answers a signed-in caller from the tenant in its token, and an anonymous caller of the very same url from
+    /// the tenant its host resolves to (See TenantProvider). The CDN edge and the browser's http cache key on the url alone,
+    /// so the anonymous answer they keep, the host store's catalogue for one, would be handed to this caller as its own.
+    /// With its tenant in the url the caller never asks for a url an anonymous caller asks for.
+    /// </summary>
+    private static void AddTenantToUrl(HttpRequestMessage request)
+    {
+        if (request.Method != HttpMethod.Get || request.RequestUri is not { IsAbsoluteUri: true } requestUri)
+            return;
+
+        if (IAuthTokenProvider.ParseAccessToken(request.Headers.Authorization?.Parameter, validateExpiry: false).GetTenantId() is not Guid tenantId)
+            return;
+
+        var query = requestUri.Query.TrimStart('?');
+
+        request.RequestUri = new UriBuilder(requestUri)
+        {
+            Query = FormattableString.Invariant($"{query}{(query.Length is 0 ? "" : "&")}{AppResponseCacheAttribute.TenantQueryParameterName}={tenantId}")
+        }.Uri;
+    }
+    //#endif
 }

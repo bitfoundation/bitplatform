@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;
 using Boilerplate.Client.Web.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Server.Web.Infrastructure.Services;
 
@@ -15,15 +16,17 @@ public partial class WebServerPrerenderStateService : IPrerenderStateService, IA
 {
     private PersistingComponentStateSubscription? subscription;
     private readonly ServerWebSettings serverWebSettings = default!;
+    private readonly IAuthTokenProvider authTokenProvider = default!;
     private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
     private bool NoPersistent => serverWebSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
                                        serverWebSettings.WebAppRender.PrerenderEnabled is false;
 
-    public WebServerPrerenderStateService(ServerWebSettings clientWebSettings, PersistentComponentState? persistentComponentState = null)
+    public WebServerPrerenderStateService(ServerWebSettings clientWebSettings, IAuthTokenProvider authTokenProvider, PersistentComponentState? persistentComponentState = null)
     {
         this.serverWebSettings = clientWebSettings;
+        this.authTokenProvider = authTokenProvider;
         this.persistentComponentState = persistentComponentState;
         if (NoPersistent) return;
         subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, clientWebSettings.WebAppRender.RenderMode);
@@ -44,6 +47,8 @@ public partial class WebServerPrerenderStateService : IPrerenderStateService, IA
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
         if (NoPersistent) return await factory();
+
+        key = await WebClientPrerenderStateService.KeyForCaller(authTokenProvider, key);
 
         if (persistentComponentState!.TryTakeFromJson(key, out T? value)) return value;
 
