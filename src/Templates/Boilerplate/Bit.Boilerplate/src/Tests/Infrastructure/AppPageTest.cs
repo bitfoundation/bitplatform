@@ -147,6 +147,16 @@ public class AppPageTest : PageTest
         return TestContext.TestRunCount > 1 ? options.EnableVideoRecording(TestContext) : options;
     }
 
+    /// <summary>
+    /// No context means the browser never came up - a Playwright server that refused the client, for one - and a
+    /// NullReferenceException here would only be reported next to that error, as if it were a second one.
+    /// </summary>
     [TestCleanup]
-    public virtual async ValueTask Cleanup() => await Context.FinalizeVideoRecording(TestContext);
+    public virtual async ValueTask Cleanup()
+    {
+        if (Context is not null)
+        {
+            await Context.FinalizeVideoRecording(TestContext);
+        }
+    }
 }
