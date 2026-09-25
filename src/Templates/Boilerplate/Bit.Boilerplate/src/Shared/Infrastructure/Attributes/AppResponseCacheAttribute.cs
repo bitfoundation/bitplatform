@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 namespace Boilerplate.Shared.Infrastructure.Attributes;
 
 /// <summary>
@@ -46,4 +47,13 @@ public class AppResponseCacheAttribute : Attribute
     /// you can set this property to true to cache those responses and improve performance.
     /// </summary>
     public bool UserAgnostic { get; set; }
+    //#if (multitenant == true)
+
+    /// <summary>
+    /// The query string parameter a signed-in client puts its token's tenant in (See AuthDelegatingHandler), so it never asks
+    /// for a url an anonymous caller asks for too. The server does not resolve the tenant from it, and a response to a url
+    /// carrying it never gets a CDN edge or browser lifetime (See AppResponseCachePolicy).
+    /// </summary>
+    public const string TenantQueryParameterName = "_tenant";
+    //#endif
 }

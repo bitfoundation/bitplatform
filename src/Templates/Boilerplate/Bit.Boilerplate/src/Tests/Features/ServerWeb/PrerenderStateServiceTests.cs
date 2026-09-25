@@ -49,7 +49,7 @@ public partial class PrerenderStateServiceTests
         await clientStateManager.RestoreStateAsync(store);
 
         var jsonSerializerOptions = server.WebApp.Services.GetRequiredService<JsonSerializerOptions>();
-        var clientPrerenderState = new WebClientPrerenderStateService(jsonSerializerOptions, clientStateManager.State);
+        var clientPrerenderState = new WebClientPrerenderStateService(jsonSerializerOptions, A.Fake<IAuthTokenProvider>(), clientStateManager.State);
 
         var apiCalls = 0;
         Task<UserDto?> CallTheApi()

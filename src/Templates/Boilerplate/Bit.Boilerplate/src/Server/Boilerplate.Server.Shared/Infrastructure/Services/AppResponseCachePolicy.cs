@@ -154,14 +154,18 @@ public partial class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSe
         }
 
         //#if (multitenant == true)
-        if (currentTenantId is not null)
+        if (currentTenantId is not null || context.HttpContext.Request.Query.ContainsKey(AppResponseCacheAttribute.TenantQueryParameterName))
         {
             // The Tenant rule above is a VaryByValues entry, and that is an output cache concept: it never becomes a
             // response header, so the output cache is the only cache that can see it. Every other cache keys on the
             // URL, which for an authenticated caller is identical across tenants - a CDN would hand tenant A's body
             // to tenant B, and the browser's own cache would replay it to whoever signs in next on that profile,
-            // across a restart. Anonymous callers are unaffected: their tenant comes from the host, so it is already
-            // in the URL, and that is the traffic these caches exist for.
+            // across a restart.
+            // An anonymous caller's tenant comes from the host, so its answer may stay in those caches. A signed-in
+            // member of another tenant asks for the very same url though, and would be handed the host's rows from
+            // them, so the client puts its token's tenant in the url (See AuthDelegatingHandler). The tenant is not
+            // resolved from that parameter, so an anonymous caller sending it gets the host's rows, which must not be
+            // kept where that tenant's members look.
             clientCacheTtl = -1;
             edgeCacheTtl = -1;
         }
