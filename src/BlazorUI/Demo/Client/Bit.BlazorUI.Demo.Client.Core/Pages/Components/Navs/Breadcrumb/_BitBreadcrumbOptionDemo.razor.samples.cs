@@ -40,28 +40,7 @@ public partial class _BitBreadcrumbOptionDemo
 </BitBreadcrumb>";
 
     private readonly string example2RazorCode = @"
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""1"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
-</BitBreadcrumb>
-
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""2"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
-</BitBreadcrumb>
-
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
-</BitBreadcrumb>
-
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""0"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
@@ -83,47 +62,136 @@ public partial class _BitBreadcrumbOptionDemo
 </BitBreadcrumb>";
 
     private readonly string example3RazorCode = @"
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" DividerIconName=""@BitIconName.CaretRightSolid8"" OverflowIconName=""@BitIconName.ChevronDown"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
-</BitBreadcrumb>
+<style>
+    .narrow-box {
+        padding: 4px;
+        overflow: hidden;
+        max-width: 480px;
+        border: 1px dashed gray;
+    }
+</style>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIconName=""@BitIconName.CollapseMenu"" ReversedIcon>
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
-</BitBreadcrumb>";
+<div class=""narrow-box"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"">
+        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
+        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
+        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" />
+        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" Title=""Very long option name 4"" IsSelected />
+    </BitBreadcrumb>
+</div>
+
+<div class=""narrow-box"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxItemWidth=""5rem"">
+        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
+        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
+        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" />
+        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" Title=""Very long option name 4"" IsSelected />
+    </BitBreadcrumb>
+</div>
+
+<div class=""narrow-box"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Wrap>
+        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
+        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
+        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" />
+        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" Title=""Very long option name 4"" IsSelected />
+    </BitBreadcrumb>
+</div>
+
+<div class=""narrow-box"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Scrollable>
+        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
+        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
+        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" />
+        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" Title=""Very long option name 4"" IsSelected />
+    </BitBreadcrumb>
+</div>";
 
     private readonly string example4RazorCode = @"
-<BitBreadcrumb TItem=""BitBreadcrumbOption"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IsSelected />
+<style>
+    .resizable-box {
+        width: 320px;
+        padding: 4px;
+        overflow: auto;
+        max-width: 100%;
+        resize: horizontal;
+        border: 1px dashed gray;
+    }
+</style>
+
+<div class=""resizable-box"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" AutoCollapse>
+        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
+        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
+        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" />
+        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" Title=""Very long option name 4"" IsSelected />
+    </BitBreadcrumb>
+</div>
+
+<div class=""resizable-box"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" AutoCollapse OverflowIndex=""1"">
+        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
+        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
+        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" />
+        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" Title=""Very long option name 4"" IsSelected />
+    </BitBreadcrumb>
+</div>";
+
+    private readonly string example5RazorCode = @"
+<style>
+    .narrow-box {
+        padding: 4px;
+        overflow: hidden;
+        max-width: 480px;
+        border: 1px dashed gray;
+    }
+</style>
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" ExpandOverflow MaxDisplayedItems=""3"" OverflowIndex=""1"">
+    <BitBreadcrumbOption Text=""Option 1"" />
+    <BitBreadcrumbOption Text=""Option 2"" />
+    <BitBreadcrumbOption Text=""Option 3"" />
+    <BitBreadcrumbOption Text=""Option 4"" />
+    <BitBreadcrumbOption Text=""Option 5"" />
+    <BitBreadcrumbOption Text=""Option 6"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" DividerIconName=""@BitIconName.CaretRightSolid8"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IsSelected />
+<div class=""narrow-box"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" ExpandOverflow Wrap MaxDisplayedItems=""2"" OverflowIndex=""1"">
+        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
+        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
+        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" />
+        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" Title=""Very long option name 4"" IsSelected />
+    </BitBreadcrumb>
+</div>";
+
+    private readonly string example6RazorCode = @"
+<BitBreadcrumb TItem=""BitBreadcrumbOption""
+               DividerIconName=""@BitIconName.CaretRightSolid8""
+               OverflowIconName=""@BitIconName.ChevronDown""
+               MaxDisplayedItems=""3""
+               OverflowIndex=""2"">
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
+</BitBreadcrumb>
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" ReversedIcon>
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
 </BitBreadcrumb>
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" DividerText=""/"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IsSelected />
-</BitBreadcrumb>
-
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" DividerText=""›"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption IconName=""@BitIconName.Home"" AriaLabel=""Home"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitBreadcrumb TItem=""BitBreadcrumbOption"">
     <DividerIconTemplate>
         <BitIcon IconName=""@BitIconName.CaretRightSolid8"" Color=""BitColor.Warning"" />
@@ -138,12 +206,12 @@ public partial class _BitBreadcrumbOptionDemo
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <ItemTemplate Context=""item"">
-        <div style=""font-weight: bold; color: #d13438; font-style:italic;"">
+        <div style=""font-weight: bold; color: #d13438; font-style: italic;"">
             @item.Text
         </div>
     </ItemTemplate>
     <OverflowTemplate Context=""item"">
-        <div style=""font-weight: bold; color: blueviolet; font-style:italic;"">
+        <div style=""font-weight: bold; color: blueviolet; font-style: italic;"">
             @item.Text
         </div>
     </OverflowTemplate>
@@ -156,59 +224,48 @@ public partial class _BitBreadcrumbOptionDemo
 </BitBreadcrumb>
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
-    <Options>
-        <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"">
-            <Template Context=""item""><div style=""color:green"">@item.Text</div></Template>
-            <OverflowTemplate Context=""item""><div style=""color:green;text-decoration:underline;"">@item.Text</div></OverflowTemplate>
-        </BitBreadcrumbOption>
-        <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"">
-            <Template Context=""item""><div style=""color:yellow"">@item.Text</div></Template>
-            <OverflowTemplate Context=""item""><div style=""color:yellow;text-decoration:underline;"">@item.Text</div></OverflowTemplate>
-        </BitBreadcrumbOption>
-        <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"">
-            <Template Context=""item""><div style=""color:red"">@item.Text</div></Template>
-            <OverflowTemplate Context=""item""><div style=""color:red;text-decoration:underline;"">@item.Text</div></OverflowTemplate>
-        </BitBreadcrumbOption>
-        <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected>
-            <Template Context=""item""><div style=""color:blue"">@item.Text</div></Template>
-            <OverflowTemplate Context=""item""><div style=""color:blue;text-decoration:underline;"">@item.Text</div></OverflowTemplate>
-        </BitBreadcrumbOption>
-    </Options>
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"">
+        <Template Context=""item""><div style=""color:green"">@item.Text</div></Template>
+        <OverflowTemplate Context=""item""><div style=""color:green;text-decoration:underline;"">@item.Text</div></OverflowTemplate>
+    </BitBreadcrumbOption>
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"">
+        <Template Context=""item""><div style=""color:goldenrod"">@item.Text</div></Template>
+        <OverflowTemplate Context=""item""><div style=""color:goldenrod;text-decoration:underline;"">@item.Text</div></OverflowTemplate>
+    </BitBreadcrumbOption>
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"">
+        <Template Context=""item""><div style=""color:red"">@item.Text</div></Template>
+        <OverflowTemplate Context=""item""><div style=""color:red;text-decoration:underline;"">@item.Text</div></OverflowTemplate>
+    </BitBreadcrumbOption>
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected>
+        <Template Context=""item""><div style=""color:blue"">@item.Text</div></Template>
+        <OverflowTemplate Context=""item""><div style=""color:blue;text-decoration:underline;"">@item.Text</div></OverflowTemplate>
+    </BitBreadcrumbOption>
 </BitBreadcrumb>";
 
-    private readonly string example6RazorCode = @"
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"">
-    <BitBreadcrumbOption Text=""Option 1"" IsSelected=""@(SelectedOptionNumber == 1)"" OnClick=""() => SelectedOptionNumber = 1"" />
-    <BitBreadcrumbOption Text=""Option 2"" IsSelected=""@(SelectedOptionNumber == 2)"" OnClick=""() => SelectedOptionNumber = 2"" />
-    <BitBreadcrumbOption Text=""Option 3"" IsSelected=""@(SelectedOptionNumber == 3)"" OnClick=""() => SelectedOptionNumber = 3"" />
-    <BitBreadcrumbOption Text=""Option 4"" IsSelected=""@(SelectedOptionNumber == 4)"" OnClick=""() => SelectedOptionNumber = 4"" />
-    <BitBreadcrumbOption Text=""Option 5"" IsSelected=""@(SelectedOptionNumber == 5)"" OnClick=""() => SelectedOptionNumber = 5"" />
-    <BitBreadcrumbOption Text=""Option 6"" IsSelected=""@(SelectedOptionNumber == 6)"" OnClick=""() => SelectedOptionNumber = 6"" />
-</BitBreadcrumb>";
-    private readonly string example6CsharpCode = @"
-private int SelectedOptionNumber = 6;";
-
-    private readonly string example7RazorCode = @"
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""@MaxDisplayedItems"" OverflowIndex=""@OverflowIndex"">
+    private readonly string example8RazorCode = @"
+<BitBreadcrumb TItem=""BitBreadcrumbOption""
+               MaxDisplayedItems=""@MaxDisplayedItems""
+               OverflowIndex=""@OverflowIndex""
+               Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"">
     @for (int i = 0; i < ItemsCount; i++)
     {
         int index = i + 1;
         <BitBreadcrumbOption Text=""@($""Option {index}"")""
-                             OnClick=""() => CustomizedSelectedOptionNumber = index""
-                             IsSelected=""@(CustomizedSelectedOptionNumber == index)"" />
+                             OnClick=""() => SelectedOptionNumber = index""
+                             IsSelected=""@(SelectedOptionNumber == index)"" />
     }
 </BitBreadcrumb>
 
-<BitButton OnClick=""() => ItemsCount++"">Add Option</BitButton>
-<BitButton OnClick=""RemoveOption"">Remove Option</BitButton>
+<BitButton OnClick=""() => ItemsCount++"">Add option</BitButton>
+<BitButton OnClick=""RemoveOption"">Remove option</BitButton>
 
 <BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed options"" ShowButtons />
 <BitNumberField @bind-Value=""OverflowIndex"" Label=""Overflow index"" ShowButtons />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-private int CustomizedSelectedOptionNumber = 4;
+private int SelectedOptionNumber = 4;
 
 private void RemoveOption()
 {
@@ -216,85 +273,13 @@ private void RemoveOption()
 
     ItemsCount--;
 
-    if (CustomizedSelectedOptionNumber > ItemsCount)
+    if (SelectedOptionNumber > ItemsCount)
     {
-        CustomizedSelectedOptionNumber = ItemsCount;
+        SelectedOptionNumber = ItemsCount;
     }
 }";
 
-    private readonly string example8RazorCode = @"
-<style>
-    .narrow-box {
-        padding: 4px;
-        overflow: hidden;
-        max-width: 480px;
-        border: 1px dashed gray;
-    }
-</style>
-
-<div class=""narrow-box"">
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"">
-        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
-        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
-        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" IsSelected />
-    </BitBreadcrumb>
-</div>
-
-<div class=""narrow-box"">
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxItemWidth=""5rem"">
-        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
-        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
-        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" IsSelected />
-    </BitBreadcrumb>
-</div>
-
-<div class=""narrow-box"">
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Wrap>
-        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
-        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
-        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" IsSelected />
-    </BitBreadcrumb>
-</div>
-
-<div class=""narrow-box"">
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Scrollable>
-        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
-        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
-        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" IsSelected />
-    </BitBreadcrumb>
-</div>";
-
     private readonly string example9RazorCode = @"
-<style>
-    .resizable-box {
-        width: 320px;
-        padding: 4px;
-        overflow: auto;
-        max-width: 100%;
-        resize: horizontal;
-        border: 1px dashed gray;
-    }
-</style>
-
-<div class=""resizable-box"">
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" AutoCollapse>
-        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" />
-        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" />
-        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" />
-        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" IsSelected />
-    </BitBreadcrumb>
-</div>
-
-<div class=""resizable-box"">
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" AutoCollapse OverflowIndex=""1"">
-        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" />
-        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" />
-        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" />
-        <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" IsSelected />
-    </BitBreadcrumb>
-</div>";
-
-    private readonly string example10RazorCode = @"
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" StructuredData MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
@@ -302,24 +287,42 @@ private void RemoveOption()
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>";
 
-    private readonly string example11RazorCode = @"
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" ExpandOverflow MaxDisplayedItems=""3"" OverflowIndex=""1"">
+    private readonly string example10RazorCode = @"
+<BitParams Parameters=""@breadcrumbParams"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"">
+        <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
+    </BitBreadcrumb>
+
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" DividerText=""›"">
+        <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
+    </BitBreadcrumb>
+</BitParams>
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 5"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 6"" Href=""/components/breadcrumb"" IsSelected />
-</BitBreadcrumb>
-
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" ExpandOverflow Wrap MaxDisplayedItems=""2"" OverflowIndex=""1"">
-    <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Very long option name 4"" Href=""/components/breadcrumb"" IsSelected />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>";
+    private readonly string example10CsharpCode = @"
+private readonly BitBreadcrumbParams[] breadcrumbParams =
+[
+    new()
+    {
+        DividerText = ""/"",
+        MaxDisplayedItems = 3,
+        OverflowIndex = 1,
+        SelectedItemAsText = true,
+    }
+];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 @foreach (var color in colors)
 {
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" Color=""color"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
@@ -344,8 +347,9 @@ private void RemoveOption()
     ];
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
                MaxDisplayedItems=""3"" OverflowIndex=""2""
@@ -374,8 +378,6 @@ private void RemoveOption()
     <BitBreadcrumbOption Text=""Laptops"" Icon=""@BitIconInfo.Fa(""solid laptop"")"" IsSelected />
 </BitBreadcrumb>
 
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Bi(""house-fill"")"" />
     <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Bi(""box-seam-fill"")"" />
@@ -383,7 +385,7 @@ private void RemoveOption()
     <BitBreadcrumbOption Text=""Laptops"" Icon=""@BitIconInfo.Bi(""laptop-fill"")"" IsSelected />
 </BitBreadcrumb>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 @foreach (var size in sizes)
 {
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" Size=""size"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
@@ -398,7 +400,7 @@ private void RemoveOption()
     private readonly BitSize[] sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
 }";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         font-style: italic;
@@ -452,12 +454,13 @@ private void RemoveOption()
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" Style=""font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" Style=""font-style: italic; text-shadow: aqua 0 0 0.5rem; border-bottom: 1px solid aqua;"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>
+
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" Class=""custom-item-1"" />
@@ -473,6 +476,7 @@ private void RemoveOption()
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" Style=""color: aqua; text-shadow: aqua 0 0 1rem;"" IsSelected />
 </BitBreadcrumb>
 
+
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" Classes=""@(new() { Item = ""custom-item"", SelectedItem = ""custom-selected-item"" })"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
@@ -485,9 +489,29 @@ private void RemoveOption()
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
-</BitBreadcrumb>";
+</BitBreadcrumb>
 
-    private readonly string example16RazorCode = @"
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption""
+               MaxDisplayedItems=""3""
+               OverflowIndex=""1""
+               Style=""--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #db2777; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;"">
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
+</BitBreadcrumb>
+
+<div style=""--bit-Breadcrumb-font-size: 0.8125rem; --bit-Breadcrumb-item-height: 1.5rem; --bit-Breadcrumb-divider-spacing: 0.25rem; --bit-Breadcrumb-selected-font-weight: 700;"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" DividerText=""/"">
+        <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
+        <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
+    </BitBreadcrumb>
+</div>";
+
+    private readonly string example15RazorCode = @"
 <BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <BitBreadcrumbOption Text=""پوشه اول"" />
     <BitBreadcrumbOption Text=""پوشه دوم"" IsSelected />

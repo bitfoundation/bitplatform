@@ -5,8 +5,18 @@ public partial class _BitBreadcrumbOptionDemo
     private int ItemsCount = 4;
     private uint OverflowIndex = 2;
     private uint MaxDisplayedItems = 3;
-    private int SelectedOptionNumber = 6;
-    private int CustomizedSelectedOptionNumber = 4;
+    private int SelectedOptionNumber = 4;
+
+    private readonly BitBreadcrumbParams[] breadcrumbParams =
+    [
+        new()
+        {
+            DividerText = "/",
+            MaxDisplayedItems = 3,
+            OverflowIndex = 1,
+            SelectedItemAsText = true,
+        }
+    ];
 
     private readonly BitColor[] colors =
     [
@@ -30,9 +40,9 @@ public partial class _BitBreadcrumbOptionDemo
 
         ItemsCount--;
 
-        if (CustomizedSelectedOptionNumber > ItemsCount)
+        if (SelectedOptionNumber > ItemsCount)
         {
-            CustomizedSelectedOptionNumber = ItemsCount;
+            SelectedOptionNumber = ItemsCount;
         }
     }
 }

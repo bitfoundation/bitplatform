@@ -39,12 +39,20 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "Very long folder name 4", Href = "/components/breadcrumb", Title = "Very long folder name 4", IsSelected = true }
     ];
 
-    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWitIcon =
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithIcon =
     [
         new() { Text = "Item 1", Href = "/components/breadcrumb", IconName = BitIconName.AdminELogoInverse32 },
         new() { Text = "Item 2", Href = "/components/breadcrumb", IconName = BitIconName.AppsContent },
         new() { Text = "Item 3", Href = "/components/breadcrumb", IconName = BitIconName.AzureIcon },
         new() { Text = "Item 4", Href = "/components/breadcrumb", IsSelected = true, IconName = BitIconName.ClassNotebookLogo16 }
+    ];
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithHomeIcon =
+    [
+        new() { IconName = BitIconName.Home, AriaLabel = "Home", Href = "/components/breadcrumb" },
+        new() { Text = "Item 2", Href = "/components/breadcrumb" },
+        new() { Text = "Item 3", Href = "/components/breadcrumb" },
+        new() { Text = "Item 4", Href = "/components/breadcrumb", IsSelected = true }
     ];
 
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithClass =
@@ -54,7 +62,7 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "Item 3", Href = "/components/breadcrumb", Class = "custom-item-1" },
         new() { Text = "Item 4", Href = "/components/breadcrumb", Class = "custom-item-2", IsSelected = true }
     ];
-        
+
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle =
     [
         new() { Text = "Item 1", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
@@ -113,6 +121,17 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "Laptops", Icon = BitIconInfo.Bi("laptop-fill"), IsSelected = true }
     ];
 
+    private readonly BitBreadcrumbParams[] breadcrumbParams =
+    [
+        new()
+        {
+            DividerText = "/",
+            MaxDisplayedItems = 3,
+            OverflowIndex = 1,
+            SelectedItemAsText = true,
+        }
+    ];
+
     private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems =
     [
         new() { Text = "پوشه اول" },
@@ -123,12 +142,6 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "پوشه ششم" },
     ];
 
-
-    private void HandleOnItemClick(BitBreadcrumbItem item)
-    {
-        BreadcrumbItemsWithControlled.First(i => i.IsSelected).IsSelected = false;
-        item.IsSelected = true;
-    }
 
     private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
     {

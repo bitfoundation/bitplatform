@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 
@@ -8,6 +9,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 {
+    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Breadcrumb-";
+
     private bool _isCalloutOpen;
     private bool _optionsOrderDirty;
     private bool _focusFirstItemOnOpen;
@@ -48,6 +51,22 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the breadcrumb component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple breadcrumb components through the <see cref="BitParams"/> component.
+    /// <br />
+    /// The cascaded values carry nothing about the item type, so one <see cref="BitBreadcrumbParams"/> fits every
+    /// breadcrumb under it whatever each of them is generic over.
+    /// </remarks>
+    [CascadingParameter(Name = BitBreadcrumbParams.ParamName)]
+    public BitBreadcrumbParams? CascadingParameters { get; set; }
 
 
 
@@ -197,7 +216,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? OverflowIconName { get; set; }
 
     /// <summary>
-    /// The custom template content to render each overflow icon.
+    /// The custom template content to render the overflow icon.
     /// </summary>
     [Parameter] public RenderFragment? OverflowIconTemplate { get; set; }
 
@@ -378,8 +397,13 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBreadcrumbParams))]
     protected override void OnParametersSet()
     {
+        // The cascaded defaults go in first, so everything below (the collapsing settings above all) reads
+        // the values the breadcrumb actually ends up with.
+        CascadingParameters?.UpdateParameters(this);
+
         if (ChildContent is null && Options is null)
         {
             _items = Items is not null ? [.. Items] : [];
@@ -809,10 +833,23 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                                     .Where(c => c.HasValue()));
     }
 
+    // Neither the Style of the instance nor a custom property declared on an ancestor of the root reaches the
+    // callout once it has moved (only :root and body stay ancestors of it), so the public --bit-Breadcrumb-*
+    // declarations of Style and Styles.Root are carried across by hand: ONE Style on the component restyles the
+    // trail and the menu it opens together. Styles.Callout is appended last, so a value written for the callout
+    // still wins over the copy.
     private string GetCalloutStyles()
     {
-        return string.Join(';', new[] { GetMaxItemWidthStyle(), Styles?.Callout }
+        return string.Join(';', new[] { GetMaxItemWidthStyle(), GetPublicCssVariables(Style), GetPublicCssVariables(Styles?.Root), Styles?.Callout }
                                     .Where(s => s.HasValue()).Select(s => s!.Trim(';')));
+    }
+
+    private static string? GetPublicCssVariables(string? style)
+    {
+        if (style.HasNoValue() || style!.Contains(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) return null;
+
+        return string.Join(';', style.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                     .Where(d => d.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal)));
     }
 
     private string? GetKey(TItem item)
