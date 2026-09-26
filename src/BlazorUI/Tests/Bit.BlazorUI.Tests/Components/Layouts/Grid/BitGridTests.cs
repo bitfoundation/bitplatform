@@ -68,14 +68,78 @@ public class BitGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitGridShouldSetTheDefaultColumnsAndSpanCssVariables()
+    public void BitGridShouldLeaveAnUnsetColumnCountToTheStylesheet()
     {
+        // An unset column count declares nothing, so the stylesheet's fallback to the public
+        // --bit-Grid-columns variable (12 when that is unset too) decides it.
         var component = RenderComponent<BitGrid>();
 
         var style = component.Find(".bit-grd").GetAttribute("style");
 
         StringAssert.Contains(style, "--bit-grd-span:1");
-        StringAssert.Contains(style, "--bit-grd-cols:12");
+        Assert.IsFalse(style.Contains("--bit-grd-cols:"), style);
+    }
+
+    [TestMethod]
+    public void BitGridShouldDeclareAnExplicitDefaultColumnCount()
+    {
+        // Columns="12" written out is a decision of the grid itself and has to beat an inherited --bit-Grid-columns.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Columns, 12);
+        });
+
+        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), "--bit-grd-cols:12");
+    }
+
+    [TestMethod]
+    public void BitGridShouldReportAnUnsetColumnCountAsNull()
+    {
+        // The count of an unset grid is resolved by the stylesheet from --bit-Grid-columns, so any number reported
+        // here could disagree with the columns actually rendered.
+        var component = RenderComponent<BitGrid>();
+
+        Assert.IsNull(component.Instance.Columns);
+    }
+
+    [TestMethod]
+    public void BitGridShouldDeclareTheDefaultColumnCountOnceItIsSetOnARerender()
+    {
+        // An unset grid and Columns="12" lay out the same until --bit-Grid-columns is declared above them, so
+        // going from one to the other has to be seen by the style even though the count it works out to is equal.
+        var component = RenderComponent<BitGrid>();
+
+        Assert.IsFalse(component.Find(".bit-grd").GetAttribute("style").Contains("--bit-grd-cols:"));
+
+        component.Render(parameters => parameters.Add(p => p.Columns, 12));
+
+        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), "--bit-grd-cols:12");
+    }
+
+    [TestMethod]
+    public void BitGridShouldStopDeclaringTheColumnCountOnceItIsClearedOnARerender()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Columns, 12);
+        });
+
+        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), "--bit-grd-cols:12");
+
+        component.Render(parameters => parameters.Add(p => p.Columns, null));
+
+        Assert.IsFalse(component.Find(".bit-grd").GetAttribute("style").Contains("--bit-grd-cols:"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldDeclareAColumnCountItWasGivenThroughTheCascadingParameters()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.AddCascadingValue(BitGridParams.ParamName, new BitGridParams { Columns = 12 });
+        });
+
+        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), "--bit-grd-cols:12");
     }
 
     [TestMethod]
@@ -182,14 +246,30 @@ public class BitGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitGridShouldDefaultTheSpacingOfBothAxes()
+    public void BitGridShouldLeaveTheDefaultSpacingToTheStylesheet()
     {
+        // An unset spacing declares no gap of its own, which is what lets the stylesheet resolve it from the
+        // --bit-Grid-* variables and the spacing unit (and density) of the theme.
         var component = RenderComponent<BitGrid>();
+
+        var style = component.Find(".bit-grd").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(style.Contains("--bit-grd-cgap:"));
+        Assert.IsFalse(style.Contains("--bit-grd-rgap:"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldDeclareOnlyTheAxisThatWasGivenASpacing()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalSpacing, "1rem");
+        });
 
         var style = component.Find(".bit-grd").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-grd-cgap:4px");
-        StringAssert.Contains(style, "--bit-grd-rgap:4px");
+        StringAssert.Contains(style, "--bit-grd-cgap:1rem");
+        Assert.IsFalse(style.Contains("--bit-grd-rgap:"));
     }
 
     [TestMethod]
@@ -407,17 +487,17 @@ public class BitGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitGridShouldFallBackToAValidLengthWhenTheSpacingIsBlank()
+    public void BitGridShouldFallBackToTheThemeSpacingWhenTheSpacingIsBlank()
     {
         var component = RenderComponent<BitGrid>(parameters =>
         {
             parameters.Add(p => p.Spacing, string.Empty);
         });
 
-        var style = component.Find(".bit-grd").GetAttribute("style");
+        var style = component.Find(".bit-grd").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-grd-cgap:0px");
-        StringAssert.Contains(style, "--bit-grd-rgap:0px");
+        Assert.IsFalse(style.Contains("--bit-grd-cgap:"));
+        Assert.IsFalse(style.Contains("--bit-grd-rgap:"));
     }
 
     [TestMethod]
@@ -938,6 +1018,72 @@ public class BitGridTests : BunitTestContext
 
         Assert.IsTrue(classList.Contains("bit-grd-nwr"));
         Assert.IsTrue(classList.Contains("bit-grd-rev"));
+    }
+
+    [TestMethod]
+    [DataRow("ul")]
+    [DataRow("ol")]
+    [DataRow("menu")]
+    [DataRow("UL")]
+    public void BitGridRenderedAsAListShouldBeAListOfListItems(string element)
+    {
+        var component = RenderComponent<BitGridListTest>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        Assert.AreEqual("list", component.Find(".bit-grd").GetAttribute("role"));
+        Assert.AreEqual("LI", component.Find(".inferred").TagName);
+        Assert.AreEqual("SECTION", component.Find(".own").TagName);
+    }
+
+    [TestMethod]
+    public void BitGridShouldLetAnExplicitRoleReplaceTheListRole()
+    {
+        var component = RenderComponent<BitGridListTest>(parameters =>
+        {
+            parameters.Add(p => p.Element, "ul");
+            parameters.Add(p => p.Role, "tablist");
+        });
+
+        Assert.AreEqual("tablist", component.Find(".bit-grd").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("section")]
+    public void BitGridNotRenderedAsAListShouldKeepDivItems(string? element)
+    {
+        var component = RenderComponent<BitGridListTest>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        Assert.IsFalse(component.Find(".bit-grd").HasAttribute("role"));
+        Assert.AreEqual("DIV", component.Find(".inferred").TagName);
+    }
+
+    [TestMethod]
+    public void BitGridShouldKeepAnAriaLabelWrittenInTheMarkup()
+    {
+        // An unset AriaLabel used to be written as a null attribute, which drops the aria-label that was given
+        // through the markup.
+        var component = RenderComponent<BitGridAttributesTest>();
+
+        var root = component.Find(".bit-grd");
+
+        Assert.AreEqual("Products", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldRenderTheTabIndex()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        Assert.AreEqual("0", component.Find(".bit-grd").GetAttribute("tabindex"));
     }
 
     [TestMethod]

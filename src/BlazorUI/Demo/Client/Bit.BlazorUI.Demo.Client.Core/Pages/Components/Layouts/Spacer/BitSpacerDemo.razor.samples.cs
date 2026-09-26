@@ -10,13 +10,13 @@ public partial class BitSpacerDemo
         padding: 0.5rem;
         align-items: center;
         box-sizing: border-box;
-        border: 1px solid gray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 
     .demo-box {
-        color: white;
+        color: var(--bit-clr-pri-text);
         white-space: nowrap;
-        background: #0078d4;
+        background: var(--bit-clr-pri);
         padding: 0.25rem 0.75rem;
     }
 </style>
@@ -64,7 +64,7 @@ public partial class BitSpacerDemo
         flex-flow: column;
         align-items: flex-start;
         box-sizing: border-box;
-        border: 1px solid gray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 </style>
 
@@ -138,6 +138,39 @@ public partial class BitSpacerDemo
 </ul>";
 
     private readonly string example7RazorCode = @"
+<div class=""demo-row"" role=""toolbar"" aria-label=""Document"">
+    <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Save"" AriaLabel=""Save"" />
+    <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Print"" AriaLabel=""Print"" />
+    <BitSpacer AriaLabel=""Support"" />
+    <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Help"" AriaLabel=""Help"" />
+</div>";
+
+    private readonly string example8RazorCode = @"
+<BitParams Parameters=""@spacerParams"">
+    <div class=""demo-row"">
+        <div class=""demo-box"">Cascaded</div>
+        <BitSpacer />
+        <div class=""demo-box"">1.5rem</div>
+        <BitSpacer />
+        <div class=""demo-box"">Own Gap</div>
+        <BitSpacer Gap=""4rem"" />
+        <div class=""demo-box"">4rem</div>
+    </div>
+</BitParams>
+
+<div class=""demo-row"">
+    <div class=""demo-box"">Outside</div>
+    <BitSpacer />
+    <div class=""demo-box"">Flexible again</div>
+</div>";
+
+    private readonly string example8CsharpCode = @"
+private readonly BitSpacerParams[] spacerParams =
+[
+    new() { Gap = ""1.5rem"" }
+];";
+
+    private readonly string example9RazorCode = @"
 <style>
     .demo-col-auto {
         height: auto;
@@ -161,9 +194,15 @@ public partial class BitSpacerDemo
     <div class=""demo-box"">Vertical Large</div>
     <BitSpacer Vertical Size=""BitSize.Large"" />
     <div class=""demo-box"">End</div>
+</div>
+
+<div class=""demo-row"" style=""--bit-Spacer-large-size:6rem"">
+    <div class=""demo-box"">Large, re-sized</div>
+    <BitSpacer Size=""BitSize.Large"" />
+    <div class=""demo-box"">End</div>
 </div>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         min-width: 4rem;
@@ -181,7 +220,7 @@ public partial class BitSpacerDemo
     <div class=""demo-box"">End</div>
 </div>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .visible-spacer {
         min-width: 1rem;

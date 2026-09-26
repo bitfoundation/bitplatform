@@ -21,6 +21,17 @@ namespace Bit.BlazorUI;
 /// The header runs across the top of everything by default, which is the shape of a web page;
 /// <see cref="FullHeightPanels"/> gives the shape of an application instead, with the panels running down the full
 /// height and the header between them.
+/// <br />
+/// Its look is set by the public <c>--bit-Layout-*</c> CSS variables (the backgrounds and text colors of the sections,
+/// the shadows of the header and the footer, the color and width of the dividers, and the sizes the parameters also
+/// set), which inherit, so one value on <c>:root</c> re-skins every layout of the app. A parameter set on the layout
+/// wins over its variable.
+/// <br />
+/// A <see cref="Nested"/> layout given a name (an <see cref="BitComponentBase.AriaLabel"/>, or an <c>aria-label</c> or
+/// <c>aria-labelledby</c> attribute) becomes a region landmark of that name, since a plain element cannot be named -
+/// which is what a workspace nested inside the content of a page wants. A top-level layout stays a plain element, so
+/// its main landmark stays at the top level and its header and footer keep their banner and contentinfo roles, and a
+/// <c>role</c> the page gives the layout itself is always the one it keeps.
 /// </remarks>
 public partial class BitLayout : BitComponentBase
 {
@@ -106,7 +117,12 @@ public partial class BitLayout : BitComponentBase
     /// <remarks>
     /// The height includes the paddings and the border of the footer, which is a border-box.
     /// <br />
-    /// When not set, the footer is as tall as its own content.
+    /// It is also the room a <see cref="StickyNavPanel"/> or a <see cref="StickyAside"/> leaves at the bottom of the
+    /// viewport for a <see cref="StickyFooter"/>, so the last items of a pinned panel never sit behind the footer.
+    /// A layout with no footer rendered has no such room to leave, whatever this says.
+    /// <br />
+    /// When not set, the footer takes the <c>--bit-Layout-footer-height</c> CSS variable, and is as tall as its own
+    /// content without one.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? FooterHeight { get; set; }
@@ -155,8 +171,8 @@ public partial class BitLayout : BitComponentBase
     /// under <see cref="FullHeightPanels"/> it is a single length, and it separates the header and the footer from
     /// the main content as well.
     /// <br />
-    /// When not set, the three sections sit right next to each other, which is what a layout whose panels bring
-    /// their own paddings or dividers wants.
+    /// When not set, the <c>--bit-Layout-gap</c> CSS variable applies, and without one the three sections sit right
+    /// next to each other, which is what a layout whose panels bring their own paddings or dividers wants.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Gap { get; set; }
@@ -179,9 +195,11 @@ public partial class BitLayout : BitComponentBase
     /// The height includes the paddings and the border of the header, which is a border-box.
     /// <br />
     /// It is also the offset a <see cref="StickyNavPanel"/> or a <see cref="StickyAside"/> pins itself at, so a panel
-    /// pinned under a <see cref="StickyHeader"/> starts right below it instead of sliding underneath it.
+    /// pinned under a <see cref="StickyHeader"/> starts right below it instead of sliding underneath it. A layout with
+    /// no header rendered (none given, or <see cref="HideHeader"/>) has no offset to leave, whatever this says.
     /// <br />
-    /// When not set, the header is as tall as its own content and the pinned panels stick to the top of the viewport.
+    /// When not set, the <c>--bit-Layout-header-height</c> CSS variable plays both parts; without one, the header is
+    /// as tall as its own content and the pinned panels stick to the top of the viewport.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? HeaderHeight { get; set; }
@@ -282,8 +300,8 @@ public partial class BitLayout : BitComponentBase
     /// Takes any CSS padding value (for example <c>1rem</c> or <c>16px 24px</c>). The main section is a border-box,
     /// so the padding is taken out of the width it already has rather than added to it.
     /// <br />
-    /// When not set, the main content spans its section edge to edge, which is what a page that brings its own
-    /// container wants.
+    /// When not set, the <c>--bit-Layout-padding</c> CSS variable applies, and without one the main content spans its
+    /// section edge to edge, which is what a page that brings its own container wants.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Padding { get; set; }
@@ -307,7 +325,8 @@ public partial class BitLayout : BitComponentBase
     /// This is the application shell: the chrome of the window never moves and the content under it scrolls, which
     /// is what a sticky section cannot do inside a box that does not scroll with the page. It needs the BitLayout to
     /// have a height to fill - <see cref="FullHeight"/>, or a parent of a definite height - since it is the leftover
-    /// of that height that becomes the scrollport.
+    /// of that height that becomes the scrollport. Together with <see cref="FullHeight"/> the layout is held at exactly
+    /// the height of the visible viewport rather than at least that tall, so it never grows with its content.
     /// <br />
     /// The nav panel and the aside scroll on their own too, so a panel with more items than fit stays reachable
     /// without the content beside it moving.
@@ -323,6 +342,8 @@ public partial class BitLayout : BitComponentBase
     /// before reaching the content. The link stays out of sight until it is focused, so it costs a mouse user nothing.
     /// <br />
     /// The main section is given a tabindex of -1 while this is on, so it can actually take the focus the link sends it.
+    /// Activating the link scrolls the main section into view and moves the focus onto it; the href names the current
+    /// page rather than a bare fragment, so the router of the app never reads it as a navigation to another page.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool SkipLink { get; set; }
@@ -342,7 +363,8 @@ public partial class BitLayout : BitComponentBase
     /// <remarks>
     /// The aside is pinned <see cref="HeaderHeight"/> pixels from the top of the viewport, which is what keeps it
     /// clear of a <see cref="StickyHeader"/>, and it is given the rest of the viewport height with its own scrollbar,
-    /// so an aside taller than the screen is still reachable.
+    /// so an aside taller than the screen is still reachable. Under a <see cref="StickyFooter"/> it also leaves
+    /// <see cref="FooterHeight"/> pixels at the bottom, so its last items never sit behind the footer.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool StickyAside { get; set; }
@@ -375,7 +397,8 @@ public partial class BitLayout : BitComponentBase
     /// <remarks>
     /// The panel is pinned <see cref="HeaderHeight"/> pixels from the top of the viewport, which is what keeps it
     /// clear of a <see cref="StickyHeader"/>, and it is given the rest of the viewport height with its own scrollbar,
-    /// so a nav panel with more items than fit on the screen is still reachable.
+    /// so a nav panel with more items than fit on the screen is still reachable. Under a <see cref="StickyFooter"/> it
+    /// also leaves <see cref="FooterHeight"/> pixels at the bottom, so its last items never sit behind the footer.
     /// <br />
     /// A nav panel that already pins itself (as the BitNavPanel component does) needs none of this.
     /// </remarks>
@@ -395,7 +418,8 @@ public partial class BitLayout : BitComponentBase
     /// Only the sections that were pinned have a stacking order to speak of, so this is what decides whether a
     /// sticky header passes over or under the other layers of the application (a callout, a drawer, a dialog).
     /// <br />
-    /// When not set, the pinned sections take the base z-index of the theme, which sits below all of them. The
+    /// When not set, the pinned sections take the <c>--bit-Layout-z-index</c> CSS variable, or the base z-index of the
+    /// theme, which sits below all of those layers. The
     /// <see cref="SkipLink"/> is always drawn above them, since a focus that lands behind a pinned header is a
     /// focus nobody can see.
     /// </remarks>
@@ -404,10 +428,30 @@ public partial class BitLayout : BitComponentBase
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
+
     /// <summary>
     /// The id of the main section, which is what the skip link points at.
     /// </summary>
     internal string _MainId => $"{_Id}-main";
+
+    /// <summary>
+    /// The href of the skip link: the address of the current page, less any fragment it already has, followed by
+    /// the id of the main section.
+    /// </summary>
+    private string _SkipLinkHref
+    {
+        get
+        {
+            var uri = _navigationManager.Uri;
+            var hashIndex = uri.IndexOf('#');
+
+            return $"{(hashIndex < 0 ? uri : uri[..hashIndex])}#{_MainId}";
+        }
+    }
 
     /// <summary>
     /// The inline style of the main section: the width it leaves for the panels beside it, followed by the custom
@@ -468,6 +512,9 @@ public partial class BitLayout : BitComponentBase
         return style.HasValue() ? style : null;
     }
 
+    private bool _headerShown;
+    private bool _footerShown;
+
     private bool _ShowHeader => Header is not null && HideHeader is false;
     private bool _ShowFooter => Footer is not null && HideFooter is false;
     private bool _ShowNavPanel => NavPanel is not null && HideNavPanel is false;
@@ -518,6 +565,11 @@ public partial class BitLayout : BitComponentBase
         ClassBuilder.Register(() => ReverseNavPanel ? "bit-lyt-rnv" : string.Empty);
 
         ClassBuilder.Register(() => Bordered ? "bit-lyt-brd" : string.Empty);
+
+        // A missing header or footer leaves the pinned sections no room to keep clear of, whatever height a parameter
+        // or a variable set once for the whole app gives it.
+        ClassBuilder.Register(() => _ShowHeader ? string.Empty : "bit-lyt-nhd");
+        ClassBuilder.Register(() => _ShowFooter ? string.Empty : "bit-lyt-nft");
     }
 
 
@@ -527,6 +579,28 @@ public partial class BitLayout : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
+        // Whether the header and the footer are rendered follows from their content as much as from HideHeader and
+        // HideFooter (either of which may also come from the cascading parameters), so the classes that say so are
+        // rebuilt here, once the final values are known, rather than by the setters of four parameters.
+        if (_ShowHeader != _headerShown || _ShowFooter != _footerShown)
+        {
+            _headerShown = _ShowHeader;
+            _footerShown = _ShowFooter;
+
+            ClassBuilder.Reset();
+        }
+
         base.OnParametersSet();
+    }
+
+
+
+    /// <summary>
+    /// Scrolls the main section into view and moves the focus onto it, so the next Tab carries on from the content
+    /// rather than from the header the link sits in.
+    /// </summary>
+    private async Task HandleSkipLinkClick()
+    {
+        await _js.BitUtilsScrollElementIntoView(_MainId, true);
     }
 }
