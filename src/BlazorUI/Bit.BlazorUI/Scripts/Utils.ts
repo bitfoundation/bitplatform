@@ -281,6 +281,117 @@
             Utils._focusTraps.delete(elementId);
         }
 
+        private static _tabOuts = new Map<string, AbortController>();
+
+        // Hands the keyboard back to the page around the trigger of a popup that does not trap it. The popup is
+        // relocated to the end of the body while it is open, so the browser's own tab order runs from its last
+        // element off the end of the page, and from its first one backwards into whatever ends the page - neither
+        // anywhere near the trigger the user opened it from, and the popup is left open behind the keyboard. Tab
+        // from the last element moves on to what follows the trigger in the page, as if the content sat right
+        // after it, and reports it through the OnTabOut callback so the popup closes; Shift+Tab from the first
+        // element goes back to the trigger, leaving the popup open for the Tab that brings the user back in.
+        public static setupTabOut(elementId: string, triggerId: string, dotnetObj: DotNetObject) {
+            Utils.disposeTabOut(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Tab' || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+
+                // A trap registered on something nested inside the popup owns the key.
+                if (Utils.hasNearerFocusTrap(element, e.target as Element | null)) return;
+
+                const trigger = document.getElementById(triggerId);
+                if (!trigger) return;
+
+                const focusables = Array.from(element.querySelectorAll<HTMLElement>(Utils._focusables))
+                    .filter(Utils.isFocusable);
+                const active = document.activeElement;
+
+                if (e.shiftKey) {
+                    // The popup itself holding the focus is where it is parked when it opens, which is ahead of
+                    // everything it holds.
+                    if (active !== element && active !== focusables[0]) return;
+
+                    e.preventDefault();
+                    trigger.focus();
+                    return;
+                }
+
+                // From the popup itself, a Tab still has its content to go into first.
+                const onLastEdge = focusables.length === 0
+                    ? active === element
+                    : active === focusables[focusables.length - 1];
+
+                if (!onLastEdge) return;
+
+                e.preventDefault();
+
+                (Utils.findFocusableAfter(trigger, element) ?? trigger).focus();
+
+                dotnetObj.invokeMethodAsync('OnTabOut');
+            }, { signal: controller.signal });
+
+            Utils._tabOuts.set(elementId, controller);
+        }
+
+        private static _escapes = new Map<string, AbortController>();
+
+        // Dismisses an open callout on Escape through the OnEscape callback - but only when it is the innermost
+        // open one. A dropdown or a menu opened from inside the callout closes its own popup on the same key,
+        // and the keydown goes on bubbling from it up through this callout: a handler that only looked at the
+        // key would close both with one press, taking away the panel the user was still working in. This
+        // listener is on the element, so it runs before Blazor's document-level delegation lets the nested
+        // component close anything, which is what makes the stack of open callouts a reliable answer here.
+        // It is registered once for the life of the component and ignores the key while the callout is closed.
+        public static setupEscape(elementId: string, dotnetObj: DotNetObject) {
+            Utils.disposeEscape(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+
+                if (Callouts.current.calloutId !== elementId) return;
+
+                dotnetObj.invokeMethodAsync('OnEscape');
+            }, { signal: controller.signal });
+
+            Utils._escapes.set(elementId, controller);
+        }
+
+        public static disposeEscape(elementId: string) {
+            const controller = Utils._escapes.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._escapes.delete(elementId);
+        }
+
+        public static disposeTabOut(elementId: string) {
+            const controller = Utils._tabOuts.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._tabOuts.delete(elementId);
+        }
+
+        // The first element of the page's tab order that follows the given one in the document, leaving out
+        // the element itself, what it contains, and the popup being tabbed out of.
+        private static findFocusableAfter(anchor: HTMLElement, exclude: HTMLElement) {
+            return Array.from(document.querySelectorAll<HTMLElement>(Utils._focusables)).find(el =>
+                (anchor.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+                && !anchor.contains(el)
+                && !exclude.contains(el)
+                && Utils.isFocusable(el)) ?? null;
+        }
+
         private static _focusOrigins = new Map<string, HTMLElement>();
 
         // Remembers the element the focus was on at the moment a popup took it over, keyed by the popup, so

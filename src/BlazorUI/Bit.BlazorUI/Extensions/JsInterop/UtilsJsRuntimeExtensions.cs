@@ -87,6 +87,36 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Hands the keyboard back to the page around the trigger when Tab leaves either end of a popup that is
+    // relocated to the body, and reports it through the OnTabOut callback; see Utils.setupTabOut.
+    internal static ValueTask BitUtilsSetupTabOut<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, string triggerId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupTabOut", elementId, triggerId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeTabOut(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeTabOut", elementId);
+    }
+
+
+    // Reports Escape pressed inside an open callout through the OnEscape callback, unless a callout opened from
+    // inside it is the innermost open one and so the one the key belongs to; see Utils.setupEscape.
+    internal static ValueTask BitUtilsSetupEscape<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupEscape", elementId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeEscape", elementId);
+    }
+
+
     // Remembers the element the focus was on when a popup took it over, so the popup can hand the keyboard
     // back to where it came from once it closes.
     internal static ValueTask BitUtilsCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
