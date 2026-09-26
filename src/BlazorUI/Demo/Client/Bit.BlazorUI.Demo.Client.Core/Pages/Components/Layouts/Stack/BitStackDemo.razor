@@ -51,8 +51,8 @@
         <DemoExample Title="Alignment" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div class="example-desc">
                 <b>HorizontalAlign</b> and <b>VerticalAlign</b> name the screen axis, not the flexbox property, so they keep
-                their meaning when the direction flips. The space distributions only apply along the children's axis and
-                <b>Baseline</b> only across it; a value that does not apply falls back to <b>Alignment</b>, the both-axes
+                their meaning when the direction flips. The space distributions only apply along the children's axis,
+                <b>Baseline</b> and <b>Stretch</b> only across it; a value that does not apply falls back to <b>Alignment</b>, the both-axes
                 shorthand. To push one child away from the rest, use a <BitLink Href="/components/spacer">BitSpacer</BitLink>.
             </div>
             <div class="example-content">
@@ -109,8 +109,10 @@
 
         <DemoExample Title="Wrap" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div class="example-desc">
-                <b>Wrap</b> moves children that do not fit onto more rows instead of squeezing them; <b>WrapReverse</b> stacks
-                those rows from the far edge. <b>AlignContent</b> places the rows once there is more than one.
+                <b>Wrap</b> moves children that do not fit into more lines instead of squeezing them: in the default
+                vertical direction, a stack of fixed height starts another column once its children overflow it.
+                <b>WrapReverse</b> stacks those columns from the far edge, and <b>AlignContent</b> places them once there
+                is more than one. A <b>Horizontal</b> stack wraps into rows the same way.
                 <b>WrapXs</b> to <b>WrapXxl</b> switch wrapping per breakpoint, with <b>Wrap</b> as the base.
             </div>
             <div class="example-content">
@@ -528,7 +530,9 @@
 
         <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
             <div class="example-desc">
-                <b>Style</b> and <b>Class</b> land on the root and win over the generated styles, except <code>display</code>.
+                <b>Style</b> and <b>Class</b> land on the root. <b>Style</b> is appended after the styles the stack generates,
+                so it wins over them, <code>display</code> included; the stack writes its layout inline, so a <b>Class</b> needs
+                <code>!important</code> to override it. The <code>hidden</code> attribute and <b>Visibility</b> still hide it.
                 <code>--bit-Stack-gap</code> inherits, so setting it on <code>:root</code> or any ancestor changes the default
                 gap of every stack inside that was given no gap of its own.
             </div>

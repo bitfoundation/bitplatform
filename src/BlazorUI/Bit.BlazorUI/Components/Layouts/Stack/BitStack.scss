@@ -19,6 +19,13 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
     box-sizing: border-box;
     align-items: flex-start;
     justify-content: flex-start;
+
+    // The display a stack writes onto the element outranks the display:none the browser gives the hidden attribute,
+    // which would otherwise leave a stack rendered with hidden="true" on screen. hidden="until-found" is left out: the
+    // browser hides that one with content-visibility instead, so find-in-page can still reveal it.
+    &[hidden]:not([hidden="until-found" i]) {
+        display: none !important;
+    }
 }
 
 // The two axes of FillContent. The child is given the whole of the axis it is not laid out along, forcibly, so a

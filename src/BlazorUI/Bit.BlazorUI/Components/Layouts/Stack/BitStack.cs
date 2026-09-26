@@ -72,7 +72,7 @@ public partial class BitStack : BitComponentBase
     /// of those takes precedence over it on its own axis.
     /// <br />
     /// The three space distributions of <see cref="BitAlignment"/> only mean something on the axis the children are laid out along,
-    /// and Baseline only means something on the axis across it, so those members reach a single axis through this shorthand and are
+    /// and Baseline and Stretch only mean something on the axis across it, so those members reach a single axis through this shorthand and are
     /// ignored on the other one. A specific alignment that means nothing on the axis it was given to steps aside for this shorthand
     /// rather than silencing it.
     /// </remarks>
@@ -354,7 +354,8 @@ public partial class BitStack : BitComponentBase
     /// </summary>
     /// <remarks>
     /// In a horizontal stack this is the axis the children are laid out along, so all of Start, Center, End and the three space
-    /// distributions apply and Baseline is meaningless. In a vertical stack it is the axis across them, so Start, Center, End,
+    /// distributions apply and Baseline and Stretch are meaningless (<see cref="GrowContent"/> and <see cref="EqualContent"/> are
+    /// what stretch the children along it). In a vertical stack it is the axis across them, so Start, Center, End,
     /// Baseline and Stretch apply and the space distributions are meaningless. A value that means nothing on the axis it lands on
     /// steps aside for <see cref="Alignment"/>.
     /// <br />
@@ -653,7 +654,8 @@ public partial class BitStack : BitComponentBase
     /// </summary>
     /// <remarks>
     /// In a vertical stack this is the axis the children are laid out along, so all of Start, Center, End and the three space
-    /// distributions apply and Baseline is meaningless. In a horizontal stack it is the axis across them, so Start, Center, End,
+    /// distributions apply and Baseline and Stretch are meaningless (<see cref="GrowContent"/> and <see cref="EqualContent"/> are
+    /// what stretch the children along it). In a horizontal stack it is the axis across them, so Start, Center, End,
     /// Baseline and Stretch apply and the space distributions are meaningless. A value that means nothing on the axis it lands on
     /// steps aside for <see cref="Alignment"/>.
     /// <br />
@@ -883,7 +885,9 @@ public partial class BitStack : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Inline ? "display:inline-flex" : "display:flex"); // to preserve display so it can't be overridden easily.
+        // Written inline so no class can override the display a stack depends on. Style is appended after it by the base
+        // class, so a display written there still wins.
+        StyleBuilder.Register(() => Inline ? "display:inline-flex" : "display:flex");
 
         // The direction of a stack that never changes it is written straight onto the element, where nothing in a
         // stylesheet can reach it. A responsive one hands the same value over as the base of the chain below instead,
@@ -1098,33 +1102,21 @@ public partial class BitStack : BitComponentBase
 
     private BitAlignment? _JustifyContent => GetJustifyContent(Horizontal);
 
-    private BitAlignment? GetAlignItems(bool horizontal) => GetCrossAlignment(horizontal ? VerticalAlign : HorizontalAlign)
-                                                         ?? GetCrossAlignment(Alignment);
+    // A member that means nothing on the axis it was given to is dropped rather than written out as a declaration the
+    // browser throws away, which is also what lets the axis fall through to the Alignment shorthand instead of being
+    // silenced by a value that was never about it.
+    private BitAlignment? GetAlignItems(bool horizontal) => (horizontal ? VerticalAlign : HorizontalAlign).ForCrossAxis()
+                                                         ?? Alignment.ForCrossAxis();
 
-    private BitAlignment? GetJustifyContent(bool horizontal) => GetMainAlignment(horizontal ? HorizontalAlign : VerticalAlign)
-                                                             ?? GetMainAlignment(Alignment);
+    private BitAlignment? GetJustifyContent(bool horizontal) => (horizontal ? HorizontalAlign : VerticalAlign).ForMainAxis()
+                                                             ?? Alignment.ForMainAxis();
 
     // align-content places the rows of a wrapping stack, so every member but Baseline - which a flex container has no
     // baseline behavior for - means something to it.
     private BitAlignment? _AlignContent => AlignContent is BitAlignment.Baseline ? null : AlignContent;
 
     // align-self places this one stack within its own container, and a single child has no room to distribute.
-    private BitAlignment? _AlignSelf => GetCrossAlignment(Self);
-
-    // Sharing room out between the children says nothing about the axis across them, so those three members are
-    // dropped here rather than written out as an align-items the browser throws away. Dropping them is also what lets
-    // the axis fall through to the Alignment shorthand instead of being silenced by a value that was never about it.
-    private static BitAlignment? GetCrossAlignment(BitAlignment? alignment)
-    {
-        return alignment is BitAlignment.SpaceBetween or BitAlignment.SpaceAround or BitAlignment.SpaceEvenly ? null : alignment;
-    }
-
-    // Lining children up on their first line of text says nothing about the axis they are laid out along, so Baseline
-    // is dropped here for the same reason, and falls through to the shorthand in the same way.
-    private static BitAlignment? GetMainAlignment(BitAlignment? alignment)
-    {
-        return alignment is BitAlignment.Baseline ? null : alignment;
-    }
+    private BitAlignment? _AlignSelf => Self.ForCrossAxis();
 
     private static string GetAlignment(string property, BitAlignment? alignment)
     {

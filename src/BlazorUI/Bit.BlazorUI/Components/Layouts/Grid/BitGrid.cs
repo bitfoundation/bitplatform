@@ -668,24 +668,15 @@ public partial class BitGrid : BitComponentBase
     // instead of rendering a justify-content the browser throws away. A HorizontalAlign spelled with one of them
     // is not a horizontal value at all, so this axis falls through to the shorthand rather than being silenced
     // by it - the same way the cross axis below falls through to the shorthand for a distribution.
-    private BitAlignment? _JustifyContent => ((HorizontalAlign is BitAlignment.Baseline or BitAlignment.Stretch ? null : HorizontalAlign)
-                                              ?? Alignment) switch
-    {
-        BitAlignment.Baseline or BitAlignment.Stretch => null,
-        var alignment => alignment
-    };
+    private BitAlignment? _JustifyContent => (HorizontalAlign.ForMainAxis() ?? Alignment).ForMainAxis();
 
     // The cross axis takes VerticalAlign, then the two members of HorizontalAlign that only make sense here, and
     // finally the shorthand, so a baseline or stretched grid can be spelled either way. A VerticalAlign spelled
     // with one of the three distributions is ignored the way it is documented to be, which means stepping aside
     // for whatever the shorthand had to say about this axis rather than silencing it.
-    private BitAlignment? _AlignItems => ((VerticalAlign is BitAlignment.SpaceBetween or BitAlignment.SpaceAround or BitAlignment.SpaceEvenly ? null : VerticalAlign)
+    private BitAlignment? _AlignItems => (VerticalAlign.ForCrossAxis()
                                           ?? (HorizontalAlign is BitAlignment.Baseline or BitAlignment.Stretch ? HorizontalAlign : null)
-                                          ?? Alignment) switch
-    {
-        BitAlignment.SpaceBetween or BitAlignment.SpaceAround or BitAlignment.SpaceEvenly => null,
-        var alignment => alignment
-    };
+                                          ?? Alignment).ForCrossAxis();
 
     private string GetSpacing(string? axisSpacing)
     {

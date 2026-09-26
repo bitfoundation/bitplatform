@@ -24,7 +24,7 @@ public class BitStackTests : BunitTestContext
     };
 
     // The members that share room out between the children say nothing about the axis across them, and
-    // Baseline says nothing about the axis they are laid out along, so each axis only accepts its own.
+    // Baseline and Stretch say nothing about the axis they are laid out along, so each axis only accepts its own.
     private static readonly BitAlignment[] _Distributions =
     [
         BitAlignment.SpaceBetween,
@@ -34,7 +34,7 @@ public class BitStackTests : BunitTestContext
 
     private static bool IsCrossAlignment(BitAlignment alignment) => Array.IndexOf(_Distributions, alignment) < 0;
 
-    private static bool IsMainAlignment(BitAlignment alignment) => alignment != BitAlignment.Baseline;
+    private static bool IsMainAlignment(BitAlignment alignment) => alignment is not BitAlignment.Baseline and not BitAlignment.Stretch;
 
 
 
@@ -1329,6 +1329,20 @@ public class BitStackTests : BunitTestContext
 
         // The horizontal axis of a vertical stack cannot distribute, so the specific value steps aside
         // for the shorthand rather than silencing it, and the vertical axis is untouched by either.
+        component.MarkupMatches(@$"<div style=""{STYLE}align-items:center;justify-content:center"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldLetStretchOnTheMainAxisFallThroughToTheShorthand()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.Center);
+            parameters.Add(p => p.VerticalAlign, BitAlignment.Stretch);
+        });
+
+        // A flex container lays justify-content:stretch out as flex-start, so the vertical axis of a vertical stack
+        // steps aside for the shorthand instead of silently packing the children at the start.
         component.MarkupMatches(@$"<div style=""{STYLE}align-items:center;justify-content:center"" class=""bit-stc"" id:ignore></div>");
     }
 

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -81,6 +82,32 @@ public class BitStackStylesheetTests : BunitTestContext
 
         StringAssert.Contains(rsp, "--bit-stc-ai: initial;");
         StringAssert.Contains(rsp, "--bit-stc-jc: initial;");
+    }
+
+    [TestMethod]
+    public void BitStackShouldLetTheHiddenAttributeWinOverTheInlineDisplay()
+    {
+        // Rendered through a fragment because the stack gathers attributes it has no parameter for in SetParametersAsync
+        // rather than through CaptureUnmatchedValues, which is what the AddUnmatched of bUnit requires.
+        var component = Context!.Render(builder =>
+        {
+            builder.OpenComponent<BitStack>(0);
+            builder.AddAttribute(1, "hidden", true);
+            builder.CloseComponent();
+        });
+
+        var stack = component.Find(".bit-stc");
+
+        // The inline display outranks the display:none of the user agent, so only an important rule can hide it.
+        Assert.IsTrue(stack.HasAttribute("hidden"));
+        StringAssert.Contains(stack.GetAttribute("style")!, "display:flex");
+
+        // Matched on what the rule does rather than how it is laid out, so it holds nested or written out in full and
+        // with any whitespace or comments inside. hidden="until-found" is left to the browser, which reveals it on a
+        // find-in-page match.
+        var rule = new Regex(@"(?:&|\.bit-stc)\[hidden\]:not\(\[hidden=""until-found""\s+i\]\)\s*\{[^}]*display:\s*none\s*!important");
+
+        Assert.IsTrue(rule.IsMatch(ReadStylesheet()), "A [hidden] stack is not hidden by an important display:none.");
     }
 
     private static string GetBlock(string stylesheet, string selector)
