@@ -17,6 +17,13 @@ public partial class BitHeaderDemo
 <BitHeader Variant=""BitVariant.Text"" Color=""BitColor.Info"">Text</BitHeader>";
 
     private readonly string example3RazorCode = @"
+<BitHeader Bordered>Bordered</BitHeader>
+
+<BitHeader Elevated>Elevated</BitHeader>
+
+<BitHeader Bordered Elevated Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"">Bordered & Elevated</BitHeader>";
+
+    private readonly string example4RazorCode = @"
 <BitHeader Alignment=""BitAlignment.Start"" Bordered>
     <BitTag Text=""Start"" />
     <BitTag Text=""of"" />
@@ -41,94 +48,33 @@ public partial class BitHeaderDemo
     <BitTag Text=""the items"" />
 </BitHeader>
 
-<BitHeader Alignment=""BitAlignment.SpaceAround"" Bordered>
-    <BitTag Text=""Space"" />
-    <BitTag Text=""around"" />
-    <BitTag Text=""the items"" />
-</BitHeader>
-
-<BitHeader Alignment=""BitAlignment.SpaceEvenly"" Bordered>
-    <BitTag Text=""Space"" />
-    <BitTag Text=""evenly"" />
-    <BitTag Text=""around the items"" />
-</BitHeader>
-
 
 <BitHeader Height=""72"" Bordered VerticalAlign=""BitAlignment.Start"">
-    <BitTag Text=""Top of the header"" />
-</BitHeader>
-
-<BitHeader Height=""72"" Bordered VerticalAlign=""BitAlignment.Center"">
-    <BitTag Text=""Middle of the header"" />
+    <BitTag Text=""VerticalAlign: Start"" />
 </BitHeader>
 
 <BitHeader Height=""72"" Bordered VerticalAlign=""BitAlignment.End"">
-    <BitTag Text=""Bottom of the header"" />
+    <BitTag Text=""VerticalAlign: End"" />
 </BitHeader>";
-
-    private readonly string example4RazorCode = @"
-<style>
-    .wrap-demo {
-        max-width: 24rem;
-    }
-</style>
-
-
-<div class=""wrap-demo"">
-    <BitHeader Bordered Gap=""0.25rem 0.5rem"">
-        @for (var i = 1; i <= 8; i++)
-        {
-            <BitTag Text=""@($""No wrap {i}"")"" />
-        }
-    </BitHeader>
-</div>
-
-<div class=""wrap-demo"">
-    <BitHeader Bordered Wrap Gap=""0.25rem 0.5rem"" Alignment=""BitAlignment.Center"">
-        @for (var i = 1; i <= 8; i++)
-        {
-            <BitTag Text=""@($""Wrapped {i}"")"" />
-        }
-    </BitHeader>
-</div>";
 
     private readonly string example5RazorCode = @"
-<BitHeader Bordered>Bordered</BitHeader>
-
-<BitHeader Elevated>Elevated</BitHeader>
-
-<BitHeader Bordered Elevated Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"">Bordered & Elevated</BitHeader>";
-
-    private readonly string example6RazorCode = @"
-<BitHeader Bordered>With the default gutter</BitHeader>
-
-<BitHeader Bordered NoGutter>
-    <BitProgress Percent=""60"" />
-</BitHeader>";
-
-    private readonly string example7RazorCode = @"
-<BitHeader Bordered>
-    <BitTag Text=""No"" />
-    <BitTag Text=""gap"" />
-    <BitTag Text=""at all"" />
-</BitHeader>
-
 <BitHeader Bordered Gap=""0.5rem"">
     <BitTag Text=""A"" />
     <BitTag Text=""0.5rem"" />
     <BitTag Text=""gap"" />
 </BitHeader>
 
-<BitHeader Bordered Gap=""2rem"" Alignment=""BitAlignment.Center"">
-    <BitTag Text=""A"" />
-    <BitTag Text=""2rem"" />
-    <BitTag Text=""gap"" />
-</BitHeader>";
+<div style=""max-width: 24rem"">
+    <BitHeader Bordered Wrap Gap=""0.25rem 0.5rem"">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <BitTag Text=""@($""Wrapped {i}"")"" />
+        }
+    </BitHeader>
+</div>
 
-    private readonly string example8RazorCode = @"
-<BitHeader Bordered Color=""BitColor.SecondaryBackground"" Alignment=""BitAlignment.SpaceBetween"">
-    <BitTag Text=""Full width content"" />
-    <BitTag Text=""Edge to edge"" />
+<BitHeader Bordered NoGutter>
+    <BitProgress Percent=""60"" />
 </BitHeader>
 
 <BitHeader Bordered MaxWidth=""24rem"" Color=""BitColor.SecondaryBackground"" Alignment=""BitAlignment.SpaceBetween"">
@@ -136,7 +82,24 @@ public partial class BitHeaderDemo
     <BitTag Text=""And centered"" />
 </BitHeader>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example6RazorCode = @"
+<BitHeader Bordered Gap=""0.5rem"" MaxWidth=""40rem"">
+    <ChildContent>
+        <BitText Typography=""BitTypography.Subtitle1"">Project Atlas</BitText>
+        <BitSpacer />
+        <BitButton Size=""BitSize.Small"">Share</BitButton>
+    </ChildContent>
+    <ExtensionContent>
+        <BitPivot HeaderOnly AriaLabel=""Project sections"">
+            <BitPivotItem HeaderText=""Overview"" />
+            <BitPivotItem HeaderText=""Issues"" />
+            <BitPivotItem HeaderText=""Pull requests"" />
+            <BitPivotItem HeaderText=""Settings"" />
+        </BitPivot>
+    </ExtensionContent>
+</BitHeader>";
+
+    private readonly string example7RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -191,7 +154,7 @@ public partial class BitHeaderDemo
     <div class=""scroll-demo-row scroll-demo-row--offset"">The absolute header covers the top of its container.</div>
 </div>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -205,7 +168,7 @@ public partial class BitHeaderDemo
 </style>
 
 
-<div>Scroll inside the box to hide and reveal the header: <b>@(isHeaderRevealed ? ""revealed"" : ""hidden"")</b></div>
+<div>Scroll inside the box: <b>@(isHeaderRevealed ? ""revealed"" : ""hidden"")</b></div>
 
 <div class=""scroll-demo"">
     <BitHeader Sticky Reveal Elevated
@@ -233,10 +196,11 @@ public partial class BitHeaderDemo
         <div class=""scroll-demo-row"">Row @i</div>
     }
 </div>";
-    private readonly string example10CsharpCode = @"
+
+    private readonly string example8CsharpCode = @"
 private bool isHeaderRevealed = true;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -274,10 +238,11 @@ private bool isHeaderRevealed = true;";
         <div class=""scroll-demo-row"">Row @i</div>
     }
 </div>";
-    private readonly string example11CsharpCode = @"
+
+    private readonly string example9CsharpCode = @"
 private bool isHeaderScrolled;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .split-demo {
         border: 1px solid gray;
@@ -309,7 +274,7 @@ private bool isHeaderScrolled;";
     </div>
 </div>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     /* A transform makes this box the containing block of any fixed descendant, which scopes the
        fixed header of the example to the box instead of the top of the page. */
@@ -346,10 +311,11 @@ private bool isHeaderScrolled;";
         <BitToggleButton @bind-IsChecked=""isImmersiveMode"" OnText=""Leave immersive mode"" OffText=""Enter immersive mode"" />
     </div>
 </div>";
-    private readonly string example13CsharpCode = @"
+
+    private readonly string example11CsharpCode = @"
 private bool isImmersiveMode;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     /* The content scrolls behind the pinned header, which is what makes the frosted glass visible. */
     .translucent-demo {
@@ -372,7 +338,7 @@ private bool isImmersiveMode;";
     }
 </div>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -426,7 +392,7 @@ private bool isImmersiveMode;";
     }
 </div>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitHeader Gap=""1rem"">
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.GlobalNavButton"" Title=""Open Navigation"" />
     <BitText Typography=""BitTypography.Caption1"">My Awesome App</BitText>
@@ -443,7 +409,28 @@ private bool isImmersiveMode;";
     </BitMenuButton>
 </BitHeader>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example15RazorCode = @"
+<BitParams Parameters=""@headerParams"">
+    <BitHeader>Takes the color, the variant, the size and the border from the cascade</BitHeader>
+
+    <BitHeader Color=""BitColor.Tertiary"">Its own Color, the cascaded rest</BitHeader>
+</BitParams>
+
+<BitHeader>Outside the cascade, and back to the defaults</BitHeader>";
+
+    private readonly string example15CsharpCode = @"
+private readonly BitHeaderParams[] headerParams =
+[
+    new()
+    {
+        Bordered = true,
+        Size = BitSize.Small,
+        Color = BitColor.Info,
+        Variant = BitVariant.Outline,
+    }
+];";
+
+    private readonly string example16RazorCode = @"
 <BitHeader Color=""BitColor.Primary"">Primary</BitHeader>
 
 <BitHeader Color=""BitColor.Secondary"">Secondary</BitHeader>
@@ -481,29 +468,24 @@ private bool isImmersiveMode;";
 
 <BitHeader Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitHeader>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitHeader Size=""BitSize.Small"" Bordered>Small</BitHeader>
 
 <BitHeader Size=""BitSize.Medium"" Bordered>Medium</BitHeader>
 
 <BitHeader Size=""BitSize.Large"" Bordered>Large</BitHeader>";
 
-    private readonly string example19RazorCode = @"
-<style>
-    .custom-class {
-        color: white;
-        background: linear-gradient(90deg, #f7971e, #ffd200);
-    }
+    private readonly string example18RazorCode = @"
+<BitHeader Bordered Elevated
+           Style=""--bit-Header-background: #1e293b; --bit-Header-color: #f8fafc; --bit-Header-border-color: #38bdf8; --bit-Header-border-width: 3px; --bit-Header-border-radius: 0.75rem; --bit-Header-min-height: 4rem;"">
+    On the instance
+</BitHeader>
 
-    .custom-root {
-        border-block-end: 2px solid blueviolet;
-    }
+<div class=""brand-headers"">
+    <BitHeader Bordered>On an ancestor</BitHeader>
 
-    .custom-container {
-        color: blueviolet;
-        justify-content: flex-end;
-    }
-</style>
+    <BitHeader Bordered Size=""BitSize.Small"">Every header under it follows</BitHeader>
+</div>
 
 
 <BitHeader Style=""background: linear-gradient(90deg, #7e57c2, #26c6da); color: white;"">Styled Header</BitHeader>
@@ -520,7 +502,38 @@ private bool isImmersiveMode;";
     Classes
 </BitHeader>";
 
-    private readonly string example20RazorCode = @"
+    private const string example18ScssCode = @"
+// An ancestor re-skins every header under it: the variables inherit.
+.brand-headers {
+    --bit-Header-background: #fdf4ff;
+    --bit-Header-color: #86198f;
+    --bit-Header-border-color: #d946ef;
+    --bit-Header-padding-inline: 2rem;
+}
+
+// ::deep reaches the classes handed to the header, whose elements carry its own scope.
+::deep {
+    .custom-class {
+        color: white;
+        background: linear-gradient(90deg, #f7971e, #ffd200);
+    }
+
+    .custom-root {
+        border-block-end: 2px solid blueviolet;
+    }
+
+    .custom-container {
+        color: blueviolet;
+        justify-content: flex-end;
+    }
+}";
+
+    private readonly DemoCodeFile[] example18CodeFiles =
+    [
+        new("BitHeaderDemo.razor.scss", example18ScssCode),
+    ];
+
+    private readonly string example19RazorCode = @"
 <BitHeader Dir=""BitDir.Rtl"" Alignment=""BitAlignment.SpaceBetween"" Bordered>
     <BitTag Text=""یک"" />
     <BitTag Text=""دو"" />
