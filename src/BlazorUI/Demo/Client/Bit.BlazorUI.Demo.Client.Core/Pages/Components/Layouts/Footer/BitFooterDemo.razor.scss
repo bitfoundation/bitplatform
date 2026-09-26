@@ -4,8 +4,8 @@
     border: 1px solid gray;
 }
 
-// The Position and Reveal examples both need a box that scrolls on its own, so the footer has
-// something to stick to (and to slide over) without taking over the whole demo page.
+// The Position, Reveal and Translucent examples need a box that scrolls on its own, so the footer has
+// something to stick to (and to slide over, or blur behind it) without taking over the whole demo page.
 .scroll-demo {
     height: rem2(160px);
     overflow: auto;
@@ -31,12 +31,6 @@
     height: rem2(160px);
     position: relative;
     border: 1px solid gray;
-}
-
-// Same containing block trick, but the content scrolls behind the still footer, which is what makes
-// the frosted glass of the Translucent example visible.
-.translucent-demo {
-    overflow: auto;
 }
 
 // The Wrap example needs a footer narrow enough to actually run out of room for its content.

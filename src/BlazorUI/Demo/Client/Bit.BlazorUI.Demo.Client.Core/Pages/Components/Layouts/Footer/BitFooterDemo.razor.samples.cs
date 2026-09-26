@@ -279,14 +279,10 @@ private bool isSelectionMode;";
 
     private readonly string example10RazorCode = @"
 <style>
-    .translucent-demo {
+    .scroll-demo {
         height: 10rem;
         overflow: auto;
-        position: relative;
         border: 1px solid gray;
-        /* Scopes the fixed footer to this box for the sake of the demo, and keeps it
-           still while the content scrolls behind it. */
-        transform: translateZ(0);
     }
 
     .scroll-demo-row {
@@ -295,12 +291,12 @@ private bool isSelectionMode;";
 </style>
 
 
-<div class=""translucent-demo"">
+<div class=""scroll-demo"">
     @for (var i = 1; i <= 6; i++)
     {
         <div class=""scroll-demo-row"">Content behind the footer - row @i</div>
     }
-    <BitFooter Fixed Translucent Bordered Color=""BitColor.PrimaryBackground"">I'm a translucent Footer</BitFooter>
+    <BitFooter Sticky Translucent Color=""BitColor.PrimaryBackground"">I'm a translucent Footer</BitFooter>
 </div>";
 
     private readonly string example11RazorCode = @"
