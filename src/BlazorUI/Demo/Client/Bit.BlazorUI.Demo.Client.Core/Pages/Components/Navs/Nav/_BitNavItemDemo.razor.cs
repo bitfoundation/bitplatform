@@ -316,6 +316,41 @@ public partial class _BitNavItemDemo
         new() { Text = "Inputs", IconName = BitIconName.TextField, Url = "/components/textfield" },
     ];
 
+    private static readonly List<BitNavItem> a11yNavItems =
+    [
+        new()
+        {
+            Text = "Navs",
+            IconName = BitIconName.GlobalNavButton,
+            Url = "/components",
+            Description = "Links to the areas of an app",
+            ExpandAriaLabel = "Show the navs",
+            CollapseAriaLabel = "Hide the navs",
+            ChildItems =
+            [
+                new() { Text = "Nav", Url = "/components/nav" },
+                new() { Text = "NavBar", Url = "/components/navbar" },
+                new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
+            ]
+        },
+        new()
+        {
+            Text = "Inputs",
+            IconName = BitIconName.TextField,
+            Description = "Fields that take a value",
+            ChildItems =
+            [
+                new() { Text = "TextField", Url = "/components/textfield" },
+                new() { Text = "Dropdown", Url = "/components/dropdown" },
+            ]
+        },
+    ];
+
+    private readonly BitNavParams[] navParams =
+    [
+        new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
+    ];
+
     private static readonly List<BitNavItem> colorNavItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home },

@@ -362,6 +362,50 @@ public partial class _BitNavCustomDemo
         new() { Text = "Inputs", ImageName = BitIconName.TextField, Url = "/components/textfield" },
     ];
 
+    private static readonly BitNavNameSelectors<Section> a11ySelectors = new()
+    {
+        IconName = { Name = nameof(Section.ImageName) },
+        ChildItems = { Name = nameof(Section.Links) },
+        Description = { Name = nameof(Section.Comment) },
+        ExpandAriaLabel = { Name = nameof(Section.OpenLabel) },
+        CollapseAriaLabel = { Name = nameof(Section.CloseLabel) },
+    };
+
+    private static readonly List<Section> customA11yNavItems =
+    [
+        new()
+        {
+            Text = "Navs",
+            ImageName = BitIconName.GlobalNavButton,
+            Url = "/components",
+            Comment = "Links to the areas of an app",
+            OpenLabel = "Show the navs",
+            CloseLabel = "Hide the navs",
+            Links =
+            [
+                new() { Text = "Nav", Url = "/components/nav" },
+                new() { Text = "NavBar", Url = "/components/navbar" },
+                new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
+            ]
+        },
+        new()
+        {
+            Text = "Inputs",
+            ImageName = BitIconName.TextField,
+            Comment = "Fields that take a value",
+            Links =
+            [
+                new() { Text = "TextField", Url = "/components/textfield" },
+                new() { Text = "Dropdown", Url = "/components/dropdown" },
+            ]
+        },
+    ];
+
+    private readonly BitNavParams[] navParams =
+    [
+        new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
+    ];
+
     private static readonly List<Section> customColorNavItems =
     [
         new() { Text = "Home", ImageName = BitIconName.Home },

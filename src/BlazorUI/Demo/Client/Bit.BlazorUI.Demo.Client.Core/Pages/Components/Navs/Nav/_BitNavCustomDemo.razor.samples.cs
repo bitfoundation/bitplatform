@@ -83,7 +83,9 @@ private static readonly List<Section> customBasicNavItems =
 private static readonly List<Section> customBasicNavItems = [ /* ... */ ];";
 
     private readonly string example3RazorCode = @"
-<BitNav Items=""customCarNavItems"" RenderType=""BitNavRenderType.Grouped"" NameSelectors=""carSelectors"" />";
+<BitNav Items=""customCarNavItems"" RenderType=""BitNavRenderType.Grouped"" NameSelectors=""carSelectors"" />
+
+<BitNav Items=""customSeparatorNavItems"" FitWidth NameSelectors=""sectionSelectors"" />";
     private readonly string example3CsharpCode = @"
 public class CarMenu
 {
@@ -168,11 +170,8 @@ private static readonly List<CarMenu> customCarNavItems =
             new() { Name = ""Model Y"", PageUrl = ""https://www.tesla.com/modely"", UrlTarget = ""_blank"" },
         ]
     },
-];";
+];
 
-    private readonly string example4RazorCode = @"
-<BitNav Items=""customSeparatorNavItems"" FitWidth NameSelectors=""sectionSelectors"" />";
-    private readonly string example4CsharpCode = @"
 private static readonly List<Section> customSeparatorNavItems =
 [
     new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -184,7 +183,7 @@ private static readonly List<Section> customSeparatorNavItems =
     new() { Text = ""Contact us"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
 ];";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitNav Items=""customFoodNavItems""
         Mode=""BitNavMode.Manual""
         NameSelectors=""foodSelectors""
@@ -201,7 +200,7 @@ private static readonly List<Section> customSeparatorNavItems =
              Label=""Select Item""
              Items=""FoodMenuDropdownItems""
              OnSelectItem=""(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(customFoodNavItems).Single(i => i.Name == item.Value)"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
@@ -271,11 +270,11 @@ private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Fl
 private FoodMenu CustomSelectedFood = customFoodNavItems[0].Childs[2];
 private string? CustomSelectedFoodName = customFoodNavItems[0].Childs[2].Name;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
 
 <BitNav Items=""customIconOnlyNavItems"" Mode=""BitNavMode.Manual"" IconOnly=""iconOnly"" NameSelectors=""sectionSelectors"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool iconOnly;
 
 private static readonly List<Section> customIconOnlyNavItems =
@@ -298,9 +297,11 @@ private static readonly List<Section> customIconOnlyNavItems =
     new() { Text = ""Contact us"", ImageName = BitIconName.Contact },
 ];";
 
-    private readonly string example7RazorCode = @"
-<BitNav Items=""customSingleExpandNavItems"" SingleExpand FitWidth NameSelectors=""sectionSelectors"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example6RazorCode = @"
+<BitNav Items=""customSingleExpandNavItems"" SingleExpand FitWidth NameSelectors=""sectionSelectors"" />
+
+<BitNav Items=""customNoCollapseNavItems"" AllExpanded NoCollapse NameSelectors=""sectionSelectors"" />";
+    private readonly string example6CsharpCode = @"
 private static readonly List<Section> customSingleExpandNavItems =
 [
     new()
@@ -326,21 +327,18 @@ private static readonly List<Section> customSingleExpandNavItems =
         ImageName = BitIconName.Coffee,
         Links = [new() { Text = ""Water"" }, new() { Text = ""Tea"" }]
     },
-];";
+];
 
-    private readonly string example8RazorCode = @"
-<BitNav Items=""customNoCollapseNavItems"" AllExpanded NoCollapse NameSelectors=""sectionSelectors"" />";
-    private readonly string example8CsharpCode = @"
 // the very same items the Basic example above lists in full
 private static readonly List<Section> customNoCollapseNavItems = [ /* ... */ ];";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitNav Items=""customChevronNavItems"" ReversedChevron AllExpanded FitWidth NameSelectors=""sectionSelectors"" />
 
 <BitNav Items=""customChevronNavItems"" ChevronDownIconName=""@BitIconName.CircleAdditionSolid"" AllExpanded FitWidth NameSelectors=""sectionSelectors"" />
 
 <BitNav Items=""customChevronNavItems"" IndentValue=""40"" IndentPadding=""40"" AllExpanded FitWidth NameSelectors=""sectionSelectors"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private static readonly List<Section> customChevronNavItems =
 [
     new()
@@ -365,7 +363,7 @@ private static readonly List<Section> customChevronNavItems =
     new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault },
 ];";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitNav Items=""customCarNavItems"" RenderType=""BitNavRenderType.Grouped"" NameSelectors=""carSelectors"">
     <HeaderTemplate Context=""item"">
         <div class=""nav-custom-header"">
@@ -394,7 +392,7 @@ private static readonly List<Section> customChevronNavItems =
         </div>
     </ItemTemplate>
 </BitNav>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private static readonly List<Section> customColorNavItems =
 [
     new() { Text = ""Home"", ImageName = BitIconName.Home },
@@ -402,7 +400,7 @@ private static readonly List<Section> customColorNavItems =
     new() { Text = ""Settings"", ImageName = BitIconName.Settings },
 ];";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitStack Horizontal Wrap>
     <BitButton OnClick=""ExpandAllApiItems"">ExpandAll</BitButton>
     <BitButton OnClick=""CollapseAllApiItems"">CollapseAll</BitButton>
@@ -414,7 +412,7 @@ private static readonly List<Section> customColorNavItems =
 </BitStack>
 
 <BitNav @ref=""apiNavRef"" Items=""customApiNavItems"" Mode=""BitNavMode.Manual"" FitWidth NameSelectors=""sectionSelectors"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private BitNav<Section>? apiNavRef;
 
 private void ExpandAllApiItems() => apiNavRef?.ExpandAll();
@@ -449,7 +447,7 @@ private readonly List<Section> customApiNavItems =
     new() { Text = ""Cookie"", ImageName = BitIconName.Cake },
 ];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitNav Items=""customFoodNavItems""
         Mode=""BitNavMode.Manual""
         NameSelectors=""foodSelectors""
@@ -462,12 +460,12 @@ private readonly List<Section> customApiNavItems =
     <span>Selected Item: <b>@CustomSelectedItem?.Name</b></span><br />
     <span>Toggled Item: <b>@(CustomToggledItem is null ? ""N/A"" : $""{CustomToggledItem.Name} ({(CustomToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</b></span>
 </div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private FoodMenu CustomClickedItem = default!;
 private FoodMenu CustomSelectedItem = default!;
 private FoodMenu CustomToggledItem = default!;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitNav Items=""customMatchNavItems"" NameSelectors=""matchSelectors"" FitWidth />
 
 <BitNav Items=""customPrefixMatchNavItems"" NameSelectors=""matchSelectors"" Match=""BitNavMatch.Prefix"" FitWidth />
@@ -479,7 +477,7 @@ private FoodMenu CustomToggledItem = default!;";
 <BitNav Items=""customItemMatchNavItems"" NameSelectors=""matchSelectors"" Match=""BitNavMatch.Exact"" FitWidth />
 
 <BitNav Items=""customAdditionalUrlsNavItems"" NameSelectors=""matchSelectors"" FitWidth />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
@@ -541,6 +539,59 @@ private static readonly List<Section> customAdditionalUrlsNavItems =
         OtherUrls = [""/components/nav"", ""/components/breadcrumb""]
     },
     new() { Text = ""Inputs"", ImageName = BitIconName.TextField, Url = ""/components/textfield"" },
+];";
+
+    private readonly string example12RazorCode = @"
+<BitNav Items=""customA11yNavItems"" NameSelectors=""a11ySelectors"" AriaLabel=""Components"" FitWidth />";
+    private readonly string example12CsharpCode = @"
+private static readonly BitNavNameSelectors<Section> a11ySelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    ExpandAriaLabel = { Name = nameof(Section.OpenLabel) },
+    CollapseAriaLabel = { Name = nameof(Section.CloseLabel) },
+};
+
+private static readonly List<Section> customA11yNavItems =
+[
+    new()
+    {
+        Text = ""Navs"",
+        ImageName = BitIconName.GlobalNavButton,
+        Url = ""/components"",
+        Comment = ""Links to the areas of an app"",
+        OpenLabel = ""Show the navs"",
+        CloseLabel = ""Hide the navs"",
+        Links =
+        [
+            new() { Text = ""Nav"", Url = ""/components/nav"" },
+            new() { Text = ""NavBar"", Url = ""/components/navbar"" },
+            new() { Text = ""Breadcrumb"", Url = ""/components/breadcrumb"" },
+        ]
+    },
+    new()
+    {
+        Text = ""Inputs"",
+        ImageName = BitIconName.TextField,
+        Comment = ""Fields that take a value"",
+        Links =
+        [
+            new() { Text = ""TextField"", Url = ""/components/textfield"" },
+            new() { Text = ""Dropdown"", Url = ""/components/dropdown"" },
+        ]
+    },
+];";
+
+    private readonly string example13RazorCode = @"
+<BitParams Parameters=""navParams"">
+    <BitNav Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" />
+    <BitNav Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Color=""BitColor.Warning"" Accent=""BitColor.Warning"" />
+</BitParams>";
+    private readonly string example13CsharpCode = @"
+private readonly BitNavParams[] navParams =
+[
+    new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
 ];";
 
     private readonly string example14RazorCode = @"
@@ -685,7 +736,13 @@ private static readonly List<Section> customSizeNavItems =
                            ItemIcon = ""custom-item-icon"",
                            ItemText = ""custom-item-text"",
                            ToggleIcon = ""custom-toggle-icon"",
-                           Description = ""custom-description"" })"" />";
+                           Description = ""custom-description"" })"" />
+
+<BitNav Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" FitWidth Mode=""BitNavMode.Manual"" Style=""--bit-Nav-item-radius: 999px; --bit-Nav-item-gap: 4px; --bit-Nav-indicator-width: 0; --bit-Nav-icon-color: currentColor; --bit-Nav-selected-background: var(--bit-clr-pri); --bit-Nav-selected-color: var(--bit-clr-pri-text);"" />
+
+<div style=""--bit-Nav-item-min-height: 2rem; --bit-Nav-font-size: 0.8125rem; --bit-Nav-icon-color: var(--bit-clr-fg-sec);"">
+    <BitNav Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" FitWidth />
+</div>";
     private readonly string example17CsharpCode = @"
 private static readonly List<Section> customStyleClassNavItems =
 [

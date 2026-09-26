@@ -76,6 +76,16 @@ public class BitNavTests : BunitTestContext
         },
     ];
 
+    // The same tree with a URL on each parent: a click on such a parent navigates, so its chevron is the
+    // control of its own that toggles it, which is what the chevron tests below need.
+    private static List<BitNavItem> LinkTreeItems()
+    {
+        var items = TreeItems();
+        items[0].Url = "/fruits";
+        items[1].Url = "/drinks";
+        return items;
+    }
+
     // A selected item carrying every part the nav renders (an icon, a description, a chevron and a child),
     // next to a separator, so a single render covers all the class and style parts at once.
     private static List<BitNavItem> PartsItems() =>
@@ -122,10 +132,11 @@ public class BitNavTests : BunitTestContext
 
         var root = component.Find(".bit-nav");
 
-        // The nav is a navigation landmark holding a list, and the list semantics are spelled out with the
-        // roles because a list with its markers removed loses them in some browsers.
+        // The nav is a navigation landmark by its own element, so no role is repeated on it, and the list
+        // semantics are spelled out with the roles because a list with its markers removed loses them in
+        // some browsers.
         Assert.AreEqual("NAV", root.TagName);
-        Assert.AreEqual("navigation", root.GetAttribute("role"));
+        Assert.IsNull(root.GetAttribute("role"));
         Assert.AreEqual("list", root.QuerySelector("ul")!.GetAttribute("role"));
         Assert.AreEqual(3, component.FindAll("li[role=listitem]").Count);
     }
@@ -856,7 +867,7 @@ public class BitNavTests : BunitTestContext
         DataRow(false, "false")]
     public void BitNavShouldReportTheExpansionStateOfAnExpandableItem(bool isExpanded, string expectedAriaExpanded)
     {
-        var items = TreeItems();
+        var items = LinkTreeItems();
         items[0].IsExpanded = isExpanded;
 
         var component = RenderNav(items);
@@ -893,7 +904,7 @@ public class BitNavTests : BunitTestContext
         DataRow("Spacebar")]
     public void BitNavShouldToggleAnItemFromTheActivationKeysOfTheChevron(string key)
     {
-        var component = RenderNav(TreeItems());
+        var component = RenderNav(LinkTreeItems());
 
         component.FindAll(".bit-nav-cbt")[0].KeyDown(new KeyboardEventArgs { Key = key });
 
@@ -903,7 +914,7 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldIgnoreOtherKeysOnTheChevron()
     {
-        var component = RenderNav(TreeItems());
+        var component = RenderNav(LinkTreeItems());
 
         component.FindAll(".bit-nav-cbt")[0].KeyDown(new KeyboardEventArgs { Key = "a" });
 
@@ -911,16 +922,36 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavShouldGiveTheChevronAButtonRole()
+    public void BitNavShouldGiveTheChevronOfALinkAButtonRole()
+    {
+        var component = RenderNav(LinkTreeItems());
+
+        var chevron = component.Find(".bit-nav-cbt");
+
+        // The chevron lives inside the item's own anchor, so it cannot be a button element; it carries the
+        // role and the tab stop explicitly instead.
+        Assert.AreEqual("button", chevron.GetAttribute("role"));
+        Assert.AreEqual("0", chevron.GetAttribute("tabindex"));
+        Assert.IsNull(chevron.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldRenderTheChevronOfAParentWithoutAUrlAsDecoration()
     {
         var component = RenderNav(TreeItems());
 
         var chevron = component.Find(".bit-nav-cbt");
 
-        // The chevron lives inside the item's own anchor or button, so it cannot be a button element; it
-        // carries the role and the tab stop explicitly instead.
-        Assert.AreEqual("button", chevron.GetAttribute("role"));
-        Assert.AreEqual("0", chevron.GetAttribute("tabindex"));
+        // A parent without a URL toggles on a click anywhere on it, so its chevron is no control of its own:
+        // a focusable child of a button would be a tab stop that assistive technologies cannot even see.
+        Assert.AreEqual("SPAN", chevron.TagName);
+        Assert.AreEqual("true", chevron.GetAttribute("aria-hidden"));
+        Assert.IsNull(chevron.GetAttribute("role"));
+        Assert.IsNull(chevron.GetAttribute("tabindex"));
+        Assert.IsNull(chevron.GetAttribute("aria-label"));
+
+        // The item itself is the one control, and it is the one that reports the state.
+        Assert.AreEqual("false", component.FindAll(".bit-nav-ict")[0].GetAttribute("aria-expanded"));
     }
 
     [TestMethod]
@@ -1214,7 +1245,7 @@ public class BitNavTests : BunitTestContext
         DataRow(false, "expand me")]
     public void BitNavShouldUseTheToggleAriaLabelsOfTheItem(bool isExpanded, string expectedLabel)
     {
-        var items = TreeItems();
+        var items = LinkTreeItems();
         items[0].IsExpanded = isExpanded;
         items[0].CollapseAriaLabel = "collapse me";
         items[0].ExpandAriaLabel = "expand me";
@@ -1229,7 +1260,7 @@ public class BitNavTests : BunitTestContext
         DataRow(false, "expand")]
     public void BitNavShouldFallBackToItsOwnToggleAriaLabels(bool isExpanded, string expectedLabel)
     {
-        var items = TreeItems();
+        var items = LinkTreeItems();
         items[0].IsExpanded = isExpanded;
 
         var component = RenderNav(items, p =>
@@ -1244,7 +1275,7 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldNameTheToggleButtonAfterTheItemWhenNoLabelIsProvided()
     {
-        var component = RenderNav(TreeItems());
+        var component = RenderNav(LinkTreeItems());
 
         // A button with no accessible name is announced as "button" and nothing else, so the item's text is
         // the last resort rather than leaving it unnamed.
@@ -1254,7 +1285,7 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldTakeTheToggleButtonOfADisabledItemOutOfTheTabOrder()
     {
-        var items = TreeItems();
+        var items = LinkTreeItems();
         items[0].IsEnabled = false;
 
         var component = RenderNav(items);
@@ -1271,11 +1302,64 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldNameAnItemThatRendersAChevronAfterItsText()
     {
-        var component = RenderNav(TreeItems());
+        var component = RenderNav(LinkTreeItems());
 
         // The chevron lives inside the item and carries a name of its own, which the item would otherwise
         // fold into its own name and announce twice.
         Assert.AreEqual("Fruits", component.FindAll(".bit-nav-ict")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotNameAParentWithADecorativeChevronExplicitly()
+    {
+        var component = RenderNav(TreeItems());
+
+        // A decorative chevron is hidden from assistive technologies, so the content of the item is exactly
+        // its text and nothing has to be spelled out.
+        Assert.IsNull(component.FindAll(".bit-nav-ict")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldDescribeAnItemByItsDescription()
+    {
+        var component = RenderNav([new() { Text = "Inbox", Url = "/inbox", Description = "12 unread" }]);
+
+        var item = component.Find(".bit-nav-ict");
+        var description = component.Find(".bit-nav-des");
+
+        // The description is announced as the description it is rather than folded into the name.
+        Assert.AreEqual("Inbox", item.GetAttribute("aria-label"));
+        Assert.IsFalse(string.IsNullOrEmpty(description.Id));
+        Assert.AreEqual(description.Id, item.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotPointAtADescriptionThatIsNotRendered()
+    {
+        var component = RenderNav([new() { Text = "Inbox", Url = "/inbox", IconName = "Mail", Description = "12 unread" }],
+                                  p => p.Add(c => c.IconOnly, true));
+
+        var item = component.Find(".bit-nav-ict");
+
+        // The rail hides the description and the text, so the item is named after its text explicitly and
+        // points at nothing.
+        Assert.AreEqual(0, component.FindAll(".bit-nav-des").Count);
+        Assert.IsNull(item.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Inbox", item.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldGiveEveryDescriptionAnIdOfItsOwn()
+    {
+        var component = RenderNav(
+        [
+            new() { Text = "Inbox", Url = "/inbox", Description = "12 unread" },
+            new() { Text = "Sent", Url = "/sent", Description = "3 today" },
+        ]);
+
+        var descriptions = component.FindAll(".bit-nav-des");
+
+        Assert.AreNotEqual(descriptions[0].Id, descriptions[1].Id);
     }
 
     [TestMethod]
@@ -2655,6 +2739,64 @@ public class BitNavTests : BunitTestContext
     // The children of an option stay in the DOM while collapsed and are hidden through the style attribute,
     // so "shown" is the absence of that declaration rather than the absence of the whole attribute.
     private static bool IsHidden(string? style) => style?.Contains("display:none") is true;
+
+    #endregion
+
+    #region selected ancestor
+
+    [TestMethod]
+    public void BitNavShouldMarkACollapsedBranchThatHoldsTheSelectedItem()
+    {
+        var items = TreeItems();
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.DefaultSelectedItem, items[0].ChildItems[1]);
+        });
+
+        // The selection opens the path down to it, so nothing is marked while the branch is open.
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sca").Count);
+
+        component.FindAll(".bit-nav-ict")[0].Click();
+
+        var parent = component.FindAll(".bit-nav-ict")[0];
+
+        // Once closed, the branch that leads to the current page borrows the look of the selection, but not
+        // its aria-current: the branch is not the current page itself.
+        Assert.IsTrue(parent.ClassList.Contains("bit-nav-sca"));
+        Assert.IsFalse(parent.ClassList.Contains("bit-nav-sel"));
+        Assert.IsNull(parent.GetAttribute("aria-current"));
+        Assert.IsFalse(component.FindAll(".bit-nav-ict")[1].ClassList.Contains("bit-nav-sca"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldMarkEveryCollapsedAncestorOfADeepSelection()
+    {
+        var deep = new BitNavItem { Text = "Deep" };
+        var items = new List<BitNavItem>
+        {
+            new() { Text = "Root", ChildItems = [new() { Text = "Middle", ChildItems = [deep] }] },
+        };
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedItem, deep);
+        });
+
+        component.InvokeAsync(() => component.Instance.CollapseAll());
+
+        Assert.IsTrue(component.Find(".bit-nav-ict").ClassList.Contains("bit-nav-sca"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotMarkAnyBranchWithoutASelection()
+    {
+        var component = RenderNav(TreeItems());
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sca").Count);
+    }
 
     #endregion
 }

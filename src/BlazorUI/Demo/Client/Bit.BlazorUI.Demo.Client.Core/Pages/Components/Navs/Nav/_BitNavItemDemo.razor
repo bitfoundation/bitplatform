@@ -1,9 +1,8 @@
 ﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
-        The nav renders the tree given to <b>Items</b> as a list of links. Each <b>BitNavItem</b> carries its
-        <b>Text</b>, an optional <b>IconName</b>, <b>Description</b> and <b>Url</b>, and the items nested in
-        its <b>ChildItems</b> turn it into an expandable node. An item with <b>IsEnabled</b> set to false is
-        rendered but neither clickable nor selectable.
+        The nav renders the tree given to <b>Items</b>. A <b>BitNavItem</b> carries its <b>Text</b>, <b>IconName</b>,
+        <b>Description</b> and <b>Url</b>; <b>ChildItems</b> make it expandable, and <b>IsEnabled</b> set to false
+        disables it.
     </div>
     <br />
     <BitNav Items="basicNavItems" />
@@ -11,9 +10,8 @@
 
 <DemoExample Title="FitWidth & FullWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>
-        By default the nav takes the width its container gives it. <b>FitWidth</b> shrinks it to the width of
-        its widest item, which is what a nav sitting next to other content usually wants, and <b>FullWidth</b>
-        stretches it over the whole container.
+        By default the nav takes the width of its container. <b>FitWidth</b> shrinks it to its widest item, and
+        <b>FullWidth</b> stretches it over the whole container.
     </div>
     <br /><br /><br />
     <div>FitWidth</div><br />
@@ -23,32 +21,25 @@
     <BitNav Items="basicNavItems" FullWidth />
 </DemoExample>
 
-<DemoExample Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="Grouped & Separator" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <div>
-        The <b>Grouped</b> render type turns every root item into a group header: a full-width button with a
-        bottom border that expands and collapses the group instead of navigating. Only the root level changes;
-        everything below it keeps rendering as ordinary nav items.
+        The <b>Grouped</b> render type turns the root items into group headers that expand and collapse their group
+        instead of navigating. An item with <b>IsSeparator</b> draws a rule instead, grouping the items around it
+        without a header; the keyboard skips it.
     </div>
-    <br />
+    <br /><br /><br />
+    <div>Grouped</div><br />
     <BitNav Items="carNavItems" RenderType="BitNavRenderType.Grouped" />
-</DemoExample>
-
-<DemoExample Title="Separator" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-    <div>
-        An item with <b>IsSeparator</b> renders a horizontal rule in place of a link, which groups the items
-        around it without giving that group a header. It is skipped by the keyboard navigation and reported to
-        assistive technologies as a separator rather than as a nav item.
-    </div>
-    <br />
+    <br /><br /><br />
+    <div>Separator</div><br />
     <BitNav Items="separatorNavItems" FitWidth />
 </DemoExample>
 
-<DemoExample Title="Manual Mode" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>
-        In the default <b>Automatic</b> mode the nav keeps the selection in sync with the current URL. The
-        <b>Manual</b> mode hands that over to the app: the clicked item becomes the selected one, the initial
-        selection comes from <b>DefaultSelectedItem</b>, and <b>SelectedItem</b> two-way binds the selection so
-        it can be driven from anywhere else on the page.
+        The default <b>Automatic</b> mode selects the item that matches the current URL. The <b>Manual</b> mode leaves
+        the selection to the app: a click selects, <b>DefaultSelectedItem</b> sets the initial item and
+        <b>@@bind-SelectedItem</b> keeps it in sync.
     </div>
     <br /><br /><br />
     <div>Basic</div><br />
@@ -71,11 +62,10 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
+<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>
-        <b>IconOnly</b> collapses the nav to a rail of icons: the texts, the descriptions and the expand
-        chevrons are all hidden, so only the icon of each item is left. The text still reaches the pointer as
-        the item's tooltip and the screen reader through the item's accessible name.
+        <b>IconOnly</b> reduces the nav to a rail of icons. The text of each item stays available as its tooltip and as
+        its accessible name.
     </div>
     <br />
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
@@ -83,33 +73,26 @@
     <BitNav Items="iconOnlyNavItems" Mode="BitNavMode.Manual" IconOnly="iconOnly" />
 </DemoExample>
 
-<DemoExample Title="SingleExpand" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Expand & Collapse" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>
-        <b>SingleExpand</b> turns the nav into an accordion: expanding a branch collapses the one that was open
-        before it, so a deep tree never grows past a single open path. <b>ExpandAll</b> is a no-op while this
-        mode is on, since it would break that rule.
+        <b>SingleExpand</b> keeps a single branch open at a time, like an accordion (<b>ExpandAll</b> does nothing in
+        this mode). <b>AllExpanded</b> opens every branch on the first render, and <b>NoCollapse</b> also removes the
+        chevrons together with the space they reserve.
     </div>
-    <br />
+    <br /><br /><br />
+    <div>SingleExpand</div><br />
     <BitNav Items="singleExpandNavItems" SingleExpand FitWidth />
-</DemoExample>
-
-<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
-    <div>
-        <b>AllExpanded</b> opens every branch of the tree on the first render. <b>NoCollapse</b> goes further
-        and removes the expand/collapse buttons altogether, together with the space they reserve at the start
-        of each item, which is how a nav that is always fully open is rendered.
-    </div>
-    <br />
+    <br /><br /><br />
+    <div>AllExpanded &amp; NoCollapse</div><br />
     <BitNav Items="noCollapseNavItems" AllExpanded NoCollapse />
 </DemoExample>
 
-<DemoExample Title="Chevron & Indentation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+<DemoExample Title="Chevron & Indentation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>
-        <b>ReversedChevron</b> moves the expand chevron to the trailing side of the item, and
-        <b>ChevronDownIconName</b> (or <b>ChevronDownIcon</b>, for an external icon library) replaces the icon
-        it renders while keeping its rotation. The indentation is arithmetic: <b>IndentValue</b> is the padding
-        added per level of depth, <b>IndentPadding</b> is the space a childless item reserves in place of the
-        chevron, and <b>IndentReversedPadding</b> replaces it while the chevron is reversed.
+        <b>ReversedChevron</b> moves the chevron to the end of the item, and <b>ChevronDownIconName</b> (or
+        <b>ChevronDownIcon</b> for an external library) replaces its icon. <b>IndentValue</b> is the padding added per
+        level, <b>IndentPadding</b> the room a childless item keeps for the chevron it lacks, and
+        <b>IndentReversedPadding</b> replaces it while the chevron is reversed.
     </div>
     <br /><br /><br />
     <div>ReversedChevron</div><br />
@@ -122,13 +105,11 @@
     <BitNav Items="chevronNavItems" IndentValue="40" IndentPadding="40" AllExpanded FitWidth />
 </DemoExample>
 
-<DemoExample Title="Custom Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Custom Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>
-        <b>HeaderTemplate</b> replaces the content of the group headers in the Grouped render type and
-        <b>ItemTemplate</b> replaces the content of every ordinary item, both receiving the item as their
-        context. The matching <b>HeaderTemplateRenderMode</b> and <b>ItemTemplateRenderMode</b> decide whether
-        the template renders inside the item's own link (<b>Normal</b>) or takes its place entirely
-        (<b>Replace</b>), and the <b>Template</b> of a single item overrides both for that item alone.
+        <b>ItemTemplate</b> and <b>HeaderTemplate</b> (Grouped) render the content of every item and group header. Their
+        <b>ItemTemplateRenderMode</b> / <b>HeaderTemplateRenderMode</b> render the template inside the item's own link
+        (<b>Normal</b>) or in its place (<b>Replace</b>), and the <b>Template</b> of a single item overrides both.
     </div>
     <br /><br /><br />
     <div>Header Template (Grouped)</div><br />
@@ -164,13 +145,11 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="Public API" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
+<DemoExample Title="Public API" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
     <div>
-        A reference to the nav exposes its state as methods: <b>ExpandAll</b> and <b>CollapseAll</b> open or
-        close the whole tree (or a single subtree, when given an item), <b>ExpandItem</b>, <b>CollapseItem</b>
-        and <b>ToggleItem</b> drive a single item, <b>IsItemExpanded</b> reports whether one is open,
-        <b>SelectItem</b> selects one without a click, and <b>FocusItem</b> moves the keyboard focus to it,
-        opening the branches it is nested in when it is not on screen yet.
+        A reference to the nav drives it: <b>ExpandAll</b> / <b>CollapseAll</b> (the whole tree or one subtree),
+        <b>ExpandItem</b>, <b>CollapseItem</b>, <b>ToggleItem</b>, <b>IsItemExpanded</b>, <b>SelectItem</b>, and
+        <b>FocusItem</b>, which opens the path to an item before focusing it.
     </div>
     <br />
     <BitStack Horizontal Wrap>
@@ -186,11 +165,11 @@
     <BitNav @ref="apiNavRef" Items="apiNavItems" Mode="BitNavMode.Manual" FitWidth />
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div>
-        <b>OnItemClick</b> fires for every click on an item, <b>OnSelectItem</b> only when the selection
-        actually changes, and <b>OnItemToggle</b> when a branch is expanded or collapsed. Setting
-        <b>Reselectable</b> makes the select events fire again for an item that is already selected.
+        <b>OnItemClick</b> fires on every click, <b>OnSelectItem</b> when the selection changes, and <b>OnItemToggle</b>
+        when a branch opens or closes. <b>Reselectable</b> fires the select events again for the item that is already
+        selected.
     </div>
     <br />
     <div class="example-box">
@@ -208,19 +187,13 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="URL Matching" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+<DemoExample Title="URL Matching" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>
-        In the <b>Automatic</b> mode the nav selects the item whose URL points at the current page.
-        <b>Match</b> sets how those URLs are compared for the whole nav, and the <b>Match</b> of an item
-        overrides it: <b>Exact</b> asks for the same URL, <b>Prefix</b> also matches everything below it,
-        <b>Wildcard</b> reads the URL of the item as a pattern in which <b>?</b> stands for a single
-        character other than <b>/</b>, <b>*</b> for any number of them and <b>**</b> for any number of
-        characters at all, slashes included, and <b>Regex</b> reads it as a regular expression. The
-        comparison ignores the query string, and <b>Exact</b> and <b>Prefix</b> also ignore the letter case
-        and a trailing slash; <b>Wildcard</b> and <b>Regex</b> run the pattern exactly as it was written, so
-        those two tell the letter cases apart and see a trailing slash as a difference.
-        <b>AdditionalUrls</b> gives an item other URLs to light up on. The navs below are all matched against
-        the URL of this page.
+        In the <b>Automatic</b> mode the item whose URL matches the current page is selected. <b>Match</b> sets the rule
+        for the whole nav, and the <b>Match</b> of an item overrides it: <b>Exact</b>, <b>Prefix</b>, <b>Wildcard</b>
+        (<b>?</b> is one character but <b>/</b>, <b>*</b> any run of them, <b>**</b> anything) or <b>Regex</b>. The query
+        string is ignored, and <b>Exact</b> and <b>Prefix</b> also ignore the letter case and a trailing slash.
+        <b>AdditionalUrls</b> gives an item more URLs to light up on. The navs below match the URL of this page.
     </div>
     <br /><br /><br />
     <div>Exact (the default)</div><br />
@@ -241,13 +214,48 @@
     <BitNav Items="additionalUrlsNavItems" FitWidth />
 </DemoExample>
 
+<DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>
+        The nav is a <b>nav</b> landmark: name it with <b>AriaLabel</b> when a page has more than one. The selected item
+        carries <b>aria-current</b> (its <b>AriaCurrent</b> picks the value), a <b>Description</b> is announced as the
+        item's description, and a parent reports <b>aria-expanded</b>. A parent without a URL toggles on a click anywhere
+        on it; a parent with one navigates, so its chevron becomes a button of its own, named by
+        <b>ExpandAriaLabel</b> / <b>CollapseAriaLabel</b>.
+        <br /><br />
+        Keyboard: <b>Tab</b> moves between the items, <b>↑</b> <b>↓</b> <b>Home</b> <b>End</b> walk the visible ones,
+        <b>→</b> opens a branch and then steps into it, <b>←</b> closes it and then steps out, <b>*</b> opens every
+        sibling, and typing jumps to the next item starting with it. Collapse <b>Navs</b>: the branch that holds the
+        current page takes the look of the selection, so the reader never loses it.
+    </div>
+    <br />
+    <BitNav Items="a11yNavItems" AriaLabel="Components" FitWidth />
+</DemoExample>
+
+<DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <div>
+        <b>BitParams</b> hands a <b>BitNavParams</b> to every nav under it, as a default rather than an override: a nav
+        that sets a parameter itself keeps its own value. What the nav is generic over (the items, the selection, the
+        templates, the name selectors and the events) stays on each nav, so one cascade serves all three APIs.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitParams Parameters="navParams">
+            <div>
+                <div>All from the cascade</div><br />
+                <BitNav Items="colorNavItems" />
+            </div>
+            <div>
+                <div>Its own Color and Accent</div><br />
+                <BitNav Items="colorNavItems" Color="BitColor.Warning" Accent="BitColor.Warning" />
+            </div>
+        </BitParams>
+    </div>
+</DemoExample>
+
 <DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
     <div>
-        <b>Color</b> paints the parts that carry the nav's identity: the icons and the border of the selected
-        item. <b>Accent</b> is a separate role that paints the hovered and the selected item: a background,
-        foreground or border role only tints it, so the colorful icon set shows through, while a semantic
-        role fills it and takes its text and icon along. Both accept every value of <b>BitColor</b>,
-        including the background, foreground and border roles that are not listed here.
+        <b>Color</b> paints the icons and the bar of the selected item. <b>Accent</b> paints the hovered and the selected
+        item: a background, foreground or border role tints it, while a semantic role fills it and recolors what it holds.
     </div>
     <br /><br /><br />
     <div>Primary</div><br />
@@ -291,9 +299,8 @@
 
 <DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>
-        Besides the built-in icons of <b>IconName</b>, the <b>Icon</b> parameter of an item accepts the CSS
-        classes of any external icon library, such as FontAwesome or Bootstrap Icons, and takes precedence over
-        <b>IconName</b>. The same applies to the <b>ChevronDownIcon</b> of the nav itself.
+        <b>Icon</b> takes the CSS classes of an external icon library (FontAwesome, Bootstrap Icons, ...) and wins over
+        <b>IconName</b>; <b>ChevronDownIcon</b> does the same for the chevron.
     </div>
     <br /><br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -309,8 +316,8 @@
 
 <DemoExample Title="Size" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
     <div>
-        <b>Size</b> scales the metrics of every part of the nav at once: the height of the items, the size of
-        their text and description, and the height and text of the group headers.
+        <b>Size</b> scales the height, text, icon and description of the items, and the height and text of the group
+        headers.
     </div>
     <br /><br /><br />
     <div>Small</div><br />
@@ -325,11 +332,9 @@
 
 <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>
-        <b>Style</b> and <b>Class</b> reach the root element, the <b>Style</b> and <b>Class</b> of an item reach
-        the list element of that item, and the <b>Styles</b> and <b>Classes</b> objects reach every part of the
-        nav separately: the root, the item container and its selected variant, the item and its selected
-        variant, the item icon and text, the toggle button and its chevron icon, the description, the group
-        header and its text, and the separator.
+        <b>Style</b> and <b>Class</b> reach the root, the <b>Style</b> and <b>Class</b> of an item its list element, and
+        <b>Styles</b> and <b>Classes</b> each part of the nav. The public <b>CSS variables</b> re-skin it without a
+        selector; they inherit, so set them on an instance, on an ancestor or on <b>:root</b>.
     </div>
     <br /><br /><br />
     <div>Component's Style & Class:</div><br />
@@ -369,13 +374,19 @@
                                ItemText = "custom-item-text",
                                ToggleIcon = "custom-toggle-icon",
                                Description = "custom-description" })" />
+    <br /><br /><br /><br />
+    <div>CSS variables:</div><br />
+    <BitNav Items="colorNavItems" FitWidth Mode="BitNavMode.Manual" Style="--bit-Nav-item-radius: 999px; --bit-Nav-item-gap: 4px; --bit-Nav-indicator-width: 0; --bit-Nav-icon-color: currentColor; --bit-Nav-selected-background: var(--bit-clr-pri); --bit-Nav-selected-color: var(--bit-clr-pri-text);" />
+    <br /><br />
+    <div style="--bit-Nav-item-min-height: 2rem; --bit-Nav-font-size: 0.8125rem; --bit-Nav-icon-color: var(--bit-clr-fg-sec);">
+        <BitNav Items="colorNavItems" FitWidth />
+    </div>
 </DemoExample>
 
 <DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
     <div>
-        Setting <b>Dir</b> to <b>Rtl</b> flips the nav and everything it renders: the chevrons, the
-        indentation of the levels and the direction of the arrow keys, so the Right arrow steps out of a branch
-        and the Left arrow steps into it.
+        <b>Dir</b> set to <b>Rtl</b> mirrors the nav, its indentation and the arrow keys: <b>→</b> steps out of a branch
+        and <b>←</b> steps into it.
     </div>
     <br />
     <div dir="rtl">

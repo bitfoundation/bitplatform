@@ -22,6 +22,11 @@ public partial class _BitNavOptionDemo
     private async Task SelectIceCreamApiOption() { if (apiNavRef is not null && iceCreamOption is not null) await apiNavRef.SelectItem(iceCreamOption); }
     private async Task FocusVeggieBurgerApiOption() { if (apiNavRef is not null && veggieBurgerOption is not null) await apiNavRef.FocusItem(veggieBurgerOption); }
 
+    private readonly BitNavParams[] navParams =
+    [
+        new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
+    ];
+
     private static readonly BitIconInfo fontAwesomeHomeIcon = BitIconInfo.Css("fa-solid fa-house");
     private static readonly BitIconInfo fontAwesomeCodeIcon = BitIconInfo.Fa("solid code");
     private static readonly BitIconInfo fontAwesomeTagIcon = BitIconInfo.Css("fa-solid fa-tag");
