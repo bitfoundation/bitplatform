@@ -2,14 +2,17 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
-     role="list"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     aria-label="@AriaLabel"
-     aria-disabled="@(IsEnabled ? null : "true")"
-     dir="@Dir?.ToString().ToLower()">
+@* A timeline is a sequence, so it is an ordered list. The explicit list role is kept on purpose: WebKit drops
+   the list semantics of a list whose markers are hidden (list-style: none) unless the role is spelled out.
+   The disabled state is carried by the items that can actually be operated, not by the list, which is not an
+   element aria-disabled applies to. *@
+<ol @ref="RootElement" @attributes="HtmlAttributes"
+    id="@_Id"
+    role="list"
+    style="@StyleBuilder.Value"
+    class="@ClassBuilder.Value"
+    aria-label="@AriaLabel"
+    dir="@Dir?.ToString().ToLower()">
     @if (Options is not null || ChildContent is not null)
     {
         <CascadingValue Value="this" IsFixed="true">
@@ -24,4 +27,4 @@
             <_BitTimelineItem Timeline="this" Item="item" @key="@GetItemKey(item, i.ToString())" />
         }
     }
-</div>
+</ol>

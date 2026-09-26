@@ -1,5 +1,24 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, on the Style of a timeline or on the Style of a single item inherits down to whatever reads it:
+//   --bit-Timeline-font-size              text size of the contents                    (default: per Size)
+//   --bit-Timeline-dot-size               diameter of the dot                          (default: per Size)
+//   --bit-Timeline-dot-background         fill of the dot                              (default: per Color and Variant)
+//   --bit-Timeline-dot-border-color       border color of the dot                      (default: per Color and Variant)
+//   --bit-Timeline-dot-border-width       border width of the dot                      (default: $shp-border-width)
+//   --bit-Timeline-dot-radius             corner radius of the dot                     (default: $shp-radius-full)
+//   --bit-Timeline-dot-shadow             shadow of the dot                            (default: none)
+//   --bit-Timeline-icon-color             color of the icon inside the dot             (default: per Color and Variant)
+//   --bit-Timeline-icon-size              size of the icon inside the dot              (default: the font size)
+//   --bit-Timeline-line-color             color of the connecting line                 (default: $clr-brd-sec)
+//   --bit-Timeline-line-width             thickness of the connecting line             (default: $shp-border-width-thick)
+//   --bit-Timeline-content-gap            room between the line and the contents       (default: half the dot size)
+//   --bit-Timeline-item-spacing           room each item keeps around its contents along the line (default: half the dot size)
+//   --bit-Timeline-item-radius            corner radius of a clickable item            (default: $shp-radius-control)
+//   --bit-Timeline-item-hover-background  hover plate of a clickable item              (default: $clr-bg-pri-hover)
+// The dot colors never override a disabled item, which keeps its disabled palette.
+
 /*
  * The dot colors are resolved on the item, never on the root: a custom property whose value contains
  * a var() is substituted on the element that declares it, so declaring the dot colors on the root
@@ -52,31 +71,27 @@
 }
 
 /*
- * The broken lines are painted as a repeating gradient rather than a border, so the same declaration
- * serves both orientations and both halves of the connector: the direction of the repetition follows
- * --bit-tln-dvd-dir-s / --bit-tln-dvd-dir-e, which the root points from the dot outwards and flips
- * while the timeline runs horizontally. Resolved per item, for the same reason the dot colors are.
+ * Every line is painted as a repeating gradient rather than a border, so the same declaration serves both
+ * orientations, both halves of the connector and all three line variants: a solid line is one repetition that
+ * covers the whole half (100% of paint over a period of 100%), a broken one repeats a short dash. The variants
+ * only set the two lengths, which carry no var() of their own, so the color is still read where the line is
+ * painted and a --bit-Timeline-line-color set on the divider, the item or any ancestor reaches it.
  */
-@mixin timeline-line-broken($dash, $period) {
-    --bit-tln-dvd-bg-s: repeating-linear-gradient(var(--bit-tln-dvd-dir-s),
-            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{$dash},
-            transparent #{$dash} #{$period});
-    --bit-tln-dvd-bg-e: repeating-linear-gradient(var(--bit-tln-dvd-dir-e),
-            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{$dash},
-            transparent #{$dash} #{$period});
+@mixin timeline-line($dash, $period) {
+    --bit-tln-dvd-dash: #{$dash};
+    --bit-tln-dvd-period: #{$period};
 }
 
 @mixin timeline-line-solid {
-    --bit-tln-dvd-bg-s: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
-    --bit-tln-dvd-bg-e: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
+    @include timeline-line(100%, 100%);
 }
 
 @mixin timeline-line-dashed {
-    @include timeline-line-broken(spacing(1), spacing(1.75));
+    @include timeline-line(spacing(1), spacing(1.75));
 }
 
 @mixin timeline-line-dotted {
-    @include timeline-line-broken(spacing(0.25), spacing(0.75));
+    @include timeline-line(spacing(0.25), spacing(0.75));
 }
 
 @mixin timeline-item-reversed {
@@ -92,26 +107,22 @@
 }
 
 .bit-tln {
+    margin: 0;
+    padding: 0;
     width: 100%;
     display: flex;
+    list-style: none;
     position: relative;
     height: max-content;
-    font-size: var(--bit-tln-font-size);
     flex-direction: var(--bit-tln-flexdir);
+    font-size: var(--bit-Timeline-font-size, var(--bit-tln-fs));
     --bit-tln-flexdir: column;
     --bit-tln-itm-flexdir: row;
     --bit-tln-pcn-flexdir: row-reverse;
     --bit-tln-scn-flexdir: row;
     --bit-tln-cn-overflow: hidden;
-    --bit-tln-cn-justcon: unset;
     --bit-tln-dvd-dsp-s: block;
     --bit-tln-dvd-dsp-e: block;
-    --bit-tln-dvd-top-s: 0;
-    --bit-tln-dvd-top-e: 50%;
-    --bit-tln-dvd-ins-s: auto;
-    --bit-tln-dvd-ins-e: auto;
-    --bit-tln-dvd-height: 50%;
-    --bit-tln-dvd-width: #{$shp-border-width-thick};
     --bit-tln-dvd-dir-s: to top;
     --bit-tln-dvd-dir-e: to bottom;
     --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
@@ -125,16 +136,19 @@
 }
 
 .bit-tln-itm {
+    margin: 0;
     width: 100%;
     display: flex;
     min-height: 100%;
     position: relative;
-    align-items: center;
+    align-items: var(--bit-tln-align, center);
     flex-direction: var(--bit-tln-itm-flexdir);
 
-    // Resolved per item so that an item-level color or size class also drives the padding of the
-    // contents and the disabled palette of the dot.
-    --bit-tln-cn-padding: calc(var(--bit-tln-dot-size) / 2) 0;
+    // Resolved per item so that an item-level size class, or a --bit-Timeline-dot-size set on the Style of the item
+    // itself, also drives the dot, the paddings around it and the line split of that item alone.
+    --bit-tln-dot-size: var(--bit-Timeline-dot-size, var(--bit-tln-dot-sz));
+    // The room kept along the line, by the contents and by the divider alike, so the dot stays level with them.
+    --bit-tln-pad: var(--bit-Timeline-item-spacing, calc(var(--bit-tln-dot-size) / 2));
     --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
     --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
     --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
@@ -147,22 +161,28 @@
     }
 }
 
-// The interactive item keeps the listitem role on its own element, so the nested button takes over
+// The interactive item keeps the list item on its own element, so the nested button takes over
 // the layout of the contents of the item and carries its focus ring.
 .bit-tln-btn {
     width: 100%;
     display: flex;
     flex: 1 1 auto;
     min-height: 100%;
-    align-items: center;
+    align-self: stretch;
+    align-items: var(--bit-tln-align, center);
     flex-direction: var(--bit-tln-itm-flexdir);
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-Timeline-item-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing;
 
     // A disabled item takes no pointer events at all, so the hover plate never shows up on one.
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-Timeline-item-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    &:active {
+        background-color: $clr-bg-pri-active;
     }
 
     &:focus-visible {
@@ -181,12 +201,11 @@
     display: flex;
     position: relative;
     align-items: center;
-    padding: var(--bit-tln-cn-padding);
-    font-size: var(--bit-tln-font-size);
     overflow: var(--bit-tln-cn-overflow);
-    justify-content: var(--bit-tln-cn-justcon);
     min-width: calc(50% - var(--bit-tln-dot-size));
     min-height: calc(50% - var(--bit-tln-dot-size));
+    font-size: var(--bit-Timeline-font-size, var(--bit-tln-fs));
+    padding: var(--bit-tln-pad) 0;
 }
 
 .bit-tln-pcn {
@@ -209,11 +228,20 @@
     max-width: 100%;
 }
 
+/*
+ * The divider stretches across the whole item along the line, so it is the box both halves of the line are
+ * positioned in, and the dot sits inside it at the place --bit-tln-align picks: centered by default, or pinned to
+ * the start or the end of the item. Its padding along the line is the same room the contents keep, which is what
+ * the split of the line below counts on; across the line it is the gap to the contents.
+ */
 .bit-tln-dvd {
     display: flex;
-    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    align-self: stretch;
     justify-content: center;
-    padding: calc(var(--bit-tln-dot-size) / 2);
+    align-items: var(--bit-tln-align, center);
+    padding: var(--bit-tln-pad) var(--bit-Timeline-content-gap, calc(var(--bit-tln-dot-size) / 2));
 
     /*
      * The connector of an item is painted as two halves, one on each side of the dot, rather than as a
@@ -223,62 +251,115 @@
      * every dot and never line up with those of the neighbouring item. Two halves that each run from
      * the dot outwards keep the pattern anchored to the dots, so it stays flush against them and
      * symmetric around them whatever the height of the item and the variant of its neighbours.
+     *
+     * The halves meet at the center of the dot: the middle of the item, or one dot in from its start or its
+     * end when the dot is pinned there (--bit-tln-split-at is 0%, 50% or 100%, and --bit-tln-split-by the
+     * direction to move from there, by the padding and half a dot). The offsets of the axis the timeline does not run along are left
+     * at auto, so the line keeps the centered static position of the divider on that axis.
+     *
+     * --bit-tln-dvd-clr is the line color the older versions documented, still honored behind the public one.
      */
     &::before,
     &::after {
         content: "";
         position: absolute;
-        width: var(--bit-tln-dvd-width);
-        height: var(--bit-tln-dvd-height);
+        width: var(--bit-Timeline-line-width, #{$shp-border-width-thick});
+        --bit-tln-split: calc(var(--bit-tln-split-at, 50%) + var(--bit-tln-split-by, 0) * (var(--bit-tln-pad) + var(--bit-tln-dot-size) / 2));
     }
 
-    // Routed through variables so the color of the line can be themed from the Styles of the divider,
-    // which cannot reach these pseudo-elements on its own, and so the line variants can replace the
-    // whole paint with a repeating gradient. The offsets of the axis the timeline does not run along
-    // are left at auto, so the line keeps the centered static position of the divider on that axis.
     &::before {
+        top: 0;
         display: var(--bit-tln-dvd-dsp-s);
-        background: var(--bit-tln-dvd-bg-s, var(--bit-tln-dvd-clr, #{$clr-brd-sec}));
-        top: var(--bit-tln-dvd-top-s);
-        inset-inline-start: var(--bit-tln-dvd-ins-s);
+        height: var(--bit-tln-split);
+        background: repeating-linear-gradient(var(--bit-tln-dvd-dir-s),
+                var(--bit-Timeline-line-color, var(--bit-tln-dvd-clr, #{$clr-brd-sec})) 0 var(--bit-tln-dvd-dash, 100%),
+                transparent var(--bit-tln-dvd-dash, 100%) var(--bit-tln-dvd-period, 100%));
     }
 
     &::after {
+        top: var(--bit-tln-split);
         display: var(--bit-tln-dvd-dsp-e);
-        background: var(--bit-tln-dvd-bg-e, var(--bit-tln-dvd-clr, #{$clr-brd-sec}));
-        top: var(--bit-tln-dvd-top-e);
-        inset-inline-start: var(--bit-tln-dvd-ins-e);
+        height: calc(100% - var(--bit-tln-split));
+        background: repeating-linear-gradient(var(--bit-tln-dvd-dir-e),
+                var(--bit-Timeline-line-color, var(--bit-tln-dvd-clr, #{$clr-brd-sec})) 0 var(--bit-tln-dvd-dash, 100%),
+                transparent var(--bit-tln-dvd-dash, 100%) var(--bit-tln-dvd-period, 100%));
     }
 }
 
 .bit-tln-dot {
     z-index: 1;
     display: flex;
-    border-radius: 50%;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     color: var(--bit-tln-dot-clr);
     width: var(--bit-tln-dot-size);
     height: var(--bit-tln-dot-size);
-    border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-color: var(--bit-tln-dot-clr-brd);
-    background-color: var(--bit-tln-dot-clr-bg);
+    box-shadow: var(--bit-Timeline-dot-shadow, none);
+    border-radius: var(--bit-Timeline-dot-radius, #{$shp-radius-full});
+    border-width: var(--bit-Timeline-dot-border-width, #{$shp-border-width});
+    border-color: var(--bit-Timeline-dot-border-color, var(--bit-tln-dot-clr-brd));
+    background-color: var(--bit-Timeline-dot-background, var(--bit-tln-dot-clr-bg));
 }
 
 // The placeholder of a hidden dot paints nothing and only reserves the box of a dot. It repeats the
 // size declarations of the dot instead of reserving that space on the divider itself, so it measures
 // the same as a dot whichever box-sizing the host page applies to both of them.
 .bit-tln-hdd {
+    flex-shrink: 0;
     visibility: hidden;
     width: var(--bit-tln-dot-size);
     height: var(--bit-tln-dot-size);
-    border-width: $shp-border-width;
     border-style: $shp-border-style;
+    border-width: var(--bit-Timeline-dot-border-width, #{$shp-border-width});
 }
 
 .bit-tln-ico {
+    font-size: var(--bit-Timeline-icon-size, 1em);
+    color: var(--bit-Timeline-icon-color, var(--bit-tln-dot-ico-clr));
+}
+
+// A disabled item keeps its disabled palette whatever dot colors were set through the public variables.
+.bit-dis .bit-tln-dot,
+.bit-tln-ids .bit-tln-dot {
+    border-color: var(--bit-tln-dot-clr-brd);
+    background-color: var(--bit-tln-dot-clr-bg);
+}
+
+.bit-dis .bit-tln-ico,
+.bit-tln-ids .bit-tln-ico {
     color: var(--bit-tln-dot-ico-clr);
+}
+
+// Pinning the dot to the start or the end of the item moves the contents with it and the point where the two
+// halves of the line meet, which sits the padding and half a dot in from that edge.
+.bit-tln-das {
+    --bit-tln-align: flex-start;
+    --bit-tln-split-at: 0%;
+    --bit-tln-split-by: 1;
+}
+
+.bit-tln-dae {
+    --bit-tln-align: flex-end;
+    --bit-tln-split-at: 100%;
+    --bit-tln-split-by: -1;
+}
+
+// In a vertical timeline the contents sit beside the dot, so their first (or last) line is centered on it rather
+// than their edge lined up with the edge of the dot. A browser without the lh unit keeps the plain padding.
+.bit-tln-das:not(.bit-tln-hrz) {
+    .bit-tln-pcn,
+    .bit-tln-scn {
+        padding-block-start: max(0px, calc(var(--bit-tln-pad) + var(--bit-tln-dot-size) / 2 - 0.5lh));
+    }
+}
+
+.bit-tln-dae:not(.bit-tln-hrz) {
+    .bit-tln-pcn,
+    .bit-tln-scn {
+        padding-block-end: max(0px, calc(var(--bit-tln-pad) + var(--bit-tln-dot-size) / 2 - 0.5lh));
+    }
 }
 
 .bit-tln-rvs {
@@ -311,13 +392,6 @@
     --bit-tln-flexdir: row;
     --bit-tln-itm-flexdir: column;
     --bit-tln-cn-overflow: unset;
-    --bit-tln-cn-justcon: center;
-    --bit-tln-dvd-top-s: unset;
-    --bit-tln-dvd-top-e: unset;
-    --bit-tln-dvd-ins-s: 0;
-    --bit-tln-dvd-ins-e: 50%;
-    --bit-tln-dvd-height: #{$shp-border-width-thick};
-    --bit-tln-dvd-width: 50%;
     --bit-tln-dvd-dir-s: to left;
     --bit-tln-dvd-dir-e: to right;
 
@@ -328,8 +402,35 @@
         --bit-tln-dvd-dir-e: to left;
     }
 
-    .bit-tln-itm {
-        --bit-tln-cn-padding: 0 calc(var(--bit-tln-dot-size) / 2);
+    // The contents stack above and below the dot, so they take the place of the dot along the line.
+    .bit-tln-pcn,
+    .bit-tln-scn {
+        flex-flow: row;
+        justify-content: var(--bit-tln-align, center);
+        padding: 0 var(--bit-tln-pad);
+    }
+
+    // Along the line is now the inline axis, so the roles of the two alignments of the divider swap.
+    .bit-tln-dvd {
+        align-items: center;
+        justify-content: var(--bit-tln-align, center);
+        padding: var(--bit-Timeline-content-gap, calc(var(--bit-tln-dot-size) / 2)) var(--bit-tln-pad);
+
+        &::before,
+        &::after {
+            top: auto;
+            height: var(--bit-Timeline-line-width, #{$shp-border-width-thick});
+        }
+
+        &::before {
+            width: var(--bit-tln-split);
+            inset-inline-start: 0;
+        }
+
+        &::after {
+            width: calc(100% - var(--bit-tln-split));
+            inset-inline-start: var(--bit-tln-split);
+        }
     }
 
     &.bit-tln-rvo {
@@ -471,7 +572,8 @@
     @include timeline-line-dotted;
 }
 
-// The text variant paints an opaque plate behind the icon so the connecting line does not run through it.
+// The text variant paints an opaque plate behind the icon so the connecting line does not run through it. The plate
+// is the only fill a text dot has, so it takes the shape of the dot and the public dot background as well.
 .bit-tln-txt .bit-tln-ico,
 .bit-tln-itm.bit-tln-ivt .bit-tln-ico {
     display: flex;
@@ -479,7 +581,8 @@
     justify-content: center;
     width: var(--bit-tln-dot-ico-width);
     height: var(--bit-tln-dot-ico-height);
-    background-color: var(--bit-tln-dot-ico-clr-bg);
+    border-radius: var(--bit-Timeline-dot-radius, #{$shp-radius-full});
+    background-color: var(--bit-Timeline-dot-background, var(--bit-tln-dot-ico-clr-bg));
 }
 
 // Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
@@ -494,17 +597,48 @@
     }
 }
 
+// The size classes only hold the defaults, which the root and every item read through the public variables.
 .bit-tln-sm, .bit-tln-ism {
-    --bit-tln-dot-size: #{spacing(2.5)};
-    --bit-tln-font-size: #{$tg-fs-xs};
+    --bit-tln-dot-sz: #{spacing(2.5)};
+    --bit-tln-fs: #{$tg-fs-xs};
 }
 
 .bit-tln-md, .bit-tln-imd {
-    --bit-tln-dot-size: #{spacing(3.75)};
-    --bit-tln-font-size: #{$tg-fs-sm};
+    --bit-tln-dot-sz: #{spacing(3.75)};
+    --bit-tln-fs: #{$tg-fs-sm};
 }
 
 .bit-tln-lg, .bit-tln-ilg {
-    --bit-tln-dot-size: #{spacing(5.25)};
-    --bit-tln-font-size: #{$tg-fs-md};
+    --bit-tln-dot-sz: #{spacing(5.25)};
+    --bit-tln-fs: #{$tg-fs-md};
+}
+
+// Forced-colors modes discard the painted line (a background image) and the palette of the dots, so both are
+// re-established with system colors: the line in the text color, and a disabled item in the disabled one.
+@media (forced-colors: active) {
+    .bit-tln-dvd::before {
+        forced-color-adjust: none;
+        background: repeating-linear-gradient(var(--bit-tln-dvd-dir-s),
+                CanvasText 0 var(--bit-tln-dvd-dash, 100%),
+                transparent var(--bit-tln-dvd-dash, 100%) var(--bit-tln-dvd-period, 100%));
+    }
+
+    .bit-tln-dvd::after {
+        forced-color-adjust: none;
+        background: repeating-linear-gradient(var(--bit-tln-dvd-dir-e),
+                CanvasText 0 var(--bit-tln-dvd-dash, 100%),
+                transparent var(--bit-tln-dvd-dash, 100%) var(--bit-tln-dvd-period, 100%));
+    }
+
+    .bit-tln.bit-dis,
+    .bit-tln-itm.bit-tln-ids,
+    .bit-dis .bit-tln-ico,
+    .bit-tln-ids .bit-tln-ico {
+        color: GrayText;
+    }
+
+    .bit-dis .bit-tln-dot,
+    .bit-tln-ids .bit-tln-dot {
+        border-color: GrayText;
+    }
 }

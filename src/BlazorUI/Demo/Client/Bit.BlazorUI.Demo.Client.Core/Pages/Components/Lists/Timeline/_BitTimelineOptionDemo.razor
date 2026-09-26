@@ -1,7 +1,7 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div>
-        Each option of the timeline renders a dot on the line, its PrimaryText before the line and its
-        SecondaryText after it, so a single option can describe an event from both sides of the axis.
+        Each BitTimelineOption puts a dot on the line, its PrimaryText before the line and its SecondaryText
+        after it.
     </div>
     <br />
     <BitTimeline TItem="BitTimelineOption">
@@ -13,9 +13,8 @@
 
 <DemoExample Title="Horizontal" RazorCode="@example2RazorCode" Id="example2" PreventRenderForMcpClient>
     <div>
-        The Timeline offers two orientations: vertical (default) and horizontal. In the horizontal one the
-        line runs from the start to the end of the timeline and the contents of each option stack above and
-        below their dot.
+        Horizontal runs the line from start to end and stacks the contents of each option above and below its
+        dot.
     </div>
     <br />
     <BitTimeline TItem="BitTimelineOption" Horizontal>
@@ -27,8 +26,8 @@
 
 <DemoExample Title="Disabled" RazorCode="@example3RazorCode" Id="example3" PreventRenderForMcpClient>
     <div>
-        Disabling the whole timeline with IsEnabled dims every option and stops all of them from responding,
-        while the IsEnabled of a single option only takes that one out of the interaction.
+        IsEnabled="false" on the timeline disables every option; the IsEnabled of an option disables that
+        option alone.
     </div>
     <br /><br /><br />
     <div>Disabled component</div><br />
@@ -46,38 +45,10 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Variant" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
+<DemoExample Title="Icon & variant" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
     <div>
-        The variant determines how the dots are painted: Fill (default) is a solid dot, Outline is a hollow
-        dot with a colored border, and Text drops the dot's shape and keeps only its icon.
-    </div>
-    <br /><br /><br />
-    <div>Fill</div><br />
-    <BitTimeline Horizontal Variant="BitVariant.Fill" TItem="BitTimelineOption">
-        <BitTimelineOption PrimaryText="Option 1" />
-        <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" IsEnabled="false" />
-        <BitTimelineOption PrimaryText="Option 3" />
-    </BitTimeline>
-    <br /><br /><br />
-    <div>Outline</div><br />
-    <BitTimeline Horizontal Variant="BitVariant.Outline" TItem="BitTimelineOption">
-        <BitTimelineOption PrimaryText="Option 1" />
-        <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" IsEnabled="false" />
-        <BitTimelineOption PrimaryText="Option 3" />
-    </BitTimeline>
-    <br /><br /><br />
-    <div>Text</div><br />
-    <BitTimeline Horizontal Variant="BitVariant.Text" TItem="BitTimelineOption">
-        <BitTimelineOption PrimaryText="Option 1" />
-        <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" IsEnabled="false" />
-        <BitTimelineOption PrimaryText="Option 3" />
-    </BitTimeline>
-</DemoExample>
-
-<DemoExample Title="Icon" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
-    <div>
-        Each option can render an icon inside its dot through IconName, which turns the dot into a marker of
-        what the event actually was.
+        IconName puts an icon in the dot. Variant sets how the dot is painted: Fill (default), Outline
+        (hollow, with a colored border) or Text (the icon alone).
     </div>
     <br /><br /><br />
     <div>Fill</div><br />
@@ -102,13 +73,14 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Reversed" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
+<DemoExample Title="Reversed & alternate" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
     <div>
-        Reversed swaps the two sides of the line: on the timeline it flips every option at once, and on a
-        single option it moves only that one to the opposite side.
+        Reversed swaps the sides of the line, for every option when set on the timeline, or for a
+        single option through its own Reversed. Alternate flips every second option so the options
+        zig-zag around the line; combined with Reversed the zig-zag starts from the other side.
     </div>
     <br /><br /><br />
-    <div>Vertical</div><br />
+    <div>Reversed</div><br />
     <div class="example-content">
         <BitTimeline TItem="BitTimelineOption" Reversed>
             <BitTimelineOption PrimaryText="Option 1" />
@@ -122,7 +94,7 @@
         </BitTimeline>
     </div>
     <br /><br /><br />
-    <div>Horizontal</div><br />
+    <div>Reversed (horizontal)</div><br />
     <BitTimeline TItem="BitTimelineOption" Horizontal Reversed>
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
@@ -134,15 +106,8 @@
         <BitTimelineOption PrimaryText="Option 2" Reversed />
         <BitTimelineOption PrimaryText="Option 3" />
     </BitTimeline>
-</DemoExample>
-
-<DemoExample Title="Alternate" RazorCode="@example7RazorCode" Id="example7" PreventRenderForMcpClient>
-    <div>
-        Alternate puts every second option on the opposite side of the line, so the options zig-zag around
-        it. Combined with Reversed the zig-zag starts from the other side.
-    </div>
     <br /><br /><br />
-    <div>Vertical</div><br />
+    <div>Alternate</div><br />
     <BitTimeline TItem="BitTimelineOption" Alternate>
         <BitTimelineOption PrimaryText="09:00" SecondaryText="Option 1" IconName="@BitIconName.Add" />
         <BitTimelineOption PrimaryText="10:30" SecondaryText="Option 2" IconName="@BitIconName.Edit" />
@@ -150,7 +115,7 @@
         <BitTimelineOption PrimaryText="16:45" SecondaryText="Option 4" IconName="@BitIconName.Accept" />
     </BitTimeline>
     <br /><br /><br />
-    <div>Vertical & Reversed</div><br />
+    <div>Alternate & Reversed</div><br />
     <BitTimeline TItem="BitTimelineOption" Alternate Reversed>
         <BitTimelineOption PrimaryText="09:00" SecondaryText="Option 1" IconName="@BitIconName.Add" />
         <BitTimelineOption PrimaryText="10:30" SecondaryText="Option 2" IconName="@BitIconName.Edit" />
@@ -158,7 +123,7 @@
         <BitTimelineOption PrimaryText="16:45" SecondaryText="Option 4" IconName="@BitIconName.Accept" />
     </BitTimeline>
     <br /><br /><br />
-    <div>Horizontal</div><br />
+    <div>Alternate (horizontal)</div><br />
     <BitTimeline TItem="BitTimelineOption" Alternate Horizontal>
         <BitTimelineOption PrimaryText="09:00" SecondaryText="Option 1" IconName="@BitIconName.Add" />
         <BitTimelineOption PrimaryText="10:30" SecondaryText="Option 2" IconName="@BitIconName.Edit" />
@@ -167,10 +132,10 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Reverse order" RazorCode="@example8RazorCode" Id="example8" PreventRenderForMcpClient>
+<DemoExample Title="Reverse order" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
     <div>
-        ReverseOrder renders the options from the last one to the first one, which turns a chronological
-        list into a most-recent-first one without touching the markup itself.
+        ReverseOrder renders the last option first, turning a chronological list into a most-recent-first one
+        without reordering the data.
     </div>
     <br /><br /><br />
     <div>Vertical</div><br />
@@ -190,57 +155,42 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Truncate line" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
+<DemoExample Title="Line" RazorCode="@example7RazorCode" Id="example7" PreventRenderForMcpClient>
     <div>
-        By default the connecting line runs through the whole extent of the timeline, past the first and the
-        last dot. TruncateLine cuts it back to the first dot (Start), to the last one (End), or to both (Both),
-        which is what a self-contained timeline usually wants.
+        TruncateLine ends the line at the first dot (Start), at the last one (End) or at both. LineVariant
+        paints it Solid, Dashed or Dotted, and an option can override it for its own stretch, which is how the
+        part still to come is usually told apart.
     </div>
     <br /><br /><br />
-    <div>Both</div><br />
+    <div>TruncateLine: Both</div><br />
     <BitTimeline TItem="BitTimelineOption" TruncateLine="BitTimelineTruncateLine.Both">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
         <BitTimelineOption PrimaryText="Option 3" />
     </BitTimeline>
     <br /><br /><br />
-    <div>Start</div><br />
+    <div>TruncateLine: Start</div><br />
     <BitTimeline TItem="BitTimelineOption" TruncateLine="BitTimelineTruncateLine.Start">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
         <BitTimelineOption PrimaryText="Option 3" />
     </BitTimeline>
     <br /><br /><br />
-    <div>End</div><br />
+    <div>TruncateLine: End</div><br />
     <BitTimeline TItem="BitTimelineOption" TruncateLine="BitTimelineTruncateLine.End">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
         <BitTimelineOption PrimaryText="Option 3" />
     </BitTimeline>
     <br /><br /><br />
-    <div>Horizontal (Both)</div><br />
-    <BitTimeline TItem="BitTimelineOption" Horizontal TruncateLine="BitTimelineTruncateLine.Both">
-        <BitTimelineOption PrimaryText="Option 1" />
-        <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
-        <BitTimelineOption PrimaryText="Option 3" />
-    </BitTimeline>
-</DemoExample>
-
-<DemoExample Title="Line variant" RazorCode="@example10RazorCode" Id="example10" PreventRenderForMcpClient>
-    <div>
-        LineVariant paints the connecting line solid (default), dashed or dotted, and an option can override
-        it for its own stretch of the line. That is the usual way to separate the part of a timeline that has
-        already happened from the part that is still expected.
-    </div>
-    <br /><br /><br />
-    <div>Dashed</div><br />
+    <div>LineVariant: Dashed</div><br />
     <BitTimeline TItem="BitTimelineOption" LineVariant="BitTimelineLineVariant.Dashed">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
         <BitTimelineOption PrimaryText="Option 3" />
     </BitTimeline>
     <br /><br /><br />
-    <div>Dotted</div><br />
+    <div>LineVariant: Dotted</div><br />
     <BitTimeline TItem="BitTimelineOption" LineVariant="BitTimelineLineVariant.Dotted">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
@@ -254,19 +204,53 @@
         <BitTimelineOption PrimaryText="Delivered" Variant="BitVariant.Outline" LineVariant="BitTimelineLineVariant.Dashed" />
     </BitTimeline>
     <br /><br /><br />
-    <div>Horizontal (Dashed)</div><br />
-    <BitTimeline TItem="BitTimelineOption" Horizontal LineVariant="BitTimelineLineVariant.Dashed">
+    <div>Horizontal (Dashed, truncated at both ends)</div><br />
+    <BitTimeline TItem="BitTimelineOption" Horizontal LineVariant="BitTimelineLineVariant.Dashed" TruncateLine="BitTimelineTruncateLine.Both">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
         <BitTimelineOption PrimaryText="Option 3" />
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Item customization" RazorCode="@example11RazorCode" Id="example11" PreventRenderForMcpClient>
+<DemoExample Title="Dot alignment" RazorCode="@example8RazorCode" Id="example8" PreventRenderForMcpClient>
     <div>
-        Color, Size and Variant are also available on the option itself, where they override the values of
-        the timeline for that option alone, and HideDot drops the dot of an option while keeping its
-        contents in place.
+        DotAlignment pins the dot, and the contents with it, to the Center (default), the Start or the End of
+        each option. Start keeps the dot beside the first line of contents that run over several lines.
+    </div>
+    <br /><br /><br />
+    <div>Center (default)</div><br />
+    <BitTimeline TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="09:00" SecondaryText="Kickoff: the scope, the milestones and an owner for each of them are agreed on." IconName="@BitIconName.Add" />
+        <BitTimelineOption PrimaryText="11:30" SecondaryText="Design review: the proposal is walked through and the open questions are collected." IconName="@BitIconName.Edit" />
+        <BitTimelineOption PrimaryText="15:00" SecondaryText="Sign-off: the plan is approved and the work is scheduled." IconName="@BitIconName.Accept" />
+    </BitTimeline>
+    <br /><br /><br />
+    <div>Start</div><br />
+    <BitTimeline TItem="BitTimelineOption" DotAlignment="BitTimelineDotAlignment.Start" TruncateLine="BitTimelineTruncateLine.Both">
+        <BitTimelineOption PrimaryText="09:00" SecondaryText="Kickoff: the scope, the milestones and an owner for each of them are agreed on." IconName="@BitIconName.Add" />
+        <BitTimelineOption PrimaryText="11:30" SecondaryText="Design review: the proposal is walked through and the open questions are collected." IconName="@BitIconName.Edit" />
+        <BitTimelineOption PrimaryText="15:00" SecondaryText="Sign-off: the plan is approved and the work is scheduled." IconName="@BitIconName.Accept" />
+    </BitTimeline>
+    <br /><br /><br />
+    <div>End</div><br />
+    <BitTimeline TItem="BitTimelineOption" DotAlignment="BitTimelineDotAlignment.End">
+        <BitTimelineOption PrimaryText="09:00" SecondaryText="Kickoff: the scope, the milestones and an owner for each of them are agreed on." IconName="@BitIconName.Add" />
+        <BitTimelineOption PrimaryText="11:30" SecondaryText="Design review: the proposal is walked through and the open questions are collected." IconName="@BitIconName.Edit" />
+        <BitTimelineOption PrimaryText="15:00" SecondaryText="Sign-off: the plan is approved and the work is scheduled." IconName="@BitIconName.Accept" />
+    </BitTimeline>
+    <br /><br /><br />
+    <div>Horizontal (Start)</div><br />
+    <BitTimeline TItem="BitTimelineOption" Horizontal DotAlignment="BitTimelineDotAlignment.Start" TruncateLine="BitTimelineTruncateLine.Both">
+        <BitTimelineOption PrimaryText="Option 1" />
+        <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" />
+    </BitTimeline>
+</DemoExample>
+
+<DemoExample Title="Item customization" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
+    <div>
+        The Color, Size and Variant of an option override the values of the timeline for that option alone,
+        and HideDot removes its dot while keeping its place on the line.
     </div>
     <br />
     <BitTimeline TItem="BitTimelineOption">
@@ -277,11 +261,11 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example12RazorCode" Id="example12" PreventRenderForMcpClient>
+<DemoExample Title="Templates" RazorCode="@example10RazorCode" Id="example10" PreventRenderForMcpClient>
     <div>
-        PrimaryContent, SecondaryContent and DotTemplate replace the corresponding part of an option, while
-        Template replaces the whole option, dot and line included. The timeline also accepts an ItemTemplate
-        and a DotTemplate of its own, which are used by every option that brings no template of its own.
+        PrimaryContent, SecondaryContent and DotTemplate replace one part of an option; Template replaces all
+        of it, dot and line included. The ItemTemplate and DotTemplate of the timeline serve every option that
+        brings no template of its own.
     </div>
     <br /><br /><br />
     <div>Vertical</div><br />
@@ -421,13 +405,11 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+<DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>
-        The OnItemClick of the timeline is raised for every option, and each option can carry an OnClick of
-        its own; both of them run for the same click. An enabled option becomes a focusable button as soon as
-        either the timeline provides an OnItemClick or the option provides its own OnClick, and a disabled
-        option raises neither of them. A clickable option picks up a hover plate and a focus ring, and answers
-        to Enter and Space as well as to a click.
+        OnItemClick fires for every option, and the OnClick of an option for that option alone; both
+        run on the same click. Only clickable options become buttons: focusable, with a hover plate
+        and a focus ring, and activated by Enter and Space. A disabled option raises neither.
     </div>
     <br />
     <BitTimeline TItem="BitTimelineOption" OnItemClick="@(item => { clickedOption = $"{item.PrimaryText} (OnItemClick)"; })">
@@ -440,8 +422,57 @@
     <div>Clicked item: <b>@clickedOption</b></div>
 </DemoExample>
 
+<DemoExample Title="Accessibility" RazorCode="@example12RazorCode" Id="example12" PreventRenderForMcpClient>
+    <div>
+        The timeline is an ordered list named by its AriaLabel, and each option a list item. The dot and its
+        icon are decoration hidden from screen readers, so what an icon or a color means belongs in the text
+        or in the AriaLabel of the option, which replaces the name read from its contents. The Title adds a
+        native tooltip.
+    </div>
+    <br />
+    <BitTimeline TItem="BitTimelineOption" AriaLabel="Order history" TruncateLine="BitTimelineTruncateLine.Both">
+        <BitTimelineOption PrimaryText="Ordered" IconName="@BitIconName.Accept" Color="BitColor.Success" AriaLabel="Ordered, done" Title="Done on 3 March" />
+        <BitTimelineOption PrimaryText="Shipped" IconName="@BitIconName.Accept" Color="BitColor.Success" LineVariant="BitTimelineLineVariant.Dashed" AriaLabel="Shipped, done" Title="Done on 4 March" />
+        <BitTimelineOption PrimaryText="Delivered" Variant="BitVariant.Outline" LineVariant="BitTimelineLineVariant.Dashed" AriaLabel="Delivered, pending" Title="Expected on 7 March" />
+    </BitTimeline>
+</DemoExample>
+
+<DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+    <div>
+        BitParams hands a BitTimelineParams to every timeline under it. The values are defaults, not
+        overrides: a parameter a timeline sets itself wins. The params carry only what does not depend on the
+        item type, so one object fits all three APIs.
+    </div>
+    <br />
+    <BitParams Parameters="timelineParams">
+        <div>Takes the orientation, color, variant and truncation from the cascade</div><br />
+        <BitTimeline TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br />
+        <div>Its own color, the cascaded rest</div><br />
+        <BitTimeline TItem="BitTimelineOption" Color="BitColor.Error">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+    </BitParams>
+    <br /><br />
+    <div>Outside the cascade, back to the defaults</div><br />
+    <BitTimeline TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+        <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+        <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+    </BitTimeline>
+</DemoExample>
+
 <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14" PreventRenderForMcpClient>
-    <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
+    <div>
+        Color sets the palette of the dots and of the focus ring; the Color of an option overrides it for that
+        option.
+    </div>
     <br /><br /><br />
     <div>Primary</div><br />
     <BitTimeline Horizontal Color="BitColor.Primary" TItem="BitTimelineOption">
@@ -752,8 +783,8 @@
 
 <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15" PreventRenderForMcpClient>
     <div>
-        Besides the built-in icons of IconName, the Icon parameter of an option accepts the CSS classes of
-        any external icon library, such as FontAwesome or Bootstrap Icons, and takes precedence over IconName.
+        The Icon takes the CSS classes of any icon library, such as FontAwesome or Bootstrap Icons, and wins
+        over IconName.
     </div>
 
     <br />
@@ -807,7 +838,9 @@
 </DemoExample>
 
 <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
-    <div>Different sizes for Timelines to meet design needs, ensuring flexibility within your application.</div>
+    <div>
+        Size scales the dots and the text: Small, Medium (default) or Large.
+    </div>
     <br /><br /><br />
     <div>Small</div><br />
     <BitTimeline Horizontal Size="BitSize.Small" TItem="BitTimelineOption">
@@ -869,10 +902,10 @@
 
 <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
     <div>
-        Style and Class reach the root element, the Style and Class of an option reach that option, and the
-        Styles and Classes objects reach every part of the timeline separately: the item, the two contents,
-        the two texts, the divider, the dot and the icon. The connecting line is painted by a pseudo-element
-        of the divider, so its color is set through the --bit-tln-dvd-clr variable on the divider's style.
+        Style and Class reach the root, the Style and Class of an option reach that option, and Styles and
+        Classes reach each part by name: the option, the two contents and their texts, the divider, the dot
+        and the icon. The line is painted by the divider, so its color is the --bit-Timeline-line-color
+        variable, which the Divider class below sets.
     </div>
     <br /><br /><br />
     <div>Component's style & class:</div><br />
@@ -916,10 +949,32 @@
             <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
         </BitTimeline>
     </div>
+    <br /><br /><br /><br />
+    <div>
+        <BitLink Href="#css-variables-section">CSS variables</BitLink> inherit: set one on <code>:root</code> or an ancestor to
+        re-skin every timeline below it, on the Style of a timeline, or on the Style of a single option. A disabled option keeps its
+        disabled colors.
+    </div><br />
+    <BitTimeline TItem="BitTimelineOption" TruncateLine="BitTimelineTruncateLine.Both"
+                 Style="--bit-Timeline-line-color: #8b5cf6; --bit-Timeline-line-width: 3px; --bit-Timeline-dot-size: 2rem; --bit-Timeline-dot-radius: 0.5rem; --bit-Timeline-dot-background: #ede9fe; --bit-Timeline-dot-border-color: #8b5cf6; --bit-Timeline-icon-color: #6d28d9;">
+        <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+        <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+        <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+    </BitTimeline>
+    <br /><br />
+    <div style="--bit-Timeline-item-spacing: 1.25rem; --bit-Timeline-content-gap: 1.5rem; --bit-Timeline-dot-shadow: 0 0 0 0.25rem var(--bit-clr-bg-sec);">
+        <BitTimeline TItem="BitTimelineOption" TruncateLine="BitTimelineTruncateLine.Both">
+            <BitTimelineOption PrimaryText="Ordered" IconName="@BitIconName.Accept" />
+            <BitTimelineOption PrimaryText="Shipped" IconName="@BitIconName.Accept" Style="--bit-Timeline-dot-background: gold; --bit-Timeline-dot-border-color: goldenrod; --bit-Timeline-icon-color: black;" />
+            <BitTimelineOption PrimaryText="Delivered" Variant="BitVariant.Outline" />
+        </BitTimeline>
+    </div>
 </DemoExample>
 
 <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
-    <div>Use the BitTimeline component in right-to-left (RTL).</div>
+    <div>
+        Use the BitTimeline component in right-to-left (RTL).
+    </div>
     <br /><br /><br />
     <div>Vertical</div><br />
     <BitTimeline TItem="BitTimelineOption" Dir="BitDir.Rtl">

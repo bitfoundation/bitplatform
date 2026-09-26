@@ -7,10 +7,10 @@ public partial class _BitTimelineItem<TItem> where TItem : class
     [Parameter] public BitTimeline<TItem> Timeline { get; set; } = default!;
 
     // Enter and Space activate the item, as the WAI-ARIA button pattern describes.
-    // The default action of Space (scrolling the page) is deliberately left alone: Blazor evaluates
-    // @onkeydown:preventDefault at render time, so a flag set from this handler only takes effect from
-    // the next key press on - one press too late to stop the scroll, and one press too early to let the
-    // following Tab through, which it would swallow instead of moving the focus.
+    // Blazor evaluates @onkeydown:preventDefault at render time, so it cannot tell Space from Tab and would
+    // swallow the Tab as well. The page scroll of Space is the default action of its keypress instead, which
+    // the button suppresses unconditionally (@onkeypress:preventDefault): keypress fires for the character
+    // keys only, so Tab and the arrow keys keep their default behavior.
     private async Task HandleOnItemKeyDown(KeyboardEventArgs e)
     {
         // Only an item that acts as a button answers to the keyboard, so a presentational item never

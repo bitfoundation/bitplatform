@@ -20,6 +20,8 @@ public class Event
 
     public string? Icon { get; set; }
 
+    public string? Label { get; set; }
+
     public bool Disabled { get; set; }
 
     public Action<Event>? OnSelect { get; set; }
@@ -33,6 +35,8 @@ public class Event
     public BitSize? DotSize { get; set; }
 
     public string? Style { get; set; }
+
+    public string? Tooltip { get; set; }
 
     public RenderFragment<Event>? Content { get; set; }
 

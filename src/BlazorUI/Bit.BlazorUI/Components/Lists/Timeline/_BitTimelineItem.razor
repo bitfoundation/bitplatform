@@ -47,7 +47,8 @@
                 }
                 else
                 {
-                    <div style="@Timeline.Styles?.Dot" class="bit-tln-dot @Timeline.Classes?.Dot">
+                    @* The default dot and its icon are decoration: what the item says is in its contents. *@
+                    <div aria-hidden="true" style="@Timeline.Styles?.Dot" class="bit-tln-dot @Timeline.Classes?.Dot">
                         @if (icon is not null)
                         {
                             <i style="@Timeline.Styles?.Icon" class="bit-tln-ico @icon.GetCssClasses() @Timeline.Classes?.Icon" />
@@ -69,19 +70,19 @@
     </text>;
 }
 
-@* The item itself always stays a listitem, so the timeline remains a valid list for assistive
+@* The item itself always stays a list item, so the timeline remains a valid list for assistive
    technologies. A nested button is only rendered while something listens to the item's click, so a
-   presentational timeline exposes no controls and stays out of the keyboard tab order. *@
-<div role="listitem"
-     aria-disabled="@(isEnabled ? null : "true")"
-     aria-label="@(isInteractive ? null : Timeline.GetAriaLabel(Item))"
-     title="@Timeline.GetTitle(Item)"
-     style="@Timeline.GetItemStyles(Item)"
-     class="bit-tln-itm@(Timeline.GetItemClasses(Item, isInteractive)) @Timeline.Classes?.Item">
+   presentational timeline exposes no controls and stays out of the keyboard tab order. The disabled
+   state is announced by that button alone, since a list item is not an element aria-disabled applies to. *@
+<li aria-label="@(isInteractive ? null : Timeline.GetAriaLabel(Item))"
+    title="@Timeline.GetTitle(Item)"
+    style="@Timeline.GetItemStyles(Item)"
+    class="bit-tln-itm@(Timeline.GetItemClasses(Item, isInteractive)) @Timeline.Classes?.Item">
     @if (isInteractive)
     {
         <div @onclick="() => Timeline.HandleOnItemClick(Item)"
              @onkeydown="HandleOnItemKeyDown"
+             @onkeypress:preventDefault
              role="button"
              tabindex="@(isEnabled ? "0" : null)"
              aria-disabled="@(isEnabled ? null : "true")"
@@ -94,4 +95,4 @@
     {
         @content
     }
-</div>
+</li>

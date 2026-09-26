@@ -16,6 +16,7 @@ public class Event
     public BitTimelineLineVariant? LineStyle { get; set; }
     public bool NoDot { get; set; }
     public string? Icon { get; set; }
+    public string? Label { get; set; }
     public bool Disabled { get; set; }
     public Action<Event>? OnSelect { get; set; }
     public bool Reversed { get; set; }
@@ -23,6 +24,7 @@ public class Event
     public string? SecondText { get; set; }
     public BitSize? DotSize { get; set; }
     public string? Style { get; set; }
+    public string? Tooltip { get; set; }
     public RenderFragment<Event>? Content { get; set; }
     public BitVariant? DotVariant { get; set; }
 }
@@ -44,6 +46,8 @@ private BitTimelineNameSelectors<Event> nameSelectors = new()
     HideDot = { Selector = i => i.NoDot },
     Template = { Selector = i => i.Content },
     OnClick = { Selector = i => i.OnSelect },
+    AriaLabel = { Selector = i => i.Label },
+    Title = { Selector = i => i.Tooltip },
 };
 
 private List<Event> basicCustoms =
@@ -83,26 +87,12 @@ private List<Event> disabledCustoms =
 ];";
 
     private readonly string example4RazorCode = @"
-<BitTimeline Horizontal Variant=""BitVariant.Fill"" Items=""disabledCustoms"" NameSelectors=""nameSelectors"" />
-
-<BitTimeline Horizontal Variant=""BitVariant.Outline"" Items=""disabledCustoms"" NameSelectors=""nameSelectors"" />
-
-<BitTimeline Horizontal Variant=""BitVariant.Text"" Items=""disabledCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example4CsharpCode = @"
-private List<Event> disabledCustoms =
-[
-    new() { FirstText = ""Custom 1"" },
-    new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"", Disabled = true },
-    new() { FirstText = ""Custom 3"" }
-];";
-
-    private readonly string example5RazorCode = @"
 <BitTimeline Horizontal Items=""iconCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" />
 
 <BitTimeline Horizontal Items=""iconCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" />
 
 <BitTimeline Horizontal Items=""iconCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private List<Event> iconCustoms =
 [
     new() { FirstText = ""Custom 1"", Icon = BitIconName.Add },
@@ -110,13 +100,19 @@ private List<Event> iconCustoms =
     new() { FirstText = ""Custom 3"", Icon = BitIconName.Delete }
 ];";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitTimeline Items=""basicCustoms"" NameSelectors=""nameSelectors"" Reversed />
 <BitTimeline Items=""reversedCustoms"" NameSelectors=""nameSelectors"" />
 
 <BitTimeline Horizontal Items=""basicCustoms"" NameSelectors=""nameSelectors"" Reversed />
-<BitTimeline Horizontal Items=""reversedCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example6CsharpCode = @"
+<BitTimeline Horizontal Items=""reversedCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline Alternate Items=""twoSidedCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline Alternate Reversed Items=""twoSidedCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline Alternate Horizontal Items=""twoSidedCustoms"" NameSelectors=""nameSelectors"" />";
+    private readonly string example5CsharpCode = @"
 private List<Event> basicCustoms =
 [
     new() { FirstText = ""Custom 1"" },
@@ -129,15 +125,8 @@ private List<Event> reversedCustoms =
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", Reversed = true },
     new() { FirstText = ""Custom 3"" }
-];";
+];
 
-    private readonly string example7RazorCode = @"
-<BitTimeline Alternate Items=""twoSidedCustoms"" NameSelectors=""nameSelectors"" />
-
-<BitTimeline Alternate Reversed Items=""twoSidedCustoms"" NameSelectors=""nameSelectors"" />
-
-<BitTimeline Alternate Horizontal Items=""twoSidedCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example7CsharpCode = @"
 private List<Event> twoSidedCustoms =
 [
     new() { FirstText = ""09:00"", SecondText = ""Custom 1"", Icon = BitIconName.Add },
@@ -146,11 +135,11 @@ private List<Event> twoSidedCustoms =
     new() { FirstText = ""16:45"", SecondText = ""Custom 4"", Icon = BitIconName.Accept }
 ];";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitTimeline ReverseOrder Items=""twoSidedCustoms"" NameSelectors=""nameSelectors"" />
 
 <BitTimeline ReverseOrder Horizontal Items=""twoSidedCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private List<Event> twoSidedCustoms =
 [
     new() { FirstText = ""09:00"", SecondText = ""Custom 1"", Icon = BitIconName.Add },
@@ -159,31 +148,21 @@ private List<Event> twoSidedCustoms =
     new() { FirstText = ""16:45"", SecondText = ""Custom 4"", Icon = BitIconName.Accept }
 ];";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitTimeline TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
 
 <BitTimeline TruncateLine=""BitTimelineTruncateLine.Start"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
 
 <BitTimeline TruncateLine=""BitTimelineTruncateLine.End"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline Horizontal TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example9CsharpCode = @"
-private List<Event> basicCustoms =
-[
-    new() { FirstText = ""Custom 1"" },
-    new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"" },
-    new() { FirstText = ""Custom 3"" }
-];";
-
-    private readonly string example10RazorCode = @"
 <BitTimeline LineVariant=""BitTimelineLineVariant.Dashed"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
 
 <BitTimeline LineVariant=""BitTimelineLineVariant.Dotted"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
 
 <BitTimeline Items=""lineVariantCustoms"" NameSelectors=""nameSelectors"" TruncateLine=""BitTimelineTruncateLine.Both"" />
 
-<BitTimeline Horizontal LineVariant=""BitTimelineLineVariant.Dashed"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example10CsharpCode = @"
+<BitTimeline Horizontal LineVariant=""BitTimelineLineVariant.Dashed"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
+    private readonly string example7CsharpCode = @"
 private BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
@@ -207,9 +186,32 @@ private List<Event> lineVariantCustoms =
     new() { FirstText = ""Delivered"", DotVariant = BitVariant.Outline, LineStyle = BitTimelineLineVariant.Dashed }
 ];";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example8RazorCode = @"
+<BitTimeline Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline DotAlignment=""BitTimelineDotAlignment.End"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline Horizontal DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
+    private readonly string example8CsharpCode = @"
+private List<Event> alignCustoms =
+[
+    new() { FirstText = ""09:00"", SecondText = ""Kickoff: the scope, the milestones and an owner for each of them are agreed on."", Icon = BitIconName.Add },
+    new() { FirstText = ""11:30"", SecondText = ""Design review: the proposal is walked through and the open questions are collected."", Icon = BitIconName.Edit },
+    new() { FirstText = ""15:00"", SecondText = ""Sign-off: the plan is approved and the work is scheduled."", Icon = BitIconName.Accept }
+];
+
+private List<Event> basicCustoms =
+[
+    new() { FirstText = ""Custom 1"" },
+    new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"" },
+    new() { FirstText = ""Custom 3"" }
+];";
+
+    private readonly string example9RazorCode = @"
 <BitTimeline Items=""customizedCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
@@ -228,7 +230,7 @@ private List<Event> customizedCustoms =
     new() { FirstText = ""No dot"", NoDot = true }
 ];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .dot-template {
         z-index: 1;
@@ -259,7 +261,7 @@ private List<Event> customizedCustoms =
         <div class=""dot-template""><BitIcon IconName=""@BitIconName.CheckMark"" /></div>
     </DotTemplate>
 </BitTimeline>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private List<Event> templateItems =
 [
     new()
@@ -313,12 +315,12 @@ private List<Event> fullTemplateItems =
     new() { FirstText = ""Delivered"" }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitTimeline Items=""clickCustoms"" NameSelectors=""nameSelectors""
              OnItemClick=""@(item => { clickedCustom = $""{item.FirstText} (OnItemClick)""; })"" />
 
 <div>Clicked item: <b>@clickedCustom</b></div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string? clickedCustom;
 private List<Event> clickCustoms = [];
 
@@ -339,6 +341,43 @@ private void HandleOnSelect(Event item)
     clickedCustom = $""{item.FirstText} (item's own OnClick)"";
     StateHasChanged();
 }";
+
+    private readonly string example12RazorCode = @"
+<BitTimeline AriaLabel=""Order history"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""a11yCustoms"" NameSelectors=""nameSelectors"" />";
+    private readonly string example12CsharpCode = @"
+private List<Event> a11yCustoms =
+[
+    new() { FirstText = ""Ordered"", Icon = BitIconName.Accept, DotColor = BitColor.Success, Label = ""Ordered, done"", Tooltip = ""Done on 3 March"" },
+    new() { FirstText = ""Shipped"", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitTimelineLineVariant.Dashed, Label = ""Shipped, done"", Tooltip = ""Done on 4 March"" },
+    new() { FirstText = ""Delivered"", DotVariant = BitVariant.Outline, LineStyle = BitTimelineLineVariant.Dashed, Label = ""Delivered, pending"", Tooltip = ""Expected on 7 March"" }
+];";
+
+    private readonly string example13RazorCode = @"
+<BitParams Parameters=""timelineParams"">
+    <BitTimeline Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+    <BitTimeline Color=""BitColor.Error"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+</BitParams>
+
+<BitTimeline Items=""iconCustoms"" NameSelectors=""nameSelectors"" />";
+    private readonly string example13CsharpCode = @"
+private readonly BitTimelineParams[] timelineParams =
+[
+    new()
+    {
+        Horizontal = true,
+        Color = BitColor.Success,
+        Variant = BitVariant.Outline,
+        TruncateLine = BitTimelineTruncateLine.Both,
+    }
+];
+
+private List<Event> iconCustoms =
+[
+    new() { FirstText = ""Custom 1"", Icon = BitIconName.Add },
+    new() { FirstText = ""Custom 2"", Icon = BitIconName.Edit, SecondText = ""Custom 2 Secondary"", Disabled = true },
+    new() { FirstText = ""Custom 3"", Icon = BitIconName.Delete }
+];";
 
     private readonly string example14RazorCode = @"
 <BitTimeline Horizontal Color=""BitColor.Primary"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
@@ -499,8 +538,8 @@ private List<Event> iconCustoms =
         color: blueviolet;
     }
 
-    .custom-divider::before {
-        background: blueviolet;
+    .custom-divider {
+        --bit-Timeline-line-color: blueviolet;
     }
 
     .custom-item-text {
@@ -527,7 +566,15 @@ private List<Event> iconCustoms =
              Classes=""@(new() { Dot = ""custom-dot"",
                                 Icon = ""custom-icon"",
                                 Item = ""custom-item-text"",
-                                Divider = ""custom-divider"" })"" />";
+                                Divider = ""custom-divider"" })"" />
+
+
+<BitTimeline TruncateLine=""BitTimelineTruncateLine.Both""
+             Style=""--bit-Timeline-line-color: #8b5cf6; --bit-Timeline-line-width: 3px; --bit-Timeline-dot-size: 2rem; --bit-Timeline-dot-radius: 0.5rem; --bit-Timeline-dot-background: #ede9fe; --bit-Timeline-dot-border-color: #8b5cf6; --bit-Timeline-icon-color: #6d28d9;"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+<div style=""--bit-Timeline-item-spacing: 1.25rem; --bit-Timeline-content-gap: 1.5rem; --bit-Timeline-dot-shadow: 0 0 0 0.25rem var(--bit-clr-bg-sec);"">
+    <BitTimeline TruncateLine=""BitTimelineTruncateLine.Both"" Items=""cssVarCustoms"" NameSelectors=""nameSelectors"" />
+</div>";
     private readonly string example17CsharpCode = @"
 private List<Event> basicCustoms =
 [
@@ -547,6 +594,13 @@ private List<Event> styleClassCustoms =
 [
     new() { FirstText = ""Styled"", Style = ""color: dodgerblue;"", Icon = BitIconName.Brush },
     new() { FirstText = ""Classed"", Class = ""custom-item"", Icon = BitIconName.FormatPainter }
+];
+
+private List<Event> cssVarCustoms =
+[
+    new() { FirstText = ""Ordered"", Icon = BitIconName.Accept },
+    new() { FirstText = ""Shipped"", Icon = BitIconName.Accept, Style = ""--bit-Timeline-dot-background: gold; --bit-Timeline-dot-border-color: goldenrod; --bit-Timeline-icon-color: black;"" },
+    new() { FirstText = ""Delivered"", DotVariant = BitVariant.Outline }
 ];";
 
     private readonly string example18RazorCode = @"
