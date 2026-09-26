@@ -2710,4 +2710,93 @@ public class BitMessageTests : BunitTestContext
         Assert.IsEmpty(component.FindAll(".bit-msg-prg"));
     }
 
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowOnlyWhileItCanFold()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+
+        // A multiline message without a cap has nothing folded away, so there is nothing to watch.
+        component.Render(parameters => parameters.Add(p => p.Multiline, true));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotWatchTheOverflowWithoutTruncate()
+    {
+        RenderComponent<BitMessage>(parameters => parameters.AddChildContent(LongText));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldOfferTheExpanderOnlyWhileSomethingIsClipped()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent("Short");
+        });
+
+        // Until the browser has measured, the expander is rendered as it always was.
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepTheExpanderWhileItIsExpanded()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Expanded, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        // An unfolded text is unclipped on purpose; the button that folds it back has to stay.
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        var expander = component.Find(".bit-msg-exb");
+
+        Assert.AreEqual("true", expander.GetAttribute("aria-expanded"));
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowAfreshWhenItComesBack()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.Dismissed, false);
+            parameters.Add(p => p.DismissedChanged, _ => { });
+            parameters.AddChildContent(LongText);
+        });
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        component.Render(parameters => parameters.Add(p => p.Dismissed, true));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+
+        component.Render(parameters => parameters.Add(p => p.Dismissed, false));
+
+        // The message is a new element, measured from scratch: the expander is back until it is.
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+    }
 }

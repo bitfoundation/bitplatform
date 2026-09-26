@@ -292,7 +292,7 @@ public partial class BitMessageDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of Message, Possible values: Small | Medium | Large.",
+            Description = "The size of the message: it scales the type, the icon, the insets, the buttons and the countdown track together.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -338,7 +338,7 @@ public partial class BitMessageDemo
             Name = "Truncate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the message text is truncated. If true, the content is clipped to a single line and a button renders to unfold it, for a message that has to fit in a tight space. On a Multiline message it unfolds the content past the MaxLines cap instead, and does nothing without one.",
+            Description = "Determines if the message text is truncated. If true, the content is clipped to a single line and a button unfolds it, rendered only while something is actually clipped. On a Multiline message it unfolds the content past the MaxLines cap instead, and does nothing without one.",
         },
         new()
         {
@@ -675,6 +675,88 @@ public partial class BitMessageDemo
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Message-color",
+            DefaultValue = "The role's on-color (Fill), its main color (Outline, Text)",
+            Description = "Color of the text, the icon and the buttons.",
+        },
+        new()
+        {
+            Name = "--bit-Message-background",
+            DefaultValue = "The role's main color (Fill), transparent (Outline, Text)",
+            Description = "Background of the surface.",
+        },
+        new()
+        {
+            Name = "--bit-Message-border-color",
+            DefaultValue = "The role's main color (Fill, Outline), transparent (Text)",
+            Description = "Color of the border.",
+        },
+        new()
+        {
+            Name = "--bit-Message-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of the border; four values draw a single side, e.g. an accent bar.",
+        },
+        new()
+        {
+            Name = "--bit-Message-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of the surface and of the countdown track. Square wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-shadow",
+            DefaultValue = "none",
+            Description = "Shadow of the surface. The Elevation parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-focus-color",
+            DefaultValue = "The role's focus color",
+            Description = "Focus ring of the message itself and of its buttons.",
+        },
+        new()
+        {
+            Name = "--bit-Message-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Size of the title and the content.",
+        },
+        new()
+        {
+            Name = "--bit-Message-title-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the title.",
+        },
+        new()
+        {
+            Name = "--bit-Message-icon-color",
+            DefaultValue = "The message's own color",
+            Description = "Color of the severity icon, or of what IconTemplate renders.",
+        },
+        new()
+        {
+            Name = "--bit-Message-icon-size",
+            DefaultValue = "Per Size, --bit-siz-icon-*",
+            Description = "Size of the severity icon.",
+        },
+        new()
+        {
+            Name = "--bit-Message-progress-color",
+            DefaultValue = "The message's own color",
+            Description = "Color of the auto-dismiss countdown bar.",
+        },
+        new()
+        {
+            Name = "--bit-Message-progress-height",
+            DefaultValue = "Per Size, --bit-siz-track-*",
+            Description = "Thickness of the auto-dismiss countdown track.",
+        },
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -867,7 +949,6 @@ public partial class BitMessageDemo
     private bool isProgressDismissed;
     private bool isPausedDismissed;
     private BitMessage? pausableMessage;
-    private bool isEscapeDismissed;
     private bool isMethodDismissed;
     private BitMessage? dismissableMessage;
     private bool isDelayedDismissed = true;
@@ -902,6 +983,16 @@ public partial class BitMessageDemo
     private bool isDisabledSampleDismissed;
 
     private double elevation = 7;
-    private bool isErrorDismissed;
-    private bool isWarningDismissed;
+
+    private bool isCssVarsDismissed;
+
+    private readonly BitMessageParams[] messageParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Size = BitSize.Small,
+            Truncate = true,
+        }
+    ];
 }
