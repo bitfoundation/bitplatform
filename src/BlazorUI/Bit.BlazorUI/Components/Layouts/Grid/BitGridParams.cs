@@ -356,7 +356,7 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
 
         if (Spacing.HasValue() && bitGrid.HasNotBeenSet(nameof(Spacing)))
         {
-            bitGrid.Spacing = Spacing!;
+            bitGrid.Spacing = Spacing;
 
             bitGrid.StyleBuilder.Reset();
         }

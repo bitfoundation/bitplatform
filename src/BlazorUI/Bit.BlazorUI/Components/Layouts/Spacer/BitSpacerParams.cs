@@ -52,7 +52,7 @@ public class BitSpacerParams : BitComponentBaseParams, IBitComponentParams
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether Gap and MinGap apply to the block (vertical) axis instead of the inline (horizontal) one.
+    /// Gets or sets a value indicating whether Gap, Size and MinGap apply to the block (vertical) axis instead of the inline (horizontal) one.
     /// </summary>
     public bool? Vertical { get; set; }
 

@@ -32,7 +32,7 @@ public partial class BitBasicListDemo
             Name = "EmptyContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content that will be rendered when there is no item to show.",
+            Description = "The content rendered in place of the rows while the list holds no items.",
         },
         new()
         {
@@ -130,7 +130,14 @@ public partial class BitBasicListDemo
             Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows the loading content of the list in place of its items. The list also raises this state on its own while it is fetching items.",
+            Description = "Shows the loading content in place of the rows. The list also raises this state on its own while it fetches the first page or a plain ItemsProvider set.",
+        },
+        new()
+        {
+            Name = "LoadingLabel",
+            Type = "string?",
+            DefaultValue = "Loading...",
+            Description = "The text next to the spinner of the default loading content and of the default LoadMore button while a page loads; announced to screen readers as the list starts loading (a LoadingTemplate is announced with its own text).",
         },
         new()
         {
@@ -158,7 +165,7 @@ public partial class BitBasicListDemo
             Name = "LoadMoreTemplate",
             Type = "RenderFragment<bool>?",
             DefaultValue = "null",
-            Description = "The template of the LoadMore button. Its context is whether a page is being loaded at that moment.",
+            Description = "Replaces the default LoadMore button. Its context is whether a page is being loaded at that moment.",
         },
         new()
         {
@@ -191,7 +198,7 @@ public partial class BitBasicListDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "list",
-            Description = "The role attribute of the html element of the list. Set it to null to leave the role off altogether.",
+            Description = "The role of the element holding the rows (which also carries the AriaLabel). Without a RowTemplate each row is rendered as a listitem while the role is list. Left off while the EmptyContent shows; set it to null to leave it off altogether. Wherever the element has no role to name, the AriaLabel names the root, as a group, instead.",
         },
         new()
         {
@@ -214,14 +221,14 @@ public partial class BitBasicListDemo
             Name = "Virtualize",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables virtualization in rendering the list.",
+            Description = "Renders only the rows around the visible region. Vertical only.",
         },
         new()
         {
             Name = "VirtualizePlaceholder",
             Type = "RenderFragment<PlaceholderContext>?",
             DefaultValue = "null",
-            Description = "The template for items that have not yet rendered.",
+            Description = "The template of the rows whose items the ItemsProvider has not delivered yet in Virtualize mode.",
         },
     ];
 
@@ -265,6 +272,100 @@ public partial class BitBasicListDemo
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-BasicList-height",
+            DefaultValue = "31.25rem (spacing(62.5))",
+            Description = "Height of a vertical list. A Horizontal list is as tall as its rows.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring of the list (when it is focusable) and of its LoadMore element.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text of the default LoadMore button when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-loading-padding",
+            DefaultValue = "spacing(2)",
+            Description = "Padding of the loading content.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-loading-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text of the default loading content.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-spinner-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Moving arc of the default spinners (loading content and busy LoadMore button).",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-spinner-size",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Width and height of the default spinners.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-load-more-padding",
+            DefaultValue = "spacing(2)",
+            Description = "Padding of the default LoadMore button.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-load-more-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Text of the default LoadMore button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-load-more-hover-color",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Text of the default LoadMore button on hover (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-load-more-background",
+            DefaultValue = "transparent",
+            Description = "Background of the default LoadMore button at rest, while busy and when disabled.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-load-more-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of the default LoadMore button on hover (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-load-more-active-background",
+            DefaultValue = "The hover background, else --bit-clr-bg-pri-active",
+            Description = "Background of the default LoadMore button while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-load-more-font-size",
+            DefaultValue = "inherit",
+            Description = "Text size of the default LoadMore button.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-load-more-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Text weight of the default LoadMore button.",
+        },
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -287,6 +388,13 @@ public partial class BitBasicListDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the header container of the list.",
+                },
+                new()
+                {
+                    Name = "Items",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the element holding the rows, where a grid or a gap between them is laid out.",
                 },
                 new()
                 {
@@ -348,6 +456,25 @@ public partial class BitBasicListDemo
 
     private readonly List<Person> emptyPeople = [];
 
+    private readonly List<Person> teamMembers = [.. Enumerable.Range(0, 25).Select(i => new Person
+    {
+        Id = i + 1,
+        FirstName = $"Member {i + 1}",
+        LastName = $"Member Family {i + 1}",
+        Job = $"Engineer {i + 1}"
+    })];
+
+    private readonly BitBasicListParams[] basicListParams =
+    [
+        new()
+        {
+            LoadMore = true,
+            LoadMoreSize = 5,
+            LoadMoreText = "Show more",
+            Style = "height: 200px; border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px;",
+        }
+    ];
+
     private readonly List<string> fruits = ["Apple", "Apricot", "Banana", "Cherry", "Fig", "Grape", "Lemon", "Mango", "Orange", "Peach"];
 
     private readonly List<Person> mutablePeople = [.. Enumerable.Range(0, 100).Select(i => new Person
@@ -372,6 +499,7 @@ public partial class BitBasicListDemo
     private BitBasicListItemsProvider<Person> loadMoreProvider = default!;
     private BitBasicListItemsProvider<Person> autoLoadProvider = default!;
     private BitBasicListItemsProvider<Person> loadMoreVirtualizeProvider = default!;
+    private BitBasicListItemsProvider<Person> accessibleProvider = default!;
 
     protected override void OnInitialized()
     {
@@ -438,6 +566,13 @@ public partial class BitBasicListDemo
             await Task.Delay(500);
 
             return BitBasicListItemsProviderResult.From([.. lotsOfPeople.Skip(req.StartIndex).Take(req.Count)], lotsOfPeople.Count);
+        };
+
+        accessibleProvider = async req =>
+        {
+            await Task.Delay(800);
+
+            return BitBasicListItemsProviderResult.From([.. teamMembers.Skip(req.StartIndex).Take(req.Count)], teamMembers.Count);
         };
 
         base.OnInitialized();
