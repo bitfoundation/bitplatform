@@ -46,6 +46,8 @@ public partial class BitSwiper : BitComponentBase
     private System.Timers.Timer? _autoPlayTimer;
     private string _directionStyle = string.Empty;
     private bool _stateReported;
+    private int _reportedItemsCount;
+    private bool _endReached;
     private string? _announcement;
 
     // Nothing is known about how far the swiper reaches until the browser has measured it, and a button
@@ -296,9 +298,12 @@ public partial class BitSwiper : BitComponentBase
     /// The event that will be called when the swiper is scrolled all the way to its end.
     /// </summary>
     /// <remarks>
-    /// It fires each time the swiper arrives at its end, not while it stays there, and never for a swiper
-    /// everything already fits in, which makes it the place to load more items: once they are added, the
-    /// swiper has somewhere to go again and fires the next time it gets there.
+    /// It fires each time the swiper is moved to its end, not while it stays there, and not when the end
+    /// comes to it instead: a resize clamping it to a shorter reach, or items taken out while it stands near
+    /// the end. A swiper everything fits in has its end in view without going anywhere, so it fires for that
+    /// too, once per set of items. That makes it the place to load more items: once they are added, the
+    /// swiper either has somewhere to go again and fires the next time it gets there, or still fits them all
+    /// and fires straight away.
     /// </remarks>
     [Parameter] public EventCallback OnReachEnd { get; set; }
 
@@ -306,7 +311,8 @@ public partial class BitSwiper : BitComponentBase
     /// The event that will be called when the swiper is scrolled all the way back to its start.
     /// </summary>
     /// <remarks>
-    /// It fires each time the swiper arrives at its start, not for the start it is first laid out on.
+    /// It fires each time the swiper is moved back to its start, not for the start it is first laid out on,
+    /// and not when a resize or a change of its items puts it there.
     /// </remarks>
     [Parameter] public EventCallback OnReachStart { get; set; }
 
@@ -349,7 +355,8 @@ public partial class BitSwiper : BitComponentBase
     /// A partly shown item is the clearest hint that there is more to scroll to. The room is taken out of
     /// the swiper before <see cref="VisibleItemsCount"/> sizes its items, so the requested number of them
     /// still fits whole between the two ends, and the items settle against it rather than against the edge
-    /// of the swiper, both when it navigates and when it snaps.
+    /// of the swiper, both when it navigates and when it snaps. Each end is capped at a quarter of the
+    /// swiper, so half of it is always left for the items however large a peek is asked for.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Peek { get; set; }
@@ -733,7 +740,21 @@ public partial class BitSwiper : BitComponentBase
         var previousIndex = _index;
         var wasAtStart = _atStart;
         var wasAtEnd = _atEnd;
-        var wasReported = _stateReported;
+
+        // A move is a report following another one over the same box and the same items, so only the scroll
+        // position changed. A resize clamping the swiper to a shorter reach, or items taken out from under
+        // it, can leave it at an end too, but it went nowhere to get there.
+        var moved = _stateReported &&
+                    Math.Abs(_viewport - state.Viewport) <= 0.5 &&
+                    _reportedItemsCount == _allItems.Count;
+
+        // Another set of items is another end to reach, and leaving the end makes it one to reach again.
+        if (_reportedItemsCount != _allItems.Count || state.AtEnd is false)
+        {
+            _endReached = false;
+        }
+
+        _reportedItemsCount = _allItems.Count;
 
         _index = state.Index;
         _page = state.Page;
@@ -774,21 +795,26 @@ public partial class BitSwiper : BitComponentBase
         if (previousIndex != _index)
         {
             await OnChange.InvokeAsync(_index);
+
+            // The handler may have taken the swiper away (navigating off the page, for one).
+            if (IsDisposed) return;
         }
 
-        // Only an arrival counts: the place the swiper is first laid out on is not one, and neither is an end
-        // of a swiper everything fits in, which it stands at both ends of without having gone anywhere.
-        if (wasReported && _scrollable)
+        // Only a move counts at the start: the place the swiper is first laid out on is not one.
+        if (moved && _scrollable && wasAtStart is false && _atStart)
         {
-            if (wasAtStart is false && _atStart)
-            {
-                await OnReachStart.InvokeAsync();
-            }
+            await OnReachStart.InvokeAsync();
 
-            if (wasAtEnd is false && _atEnd)
-            {
-                await OnReachEnd.InvokeAsync();
-            }
+            if (IsDisposed) return;
+        }
+
+        // The end is reached by moving to it or, in a swiper everything fits in, by having it in view already;
+        // without the latter, a swiper loading more items here would stall on a first batch that fits.
+        if (_atEnd && _endReached is false && (_scrollable is false || (moved && wasAtEnd is false)))
+        {
+            _endReached = true;
+
+            await OnReachEnd.InvokeAsync();
         }
     }
 

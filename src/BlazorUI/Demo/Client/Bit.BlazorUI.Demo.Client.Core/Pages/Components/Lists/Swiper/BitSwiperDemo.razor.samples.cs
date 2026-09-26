@@ -246,14 +246,25 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
 <div>Loaded: @loadedCount items</div>";
     private readonly string example10CsharpCode = @"
 private int loadedCount = 8;
+private bool isLoading;
 
 private async Task LoadMore()
 {
-    if (loadedCount >= 40) return;
+    // the swiper does not wait for the handler, so a second arrival can come in while a page is on its way
+    if (isLoading || loadedCount >= 40) return;
 
-    await Task.Delay(300); // fetching the next page of items
+    isLoading = true;
 
-    loadedCount += 8;
+    try
+    {
+        await Task.Delay(300); // fetching the next page of items
+
+        loadedCount += 8;
+    }
+    finally
+    {
+        isLoading = false;
+    }
 }";
 
     private readonly string example11RazorCode = itemStyle + @"

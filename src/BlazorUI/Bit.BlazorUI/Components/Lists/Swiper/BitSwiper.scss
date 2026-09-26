@@ -86,16 +86,18 @@ $swp-target: 24px;
     min-height: 0;
     gap: var(--bit-swp-gap);
     overflow-x: auto;
-
-    // The peek is padding, so the fraction VisibleItemsCount sizes the items with is a fraction of what is
-    // left between the two ends, and scroll padding, so the snapping settles the items against it rather than
-    // against the edge of the box. The browser side reads it back off the box for its own alignment.
-    box-sizing: border-box;
-    padding-inline: var(--bit-swp-peek);
-    scroll-padding-inline: var(--bit-swp-peek);
     overflow-y: hidden;
     overscroll-behavior-x: contain;
     scroll-snap-type: var(--bit-swp-snap, none);
+
+    // The peek is padding, so the fraction VisibleItemsCount sizes the items with is a fraction of what is
+    // left between the two ends, and scroll padding, so the snapping settles the items against it rather than
+    // against the edge of the box. The browser side reads it back off the box for its own alignment. Each end
+    // is capped at a quarter of the box (a padding percentage is one of the width the box fills), so however
+    // large a peek is asked for, half the swiper is always left for the items.
+    box-sizing: border-box;
+    padding-inline: min(var(--bit-swp-peek), 25%);
+    scroll-padding-inline: min(var(--bit-swp-peek), 25%);
 
     // The swiper animates itself by writing the scroll position a frame at a time, which a smooth
     // scrolling rule of the hosting application would animate a second time, so the box is kept on the
@@ -193,10 +195,12 @@ $swp-target: 24px;
         overflow-y: auto;
         overscroll-behavior-x: auto;
         overscroll-behavior-y: contain;
+        // A padding percentage is one of the width even here, so the quarter-of-the-box cap is measured by
+        // the browser side and handed down as --bit-swp-pmx; until it has measured, the peek goes uncapped.
         padding-inline: 0;
-        padding-block: var(--bit-swp-peek);
+        padding-block: min(var(--bit-swp-peek), var(--bit-swp-pmx, var(--bit-swp-peek)));
         scroll-padding-inline: 0;
-        scroll-padding-block: var(--bit-swp-peek);
+        scroll-padding-block: min(var(--bit-swp-peek), var(--bit-swp-pmx, var(--bit-swp-peek)));
     }
 }
 

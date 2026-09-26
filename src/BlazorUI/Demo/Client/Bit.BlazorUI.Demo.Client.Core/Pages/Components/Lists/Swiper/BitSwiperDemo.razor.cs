@@ -173,14 +173,14 @@ public partial class BitSwiperDemo
             Name = "OnReachEnd",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "The event that will be called each time the swiper arrives at its end (never for a swiper everything fits in), which is where more items are loaded."
+            Description = "The event that will be called each time the swiper is moved to its end, not when a resize or removed items put it there, and once per set of items for a swiper everything fits in, which is where more items are loaded."
         },
         new()
         {
             Name = "OnReachStart",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "The event that will be called each time the swiper arrives back at its start (not for the start it is first laid out on)."
+            Description = "The event that will be called each time the swiper is moved back to its start (not for the start it is first laid out on, nor when a resize or a change of its items puts it there)."
         },
         new()
         {
@@ -226,7 +226,7 @@ public partial class BitSwiperDemo
             Name = "Peek",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The room (any CSS length, for example 2rem) kept at both ends of the swiper, which the neighboring items peek into. VisibleItemsCount fits its items between the two, and the items settle against it."
+            Description = "The room (any CSS length, for example 2rem) kept at both ends of the swiper, which the neighboring items peek into. VisibleItemsCount fits its items between the two, and the items settle against it. Each end is capped at a quarter of the swiper."
         },
         new()
         {
@@ -698,6 +698,7 @@ public partial class BitSwiperDemo
     private BitSwiperSnap snap = BitSwiperSnap.Center;
     private int number = 1;
     private int loadedCount = 8;
+    private bool isLoading;
     private int currentIndex;
     private BitSwiper swiper = default!;
 
@@ -713,10 +714,20 @@ public partial class BitSwiperDemo
 
     private async Task LoadMore()
     {
-        if (loadedCount >= 40) return;
+        // the swiper does not wait for the handler, so a second arrival can come in while a page is on its way
+        if (isLoading || loadedCount >= 40) return;
 
-        await Task.Delay(300); // fetching the next page of items
+        isLoading = true;
 
-        loadedCount += 8;
+        try
+        {
+            await Task.Delay(300); // fetching the next page of items
+
+            loadedCount += 8;
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

@@ -33,10 +33,10 @@ namespace BitBlazorUI {
         scroll: number;
         viewport: number;
         max: number;
-        // The room kept at the ends of the swiper (its Peek), which the items settle against instead of
-        // against its edges, and the length left between the two, where a whole item is "in view".
+        // The room kept at the start of the swiper (its Peek), which the items settle against instead of
+        // against its edge, and the length left between the two ends, where a whole item is "in view". The
+        // peek alone is not read fresh, but kept from one resize to the next (see readPeek).
         padStart: number;
-        padEnd: number;
         span: number;
         positions: number[];
         sizes: number[];
@@ -113,6 +113,9 @@ namespace BitBlazorUI {
         private notification = -1;
         private lastKey = '';
         private direction = 'ltr';
+        private padStart = 0;
+        private padEnd = 0;
+        private peekDirty = true;
 
         private dragging = false;
         private moved = false;
@@ -161,7 +164,10 @@ namespace BitBlazorUI {
             this.root.addEventListener('focusout', this.onFocusOut, { signal });
 
             try {
-                this.observer = new ResizeObserver(() => this.scheduleNotify());
+                this.observer = new ResizeObserver(() => {
+                    this.peekDirty = true;
+                    this.scheduleNotify();
+                });
                 this.observe();
             } catch (e) { console.error("BitBlazorUI.Swiper.init:", e); }
 
@@ -189,6 +195,8 @@ namespace BitBlazorUI {
 
             this.readDirection();
 
+            this.peekDirty = true;
+
             this.scheduleNotify();
         }
 
@@ -200,6 +208,8 @@ namespace BitBlazorUI {
             this.observe();
 
             this.readDirection();
+
+            this.peekDirty = true;
 
             this.scheduleNotify();
         }
@@ -359,17 +369,12 @@ namespace BitBlazorUI {
                 ? container.scrollHeight - container.clientHeight
                 : container.scrollWidth - container.clientWidth);
 
-            let padStart = 0;
-            let padEnd = 0;
+            if (this.peekDirty) {
+                this.readPeek(viewport);
+            }
 
-            try {
-                const cs = window.getComputedStyle(container);
-
-                padStart = parseFloat(vertical ? cs.paddingTop : (rtl ? cs.paddingRight : cs.paddingLeft)) || 0;
-                padEnd = parseFloat(vertical ? cs.paddingBottom : (rtl ? cs.paddingLeft : cs.paddingRight)) || 0;
-            } catch (e) { }
-
-            const span = Math.max(0, viewport - padStart - padEnd);
+            const padStart = this.padStart;
+            const span = Math.max(0, viewport - padStart - this.padEnd);
 
             const positions: number[] = [];
             const sizes: number[] = [];
@@ -390,7 +395,38 @@ namespace BitBlazorUI {
                 sizes.push(vertical ? r.height : r.width);
             }
 
-            return { rtl, scroll, viewport, max, padStart, padEnd, span, positions, sizes };
+            return { rtl, scroll, viewport, max, padStart, span, positions, sizes };
+        }
+
+        // The peek is read back off the padding of the box, and kept: it only changes along with the size
+        // of what the box holds (which the observer reports) or with the options, so a drag, a scroll and
+        // an animation, which measure the swiper every frame, do not pay for a style resolution of it.
+        // A horizontal box caps it in its stylesheet (a percentage of padding is one of the width), while a
+        // vertical one is capped here, since nothing in CSS resolves a padding against a height; either way
+        // the two ends together never take more than half the swiper, so there is always room for an item.
+        private readPeek(viewport: number) {
+            this.peekDirty = false;
+
+            const vertical = this.vertical;
+            const holder = this.container.parentElement;
+
+            if (holder) {
+                const cap = vertical ? `${Math.floor(viewport / 4)}px` : '';
+
+                if (holder.style.getPropertyValue('--bit-swp-pmx') !== cap) {
+                    if (cap) {
+                        holder.style.setProperty('--bit-swp-pmx', cap);
+                    } else {
+                        holder.style.removeProperty('--bit-swp-pmx');
+                    }
+                }
+            }
+
+            const cs = window.getComputedStyle(this.container);
+            const rtl = this.rtl;
+
+            this.padStart = parseFloat(vertical ? cs.paddingTop : (rtl ? cs.paddingRight : cs.paddingLeft)) || 0;
+            this.padEnd = parseFloat(vertical ? cs.paddingBottom : (rtl ? cs.paddingLeft : cs.paddingRight)) || 0;
         }
 
         // Where the swiper has to stand for the given item to sit where the snap alignment asks for: at

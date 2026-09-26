@@ -272,8 +272,8 @@
 
     <DemoExample Title="Load more" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            <b>OnReachEnd</b> fires each time the swiper arrives at its end (<b>OnReachStart</b> at its start), never for
-            one that already fits, so it is where more items are loaded.
+            <b>OnReachEnd</b> fires each time the swiper is moved to its end (<b>OnReachStart</b> to its start), and once
+            per set of items for one everything already fits in, so it is where more items are loaded.
         </div>
         <br />
         <div>
@@ -332,7 +332,8 @@
     <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>BitParams</b> with a <b>BitSwiperParams</b> sets defaults for every swiper under it; a swiper's own
-            value always wins. The items, <b>DefaultItem</b> and <b>OnChange</b> are not cascaded.
+            value always wins. The items, <b>DefaultItem</b>, <b>OnChange</b>, <b>OnReachStart</b> and <b>OnReachEnd</b>
+            are not cascaded.
         </div>
         <br />
         <BitParams Parameters="@swiperParams">

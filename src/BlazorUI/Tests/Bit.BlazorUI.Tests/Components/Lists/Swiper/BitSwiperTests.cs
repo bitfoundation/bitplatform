@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -1484,10 +1485,83 @@ public class BitSwiperTests : BunitTestContext
         await PushState(component, atStart: true, atEnd: false);
         Assert.AreEqual(1, reachedStart);
 
-        // a swiper everything fits in stands at both ends without having gone anywhere
+        // a resize clamping the swiper to a shorter reach puts it at an end without it having gone anywhere
+        await PushState(component, atStart: false, atEnd: false);
+        await PushState(component, atStart: false, atEnd: true, viewport: 800);
+        Assert.AreEqual(1, reachedEnd);
+
+        await PushState(component, atStart: true, atEnd: false, viewport: 400);
+        Assert.AreEqual(1, reachedStart);
+
+        // the next move to the end is an arrival again
+        await PushState(component, atStart: false, atEnd: true, viewport: 400);
+        Assert.AreEqual(2, reachedEnd);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldFireOnReachEndOncePerSetOfItemsThatFit()
+    {
+        var reachedEnd = 0;
+        var reachedStart = 0;
+
+        static RenderFragment Items(int count) => builder =>
+        {
+            for (int i = 0; i < count; i++)
+            {
+                builder.OpenComponent<BitSwiperItem>(0);
+                builder.CloseComponent();
+            }
+        };
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.OnReachEnd, () => reachedEnd++);
+            parameters.Add(p => p.OnReachStart, () => reachedStart++);
+            parameters.Add(p => p.ChildContent, Items(2));
+        });
+
+        // a swiper everything fits in has its end in view from the outset, which is where more items load
         await PushState(component, atStart: true, atEnd: true, scrollable: false);
         Assert.AreEqual(1, reachedEnd);
-        Assert.AreEqual(1, reachedStart);
+        Assert.AreEqual(0, reachedStart);
+
+        // staying there, resized or not, does not fire it again
+        await PushState(component, atStart: true, atEnd: true, scrollable: false, viewport: 800);
+        Assert.AreEqual(1, reachedEnd);
+
+        // more items that still fit are another end in view
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Items(4)));
+        await PushState(component, atStart: true, atEnd: true, scrollable: false, viewport: 800);
+        Assert.AreEqual(2, reachedEnd);
+
+        // items that no longer fit leave the swiper somewhere to go, and items taken out while it stands at
+        // the end are not an arrival
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Items(8)));
+        await PushState(component, atStart: false, atEnd: true, viewport: 800);
+        Assert.AreEqual(2, reachedEnd);
+
+        await PushState(component, atStart: false, atEnd: false, viewport: 800);
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Items(6)));
+        await PushState(component, atStart: false, atEnd: true, viewport: 800);
+        Assert.AreEqual(2, reachedEnd);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldNotFireOnReachEndOnceOnChangeDisposedIt()
+    {
+        var reachedEnd = 0;
+        IRenderedComponent<BitSwiper>? component = null;
+
+        component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, async (int _) => await component!.Instance.DisposeAsync());
+            parameters.Add(p => p.OnReachEnd, () => reachedEnd++);
+        });
+
+        await PushState(component, atStart: false, atEnd: false);
+        await PushState(component, index: 1, atStart: false, atEnd: true);
+
+        Assert.AreEqual(0, reachedEnd);
     }
 
     [TestMethod]
