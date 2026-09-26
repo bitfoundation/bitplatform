@@ -66,7 +66,8 @@ public partial class BitPersonaDemo
             ImageUrl=""/images/persona/persona-female.png"" />
 
 
-<div>With a glyph inside the dot (PresenceIconNames)</div>
+<div>A glyph in the dot (<b>PresenceIconNames</b>), and a single status's glyph (<b>PresenceIconName</b>):</div>
+
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Online""
@@ -74,8 +75,6 @@ public partial class BitPersonaDemo
             Size=""BitPersonaSize.Size100""
             ImageUrl=""/images/persona/persona-female.png"" />
 
-
-<div>A single status, without a map of all eight (PresenceIconName)</div>
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Out of office""
             Presence=""BitPersonaPresence.OutOfOffice""
@@ -84,7 +83,8 @@ public partial class BitPersonaDemo
             ImageUrl=""/images/persona/persona-female.png"" />
 
 
-<div>Named for the reader (PresenceTitles)</div>
+<div>Named for the reader (<b>PresenceTitles</b>) - hover the dot:</div>
+
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Dnd""
@@ -123,18 +123,13 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
 
 <BitPersona PrimaryText=""Elvia Atkins (Contoso)"" SecondaryText=""The aside is dropped"" Size=""BitPersonaSize.Size72"" />
 
-<BitPersona PrimaryText=""carlos.slattery@contoso.com"" SecondaryText=""An address, not a name"" Size=""BitPersonaSize.Size72"" />
-
-<BitPersona PrimaryText=""+1 (555) 016 7788"" SecondaryText=""No letters - the icon stands in"" Size=""BitPersonaSize.Size72"" />
+<BitPersona PrimaryText=""carlos.slattery@@contoso.com"" SecondaryText=""An address, not a name"" Size=""BitPersonaSize.Size72"" />
 
 <BitPersona AllowPhoneInitials PrimaryText=""+1 (555) 016 7788"" SecondaryText=""AllowPhoneInitials"" Size=""BitPersonaSize.Size72"" />
 
 <BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""ImageInitials"" ImageInitials=""SK!"" Size=""BitPersonaSize.Size72"" />
 
-<BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""Three letters, stepped down to fit"" ImageInitials=""SKH"" Size=""BitPersonaSize.Size72"" />
-
-<BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""Four letters, stepped down further"" ImageInitials=""SKHN"" Size=""BitPersonaSize.Size72"" />
-
+<BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""Four letters, stepped down to fit"" ImageInitials=""SKHN"" Size=""BitPersonaSize.Size72"" />
 
 <BitPersona PrimaryText=""Saleh Khafan""
             SecondaryText=""Broken image url""
@@ -148,20 +143,11 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             CoinIconName=""@BitIconName.Group""
             Size=""BitPersonaSize.Size72"" />
 
-<BitPersona PrimaryText=""Meeting Room 4""
-            SecondaryText=""Second floor""
-            CoinColor=""BitColor.Tertiary""
-            CoinIconName=""@BitIconName.Room""
-            Size=""BitPersonaSize.Size72"" />
-
 <BitPersona PrimaryText=""Build Bot""
             SecondaryText=""Service account""
-            Squared
-            CoinColor=""BitColor.Success""
             CoinIconName=""@BitIconName.Robot""
-            Size=""BitPersonaSize.Size72"" />";
+            Size=""BitPersonaSize.Size72"" />
 
-    private readonly string example5RazorCode = @"
 <BitPersona PrimaryText=""Unknown""
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
@@ -173,7 +159,7 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             UnknownIconName=""@BitIconName.StatusErrorFull""
             Unknown />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Circular (default)""
             Presence=""BitPersonaPresence.Online""
@@ -188,20 +174,12 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona Shape=""BitPersonaShape.Square""
-            PrimaryText=""Xafan Salina""
-            SecondaryText=""Square""
-            Presence=""BitPersonaPresence.Online""
-            Size=""BitPersonaSize.Size72""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona Shape=""BitPersonaShape.Square""
             PrimaryText=""Design Team""
-            SecondaryText=""A coin that is not a face""
-            CoinColor=""BitColor.Tertiary""
+            SecondaryText=""Square""
             CoinIconName=""@BitIconName.Group""
-            Size=""BitPersonaSize.Size72"" />";
+            Size=""BitPersonaSize.Size72"" />
 
-    private readonly string example7RazorCode = @"
+
 <BitPersona PrimaryText=""Saleh Xafan""
             SecondaryText=""Fill (default)""
             Size=""BitPersonaSize.Size72""
@@ -217,20 +195,7 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             Size=""BitPersonaSize.Size72""
             CoinVariant=""BitVariant.Text"" />";
 
-    private readonly string example8RazorCode = @"
-<style>
-    .tinted-box {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        background-color: var(--bit-clr-bg-ter);
-    }
-</style>
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Not active""
-            Size=""BitPersonaSize.Size72""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
+    private readonly string example6RazorCode = @"
 <BitPersona Active
             PrimaryText=""Xafan Salina""
             SecondaryText=""Ring (default)""
@@ -246,48 +211,29 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
 
 <BitPersona Active
             ActiveAppearance=""BitPersonaActiveAppearance.RingShadow""
-            CoinColor=""BitColor.Success""
             PrimaryText=""Xafan Salina""
             SecondaryText=""RingShadow""
             Size=""BitPersonaSize.Size72""
             ImageUrl=""/images/persona/persona-female.png"" />
 
+<BitPersona Inactive
+            PrimaryText=""Saleh Khafan""
+            SecondaryText=""Inactive""
+            Size=""BitPersonaSize.Size72"" />
 
-<div>On a surface of its own, with the gap cut in that surface instead of the page</div>
-<div class=""tinted-box"">
-    <BitPersona Active
-                PrimaryText=""Xafan Salina""
-                SecondaryText=""Default gap color""
-                Size=""BitPersonaSize.Size72""
-                ImageUrl=""/images/persona/persona-female.png"" />
 
+<div>On a tinted surface, with the gap cut in that surface:</div>
+
+<div style=""padding: 1rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-ter);"">
     <BitPersona Active
                 PrimaryText=""Xafan Salina""
                 SecondaryText=""Retuned gap color""
                 Size=""BitPersonaSize.Size72""
-                Style=""--bit-prs-ring-gap-clr: var(--bit-clr-bg-ter);""
+                Style=""--bit-Persona-ring-gap-color: var(--bit-clr-bg-ter);""
                 ImageUrl=""/images/persona/persona-female.png"" />
-</div>
+</div>";
 
-
-<div>The speaker and everyone else</div>
-<BitPersona Active
-            PrimaryText=""Xafan Salina""
-            SecondaryText=""Speaking""
-            Size=""BitPersonaSize.Size72""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona Inactive
-            PrimaryText=""Saleh Khafan""
-            SecondaryText=""Listening""
-            Size=""BitPersonaSize.Size72"" />
-
-<BitPersona Inactive
-            PrimaryText=""Ted Randall""
-            SecondaryText=""Listening""
-            Size=""BitPersonaSize.Size72"" />";
-
-    private readonly string example9RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
@@ -297,34 +243,32 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             OnActionClick=""() => actionClickCount++""
             ActionIconName=""@BitIconName.CloudUpload""
             ImageUrl=""/images/persona/persona-female.png"" />
-<p>Action Click Count: @actionClickCount</p>
+<p>Action click count: @actionClickCount</p>
 
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
-            Presence=""BitPersonaPresence.Online""
             ImageOverlayText=""Change photo""
             OnImageClick=""() => imageClickCount++""
             ImageUrl=""/images/persona/persona-female.png"" />
-<p>Image Click Count: @imageClickCount</p>
 
 <BitPersona PrimaryText=""Saleh Khafan""
-            SecondaryText=""Developer""
+            SecondaryText=""No picture, same overlay""
             Size=""BitPersonaSize.Size120""
             ImageOverlayText=""Add photo""
             OnImageClick=""() => imageClickCount++"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Opens the profile""
+            SecondaryText=""Empty ImageOverlayText""
             Size=""BitPersonaSize.Size120""
             ImageOverlayText=""""
             OnImageClick=""() => imageClickCount++""
             ImageUrl=""/images/persona/persona-female.png"" />
+<p>Image click count: @imageClickCount</p>
 
 <BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
+            SecondaryText=""ActionTemplate""
             Size=""BitPersonaSize.Size120""
             OnActionClick=""() => actionClickCount++""
             ImageUrl=""/images/persona/persona-female.png"">
@@ -332,11 +276,33 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
         <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""() => actionClickCount++"">Upload</BitButton>
     </ActionTemplate>
 </BitPersona>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private int imageClickCount = 0;
 private int actionClickCount = 0;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example8RazorCode = @"
+<BitPersona Href=""/components/persona""
+            PrimaryText=""Xafan Salina""
+            SecondaryText=""Opens this page""
+            Presence=""BitPersonaPresence.Online""
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+<BitPersona Href=""https://github.com/bitfoundation/bitplatform""
+            Target=""_blank""
+            PrimaryText=""bit platform""
+            SecondaryText=""Opens in a new tab""
+            CoinIconName=""@BitIconName.Globe""
+            Size=""BitPersonaSize.Size72"" />
+
+<BitPersona Href=""/components/persona""
+            ImageOverlayText=""View profile""
+            PrimaryText=""Xafan Salina""
+            SecondaryText=""With a veil""
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/images/persona/persona-female.png"" />";
+
+    private readonly string example9RazorCode = @"
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Online""
@@ -345,37 +311,36 @@ private int actionClickCount = 0;";
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Saleh Khafan""
-            SecondaryText=""Developer""
+            SecondaryText=""Clickable, disabled""
             Size=""BitPersonaSize.Size72""
-            IsEnabled=""false"" />";
+            OnImageClick=""() => {}""
+            IsEnabled=""false"" />
 
-    private readonly string example11RazorCode = @"
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Loads""
+<BitPersona Href=""/components/persona""
+            PrimaryText=""Xafan Salina""
+            SecondaryText=""Link, disabled""
             Size=""BitPersonaSize.Size72""
+            IsEnabled=""false""
+            ImageUrl=""/images/persona/persona-female.png"" />";
+
+    private readonly string example10RazorCode = @"
+<BitPersona PrimaryText=""Xafan Salina""
+            SecondaryText=""Loads, lazily""
+            Size=""BitPersonaSize.Size72""
+            ImageLoading=""BitImageLoading.Lazy""
             OnImageLoad=""() => imageLoadCount++""
             ImageUrl=""/images/persona/persona-female.png"" />
-<p>Image Load Count: @imageLoadCount</p>
+<p>Image load count: @imageLoadCount</p>
 
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Fails""
             Size=""BitPersonaSize.Size72""
             OnImageError=""() => imageErrorCount++""
             ImageUrl=""invalid-image-url"" />
-<p>Image Error Count: @imageErrorCount</p>";
-    private readonly string example11CsharpCode = @"
-private int imageLoadCount = 0;
-private int imageErrorCount = 0;";
-
-    private readonly string example12RazorCode = @"
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Lazy loaded""
-            Size=""BitPersonaSize.Size72""
-            ImageLoading=""BitImageLoading.Lazy""
-            ImageUrl=""/images/persona/persona-female.png"" />
+<p>Image error count: @imageErrorCount</p>
 
 <BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Eagerly loaded, not draggable""
+            SecondaryText=""Eager, not draggable""
             Size=""BitPersonaSize.Size72""
             ImageLoading=""BitImageLoading.Eager""
             ImageAttributes=""@(new() { { ""draggable"", ""false"" }, { ""decoding"", ""async"" } })""
@@ -393,10 +358,12 @@ private int imageErrorCount = 0;";
                 Size=""BitPersonaSize.Size72""
                 ImageUrl=""/images/persona/persona-female.png"" />
 }";
-    private readonly string example12CsharpCode = @"
+    private readonly string example10CsharpCode = @"
+private int imageLoadCount = 0;
+private int imageErrorCount = 0;
 private bool isFadeInPersonaShown = true;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size72""
@@ -405,14 +372,13 @@ private bool isFadeInPersonaShown = true;";
             ImageSizes=""72px""
             ImageSrcSet=""/images/persona/persona-female-72.png 72w, /images/persona/persona-female.png 96w"" />
 
-
 <BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
+            SecondaryText=""Candidates only""
             Size=""BitPersonaSize.Size72""
             ImageSizes=""72px""
             ImageSrcSet=""/images/persona/persona-female-72.png 72w, /images/persona/persona-female.png 96w"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .custom-ico {
         font-size: 14px;
@@ -448,149 +414,156 @@ private bool isFadeInPersonaShown = true;";
     </ImageOverlayTemplate>
 </BitPersona>
 
-
-<BitPersona Size=""BitPersonaSize.Size100"" PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"" CoinVariant=""BitVariant.Text"">
+<BitPersona Size=""BitPersonaSize.Size100"" PrimaryText=""Xafan Salina"" SecondaryText=""CoinTemplate"" Presence=""BitPersonaPresence.Online"" CoinVariant=""BitVariant.Text"">
     <CoinTemplate>
         <img src=""/images/persona/persona-female.png"" width=""100"" height=""100"" class=""custom-coin"" />
     </CoinTemplate>
 </BitPersona>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitPersona AutoCoinColor PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Size=""BitPersonaSize.Size72"" />
+
 <BitPersona AutoCoinColor PrimaryText=""Saleh Khafan"" SecondaryText=""Developer"" Size=""BitPersonaSize.Size72"" />
+
 <BitPersona AutoCoinColor PrimaryText=""Ted Randall"" SecondaryText=""Designer"" Size=""BitPersonaSize.Size72"" />
-<BitPersona AutoCoinColor PrimaryText=""Carlos Slattery"" SecondaryText=""Manager"" Size=""BitPersonaSize.Size72"" />
-<BitPersona AutoCoinColor PrimaryText=""Elvia Atkins"" SecondaryText=""QA Engineer"" Size=""BitPersonaSize.Size72"" />
 
 
-<BitPersona AutoCoinColor CoinColorSeed=""u-1024"" PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Size=""BitPersonaSize.Size72"" />
-<BitPersona AutoCoinColor CoinColorSeed=""u-1024"" PrimaryText=""X. Salina"" SecondaryText=""Same seed, same color"" Size=""BitPersonaSize.Size72"" />
+<div>Same seed, same color (<b>CoinColorSeed</b>):</div>
+
+<BitPersona AutoCoinColor CoinColorSeed=""u-1024"" PrimaryText=""Xafan Salina"" SecondaryText=""u-1024"" Size=""BitPersonaSize.Size72"" />
+
+<BitPersona AutoCoinColor CoinColorSeed=""u-1024"" PrimaryText=""X. Salina"" SecondaryText=""u-1024"" Size=""BitPersonaSize.Size72"" />
 
 
-<BitPersona AutoCoinColor AutoCoinColors=""_coinColors"" PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Size=""BitPersonaSize.Size72"" />
-<BitPersona AutoCoinColor AutoCoinColors=""_coinColors"" PrimaryText=""Saleh Khafan"" SecondaryText=""Developer"" Size=""BitPersonaSize.Size72"" />
-<BitPersona AutoCoinColor AutoCoinColors=""_coinColors"" PrimaryText=""Ted Randall"" SecondaryText=""Designer"" Size=""BitPersonaSize.Size72"" />
+<div>A palette of your own (<b>AutoCoinColors</b>), and an explicit <b>CoinColor</b>:</div>
+
 <BitPersona AutoCoinColor AutoCoinColors=""_coinColors"" PrimaryText=""Carlos Slattery"" SecondaryText=""Manager"" Size=""BitPersonaSize.Size72"" />
 
+<BitPersona AutoCoinColor AutoCoinColors=""_coinColors"" PrimaryText=""Elvia Atkins"" SecondaryText=""QA Engineer"" Size=""BitPersonaSize.Size72"" />
 
 <BitPersona AutoCoinColor CoinColor=""BitColor.Success"" PrimaryText=""Xafan Salina"" SecondaryText=""Always green"" Size=""BitPersonaSize.Size72"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitColor.Tertiary];";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitPersona Reversed
             PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
+            SecondaryText=""Reversed""
             Presence=""BitPersonaPresence.Online""
-            PresenceIconNames=""_iconNames""
-            Size=""BitPersonaSize.Size100""
-            ImageUrl=""/images/persona/persona-female.png"" />";
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/images/persona/persona-female.png"" />
 
-    private readonly string example17RazorCode = @"
-<style>
-    .width-box {
-        width: 20rem;
-        padding: 0.5rem;
-        border: 1px solid gray;
-    }
-</style>
+<div style=""display: flex; gap: 2rem; flex-wrap: wrap;"">
+    <BitPersona Vertical
+                PrimaryText=""Xafan Salina""
+                SecondaryText=""Vertical""
+                Presence=""BitPersonaPresence.Online""
+                Size=""BitPersonaSize.Size72""
+                ImageUrl=""/images/persona/persona-female.png"" />
+    <BitPersona Vertical
+                Reversed
+                PrimaryText=""Saleh Khafan""
+                SecondaryText=""Vertical, Reversed""
+                Presence=""BitPersonaPresence.Away""
+                Size=""BitPersonaSize.Size72"" />
+</div>
 
-<div class=""width-box"">
-    <BitPersona PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Size=""BitPersonaSize.Size48""
+<div style=""width: 16rem; padding: 0.5rem; border: 1px solid var(--bit-clr-brd-sec);"">
+    <BitPersona FullWidth
+                PrimaryText=""Xafan Salina Abdollahzadeh Yusefnejad""
+                SecondaryText=""Principal Software Engineer, Developer Experience""
+                Size=""BitPersonaSize.Size48""
                 ImageUrl=""/images/persona/persona-female.png"" />
 </div>
 
-<div class=""width-box"">
-    <BitPersona FullWidth PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Size=""BitPersonaSize.Size48""
-                ImageUrl=""/images/persona/persona-female.png"" />
-</div>
-
-<div class=""width-box"">
-    <BitPersona FullWidth PrimaryText=""Xafan Salina Abdollahzadeh Yusefnejad"" SecondaryText=""Principal Software Engineer, Platform and Developer Experience"" Size=""BitPersonaSize.Size48""
-                ImageUrl=""/images/persona/persona-female.png"" />
-</div>
-
-<div class=""width-box"">
-    <BitPersona FullWidth ShowOverflowTooltip=""false"" PrimaryText=""Xafan Salina Abdollahzadeh Yusefnejad"" SecondaryText=""No tooltip on hover"" Size=""BitPersonaSize.Size48""
+<div style=""width: 16rem; padding: 0.5rem; border: 1px solid var(--bit-clr-brd-sec);"">
+    <BitPersona FullWidth
+                ShowOverflowTooltip=""false""
+                PrimaryText=""Xafan Salina Abdollahzadeh Yusefnejad""
+                SecondaryText=""No tooltip on hover""
+                Size=""BitPersonaSize.Size48""
                 ImageUrl=""/images/persona/persona-female.png"" />
 </div>";
 
-    private readonly string example18RazorCode = @"
-<BitPersona Href=""/components/persona""
-            PrimaryText=""Xafan Salina""
-            SecondaryText=""Opens this page""
-            Presence=""BitPersonaPresence.Online""
-            Size=""BitPersonaSize.Size72""
-            ImageUrl=""/images/persona/persona-female.png"" />
+    private readonly string example15RazorCode = @"
+<BitParams Parameters=""@personaParams"">
+    <BitPersona PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"" />
 
-<BitPersona Href=""https://github.com/bitfoundation/bitplatform""
-            Target=""_blank""
-            PrimaryText=""bit platform""
-            SecondaryText=""Opens in a new tab""
-            CoinIconName=""@BitIconName.Globe""
-            Size=""BitPersonaSize.Size72"" />
+    <BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""Developer"" Presence=""BitPersonaPresence.Away"" />
 
-<BitPersona Href=""/components/persona""
-            ImageOverlayText=""View profile""
-            OnImageClick=""() => imageClickCount++""
-            PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
-            Size=""BitPersonaSize.Size72""
-            ImageUrl=""/images/persona/persona-female.png"" />
-<p>Image Click Count: @imageClickCount</p>
+    <BitPersona PrimaryText=""Ted Randall"" SecondaryText=""Its own Size"" Presence=""BitPersonaPresence.Busy"" Size=""BitPersonaSize.Size72"" />
+</BitParams>";
+    private readonly string example15CsharpCode = @"
+private readonly BitPersonaParams[] personaParams =
+[
+    new()
+    {
+        Size = BitPersonaSize.Size40,
+        AutoCoinColor = true,
+        Shape = BitPersonaShape.Rounded,
+        PresenceTitles = new()
+        {
+            { BitPersonaPresence.Online, ""Available"" },
+            { BitPersonaPresence.Away, ""Be right back"" },
+            { BitPersonaPresence.Busy, ""In a call"" },
+        },
+    }
+];";
 
-<BitPersona Href=""/components/persona""
-            IsEnabled=""false""
-            PrimaryText=""Xafan Salina""
-            SecondaryText=""Disabled""
-            Size=""BitPersonaSize.Size72""
-            ImageUrl=""/images/persona/persona-female.png"" />";
-
-    private readonly string example19RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitPersona PrimaryText=""Primary"" CoinColor=""BitColor.Primary"" />
+
 <BitPersona PrimaryText=""Secondary"" CoinColor=""BitColor.Secondary"" />
+
 <BitPersona PrimaryText=""Tertiary"" CoinColor=""BitColor.Tertiary"" />
+
 <BitPersona PrimaryText=""Info"" SecondaryText=""(default)"" CoinColor=""BitColor.Info"" />
+
 <BitPersona PrimaryText=""Success"" CoinColor=""BitColor.Success"" />
+
 <BitPersona PrimaryText=""Warning"" CoinColor=""BitColor.Warning"" />
+
 <BitPersona PrimaryText=""SevereWarning"" CoinColor=""BitColor.SevereWarning"" />
+
 <BitPersona PrimaryText=""Error"" CoinColor=""BitColor.Error"" />
 
-<BitPersona PrimaryText=""PrimaryBackground"" CoinColor=""BitColor.PrimaryBackground"" />
-<BitPersona PrimaryText=""SecondaryBackground"" CoinColor=""BitColor.SecondaryBackground"" />
-<BitPersona PrimaryText=""TertiaryBackground"" CoinColor=""BitColor.TertiaryBackground"" />
+<div style=""background: var(--bit-clr-fg-ter); padding: 1rem;"">
+    <BitPersona PrimaryText=""PrimaryBackground"" CoinColor=""BitColor.PrimaryBackground"" />
+
+    <BitPersona PrimaryText=""SecondaryBackground"" CoinColor=""BitColor.SecondaryBackground"" />
+
+    <BitPersona PrimaryText=""TertiaryBackground"" CoinColor=""BitColor.TertiaryBackground"" />
+</div>
 
 <BitPersona PrimaryText=""PrimaryForeground"" CoinColor=""BitColor.PrimaryForeground"" />
+
 <BitPersona PrimaryText=""SecondaryForeground"" CoinColor=""BitColor.SecondaryForeground"" />
+
 <BitPersona PrimaryText=""TertiaryForeground"" CoinColor=""BitColor.TertiaryForeground"" />
+
 <BitPersona PrimaryText=""PrimaryBorder"" CoinColor=""BitColor.PrimaryBorder"" />
+
 <BitPersona PrimaryText=""SecondaryBorder"" CoinColor=""BitColor.SecondaryBorder"" />
+
 <BitPersona PrimaryText=""TertiaryBorder"" CoinColor=""BitColor.TertiaryBorder"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 <BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
-            TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""
-            Size=""BitPersonaSize.Size120""
-            Presence=""BitPersonaPresence.None""
+            SecondaryText=""FontAwesome action icon""
+            Size=""BitPersonaSize.Size100""
             OnActionClick=""() => actionClickCount++""
             ActionIcon=""@BitIconInfo.Fa(""solid camera"")""
             ImageUrl=""/images/persona/persona-female.png"" />
-<p>Action Click Count: @actionClickCount</p>
 
 <BitPersona PrimaryText=""Design Team""
-            SecondaryText=""12 members""
+            SecondaryText=""FontAwesome coin icon""
             Size=""BitPersonaSize.Size72""
             CoinIcon=""@BitIconInfo.Fa(""solid people-group"")"" />
 
-
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
 <BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Online""
+            SecondaryText=""Bootstrap Icons presence icons""
             Presence=""BitPersonaPresence.Online""
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size100""
@@ -603,27 +576,14 @@ private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitC
             Size=""BitPersonaSize.Size100""
             ImageUrl=""/images/persona/persona-female.png"" />
 
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Away""
-            Presence=""BitPersonaPresence.Away""
-            PresenceIcons=""_icons""
-            Size=""BitPersonaSize.Size100""
-            ImageUrl=""/images/persona/persona-female.png"" />
+<BitPersona PrimaryText=""Unresolved""
+            SecondaryText=""FontAwesome unknown icon""
+            Size=""BitPersonaSize.Size72""
+            UnknownIcon=""@BitIconInfo.Fa(""solid user-secret"")""
+            Unknown />";
+    private readonly string example17CsharpCode = @"
+private int actionClickCount = 0;
 
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Dnd""
-            Presence=""BitPersonaPresence.Dnd""
-            PresenceIcons=""_icons""
-            Size=""BitPersonaSize.Size100""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Offline""
-            Presence=""BitPersonaPresence.Offline""
-            PresenceIcons=""_icons""
-            Size=""BitPersonaSize.Size100""
-            ImageUrl=""/images/persona/persona-female.png"" />";
-    private readonly string example20CsharpCode = @"
 private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
 {
     { BitPersonaPresence.Offline, BitIconInfo.Bi(""wifi-off"") },
@@ -634,15 +594,14 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
     { BitPersonaPresence.Busy, BitIconInfo.Bi(""exclamation-circle-fill"") },
 };";
 
-    private readonly string example21RazorCode = @"
-<BitCheckbox @bind-Value=""isDetailsShown"" Label=""Include BitPersona details"" />
+    private readonly string example18RazorCode = @"
+<BitCheckbox @bind-Value=""isDetailsShown"" Label=""Show details"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size8""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Online""
-            ImageUrl=""/images/persona/persona-female.png"" />
+            Presence=""BitPersonaPresence.Online"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Secondary""
@@ -652,7 +611,7 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
 
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Secondary""
-            Size=@BitPersonaSize.Size32
+            Size=""BitPersonaSize.Size32""
             HidePersonaDetails=""!isDetailsShown""
             ImageUrl=""/images/persona/persona-female.png"" />
 
@@ -683,7 +642,7 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
 
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
-            TertiaryText=""Off""
+            TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size100""
             HidePersonaDetails=""!isDetailsShown""
@@ -699,37 +658,21 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
 
 <BitPersona CoinSize=""150""
             PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
-            TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""
+            SecondaryText=""CoinSize 150""
             Size=""BitPersonaSize.Size120""
             Presence=""BitPersonaPresence.Online""
-            HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona CoinSize=""150""
-            PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
-            Size=""BitPersonaSize.Size120""
             HidePersonaDetails=""!isDetailsShown"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
+            SecondaryText=""ShowSecondaryText""
             Size=""BitPersonaSize.Size24""
             ShowSecondaryText
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
-            Size=""BitPersonaSize.Size32""
-            ShowSecondaryText
-            HidePersonaDetails=""!isDetailsShown""
             ImageUrl=""/images/persona/persona-female.png"" />";
-    private readonly string example21CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private bool isDetailsShown = true;";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -751,12 +694,14 @@ private bool isDetailsShown = true;";
 
 <BitPersona PrimaryText=""Saleh Khafan""
             Size=""BitPersonaSize.Size72""
-            Style=""padding: 1rem; background: gray;border-radius: 1rem;"" />
+            Style=""padding: 1rem; background: gray; border-radius: 1rem;"" />
 
 <BitPersona PrimaryText=""Saleh Khafan""
             Size=""BitPersonaSize.Size72""
             Class=""custom-class"" />
 
+
+<div><b>Styles</b> & <b>Classes</b>:</div>
 
 <BitPersona PrimaryText=""Saleh Khafan""
             Size=""BitPersonaSize.Size72""
@@ -768,27 +713,41 @@ private bool isDetailsShown = true;";
 <BitPersona PrimaryText=""Saleh Khafan""
             Size=""BitPersonaSize.Size72""
             Classes=""@(new() { ImageContainer = ""custom-img-container"",
-                               PrimaryTextContainer = ""custom-primary-text"" })"" />";
+                               PrimaryTextContainer = ""custom-primary-text"" })"" />
 
-    private readonly string example23RazorCode = @"
+
+<div>CSS variables, set once on an ancestor:</div>
+
+<div style=""--bit-Persona-coin-background: #7a2e8e;
+            --bit-Persona-coin-color: #fff;
+            --bit-Persona-coin-radius: 0.75rem;
+            --bit-Persona-gap: 1.5rem;
+            --bit-Persona-primary-font-weight: 600;
+            --bit-Persona-secondary-color: #7a2e8e;"">
+    <BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""Developer"" Size=""BitPersonaSize.Size56"" />
+
+    <BitPersona Active PrimaryText=""Ted Randall"" SecondaryText=""Designer"" Size=""BitPersonaSize.Size56"" />
+</div>";
+
+    private readonly string example20RazorCode = @"
 <div dir=""rtl"">
     <BitPersona Dir=""BitDir.Rtl""
                 PrimaryText=""صالح یوسف نژاد""
                 SecondaryText=""مهندس نرم افزار""
                 Presence=""BitPersonaPresence.Online""
-                Size=""@BitPersonaSize.Size56"" />
+                Size=""BitPersonaSize.Size56"" />
 
     <BitPersona Dir=""BitDir.Rtl""
                 PrimaryText=""Saleh Khafan""
                 SecondaryText=""یک نام لاتین""
                 Presence=""BitPersonaPresence.Online""
-                Size=""@BitPersonaSize.Size56"" />
+                Size=""BitPersonaSize.Size56"" />
 
     <BitPersona Dir=""BitDir.Rtl""
                 PrimaryText=""صالح یوسف نژاد""
                 SecondaryText=""مهندس نرم افزار""
                 Presence=""BitPersonaPresence.Online""
-                Size=""@BitPersonaSize.Size56""
+                Size=""BitPersonaSize.Size56""
                 ImageUrl=""/images/persona/persona-female.png"" />
 </div>";
 }

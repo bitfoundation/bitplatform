@@ -24,15 +24,15 @@ public partial class BitPersonaDemo
         {
             Name = "ActionIconName",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Icon name for the icon button of the custom action.",
         },
         new()
         {
             Name = "ActionTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
-            Description = "Optional Custom template for the custom action element.",
+            DefaultValue = "null",
+            Description = "Custom template replacing the default action button.",
         },
         new()
         {
@@ -118,14 +118,14 @@ public partial class BitPersonaDemo
         {
             Name = "CoinSize",
             Type = "int?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Optional custom persona coin size in pixel.",
         },
         new()
         {
             Name = "CoinTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom persona coin's image template.",
         },
         new()
@@ -163,7 +163,7 @@ public partial class BitPersonaDemo
             Name = "ImageAlt",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Alt text for the image to use. default is empty string.",
+            Description = "Alt text of the picture. Unset, the picture is decorative (an empty alt), since the name beside it already says who this is.",
         },
         new()
         {
@@ -199,8 +199,8 @@ public partial class BitPersonaDemo
         {
             Name = "ImageOverlayTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
-            Description = "Optional Custom template for the image overlay.",
+            DefaultValue = "null",
+            Description = "Custom template for the overlay a clickable coin reveals.",
         },
         new()
         {
@@ -276,7 +276,7 @@ public partial class BitPersonaDemo
         {
             Name = "OptionalTextTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom optional text template.",
         },
         new()
@@ -345,8 +345,22 @@ public partial class BitPersonaDemo
         {
             Name = "PrimaryTextTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom primary text template.",
+        },
+        new()
+        {
+            Name = "Rel",
+            Type = "BitLinkRels?",
+            DefaultValue = "null",
+            Description = "Sets the rel attribute of the coin when Href renders it as a link. When it is not set and Target is _blank, rel=\"noopener\" is added automatically.",
+        },
+        new()
+        {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Puts the coin after the texts instead of before them (under them while Vertical is set).",
         },
         new()
         {
@@ -359,7 +373,7 @@ public partial class BitPersonaDemo
         {
             Name = "SecondaryTextTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom secondary text template.",
         },
         new()
@@ -417,20 +431,6 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "Rel",
-            Type = "BitLinkRels?",
-            DefaultValue = "null",
-            Description = "Sets the rel attribute of the coin when Href renders it as a link. When it is not set and Target is _blank, rel=\"noopener\" is added automatically.",
-        },
-        new()
-        {
-            Name = "Reversed",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reverses the texts and image location.",
-        },
-        new()
-        {
             Name = "Size",
             Type = "BitPersonaSize",
             DefaultValue = "BitPersonaSize.Size48",
@@ -474,7 +474,132 @@ public partial class BitPersonaDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom tertiary text template.",
-        }
+        },
+        new()
+        {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stacks the coin over the details and centers both, for cards and tiles. Combined with Reversed it puts the details over the coin.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Persona-gap",
+            DefaultValue = "Per size, spacing(1) to spacing(2)",
+            Description = "Room between the coin and the details.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-primary-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the primary row.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-primary-font-weight",
+            DefaultValue = "--bit-tpg-fw-regular",
+            Description = "Weight of the primary row.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-secondary-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text of the secondary, tertiary and optional rows.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text of every row when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-coin-background",
+            DefaultValue = "The CoinColor's main color",
+            Description = "Fill of the coin (the ring and the text of the Outline and Text variants), and the color of the Active ring.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-coin-color",
+            DefaultValue = "The CoinColor's text color",
+            Description = "Initials and coin icon of a Fill coin.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-coin-radius",
+            DefaultValue = "Per Shape: 50%, --bit-shp-radius-control, 0",
+            Description = "Corner radius of the coin and of its overlay.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-overlay-background",
+            DefaultValue = "The coin background",
+            Description = "Fill of the overlay a clickable coin reveals on hover and focus.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-overlay-color",
+            DefaultValue = "The coin color",
+            Description = "Text of that overlay.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring of a clickable or link coin and of the action button.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-border-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Ring the presence dot is cut out of; match it to the surface the persona sits on.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-ring-color",
+            DefaultValue = "The coin background",
+            Description = "Ring of an Active coin (Ring and RingShadow).",
+        },
+        new()
+        {
+            Name = "--bit-Persona-ring-width",
+            DefaultValue = "Per size, 1.5px to 4px",
+            Description = "Width of that ring.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-ring-gap",
+            DefaultValue = "Per size, 1.5px to 4px",
+            Description = "Gap between the coin and that ring.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-ring-gap-color",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Color the gap is cut in; match it to the surface the persona sits on.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-active-shadow",
+            DefaultValue = "--bit-shd-card",
+            Description = "Shadow of an Active coin (Shadow and RingShadow).",
+        },
+        new()
+        {
+            Name = "--bit-Persona-inactive-opacity",
+            DefaultValue = "0.8",
+            Description = "Opacity of an Inactive coin.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-inactive-scale",
+            DefaultValue = "0.875",
+            Description = "Scale of an Inactive coin.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -1004,6 +1129,22 @@ public partial class BitPersonaDemo
     private int imageErrorCount = 0;
     private bool isDetailsShown = true;
     private bool isFadeInPersonaShown = true;
+
+    private readonly BitPersonaParams[] personaParams =
+    [
+        new()
+        {
+            Size = BitPersonaSize.Size40,
+            AutoCoinColor = true,
+            Shape = BitPersonaShape.Rounded,
+            PresenceTitles = new()
+            {
+                { BitPersonaPresence.Online, "Available" },
+                { BitPersonaPresence.Away, "Be right back" },
+                { BitPersonaPresence.Busy, "In a call" },
+            },
+        }
+    ];
 
     private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitColor.Tertiary];
 
