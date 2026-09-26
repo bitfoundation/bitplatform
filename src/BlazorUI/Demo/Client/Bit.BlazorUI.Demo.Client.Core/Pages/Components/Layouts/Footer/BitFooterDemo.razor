@@ -290,12 +290,12 @@
     <DemoExample Title="Translucent" RazorCode="@example10RazorCode" Id="example10">
         <div><b>Translucent</b> softens the background and blurs what scrolls behind it (Fill variant only).</div>
         <br />
-        <div class="fixed-demo translucent-demo">
+        <div class="scroll-demo">
             @for (var i = 1; i <= 6; i++)
             {
                 <div class="scroll-demo-row">Content behind the footer - row @i</div>
             }
-            <BitFooter Fixed Translucent Bordered Color="BitColor.PrimaryBackground">I'm a translucent Footer</BitFooter>
+            <BitFooter Sticky Translucent Color="BitColor.PrimaryBackground">I'm a translucent Footer</BitFooter>
         </div>
     </DemoExample>
 
