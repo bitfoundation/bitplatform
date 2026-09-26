@@ -17,6 +17,11 @@ public partial class BitFooterDemo
 <BitFooter Variant=""BitVariant.Text"" Color=""BitColor.Info"">Text</BitFooter>";
 
     private readonly string example3RazorCode = @"
+<BitFooter Bordered>Bordered</BitFooter>
+
+<BitFooter Elevated>Elevated</BitFooter>";
+
+    private readonly string example4RazorCode = @"
 <BitFooter Alignment=""BitAlignment.Start"" Bordered>
     <BitTag Text=""Start"" />
     <BitTag Text=""of"" />
@@ -62,7 +67,7 @@ public partial class BitFooterDemo
     <BitTag Text=""Bottom of the footer"" />
 </BitFooter>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .wrap-demo {
         max-width: 24rem;
@@ -93,11 +98,6 @@ public partial class BitFooterDemo
 <BitFooter Bordered NoGutter>
     <BitProgress Percent=""60"" />
 </BitFooter>";
-
-    private readonly string example5RazorCode = @"
-<BitFooter Bordered>Bordered</BitFooter>
-
-<BitFooter Elevated>Elevated</BitFooter>";
 
     private readonly string example6RazorCode = @"
 <style>

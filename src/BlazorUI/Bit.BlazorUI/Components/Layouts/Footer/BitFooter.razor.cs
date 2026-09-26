@@ -173,6 +173,9 @@ public partial class BitFooter : BitComponentBase
     /// while it is out of the view. Unlike <see cref="BitComponentBase.Visibility"/>, which switches the footer off at
     /// once, this slides it in and out and keeps the room it occupies in the layout.
     /// <br />
+    /// A control inside the footer that has the focus when it is hidden loses it to the body of the page, so an
+    /// application hiding the footer from one of its own buttons moves the focus somewhere meaningful first.
+    /// <br />
     /// It only slides over a <see cref="Fixed"/> or <see cref="Sticky"/> footer; a footer in the normal flow is
     /// translated over whatever follows it in the page.
     /// </remarks>

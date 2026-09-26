@@ -21,9 +21,13 @@ namespace BitBlazorUI {
         // shell whose pane carries both) would each otherwise capture the write of the other as "the
         // value it had before", so the first one to go would wipe the padding the second still needs and
         // the second would hand the box back a value the page never had. The value found before any of
-        // them touched the box is kept here instead, together with the footers reserving padding on it,
-        // and only the last one to let go puts it back.
-        private static _paddings = new WeakMap<HTMLElement, { previous: string, owners: Set<string> }>();
+        // them touched the box is kept here instead, together with the height each footer is reserving on
+        // it: the box carries the tallest of them, and only the last one to let go puts the value back.
+        private static _paddings = new WeakMap<HTMLElement, { previous: string, owners: Map<string, number> }>();
+
+        private static writePadding(box: HTMLElement, owners: Map<string, number>) {
+            box.style.scrollPaddingBlockEnd = `${Math.max(...owners.values())}px`;
+        }
 
         // Scroll deltas below this many pixels are ignored, so the rubber-banding of touch devices and
         // the sub-pixel jitter of a trackpad cannot flip the footer back and forth on every frame.
@@ -86,12 +90,14 @@ namespace BitBlazorUI {
                 if (shared) {
                     shared.owners.delete(id);
 
-                    // The footer leaving is not necessarily the one that wrote the padding that is on the
-                    // box right now, so the value is only put back once nothing is reserving any anymore.
+                    // The footer leaving may be the tallest one, so the footers still on the box settle it
+                    // on their own tallest height, and the value is only put back once nothing is left.
                     if (shared.owners.size === 0) {
                         padded.style.scrollPaddingBlockEnd = shared.previous;
 
                         Footers._paddings.delete(padded);
+                    } else {
+                        Footers.writePadding(padded, shared.owners);
                     }
                 }
 
@@ -114,21 +120,19 @@ namespace BitBlazorUI {
                     clearPadding();
                 }
 
-                if (!padded) {
-                    let shared = Footers._paddings.get(box);
+                let shared = Footers._paddings.get(box);
 
-                    if (!shared) {
-                        shared = { previous: box.style.scrollPaddingBlockEnd, owners: new Set() };
+                if (!shared) {
+                    shared = { previous: box.style.scrollPaddingBlockEnd, owners: new Map() };
 
-                        Footers._paddings.set(box, shared);
-                    }
-
-                    shared.owners.add(id);
-
-                    padded = box;
+                    Footers._paddings.set(box, shared);
                 }
 
-                box.style.scrollPaddingBlockEnd = `${element.offsetHeight}px`;
+                shared.owners.set(id, element.offsetHeight);
+
+                padded = box;
+
+                Footers.writePadding(box, shared.owners);
             };
 
             const apply = (next: boolean) => {

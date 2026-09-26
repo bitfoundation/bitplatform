@@ -258,18 +258,16 @@
 
 .bit-ftr-anm {
     will-change: transform;
-    transition: transform $mot-duration $mot-easing;
-}
-
-// Both a transform and a shadow can be in flight on the same footer, so the two transitions are
-// merged rather than left to override one another.
-.bit-ftr-anm.bit-ftr-esc {
     transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing;
 }
 
 // translateY is used rather than a bottom offset so the slide runs on the compositor, and it hides the
 // footer in both directions without any RTL specific rule.
+// The shadow is cast upwards, outside the box, so it would still be showing along the bottom edge of the
+// screen once the box itself has slid out of it: a hidden footer drops its shadow, which the transition
+// above fades out along with the slide.
 .bit-ftr-hdn {
+    box-shadow: none;
     transform: translateY(100%);
 }
 

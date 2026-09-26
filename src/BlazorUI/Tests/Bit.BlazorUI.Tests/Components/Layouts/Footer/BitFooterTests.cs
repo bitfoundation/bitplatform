@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Footer;
@@ -1075,6 +1076,30 @@ public class BitFooterTests : BunitTestContext
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.setup").ToArray();
 
         Assert.IsTrue(setups.All(i => true.Equals(i.Arguments[4]) && "#shell".Equals(i.Arguments[5]) && true.Equals(i.Arguments[6])));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectACascadedHidden()
+    {
+        var component = RenderComponent<CascadingValue<BitFooterParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitFooterParams.ParamName);
+            parameters.Add(p => p.Value, new BitFooterParams { Hidden = true, Fixed = true, Elevated = true });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitFooter>(0);
+                builder.CloseComponent();
+            }));
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        // A cascaded Hidden hides the footer exactly like its own would: slid away, animatable and inert.
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-hdn"));
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-anm"));
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-fix"));
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-elv"));
+        Assert.IsTrue(footer.HasAttribute("inert"));
     }
 
     [TestMethod]
