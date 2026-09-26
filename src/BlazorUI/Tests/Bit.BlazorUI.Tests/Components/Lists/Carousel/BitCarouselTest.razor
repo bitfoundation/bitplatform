@@ -18,6 +18,7 @@
               NoKeyboard="NoKeyboard"
               DefaultPage="DefaultPage"
               DotTemplate="DotTemplate"
+              DotsPosition="DotsPosition"
               HideNextPrev="HideNextPrev"
               ShowPlayPause="ShowPlayPause"
               PauseOnHover="PauseOnHover"
@@ -86,6 +87,7 @@
     [Parameter] public string? GoRightAriaLabel { get; set; }
     [Parameter] public string? ItemAriaLabelFormat { get; set; }
     [Parameter] public RenderFragment<int>? DotTemplate { get; set; }
+    [Parameter] public BitCarouselDotsPosition? DotsPosition { get; set; }
     [Parameter] public IEnumerable<BitCarouselResponsiveOption>? ResponsiveOptions { get; set; }
     [Parameter] public BitCarouselClassStyles? Styles { get; set; }
     [Parameter] public BitCarouselClassStyles? Classes { get; set; }
