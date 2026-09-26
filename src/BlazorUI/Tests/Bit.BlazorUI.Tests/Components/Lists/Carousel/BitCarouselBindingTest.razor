@@ -1,0 +1,16 @@
+<BitCarousel @ref="Carousel" @bind-SelectedPage="Page" InfiniteScrolling="InfiniteScrolling" IsEnabled="IsEnabled">
+    @for (int i = 1; i <= ItemsCount; i++)
+    {
+        var index = i;
+        <BitCarouselItem><div class='item'>@index</div></BitCarouselItem>
+    }
+</BitCarousel>
+
+@code {
+    public BitCarousel Carousel { get; set; } = default!;
+
+    [Parameter] public int Page { get; set; }
+    [Parameter] public int ItemsCount { get; set; } = 3;
+    [Parameter] public bool InfiniteScrolling { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
+}
