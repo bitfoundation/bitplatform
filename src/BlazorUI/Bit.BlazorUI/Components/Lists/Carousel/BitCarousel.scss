@@ -436,7 +436,9 @@
         border: 1px solid ButtonText;
     }
 
-    .bit-csl-cud {
+    // Only a plain dot opts out of the forced colors: a templated one keeps them, so the content it
+    // carries (a page number, a thumbnail) is still adjusted like the rest of the page.
+    .bit-csl-cud:where(:not(.bit-csl-dtt)) {
         forced-color-adjust: none;
         background-color: Highlight;
     }

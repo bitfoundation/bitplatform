@@ -936,8 +936,10 @@ public partial class BitCarousel : BitComponentBase
             // A page requested through SelectedPage is navigated to once the carousel is laid out and not
             // in the middle of another move; a move that is under way asks for a render when it is over.
             // A carousel with no pages (its items are being reloaded, for one) keeps the request until it
-            // has somewhere to go: the re-layout that brings the pages back renders it again.
-            if (_pendingSelectedPage is { } page && _navigating is false && _needsReset is false && _pagesCount > 0)
+            // has somewhere to go: the re-layout that brings the pages back renders it again. A disabled
+            // carousel does not move, so it keeps the request as well until it is enabled again, instead
+            // of dropping it and writing its current page back over it.
+            if (_pendingSelectedPage is { } page && IsEnabled && _navigating is false && _needsReset is false && _pagesCount > 0)
             {
                 _pendingSelectedPage = null;
 
@@ -1135,6 +1137,20 @@ public partial class BitCarousel : BitComponentBase
         _laidOutItemsCount = itemsCount;
 
         _pagesCount = CalculatePagesCount(itemsCount, visible, scroll);
+
+        // The dots are only rendered while there is more than one page, one per page, so the references
+        // of the dots the new count no longer renders are let go of rather than kept pointing at nothing.
+        if (_pagesCount <= 1)
+        {
+            _dotRefs.Clear();
+        }
+        else
+        {
+            foreach (var stale in _dotRefs.Keys.Where(k => k >= _pagesCount).ToArray())
+            {
+                _dotRefs.Remove(stale);
+            }
+        }
 
         // The page the carousel is on is kept across a re-layout, so resizing the window (or adding a slide)
         // does not throw the reader back to the first page.

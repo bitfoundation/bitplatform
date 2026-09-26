@@ -488,15 +488,14 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldMoveTheFocusToTheNewDotOnKeyboardNavigation()
+    public async Task BitCarouselShouldMoveTheFocusToTheNewDotOnKeyboardNavigation()
     {
         var component = RenderComponent<BitCarouselTest>();
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        component.FindAll(".bit-csl-dot")[0].Focus();
-
-        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        // the key was pressed on a dot
+        await PressKey(component, "ArrowRight", "dot");
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
 
@@ -505,13 +504,16 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldNotMoveTheFocusOnKeyboardNavigationFromTheRoot()
+    public async Task BitCarouselShouldNotMoveTheFocusToADotThatIsNotRendered()
     {
         var component = RenderComponent<BitCarouselTest>();
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        // the dot that held the focus went away (HideDots) before the key was handled
+        component.Render(parameters => parameters.Add(p => p.HideDots, true));
+
+        await PressKey(component, "ArrowRight", "dot");
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
 
@@ -519,16 +521,32 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldTakeTheFocusOverWhenAKeyMovesTheFocusedSlideAway()
+    public async Task BitCarouselShouldNotMoveTheFocusOnKeyboardNavigationFromTheRoot()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        await PressKey(component, "ArrowRight");
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
+
+        Assert.IsFalse(System.Threading.SpinWait.SpinUntil(() => FocusCalls() > 0, 300));
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldTakeTheFocusOverWhenAKeyMovesTheFocusedSlideAway()
     {
         var component = RenderComponent<BitCarouselTest>();
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
         // a control inside the first slide holds the focus when the carousel is moved past that slide
-        component.FindAll(".bit-crsi")[0].FocusIn();
+        var slide = component.FindAll(".bit-crsi")[0];
 
-        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.AreEqual("slide", slide.GetAttribute("data-bit-key-origin"));
+
+        await PressKey(component, "ArrowRight", "slide", slide.Id);
 
         component.WaitForAssertion(() =>
         {
@@ -540,16 +558,14 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldHandTheFocusOverWhenAKeyHidesTheFocusedButton()
+    public async Task BitCarouselShouldHandTheFocusOverWhenAKeyHidesTheFocusedButton()
     {
         var component = RenderComponent<BitCarouselTest>();
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
         // the "left" button goes forwards in a left-to-right carousel, and hides itself on the last page
-        component.Find(".bit-csl-lbt").Focus();
-
-        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "End" });
+        await PressKey(component, "End", "left");
 
         component.WaitForAssertion(() =>
         {
@@ -757,30 +773,29 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldNavigateWithKeyboard()
+    public async Task BitCarouselShouldNavigateWithKeyboard()
     {
         var component = RenderComponent<BitCarouselTest>();
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        var root = component.Find(".bit-csl");
         var carousel = component.Instance.Carousel;
 
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
+        await PressKey(component, "ArrowRight");
         component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
 
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
+        await PressKey(component, "ArrowLeft");
         component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
 
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "End" });
+        await PressKey(component, "End");
         component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage));
 
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Home" });
+        await PressKey(component, "Home");
         component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
     }
 
     [TestMethod]
-    public void BitCarouselShouldFlipKeyboardNavigationInRtl()
+    public async Task BitCarouselShouldFlipKeyboardNavigationInRtl()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
@@ -789,19 +804,18 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        var root = component.Find(".bit-csl");
         var carousel = component.Instance.Carousel;
 
         // In a right-to-left carousel the next slide sits on the left, so ArrowLeft moves forwards.
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
+        await PressKey(component, "ArrowLeft");
         component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
 
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
+        await PressKey(component, "ArrowRight");
         component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
     }
 
     [TestMethod]
-    public void BitCarouselShouldNavigateWithKeyboardVertically()
+    public async Task BitCarouselShouldNavigateWithKeyboardVertically()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
@@ -810,29 +824,35 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        var root = component.Find(".bit-csl");
         var carousel = component.Instance.Carousel;
 
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowDown" });
+        await PressKey(component, "ArrowDown");
         component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
 
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowUp" });
+        await PressKey(component, "ArrowUp");
         component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
     }
 
     [TestMethod]
-    public void BitCarouselShouldIgnoreModifiedNavigationKeys()
+    public void BitCarouselShouldRegisterTheNavigationKeysOfItsAxis()
     {
+        // The browser takes the keys (unmodified, and not consumed by a control inside a slide) and hands
+        // them over, so what it is handed decides both what is suppressed and what moves the carousel.
+        string[] RegisteredKeys() => (string[])Context.JSInterop.Invocations
+                                                      .Last(i => i.Identifier == "BitBlazorUI.Utils.registerNavigationKeys")
+                                                      .Arguments[1]!;
+
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "ArrowLeft", "ArrowRight", "Home", "End" }, RegisteredKeys()));
 
-        var root = component.Find(".bit-csl");
-        var carousel = component.Instance.Carousel;
+        component.Render(parameters => parameters.Add(p => p.Vertical, true));
 
-        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "ArrowUp", "ArrowDown", "Home", "End" }, RegisteredKeys()));
 
-        Assert.AreEqual(0, carousel.CurrentPage);
+        component.Render(parameters => parameters.Add(p => p.NoKeyboard, true));
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, RegisteredKeys().Length));
     }
 
     [TestMethod]
@@ -2221,7 +2241,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         Assert.AreEqual(0, carousel.CurrentPage);
 
-        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        await PressKey(component, "ArrowRight");
 
         Assert.AreEqual(0, carousel.CurrentPage);
     }
@@ -2263,7 +2283,48 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldNotNavigateWithKeyboardWhenNoKeyboard()
+    public void BitCarouselShouldStartTheAutoPlayPausedWhenItIsSwitchedOnUnderReducedMotion()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitCarouselTest>();
+
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlay, true));
+
+        Assert.IsTrue(carousel.IsPaused);
+        Assert.IsFalse(carousel.IsPlaying);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldAskAboutReducedMotionBeforeTheFirstLayout()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPaused));
+
+        // The first layout is what starts the timer of a carousel that has pages to rotate through, so the
+        // answer has to be in before it, or the rotation would run (and could move a slide) until it came.
+        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+
+        var reducedMotion = identifiers.IndexOf("BitBlazorUI.Utils.prefersReducedMotion");
+        var firstLayout = identifiers.IndexOf("BitBlazorUI.Utils.getBoundingClientRect");
+
+        Assert.IsTrue(reducedMotion >= 0 && reducedMotion < firstLayout);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldNotNavigateWithKeyboardWhenNoKeyboard()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
@@ -2272,45 +2333,36 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        await PressKey(component, "ArrowRight");
 
         Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
     }
 
     [TestMethod]
-    public void BitCarouselShouldLeaveKeysToAFocusedControlInsideASlide()
-    {
-        // A field (or a slider, a list, ...) inside a slide moves its caret or its own selection with the
-        // arrow keys, so the carousel stays where it is while such a control holds the focus.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isKeyConsumerFocused", _ => true).SetResult(true);
-
-        var component = RenderComponent<BitCarouselTest>();
-
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
-
-        var root = component.Find(".bit-csl");
-
-        root.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
-        root.KeyDown(new KeyboardEventArgs { Key = "End" });
-
-        Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
-    }
-
-    [TestMethod]
-    public void BitCarouselShouldNotAskAboutKeysItDoesNotNavigateWith()
+    public async Task BitCarouselShouldIgnoreKeysItDoesNotNavigateWith()
     {
         var component = RenderComponent<BitCarouselTest>();
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
-
-        var root = component.Find(".bit-csl");
 
         // The up/down arrows are not the keys of a horizontal carousel, and neither is a letter.
-        root.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
-        root.KeyDown(new KeyboardEventArgs { Key = "a" });
+        await PressKey(component, "ArrowDown");
+        await PressKey(component, "a");
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.isKeyConsumerFocused"));
         Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldMarkWhereANavigationKeyWasPressed()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        Assert.AreEqual("left", component.Find(".bit-csl-lbt").GetAttribute("data-bit-key-origin"));
+        Assert.AreEqual("right", component.Find(".bit-csl-rbt").GetAttribute("data-bit-key-origin"));
+        Assert.IsTrue(component.FindAll(".bit-csl-dot").All(d => d.GetAttribute("data-bit-key-origin") == "dot"));
+        Assert.IsTrue(component.FindAll(".bit-crsi").All(s => s.GetAttribute("data-bit-key-origin") == "slide"));
     }
 
     [TestMethod]
@@ -2320,7 +2372,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+        // The click focused the button it landed on.
+        component.Find(".bit-csl").FocusIn();
 
         // A move that leaves the button in place keeps the focus where it is.
         component.Find(".bit-csl-lbt").Click();
@@ -2331,6 +2384,63 @@ public partial class BitCarouselTests : BunitTestContext
         component.Find(".bit-csl-lbt").Click();
         component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
         component.WaitForAssertion(() => Assert.AreEqual(1, FocusCalls()));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNotPullTheFocusInWhenAClickDidNotFocusTheButton()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        // A click (or a tap in Safari) that does not focus the button leaves the focus outside the carousel.
+        component.Find(".bit-csl-lbt").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
+
+        component.Find(".bit-csl-lbt").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
+
+        Assert.IsFalse(System.Threading.SpinWait.SpinUntil(() => FocusCalls() > 0, 300));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldKeepASelectedPageRequestedWhileItHasNoPages()
+    {
+        var component = RenderComponent<BitCarouselBindingTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Page));
+
+        // The items are reloaded, and the page is asked for while they are gone.
+        component.Render(parameters => parameters.Add(p => p.ItemsCount, 0));
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.Instance.Carousel.PagesCount));
+
+        component.Render(parameters => parameters.Add(p => p.Page, 3));
+
+        component.Render(parameters => parameters.Add(p => p.ItemsCount, 5));
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
+        Assert.AreEqual(3, component.Instance.Page);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldKeepASelectedPageRequestedWhileItIsDisabled()
+    {
+        var component = RenderComponent<BitCarouselBindingTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Page));
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        // A disabled carousel does not move, but it neither drops the request nor writes its page over it.
+        component.Render(parameters => parameters.Add(p => p.Page, 3));
+
+        Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+        Assert.AreEqual(3, component.Instance.Page);
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
+        Assert.AreEqual(3, component.Instance.Page);
     }
 
     [TestMethod]
@@ -2365,6 +2475,17 @@ public partial class BitCarouselTests : BunitTestContext
 
             Assert.AreEqual(true, invocation.Arguments[1]);
             Assert.AreEqual(35, invocation.Arguments[2]);
+            Assert.AreEqual("x", invocation.Arguments[3]);
+        });
+
+        // A vertical carousel is dragged along the other axis, which the click is measured along too.
+        component.Render(parameters => parameters.Add(p => p.Vertical, true));
+
+        component.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Utils.registerPreventPointerDown");
+
+            Assert.AreEqual("y", invocation.Arguments[3]);
         });
     }
 
@@ -2568,6 +2689,13 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsNull(component.Instance.Carousel.CascadingParameters);
         Assert.IsFalse(root.ClassList.Contains("bit-csl-vrt"));
         Assert.IsFalse(root.ClassList.Contains("bit-csl-lg"));
+    }
+
+    // A navigation key reaches the carousel from the browser (registerNavigationKeys), already filtered down
+    // to a plain key that no control inside a slide consumes, with the marker of where it was pressed.
+    private static Task PressKey(IRenderedComponent<BitCarouselTest> component, string key, string? origin = null, string? originId = null)
+    {
+        return component.InvokeAsync(() => component.Instance.Carousel._OnNavigationKey(key, origin, originId));
     }
 
     // The focus call lands on the renderer's thread while the test polls for it, so a read that races a write
