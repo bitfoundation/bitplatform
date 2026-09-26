@@ -812,49 +812,59 @@
 
         // Scrolls a scroll container to an absolute offset on its scrolling axis. The axis is passed in
         // rather than guessed, since a container can be scrollable on both and only the component knows
-        // which one its items are laid out along.
+        // which one its items are laid out along. The offset is measured from the start edge the content
+        // flows from, so a horizontal RTL container (whose scrollLeft runs from 0 towards the negative)
+        // is handed its negation. The smooth scroll is dropped for a reader who has asked for less motion.
         public static scrollTo(element: HTMLElement, offset: number, horizontal: boolean, smooth: boolean) {
             if (!element) return;
 
             try {
+                const rtl = horizontal && getComputedStyle(element).direction === 'rtl';
+                const reduce = smooth && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
                 element.scrollTo({
-                    [horizontal ? 'left' : 'top']: offset,
-                    behavior: smooth ? 'smooth' : 'auto'
+                    [horizontal ? 'left' : 'top']: rtl ? -offset : offset,
+                    behavior: smooth && !reduce ? 'smooth' : 'auto'
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.scrollTo:", e); }
         }
 
         // Scrolls a scroll container to its far end. scrollHeight/scrollWidth overshoot the maximum
         // scroll offset, which the browser clamps, so no measuring of the viewport is needed here.
-        // The far end of an RTL container sits at a negative scrollLeft, so the offset is negated there.
         public static scrollToEnd(element: HTMLElement, horizontal: boolean, smooth: boolean) {
             if (!element) return;
 
             try {
-                const rtl = horizontal && getComputedStyle(element).direction === 'rtl';
-                const offset = horizontal
-                    ? (rtl ? -element.scrollWidth : element.scrollWidth)
-                    : element.scrollHeight;
-
-                Utils.scrollTo(element, offset, horizontal, smooth);
+                Utils.scrollTo(element, horizontal ? element.scrollWidth : element.scrollHeight, horizontal, smooth);
             } catch (e) { console.error("BitBlazorUI.Utils.scrollToEnd:", e); }
         }
 
-        // Scrolls a scroll container to a position measured off one of its children rather than off the
-        // container itself, which is what a list that renders anything before its items (a header) needs:
-        // the child is the one the items start at, and extraOffset is how far into them to go. A list of
-        // items of differing sizes points at the item itself and passes no extra offset; a virtualized one
-        // points at the spacer the items start after and passes the offset it calculated from its item size.
-        public static scrollToChild(element: HTMLElement, index: number, extraOffset: number, horizontal: boolean, smooth: boolean) {
-            if (!element) return;
+        // Scrolls a scroll container to a position measured off one of the children of an element inside
+        // it rather than off the container itself, which is what a list that renders anything before its
+        // items (a header) needs: the child is the one the items start at, and extraOffset is how far into
+        // them to go. A list of items of differing sizes points at the item itself and passes no extra
+        // offset; a virtualized one points at the spacer the items start after and passes the offset it
+        // calculated from its item size. The offset is measured from the inner (padding) edge of the
+        // container, so neither its border nor, in RTL, its right-hand side throws the item off its edge.
+        public static scrollToChild(element: HTMLElement, container: HTMLElement, index: number, extraOffset: number, horizontal: boolean, smooth: boolean) {
+            if (!element || !container) return;
 
             try {
-                const child = element.children[index] as HTMLElement;
+                const child = container.children[index] as HTMLElement;
                 if (!child) return;
 
-                const offset = horizontal
-                    ? child.getBoundingClientRect().left - element.getBoundingClientRect().left + element.scrollLeft
-                    : child.getBoundingClientRect().top - element.getBoundingClientRect().top + element.scrollTop;
+                const box = element.getBoundingClientRect();
+                const rect = child.getBoundingClientRect();
+
+                let offset: number;
+                if (horizontal) {
+                    const innerLeft = box.left + element.clientLeft;
+                    offset = getComputedStyle(element).direction === 'rtl'
+                        ? (innerLeft + element.clientWidth) - rect.right - element.scrollLeft
+                        : rect.left - innerLeft + element.scrollLeft;
+                } else {
+                    offset = rect.top - (box.top + element.clientTop) + element.scrollTop;
+                }
 
                 Utils.scrollTo(element, offset + extraOffset, horizontal, smooth);
             } catch (e) { console.error("BitBlazorUI.Utils.scrollToChild:", e); }
@@ -1075,6 +1085,48 @@
                     e.preventDefault();
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventKeys:", e); }
+        }
+
+        // Makes an element carrying the button role activate from the keyboard the way a real button
+        // does: Enter clicks it as the key goes down, Space as the key comes back up, and neither key
+        // scrolls the page. Only a key pressed on the element itself counts - one pressed on a control
+        // inside it (a button a template brought along) already clicks that control, and the click
+        // bubbles up to the element's own handler, so answering the key here too would act twice.
+        // The listeners are garbage-collected with the element, so no unregister call is needed.
+        public static registerButtonKeys(element: HTMLElement) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                if (el.__bitButtonKeysRegistered) return;
+                el.__bitButtonKeysRegistered = true;
+
+                const plain = (e: KeyboardEvent) => e.target === element && !e.ctrlKey && !e.altKey && !e.metaKey;
+
+                element.addEventListener('keydown', (e: KeyboardEvent) => {
+                    if (!plain(e)) return;
+
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        element.click();
+                    } else if (e.key === ' ') {
+                        e.preventDefault();
+                        el.__bitButtonKeysSpace = true;
+                    }
+                });
+
+                element.addEventListener('keyup', (e: KeyboardEvent) => {
+                    if (e.key !== ' ' || !el.__bitButtonKeysSpace) return;
+                    el.__bitButtonKeysSpace = false;
+
+                    if (!plain(e)) return;
+
+                    e.preventDefault();
+                    element.click();
+                });
+
+                element.addEventListener('blur', () => el.__bitButtonKeysSpace = false);
+            } catch (e) { console.error("BitBlazorUI.Utils.registerButtonKeys:", e); }
         }
 
         public static selectText(element: HTMLInputElement) {

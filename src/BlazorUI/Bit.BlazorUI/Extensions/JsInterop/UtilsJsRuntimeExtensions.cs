@@ -231,9 +231,15 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsScrollToChild(this IJSRuntime jsRuntime, ElementReference element, int index, double extraOffset, bool horizontal, bool smooth)
+    internal static ValueTask BitUtilsScrollToChild(this IJSRuntime jsRuntime, ElementReference element, ElementReference container, int index, double extraOffset, bool horizontal, bool smooth)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.scrollToChild", element, index, extraOffset, horizontal, smooth);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.scrollToChild", element, container, index, extraOffset, horizontal, smooth);
+    }
+
+
+    internal static ValueTask BitUtilsRegisterButtonKeys(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerButtonKeys", element);
     }
 
 
