@@ -5,18 +5,17 @@
             Description="Badge component is a small marker that reports a count, a state or a plain dot on the element it belongs to, over it or beside it." />
 
 <DemoPage Name="Badge"
-          Description="Badge is the small marker that sits on another element and reports what is waiting behind it. It takes a number, a string, an icon or a template, caps a count at a max, hides itself when that count reaches zero, or drops its content altogether and becomes a dot. It anchors to any of fifteen positions around its child - physical or direction-aware - and can be nudged, overlapped, ringed against a busy background or given a pulse while something is in progress. It can also step out of the overlay and sit beside its child in the flow, or stand entirely on its own where there is nothing to overlay. It turns into a real keyboard-operable button as soon as it is given a click handler and into a real link as soon as it is given a URL, and carries a text alternative and a live region so that what it says visually also reaches a screen reader."
+          Description="Badge is the small marker that reports what is waiting behind another element: a count capped at a max and hidden at zero, a string, an icon, a template or a plain dot. It anchors to fifteen positions around its child, or sits beside it or on its own in the flow. Given a handler or a URL it becomes a real button or link, and a text alternative and a live region carry what it shows to screen readers."
           Parameters="componentParameters"
+          CssVariables="componentCssVariables"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Notifications/Badge/BitBadge.razor"
           GitHubDemoUrl="Notifications/Badge/BitBadgeDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            The badge overlays whatever it wraps and <b>Content</b> is what it shows. A number is the common case: how much of something is waiting behind the element the badge is attached to.
-            A number is also the only content the badge counts, which is what <BitLink Href="#example5">Max</BitLink> and <BitLink Href="#example6">ShowZero</BitLink> act on.
-            The badge scales itself in as it lands on the page and gives a short bump whenever what it shows changes, so a count ticking over is noticed rather than silently
-            different; both collapse to nothing when the reader asks for reduced motion, which is why this page keeps them off until the animation toggle turns them back on.
+            The badge overlays whatever it wraps and shows its <b>Content</b>. It scales in as it lands and bumps whenever what it shows changes;
+            both collapse under reduced motion, which this page keeps on until the animation toggle turns motion back on.
         </div>
         <br /><br />
         <BitBadge Content="63">
@@ -24,21 +23,19 @@
         </BitBadge>
     </DemoExample>
 
-    <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Variant & Shape" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            The badge offers three variants: <b>Fill</b> (default) paints it in the role color, <b>Outline</b> keeps only the border and the label, and <b>Text</b> drops the border too.
-            A disabled badge keeps its variant and swaps the role color for the disabled one.
+            <b>Variant</b>: <b>Fill</b> (default), <b>Outline</b> or <b>Text</b>. <b>Shape</b>: <b>Circular</b> (default), <b>Rounded</b> (the theme's control corner) or <b>Square</b>.
+            A disabled badge keeps its variant and takes the disabled colors.
         </div>
-        <br />
+        <br /><br />
         <div class="example-content">
             <BitBadge Content="84" Variant="BitVariant.Fill">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
             <BitBadge Content="84" Variant="BitVariant.Outline">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
             <BitBadge Content="84" Variant="BitVariant.Text">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
@@ -48,169 +45,117 @@
             <BitBadge Content="84" Variant="BitVariant.Fill" IsEnabled="false">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
             <BitBadge Content="84" Variant="BitVariant.Outline" IsEnabled="false">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
             <BitBadge Content="84" Variant="BitVariant.Text" IsEnabled="false">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
-    </DemoExample>
-
-    <DemoExample Title="Shape" RazorCode="@example3RazorCode" Id="example3">
-        <div>
-            <b>Shape</b> is the corner of the badge. <b>Circular</b> (default) rounds it fully, so a single digit is a circle and a longer label a pill;
-            <b>Rounded</b> takes the corner the current theme gives its controls, which is what makes a badge sit next to the rest of a form; and <b>Square</b> drops the radius altogether.
-            A <BitLink Href="#example4">dot</BitLink> is always a circle, whatever the shape says.
-        </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Content="9" Shape="BitBadgeShape.Circular">
+            <BitBadge Content="@("New")" Shape="BitBadgeShape.Circular">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Content="9" Shape="BitBadgeShape.Rounded">
+            <BitBadge Content="@("New")" Shape="BitBadgeShape.Rounded">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Content="9" Shape="BitBadgeShape.Square">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <BitBadge Content="@("New")" Shape="BitBadgeShape.Circular" Color="BitColor.Info">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-
-            <BitBadge Content="@("New")" Shape="BitBadgeShape.Rounded" Color="BitColor.Info">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-
-            <BitBadge Content="@("New")" Shape="BitBadgeShape.Square" Color="BitColor.Info">
+            <BitBadge Content="@("New")" Shape="BitBadgeShape.Square">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Dot" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Content" RazorCode="@example3RazorCode" Id="example3">
         <div>
-            <b>Dot</b> shrinks the badge to a plain mark and drops its content and its icon. Use it when the fact that something changed matters more than how much of it there is.
-            The dot scales with the <BitLink Href="#example21">Size</BitLink> of the badge, and since it says nothing on its own, give it a
-            <BitLink Href="#example18">Description</BitLink> so its meaning is not carried by color alone.
+            Beyond a number, <b>Content</b> takes a string or any value (rendered through <code>ToString()</code>). <b>IconName</b> / <b>Icon</b> add a glyph,
+            <b>Reversed</b> puts it after the content, and <b>ContentTemplate</b> replaces both with your own markup. A badge given nothing to show is not rendered.
         </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Dot Size="BitSize.Small">
+            <BitBadge Content="@("Text")">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Dot Size="BitSize.Medium">
+            <BitBadge IconName="@BitIconName.Ringer">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Dot Size="BitSize.Large">
+            <BitBadge Content="@("Sent")" IconName="@BitIconName.CheckMark">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Dot Color="BitColor.Success" Description="Online">
-                <BitIcon IconName="@BitIconName.Contact" Color="BitColor.Tertiary" />
+            <BitBadge Content="@("Sent")" IconName="@BitIconName.CheckMark" Reversed>
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge>
+                <ContentTemplate>
+                    <b>99</b><span style="opacity:0.75">%</span>
+                </ContentTemplate>
+                <ChildContent>
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </ChildContent>
             </BitBadge>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Max" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Max, ShowZero & Hidden" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            <b>Max</b> caps a numeric content: anything above it renders as the max followed by a plus sign, so a counter never grows wider than the room it was given.
-            It reads every numeric type - integral or fractional, not only <code>int</code> - and leaves a string content untouched. A capped badge is the one a reader
-            cannot get the real figure out of, so it carries that figure as its tooltip on its own: hover the second badge below and it reads 100. <b>Title</b> overrides
-            that wherever there is something better to say than the number itself, as the third one does.
+            <b>Max</b> caps a number of any numeric type (<code>99+</code>) and spells the real figure out as the tooltip; <b>Title</b> replaces that tooltip.
+            <b>ShowZero</b>=false takes an emptied counter off the page, and <b>Hidden</b> removes the badge while its child keeps rendering.
         </div>
         <br /><br />
         <div class="example-content">
             <BitBadge Max="63" Content="60">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
             <BitBadge Max="63" Content="100">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
             <BitBadge Max="99" Content="12345L" Title="12345 unread messages">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
-    </DemoExample>
-
-    <DemoExample Title="ShowZero" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>
-            A counter that reaches zero has nothing left to report. <b>ShowZero</b> is <code>true</code> by default, so the zero is rendered; set it to <code>false</code> and the
-            badge disappears on its own, which saves keeping a <BitLink Href="#example15">Hidden</BitLink> flag of your own next to the count. An icon or a
-            <b>ContentTemplate</b> is content of its own rather than a number, so it keeps the badge on the page and only the emptied count is taken off it.
-        </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Content="zeroCount">
+            <BitBadge Content="count">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Content="zeroCount" ShowZero="false">
+            <BitBadge Content="count" ShowZero="false">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Content="count" Hidden="hidden">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
         <br /><br />
         <div class="example-content">
-            <BitButton Variant="BitVariant.Outline" OnClick="() => zeroCount--" IsEnabled="@(zeroCount > 0)">Remove one</BitButton>
-            <BitButton Variant="BitVariant.Outline" OnClick="() => zeroCount++">Add one</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="() => count--" IsEnabled="@(count > 0)">Remove one</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="() => count++">Add one</BitButton>
+            <BitToggle @bind-Value="hidden" Label="Hidden" Inline />
         </div>
     </DemoExample>
 
-    <DemoExample Title="Content" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Dot" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            Beyond a number, the badge takes a string, an icon (<b>IconName</b> or <b>Icon</b>), both together, or - when text is not enough - a <b>ContentTemplate</b> of your own markup.
-            <b>Reversed</b> flips the order of the icon and the content. Any other value of <b>Content</b> is rendered through its own <code>ToString()</code>.
-            A template is content of its own, so it is what the badge shows and what keeps it on the page: neither <b>Max</b> nor <BitLink Href="#example6">ShowZero</BitLink> reads it.
-            A badge given no content, no icon and no template at all has nothing to report and is not rendered, so a counter bound to nothing leaves no empty mark behind.
+            <b>Dot</b> drops the content and shrinks the badge to a mark scaled by <BitLink Href="#example16">Size</BitLink>. A dot says nothing on its own,
+            so give it a <b>Description</b>: the text screen readers read in its place (see <BitLink Href="#example11">Accessibility</BitLink>).
         </div>
         <br /><br />
-        <div>String content</div><br />
-        <BitBadge Content="@("Text")">
-            <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-        </BitBadge>
-        <br /><br /><br /><br />
-        <div>Icon</div><br />
-        <BitBadge IconName="@BitIconName.Ringer">
-            <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-        </BitBadge>
-        <br /><br /><br /><br />
-        <div>Icon and content, and the same pair reversed</div><br />
-        <div class="example-content" style="gap:5rem">
-            <BitBadge Content="@("Sent")" IconName="@BitIconName.CheckMark" Color="BitColor.Success">
+        <div class="example-content">
+            <BitBadge Dot Size="BitSize.Small" Description="New mail">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Content="@("Sent")" IconName="@BitIconName.CheckMark" Color="BitColor.Success" Reversed>
+            <BitBadge Dot Size="BitSize.Medium" Description="New mail">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Dot Size="BitSize.Large" Description="New mail">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
-        <br /><br /><br /><br />
-        <div>ContentTemplate</div><br />
-        <BitBadge Color="BitColor.Error">
-            <ContentTemplate>
-                <b>99</b><span style="opacity:0.75">%</span>
-            </ContentTemplate>
-            <ChildContent>
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </ChildContent>
-        </BitBadge>
     </DemoExample>
 
-    <DemoExample Title="Position" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Position" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <b>Position</b> anchors the badge to one of the fifteen points around its child. The Left and Right ones are physical and stay where they are in
-            <BitLink Href="#example23">right-to-left</BitLink>, while the Start and End ones follow the direction of writing and swap sides with it.
+            <b>Position</b> anchors the badge to one of fifteen points around its child. Left/Right are physical; Start/End follow the
+            <BitLink Href="#example18">direction of writing</BitLink>.
         </div>
         <br />
         <div class="example-content" style="margin-left:1rem">
@@ -222,210 +167,104 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Overlap" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Overlap & Offset" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            <b>Overlap</b> pulls the badge in towards its child instead of leaving it on the bounding box. Turn it on for a child with a rounded outline - an avatar, a circular
-            button - where a badge sitting on the corner of the box would float away from it.
+            <b>Overlap</b> pulls the badge in over a rounded child such as an avatar. <b>OffsetX</b> / <b>OffsetY</b> nudge it by any CSS length;
+            positive values move it right and down in both directions of writing.
         </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Content="63">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-
-            <BitBadge Content="63" Overlap>
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Offset" RazorCode="@example10RazorCode" Id="example10">
-        <div>
-            <b>OffsetX</b> and <b>OffsetY</b> nudge the badge by any CSS length on top of its position, for the cases the fifteen anchors and Overlap do not land exactly on.
-            A positive value moves the badge right and down in both directions of writing, since an offset is a correction for one specific child rather than a part of the layout.
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <BitBadge Content="63">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-
-            <BitBadge Content="63" OffsetX="-0.5rem" OffsetY="0.5rem">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-
-            <BitBadge Dot Position="BitPosition.BottomEnd" OffsetX="-2px" OffsetY="-2px" Color="BitColor.Success">
-                <BitIcon IconName="@BitIconName.Contact" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Bordered" RazorCode="@example11RazorCode" Id="example11">
-        <div>
-            <b>Bordered</b> draws a ring around the badge in the color of the page behind it, so a badge landing on a picture or an avatar keeps an edge of its own
-            instead of dissolving into whatever is underneath it.
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <BitBadge Dot Color="BitColor.Success" Position="BitPosition.BottomEnd" Overlap Description="Online">
+            <BitBadge Content="8">
                 <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" Width="4rem" Style="border-radius:50%" Alt="Avatar" />
             </BitBadge>
-
-            <BitBadge Dot Bordered Color="BitColor.Success" Position="BitPosition.BottomEnd" Overlap Description="Online">
+            <BitBadge Content="8" Overlap>
                 <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" Width="4rem" Style="border-radius:50%" Alt="Avatar" />
             </BitBadge>
-
-            <BitBadge Content="8" Bordered Overlap>
+            <BitBadge Content="8" OffsetX="-0.5rem" OffsetY="0.5rem">
                 <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" Width="4rem" Style="border-radius:50%" Alt="Avatar" />
             </BitBadge>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Pulse" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Bordered & Pulse" RazorCode="@example8RazorCode" Id="example8">
         <div>
-            <b>Pulse</b> sends a ring expanding out of the badge and fading, for a state that is still going: a sync in flight, a device connecting, a live stream.
-            The ring is decorative - it slows down rather than stops when the reader asks for reduced motion - so pair it with a <BitLink Href="#example18">Description</BitLink> when the state itself matters.
+            <b>Bordered</b> rings the badge in the page color so it keeps an edge over a busy child. <b>Pulse</b> sends a fading ring out of it for a
+            state still in progress; it is decorative and only slows down under reduced motion.
         </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Dot Pulse Color="BitColor.Success" Description="Connected">
-                <BitIcon IconName="@BitIconName.Streaming" Color="BitColor.Tertiary" />
+            <BitBadge Dot Position="BitPosition.BottomEnd" Overlap Description="Online">
+                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" Width="4rem" Style="border-radius:50%" Alt="Avatar" />
             </BitBadge>
-
-            <BitBadge Dot Pulse Color="BitColor.Warning" Position="BitPosition.BottomEnd" Overlap Description="Syncing">
+            <BitBadge Dot Bordered Position="BitPosition.BottomEnd" Overlap Description="Online">
+                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" Width="4rem" Style="border-radius:50%" Alt="Avatar" />
+            </BitBadge>
+            <BitBadge Dot Pulse Description="Syncing">
                 <BitIcon IconName="@BitIconName.Cloud" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Content="3" Pulse Color="BitColor.Error">
+            <BitBadge Content="3" Pulse Bordered>
                 <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Standalone" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Standalone & Inline" RazorCode="@example9RazorCode" Id="example9">
         <div>
-            With no child content there is nothing to overlay, so the badge renders standalone: in the normal flow of the page, at its own size, with Position and Overlap
-            no longer applying. That is how a badge is used inside a table cell, a list row or a heading, where it labels the line it is on rather than an element it sits over.
-            To keep the child content and still lay the badge out beside it, use <BitLink Href="#example14">Inline</BitLink>.
+            Without child content the badge stands alone in the flow - a status in a table cell or a heading. <b>Inline</b> keeps the child and lays the badge
+            beside it; only the side of <b>Position</b> is read (Start/Left before the child, the rest after).
         </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Content="@("Draft")" Color="BitColor.Tertiary" />
-            <BitBadge Content="@("Active")" Color="BitColor.Success" />
-            <BitBadge Content="@("Failed")" Color="BitColor.Error" Variant="BitVariant.Outline" />
-            <BitBadge Content="@("Beta")" Color="BitColor.Info" IconName="@BitIconName.TestBeaker" Shape="BitBadgeShape.Rounded" />
-            <BitBadge Dot Color="BitColor.Warning" Description="Degraded" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Inline" RazorCode="@example14RazorCode" Id="example14">
-        <div>
-            <b>Inline</b> keeps the child content and lays the badge out beside it instead of over it, so the badge is given room of its own rather than having to stay small
-            enough not to bury what it sits on. That is the counter at the end of a navigation item, the status next to a heading, the total after a tab label.
-            <b>Overlap</b> stops applying and only the side of <BitLink Href="#example8">Position</BitLink> is read: the Start and Left families put the badge before the
-            child, every other one after it.
+            <BitBadge Content="@("Draft")" />
+            <BitBadge Content="@("Beta")" IconName="@BitIconName.TestBeaker" Shape="BitBadgeShape.Rounded" Variant="BitVariant.Outline" />
+            <BitBadge Dot Description="Degraded" />
         </div>
         <br /><br />
         <div class="example-content">
             <BitBadge Inline Content="24">
                 <BitText Typography="BitTypography.Body1">Inbox</BitText>
             </BitBadge>
-
-            <BitBadge Inline Content="3" Color="BitColor.Error" Position="BitPosition.CenterStart">
-                <BitText Typography="BitTypography.Body1">Alerts</BitText>
-            </BitBadge>
-
-            <BitBadge Inline Dot Color="BitColor.Success" Position="BitPosition.CenterStart" Description="Operational">
+            <BitBadge Inline Dot Position="BitPosition.CenterStart" Description="Operational">
                 <BitText Typography="BitTypography.Body1">Build server</BitText>
             </BitBadge>
-
-            <BitBadge Inline Content="@("Beta")" Color="BitColor.Info" Variant="BitVariant.Outline" Shape="BitBadgeShape.Rounded">
-                <BitText Typography="BitTypography.Body1">Reports</BitText>
-            </BitBadge>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Hidden" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="OnClick & Href" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            <b>Hidden</b> removes the badge from the DOM while its child keeps rendering, for a marker you control yourself.
-            When what you are hiding is an empty counter, <BitLink Href="#example6">ShowZero</BitLink> does it without a flag.
-        </div>
-        <br />
-        <BitToggle @bind-Value="hidden" Label="Hide the badge" />
-        <br /><br />
-        <BitBadge Hidden="hidden" Content="63">
-            <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-        </BitBadge>
-    </DemoExample>
-
-    <DemoExample Title="Events" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
-        <div>
-            Giving the badge an <b>OnClick</b> handler turns it into a real button: it takes the pointer back from the element underneath it, answers to hover and to the
-            Enter and Space keys, and shows a focus ring. The click stops there rather than carrying on to whatever the badge is sitting on, so a badge over a button is
-            its own target. Without a handler the badge never takes focus and lets every pointer through - it is a label on the element it belongs to, and that element is
-            what a keyboard user reaches. Disabling the badge takes it out of the tab order and stops the handler. For a badge that opens what it counts rather than acting on
-            the page it is already on, give it an <BitLink Href="#example17">Href</BitLink> instead of a handler.
+            <b>OnClick</b> makes the badge a real button and <b>Href</b> a real link: focusable, keyboard-operable, with a focus ring and a 24px hit area.
+            The click stops at the badge. <b>Target</b> and <b>Rel</b> work as on any link (<code>_blank</code> adds <code>noopener</code>).
+            Disabled, it leaves the tab order and drops the href. Without either, the badge never takes focus.
         </div>
         <br /><br />
         <div class="example-content">
             <BitBadge Content="counter" OnClick="() => counter++">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
             <BitBadge Content="counter" OnClick="() => counter++" IsEnabled="false">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Link" RazorCode="@example17RazorCode" Id="example17">
-        <div>
-            <b>Href</b> turns the badge into a real anchor, for a counter that opens what it counts rather than acting on the page it is already on. It brings everything a
-            click handler cannot: the context menu, the middle click, the address in the status bar and the announcement of a link. <b>Target</b> picks the browsing context
-            it opens in and <b>Rel</b> the relationship to the linked document - a badge opening in a new tab with no Rel of its own is given <code>rel="noopener"</code>,
-            which keeps the opened page from reaching back into this one. <b>OnClick</b> can be set alongside it, in which case the handler runs and the navigation still
-            happens. Disabling the badge drops the href and takes the badge out of the tab order, so a disabled link cannot be followed by either the pointer or the keyboard.
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <BitBadge Inline Content="7" Href="#example17" AriaLabel="7 new items">
-                <BitText Typography="BitTypography.Body1">Inbox</BitText>
-            </BitBadge>
-
-            <BitBadge Content="@("Docs")" Color="BitColor.Info" Variant="BitVariant.Outline" Href="https://blazorui.bitplatform.dev" Target="_blank" />
-
-            <BitBadge Content="@("Source")" Color="BitColor.Secondary" IconName="@BitIconName.OpenInNewWindow"
+            <BitBadge Content="@("Docs")" Variant="BitVariant.Outline" Href="https://blazorui.bitplatform.dev" Target="_blank" />
+            <BitBadge Content="@("Source")" IconName="@BitIconName.OpenInNewWindow"
                       Href="https://github.com/bitfoundation/bitplatform" Target="_blank" Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" />
-
-            <BitBadge Content="@("Disabled")" Href="https://bitplatform.dev" IsEnabled="false" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
-            A badge says what it says visually, and a number or a colored dot reaches a screen reader as nothing at all. <b>Description</b> is its text alternative: it is
-            rendered into the badge for assistive technologies only, and the visible content is hidden from them so the two are never announced twice.
-            <b>Live</b> adds a polite live region, so a count that changes while the page stays open is announced as it changes - keep it off for a count that only mirrors
-            what is already on the screen. The region is kept on the page whether or not the badge itself is, which is what makes a counter that appears, changes and then
-            <BitLink Href="#example6">disappears</BitLink> announced every time: a live region inserted together with its own text is announced by nothing.
-            What the region reads out is the Description when there is one and the counter itself otherwise; a <BitLink Href="#example7">ContentTemplate</BitLink> is markup
-            neither of them can be read out of, so a badge showing one keeps its own voice and needs a Description before <b>Live</b> has anything to announce.
-            <b>AriaLabel</b> is the other half: where a Description says what the badge <i>shows</i>, the label names the badge as a <i>control</i>. A badge that is a
-            <BitLink Href="#example16">button</BitLink> or a <BitLink Href="#example17">link</BitLink> is what a screen reader lands on, so the label moves onto that control
-            itself - which is what an icon-only or dotted one, carrying no text to be named by, needs before it becomes either. A Description already names the control, so
-            the two are not set together.
+            <b>Description</b> is the badge's text alternative: read by screen readers in place of the visible number, glyph or dot.
+            <b>Live</b> announces changes politely, even as the badge appears and disappears; keep it off for counts that only mirror the screen.
+            <b>AriaLabel</b> names a button or link badge (a Description then describes it); on a plain badge it serves as the text alternative.
         </div>
         <br /><br />
         <div class="example-content">
             <BitBadge Content="unread" Description="@($"{unread} unread messages")" Live>
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Dot Color="BitColor.Success" Description="Online">
+            <BitBadge Dot Description="Online">
                 <BitIcon IconName="@BitIconName.Contact" Color="BitColor.Tertiary" />
             </BitBadge>
-
-            <BitBadge Dot Color="BitColor.Error" Href="#example18" AriaLabel="Open the alerts you have not read">
+            <BitBadge Dot Href="#example11" AriaLabel="Alerts" Description="3 unread">
                 <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
@@ -433,119 +272,75 @@
         <BitButton Variant="BitVariant.Outline" OnClick="() => unread++">Receive a message</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="CSS variables" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            <b>Color</b> picks the role the badge is painted in. The eight semantic roles carry a meaning - Error for something that needs attention, Success for something
-            that went through - while the background, foreground and border roles are the neutral surfaces of the theme, for a badge that should not shout.
-            Every role works with all three variants.
+            The public <b>--bit-Badge-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink> table) restyle what no parameter covers.
+            They inherit, so set them on <code>:root</code>, an ancestor, or one badge's <b>Style</b>. A disabled badge keeps the theme's disabled colors.
         </div>
         <br /><br />
-        <div>Primary</div><br />
         <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Primary">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Primary" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Primary" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
+            <BitBadge Content="@("Tint")" Style="--bit-Badge-background: color-mix(in srgb, var(--bit-clr-pri) 16%, transparent); --bit-Badge-color: var(--bit-clr-pri);" />
+            <BitBadge Content="@("Custom")" Style="--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;" />
+            <BitBadge Content="@("Tall")" Style="--bit-Badge-height: 2rem; --bit-Badge-padding: 0 1rem; --bit-Badge-radius: 0.5rem; --bit-Badge-font-weight: 400;" />
+            <BitBadge Dot Pulse Description="Recording" Style="--bit-Badge-dot-size: 0.75rem; --bit-Badge-background: crimson; --bit-Badge-pulse-color: crimson;" />
         </div>
         <br /><br />
-        <div>Secondary</div><br />
+        <div class="example-content" style="--bit-Badge-inset: 0px; --bit-Badge-height: 1rem; --bit-Badge-font-size: 0.625rem; --bit-Badge-padding: 0 0.25rem;">
+            <BitBadge Content="4">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Content="12">
+                <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Content="99" Max="9">
+                <BitIcon IconName="@BitIconName.ShoppingCart" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            <b>BitParams</b> carries a <b>BitBadgeParams</b> to every badge under it, so a toolbar sets the shared look once. It is a default, not an override:
+            a badge keeps whatever it sets itself (the last one keeps its own Color).
+        </div>
+        <br /><br />
         <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Secondary">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Secondary" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Secondary" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
+            <BitParams Parameters="@badgeParams">
+                <BitBadge Content="4">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="120">
+                    <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="7" Color="BitColor.Error">
+                    <BitIcon IconName="@BitIconName.ShoppingCart" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </BitParams>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>Color</b> picks the theme role the badge is painted in, with every variant. The semantic roles carry a meaning; the background, foreground and border roles
+            are the theme's neutral surfaces, for a badge that should not shout.
         </div>
         <br /><br />
-        <div>Tertiary</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Tertiary">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Tertiary" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Tertiary" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Info</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Info">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Info" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Info" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Success</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Success">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Success" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Success" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Warning</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Warning">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Warning" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Warning" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>SevereWarning</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.SevereWarning">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.SevereWarning" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.SevereWarning" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Error</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Error">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Error" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Error" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div><b>Backgrounds, foregrounds & borders</b>:</div>
-        <br />
+        @foreach (var color in semanticColors)
+        {
+            <div>@color</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="color">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="color" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="color" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+        }
         <div>PrimaryBackground, SecondaryBackground, TertiaryBackground</div><br />
         <div class="example-content">
             <BitBadge Content="84" Color="BitColor.PrimaryBackground">
@@ -584,115 +379,9 @@
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
-        <br /><br />
-        <div><b>Disabled</b>:</div>
-        <br />
-        <div>Primary</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Primary" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Primary" Variant="BitVariant.Outline" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Primary" Variant="BitVariant.Text" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Secondary</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Secondary" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Secondary" Variant="BitVariant.Outline" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Secondary" Variant="BitVariant.Text" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Tertiary</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Tertiary" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Tertiary" Variant="BitVariant.Outline" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Tertiary" Variant="BitVariant.Text" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Info</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Info" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Info" Variant="BitVariant.Outline" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Info" Variant="BitVariant.Text" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Success</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Success" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Success" Variant="BitVariant.Outline" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Success" Variant="BitVariant.Text" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Warning</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Warning" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Warning" Variant="BitVariant.Outline" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Warning" Variant="BitVariant.Text" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>SevereWarning</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.SevereWarning" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.SevereWarning" Variant="BitVariant.Outline" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.SevereWarning" Variant="BitVariant.Text" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Error</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Color="BitColor.Error" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Error" Variant="BitVariant.Outline" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Color="BitColor.Error" Variant="BitVariant.Text" IsEnabled="false">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
         <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter.</div>
         <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
 
@@ -723,60 +412,34 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
         <div>
-            <b>Size</b> sets the height, the type size and the inset of the badge, and the diameter of a <BitLink Href="#example4">dot</BitLink> along with them.
-            A counter is never narrower than it is tall, so a single digit stays a circle at every size.
+            <b>Size</b> sets the height, type size and padding, and the diameter of a dot. A single digit stays a circle at every size.
         </div>
         <br /><br />
-        <div>Small</div><br />
         <div class="example-content">
-            <BitBadge Content="84" Size="BitSize.Small" Variant="BitVariant.Fill">
+            <BitBadge Content="84" Size="BitSize.Small">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-            <BitBadge Content="84" Size="BitSize.Small" Variant="BitVariant.Outline">
+            <BitBadge Content="84" Size="BitSize.Medium">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-            <BitBadge Content="84" Size="BitSize.Small" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-        </div>
-        <br /><br />
-        <div>Medium</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Size="BitSize.Medium" Variant="BitVariant.Fill">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Size="BitSize.Medium" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Size="BitSize.Medium" Variant="BitVariant.Text">
+            <BitBadge Content="84" Size="BitSize.Large">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
         <br /><br />
-        <div>Large</div><br />
         <div class="example-content">
-            <BitBadge Content="84" Size="BitSize.Large" Variant="BitVariant.Fill">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Size="BitSize.Large" Variant="BitVariant.Outline">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-            <BitBadge Content="84" Size="BitSize.Large" Variant="BitVariant.Text">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
+            <BitBadge Content="@("Small")" Size="BitSize.Small" Variant="BitVariant.Outline" />
+            <BitBadge Content="@("Medium")" Size="BitSize.Medium" Variant="BitVariant.Outline" />
+            <BitBadge Content="@("Large")" Size="BitSize.Large" Variant="BitVariant.Outline" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
         <div>
-            <b>Style</b> and <b>Class</b> land on the root of the component - the box that wraps the child content - while <b>Styles</b> and <b>Classes</b> reach every part of it
-            on its own: the root, the wrapper the badge is positioned inside of, the badge itself, its icon, its content, its visually hidden description and its live region.
-            The badge also reads a handful of CSS variables off its root, for what no parameter covers: <code>--bit-bdg-clr</code> and <code>--bit-bdg-clr-txt</code> for a color
-            outside the theme roles, <code>--bit-bdg-clr-ring</code> for the color a <BitLink Href="#example11">Bordered</BitLink> ring is drawn in,
-            <code>--bit-bdg-gap</code> for the room between an <BitLink Href="#example14">inline</BitLink> badge and its child, and <code>--bit-bdg-zin</code> for the
-            layer an overlaid badge is painted on, which it sits one above its child on by default so nothing the child raises can cover it.
+            <b>Style</b> and <b>Class</b> land on the root, which wraps the child. <b>Styles</b> and <b>Classes</b> reach every part: the root, the wrapper the badge is
+            positioned in, the badge, its icon, its content, its hidden description and its live region.
         </div>
         <br /><br />
         <div>Component's Style & Class:</div><br />
@@ -786,17 +449,6 @@
             </BitBadge>
             <BitBadge Content="84" Class="custom-class" Variant="BitVariant.Outline">
                 <div>Anchor</div>
-            </BitBadge>
-        </div>
-        <br /><br /><br />
-        <div>CSS variables:</div><br />
-        <div class="example-content">
-            <BitBadge Content="84" Style="--bit-bdg-clr: rebeccapurple; --bit-bdg-clr-txt: white;">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-
-            <BitBadge Inline Content="84" Style="--bit-bdg-gap: 1rem;">
-                <BitText Typography="BitTypography.Body1">Wider gap</BitText>
             </BitBadge>
         </div>
         <br /><br /><br />
@@ -821,10 +473,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <div>
-            Use BitBadge in right-to-left (RTL). The Start and End positions follow the direction of writing and move to the other side of the child with it, while the
-            Left and Right ones stay where they are. An icon and its content swap sides along with the layout.
+            Use BitBadge in right-to-left (RTL). Start/End positions and the icon order follow the direction; Left/Right stay put.
         </div>
         <br /><br />
         <div dir="rtl">
@@ -836,17 +487,13 @@
                 <BitBadge Dir="BitDir.Rtl" Content="63" Position="BitPosition.TopStart">
                     <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
                 </BitBadge>
+
+                <BitBadge Dir="BitDir.Rtl" Content="@("جدید")" IconName="@BitIconName.CheckMark" Color="BitColor.Success" Position="BitPosition.BottomEnd">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+
+                <BitBadge Dir="BitDir.Rtl" Content="@("پیش‌نویس")" Color="BitColor.Tertiary" />
             </div>
-
-            <br/>
-
-            <BitBadge Dir="BitDir.Rtl" Content="@("جدید")" IconName="@BitIconName.CheckMark" Color="BitColor.Success" Position="BitPosition.BottomEnd">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-
-            <br/><br/><br/>
-
-            <BitBadge Dir="BitDir.Rtl" Content="@("پیش‌نویس")" Color="BitColor.Tertiary" />
         </div>
     </DemoExample>
 

@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components;
@@ -771,16 +773,64 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBadgeShouldRenderTheAriaLabelOnItsRoot()
+    public void BitBadgeShouldNotNameAGenericRoot()
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.AriaLabel, "5 unread messages");
+        });
+
+        // ARIA prohibits naming a generic span, so the label is read out of the badge as its text alternative
+        // instead of being written where every screen reader drops it.
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-vhd").TextContent);
+        Assert.AreEqual("true", component.Find(".bit-bdg-con").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldPreferTheDescriptionOverTheAriaLabelAsItsTextAlternative()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.AriaLabel, "Inbox");
+            parameters.Add(p => p.Description, "5 unread messages");
+        });
+
+        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-vhd").TextContent);
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNameARootGivenARoleOfItsOwn()
+    {
+        // Unmatched attributes are captured by BitComponentBase, so they are supplied the way markup would.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBadge>(0);
+            builder.AddAttribute(1, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(2, nameof(BitBadge.AriaLabel), "Inbox");
+            builder.AddAttribute(3, "role", "group");
+            builder.CloseComponent();
         });
 
         Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
     }
-
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldReadTheAriaLabelOfAPlainBadge()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.AriaLabel, "5 unread messages");
+        });
+
+        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
     [TestMethod]
     public void BitBadgeShouldMoveTheAriaLabelOntoItsButton()
     {
@@ -796,18 +846,40 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBadgeShouldKeepTheAriaLabelOnItsRootWhenTheButtonHasADescription()
+    public void BitBadgeButtonShouldBeNamedByTheAriaLabelAndDescribedByTheDescription()
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
+            parameters.Add(p => p.Id, "inbox-badge");
             parameters.Add(p => p.IconName, "TestIcon");
             parameters.Add(p => p.AriaLabel, "Inbox");
             parameters.Add(p => p.Description, "5 unread messages");
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
-        Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
-        Assert.IsNull(component.Find(".bit-bdg-ctn").GetAttribute("aria-label"));
+        var button = component.Find(".bit-bdg-ctn");
+
+        Assert.AreEqual("Inbox", button.GetAttribute("aria-label"));
+        Assert.AreEqual("inbox-badge-dsc", button.GetAttribute("aria-describedby"));
+        Assert.AreEqual("5 unread messages", component.Find("#inbox-badge-dsc").TextContent);
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBadgeButtonShouldNotPointAtADescriptionItIsNamedBy()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Description, "5 unread messages");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // With no label, the description inside the button is what names it, so it does not describe it too.
+        var button = component.Find(".bit-bdg-ctn");
+
+        Assert.IsNull(button.GetAttribute("aria-describedby"));
+        Assert.IsNull(component.Find(".bit-bdg-vhd").GetAttribute("id"));
     }
 
     [TestMethod]
@@ -2034,5 +2106,254 @@ public class BitBadgeTests : BunitTestContext
         });
 
         Assert.AreEqual("42", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldTakeThePointerBackOnlyWhenItHasATooltip()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 9);
+            parameters.Add(p => p.Content, 5);
+            parameters.AddChildContent("<span>child</span>");
+        });
+
+        // An overlaid badge lets every pointer through to its child, unless it has a tooltip to show on hover.
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-ttl"));
+
+        component.Render(parameters => parameters.Add(p => p.Content, 42));
+
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-ttl"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Title, "Five");
+        });
+
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-ttl"));
+    }
+
+    [TestMethod]
+    public void BitBadgeParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitBadge)}", BitBadgeParams.ParamName);
+
+        var @params = new BitBadgeParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitBadgeParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldApplyCascadingParametersFromBitParams()
+    {
+        var component = RenderInBitParams(new BitBadgeParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Shape = BitBadgeShape.Rounded,
+            Variant = BitVariant.Outline,
+            Position = BitPosition.BottomStart,
+            Overlap = true,
+            Bordered = true,
+            Title = "Cascaded title",
+        }, builder => builder.AddAttribute(1, nameof(BitBadge.Content), 5));
+
+        var root = component.Find(".bit-bdg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-rnd"));
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-otl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-bst"));
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-orp"));
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-brd"));
+        Assert.AreEqual("Cascaded title", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeDirectParametersShouldOverrideCascadingParameters()
+    {
+        var component = RenderInBitParams(new BitBadgeParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Dot = true,
+        }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(2, nameof(BitBadge.Color), BitColor.Error);
+            builder.AddAttribute(3, nameof(BitBadge.Dot), false);
+        });
+
+        var root = component.Find(".bit-bdg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-err"));
+        Assert.IsFalse(root.ClassList.Contains("bit-bdg-suc"));
+        Assert.IsFalse(root.ClassList.Contains("bit-bdg-dot"));
+        Assert.IsTrue(root.ClassList.Contains("bit-bdg-lg"));
+        Assert.AreEqual("5", component.Find(".bit-bdg-con").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeCascadedMaxShouldCapTheContentOfTheBadge()
+    {
+        var component = RenderInBitParams(new BitBadgeParams { Max = 99 },
+                                          builder => builder.AddAttribute(1, nameof(BitBadge.Content), 150));
+
+        // The cap is read together with the content, so a Max that arrives only through the cascade still caps it.
+        Assert.AreEqual("99+", component.Find(".bit-bdg-con").TextContent);
+        Assert.AreEqual("150", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeCascadedShowZeroShouldHideAnEmptiedCounter()
+    {
+        var component = RenderInBitParams(new BitBadgeParams { ShowZero = false },
+                                          builder => builder.AddAttribute(1, nameof(BitBadge.Content), 0));
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeCascadedTargetShouldProtectTheLinkOfTheBadge()
+    {
+        var component = RenderInBitParams(new BitBadgeParams { Target = "_blank" }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(2, nameof(BitBadge.Href), "https://bitplatform.dev");
+        });
+
+        var anchor = component.Find("a.bit-bdg-ctn");
+
+        Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+        Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitBadgeCascadedOffsetsShouldBeWrittenOntoTheRoot()
+    {
+        var component = RenderInBitParams(new BitBadgeParams { OffsetX = "2px", OffsetY = "-3px" },
+                                          builder => builder.AddAttribute(1, nameof(BitBadge.Content), 5));
+
+        var style = component.Find(".bit-bdg").GetAttribute("style")!;
+
+        StringAssert.Contains(style, "--bit-bdg-ofs-x:2px");
+        StringAssert.Contains(style, "--bit-bdg-ofs-y:-3px");
+    }
+
+    [TestMethod]
+    public void BitBadgeParamsUpdateParametersShouldSetAllProperties()
+    {
+        RenderFragment template = builder => builder.AddContent(0, "tpl");
+        var classes = new BitBadgeClassStyles { Badge = "cascaded-badge" };
+        var styles = new BitBadgeClassStyles { Badge = "color: red;" };
+
+        var @params = new BitBadgeParams
+        {
+            Bordered = true,
+            Classes = classes,
+            Color = BitColor.Warning,
+            Content = 7,
+            ContentTemplate = template,
+            Description = "Seven",
+            Dot = true,
+            Hidden = true,
+            Href = "/inbox",
+            Icon = BitIconInfo.Css("my-icon"),
+            IconName = "Mail",
+            Inline = true,
+            Live = true,
+            Max = 5,
+            OffsetX = "1px",
+            OffsetY = "2px",
+            Overlap = true,
+            Position = BitPosition.Center,
+            Pulse = true,
+            Rel = BitLinkRels.NoFollow,
+            Reversed = true,
+            Shape = BitBadgeShape.Square,
+            ShowZero = false,
+            Size = BitSize.Small,
+            Styles = styles,
+            Target = "_self",
+            Title = "Title",
+            Variant = BitVariant.Text,
+        };
+
+        var badge = new BitBadge();
+
+        @params.UpdateParameters(badge);
+
+        Assert.IsTrue(badge.Bordered);
+        Assert.AreSame(classes, badge.Classes);
+        Assert.AreEqual(BitColor.Warning, badge.Color);
+        Assert.AreEqual(7, badge.Content);
+        Assert.AreSame(template, badge.ContentTemplate);
+        Assert.AreEqual("Seven", badge.Description);
+        Assert.IsTrue(badge.Dot);
+        Assert.IsTrue(badge.Hidden);
+        Assert.AreEqual("/inbox", badge.Href);
+        Assert.AreEqual("my-icon", badge.Icon?.Name);
+        Assert.AreEqual("Mail", badge.IconName);
+        Assert.IsTrue(badge.Inline);
+        Assert.IsTrue(badge.Live);
+        Assert.AreEqual(5, badge.Max);
+        Assert.AreEqual("1px", badge.OffsetX);
+        Assert.AreEqual("2px", badge.OffsetY);
+        Assert.IsTrue(badge.Overlap);
+        Assert.AreEqual(BitPosition.Center, badge.Position);
+        Assert.IsTrue(badge.Pulse);
+        Assert.AreEqual(BitLinkRels.NoFollow, badge.Rel);
+        Assert.IsTrue(badge.Reversed);
+        Assert.AreEqual(BitBadgeShape.Square, badge.Shape);
+        Assert.IsFalse(badge.ShowZero);
+        Assert.AreEqual(BitSize.Small, badge.Size);
+        Assert.AreSame(styles, badge.Styles);
+        Assert.AreEqual("_self", badge.Target);
+        Assert.AreEqual("Title", badge.Title);
+        Assert.AreEqual(BitVariant.Text, badge.Variant);
+    }
+
+    [TestMethod]
+    public void BitBadgeParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        var component = RenderInBitParams(new BitBadgeParams
+        {
+            Content = 1,
+            Description = "Cascaded",
+            Variant = BitVariant.Outline,
+            ShowZero = false,
+        }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitBadge.Content), 0);
+            builder.AddAttribute(2, nameof(BitBadge.Description), "Own");
+            builder.AddAttribute(3, nameof(BitBadge.ShowZero), true);
+        });
+
+        Assert.AreEqual("0", component.Find(".bit-bdg-con").TextContent);
+        Assert.AreEqual("Own", component.Find(".bit-bdg-vhd").TextContent);
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-otl"));
+    }
+
+    [TestMethod]
+    public void BitBadgeParamsUpdateParametersShouldIgnoreNull()
+    {
+        new BitBadgeParams { Color = BitColor.Error }.UpdateParameters(null!);
+    }
+
+    private IRenderedComponent<BitParams> RenderInBitParams(BitBadgeParams badgeParams, Action<Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder> addAttributes)
+    {
+        return RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { badgeParams });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitBadge>(0);
+                addAttributes(builder);
+                builder.CloseComponent();
+            });
+        });
     }
 }
