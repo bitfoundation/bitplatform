@@ -102,7 +102,7 @@ public partial class BitSwiperItem : BitComponentBase
 
     // The accessible name of an item falls back to its position, which is what the carousel pattern of the
     // ARIA authoring practices asks for when a slide has nothing better to be called.
-    private string? GetAriaLabel()
+    internal string? GetAriaLabel()
     {
         if (AriaLabel.HasValue()) return AriaLabel;
 

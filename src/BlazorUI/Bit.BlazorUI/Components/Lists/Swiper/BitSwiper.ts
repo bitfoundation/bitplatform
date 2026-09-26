@@ -10,6 +10,7 @@ namespace BitBlazorUI {
         align: number;   // 0 = start, 0.5 = center, 1 = end
         duration: number;  // seconds
         threshold: number; // pixels the pointer has to travel before a drag starts
+        rewind: boolean;   // the next/prev buttons stay at the ends
         scrollCount: number;
         start: number;     // the item the swiper is laid out on, read only at setup
     }
@@ -32,6 +33,11 @@ namespace BitBlazorUI {
         scroll: number;
         viewport: number;
         max: number;
+        // The room kept at the start of the swiper (its Peek), which the items settle against instead of
+        // against its edge, and the length left between the two ends, where a whole item is "in view". The
+        // peek alone is not read fresh, but kept from one resize to the next (see readPeek).
+        padStart: number;
+        span: number;
         positions: number[];
         sizes: number[];
     }
@@ -107,6 +113,9 @@ namespace BitBlazorUI {
         private notification = -1;
         private lastKey = '';
         private direction = 'ltr';
+        private padStart = 0;
+        private padEnd = 0;
+        private peekDirty = true;
 
         private dragging = false;
         private moved = false;
@@ -117,6 +126,7 @@ namespace BitBlazorUI {
         private lastMoveTime = 0;
         private velocity = 0;
         private lastWheel = 0;
+        private keysOwned = false;
 
         constructor(
             id: string,
@@ -150,8 +160,14 @@ namespace BitBlazorUI {
             // Non-passive, since a wheel the swiper navigates with has to be taken from the page.
             container.addEventListener('wheel', this.onWheel, { signal, passive: false });
 
+            this.root.addEventListener('focusin', this.onFocusIn, { signal });
+            this.root.addEventListener('focusout', this.onFocusOut, { signal });
+
             try {
-                this.observer = new ResizeObserver(() => this.scheduleNotify());
+                this.observer = new ResizeObserver(() => {
+                    this.peekDirty = true;
+                    this.scheduleNotify();
+                });
                 this.observe();
             } catch (e) { console.error("BitBlazorUI.Swiper.init:", e); }
 
@@ -179,6 +195,8 @@ namespace BitBlazorUI {
 
             this.readDirection();
 
+            this.peekDirty = true;
+
             this.scheduleNotify();
         }
 
@@ -190,6 +208,8 @@ namespace BitBlazorUI {
             this.observe();
 
             this.readDirection();
+
+            this.peekDirty = true;
 
             this.scheduleNotify();
         }
@@ -349,6 +369,13 @@ namespace BitBlazorUI {
                 ? container.scrollHeight - container.clientHeight
                 : container.scrollWidth - container.clientWidth);
 
+            if (this.peekDirty) {
+                this.readPeek(viewport);
+            }
+
+            const padStart = this.padStart;
+            const span = Math.max(0, viewport - padStart - this.padEnd);
+
             const positions: number[] = [];
             const sizes: number[] = [];
 
@@ -368,16 +395,48 @@ namespace BitBlazorUI {
                 sizes.push(vertical ? r.height : r.width);
             }
 
-            return { rtl, scroll, viewport, max, positions, sizes };
+            return { rtl, scroll, viewport, max, padStart, span, positions, sizes };
+        }
+
+        // The peek is read back off the padding of the box, and kept: it only changes along with the size
+        // of what the box holds (which the observer reports) or with the options, so a drag, a scroll and
+        // an animation, which measure the swiper every frame, do not pay for a style resolution of it.
+        // A horizontal box caps it in its stylesheet (a percentage of padding is one of the width), while a
+        // vertical one is capped here, since nothing in CSS resolves a padding against a height; either way
+        // the two ends together never take more than half the swiper, so there is always room for an item.
+        private readPeek(viewport: number) {
+            this.peekDirty = false;
+
+            const vertical = this.vertical;
+            const holder = this.container.parentElement;
+
+            if (holder) {
+                const cap = vertical ? `${Math.floor(viewport / 4)}px` : '';
+
+                if (holder.style.getPropertyValue('--bit-swp-pmx') !== cap) {
+                    if (cap) {
+                        holder.style.setProperty('--bit-swp-pmx', cap);
+                    } else {
+                        holder.style.removeProperty('--bit-swp-pmx');
+                    }
+                }
+            }
+
+            const cs = window.getComputedStyle(this.container);
+            const rtl = this.rtl;
+
+            this.padStart = parseFloat(vertical ? cs.paddingTop : (rtl ? cs.paddingRight : cs.paddingLeft)) || 0;
+            this.padEnd = parseFloat(vertical ? cs.paddingBottom : (rtl ? cs.paddingLeft : cs.paddingRight)) || 0;
         }
 
         // Where the swiper has to stand for the given item to sit where the snap alignment asks for: at
         // the start of the view, in its middle, or at its end. A swiper that does not snap aligns to the
-        // start, which is what a rail of items scrolls to.
+        // start, which is what a rail of items scrolls to. The view is the span between the two peeks,
+        // which is also what the scroll padding tells the browser's snapping to align with.
         private alignedPos(g: SwiperGeometry, index: number): number {
             const align = this.options.snap ? (this.options.align || 0) : 0;
 
-            return g.positions[index] - align * (g.viewport - g.sizes[index]);
+            return g.positions[index] - g.padStart - align * (g.span - g.sizes[index]);
         }
 
         // The item the swiper is standing on is the one whose resting place is nearest to where it
@@ -406,7 +465,7 @@ namespace BitBlazorUI {
         // screenfuls (the gaps between the items alone are enough for that), one the swiper can never
         // reach the start of, so its dot would never be the current one.
         private pages(g: SwiperGeometry): number[] {
-            if (g.viewport <= 0) return [];
+            if (g.span <= 0) return [];
 
             const count = g.positions.length;
 
@@ -431,7 +490,7 @@ namespace BitBlazorUI {
                 // The next page starts at the first item that no longer fits next to the one this page
                 // starts with, and never before the item after it, so an item wider than the swiper still
                 // moves it on rather than paging in place.
-                const edge = g.positions[i] + g.viewport;
+                const edge = g.positions[i] + g.span;
 
                 let next = i + 1;
 
@@ -682,6 +741,45 @@ namespace BitBlazorUI {
             this.pointerId = -1;
         };
 
+        // A control inside an item that takes the navigation keys for itself: typing in a text field, moving a
+        // slider or walking a listbox with the arrow keys must not move the swiper under it.
+        private ownsKeys(target: EventTarget | null): boolean {
+            if (target instanceof HTMLElement === false) return false;
+
+            const el = target as HTMLElement;
+
+            if (el === this.root || this.root.contains(el) === false) return false;
+            if (el.isContentEditable) return true;
+            if (/^(input|textarea|select)$/i.test(el.tagName)) return true;
+
+            return el.closest('[role="slider"],[role="spinbutton"],[role="listbox"],[role="combobox"],[role="textbox"],' +
+                '[role="menu"],[role="menubar"],[role="tablist"],[role="tree"],[role="treegrid"],[role="grid"],' +
+                '[role="radiogroup"]') !== null;
+        }
+
+        private setKeysOwned(owned: boolean) {
+            if (this.keysOwned === owned) return;
+
+            this.keysOwned = owned;
+
+            try {
+                this.dotnetObj.invokeMethodAsync('OnKeysOwnerChange', owned)
+                    .catch(e => console.error("BitBlazorUI.Swiper.setKeysOwned:", e));
+            } catch (e) { console.error("BitBlazorUI.Swiper.setKeysOwned:", e); }
+        }
+
+        private onFocusIn = (e: FocusEvent) => {
+            this.setKeysOwned(this.ownsKeys(e.target));
+        };
+
+        private onFocusOut = (e: FocusEvent) => {
+            // A focus that moves on to another element inside the swiper is picked up by its focusin.
+            const next = e.relatedTarget;
+            if (next instanceof Node && this.root.contains(next)) return;
+
+            this.setKeysOwned(false);
+        };
+
         private swallowClick = (e: MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
@@ -743,6 +841,8 @@ namespace BitBlazorUI {
 
             this.lastKey = key;
 
+            this.keepFocus(state);
+
             try {
                 // The call is not awaited (the swiper has nothing to do with what comes back), so the
                 // rejection of a swiper that went away mid-flight is picked up here rather than being
@@ -750,6 +850,43 @@ namespace BitBlazorUI {
                 this.dotnetObj.invokeMethodAsync('OnStateChange', state)
                     .catch(e => console.error("BitBlazorUI.Swiper.notify:", e));
             } catch (e) { console.error("BitBlazorUI.Swiper.notify:", e); }
+        }
+
+        // A next/prev button hides itself at the end it cannot move any further towards, and a button that
+        // disappears while it holds the keyboard focus drops it on the body of the page, leaving someone who
+        // was pressing it with nowhere to continue from. So the focus is moved on before the button hides:
+        // onto the swiper itself, which the arrow keys keep navigating, or onto the other button when the
+        // swiper does not take the focus.
+        private keepFocus(state: SwiperState) {
+            if (this.options.rewind && state.scrollable) return;
+
+            const active = document.activeElement;
+
+            // Only the buttons of this swiper, not those of a swiper nested inside one of its items.
+            if (active instanceof HTMLElement === false || active.parentElement?.parentElement !== this.root) return;
+
+            const next = active.classList.contains('bit-swp-rbt');
+            const prev = active.classList.contains('bit-swp-lbt');
+
+            if (next === false && prev === false) return;
+
+            const hides = state.scrollable === false || (next ? state.atEnd : state.atStart);
+
+            if (hides === false) return;
+
+            let target: HTMLElement | null = null;
+
+            if (this.root.hasAttribute('tabindex')) {
+                target = this.root;
+            } else {
+                const otherHides = state.scrollable === false || (next ? state.atStart : state.atEnd);
+
+                if (otherHides === false) {
+                    target = this.root.querySelector<HTMLElement>(next ? ':scope > .bit-swp-vwp > .bit-swp-lbt' : ':scope > .bit-swp-vwp > .bit-swp-rbt');
+                }
+            }
+
+            try { target?.focus({ preventScroll: true }); } catch (e) { }
         }
 
         private state(): SwiperState {

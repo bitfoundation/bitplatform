@@ -108,4 +108,8 @@
             </CascadingValue>
         </div>
     </div>
+
+    @* The carousel pattern of the ARIA authoring practices keeps the announcements quiet while the swiper
+       moves on its own, and polite while it is only moved by the person reading the page. *@
+    <div class="bit-swp-sro" aria-live="@(IsPlaying ? "off" : "polite")" aria-atomic="true">@_announcement</div>
 </div>
