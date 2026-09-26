@@ -93,6 +93,12 @@
             @include device-island(rem2(8px), rem2(62px), rem2(16px));
         }
 
+        // A section comparing several bars side by side crops each phone to its lower part, so the
+        // comparison fits on a screen instead of running through a column of full-height phones.
+        &.short {
+            min-height: rem2(200px);
+        }
+
         // A vertical bar is a navigation rail: it runs down the side of the screen rather than along
         // its foot, and starts below the status strip instead of underneath it.
         &:has(> .bit-nbr-vrt) {
@@ -120,6 +126,19 @@
         border-radius: 1rem;
         box-shadow: aqua 0 0 1rem;
         background: linear-gradient(90deg, magenta, transparent) blue;
+    }
+
+    // The Style & Class section's CSS-variables sample: the same rule its code sample carries.
+    .floating-navbar {
+        margin: 0 rem2(12px) rem2(12px);
+        --bit-NavBar-background: var(--bit-clr-bg-sec);
+        --bit-NavBar-border-radius: #{rem2(999px)};
+        --bit-NavBar-shadow: 0 #{rem2(4px)} #{rem2(16px)} rgba(0, 0, 0, 0.2);
+        --bit-NavBar-padding-block: #{rem2(4px)};
+        --bit-NavBar-padding-inline: #{rem2(8px)};
+        --bit-NavBar-item-border-radius: #{rem2(999px)};
+        --bit-NavBar-selected-color: var(--bit-clr-pri-text);
+        --bit-NavBar-selected-background: var(--bit-clr-pri);
     }
 
     .custom-item {

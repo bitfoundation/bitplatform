@@ -1,11 +1,11 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
-        Each item of the navbar renders an icon over its text and becomes a link when it carries a <b>Url</b>.
-        A custom item type is read through <b>NameSelectors</b>, which maps each field of the navbar onto a
-        property of that type. By default the navbar runs in the <b>Automatic</b> mode, where it highlights the
-        item whose URL points at the current page all by itself.
+        Each item is an icon over its text, and a link when it has a <b>Url</b>. A custom item type is read through
+        <b>NameSelectors</b>, which maps each field of the navbar onto a property of that type. In the default
+        <b>Automatic</b> mode the item whose URL matches the current page is selected and marked
+        <code>aria-current="page"</code>.
     </div>
-    <br /><br />
+    <br />
     <div class="container">
         <BitNavBar Items="basicNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
@@ -15,20 +15,19 @@
 
 <DemoExample Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>
-        <b>IsEnabled</b> turns the whole navbar off, and the <b>IsEnabled</b> selector turns a single item off.
-        A disabled item is not only greyed out: it loses its link, its tab stop and its keyboard stop, so it
-        cannot be reached or followed at all.
+        <b>IsEnabled</b> disables the whole navbar, and the <b>IsEnabled</b> selector a single item. A disabled item
+        loses its link and its tab stop, and is announced as dimmed.
     </div>
-    <br /><br />
-    <div>Disabled:</div><br />
-    <div class="container">
+    <br />
+    <div>Disabled navbar:</div><br />
+    <div class="container short">
         <BitNavBar Items="basicNavBarCustoms" IsEnabled="false"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Disabled item:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="basicNavBarCustomsDisabled"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
@@ -38,12 +37,10 @@
 
 <DemoExample Title="Manual Mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <div>
-        In the <b>Manual</b> mode the selection is driven by clicks instead of by the current URL, which is
-        what a navbar that switches between panels of the same page needs. <b>DefaultSelectedItem</b> sets the
-        item to start on. A navbar that switches panels rather than pages marks its current item with an
-        <b>AriaCurrent</b> of <b>True</b>, since it is not the page that is current but one item of a set.
+        In the <b>Manual</b> mode clicks select the items instead of the URL, for a navbar that switches panels of one
+        page. <b>DefaultSelectedItem</b> sets the starting item.
     </div>
-    <br /><br />
+    <br />
     <div class="container">
         <BitNavBar Mode="BitNavMode.Manual"
                    Items="basicNavBarCustoms"
@@ -55,37 +52,30 @@
 
 <DemoExample Title="URL Matching" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>
-        In the <b>Automatic</b> mode the navbar selects the item whose URL points at the current page.
-        <b>Match</b> sets how those URLs are compared for the whole navbar, and the <b>Match</b> of an item
-        overrides it: <b>Exact</b> asks for the same URL, <b>Prefix</b> also matches everything below it,
-        <b>Wildcard</b> reads the URL of the item as a pattern in which <b>?</b> stands for a single character
-        other than <b>/</b>, <b>*</b> for any number of them and <b>**</b> for any number of characters at all,
-        slashes included, and <b>Regex</b> reads it as a regular expression. <b>Exact</b> and <b>Prefix</b>
-        compare the path alone when the URL of the item carries neither a query string nor a fragment, and the
-        whole URL when it carries one, and they ignore the letter case and a trailing slash either way; a
-        <b>Wildcard</b> or a <b>Regex</b> pattern is run against both, so it can match the query and the
-        fragment as well. <b>AdditionalUrls</b> gives an item other URLs to light up on. The navbars below are
-        all matched against the URL of this page.
+        <b>Match</b> (per navbar, or per item through its selector) compares URLs <b>Exact</b>ly (the default), by
+        <b>Prefix</b>, as a <b>Wildcard</b> pattern (<b>?</b>, <b>*</b> within a segment, <b>**</b> across segments) or
+        as a <b>Regex</b>. Exact and Prefix ignore case and a trailing slash. The <b>AdditionalUrls</b> selector gives an
+        item more URLs to match. All of these are matched against the URL of this page.
     </div>
-    <br /><br />
+    <br />
     <div>Exact (the default):</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="exactMatchCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
                                             Url = { Selector = item => item.Link } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Prefix:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="prefixMatchCustoms" Match="BitNavMatch.Prefix"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
                                             Url = { Selector = item => item.Link } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Wildcard:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="wildcardMatchCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
@@ -93,9 +83,9 @@
                                             Match = { Selector = item => item.Matching },
                                             IsEnabled = { Selector = item => item.Disabled is false } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Regex:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="regexMatchCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
@@ -103,9 +93,9 @@
                                             Match = { Selector = item => item.Matching },
                                             IsEnabled = { Selector = item => item.Disabled is false } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>AdditionalUrls:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="additionalUrlsCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
@@ -114,29 +104,21 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+<DemoExample Title="Labels" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>
-        <b>IconOnly</b> drops the text of every item and keeps the icons alone. The text is still what names
-        the item for a screen reader, and it is moved onto the item as its label and its tooltip, so nothing
-        is lost by hiding it.
+        <b>IconOnly</b> hides every label, <b>HideUnselectedText</b> keeps only the selected one's, and
+        <b>InlineText</b> puts the label beside the icon. A hidden label still names its item for screen readers.
     </div>
-    <br /><br />
-    <div class="container">
-        <BitNavBar IconOnly
-                   Items="basicNavBarCustoms"
+    <br />
+    <div>IconOnly:</div><br />
+    <div class="container short">
+        <BitNavBar Items="basicNavBarCustoms" IconOnly
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-</DemoExample>
-
-<DemoExample Title="HideUnselectedText" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
-    <div>
-        <b>HideUnselectedText</b> keeps the text of the selected item alone and leaves the rest with their
-        icon, which is how a bar holding more destinations stays readable without dropping every label.
-        Select an item to move the label along with the selection.
-    </div>
     <br /><br />
-    <div class="container">
+    <div>HideUnselectedText:</div><br />
+    <div class="container short">
         <BitNavBar HideUnselectedText
                    Mode="BitNavMode.Manual"
                    Items="basicNavBarCustoms"
@@ -144,155 +126,131 @@
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-</DemoExample>
-
-<DemoExample Title="Layout" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
-    <div>
-        <b>InlineText</b> puts the text of an item beside its icon instead of under it, which is what a
-        navbar does with the room a wider layout gives it. Stacking the items into a column instead turns
-        the navbar into a navigation rail, which <b>Vertical</b> covers in a section of its own below.
-    </div>
     <br /><br />
-    <div class="container">
-        <BitNavBar InlineText
-                   Items="basicNavBarCustoms"
+    <div>InlineText:</div><br />
+    <div class="container short">
+        <BitNavBar Items="basicNavBarCustoms" InlineText
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Width" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
+<DemoExample Title="Width & Alignment" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
     <div>
-        <b>FitWidth</b> shrinks the navbar to the width of its own content, and <b>FullWidth</b> stretches it
-        over the full width of its container. Without either one the navbar takes the width its container
-        gives it. Those two size the bar; <b>Justified</b> sizes the items inside it, giving each one an equal
-        share instead of the width of its own label, which is how a navigation bar keeps its destinations on
-        a predictable grid, and <b>Scrollable</b> is the other answer to a bar that runs out of
-        room: it leaves the items at the size of their own content and scrolls them instead.
+        <b>FitWidth</b> shrinks the navbar to its content and <b>FullWidth</b> stretches it over its container.
+        <b>Justified</b> gives every item an equal share, and <b>Alignment</b> packs or spreads the items along the bar.
     </div>
-    <br /><br />
+    <br />
     <div>FitWidth:</div><br />
-    <div class="container">
-        <BitNavBar FitWidth
-                   Items="basicNavBarCustoms"
+    <div class="container short">
+        <BitNavBar Items="basicNavBarCustoms" FitWidth
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>FullWidth:</div><br />
-    <div class="container">
-        <BitNavBar FullWidth
-                   Items="basicNavBarCustoms"
+    <div class="container short">
+        <BitNavBar Items="basicNavBarCustoms" FullWidth
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
-    <div>Justified (items of unequal label length):</div><br />
-    <div class="container">
-        <BitNavBar Justified
-                   Items="unevenNavBarCustoms"
+    <br /><br />
+    <div>Justified (labels of unequal length):</div><br />
+    <div class="container short">
+        <BitNavBar Items="unevenNavBarCustoms" Justified
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>Alignment Center:</div><br />
+    <div class="container short">
+        <BitNavBar Alignment="BitAlignment.Center" Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>Alignment SpaceBetween:</div><br />
+    <div class="container short">
+        <BitNavBar Alignment="BitAlignment.SpaceBetween" Items="basicNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Alignment" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+<DemoExample Title="Selection" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>
-        <b>Alignment</b> distributes the items along the navbar: packed at its <b>Start</b>, its <b>Center</b>
-        or its <b>End</b>, or spread over it with <b>SpaceBetween</b>, <b>SpaceAround</b> (what a horizontal
-        bar does on its own) and <b>SpaceEvenly</b>. It works in both directions, so it is also what moves the
-        destinations of a <b>Vertical</b> rail away from its top edge. <b>Justified</b> is the other half of
-        the picture: it has the items fill the navbar instead of sitting somewhere along it.
+        The <b>SelectedIconName</b> selector (or <b>SelectedIcon</b>) swaps the selected item to a filled glyph.
+        <b>Filled</b> fills the hovered and selected item with the <b>Color</b>, and <b>Indicator</b> adds a <b>Line</b>
+        along its edge or a <b>Pill</b> behind its icon - cues beyond color alone.
+    </div>
+    <br />
+    <div>SelectedIconName:</div><br />
+    <div class="container short">
+        <BitNavBar Mode="BitNavMode.Manual"
+                   Items="selectedIconCustoms"
+                   DefaultSelectedItem="selectedIconCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName },
+                                            SelectedIconName = { Selector = item => item.SelectedImageName } })" />
     </div>
     <br /><br />
-    <div>Start:</div><br />
-    <div class="container">
-        <BitNavBar Alignment="BitAlignment.Start"
-                   Items="basicNavBarCustoms"
+    <div>Filled:</div><br />
+    <div class="container short">
+        <BitNavBar Filled
+                   Mode="BitNavMode.Manual"
+                   Items="selectedIconCustoms"
+                   DefaultSelectedItem="selectedIconCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Center:</div><br />
-    <div class="container">
-        <BitNavBar Alignment="BitAlignment.Center"
-                   Items="basicNavBarCustoms"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>End:</div><br />
-    <div class="container">
-        <BitNavBar Alignment="BitAlignment.End"
-                   Items="basicNavBarCustoms"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>SpaceBetween:</div><br />
-    <div class="container">
-        <BitNavBar Alignment="BitAlignment.SpaceBetween"
-                   Items="basicNavBarCustoms"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="Indicator" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
-    <div>
-        <b>Indicator</b> gives the selection a mark of its own beside the color of the item: a <b>Line</b>
-        along the edge of the selected item - its bottom edge across a bar and its leading edge down a
-        <b>Vertical</b> rail, the way a tab strip marks its current tab - or the <b>Pill</b> a Material
-        navigation bar draws behind the icon of its current destination. The pill is the filled part in that
-        mode, so it takes the fill of the item over, and both follow the <b>Color</b> while <b>Filled</b> is
-        enabled.
+                                            IconName = { Selector = item => item.ImageName },
+                                            SelectedIconName = { Selector = item => item.SelectedImageName } })" />
     </div>
     <br /><br />
-    <div>Line:</div><br />
-    <div class="container">
+    <div>Line indicator:</div><br />
+    <div class="container short">
         <BitNavBar Indicator="BitNavBarIndicator.Line"
-                   Items="basicNavBarCustoms"
                    Mode="BitNavMode.Manual"
-                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   Items="selectedIconCustoms"
+                   DefaultSelectedItem="selectedIconCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
+                                            IconName = { Selector = item => item.ImageName },
+                                            SelectedIconName = { Selector = item => item.SelectedImageName } })" />
     </div>
-    <br /><br /><br /><br />
-    <div>Pill:</div><br />
-    <div class="container">
+    <br /><br />
+    <div>Pill indicator:</div><br />
+    <div class="container short">
         <BitNavBar Indicator="BitNavBarIndicator.Pill"
-                   Items="basicNavBarCustoms"
                    Mode="BitNavMode.Manual"
-                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   Items="selectedIconCustoms"
+                   DefaultSelectedItem="selectedIconCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
+                                            IconName = { Selector = item => item.ImageName },
+                                            SelectedIconName = { Selector = item => item.SelectedImageName } })" />
     </div>
-    <br /><br /><br /><br />
-    <div>Pill, filled:</div><br />
-    <div class="container">
+    <br /><br />
+    <div>Pill indicator, Filled:</div><br />
+    <div class="container short">
         <BitNavBar Indicator="BitNavBarIndicator.Pill"
                    Filled
-                   Items="basicNavBarCustoms"
                    Mode="BitNavMode.Manual"
-                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   Items="selectedIconCustoms"
+                   DefaultSelectedItem="selectedIconCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
+                                            IconName = { Selector = item => item.ImageName },
+                                            SelectedIconName = { Selector = item => item.SelectedImageName } })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Scrollable" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Scrollable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>
-        A navbar squeezes its items into the room it has, which runs out once it holds more destinations than
-        it fits. <b>Scrollable</b> leaves every item at the size of its own content and scrolls the list
-        instead, with the scrollbar itself hidden, and it brings the selected item into view whenever the
-        selection moves - from a click, from the URL in the <b>Automatic</b> mode, or from the binding,
-        as the button below does. A <b>Vertical</b> rail scrolls down its own length in exactly the same way.
+        <b>Scrollable</b> scrolls the items instead of squeezing them (scrollbar hidden) and brings the selected item
+        into view whenever the selection moves - here from the button.
     </div>
-    <br /><br />
+    <br />
     <BitButton OnClick="@(() => scrollableSelectedCustom = scrollableNavBarCustoms[^1])">Select the last item</BitButton>
     <br /><br />
     <div class="container">
-        <BitNavBar Scrollable
+        <BitNavBar TItem="MenuItem"
+                   Scrollable
                    Mode="BitNavMode.Manual"
                    Items="scrollableNavBarCustoms"
                    @bind-SelectedItem="scrollableSelectedCustom"
@@ -303,20 +261,18 @@
     Selected item: @scrollableSelectedCustom?.Title
 </DemoExample>
 
-<DemoExample Title="Header & Footer" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="Header & Footer" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <div>
-        <b>HeaderTemplate</b> and <b>FooterTemplate</b> render content before and after the items and outside
-        of the list the items form, so whatever they hold is not counted among the destinations by a screen
-        reader: the logo or the menu button of a bar, and the button a navigation rail is conventionally
-        headed or ended with.
+        <b>HeaderTemplate</b> and <b>FooterTemplate</b> render content before and after the items, outside their list,
+        so a screen reader does not count it among the destinations.
     </div>
-    <br /><br />
+    <br />
     <div class="container">
         <BitNavBar Items="basicNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })">
             <HeaderTemplate>
-                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="32" />
+                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="32" Alt="bit" />
             </HeaderTemplate>
             <FooterTemplate>
                 <BitButton IconOnly Title="More" Variant="BitVariant.Text" IconName="@BitIconName.More" />
@@ -325,55 +281,24 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Vertical" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+<DemoExample Title="Vertical" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>
-        <b>Vertical</b> stacks the items in a column, which turns the navbar into the navigation rail that
-        runs down the side of a page instead of across the foot of it. The header, the items and the footer
-        all follow that direction, and a rail is normally sized with <b>FitWidth</b>, so it takes the width
-        of its own content rather than the width of its container. Everything the bar does the rail does
-        too: <b>InlineText</b> and <b>IconOnly</b> reshape its items, <b>Alignment</b> moves them away from
-        its top edge, the <b>Line</b> indicator runs down the leading edge of the selected item instead of
-        along its bottom, <b>Scrollable</b> scrolls the rail down its own length, and the header and the
-        footer sit above and below the items.
+        <b>Vertical</b> turns the navbar into a navigation rail (usually with <b>FitWidth</b>). Everything above
+        applies: the <b>Line</b> runs down the leading edge and <b>Scrollable</b> scrolls down the rail.
     </div>
-    <br /><br />
+    <br />
     <div>Basic:</div><br />
     <div class="container">
-        <BitNavBar Vertical FitWidth
-                   Items="basicNavBarCustoms"
+        <BitNavBar Items="basicNavBarCustoms" Vertical FitWidth
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
-    <div>InlineText:</div><br />
-    <div class="container">
-        <BitNavBar Vertical InlineText FitWidth
-                   Items="basicNavBarCustoms"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>IconOnly:</div><br />
-    <div class="container">
-        <BitNavBar Vertical IconOnly FitWidth
-                   Items="basicNavBarCustoms"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Alignment:</div><br />
-    <div class="container">
-        <BitNavBar Vertical FitWidth
-                   Alignment="BitAlignment.Center"
-                   Items="basicNavBarCustoms"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Indicator:</div><br />
+    <br /><br />
+    <div>InlineText and Line indicator:</div><br />
     <div class="container">
         <BitNavBar Vertical
                    FitWidth
+                   InlineText
                    Indicator="BitNavBarIndicator.Line"
                    Items="basicNavBarCustoms"
                    Mode="BitNavMode.Manual"
@@ -381,7 +306,21 @@
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
+    <div>IconOnly, centered, with header and footer:</div><br />
+    <div class="container">
+        <BitNavBar Vertical FitWidth IconOnly Alignment="BitAlignment.Center" Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })">
+            <HeaderTemplate>
+                <BitButton IconOnly Title="New" IconName="@BitIconName.Add" />
+            </HeaderTemplate>
+            <FooterTemplate>
+                <BitButton IconOnly Title="Settings" Variant="BitVariant.Text" IconName="@BitIconName.Settings" />
+            </FooterTemplate>
+        </BitNavBar>
+    </div>
+    <br /><br />
     <div>Scrollable:</div><br />
     <div class="container">
         <BitNavBar Scrollable
@@ -393,32 +332,15 @@
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
-    <div>Header &amp; Footer:</div><br />
-    <div class="container">
-        <BitNavBar Vertical FitWidth IconOnly
-                   Items="basicNavBarCustoms"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })">
-            <HeaderTemplate>
-                <BitButton IconOnly Title="New" IconName="@BitIconName.Add" />
-            </HeaderTemplate>
-            <FooterTemplate>
-                <BitButton IconOnly Title="Settings" Variant="BitVariant.Text" IconName="@BitIconName.Settings" />
-            </FooterTemplate>
-        </BitNavBar>
-    </div>
 </DemoExample>
 
-<DemoExample Title="Badge" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
+<DemoExample Title="Badge" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>
-        <b>Badge</b> puts a short count or status on the icon of an item, and <b>Dot</b> marks it as needing
-        attention without a number. Both are drawn on the icon and hidden from assistive technology, and the
-        badge is folded into the name of the item instead, so it is announced once rather than twice
-        - "Inbox (12)". <b>BadgeAriaLabel</b> replaces that with a description a screen reader can read
-        out on its own, and is the only way a <b>Dot</b> is announced at all, since a dot carries no text.
+        The <b>Badge</b> selector puts a count on the icon and the <b>Dot</b> selector marks it without one. The badge is
+        folded into the item's name ("Inbox (12)"); <b>BadgeAriaLabel</b> replaces that text, and is the only way a dot
+        is announced.
     </div>
-    <br /><br />
+    <br />
     <div class="container">
         <BitNavBar Items="badgeNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
@@ -429,36 +351,15 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Filled" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Templates" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>
-        <b>Filled</b> fills the hovered and the selected item, which gives the selection a mark of its own
-        instead of leaving it to the text color alone. The fill takes the <b>Color</b> of the navbar, and the
-        content of the item - along with the <b>Indicator</b>, when the navbar carries one -
-        moves onto the on-color of that color so that it stays legible over the fill.
+        <b>ItemTemplate</b> replaces the content of every item and the <b>Template</b> selector an item's own. With a
+        <b>TemplateRenderMode</b> selector (or <b>ItemTemplateRenderMode</b>) of <b>Replace</b> the template replaces the
+        whole item, for an item that is a control of its own; it then owns its clicks, focus and name.
     </div>
-    <br /><br />
-    <div class="container">
-        <BitNavBar Filled Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="Templates" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
-    <div>
-        <b>ItemTemplate</b> replaces the content of every item of the navbar, and the <b>Template</b> selector
-        replaces the content of a single item and wins over the navbar's template. Either one renders inside
-        the anchor (or the button) the item is; the <b>TemplateRenderMode</b> selector of an item (and
-        <b>ItemTemplateRenderMode</b> of the navbar, for its own template) set to <b>Replace</b> has the
-        template render that element itself instead, which is what an item that is a control of its own
-        - the center action of a mobile bar - needs, since an interactive element cannot be
-        nested in another one. A replaced item owns its clicks, its focus and its accessible name, and is
-        left out of the keyboard navigation of the bar.
-    </div>
-    <br /><br />
+    <br />
     <div>ItemTemplate:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="basicNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })">
@@ -468,17 +369,17 @@
             </ItemTemplate>
         </BitNavBar>
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Item's template:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="templateNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
                                             Template = { Selector = item => item.Fragment } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Replaced item template:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Mode="BitNavMode.Manual"
                    Items="replacedTemplateNavBarCustoms"
                    DefaultSelectedItem="replacedTemplateNavBarCustoms[0]"
@@ -489,92 +390,54 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+<DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>
-        <b>OnItemClick</b> is invoked when an item is clicked, and <b>OnSelectItem</b> when the selection
-        actually moves onto an item, whether that came from a click or from the URL in the <b>Automatic</b>
-        mode.
+        <b>OnItemClick</b> fires on a click and <b>OnSelectItem</b> when the selection moves. Both skip the already
+        selected item unless <b>Reselectable</b> is set - for a bar that scrolls its page to the top on a second tap.
     </div>
-    <br /><br />
-    <div class="container">
+    <br />
+    <BitToggle @bind-Value="reselectable" Label="Reselectable" Inline />
+    <br />
+    <div class="container short">
         <BitNavBar Items="basicNavBarCustoms"
                    Mode="BitNavMode.Manual"
-                   OnItemClick="(MenuItem item) => eventsClickedItem = item"
-                   OnSelectItem="(MenuItem item) => eventsSelectedItem = item"
+                   Reselectable="reselectable"
+                   OnItemClick="(MenuItem item) => { eventsClickedItem = item; clickCount++; }"
+                   OnSelectItem="(MenuItem item) => { eventsSelectedItem = item; selectCount++; }"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br />
-    Clicked item: @eventsClickedItem?.Title
     <br />
-    Selected item: @eventsSelectedItem?.Title
+    <div>Clicked item: @eventsClickedItem?.Title (@clickCount clicks)</div>
+    <div>Selected item: @eventsSelectedItem?.Title (@selectCount selections)</div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
-    <div>
-        <b>DefaultSelectedItem</b> only sets the item to start on, while <b>SelectedItem</b> binds both ways,
-        so the selection can be read and written from outside the navbar at any time.
-    </div>
-    <br /><br />
-    <div>DefaultSelectedItem:</div><br />
-    <div class="container">
-        <BitNavBar @bind-SelectedItem="selectedItem"
+<DemoExample Title="Binding" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <div><b>SelectedItem</b> binds both ways, so the selection can be read and written from outside the navbar.</div>
+    <br />
+    <div class="container short">
+        <BitNavBar TItem="MenuItem"
+                   @bind-SelectedItem="twoWaySelectedItem"
                    Items="basicNavBarCustoms"
                    Mode="BitNavMode.Manual"
-                   DefaultSelectedItem="basicNavBarCustoms[1]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br />
-    Selected item: @selectedItem.Title
-    <br /><br /><br /><br />
-    <div>Two-way SelectedItem:</div><br />
-    <div class="container">
-        <BitNavBar Items="basicNavBarCustoms"
-                   Mode="BitNavMode.Manual"
-                   @bind-SelectedItem="twoWaySelectedItem"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br />
+    Selected item: @twoWaySelectedItem?.Title
+    <br /><br />
     <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
 </DemoExample>
 
-<DemoExample Title="Reselectable" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+<DemoExample Title="Keyboard" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
     <div>
-        The events of an item that is already selected are swallowed, so a second click on the current
-        destination changes nothing. <b>Reselectable</b> lets them through, which is what a bar that scrolls
-        its page back to the top on a repeated click needs.
-    </div>
-    <br /><br />
-    <BitToggle @bind-Value="reselectable" OnText="Enabled recalling" OffText="Disabled recalling" />
-    <br />
-    <div class="container">
-        <BitNavBar Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms"
-                   Reselectable="reselectable"
-                   OnItemClick="(MenuItem item) => countClick++"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
+        The arrow keys, <b>Home</b> and <b>End</b> move the focus (flipped in RTL, skipping disabled items). By default
+        every item is a tab stop; <b>SingleTabStop</b> makes the bar one stop like a toolbar. <b>WrapNavigation</b>
+        wraps at the ends, and <b>SelectOnFocus</b> moves the selection with the focus (Manual mode).
     </div>
     <br />
-    Item click count: @countClick
-</DemoExample>
-
-<DemoExample Title="Keyboard" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
-    <div>
-        By default the navbar is a set of links that <b>Tab</b> reaches one by one, which is how a navigation
-        landmark behaves. <b>SingleTabStop</b> turns it into the roving tab index of a toolbar instead: the
-        whole bar is a single stop that lands on the selected item, and the rest are reached from there.
-        In both modes the arrow keys of either axis, <b>Home</b> and <b>End</b> move the focus along the bar,
-        the horizontal pair flipping in RTL, and a disabled item is skipped. The focus stops at both ends;
-        <b>WrapNavigation</b> lets it wrap around from the last item to the first one and back, and
-        <b>SelectOnFocus</b> moves the selection along with the focus in the <b>Manual</b> mode, the way the
-        tabs of a tab list do.
-    </div>
-    <br /><br />
     <div>SingleTabStop:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar SingleTabStop
                    Mode="BitNavMode.Manual"
                    Items="basicNavBarCustoms"
@@ -582,9 +445,9 @@
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>WrapNavigation:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar WrapNavigation
                    SingleTabStop
                    Mode="BitNavMode.Manual"
@@ -593,9 +456,9 @@
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>SelectOnFocus:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar SelectOnFocus
                    SingleTabStop
                    Mode="BitNavMode.Manual"
@@ -606,41 +469,21 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Selected Icon" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Dynamic Items" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
     <div>
-        A navigation bar conventionally marks its current destination with the filled variant of the same
-        glyph, which is what the <b>SelectedIconName</b> selector (and <b>SelectedIcon</b>, for an external
-        icon library) is for: the item swaps to it while it is the selected one and falls back to its
-        <b>IconName</b> otherwise. It reads as a second, shape-based cue for the selection next to the color,
-        which is what keeps the current destination legible where a color difference alone is not enough. <b>Indicator</b>
-        adds a third cue, drawn beside the content of the item rather than in it.
+        <b>Items</b> is re-read on every render, so changes to the same list show up at once; the selection survives
+        while its item is still there.
     </div>
-    <br /><br />
-    <div class="container">
-        <BitNavBar Mode="BitNavMode.Manual"
-                   Items="selectedIconCustoms"
-                   DefaultSelectedItem="selectedIconCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName },
-                                            SelectedIconName = { Selector = item => item.SelectedImageName } })" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="Dynamic Items" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
-    <div>
-        The <b>Items</b> collection is read again on every render, so items appended to (or removed from) the
-        very same list are picked up without handing the navbar a new collection. The selection survives as
-        long as the item it points at is still in the list, and the keyboard follows the new order at once.
-    </div>
-    <br /><br />
+    <br />
     <BitStack Horizontal>
         <BitButton OnClick="AddDynamicCustom">Add item</BitButton>
         <BitButton OnClick="RemoveDynamicCustom">Remove item</BitButton>
         <BitButton OnClick="ReverseDynamicCustoms">Reverse items</BitButton>
     </BitStack>
     <br />
-    <div class="container">
-        <BitNavBar Mode="BitNavMode.Manual"
+    <div class="container short">
+        <BitNavBar TItem="MenuItem"
+                   Mode="BitNavMode.Manual"
                    Items="dynamicNavBarCustoms"
                    @bind-SelectedItem="dynamicSelectedCustom"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
@@ -650,196 +493,207 @@
     Selected item: @dynamicSelectedCustom?.Title
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
-    <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
+<DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+    <div>
+        <b>BitParams</b> hands a <b>BitNavBarParams</b> to every navbar under it as defaults: a navbar keeps what it
+        sets itself and takes only what it left unset. The object is not generic, so it serves all three item APIs -
+        and carries no <b>NameSelectors</b>, which each navbar still passes itself.
+    </div>
+    <br />
+    <BitParams Parameters="navBarParams">
+        <div>Everything from the cascade:</div><br />
+        <div class="container short">
+            <BitNavBar Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
+                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                                IconName = { Selector = item => item.ImageName } })" />
+        </div>
+        <br /><br />
+        <div>Its own Indicator, the cascaded rest:</div><br />
+        <div class="container short">
+            <BitNavBar Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Indicator="BitNavBarIndicator.Line"
+                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                                IconName = { Selector = item => item.ImageName } })" />
+        </div>
+    </BitParams>
     <br /><br />
-    <div>Primary:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.Primary" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Secondary:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.Secondary" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Tertiary:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.Tertiary" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Info:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.Info" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Success:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.Success" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Warning:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.Warning" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>SevereWarning:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.SevereWarning" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>Error:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.Error" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div class="inverted-panel" style="background:var(--bit-clr-fg-sec);padding:1rem">
-        <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground:</div><br />
-        <div class="container">
-            <BitNavBar Color="BitColor.PrimaryBackground" Mode="BitNavMode.Manual"
-                       Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                                IconName = { Selector = item => item.ImageName } })" />
-        </div>
-        <br /><br /><br /><br />
-        <div style="color:var(--bit-clr-bg-sec)">SecondaryBackground:</div><br />
-        <div class="container">
-            <BitNavBar Color="BitColor.SecondaryBackground" Mode="BitNavMode.Manual"
-                       Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                                IconName = { Selector = item => item.ImageName } })" />
-        </div>
-        <br /><br /><br /><br />
-        <div style="color:var(--bit-clr-bg-ter)">TertiaryBackground:</div><br />
-        <div class="container">
-            <BitNavBar Color="BitColor.TertiaryBackground" Mode="BitNavMode.Manual"
-                       Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                                IconName = { Selector = item => item.ImageName } })" />
-        </div>
-    </div>
-    <br /><br /><br /><br />
-    <div>PrimaryForeground:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.PrimaryForeground" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>SecondaryForeground:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.SecondaryForeground" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>TertiaryForeground:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.TertiaryForeground" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>PrimaryBorder:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.PrimaryBorder" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>SecondaryBorder:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.SecondaryBorder" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br /><br /><br /><br />
-    <div>TertiaryBorder:</div><br />
-    <div class="container">
-        <BitNavBar Color="BitColor.TertiaryBorder" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
+    <div>Outside the cascade:</div><br />
+    <div class="container short">
+        <BitNavBar Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
-    <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
-
+<DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+    <div><b>Color</b> paints the selected item, its indicator and its fill.</div>
     <br />
-    <br />
+    <div>Primary:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.Primary" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>Secondary:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.Secondary" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>Tertiary:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.Tertiary" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>Info:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.Info" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>Success:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.Success" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>Warning:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.Warning" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>SevereWarning:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.SevereWarning" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>Error:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.Error" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div class="inverted-panel" style="background:var(--bit-clr-fg-sec);padding:1rem">
+        <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground:</div><br />
+        <div class="container short">
+            <BitNavBar Color="BitColor.PrimaryBackground" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                                IconName = { Selector = item => item.ImageName } })" />
+        </div>
+        <br /><br />
+        <div style="color:var(--bit-clr-bg-sec)">SecondaryBackground:</div><br />
+        <div class="container short">
+            <BitNavBar Color="BitColor.SecondaryBackground" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                                IconName = { Selector = item => item.ImageName } })" />
+        </div>
+        <br /><br />
+        <div style="color:var(--bit-clr-bg-ter)">TertiaryBackground:</div><br />
+        <div class="container short">
+            <BitNavBar Color="BitColor.TertiaryBackground" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                                IconName = { Selector = item => item.ImageName } })" />
+        </div>
+    </div>
+    <br /><br />
+    <div>PrimaryForeground:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.PrimaryForeground" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>SecondaryForeground:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.SecondaryForeground" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>TertiaryForeground:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.TertiaryForeground" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>PrimaryBorder:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.PrimaryBorder" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>SecondaryBorder:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.SecondaryBorder" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>TertiaryBorder:</div><br />
+    <div class="container short">
+        <BitNavBar Color="BitColor.TertiaryBorder" Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]" Mode="BitNavMode.Manual"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+</DemoExample>
 
+<DemoExample Title="External Icons" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+    <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> selector.</div>
+    <br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="externalIconCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             Icon = { Selector = item => item.Image } })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
-    <div>The <b>Size</b> scales the icon, the text and the padding of every item of the navbar at once.</div>
-    <br /><br />
+<DemoExample Title="Size" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+    <div><b>Size</b> scales the icon, the text, the padding and the touch target of every item.</div>
+    <br />
     <div>Small:</div><br />
-    <div class="container">
-        <BitNavBar Size="BitSize.Small" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
+    <div class="container short">
+        <BitNavBar Size="BitSize.Small" Items="basicNavBarCustoms" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Medium:</div><br />
-    <div class="container">
-        <BitNavBar Size="BitSize.Medium" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
+    <div class="container short">
+        <BitNavBar Size="BitSize.Medium" Items="basicNavBarCustoms" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Large:</div><br />
-    <div class="container">
-        <BitNavBar Size="BitSize.Large" Mode="BitNavMode.Manual"
-                   Items="basicNavBarCustoms" DefaultSelectedItem="basicNavBarCustoms[0]"
+    <div class="container short">
+        <BitNavBar Size="BitSize.Large" Items="basicNavBarCustoms" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
-    <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
-    <br /><br />
+<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+    <div>
+        <b>Style</b>/<b>Class</b> for the root, <b>Styles</b>/<b>Classes</b> for its parts, an item's own
+        <b>Style</b>/<b>Class</b> through their selectors, and the public <b>--bit-NavBar-*</b> CSS variables, which
+        re-skin every navbar when set on <code>:root</code> or a class.
+    </div>
+    <br />
     <div>Component's Style:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="basicNavBarCustoms"
                    Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
@@ -847,57 +701,67 @@
     </div>
     <br /><br />
     <div>Component's Class:</div><br />
-    <div class="container">
-        <BitNavBar Items="basicNavBarCustoms"
-                   Class="custom-class"
+    <div class="container short">
+        <BitNavBar Items="basicNavBarCustoms" Class="custom-class"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
-    <br /><br /><br /><br />
-    <div>Item's style & class:</div><br />
-    <div class="container">
+    <br /><br />
+    <div>Item's Style & Class:</div><br />
+    <div class="container short">
         <BitNavBar Items="basicNavBarCustomsClassStyle"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
                                             Class = { Selector = item => item.CssClass },
-                                            Style = { Selector = item => item.Style }})" />
+                                            Style = { Selector = item => item.Style } })" />
     </div>
-    <br /><br /><br /><br />
+    <br /><br />
     <div>Styles:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="badgeNavBarCustoms"
                    Styles="@(new() { ItemIcon = "color: aqua;", ItemText = "color: tomato;", ItemBadge = "background: darkmagenta;" })"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
                                             Badge = { Selector = item => item.Counter },
+                                            BadgeAriaLabel = { Selector = item => item.CounterLabel },
                                             Dot = { Selector = item => item.Marker } })" />
     </div>
     <br /><br />
     <div>Classes:</div><br />
-    <div class="container">
+    <div class="container short">
         <BitNavBar Items="basicNavBarCustoms"
                    Classes="@(new() { ItemIcon = "custom-item-ico", ItemText = "custom-item-txt" })"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
+    <br /><br />
+    <div>CSS variables (a floating tab bar):</div><br />
+    <div class="container short">
+        <BitNavBar Items="basicNavBarCustoms"
+                   Class="floating-navbar"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
-    <br /><br />
+    <br />
     <div dir="rtl">
-        <div class="container">
+        <div class="container short">
             <BitNavBar Dir="BitDir.Rtl"
-                    Items="rtlCustomsItems"
-                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                             IconName = { Selector = item => item.ImageName } })" />
+                       Items="rtlCustomsItems"
+                       NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                                IconName = { Selector = item => item.ImageName } })" />
         </div>
     </div>
 </DemoExample>
 
 @code {
     private static readonly List<MenuItem> templateNavBarCustoms =
-            [
+    [
         new() { Title = "Home", ImageName = BitIconName.Home  },
         new() { Title = "Products", Fragment = (item) => @<div style="display:flex;flex-direction:column"><b>@item.Title</b><span>🎁</span></div> },
         new() { Title = "Academy", ImageName = BitIconName.LearningTools },

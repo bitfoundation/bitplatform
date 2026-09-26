@@ -41,9 +41,17 @@ public partial class BitNavBar<TItem>
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The initially selected item in manual mode.
+    /// The initially selected item in manual mode. Ignored while <see cref="SelectedItem"/> is bound.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// The <c>Key</c> of the initially selected item in manual mode, applied as soon as an item with that key is
+    /// there. It is how the options API sets a default selection, since no option exists to be referenced by
+    /// <see cref="DefaultSelectedItem"/> before the options render. <see cref="DefaultSelectedItem"/> wins
+    /// when both are set, and both are ignored while <see cref="SelectedItem"/> is bound.
+    /// </summary>
+    [Parameter] public string? DefaultSelectedKey { get; set; }
 
     /// <summary>
     /// Fills the hovered and the selected item of the navbar with the <see cref="Color"/> of the navbar.
@@ -171,7 +179,8 @@ public partial class BitNavBar<TItem>
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// Enables recalling the select events when the same item is selected.
+    /// Lets the click and the select events of the already selected item through: on a click in the manual
+    /// mode, and on a navigation back to its URL in the automatic mode. By default they are swallowed.
     /// </summary>
     [Parameter] public bool Reselectable { get; set; }
 
@@ -184,8 +193,9 @@ public partial class BitNavBar<TItem>
 
     /// <summary>
     /// Lets the items scroll along the navbar instead of being squeezed into it, which is what a bar (or a
-    /// rail) holding more destinations than it has room for needs. The scrollbar itself is hidden, the items
-    /// keep the size of their own content, and the selected one is scrolled into view as the selection moves.
+    /// rail) holding more destinations than it has room for needs. The scrollbar itself is hidden (a mouse wheel
+    /// scrolls a horizontal bar sideways instead), the items keep the size of their own content, and the
+    /// selected one is scrolled into view as the selection moves.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Scrollable { get; set; }

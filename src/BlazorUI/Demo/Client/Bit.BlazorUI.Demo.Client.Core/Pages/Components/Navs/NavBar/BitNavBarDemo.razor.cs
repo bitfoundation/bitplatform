@@ -11,7 +11,7 @@ public partial class BitNavBarDemo
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "How the items are distributed along the navbar: packed at its start, its center or its end, or spread over it. While it is not set, the items of a horizontal navbar are spread evenly over its width and the items of a vertical rail are packed at its top. Baseline and Stretch carry no distribution of their own and are left at the default; use Justified to have the items fill the navbar.",
+            Description = "How the items are distributed along the navbar. Unset, a bar spreads its items evenly and a vertical rail packs them at its top; Baseline and Stretch keep that default.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },
@@ -20,7 +20,7 @@ public partial class BitNavBarDemo
             Name = "AutoReorderOptions",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the order of the registered options in sync with the markup order of the options, even when an option is added, removed or reordered conditionally after the first render (an option that shows up later registers itself at the end of the list, which leaves the keyboard moving between the items in another order than the one they are rendered in). This is achieved by reading the DOM order of the options after each render, so it adds a JS interop call per change and is opt-in.",
+            Description = "Keeps the order of the options (what the keyboard walks) in sync with their markup order when options are added, removed or reordered after the first render. Opt-in, since it reads the DOM order back after each change.",
         },
         new()
         {
@@ -50,14 +50,21 @@ public partial class BitNavBarDemo
             Name = "DefaultSelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
-            Description = "The initially selected item in manual mode."
+            Description = "The initially selected item in manual mode. Ignored while SelectedItem is bound."
+        },
+        new()
+        {
+            Name = "DefaultSelectedKey",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The Key of the initially selected item in manual mode, applied as soon as an item with that key is there. It is how the options API sets a default selection. DefaultSelectedItem wins when both are set.",
         },
         new()
         {
             Name = "Filled",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Fills the hovered and the selected item of the navbar with the Color of the navbar. While it is not enabled, the selection is conveyed by the color of the item alone.",
+            Description = "Fills the hovered and the selected item with the Color of the navbar, moving their content onto its on-color.",
         },
         new()
         {
@@ -71,7 +78,7 @@ public partial class BitNavBarDemo
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content rendered after the items of the navbar, outside of the list they form: the trailing actions of a bar, or the account button at the bottom of a navigation rail."
+            Description = "Content rendered after the items, outside their list: trailing actions of a bar, or the bottom button of a rail."
         },
         new()
         {
@@ -85,28 +92,28 @@ public partial class BitNavBarDemo
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content rendered before the items of the navbar, outside of the list they form: the logo or the menu button of a bar, or the button a navigation rail is conventionally headed with."
+            Description = "Content rendered before the items, outside their list: a logo or a menu button, or the top button of a rail."
         },
         new()
         {
             Name = "HideUnselectedText",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Only renders the text of the selected item and leaves the rest of the items with their icon alone, which is how a navigation bar keeps its labels readable while holding more destinations. Ignored while IconOnly is enabled."
+            Description = "Only renders the text of the selected item; the others keep their icon, and their text as their accessible name. Ignored while IconOnly is enabled."
         },
         new()
         {
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Only renders the icon of each navbar item."
+            Description = "Only renders the icon of each item; the text becomes its accessible name and tooltip."
         },
         new()
         {
             Name = "Indicator",
             Type = "BitNavBarIndicator?",
             DefaultValue = "null",
-            Description = "The shape of the indicator that marks the selected item: a line along the edge of the item, or the pill a Material navigation bar draws behind the icon of its current destination. While it is not set, the selection is conveyed by the color of the item and by the fill Filled gives it.",
+            Description = "The mark of the selected item beside its color: a Line along its edge or a Pill behind its icon.",
             LinkType = LinkType.Link,
             Href = "#indicator-enum",
         },
@@ -138,7 +145,7 @@ public partial class BitNavBarDemo
             Name = "ItemTemplateRenderMode",
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
-            Description = "Whether the ItemTemplate is rendered inside the anchor (or the button) each item is, or replaces it altogether, which is what items that are controls of their own need, since an interactive element cannot be nested in another one. Replaced items are left out of the keyboard navigation of the navbar, and whatever they render owns its own clicks, its own focus and its own accessible name.",
+            Description = "Whether the ItemTemplate renders inside the anchor (or button) of each item, or replaces it for items that are controls of their own. Replaced items own their clicks, focus and accessible name, and are left out of the keyboard navigation.",
             LinkType = LinkType.Link,
             Href = "#template-render-mode-enum",
         },
@@ -147,7 +154,7 @@ public partial class BitNavBarDemo
             Name = "Justified",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Gives every item an equal share of the navbar so that the items evenly fill it, which is how a navigation bar keeps its destinations on a predictable grid. By default each item only takes the width of its own content."
+            Description = "Gives every item an equal share of the navbar instead of the width of its own content."
         },
         new()
         {
@@ -200,21 +207,21 @@ public partial class BitNavBarDemo
             Name = "Reselectable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables recalling the select events when the same item is selected."
+            Description = "Lets the click and select events of the already selected item through, on a click in the Manual mode and on a navigation back to its URL in the Automatic mode."
         },
         new()
         {
             Name = "SafeArea",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reserves the safe area of the device (the home indicator of a phone, for instance) under the navbar, so a bar pinned to the bottom of the screen is not overlapped by it."
+            Description = "Adds the bottom safe-area inset of the device (a phone's home indicator) to the padding of the navbar."
         },
         new()
         {
             Name = "Scrollable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets the items scroll along the navbar instead of being squeezed into it, which is what a bar (or a rail) holding more destinations than it has room for needs. The scrollbar itself is hidden, the items keep the size of their own content, and the selected one is scrolled into view as the selection moves."
+            Description = "Scrolls the items along the navbar instead of squeezing them, with the scrollbar hidden and a mouse wheel scrolling a horizontal bar sideways, and keeps the selected item in view as the selection moves."
         },
         new()
         {
@@ -228,14 +235,14 @@ public partial class BitNavBarDemo
             Name = "SelectOnFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Selects an item as soon as the focus reaches it, so walking the navbar with the arrow keys switches the selection along with it, the way the tabs of a tab list do. It only applies to the Manual mode, where the selection is the navbar's own."
+            Description = "Selects an item as soon as the focus reaches it, like the tabs of a tab list. Manual mode only."
         },
         new()
         {
             Name = "SingleTabStop",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Takes the navbar out of the tab sequence as a single stop: only the selected item (or the first one, while nothing is selected) is tabbable and the arrow keys move between the items, exactly like a toolbar. By default every item is a tab stop of its own, the way the links of a navigation are."
+            Description = "Makes the navbar a single tab stop (the last focused item, else the selected one, else the first) with the arrow keys moving inside it, like a toolbar. By default every item is a tab stop."
         },
         new()
         {
@@ -267,7 +274,7 @@ public partial class BitNavBarDemo
             Name = "WrapNavigation",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets the arrow keys wrap around at both ends of the navbar, from the last item to the first one and back, the way the toolbar pattern does. By default the focus stops at the ends instead."
+            Description = "Lets the arrow keys wrap around from the last item to the first one and back. By default the focus stops at the ends."
         }
     ];
 
@@ -283,7 +290,7 @@ public partial class BitNavBarDemo
         {
             Name = "ScrollItemIntoView",
             Type = "Func<TItem, ValueTask>",
-            Description = "Brings an item into the visible area of a Scrollable navbar, without selecting it or moving the focus onto it. It is a no-op on a navbar that does not scroll.",
+            Description = "Brings an item into the visible area of a Scrollable navbar without selecting or focusing it.",
         },
         new()
         {
@@ -291,6 +298,32 @@ public partial class BitNavBarDemo
             Type = "Func<TItem?, Task>",
             Description = "Selects an item programmatically, exactly like a click on that item would in the manual mode.",
         },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-NavBar-background", DefaultValue = "transparent", Description = "Fill of the bar." },
+        new() { Name = "--bit-NavBar-border-radius", DefaultValue = "0", Description = "Corners of the bar, for a floating tab bar." },
+        new() { Name = "--bit-NavBar-shadow", DefaultValue = "none", Description = "Shadow of the bar." },
+        new() { Name = "--bit-NavBar-padding-block", DefaultValue = "0", Description = "Room above and below the items (SafeArea adds the device inset to it)." },
+        new() { Name = "--bit-NavBar-padding-inline", DefaultValue = "0", Description = "Room on the two sides of the items." },
+        new() { Name = "--bit-NavBar-gap", DefaultValue = "0", Description = "Space between the items." },
+        new() { Name = "--bit-NavBar-item-color", DefaultValue = "--bit-clr-fg-pri", Description = "Content color of an item." },
+        new() { Name = "--bit-NavBar-item-hover-color", DefaultValue = "The Color kind (its on-color when Filled)", Description = "Content color of a hovered item." },
+        new() { Name = "--bit-NavBar-item-hover-background", DefaultValue = "The Color kind's hover when Filled, else transparent", Description = "Fill of a hovered item, or of its pill with the Pill indicator." },
+        new() { Name = "--bit-NavBar-item-border-radius", DefaultValue = "--bit-shp-radius-control", Description = "Corners of an item." },
+        new() { Name = "--bit-NavBar-item-padding", DefaultValue = "Per Size", Description = "Padding of an item." },
+        new() { Name = "--bit-NavBar-item-min-size", DefaultValue = "Per Size (--bit-siz-ctrl-*)", Description = "Minimum width and height of an item, its touch target." },
+        new() { Name = "--bit-NavBar-icon-size", DefaultValue = "Per Size", Description = "Size of the icon of an item." },
+        new() { Name = "--bit-NavBar-text-size", DefaultValue = "Per Size", Description = "Font size of the text of an item." },
+        new() { Name = "--bit-NavBar-selected-color", DefaultValue = "The Color kind (its on-color when Filled)", Description = "Content color of the selected item." },
+        new() { Name = "--bit-NavBar-selected-background", DefaultValue = "The Color kind's active when Filled, else transparent", Description = "Fill of the selected item, or of its pill with the Pill indicator." },
+        new() { Name = "--bit-NavBar-selected-font-weight", DefaultValue = "--bit-tpg-fw-semibold", Description = "Font weight of the selected item." },
+        new() { Name = "--bit-NavBar-indicator-color", DefaultValue = "The Color kind (its on-color when Filled)", Description = "Color of the Line indicator." },
+        new() { Name = "--bit-NavBar-indicator-thickness", DefaultValue = "--bit-siz-tab-indicator", Description = "Thickness of the Line indicator." },
+        new() { Name = "--bit-NavBar-badge-color", DefaultValue = "--bit-clr-err-text", Description = "Text color of a badge." },
+        new() { Name = "--bit-NavBar-badge-background", DefaultValue = "--bit-clr-err", Description = "Fill of a badge and a dot." },
+        new() { Name = "--bit-NavBar-disabled-color", DefaultValue = "The Color kind's disabled text", Description = "Content color of a disabled item." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -387,7 +420,7 @@ public partial class BitNavBarDemo
                    Name = "Key",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "A unique value to use as a key or id of the navbar item.",
+                   Description = "A unique value to use as a key or id of the navbar item, and what the DefaultSelectedKey of the navbar matches.",
                },
                new()
                {
@@ -559,7 +592,7 @@ public partial class BitNavBarDemo
                    Name = "Key",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "A unique value to use as a key or id of the navbar option.",
+                   Description = "A unique value to use as a key or id of the navbar option, and what the DefaultSelectedKey of the navbar matches.",
                },
                new()
                {

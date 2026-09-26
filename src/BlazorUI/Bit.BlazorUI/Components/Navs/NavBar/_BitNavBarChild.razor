@@ -1,17 +1,21 @@
 @namespace Bit.BlazorUI
 
-@if (Href.HasValue())
+@* An item with a URL stays an anchor even while it is disabled: it only drops its href (so it can be neither
+   followed nor focused) and keeps announcing itself as a dimmed link, the way BitButton renders a disabled
+   link, instead of turning into a button that a screen reader would report as another kind of control. *@
+@if (IsLink)
 {
     <a @ref="Element"
        @onclick="OnClick"
        @onfocusin="OnFocusIn"
        @onkeydown="OnKeyDown"
-       rel="@Rel"
-       href="@Href"
+       role="@(Disabled ? "link" : null)"
+       rel="@(Disabled ? null : Rel)"
+       href="@(Disabled ? null : Href)"
        title="@Title"
        class="@Class"
        style="@Style"
-       target="@Target"
+       target="@(Disabled ? null : Target)"
        tabindex="@TabIndex"
        aria-label="@AriaLabel"
        aria-current="@AriaCurrent"
@@ -21,6 +25,7 @@
 }
 else
 {
+    @* The native disabled attribute already reports the state, so no aria-disabled is repeated on it. *@
     <button @ref="Element"
             @onclick="OnClick"
             @onfocusin="OnFocusIn"
@@ -32,8 +37,7 @@ else
             disabled="@Disabled"
             tabindex="@TabIndex"
             aria-label="@AriaLabel"
-            aria-current="@AriaCurrent"
-            aria-disabled="@(Disabled ? "true" : null)">
+            aria-current="@AriaCurrent">
         @ChildContent
     </button>
 }

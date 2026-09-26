@@ -58,6 +58,17 @@ public partial class _BitNavBarItemDemo
         new() { Text = "Me", IconName = BitIconName.Contact },
     ];
 
+    private static readonly BitNavBarParams[] navBarParams =
+    [
+        new()
+        {
+            Mode = BitNavMode.Manual,
+            Filled = true,
+            Color = BitColor.Info,
+            Indicator = BitNavBarIndicator.Pill,
+        }
+    ];
+
     private static readonly List<BitNavBarItem> badgeNavBarItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home  },
@@ -140,10 +151,10 @@ public partial class _BitNavBarItemDemo
 
     private void ReverseDynamicItems() => dynamicNavBarItems.Reverse();
 
-    private int countClick;
-    private bool reselectable = true;
-    private BitNavBarItem selectedItem = basicNavBarItems[0];
-    private BitNavBarItem twoWaySelectedItem = basicNavBarItems[0];
+    private int clickCount;
+    private int selectCount;
+    private bool reselectable;
+    private BitNavBarItem? twoWaySelectedItem;
     private BitNavBarItem? scrollableSelectedItem;
     private BitNavBarItem? eventsClickedItem;
     private BitNavBarItem? eventsSelectedItem;
