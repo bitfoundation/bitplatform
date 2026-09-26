@@ -11,7 +11,6 @@
     // that keeps its href and its tab stop can still be followed with the keyboard.
     var isEnabled = NavBar.IsEnabled && NavBar.GetIsEnabled(Item);
     var isSelected = NavBar.IsSelected(Item);
-    var href = isEnabled ? url : null;
     // The item stays the very same element whether it is selected or not: an anchor that turns into a
     // button on selection loses the focus that was on it, and takes the context menu, the middle click and
     // the "open in a new tab" of the current destination away with it.
@@ -53,7 +52,8 @@
     else
     {
         <_BitNavBarChild @ref="_child"
-                         Href="@href"
+                         Href="@url"
+                         IsLink="@url.HasValue()"
                          Target="@target"
                          AriaLabel="@ariaLabel"
                          AriaCurrent="@ariaCurrent"

@@ -70,6 +70,40 @@ namespace BitBlazorUI {
         }
 
 
+        // A horizontal Scrollable navbar hides its scrollbar, which leaves a mouse on a desktop with nothing
+        // to reach the items past the edge with: a vertical wheel does not scroll a horizontal overflow.
+        // The wheel is turned into a horizontal scroll while the bar can still move that way, and handed
+        // back to the page at either end so the bar never traps the page scroll. A wheel that already
+        // scrolls sideways (a trackpad, Shift+wheel) and a pinch zoom (Ctrl+wheel) are left alone.
+        public static setupWheel(containerId: string) {
+            const container = document.getElementById(containerId) as (HTMLElement & { bitNbrWheel?: boolean }) | null;
+            if (!container || container.bitNbrWheel) return;
+            container.bitNbrWheel = true;
+
+            container.addEventListener('wheel', (e: WheelEvent) => {
+                if (e.ctrlKey || e.deltaY === 0 || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+
+                // The mode is read at the time of the event, so a navbar that stops being a horizontal
+                // scrolling one keeps the listener without it doing anything.
+                const root = container.parentElement;
+                if (!root || !root.classList.contains('bit-nbr-scr') || root.classList.contains('bit-nbr-vrt')) return;
+
+                const max = container.scrollWidth - container.clientWidth;
+                if (max <= 0) return;
+
+                const rtl = getComputedStyle(container).direction === 'rtl';
+                const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * container.clientWidth : e.deltaY;
+                // In RTL scrollLeft runs from 0 down to -max, so the distance travelled is its magnitude.
+                const position = Math.abs(container.scrollLeft);
+
+                if ((delta < 0 && position <= 0) || (delta > 0 && position >= max - 1)) return;
+
+                e.preventDefault();
+                container.scrollLeft += rtl ? -delta : delta;
+            }, { passive: false });
+        }
+
+
         private static isEditable(element: HTMLElement): boolean {
             if (element.isContentEditable) return true;
 
