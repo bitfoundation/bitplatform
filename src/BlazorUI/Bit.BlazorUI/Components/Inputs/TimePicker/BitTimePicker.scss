@@ -2,18 +2,86 @@
 @import "../../../Styles/media-queries.scss";
 @import "../../../Styles/color-role-maps.scss";
 
+// Public CSS variables, read off the root (and off the callout, which the component copies them onto by
+// hand because the callout is reparented to the body while it is open) and never declared here, so a value
+// set on :root re-skins every time picker and one set on the Style of an instance re-skins that one alone:
+//   --bit-TimePicker-color                    accent: the selected AM/PM button and the text of the
+//                                             now/clear buttons                    (default: the Color role's main color)
+//   --bit-TimePicker-on-color                 text over that accent                (default: the Color role's on-color)
+//   --bit-TimePicker-hover-color              accent of the hovered AM/PM button   (default: the Color role's hover color)
+//   --bit-TimePicker-active-color             accent of the pressed AM/PM button   (default: the Color role's active color)
+//   --bit-TimePicker-focus-color              color of the keyboard focus ring     (default: the Color role's focus color)
+//   --bit-TimePicker-invalid-color            border and underline of an invalid
+//                                             field (the frame of a standalone
+//                                             one), and its error text             (default: $clr-err)
+//   --bit-TimePicker-background               background of the input field        (default: $clr-bg-pri)
+//   --bit-TimePicker-text-color               text color of the input field        (default: $clr-fg-pri)
+//   --bit-TimePicker-placeholder-color        text color of the placeholder        (default: $clr-fg-sec)
+//   --bit-TimePicker-border-color             border of the input field, and the
+//                                             rule of the underlined variant       (default: $clr-brd-pri)
+//   --bit-TimePicker-hover-border-color       border of the hovered and the pressed
+//                                             field                                (default: $clr-brd-pri-hover / -active)
+//   --bit-TimePicker-border-width             stroke of that border                (default: $shp-border-width)
+//   --bit-TimePicker-radius                   corner radius of the input field     (default: $shp-radius-control)
+//   --bit-TimePicker-height                   height of the input field            (default: per Size, $siz-ctrl-*)
+//   --bit-TimePicker-padding                  inline padding of the input field    (default: spacing(1))
+//   --bit-TimePicker-font-size                text size of the input field         (default: per Size)
+//   --bit-TimePicker-icon-color               color of the field icon              (default: $clr-fg-sec)
+//   --bit-TimePicker-icon-size                size of the field icon               (default: per Size, $siz-icon-*)
+//   --bit-TimePicker-prefix-color             text of the prefix addon             (default: $clr-fg-pri)
+//   --bit-TimePicker-prefix-background        background of the prefix addon       (default: $clr-bg-sec)
+//   --bit-TimePicker-suffix-color             text of the suffix addon             (default: $clr-fg-pri)
+//   --bit-TimePicker-suffix-background        background of the suffix addon       (default: $clr-bg-sec)
+//   --bit-TimePicker-label-color              color of the label                   (default: $clr-fg-pri)
+//   --bit-TimePicker-label-font-size          text size of the label               (default: per Size)
+//   --bit-TimePicker-label-font-weight        weight of the label                  (default: $tg-fw-semibold)
+//   --bit-TimePicker-required-color           color of the required asterisk       (default: $clr-req)
+//   --bit-TimePicker-description-color        color of the helper text             (default: $clr-fg-sec)
+//   --bit-TimePicker-description-font-size    text size of the helper and the
+//                                             error text                           (default: per Size)
+//   --bit-TimePicker-disabled-color           text and icon of a disabled picker   (default: $clr-fg-dis)
+//   --bit-TimePicker-disabled-background      background of a disabled field       (default: $clr-bg-dis)
+//   --bit-TimePicker-disabled-border-color    border of a disabled field           (default: $clr-brd-dis)
+//   --bit-TimePicker-callout-background       background of the popup              (default: $clr-bg-pri)
+//   --bit-TimePicker-callout-radius           corner radius of the popup           (default: $shp-radius-popup)
+//   --bit-TimePicker-callout-padding          padding inside the popup             (default: spacing(2))
+//   --bit-TimePicker-callout-shadow           elevation of the popup               (default: $box-shadow-popup)
+//   --bit-TimePicker-overlay-background       the layer behind an open popup, a
+//                                             scrim for the responsive sheet       (default: transparent)
+//   --bit-TimePicker-gap                      space between the hour, minute and
+//                                             second groups                        (default: spacing(1))
+//   --bit-TimePicker-cell-size                width and height of a time input and
+//                                             of a spin button                     (default: per Size)
+//   --bit-TimePicker-cell-font-size           text size of the time inputs         (default: per Size)
+//   --bit-TimePicker-cell-color               text color of the time inputs        (default: $clr-fg-pri)
+//   --bit-TimePicker-cell-font-weight         weight of the time inputs and the
+//                                             separators                           (default: $tg-font-weight)
+//   --bit-TimePicker-cell-radius              corner radius of a spin button and
+//                                             of the AM/PM buttons                 (default: $shp-radius-button)
+//   --bit-TimePicker-separator-color          color of the ":" between the parts   (default: inherited)
+//   --bit-TimePicker-separator-font-size      size of the ":" between the parts    (default: per Size)
+//   --bit-TimePicker-spin-color               glyph color of a spin button         (default: $clr-fg-pri)
+//   --bit-TimePicker-spin-font-size           glyph size of a spin button          (default: per Size)
+//   --bit-TimePicker-spin-hover-background    background of a hovered spin button  (default: $clr-bg-pri-hover)
+//   --bit-TimePicker-spin-active-background   background of a pressed spin button  (default: $clr-bg-pri-active)
+//   --bit-TimePicker-meridiem-font-size       text size of the AM/PM buttons       (default: per Size)
+//   --bit-TimePicker-action-font-size         text size of the now/clear buttons   (default: per Size)
+
 // The default size, declared as a mixin so both the root element and the callout - which is moved out to
-// the body while it is open and therefore inherits nothing from the root - can fall back to it.
+// the body while it is open and therefore inherits nothing from the root - can fall back to it. The public
+// override is resolved here rather than beside each use, so one name is read once per size class.
 @mixin tpc-size-medium {
-    --bit-tpc-inp-h: #{$siz-ctrl-md};
-    --bit-tpc-inp-fs: #{$tg-fs-sm};
-    --bit-tpc-lbl-fs: #{$tg-fs-sm};
-    --bit-tpc-cell-size: #{spacing(3.75)};
-    --bit-tpc-cell-fs: #{$tg-fs-lg};
-    --bit-tpc-ico-fs: #{$tg-fs-xs};
-    --bit-tpc-sep-fs: #{$tg-fs-xl};
-    --bit-tpc-ampm-fs: #{$tg-fs-sm};
-    --bit-tpc-act-fs: #{$tg-fs-sm};
+    --bit-tpc-inp-h: var(--bit-TimePicker-height, #{$siz-ctrl-md});
+    --bit-tpc-inp-fs: var(--bit-TimePicker-font-size, #{$tg-fs-sm});
+    --bit-tpc-lbl-fs: var(--bit-TimePicker-label-font-size, #{$tg-fs-sm});
+    --bit-tpc-des-fs: var(--bit-TimePicker-description-font-size, #{$tg-fs-xs});
+    --bit-tpc-fld-ico-fs: var(--bit-TimePicker-icon-size, #{$siz-icon-md});
+    --bit-tpc-cell-size: var(--bit-TimePicker-cell-size, #{spacing(3.75)});
+    --bit-tpc-cell-fs: var(--bit-TimePicker-cell-font-size, #{$tg-fs-lg});
+    --bit-tpc-ico-fs: var(--bit-TimePicker-spin-font-size, #{$tg-fs-xs});
+    --bit-tpc-sep-fs: var(--bit-TimePicker-separator-font-size, #{$tg-fs-xl});
+    --bit-tpc-ampm-fs: var(--bit-TimePicker-meridiem-font-size, #{$tg-fs-sm});
+    --bit-tpc-act-fs: var(--bit-TimePicker-action-font-size, #{$tg-fs-sm});
 }
 
 .bit-tpc {
@@ -30,39 +98,41 @@
 
     &.bit-dis {
         .bit-tpc-lbl,
-        .bit-tpc-tdv {
-            color: $clr-fg-dis;
+        .bit-tpc-tdv,
+        .bit-tpc-pre,
+        .bit-tpc-suf {
+            color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-tpc-icn {
             cursor: default;
             pointer-events: none;
-            color: $clr-fg-dis;
-            background: none $clr-bg-dis;
-            border: $shp-border-width $shp-border-style $clr-brd-dis;
+            color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
+            background: none var(--bit-TimePicker-disabled-background, #{$clr-bg-dis});
+            border: var(--bit-TimePicker-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TimePicker-disabled-border-color, #{$clr-brd-dis});
         }
 
         .bit-tpc-ico {
             cursor: default;
-            color: $clr-fg-dis;
+            color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-tpc-inp {
             cursor: default;
-            color: $clr-fg-dis;
-            background: none $clr-bg-dis;
+            color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
+            background: none var(--bit-TimePicker-disabled-background, #{$clr-bg-dis});
         }
     }
 
     &.bit-inv {
         .bit-tpc-icn {
-            border-color: $clr-err;
+            border-color: var(--bit-TimePicker-invalid-color, #{$clr-err});
         }
 
         &.bit-tpc-und .bit-tpc-wrp {
             // Underlined variant drops the icon border, so surface the error cue on the
             // underline itself to keep the invalid state visible before focus.
-            border-bottom-color: $clr-err;
+            border-bottom-color: var(--bit-TimePicker-invalid-color, #{$clr-err});
         }
 
         &.bit-tpc-foc:not(.bit-tpc-und) .bit-tpc-icn {
@@ -72,6 +142,12 @@
         &.bit-tpc-und.bit-tpc-foc .bit-tpc-icn {
             @include focus-underline-ring($clr-err-focus);
         }
+
+        // A standalone picker has no field to turn red, so its frame says it instead - inset, so the
+        // layout does not move when the state comes and goes.
+        &.bit-tpc-sta .bit-tpc-cac {
+            box-shadow: inset 0 0 0 var(--bit-TimePicker-border-width, #{$shp-border-width}) var(--bit-TimePicker-invalid-color, #{$clr-err});
+        }
     }
 }
 
@@ -79,12 +155,12 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: $tg-fw-semibold;
     box-sizing: border-box;
     padding: spacing(0.5) 0;
     font-size: var(--bit-tpc-lbl-fs);
+    font-weight: var(--bit-TimePicker-label-font-weight, #{$tg-fw-semibold});
     overflow-wrap: break-word;
-    color: $clr-fg-pri;
+    color: var(--bit-TimePicker-label-color, #{$clr-fg-pri});
 }
 
 .bit-tpc-wrp {
@@ -100,18 +176,77 @@
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
-    padding: 0 spacing(1);
+    --bit-tpc-pad: var(--bit-TimePicker-padding, #{spacing(1)});
+    padding: 0 var(--bit-tpc-pad);
     box-sizing: border-box;
-    border-radius: $shp-radius-control;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: var(--bit-TimePicker-radius, #{$shp-radius-control});
+    background-color: var(--bit-TimePicker-background, #{$clr-bg-pri});
+    border: var(--bit-TimePicker-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TimePicker-border-color, #{$clr-brd-pri});
+    transition: border-color $mot-duration-short $mot-easing;
+}
+
+// The field says it can be operated before it is: its border darkens under the pointer and a little more
+// while it is pressed. An invalid field keeps the color that says why, and a disabled one takes no pointer.
+.bit-tpc:not(.bit-inv) {
+    @media (hover: hover) {
+        .bit-tpc-icn:hover {
+            border-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-hover});
+        }
+
+        &.bit-tpc-und .bit-tpc-wrp:hover {
+            border-bottom-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-hover});
+        }
+    }
+
+    .bit-tpc-icn:active {
+        border-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-active});
+    }
+
+    &.bit-tpc-und .bit-tpc-wrp:active {
+        border-bottom-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-active});
+    }
+}
+
+// The two addons sit flush with the ends of the field, so they reach over its inline padding, and are
+// themed apart: a zone suffix and a "Starts at" prefix are rarely the same kind of thing.
+.bit-tpc-pre,
+.bit-tpc-suf {
+    display: flex;
+    flex-shrink: 0;
+    align-self: stretch;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0 spacing(1.25);
+
+    span {
+        font-size: var(--bit-tpc-inp-fs);
+    }
+}
+
+.bit-tpc-pre {
+    margin-inline-end: var(--bit-tpc-pad);
+    margin-inline-start: calc(-1 * var(--bit-tpc-pad));
+    border-start-start-radius: inherit;
+    border-end-start-radius: inherit;
+    color: var(--bit-TimePicker-prefix-color, #{$clr-fg-pri});
+    background: var(--bit-TimePicker-prefix-background, #{$clr-bg-sec});
+}
+
+.bit-tpc-suf {
+    margin-inline-start: var(--bit-tpc-pad);
+    margin-inline-end: calc(-1 * var(--bit-tpc-pad));
+    border-start-end-radius: inherit;
+    border-end-end-radius: inherit;
+    color: var(--bit-TimePicker-suffix-color, #{$clr-fg-pri});
+    background: var(--bit-TimePicker-suffix-background, #{$clr-bg-sec});
 }
 
 .bit-tpc-ico {
     cursor: pointer;
-    color: $clr-fg-sec;
     padding-inline-end: 0;
     padding-inline-start: spacing(1);
+    color: var(--bit-TimePicker-icon-color, #{$clr-fg-sec});
+    font-size: var(--bit-tpc-fld-ico-fs);
 }
 
 .bit-tpc-inp {
@@ -130,8 +265,15 @@
     text-overflow: ellipsis;
     font-size: var(--bit-tpc-inp-fs);
     background: none transparent;
-    color: $clr-fg-pri;
+    color: var(--bit-TimePicker-text-color, #{$clr-fg-pri});
     font-family: $tg-font-family;
+
+    // A placeholder is a hint and not the value, so it is told apart from a time that has been picked -
+    // which the browser default (a shade of the text color it picks itself) does not reliably do.
+    &::placeholder {
+        color: var(--bit-TimePicker-placeholder-color, #{$clr-fg-sec});
+        opacity: 1; // Firefox dims it a second time on its own.
+    }
 }
 
 // An input that takes a typed time is a text field, so it carries the caret of one rather than the
@@ -140,14 +282,85 @@
     cursor: text;
 }
 
+// The clear button of the field, which is the one way out of a picked time without opening the callout.
+.bit-tpc-clr {
+    padding: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    background: none transparent;
+    color: var(--bit-TimePicker-icon-color, #{$clr-fg-sec});
+    font-size: var(--bit-tpc-fld-ico-fs);
+    border-radius: var(--bit-TimePicker-cell-radius, #{$shp-radius-button});
+    margin-inline-start: spacing(0.5);
+    // WCAG 2.2 SC 2.5.8: the glyph is small, the target it sits in is not.
+    min-width: 24px;
+    min-height: 24px;
+    flex-shrink: 0;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-tpc-clr-focus));
+    }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+        color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
+    }
+}
+
+// The helper text and the error text under the field, which the input names through its aria-describedby.
+.bit-tpc-des {
+    padding-top: spacing(0.5);
+    font-size: var(--bit-tpc-des-fs);
+    color: var(--bit-TimePicker-description-color, #{$clr-fg-sec});
+}
+
+.bit-tpc-erm {
+    padding-top: spacing(0.5);
+    font-size: var(--bit-tpc-des-fs);
+    color: var(--bit-TimePicker-invalid-color, #{$clr-err});
+}
+
 .bit-tpc-lic {
     .bit-tpc-icn {
         flex-direction: row-reverse;
     }
 
+    // Logical, like the padding it replaces: in a right-to-left picker the icon is still at the start.
     .bit-tpc-ico {
-        padding-left: 0;
-        padding-right: spacing(1);
+        padding-inline-start: 0;
+        padding-inline-end: spacing(1);
+    }
+
+    // The row is reversed to put the icon before the input, but the clear button belongs at the far end
+    // of the field either way - it is the last thing in the row, not the second thing. In a reversed row
+    // the lowest order is what lands there.
+    .bit-tpc-clr {
+        order: -1;
+    }
+
+    // The addons keep to their own ends of the field as well: the prefix takes the highest order, which a
+    // reversed row puts first, and the suffix the lowest, beyond the clear button.
+    .bit-tpc-pre {
+        order: 1;
+    }
+
+    .bit-tpc-suf {
+        order: -2;
     }
 }
 
@@ -161,7 +374,7 @@
     .bit-tpc-wrp {
         width: 100%;
         display: flex;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-bottom: var(--bit-TimePicker-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TimePicker-border-color, #{$clr-brd-pri});
     }
 
     .bit-tpc-icn {
@@ -172,7 +385,7 @@
 
     &.bit-dis {
         .bit-tpc-wrp {
-            border-bottom-color: $clr-brd-dis;
+            border-bottom-color: var(--bit-TimePicker-disabled-border-color, #{$clr-brd-dis});
         }
     }
 
@@ -197,7 +410,7 @@
     display: none;
     position: fixed;
     z-index: $zindex-overlay;
-    background-color: transparent;
+    background-color: var(--bit-TimePicker-overlay-background, transparent);
 }
 
 .bit-tpc-cal {
@@ -211,8 +424,8 @@
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
-    box-shadow: $box-shadow-popup;
-    border-radius: $shp-radius-popup;
+    box-shadow: var(--bit-TimePicker-callout-shadow, #{$box-shadow-popup});
+    border-radius: var(--bit-TimePicker-callout-radius, #{$shp-radius-popup});
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: $mot-easing-decelerate;
 
@@ -231,16 +444,16 @@
     overflow: hidden auto;
     align-content: center;
     justify-content: center;
-    border-radius: $shp-radius-popup;
-    background-color: $clr-bg-pri;
-    padding: spacing(2);
+    border-radius: var(--bit-TimePicker-callout-radius, #{$shp-radius-popup});
+    background-color: var(--bit-TimePicker-callout-background, #{$clr-bg-pri});
+    padding: var(--bit-TimePicker-callout-padding, #{spacing(2)});
     box-sizing: border-box;
 }
 
 .bit-tpc-tic {
     display: flex;
     direction: ltr;
-    gap: spacing(1);
+    gap: var(--bit-TimePicker-gap, #{spacing(1)});
     flex-direction: row;
     justify-content: space-between;
 }
@@ -260,7 +473,8 @@
     align-content: center;
     align-items: center;
     font-size: var(--bit-tpc-sep-fs);
-    font-weight: $tg-font-weight;
+    font-weight: var(--bit-TimePicker-cell-font-weight, #{$tg-font-weight});
+    color: var(--bit-TimePicker-separator-color, inherit);
 }
 
 .bit-tpc-chd,
@@ -277,8 +491,9 @@
     margin-top: spacing(1);
 }
 
-// The announcement of the whole time, which is read but never seen.
-.bit-tpc-lve {
+// The text written for a screen reader alone: the announcement of the whole time, and the accessible
+// description. Read but never seen, and out of the layout so neither of them takes any room.
+.bit-tpc-vhd {
     width: 1px;
     height: 1px;
     padding: 0;
@@ -309,15 +524,17 @@
     box-sizing: border-box;
     justify-content: center;
     -moz-appearance: textfield; // Firefox
-    background-color: $clr-bg-pri;
+    background-color: transparent;
+    color: var(--bit-TimePicker-cell-color, #{$clr-fg-pri});
     font-size: var(--bit-tpc-cell-fs);
-    font-weight: $tg-font-weight;
+    font-weight: var(--bit-TimePicker-cell-font-weight, #{$tg-font-weight});
+    font-family: $tg-font-family;
     overflow: hidden;
     aspect-ratio: 1;
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
     }
 
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
@@ -344,18 +561,20 @@
     line-height: var(--bit-tpc-cell-size);
     font-size: var(--bit-tpc-ico-fs);
     background-color: transparent;
-    color: $clr-fg-pri;
-    border-radius: $shp-radius-control;
+    color: var(--bit-TimePicker-spin-color, #{$clr-fg-pri});
+    border-radius: var(--bit-TimePicker-cell-radius, #{$shp-radius-button});
+    letter-spacing: $tg-ctrl-letter-spacing;
     aspect-ratio: 1;
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-hover;
+        background-color: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
     }
 
     i {
@@ -368,12 +587,12 @@
     }
 
     &:disabled {
-        color: $clr-fg-dis;
+        color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
         pointer-events: none;
         background-color: transparent;
 
         i {
-            color: $clr-fg-dis;
+            color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
         }
     }
 
@@ -385,7 +604,8 @@
 .bit-tpc-bam,
 .bit-tpc-bpm {
     font-size: var(--bit-tpc-ampm-fs);
-    font-weight: $tg-font-weight;
+    font-weight: var(--bit-TimePicker-cell-font-weight, #{$tg-font-weight});
+    text-transform: $tg-ctrl-text-transform;
 }
 
 .bit-tpc-bns {
@@ -412,6 +632,7 @@
     display: flex;
     gap: spacing(1);
     margin-top: spacing(1);
+    flex-wrap: wrap;
     justify-content: flex-end;
 }
 
@@ -424,21 +645,26 @@
     background-color: transparent;
     font-family: $tg-font-family;
     padding: spacing(0.75) spacing(1.5);
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-TimePicker-cell-radius, #{$shp-radius-button});
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    // WCAG 2.2 SC 2.5.8, which the padding alone does not reach at the small size.
+    min-height: 24px;
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active:not(:disabled) {
-        background-color: $clr-bg-pri-active;
+        background-color: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
     }
 
     &:focus-visible {
@@ -472,7 +698,7 @@
 // The class sits on the root and on the callout alike, since the callout leaves the root while it is open.
 .bit-tpc-rdl {
     .bit-tpc-tbt:disabled {
-        color: $clr-fg-pri;
+        color: var(--bit-TimePicker-spin-color, #{$clr-fg-pri});
 
         i {
             color: inherit;
@@ -492,7 +718,7 @@
 .bit-tpc-req {
     .bit-tpc-lbl::after {
         content: "*";
-        color: $clr-req;
+        color: var(--bit-TimePicker-required-color, #{$clr-req});
         margin-inline-start: spacing(0.625);
     }
 }
@@ -552,28 +778,31 @@
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // They are applied to the root element and to the callout alike, since the callout is moved out of
-// the root while it is open and inherits nothing from it.
+// the root while it is open and inherits nothing from it. The public override is resolved here, so the
+// accent of one instance can be set without knowing which role class it happens to carry.
 @each $role, $tokens in $bit-color-roles {
     .bit-tpc-#{$role} {
-        --bit-tpc-clr: #{role($tokens, main)};
-        --bit-tpc-clr-txt: #{role($tokens, on)};
-        --bit-tpc-clr-hover: #{role($tokens, hover)};
-        --bit-tpc-clr-active: #{role($tokens, active)};
-        --bit-tpc-clr-focus: #{role($tokens, focus)};
+        --bit-tpc-clr: var(--bit-TimePicker-color, #{role($tokens, main)});
+        --bit-tpc-clr-txt: var(--bit-TimePicker-on-color, #{role($tokens, on)});
+        --bit-tpc-clr-hover: var(--bit-TimePicker-hover-color, #{role($tokens, hover)});
+        --bit-tpc-clr-active: var(--bit-TimePicker-active-color, #{role($tokens, active)});
+        --bit-tpc-clr-focus: var(--bit-TimePicker-focus-color, #{role($tokens, focus)});
     }
 }
 
 
 .bit-tpc-sm {
-    --bit-tpc-inp-h: #{$siz-ctrl-sm};
-    --bit-tpc-inp-fs: #{$tg-fs-xs};
-    --bit-tpc-lbl-fs: #{$tg-fs-xs};
-    --bit-tpc-cell-size: #{spacing(3)};
-    --bit-tpc-cell-fs: #{$tg-fs-sm};
-    --bit-tpc-ico-fs: #{$tg-fs-xs};
-    --bit-tpc-sep-fs: #{$tg-fs-md};
-    --bit-tpc-ampm-fs: #{$tg-fs-xs};
-    --bit-tpc-act-fs: #{$tg-fs-xs};
+    --bit-tpc-inp-h: var(--bit-TimePicker-height, #{$siz-ctrl-sm});
+    --bit-tpc-inp-fs: var(--bit-TimePicker-font-size, #{$tg-fs-xs});
+    --bit-tpc-lbl-fs: var(--bit-TimePicker-label-font-size, #{$tg-fs-xs});
+    --bit-tpc-des-fs: var(--bit-TimePicker-description-font-size, #{$tg-fs-2xs});
+    --bit-tpc-fld-ico-fs: var(--bit-TimePicker-icon-size, #{$siz-icon-sm});
+    --bit-tpc-cell-size: var(--bit-TimePicker-cell-size, #{spacing(3)});
+    --bit-tpc-cell-fs: var(--bit-TimePicker-cell-font-size, #{$tg-fs-sm});
+    --bit-tpc-ico-fs: var(--bit-TimePicker-spin-font-size, #{$tg-fs-xs});
+    --bit-tpc-sep-fs: var(--bit-TimePicker-separator-font-size, #{$tg-fs-md});
+    --bit-tpc-ampm-fs: var(--bit-TimePicker-meridiem-font-size, #{$tg-fs-xs});
+    --bit-tpc-act-fs: var(--bit-TimePicker-action-font-size, #{$tg-fs-xs});
 }
 
 .bit-tpc-md {
@@ -581,13 +810,78 @@
 }
 
 .bit-tpc-lg {
-    --bit-tpc-inp-h: #{$siz-ctrl-lg};
-    --bit-tpc-inp-fs: #{$tg-fs-md};
-    --bit-tpc-lbl-fs: #{$tg-fs-md};
-    --bit-tpc-cell-size: #{spacing(4.5)};
-    --bit-tpc-cell-fs: #{$tg-fs-xl};
-    --bit-tpc-ico-fs: #{$tg-fs-sm};
-    --bit-tpc-sep-fs: #{$tg-fs-2xl};
-    --bit-tpc-ampm-fs: #{$tg-fs-md};
-    --bit-tpc-act-fs: #{$tg-fs-md};
+    --bit-tpc-inp-h: var(--bit-TimePicker-height, #{$siz-ctrl-lg});
+    --bit-tpc-inp-fs: var(--bit-TimePicker-font-size, #{$tg-fs-md});
+    --bit-tpc-lbl-fs: var(--bit-TimePicker-label-font-size, #{$tg-fs-md});
+    --bit-tpc-des-fs: var(--bit-TimePicker-description-font-size, #{$tg-fs-sm});
+    --bit-tpc-fld-ico-fs: var(--bit-TimePicker-icon-size, #{$siz-icon-lg});
+    --bit-tpc-cell-size: var(--bit-TimePicker-cell-size, #{spacing(4.5)});
+    --bit-tpc-cell-fs: var(--bit-TimePicker-cell-font-size, #{$tg-fs-xl});
+    --bit-tpc-ico-fs: var(--bit-TimePicker-spin-font-size, #{$tg-fs-sm});
+    --bit-tpc-sep-fs: var(--bit-TimePicker-separator-font-size, #{$tg-fs-2xl});
+    --bit-tpc-ampm-fs: var(--bit-TimePicker-meridiem-font-size, #{$tg-fs-md});
+    --bit-tpc-act-fs: var(--bit-TimePicker-action-font-size, #{$tg-fs-md});
+}
+
+
+// Windows High Contrast / forced-colors: the palette collapses to the system pair and every background
+// an author paints is stripped, so the selected AM/PM button - which says which half of the day the time
+// is in with nothing but a background - would read exactly like the unselected one. The system Highlight
+// pair carries the selection instead, and the disabled parts fall back to GrayText, which the mode keeps.
+@media (forced-colors: active) {
+    .bit-tpc-bns,
+    .bit-tpc-rdl .bit-tpc-bns:disabled {
+        color: HighlightText;
+        background-color: Highlight;
+        forced-color-adjust: none;
+    }
+
+    .bit-tpc-icn {
+        border-color: ButtonBorder;
+    }
+
+    .bit-tpc-cac {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    .bit-tpc.bit-dis {
+        .bit-tpc-lbl,
+        .bit-tpc-inp,
+        .bit-tpc-ico,
+        .bit-tpc-tdv {
+            color: GrayText;
+        }
+
+        .bit-tpc-icn {
+            border-color: GrayText;
+        }
+    }
+
+    .bit-tpc-tbt:disabled,
+    .bit-tpc-abn:disabled,
+    .bit-tpc-tin:disabled,
+    .bit-tpc-clr:disabled {
+        color: GrayText;
+
+        i {
+            color: GrayText;
+        }
+    }
+
+    // A read-only picker is not a disabled one, so the buttons that only carry the attribute to stay
+    // unpressable are taken back off the GrayText the rule above puts them on.
+    .bit-tpc-rdl {
+        .bit-tpc-tbt:disabled,
+        .bit-tpc-abn:disabled {
+            color: CanvasText;
+
+            i {
+                color: CanvasText;
+            }
+        }
+    }
+
+    .bit-tpc-erm {
+        color: CanvasText;
+    }
 }

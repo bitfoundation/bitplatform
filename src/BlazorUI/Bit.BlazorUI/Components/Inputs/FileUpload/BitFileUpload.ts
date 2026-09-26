@@ -95,11 +95,74 @@ namespace BitBlazorUI {
             dragStyle: string | null,
             allowDrop: boolean,
             allowPaste: boolean,
-            expandDirectories: boolean) {
+            expandDirectories: boolean,
+            dropZoneSelector: string | null,
+            rejectClass: string = '',
+            rejectStyle: string | null = null,
+            acceptedMimeTypes: string[] | null = null,
+            remainingSlots: number = -1) {
 
             let dragCounter = 0;
-            let originalStyle: string | null = null;
             let dragClasses = dragClass.split(' ').filter(c => c.length > 0);
+            let rejectClasses = rejectClass.split(' ').filter(c => c.length > 0);
+            // whether the drag in flight is known to carry files the component is going to turn away, decided
+            // once when it enters, since what is being dragged does not change until it is dropped.
+            let isRejected = false;
+            // the inline style every zone carried before the drag state was applied to it, so that the
+            // element the app owns gets exactly its own style back rather than losing it.
+            const originalStyles = new Map<HTMLElement, string | null>();
+
+            // a page can well point two uploaders at one shared zone, so a drop or a paste landing in it
+            // is claimed by the first of them to see it rather than handed to every one of them.
+            const handledFlag = '__bitUplHandled';
+
+            function claim(e: Event) {
+                if ((e as any)[handledFlag]) return false;
+
+                (e as any)[handledFlag] = true;
+
+                return true;
+            }
+
+            // the root is always a drop zone; the selector adds whatever else the app nominates, which is
+            // how a whole form - or the page - accepts a drop while the browse button stays where it is.
+            // the drag listeners sit on the document and ask this rather than being attached to the zones
+            // themselves, so an element the app renders after this component - or replaces later on - is a
+            // drop zone from the moment it matches the selector, with nothing to re-attach.
+            function isInZone(target: EventTarget | null): boolean {
+                if (!(target instanceof Node)) return false;
+
+                if (dropZoneElement.contains(target)) return true;
+
+                if (!dropZoneSelector) return false;
+
+                const element = target instanceof Element ? target : target.parentElement;
+
+                try {
+                    return element?.closest(dropZoneSelector) != null;
+                } catch {
+                    // an invalid selector leaves the component with its own root as the only zone.
+                    return false;
+                }
+            }
+
+            function resolveZones(): HTMLElement[] {
+                const list: HTMLElement[] = [dropZoneElement];
+
+                if (!dropZoneSelector) return list;
+
+                try {
+                    document.querySelectorAll(dropZoneSelector).forEach(e => {
+                        if (e !== dropZoneElement && e instanceof HTMLElement) list.push(e);
+                    });
+                } catch { /* see isInZone */ }
+
+                return list;
+            }
+
+            // the zones the drag state is currently painted on, captured when it was applied so that it
+            // comes off exactly the elements it went on, whatever the DOM does in between.
+            let zones: HTMLElement[] = [];
 
             function hasFiles(e: DragEvent) {
                 return !!e.dataTransfer && Array.prototype.includes.call(e.dataTransfer.types, 'Files');
@@ -109,29 +172,100 @@ namespace BitBlazorUI {
                 return allowDrop && !inputElement.disabled && hasFiles(e);
             }
 
-            function applyDragStyling() {
-                dropZoneElement.classList.add(...dragClasses);
+            // a browser shows the kind and the MIME type of a dragged file but never its name until the drop,
+            // so only what those two can tell is judged here: a type the MIME-only rule does not accept, or
+            // more files than the MaxCount still has room for. anything unknown - a folder, a type the OS left
+            // blank - counts as accepted, and the validations have the final word once the files land anyway.
+            function judgeDrag(e: DragEvent) {
+                const items = e.dataTransfer?.items;
+                if (!items) return false;
 
-                if (!dragStyle) return;
-                originalStyle = dropZoneElement.getAttribute('style');
-                dropZoneElement.setAttribute('style', [originalStyle, dragStyle].filter(s => s).join(';'));
+                const files = Array.prototype.filter.call(items, (i: DataTransferItem) => i.kind === 'file') as DataTransferItem[];
+                if (files.length === 0) return false;
+
+                if (remainingSlots >= 0) {
+                    const acceptsMany = inputElement.multiple || inputElement.webkitdirectory;
+                    const count = acceptsMany ? files.length : 1;
+                    if (count > remainingSlots) return true;
+                }
+
+                if (!acceptedMimeTypes || acceptedMimeTypes.length === 0) return false;
+
+                return files.some(f => {
+                    const type = (f.type || '').toLowerCase();
+                    if (!type) return false;
+
+                    return !acceptedMimeTypes!.some(a => {
+                        const entry = a.toLowerCase();
+                        return entry.endsWith('/*') ? type.startsWith(entry.substring(0, entry.length - 1)) : type === entry;
+                    });
+                });
+            }
+
+            function paintZone(zone: HTMLElement) {
+                zone.classList.add(...dragClasses);
+                if (isRejected) {
+                    zone.classList.add(...rejectClasses);
+                }
+
+                const style = isRejected ? [dragStyle, rejectStyle].filter(s => s).join(';') : dragStyle;
+                if (!style) return;
+                const original = zone.getAttribute('style');
+                originalStyles.set(zone, original);
+                zone.setAttribute('style', [original, style].filter(s => s).join(';'));
+            }
+
+            function applyDragStyling() {
+                zones = resolveZones();
+
+                zones.forEach(zone => paintZone(zone));
+            }
+
+            // a zone can be rendered - or start matching the selector - while the drag is already in
+            // flight, and a zone that takes the drop is a zone that shows it is about to. the ones already
+            // painted are left alone so that the style they had before the drag is remembered once rather
+            // than overwritten with the dragging one.
+            // the painted zones are asked by containment rather than by running the selector again, so this
+            // costs nothing on a dragover, which fires several times a second.
+            function isPainted(target: EventTarget | null) {
+                return target instanceof Node && zones.some(zone => zone.contains(target));
+            }
+
+            function syncDragStyling() {
+                resolveZones().forEach(zone => {
+                    if (zones.indexOf(zone) >= 0) return;
+
+                    zones.push(zone);
+                    paintZone(zone);
+                });
             }
 
             function clearDragStyling() {
-                dropZoneElement.classList.remove(...dragClasses);
+                zones.forEach(zone => {
+                    zone.classList.remove(...dragClasses);
+                    zone.classList.remove(...rejectClasses);
 
-                if (!dragStyle) return;
-                if (originalStyle) {
-                    dropZoneElement.setAttribute('style', originalStyle);
-                } else {
-                    dropZoneElement.removeAttribute('style');
-                }
-                originalStyle = null;
+                    if (!originalStyles.has(zone)) return;
+                    const original = originalStyles.get(zone);
+                    if (original) {
+                        zone.setAttribute('style', original);
+                    } else {
+                        zone.removeAttribute('style');
+                    }
+                    originalStyles.delete(zone);
+                });
+
+                zones = [];
             }
 
-            function addDragState() {
+            function addDragState(e: DragEvent) {
                 dragCounter++;
-                if (dragCounter > 1) return;
+                if (dragCounter > 1) {
+                    syncDragStyling();
+                    return;
+                }
+
+                isRejected = judgeDrag(e);
 
                 applyDragStyling();
             }
@@ -146,24 +280,38 @@ namespace BitBlazorUI {
             }
 
             function onDragEnter(e: DragEvent) {
+                if (!isInZone(e.target)) return;
+
                 e.preventDefault();
                 if (!canAcceptDrop(e)) return;
 
-                addDragState();
+                addDragState(e);
             }
 
             function onDragOver(e: DragEvent) {
+                if (!isInZone(e.target)) return;
+
                 // the default must always be prevented, otherwise the browser navigates away
                 // to the dropped file and the app state gets lost.
                 e.preventDefault();
 
                 if (!e.dataTransfer) return;
 
+                const accepts = canAcceptDrop(e);
+
                 // gives the OS the correct drag cursor (a copy badge or a no-drop sign).
-                e.dataTransfer.dropEffect = canAcceptDrop(e) ? 'copy' : 'none';
+                e.dataTransfer.dropEffect = accepts ? 'copy' : 'none';
+
+                // a zone can also come up underneath a pointer that is already over it, which leaves no
+                // dragenter of its own for it to be noticed by.
+                if (accepts && dragCounter > 0 && !isPainted(e.target)) {
+                    syncDragStyling();
+                }
             }
 
             function onDragLeave(e: DragEvent) {
+                if (!isInZone(e.target)) return;
+
                 e.preventDefault();
                 if (!hasFiles(e)) return;
 
@@ -204,7 +352,14 @@ namespace BitBlazorUI {
             }
 
             function onDrop(e: DragEvent) {
+                if (!isInZone(e.target)) return;
+
                 e.preventDefault();
+
+                // two uploaders can well be pointed at one shared zone, and the files belong to
+                // whichever of them takes the drop rather than to both of them at once.
+                if (!claim(e)) return;
+
                 removeDragState(true);
 
                 if (!allowDrop || inputElement.disabled || !e.dataTransfer) return;
@@ -228,30 +383,29 @@ namespace BitBlazorUI {
             // nor the hidden file input can ever hold it, so the listener sits on the document and decides
             // for itself whether the paste was meant for this component: the focus being somewhere inside
             // it, or nothing on the page holding the focus at all. in that second case the paste belongs to
-            // no one in particular, so the first paste enabled upload on the page takes it and marks the
-            // event, otherwise a second one would end up with a copy of the same files.
+            // no one in particular, so whichever paste enabled upload on the page sees it first takes it.
             function onPaste(e: ClipboardEvent) {
                 if (!allowPaste || inputElement.disabled) return;
                 if (!e.clipboardData || e.clipboardData.files.length === 0) return;
 
                 const focused = document.activeElement;
-                const isFocusedHere = focused !== null && (focused === inputElement || dropZoneElement.contains(focused));
+                const isFocusedHere = focused !== null && (focused === inputElement || isInZone(focused));
 
-                if (!isFocusedHere) {
-                    if (focused !== null && focused !== document.body) return;
-                    if ((e as any).bitPasteHandled) return;
+                // the focus sitting inside some unrelated element is a paste meant for that element.
+                if (!isFocusedHere && focused !== null && focused !== document.body) return;
 
-                    (e as any).bitPasteHandled = true;
-                }
+                // the focus can be inside a zone two uploaders share just as well as it can be nowhere at
+                // all, so either way the files belong to one of them rather than to both at once.
+                if (!claim(e)) return;
 
                 setFiles(e.clipboardData.files);
             }
 
-            dropZoneElement.addEventListener("dragenter", onDragEnter);
-            dropZoneElement.addEventListener("dragover", onDragOver);
-            dropZoneElement.addEventListener("dragleave", onDragLeave);
-            dropZoneElement.addEventListener("drop", onDrop);
-            dropZoneElement.addEventListener('dragend', onDragCancel);
+            document.addEventListener('dragenter', onDragEnter);
+            document.addEventListener('dragover', onDragOver);
+            document.addEventListener('dragleave', onDragLeave);
+            document.addEventListener('drop', onDrop);
+            document.addEventListener('dragend', onDragCancel);
             document.addEventListener('paste', onPaste);
             // the window listener only cleans the state up, it never prevents the default,
             // so a drop landing anywhere else on the page keeps behaving as it did.
@@ -264,13 +418,38 @@ namespace BitBlazorUI {
                     newAllowPaste: boolean,
                     newExpandDirectories: boolean,
                     newDragClass: string,
-                    newDragStyle: string | null) => {
+                    newDragStyle: string | null,
+                    newDropZoneSelector: string | null,
+                    newRejectClass: string = '',
+                    newRejectStyle: string | null = null,
+                    newAcceptedMimeTypes: string[] | null = null,
+                    newRemainingSlots: number = -1) => {
 
                     allowDrop = newAllowDrop;
                     allowPaste = newAllowPaste;
                     expandDirectories = newExpandDirectories;
+                    // what a drag is judged against only applies to the next one; the one in flight keeps
+                    // the verdict it entered with.
+                    acceptedMimeTypes = newAcceptedMimeTypes;
+                    remainingSlots = newRemainingSlots;
 
-                    if (newDragClass !== dragClass || newDragStyle !== dragStyle) {
+                    if (newDropZoneSelector !== dropZoneSelector) {
+                        // the zones of the old selector are already wearing the drag state, and only they
+                        // can be asked to take it off again.
+                        const isDragging = dragCounter > 0;
+                        if (isDragging) {
+                            clearDragStyling();
+                        }
+
+                        dropZoneSelector = newDropZoneSelector;
+
+                        if (isDragging) {
+                            applyDragStyling();
+                        }
+                    }
+
+                    if (newDragClass !== dragClass || newDragStyle !== dragStyle ||
+                        newRejectClass !== rejectClass || newRejectStyle !== rejectStyle) {
                         // an ongoing drag is already showing the old class and style, which have to come off
                         // before they get replaced, otherwise nothing would ever take them off again.
                         const isDragging = dragCounter > 0;
@@ -281,6 +460,9 @@ namespace BitBlazorUI {
                         dragClass = newDragClass;
                         dragClasses = dragClass.split(' ').filter(c => c.length > 0);
                         dragStyle = newDragStyle;
+                        rejectClass = newRejectClass;
+                        rejectClasses = rejectClass.split(' ').filter(c => c.length > 0);
+                        rejectStyle = newRejectStyle;
 
                         if (isDragging) {
                             applyDragStyling();
@@ -292,11 +474,15 @@ namespace BitBlazorUI {
                     }
                 },
                 dispose: () => {
-                    dropZoneElement.removeEventListener('dragenter', onDragEnter);
-                    dropZoneElement.removeEventListener('dragover', onDragOver);
-                    dropZoneElement.removeEventListener('dragleave', onDragLeave);
-                    dropZoneElement.removeEventListener("drop", onDrop);
-                    dropZoneElement.removeEventListener('dragend', onDragCancel);
+                    // a zone the app owns outlives this component, so anything painted on it while a drag
+                    // was still in flight has to come off before the listeners that would have done it go.
+                    removeDragState(true);
+
+                    document.removeEventListener('dragenter', onDragEnter);
+                    document.removeEventListener('dragover', onDragOver);
+                    document.removeEventListener('dragleave', onDragLeave);
+                    document.removeEventListener('drop', onDrop);
+                    document.removeEventListener('dragend', onDragCancel);
                     document.removeEventListener('paste', onPaste);
                     window.removeEventListener('dragend', onDragCancel);
                     window.removeEventListener('drop', onDragCancel);
@@ -433,6 +619,21 @@ namespace BitBlazorUI {
     }
 
     class BitFileUploader {
+        // a response body is handed to .NET as the Message of the file, and on Blazor Server that hop is a
+        // SignalR message whose default limit is 32 KB - so the body is cut well below it.
+        static readonly MAX_RESPONSE_TEXT_LENGTH = 8 * 1024;
+
+        // the cut counts UTF-16 code units, so it can land between the two halves of a surrogate pair; a lone
+        // high surrogate is not valid UTF-16 and .NET's JSON reader would reject the whole call, leaving the
+        // file in progress for good - so the cut steps back one unit instead of keeping half a character.
+        static capText(text: string): string {
+            const max = BitFileUploader.MAX_RESPONSE_TEXT_LENGTH;
+            if (text.length <= max) return text;
+
+            const last = text.charCodeAt(max - 1);
+            return text.substring(0, last >= 0xD800 && last <= 0xDBFF ? max - 1 : max);
+        }
+
         id: string;
         dotnetReference: DotNetObject;
         file: File | null;
@@ -483,7 +684,13 @@ namespace BitBlazorUI {
             const me = this;
             this.xhr.onreadystatechange = function (event) {
                 if (me.xhr.readyState === 4) {
-                    dotnetReference.invokeMethodAsync("HandleChunkUpload", index, me.xhr.status, me.xhr.responseText);
+                    // the body of an error response is whatever the endpoint happens to serve - an error page
+                    // of a hundred kilobytes as easily as a one line message - and it travels to .NET over the
+                    // Blazor Server circuit, whose default message size is 32 KB. A body over that limit would
+                    // tear the circuit down and take the whole page with it, so it is capped to what a Message
+                    // is actually read for rather than sent whole.
+                    const body = me.xhr.responseText ?? '';
+                    dotnetReference.invokeMethodAsync("HandleChunkUpload", index, me.xhr.status, BitFileUploader.capText(body));
                 }
             };
         }

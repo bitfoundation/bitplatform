@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.OtpInput;
 
@@ -11,7 +11,7 @@ public partial class BitOtpInputDemo
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The accent color of the inputs, applied to the border and the focus ring of the focused input. The error state of the validation still wins over it.",
+            Description = "The color of the focused input's border and focus ring, and of the loading bar. The error state wins over it.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -20,21 +20,28 @@ public partial class BitOtpInputDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the first input left to fill is auto focused on the first render, so a component seeded with a partial code carries on where the typing stopped. A component that starts out disabled cannot take the focus, so it is focused on the first render that finds it enabled instead of losing the auto focus altogether.",
+            Description = "Focuses the first empty input on the first render that finds the component enabled.",
         },
         new()
         {
             Name = "AutoShift",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables auto shifting the indexes while clearing the inputs using Delete or Backspace, so the remaining characters move one input to the left instead of leaving a hole in the middle of the code.",
+            Description = "Shifts the rest of the code one input back when a character is cleared with Backspace or Delete, instead of leaving a hole.",
+        },
+        new()
+        {
+            Name = "AutoSubmit",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Submits the enclosing form (a plain form or an EditForm) right after OnFill, the way pressing Enter would: the form still validates first. Nothing happens outside of a form.",
         },
         new()
         {
             Name = "BlurOnFill",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the focus from the inputs as soon as the code is complete, which is what dismisses the virtual keyboard of a phone once there is nothing left to type.",
+            Description = "Removes the focus from the inputs once the code is complete, which dismisses a phone's virtual keyboard.",
         },
         new()
         {
@@ -50,28 +57,35 @@ public partial class BitOtpInputDemo
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The description (helper text) rendered under the inputs, which the group of the inputs references through its aria-describedby so that screen readers announce it along with the name of the group. It is where the sentence that turns a row of empty boxes into a question the user can answer belongs: where the code was sent, how long it is good for, or what a server that rejected it said.",
+            Description = "Helper text under the inputs, referenced by the group's aria-describedby. While Invalid or IsLoading is on it is also announced through a live region.",
         },
         new()
         {
             Name = "DescriptionTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom template for the description (helper text) rendered under the inputs, which takes precedence over the Description. It is referenced the very same way, so a \"resend the code\" button or a countdown put in here is announced with the group as well.",
+            Description = "Custom template for the helper text, taking precedence over Description. It is described the same way but never copied into the live region.",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stretches the row across its container and shares the width evenly between the inputs. The height stays the one of the Size.",
         },
         new()
         {
             Name = "InputAriaLabelFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The composite format of the aria-label rendered on each input, where {0} is the one based index of the input and {1} is the Length. Set it to localize the position that screen readers announce for each input. The default is \"{0} of {1}\".",
+            Description = "Composite format of each input's aria-label: {0} is the one based position and {1} the Length. Defaults to \"{0} of {1}\".",
         },
         new()
         {
             Name = "InputMode",
             Type = "BitInputMode?",
             DefaultValue = "null",
-            Description = "Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a phone brings up without changing the element that is rendered or the characters that are accepted. It defaults to the keyboard that matches the Type, so it is only needed to ask for a keyboard the type does not imply, like the telephone keypad (whose keys are larger than the numeric ones on most Android keyboards) for a code of digits.",
+            Description = "The inputmode attribute of the inputs, which picks the virtual keyboard without changing the accepted characters. Defaults to the one the Type implies.",
             LinkType = LinkType.Link,
             Href = "#input-mode-enum",
         },
@@ -80,21 +94,21 @@ public partial class BitOtpInputDemo
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Paints the inputs with the error state without an EditContext taking part in it, which is what reports a code that the server has rejected (\"that code is not correct, try again\"): the failure only becomes known once the code has been submitted, so there is nothing for a validator to see. It also marks the inputs with aria-invalid, and a failing validation of an EditContext still shows the very same state on its own.",
+            Description = "Paints the error state and sets aria-invalid without an EditContext, e.g. for a code the server rejected. A failing validation shows the same state on its own.",
         },
         new()
         {
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Puts the component into the busy state of a code that has been submitted and is being checked, which is the step between the OnFill and the answer that either lets the user through or sets the Invalid. It paints an indeterminate progress bar under the inputs, marks the group with aria-busy so that the wait is announced rather than only shown, and holds the code still the way the ReadOnly does, so that nothing can be typed, pasted or cut over a code whose answer is already on its way. The Clear of the consumer is deliberately not blocked by it.",
+            Description = "The busy state of a submitted code: draws a progress bar, marks the group aria-busy, announces the Description and holds the code still like ReadOnly. Clear is not blocked by it.",
         },
         new()
         {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Label displayed above the inputs. It is rendered as a real label element bound to the first input and it also names the group of the inputs for assistive technologies.",
+            Description = "Label displayed above the inputs, bound to the first input and naming the group of inputs.",
         },
         new()
         {
@@ -108,147 +122,147 @@ public partial class BitOtpInputDemo
             Name = "Length",
             Type = "int",
             DefaultValue = "5",
-            Description = "Length of the OTP or number of the inputs. Values below 1 are clamped to 1, changing it at runtime keeps the characters of the inputs that survive the resize, and a value longer than the inputs can hold loses its extra characters instead of being reported as a value that is not shown.",
+            Description = "The number of inputs, which is the length of the code. Values below 1 are treated as 1.",
         },
         new()
         {
             Name = "Lowercase",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns every character of the code into its lower case form as it is typed or pasted, the mirror of the Uppercase and applied under the very same rules: before the Pattern is applied, so an expression restricted to lower case letters accepts an upper case keystroke, and to a code that is assigned to the component as much as to one that is typed into it. The Uppercase wins when both are set.",
+            Description = "Converts every character to lower case before the Pattern is applied. Uppercase wins when both are set.",
         },
         new()
         {
             Name = "Mask",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text rendered in place of every filled input, which hides the code without turning the inputs into password inputs, so a masking character of its own (a bullet, an asterisk, an emoji) can be used. The value of the component stays the code that was typed.",
+            Description = "Text shown in place of every filled input's character. The value stays the typed code, and a masked code is kept off the clipboard.",
         },
         new()
         {
             Name = "Merged",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Glues the inputs of each group together into a single field instead of leaving them standing next to each other: the gaps between them are closed, the rule they share is drawn once, and only the two ends of every group keep their rounding, which is the look of a code printed in a single box. The groups are the ones the Separator makes, so a separator with a SeparatorInterval of 3 renders a six character code as two joined boxes of three.",
+            Description = "Glues the inputs of each group (the ones the Separator makes) into a single field with rounding only at its ends.",
         },
         new()
         {
             Name = "NormalizeDigits",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns the digits of the other numbering systems (the Persian ۰۱۲۳, the Arabic-Indic ٠١٢٣, the full width ０１２３ and the rest) into their ASCII form as they are typed or pasted, which is what lets a code that arrives in a message written in the language of the user be typed on the keyboard of that language rather than being rejected as if it were not a number at all. The conversion happens before the Pattern is applied and before the Type rejects what is not a digit, and the value of the component is the ASCII form that a server expects.",
+            Description = "Converts the digits of other numbering systems (Persian, Arabic-Indic, full width, ...) to ASCII before the Type and the Pattern are applied.",
         },
         new()
         {
             Name = "NoSmsAutoFill",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Disables both the SMS auto fill of the OTP through the WebOTP API of the browser and the one-time-code autofill of the inputs themselves. It also renders the attributes that keep the password manager extensions (1Password, LastPass, Bitwarden, Dashlane) from filling the inputs and from putting their badge over them, since an autocomplete of \"off\" is a request those extensions deliberately ignore.",
+            Description = "Turns off the WebOTP SMS auto fill, the one-time-code autocomplete and the password managers' autofill.",
         },
         new()
         {
             Name = "OnFill",
             Type = "EventCallback<string?>",
-            Description = "Callback for when all of the inputs are filled. It is raised once per completed code, so an edit that keeps the very same code does not raise it again.",
+            Description = "Callback for when all of the inputs are filled, raised once per completed code.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback<(FocusEventArgs Event, int Index)>",
-            Description = "onfocusin event callback for each input, receiving the event and the index of the input that raised it.",
+            Description = "onfocusin event callback for each input, with the index of the input.",
         },
         new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback<(FocusEventArgs Event, int Index)>",
-            Description = "onfocusout event callback for each input, receiving the event and the index of the input that raised it.",
+            Description = "onfocusout event callback for each input, with the index of the input.",
         },
         new()
         {
             Name = "OnInput",
             Type = "EventCallback<(ChangeEventArgs Event, int Index)>",
-            Description = "oninput event callback for each input, receiving the event and the index of the input that raised it.",
+            Description = "oninput event callback for each input, with the index of the input.",
         },
         new()
         {
             Name = "OnInvalid",
             Type = "EventCallback<(string Value, int Index)>",
-            Description = "Callback for when what was typed, pasted or auto filled is rejected in full by the Type or the Pattern, so that nothing of it reaches the inputs. It receives the rejected text along with the index of the input that received it, and it is what turns a silent rejection into a visible one. A paste that only loses some of its characters, like a code copied with the dashes in it, is not a rejection and does not raise it.",
+            Description = "Callback for when a keystroke, paste or auto fill is rejected in full by the Type, the Pattern or the PasteTransformer, with the rejected text and the index of the input. A paste that only loses some characters does not raise it.",
         },
         new()
         {
             Name = "OnKeyDown",
             Type = "EventCallback<(KeyboardEventArgs Event, int Index)>",
-            Description = "onkeydown event callback for each input, receiving the event and the index of the input that raised it.",
+            Description = "onkeydown event callback for each input, with the index of the input.",
         },
         new()
         {
             Name = "OnPaste",
             Type = "EventCallback<(ClipboardEventArgs Event, int Index)>",
-            Description = "onpaste event callback for each input, receiving the event and the index of the input that raised it.",
+            Description = "onpaste event callback for each input, with the index of the input.",
         },
         new()
         {
             Name = "PasteTransformer",
             Type = "Func<string, string>?",
             DefaultValue = "null",
-            Description = "A function applied to a chunk of characters that reaches the component in one go (a paste, an SMS auto fill, or a multi character input event) before anything else is done with it, which is what pulls the code out of the text it was copied inside of. The per character filtering of the Type and the Pattern cannot do that on its own for a code of letters, since the letters of the words around it match just as well as the ones of the code: \"your code is A1B2C3\" would fill the inputs with \"YOURCODEI\". Returning an empty string rejects the chunk, which raises OnInvalid. It is not applied to a single typed character, and an exception thrown out of it leaves the chunk untouched rather than breaking the input.",
+            Description = "Applied to a pasted or auto filled chunk before it is filtered, e.g. to pull the code out of the message around it. An empty result rejects the chunk; an exception leaves it untouched. Not applied to a single typed character.",
         },
         new()
         {
             Name = "Pattern",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A regular expression that every single character of the code has to match, which is what narrows the code down to a set of characters that no input type covers on its own, like upper case letters or hexadecimal digits. Characters that do not match are rejected while typing and dropped while pasting. An unusable expression is ignored rather than breaking the input.",
+            Description = "A regular expression every single character has to match. Non-matching characters are rejected when typed and dropped when pasted; an invalid expression is ignored.",
         },
         new()
         {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The hint text rendered in the empty inputs. A string as long as the Length is spread over the inputs one character each, any other value is rendered in every input as is.",
+            Description = "Hint text of the empty inputs. A string exactly Length long is spread one character per input; any other is shown in every input.",
         },
         new()
         {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Defines whether to render inputs in the opposite direction. The arrow key navigation flips along with it.",
+            Description = "Renders the inputs in the opposite order. The arrow keys follow.",
         },
         new()
         {
             Name = "Separator",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text rendered between the inputs, like a dash or a dot, to make a long code easier to read. It is hidden from assistive technologies and never becomes part of the value.",
+            Description = "Text rendered between the groups of inputs. It is hidden from assistive technologies and never part of the value.",
         },
         new()
         {
             Name = "SeparatorInterval",
             Type = "int",
             DefaultValue = "1",
-            Description = "The number of inputs of each group that the Separator is rendered between, which is how a long code is split into the chunks it is usually printed in, like 123-456. The default is 1, meaning a separator between every pair of inputs. Values below 1 are treated as 1.",
+            Description = "The number of inputs in each group the Separator is rendered between, e.g. 3 for 123-456. Values below 1 are treated as 1.",
         },
         new()
         {
             Name = "SeparatorTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
-            Description = "Custom template rendered between the inputs in place of the Separator text, which is what puts an icon or any other markup between the groups of a code. The context is the zero based index of the input the separator is rendered before, so a template can tell one separator of the row from another. It takes precedence over the Separator.",
+            Description = "Custom template rendered in place of the Separator text, with the zero based index of the next input as its context.",
         },
         new()
         {
             Name = "Sequential",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the code free of holes: giving the focus to an input that sits after the first empty one, by clicking it or with an arrow key, moves the focus to that first empty input instead, and a chunk of characters that arrives at once (a paste or an auto fill) cannot land past it either, so the code is always filled from its start onwards. Without it a character typed into the middle of an empty row is reported as if it were the first one of the code, since the value is the characters of the inputs joined together and an empty input contributes nothing to it. A complete code is left alone, so any of its characters can still be clicked and corrected.",
+            Description = "Keeps the code free of holes: focusing, or pasting into, an input past the first empty one lands on that first empty input instead. A complete code is left editable anywhere.",
         },
         new()
         {
             Name = "SingleTabStop",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns the whole component into a single stop of the tab order: only the input holding the first character of the code is reachable with the Tab key and the rest are left to the auto advancing focus, the arrow keys and the mouse. Tabbing out of the code then lands on the element after it rather than on its next character.",
+            Description = "Makes the whole component a single tab stop: only the first input is reachable with Tab.",
         },
         new()
         {
@@ -273,7 +287,7 @@ public partial class BitOtpInputDemo
             Name = "Type",
             Type = "BitInputType?",
             DefaultValue = "null",
-            Description = "Type of the inputs, which also decides the virtual keyboard of the mobile browsers. The Number type asks for the numeric keypad and rejects every character that is not a digit, whether it is typed or pasted, without rendering a native number input (which would carry spin buttons and report an empty value for characters like e or -). The Email and the Url types are rendered as text inputs for the same reason, since the constraint validation they carry can never be satisfied by a single character and would keep a plain html form from submitting; only the keyboard they ask for is kept.",
+            Description = "Type of the inputs, deciding the accepted characters and the virtual keyboard. Number accepts digits only; Number, Email and Url render as text inputs.",
             LinkType = LinkType.Link,
             Href = "#input-type-enum",
         },
@@ -282,14 +296,14 @@ public partial class BitOtpInputDemo
             Name = "Uppercase",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns every character of the code into its upper case form as it is typed or pasted, which is what lets a code that is printed in upper case be typed in either case. The conversion happens before the Pattern is applied, so an expression restricted to upper case letters accepts a lower case keystroke instead of rejecting it.",
+            Description = "Converts every character to upper case before the Pattern is applied.",
         },
         new()
         {
             Name = "Variant",
             Type = "BitVariant?",
             DefaultValue = "null",
-            Description = "The visual variant of the inputs, which decides how much of the frame around each input is painted: a full fill, only an outline, or just an underline.",
+            Description = "The visual variant of the inputs: Outline (default), Fill or Text (underline only).",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
         },
@@ -298,7 +312,7 @@ public partial class BitOtpInputDemo
             Name = "Vertical",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Defines whether to render inputs vertically. The arrow key navigation follows the layout.",
+            Description = "Renders the inputs vertically. The arrow keys follow.",
         },
     ];
 
@@ -549,31 +563,249 @@ public partial class BitOtpInputDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-OtpInput-gap",
+            DefaultValue = "0.625rem",
+            Description = "Room between the inputs. Merged closes it to 0 whatever this holds.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-input-size",
+            DefaultValue = "--bit-siz-ctrl-sm / --bit-siz-ctrl-md / --bit-siz-ctrl-lg, per Size",
+            Description = "Width and height of every input, which is a square of the control height of its size class. FullWidth overrides the width alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-input-width",
+            DefaultValue = "--bit-OtpInput-input-size",
+            Description = "Width of an input on its own, for a box wider than it is tall.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-input-height",
+            DefaultValue = "--bit-OtpInput-input-size",
+            Description = "Height of an input on its own.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-font-family",
+            DefaultValue = "--bit-tpg-font-family",
+            Description = "Typeface of the whole component, which is where a tabular or monospaced face for the code is set - the one piece of text in a form that is read character by character.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-font-size",
+            DefaultValue = "--bit-tpg-fs-xs / --bit-tpg-fs-sm / --bit-tpg-fs-md, per Size",
+            Description = "Size of the code, inherited by the label and the placeholder.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-label-font-size",
+            DefaultValue = "--bit-OtpInput-font-size",
+            Description = "Size of the label above the inputs, which follows the size of the code unless it is set on its own.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the label above the inputs.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-description-font-size",
+            DefaultValue = "--bit-tpg-fs-2xs / --bit-tpg-fs-xs / --bit-tpg-fs-sm, per Size",
+            Description = "Size of the helper text under the inputs, one step of the type ramp below the code.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-font-weight",
+            DefaultValue = "--bit-tpg-fw-regular",
+            Description = "Weight of the character inside an input.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of an input, and of the two ends of every group while Merged is on. The Text variant squares them off whatever this holds.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-border-width",
+            DefaultValue = "--bit-shp-border-width",
+            Description = "Thickness of an input's rule, and with it the overlap that glues two Merged inputs together.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the typed character.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-background",
+            DefaultValue = "Per Variant: --bit-clr-bg-pri (Outline), --bit-clr-bg-sec (Fill), transparent (Text)",
+            Description = "Input background at rest, and the fallback of the hover and filled backgrounds below.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-hover-background",
+            DefaultValue = "Per Variant: the rest background (Outline, Text), --bit-clr-bg-sec-hover (Fill)",
+            Description = "Input background while hovered, on an input that is neither disabled nor read-only.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-border-color",
+            DefaultValue = "Per Variant: --bit-clr-brd-pri (Outline, Text), transparent (Fill)",
+            Description = "Input rule at rest, and the fallback of the hover and filled rules below.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-hover-border-color",
+            DefaultValue = "Per Variant: --bit-clr-brd-pri-hover (Outline, Text), the rest rule (Fill)",
+            Description = "Input rule while hovered.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-filled-background",
+            DefaultValue = "--bit-OtpInput-background",
+            Description = "Background of an input that already holds a character, which is what turns the row into its own progress indicator. It has no parameter behind it.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-filled-border-color",
+            DefaultValue = "--bit-OtpInput-border-color",
+            Description = "Rule of an input that already holds a character.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-focus-border-color",
+            DefaultValue = "The Accent role's main color",
+            Description = "Input rule while focused.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-focus-color",
+            DefaultValue = "The Accent role's focus color",
+            Description = "Color of the keyboard focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-placeholder-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Hint character of an empty input.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Label above the inputs.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Helper text under the inputs, outside the error state.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-separator-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text drawn between the groups of the code.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-invalid-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Input rule, helper text and loading bar while Invalid is on or a validation is failing.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-invalid-focus-color",
+            DefaultValue = "--bit-clr-err-focus",
+            Description = "Focus ring color in the error state.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Character, placeholder, label, helper text, separator and loading bar when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Input background when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-disabled-border-color",
+            DefaultValue = "--bit-clr-brd-dis",
+            Description = "Input rule when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-loader-color",
+            DefaultValue = "The Accent role's main color",
+            Description = "The sweep of the bar drawn while IsLoading is on. The error and disabled states paint it with their own color instead.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-loader-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "The track the sweep of the loading bar travels along.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-loader-height",
+            DefaultValue = "--bit-siz-track-sm",
+            Description = "Thickness of the loading bar.",
+        },
+    ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
         {
             Name = "InputElements",
             Type = "ElementReference[]",
-            Description = "The ElementReferences to the input elements of the BitOtpInput. The inherited InputElement, which every input component carries a single one of, stands for the input holding the first character of the code.",
+            Description = "The ElementReferences to the input elements of the BitOtpInput. The inherited InputElement is the first of them.",
         },
         new()
         {
             Name = "BlurAsync",
             Type = "() => ValueTask",
-            Description = "Removes the focus from the input of the BitOtpInput that currently holds it, which is what dismisses the virtual keyboard of a phone. Nothing happens when the focus is somewhere else on the page, so a component that filled itself in the background never takes it away from what the user is doing.",
+            Description = "Removes the focus from the input that holds it, dismissing a phone's virtual keyboard. Does nothing when the focus is elsewhere on the page.",
         },
         new()
         {
             Name = "Clear",
             Type = "() => Task",
-            Description = "Clears the value of all of the inputs of the BitOtpInput. It does nothing while the component is disabled or read-only.",
+            Description = "Clears all of the inputs and the value. Does nothing while the component is disabled or read-only.",
         },
         new()
         {
             Name = "FocusAsync",
             Type = "(int index = 0) => ValueTask",
-            Description = "Gives focus to a specific input element of the BitOtpInput. The index is clamped into the range of the rendered inputs, and calling it before the component has rendered does nothing rather than asking the browser for an element that is not there yet.",
+            Description = "Focuses the input at the given index, clamped into range. The inherited FocusAsync() and FocusAsync(bool preventScroll) focus the first input. Does nothing before the first render.",
+        }
+    ];
+
+
+
+    private readonly BitOtpInputParams[] otpInputParams =
+    [
+        new()
+        {
+            Length = 6,
+            Separator = "-",
+            SeparatorInterval = 3,
+            Type = BitInputType.Number,
+            Variant = BitVariant.Fill,
+            NormalizeDigits = true,
+            PasteTransformer = v => System.Text.RegularExpressions.Regex.Match(v, @"\p{Nd}{6}").Value,
         }
     ];
 
@@ -625,30 +857,18 @@ public partial class BitOtpInputDemo
         formIsValidSubmit = false;
     }
 
-    private bool invalidState;
-    private BitOtpInput? invalidOtpInput;
-    private string invalidDescription = "Enter the 6 digit code we sent you. Try 123456.";
-    private void HandleInvalidDemoFill(string? value)
+    private bool autoSubmitted;
+    private ValidationOtpInputModel autoSubmitOtpInputModel = new();
+    private async Task HandleAutoSubmit()
     {
-        // Only the server that issued the code knows whether it is the right one, so the error state is
-        // set from the answer it gives rather than from a validator, and the answer itself goes into the
-        // description, which the group of the inputs is described by.
-        invalidState = value != "123456";
+        autoSubmitted = true;
 
-        invalidDescription = invalidState
-            ? "That code is not correct or has expired. Try 123456."
-            : "That code is correct.";
-    }
+        await Task.Delay(3000);
 
-    private async Task HandleInvalidDemoRetry()
-    {
-        invalidState = false;
-        invalidDescription = "Enter the 6 digit code we sent you. Try 123456.";
+        autoSubmitted = false;
+        autoSubmitOtpInputModel = new();
 
-        if (invalidOtpInput is null) return;
-
-        await invalidOtpInput.Clear();
-        await invalidOtpInput.FocusAsync();
+        StateHasChanged();
     }
 
     private bool isLoading;
@@ -684,437 +904,4 @@ public partial class BitOtpInputDemo
         await loadingOtpInput.Clear();
         await loadingOtpInput.FocusAsync();
     }
-
-
-
-    private readonly string example1RazorCode = @"
-<BitOtpInput />
-
-<BitOtpInput Length=""4"" />
-
-<BitOtpInput IsEnabled=""false"" DefaultValue=""12345"" />
-
-<BitOtpInput ReadOnly DefaultValue=""12345"" />
-
-<BitOtpInput AutoFocus />
-
-<BitOtpInput AutoShift DefaultValue=""12345"" />
-
-<BitOtpInput BlurOnFill Length=""4"" />
-
-<BitOtpInput Sequential Length=""6"" Type=""BitInputType.Number"" />";
-
-    private readonly string example2RazorCode = @"
-<BitOtpInput Label=""OTP"" />
-
-<BitOtpInput Label=""OTP"" Required />
-
-<BitOtpInput>
-    <LabelTemplate>
-        <BitStack Horizontal>
-            <BitText Gutter><i>Custom label</i></BitText>
-            <BitSpacer />
-            <BitIcon IconName=""@BitIconName.TemporaryAccessPass"" />
-        </BitStack>
-    </LabelTemplate>
-</BitOtpInput>
-
-<BitOtpInput Label=""Verification code"" Length=""6"" Type=""BitInputType.Number""
-             Description=""We sent a 6 digit code to +1 555 0100. It stays valid for 10 minutes."" />
-
-<BitOtpInput Label=""Verification code"" Length=""6"" Type=""BitInputType.Number"">
-    <DescriptionTemplate>
-        <BitStack Horizontal FitWidth Gap=""0.25rem"" VerticalAlign=""BitAlignment.Center"">
-            <BitText Typography=""BitTypography.Caption1"">Didn't get it?</BitText>
-            <BitLink Href=""#example2"">Send it again</BitLink>
-        </BitStack>
-    </DescriptionTemplate>
-</BitOtpInput>";
-
-    private readonly string example3RazorCode = @"
-<BitOtpInput Label=""Text"" Type=""BitInputType.Text"" />
-<BitOtpInput Label=""Number"" Type=""BitInputType.Number"" />
-<BitOtpInput Label=""Password"" Type=""BitInputType.Password"" />
-<BitOtpInput Label=""Number, with the telephone keypad"" Type=""BitInputType.Number"" InputMode=""BitInputMode.Tel"" />
-
-<BitOtpInput Label=""Number, typed or pasted in any numbering system"" Length=""6""
-             Type=""BitInputType.Number"" NormalizeDigits @bind-Value=""normalizeDigitsValue"" />
-<div>Value: @normalizeDigitsValue</div>";
-    private readonly string example3CsharpCode = @"
-private string? normalizeDigitsValue;";
-
-    private readonly string example4RazorCode = @"
-<BitOtpInput Label=""Bullet"" Mask=""●"" DefaultValue=""12345"" />
-
-<BitOtpInput Label=""Asterisk"" Mask=""*"" Type=""BitInputType.Number"" />
-
-<BitOtpInput Label=""Emoji"" Mask=""🔒"" DefaultValue=""12345"" />
-
-<BitOtpInput Label=""Masked, with the real value below"" Mask=""●"" @bind-Value=""maskValue"" />
-<div>Value: @maskValue</div>";
-    private readonly string example4CsharpCode = @"
-private string? maskValue;";
-
-    private readonly string example5RazorCode = @"
-<BitOtpInput Label=""Hexadecimal"" Length=""6"" Pattern=""^[a-fA-F0-9]$"" Placeholder=""0"" />
-
-<BitOtpInput Label=""Upper case letters"" Length=""4"" Pattern=""^[A-Z]$"" Placeholder=""A"" />
-
-<BitOtpInput Label=""Upper case letters, typed in any case"" Length=""4"" Pattern=""^[A-Z]$"" Placeholder=""A"" Uppercase />
-
-<BitOtpInput Label=""Lower case letters, typed in any case"" Length=""4"" Pattern=""^[a-z]$"" Placeholder=""a"" Lowercase />";
-
-    private readonly string example6RazorCode = @"
-<BitOtpInput Label=""Single character"" Placeholder=""•"" />
-
-<BitOtpInput Label=""One character per input"" Length=""6"" Placeholder=""123456"" />";
-
-    private readonly string example7RazorCode = @"
-<BitOtpInput Label=""Dash"" Length=""6"" Separator=""-"" />
-
-<BitOtpInput Label=""Dot"" Length=""6"" Separator=""•"" Type=""BitInputType.Number"" />
-
-<BitOtpInput Label=""Grouped by 3"" Length=""6"" Separator=""-"" SeparatorInterval=""3"" />
-
-<BitOtpInput Label=""Grouped by 4"" Length=""8"" Separator=""—"" SeparatorInterval=""4"" Type=""BitInputType.Number"" />
-
-<BitOtpInput Label=""Icon separator"" Length=""6"" SeparatorInterval=""3"" Type=""BitInputType.Number"">
-    <SeparatorTemplate>
-        <BitIcon IconName=""@BitIconName.Remove"" />
-    </SeparatorTemplate>
-</BitOtpInput>";
-
-    private readonly string example8RazorCode = @"
-<BitOtpInput Label=""Default"" />
-<BitOtpInput Label=""Reversed"" Reversed />
-<BitOtpInput Label=""Vertical"" Vertical />
-<BitOtpInput Label=""Reversed Vertical"" Vertical Reversed />";
-
-    private readonly string example9RazorCode = @"
-<BitOtpInput Label=""Merged"" Length=""6"" Merged Type=""BitInputType.Number"" />
-
-<BitOtpInput Label=""Merged, grouped by 3"" Length=""6"" Merged Separator=""-"" SeparatorInterval=""3""
-             Type=""BitInputType.Number"" />
-
-<BitOtpInput Label=""Merged, filled"" Length=""6"" Merged Variant=""BitVariant.Fill""
-             Type=""BitInputType.Number"" DefaultValue=""123456"" />
-
-<BitOtpInput Label=""Merged, underlined"" Length=""6"" Merged Variant=""BitVariant.Text""
-             Type=""BitInputType.Number"" />
-
-<BitOtpInput Label=""Merged, vertical"" Length=""4"" Merged Vertical Type=""BitInputType.Number"" />
-
-<BitOtpInput Label=""Merged, reversed"" Length=""4"" Merged Reversed Type=""BitInputType.Number"" />";
-
-    private readonly string example10RazorCode = @"
-<BitOtpInput Label=""Verification code"" Length=""6"" />
-
-<BitOtpInput AriaLabel=""Enter the 6 digit code sent to your phone"" Length=""6"" />
-
-<BitOtpInput Label=""Localized announcement"" Length=""6"" InputAriaLabelFormat=""رقم {0} از {1}"" />
-
-<BitOtpInput Label=""Single tab stop"" Length=""6"" SingleTabStop />
-
-<BitOtpInput Label=""Described group"" Length=""6""
-             Description=""Enter the code from the text message we sent to +1 555 0100."" />";
-
-    private readonly string example11RazorCode = @"
-<BitOtpInput Label=""Paste a code"" Length=""6"" Type=""BitInputType.Number"" @bind-Value=""pasteValue"" />
-<div>Value: @pasteValue</div>
-
-<BitOtpInput Label=""Alphanumeric, pulled out of the message"" Length=""6"" Uppercase
-             PasteTransformer=""@(v => Regex.Match(v, ""[A-Za-z0-9]{6}"").Value)""
-             @bind-Value=""transformedPasteValue"" />
-<div>Value: @transformedPasteValue</div>
-
-<BitOtpInput Label=""Without the SMS auto fill"" Length=""6"" NoSmsAutoFill />";
-    private readonly string example11CsharpCode = @"
-private string? pasteValue;
-private string? transformedPasteValue;";
-
-    private readonly string example12RazorCode = @"
-<BitOtpInput Label=""One-way"" Value=""@oneWayValue"" />
-<BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
-
-<BitOtpInput Label=""Two-way"" @bind-Value=""twoWayValue"" />
-<BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />";
-    private readonly string example12CsharpCode = @"
-private string? oneWayValue;
-private string? twoWayValue;";
-
-    private readonly string example13RazorCode = @"
-<BitOtpInput Label=""OnChange"" OnChange=""v => onChangeValue = v"" />
-<div>OnChange value: @onChangeValue</div>
-
-<BitOtpInput Label=""OnFill"" OnFill=""v => onFillValue = v"" />
-<div>OnFill value: @onFillValue</div>
-
-<BitOtpInput Label=""OnInvalid (digits only)"" Type=""BitInputType.Number"" OnInvalid=""args => onInvalidArgs = args"" />
-<div>Rejected: @onInvalidArgs?.Value</div>
-<div>Input index: @onInvalidArgs?.Index</div>
-
-<BitOtpInput Label=""OnFocusIn"" OnFocusIn=""args => onFocusInArgs = args"" />
-<div>Focus type: @onFocusInArgs?.Event.Type</div>
-<div>Input index: @onFocusInArgs?.Index</div>
-
-<BitOtpInput Label=""OnFocusOut"" OnFocusOut=""args => onFocusOutArgs = args"" />
-<div>Focus type: @onFocusOutArgs?.Event.Type</div>
-<div>Input index: @onFocusOutArgs?.Index</div>
-
-<BitOtpInput Label=""OnInput"" OnInput=""args => onInputArgs = args"" />
-<div>Value: @onInputArgs?.Event.Value</div>
-<div>Input index: @onInputArgs?.Index</div>
-
-<BitOtpInput Label=""OnKeyDown"" OnKeyDown=""args => onKeyDownArgs = args"" />
-<div>Key & Code: [@onKeyDownArgs?.Event.Key] [@onKeyDownArgs?.Event.Code]</div>
-<div>Input index: @onKeyDownArgs?.Index</div>
-
-<BitOtpInput Label=""OnPaste"" OnPaste=""args => onPasteArgs = args"" />
-<div>Focus type: @onPasteArgs?.Event.Type</div>
-<div>Input index: @onPasteArgs?.Index</div>";
-    private readonly string example13CsharpCode = @"
-private string? onChangeValue;
-private string? onFillValue;
-private (string Value, int Index)? onInvalidArgs;
-private (FocusEventArgs Event, int Index)? onFocusInArgs;
-private (FocusEventArgs Event, int Index)? onFocusOutArgs;
-private (ChangeEventArgs Event, int Index)? onInputArgs;
-private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
-private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
-
-    private readonly string example14RazorCode = @"
-<BitOtpInput @ref=""apiOtpInput"" Label=""OTP"" Length=""6"" DefaultValue=""123456"" />
-
-<BitStack Horizontal FitWidth Gap=""0.5rem"" Wrap>
-    <BitButton OnClick=""() => apiOtpInput?.FocusAsync(0)"">Focus first</BitButton>
-    <BitButton OnClick=""() => apiOtpInput?.FocusAsync(5)"">Focus last</BitButton>
-    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => apiOtpInput?.BlurAsync()"">Blur</BitButton>
-    <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleClearClick"">Clear</BitButton>
-</BitStack>";
-    private readonly string example14CsharpCode = @"
-private BitOtpInput? apiOtpInput;
-
-private async Task HandleClearClick()
-{
-    if (apiOtpInput is null) return;
-
-    await apiOtpInput.Clear();
-    await apiOtpInput.FocusAsync();
-}";
-
-    private readonly string example15RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-        font-size: 0.75rem;
-    }
-</style>
-
-<EditForm Model=""validationOtpInputModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-    <DataAnnotationsValidator />
-
-    <BitOtpInput Length=""6"" @bind-Value=""validationOtpInputModel.OtpValue"" />
-    <ValidationMessage For=""() => validationOtpInputModel.OtpValue"" />
-
-    <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example15CsharpCode = @"
-public class ValidationOtpInputModel
-{
-    [Required(ErrorMessage = ""The OTP value is required."")]
-    [MinLength(6, ErrorMessage = ""Minimum length is 6."")]
-    public string OtpValue { get; set; }
-}
-
-private ValidationOtpInputModel validationOtpInputModel = new();
-
-private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
-
-    private readonly string example16RazorCode = @"
-<BitOtpInput @ref=""invalidOtpInput"" Label=""Verification code"" Length=""6""
-             Type=""BitInputType.Number""
-             Invalid=""invalidState""
-             Description=""@invalidDescription""
-             OnFill=""HandleInvalidDemoFill"" />
-
-<BitStack Horizontal FitWidth Gap=""0.5rem"">
-    <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleInvalidDemoRetry"">Clear & retry</BitButton>
-</BitStack>";
-    private readonly string example16CsharpCode = @"
-private bool invalidState;
-private BitOtpInput? invalidOtpInput;
-private string invalidDescription = ""Enter the 6 digit code we sent you. Try 123456."";
-
-private void HandleInvalidDemoFill(string? value)
-{
-    // Only the server that issued the code knows whether it is the right one, so the error state is
-    // set from the answer it gives rather than from a validator, and the answer itself goes into the
-    // description, which the group of the inputs is described by.
-    invalidState = value != ""123456"";
-
-    invalidDescription = invalidState
-        ? ""That code is not correct or has expired. Try 123456.""
-        : ""That code is correct."";
-}
-
-private async Task HandleInvalidDemoRetry()
-{
-    invalidState = false;
-    invalidDescription = ""Enter the 6 digit code we sent you. Try 123456."";
-
-    if (invalidOtpInput is null) return;
-
-    await invalidOtpInput.Clear();
-    await invalidOtpInput.FocusAsync();
-}";
-
-    private readonly string example17RazorCode = @"
-<BitOtpInput @ref=""loadingOtpInput"" Label=""Verification code"" Length=""6""
-             Type=""BitInputType.Number""
-             Invalid=""loadingInvalid""
-             IsLoading=""isLoading""
-             Description=""@loadingDescription""
-             OnFill=""HandleLoadingDemoFill"" />
-
-<BitStack Horizontal FitWidth Gap=""0.5rem"">
-    <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleLoadingDemoRetry"">Clear & retry</BitButton>
-</BitStack>";
-    private readonly string example17CsharpCode = @"
-private bool isLoading;
-private bool loadingInvalid;
-private BitOtpInput? loadingOtpInput;
-private string loadingDescription = ""Enter the 6 digit code we sent you. Try 123456."";
-
-private async Task HandleLoadingDemoFill(string? value)
-{
-    // The code is on its way to the server, which is what the component says while the answer is
-    // awaited: the boxes are held still and the wait is announced along with the group.
-    isLoading = true;
-    loadingInvalid = false;
-    loadingDescription = ""Checking the code…"";
-
-    await Task.Delay(2000);
-
-    isLoading = false;
-    loadingInvalid = value != ""123456"";
-
-    loadingDescription = loadingInvalid
-        ? ""That code is not correct or has expired. Try 123456.""
-        : ""That code is correct."";
-}
-
-private async Task HandleLoadingDemoRetry()
-{
-    isLoading = false;
-    loadingInvalid = false;
-    loadingDescription = ""Enter the 6 digit code we sent you. Try 123456."";
-
-    if (loadingOtpInput is null) return;
-
-    await loadingOtpInput.Clear();
-    await loadingOtpInput.FocusAsync();
-}";
-
-    private readonly string example18RazorCode = @"
-<BitOtpInput Label=""Fill"" Variant=""BitVariant.Fill"" DefaultValue=""12345"" />
-<BitOtpInput Label=""Outline"" Variant=""BitVariant.Outline"" DefaultValue=""12345"" />
-<BitOtpInput Label=""Text"" Variant=""BitVariant.Text"" DefaultValue=""12345"" />";
-
-    private readonly string example19RazorCode = @"
-<BitOtpInput Label=""Primary"" Accent=""BitColor.Primary"" />
-<BitOtpInput Label=""Secondary"" Accent=""BitColor.Secondary"" />
-<BitOtpInput Label=""Tertiary"" Accent=""BitColor.Tertiary"" />
-<BitOtpInput Label=""Info"" Accent=""BitColor.Info"" />
-<BitOtpInput Label=""Success"" Accent=""BitColor.Success"" />
-<BitOtpInput Label=""Warning"" Accent=""BitColor.Warning"" />
-<BitOtpInput Label=""SevereWarning"" Accent=""BitColor.SevereWarning"" />
-<BitOtpInput Label=""Error"" Accent=""BitColor.Error"" />";
-
-    private readonly string example20RazorCode = @"
-<BitOtpInput Label=""Small"" Size=""BitSize.Small"" />
-<BitOtpInput Label=""Medium"" Size=""BitSize.Medium"" />
-<BitOtpInput Label=""Large"" Size=""BitSize.Large"" />";
-
-    private readonly string example21RazorCode = @"
-<style>
-    .custom-class {
-        gap: 1rem;
-        margin-inline: 1rem;
-    }
-
-    .custom-class input {
-        border-radius: 0;
-        border-width: 0 0 1px 0;
-        border-color: lightseagreen;
-    }
-
-
-    .custom-root {
-        margin-inline: 1rem;
-    }
-
-    .custom-label {
-        color: tomato;
-        letter-spacing: 0.1rem;
-    }
-
-    .custom-description {
-        color: tomato;
-    }
-
-    .custom-wrapper {
-        gap: 0.25rem;
-    }
-
-    .custom-input {
-        border-radius: 50%;
-        border: 1px solid tomato;
-    }
-
-    .custom-filled {
-        background-color: #fff1ed;
-    }
-
-    .custom-focused {
-        border-color: red;
-        box-shadow: tomato 0 0 1rem;
-    }
-
-    .custom-separator {
-        color: tomato;
-        font-weight: 700;
-    }
-</style>
-
-
-<BitOtpInput Style=""margin-inline: 1rem; box-shadow: aqua 0 0 0.5rem;"" />
-
-<BitOtpInput Class=""custom-class"" />
-
-
-<BitOtpInput Label=""Styles"" Description=""Every part of the component has a slot of its own.""
-             Styles=""@(new() { Root = ""margin-inline: 1rem;"",
-                               Label = ""color: blueviolet; letter-spacing: 0.1rem;"",
-                               Description = ""color: blueviolet;"",
-                               InputsWrapper = ""gap: 0.25rem;"",
-                               Input = ""border-color: blueviolet;"",
-                               Filled = ""background-color: #f3e8ff;"",
-                               Focused = ""box-shadow: blueviolet 0 0 1rem;"" })"" />
-
-<BitOtpInput Label=""Classes"" Length=""6"" Separator=""-""
-             Description=""Every part of the component has a slot of its own.""
-             Classes=""@(new() { Root = ""custom-root"",
-                                Label = ""custom-label"",
-                                Description = ""custom-description"",
-                                InputsWrapper = ""custom-wrapper"",
-                                Input = ""custom-input"",
-                                Filled = ""custom-filled"",
-                                Focused = ""custom-focused"",
-                                Separator = ""custom-separator"" })"" />";
-
-    private readonly string example22RazorCode = @"
-<BitOtpInput Label=""پیش‌فرض"" Dir=""BitDir.Rtl"" />
-<BitOtpInput Label=""معکوس"" Reversed Dir=""BitDir.Rtl"" />
-<BitOtpInput Label=""جداکننده"" Length=""6"" Separator=""-"" Dir=""BitDir.Rtl"" />";
 }

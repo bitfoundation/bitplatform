@@ -13,6 +13,20 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "AutoApply",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether every pick is applied to the value as it is made. Turning it off makes the callout a transaction: it renders a Cancel and an Apply button and rolls the range back unless Apply commits it. It has no effect on a Standalone picker and it overrides AutoClose.",
+        },
+        new()
+        {
+            Name = "ApplyButtonText",
+            Type = "string",
+            DefaultValue = "Apply",
+            Description = "The text of the button that commits the picked range, rendered while AutoApply is off.",
+        },
+        new()
+        {
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "true",
@@ -24,6 +38,13 @@ public partial class BitDateRangePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the input of the picker gets the focus as soon as it renders for the first time. A standalone picker carries its value in a hidden input nobody is meant to land on, so it has nothing to place the focus on.",
+        },
+        new()
+        {
+            Name = "CancelButtonText",
+            Type = "string",
+            DefaultValue = "Cancel",
+            Description = "The text of the button that discards the picked range, rendered while AutoApply is off.",
         },
         new()
         {
@@ -179,6 +200,20 @@ public partial class BitDateRangePickerDemo
             Type = "IEnumerable<DayOfWeek>?",
             DefaultValue = "null",
             Description = "The days of the week that are disabled (not selectable) in the DateRangePicker (e.g. weekends)."
+        },
+        new()
+        {
+            Name = "DisabledDateErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a typed range that lands on a day blocked by DisabledDates, DisabledDaysOfWeek or IsDateDisabled, told apart from a range that merely breaks the bounds.",
+        },
+        new()
+        {
+            Name = "DropDirection",
+            Type = "BitDropDirection",
+            DefaultValue = "BitDropDirection.TopAndBottom",
+            Description = "Determines the allowed drop directions of the callout.",
         },
         new()
         {
@@ -395,6 +430,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "HighlightToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the day picker highlights today's cell. It only affects the paint: the cell still reports itself as the current date to assistive technologies.",
+        },
+        new()
+        {
             Name = "HighlightedDates",
             Type = "IEnumerable<DateTimeOffset>?",
             DefaultValue = "null",
@@ -523,7 +565,7 @@ public partial class BitDateRangePickerDemo
             Name = "MaxRange",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "The maximum range of day and times allowed for selection in DateRangePicker.",
+            Description = "The longest span the selected range is allowed to cover. The day grid is bounded by it in whole days, equally far either side of the picked start date, and the time picker refuses a time that would push the span past it - so a MaxRange shorter than a day leaves the day the range started on as the only one it can end on.",
         },
         new()
         {
@@ -624,6 +666,20 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "OnApply",
+            Type = "EventCallback<BitDateRangePickerValue?>",
+            DefaultValue = "",
+            Description = "The callback for when the picked range is committed by the Apply button of a picker that does not AutoApply.",
+        },
+        new()
+        {
+            Name = "OnCancel",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The callback for when the picked range is discarded by the Cancel button of a picker that does not AutoApply. A callout dismissed any other way rolls the range back just the same, but reports itself through OnClose alone.",
+        },
+        new()
+        {
             Name = "OnClear",
             Type = "EventCallback",
             Description = "Callback for when the value is cleared using the clear button.",
@@ -684,6 +740,13 @@ public partial class BitDateRangePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the previous and next navigation buttons move the calendar by all of its rendered months instead of one, so consecutive pages of a multi-month calendar never overlap. It has no effect when MonthCount renders a single month.",
+        },
+        new()
+        {
+            Name = "OnSelectDate",
+            Type = "EventCallback<BitDateRangePickerValue?>",
+            DefaultValue = "",
+            Description = "The callback for when the user picks a day in the calendar, reporting the range as it stands after the pick - so a range with only its start date set, while the second day is still to be chosen, is reported too.",
         },
         new()
         {
@@ -872,6 +935,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label. The callout takes the size with it.",
+        },
+        new()
+        {
             Name = "StartTimeDecreaseHourIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -1031,6 +1101,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "WeekNumbersHeaderTitle",
+            Type = "string",
+            DefaultValue = "Week",
+            Description = "The accessible name of the empty header cell above the week numbers column.",
+        },
+        new()
+        {
             Name = "WeekNumberTitle",
             Type = "string",
             DefaultValue = "Week number {0}",
@@ -1056,6 +1133,256 @@ public partial class BitDateRangePickerDemo
             Type = "string",
             DefaultValue = "{0} - {1}, change month",
             Description = "The title of the year range picker's toggle (tooltip).",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-DateRangePicker-color",
+            DefaultValue = "The Color role's main color",
+            Description = "The accent: the two ends of the selected range, today's cell, the selected preset, the active AM/PM button and the border of the field while the calendar is open.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-text-color",
+            DefaultValue = "The Color role's on color",
+            Description = "Foreground of whatever the accent fills.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-hover-color",
+            DefaultValue = "The Color role's hover color",
+            Description = "The accent while hovered.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-active-color",
+            DefaultValue = "The Color role's active color",
+            Description = "The accent while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-range-background",
+            DefaultValue = "The Color role's light color",
+            Description = "Background of the days between the two ends of the selected range.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-preview-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the range previewed while the pointer moves over the grid with only the start date picked.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the focus ring, around the field and around every cell and button of the calendar. An invalid value overrides it with the error focus color, so the field never shows two states at once.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-invalid-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Border and underline of the field while the value is invalid.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "Color of the asterisk after a required label.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text and glyphs of every disabled part, in the field and in the calendar alike.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-input-height",
+            DefaultValue = "Per Size, --bit-siz-ctrl-sm/md/lg",
+            Description = "Height of the field.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-input-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the field.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-input-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the field.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-input-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the field.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-input-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Border of the field, and its underline in the Underlined variant.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-input-border-width",
+            DefaultValue = "--bit-shp-border-width",
+            Description = "Border stroke of the field.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-input-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the field.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-icon-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the calendar glyph inside the field.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the label.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-label-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the label.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the label.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-callout-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the calendar surface.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-callout-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-callout-shadow",
+            DefaultValue = "--bit-shd-popup",
+            Description = "Elevation of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-calendar-padding",
+            DefaultValue = "12px",
+            Description = "Padding around each pane of the callout: a month, the month/year picker and the presets column.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-day-size",
+            DefaultValue = "Per Size, 24/28/34px",
+            Description = "Width and height of a day cell. The week numbers and the navigation buttons track it, so the whole calendar scales with this one value.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-day-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of a day cell and of the weekday initials above it.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-day-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of a day cell.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-day-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of a day cell.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-day-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a hovered day and of a hovered navigation button.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-today-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of today's cell, which is a circle by default while the other days take the day radius.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-range-radius",
+            DefaultValue = "--bit-shp-radius-lg",
+            Description = "Corner radius at the two ends of the selected range, which is what gives the range its pill shape. A range of a single day takes it on all four corners.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-outside-day-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the days of the adjacent months rendered by ShowOutsideDays.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-highlighted-background",
+            DefaultValue = "--bit-clr-bg-ter",
+            Description = "Background of a day listed in HighlightedDates.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-week-day-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the row of weekday initials.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-week-number-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the week number column.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-week-number-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the week number column.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-header-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the month and year titles above the grids.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-divider-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of the rules between the panes of the callout and beside the week numbers.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-presets-width",
+            DefaultValue = "112px",
+            Description = "Width of the presets column.",
+        },
+        new()
+        {
+            Name = "--bit-DateRangePicker-presets-max-height",
+            DefaultValue = "320px",
+            Description = "Height the presets column scrolls in before it starts scrolling.",
         },
     ];
 
@@ -1157,6 +1484,27 @@ public partial class BitDateRangePickerDemo
                 },
                 new()
                 {
+                    Name = "ActionsContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the actions row the Apply and Cancel buttons of a picker that does not AutoApply are laid out in."
+                },
+                new()
+                {
+                    Name = "ApplyButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Apply button of a picker that does not AutoApply."
+                },
+                new()
+                {
+                    Name = "CancelButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Cancel button of a picker that does not AutoApply."
+                },
+                new()
+                {
                     Name = "Focused",
                     Type = "string?",
                     DefaultValue = "null",
@@ -1223,7 +1571,7 @@ public partial class BitDateRangePickerDemo
                     Name = "Callout",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the callout of the BitDateRangePicker."
+                    Description = "Custom CSS classes/styles for the callout of the BitDateRangePicker. Applied after the --bit-DateRangePicker-* variables copied from Style and Styles.Root, so it wins over them."
                 },
                 new()
                 {
@@ -2106,6 +2454,72 @@ public partial class BitDateRangePickerDemo
         EndDate = new DateTimeOffset(2024, 12, 12, 16, 45, 0, DateTimeOffset.Now.Offset),
     };
 
+    private bool isOpen;
+    private BitDateRangePickerValue? isOpenValue;
+    private BitDateRangePicker? calloutPicker;
+
+    private async Task OpenFromCode()
+    {
+        if (calloutPicker is not null)
+        {
+            await calloutPicker.OpenCallout();
+        }
+    }
+
+    private async Task CloseFromCode()
+    {
+        if (calloutPicker is not null)
+        {
+            await calloutPicker.CloseCallout();
+        }
+    }
+
+    private string? applyOutcome;
+    private BitDateRangePickerValue? applyValue;
+
     private BitDateRangePickerValue? timeZoneDateRange1 = new();
     private BitDateRangePickerValue? timeZoneDateRange2 = new();
+
+    private BitDateRangePickerValue? eventsValue;
+    private readonly List<string> eventLog = [];
+
+    private void Log(string message)
+    {
+        eventLog.Insert(0, message);
+
+        if (eventLog.Count > 8)
+        {
+            eventLog.RemoveAt(eventLog.Count - 1);
+        }
+    }
+
+    private static string Fmt(BitDateRangePickerValue? value)
+    {
+        return $"{value?.StartDate?.ToString("d") ?? "-"} to {value?.EndDate?.ToString("d") ?? "-"}";
+    }
+
+    private void LogSelectDate(BitDateRangePickerValue? value) => Log($"OnSelectDate: {Fmt(value)}");
+    private void LogChange(BitDateRangePickerValue? value) => Log($"OnChange: {Fmt(value)}");
+    private void LogMonthChange(DateTimeOffset date) => Log($"OnMonthChange: {date:yyyy/MM}");
+    private void LogClear() => Log("OnClear");
+    private void LogOpen() => Log("OnOpen");
+    private void LogClose() => Log("OnClose");
+
+    private readonly IBitComponentParams[] dateRangePickerParams =
+    [
+        new BitDateRangePickerParams
+        {
+            MonthCount = 2,
+            ShowClearButton = true,
+            FirstDayOfWeek = DayOfWeek.Monday,
+            MinDate = DateTimeOffset.Now.Date,
+            MaxRange = TimeSpan.FromDays(30),
+            Placeholder = "Pick your dates",
+            Presets =
+            [
+                new() { Text = "Next 7 days", ValueProvider = () => new() { StartDate = DateTimeOffset.Now.Date, EndDate = DateTimeOffset.Now.Date.AddDays(6) } },
+                new() { Text = "Next 14 days", ValueProvider = () => new() { StartDate = DateTimeOffset.Now.Date, EndDate = DateTimeOffset.Now.Date.AddDays(13) } },
+            ]
+        }
+    ];
 }
