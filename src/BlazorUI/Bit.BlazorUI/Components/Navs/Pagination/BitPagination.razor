@@ -14,7 +14,9 @@
    links rather than in buttons. The two forms are written out side by side rather than folded into one
    dynamic tag: which one is rendered follows from GetPageHref alone, so a control never swaps its markup
    while the selection moves. A link with no page to reach carries no href, and reports aria-disabled in
-   place of the disabled attribute an anchor has no use for. A click carrying a modifier opens the address
+   place of the disabled attribute an anchor has no use for. An anchor without an href is no longer a link
+   but a generic element, which may neither be named nor disabled, so it states the link role itself: an
+   icon-only "Previous page" at the first page would otherwise be announced as nothing at all. A click carrying a modifier opens the address
    somewhere else, so it leaves the selection of this pagination alone. *@
 @* The aria-label sits before the attribute splatting so that an aria-label passed as a plain attribute
    still wins over the default name of the landmark, while the id, the style, the class and the dir stay
@@ -81,6 +83,7 @@
                         <a @ref="_firstButtonRef"
                            @onclick="@(e => ChangePageFromLink(e, FocusTarget.First, 1))"
                            href="@firstHref"
+                           role="@(firstHref is null ? "link" : null)"
                            title="@(FirstButtonText.HasValue() ? null : FirstButtonAriaLabel)"
                            aria-label="@FirstButtonAriaLabel"
                            aria-disabled="@(firstHref is null ? "true" : null)"
@@ -124,6 +127,7 @@
                         <a @ref="_previousButtonRef"
                            @onclick="@(e => ChangePageFromLink(e, FocusTarget.Previous, _PreviousPage))"
                            href="@previousHref"
+                           role="@(previousHref is null ? "link" : null)"
                            rel="@(previousHref is null ? null : "prev")"
                            title="@(PreviousButtonText.HasValue() ? null : PreviousButtonAriaLabel)"
                            aria-label="@PreviousButtonAriaLabel"
@@ -187,6 +191,7 @@
                                     var ellipsisHref = GetHref(ellipsisPage, IsEnabled is false);
                                     <a @onclick="@(e => ChangePageFromLink(e, FocusTarget.Ellipsis, ellipsisPage))"
                                        href="@ellipsisHref"
+                                       role="@(ellipsisHref is null ? "link" : null)"
                                        title="@EllipsisAriaLabel"
                                        aria-label="@EllipsisAriaLabel"
                                        aria-disabled="@(ellipsisHref is null ? "true" : null)"
@@ -221,6 +226,7 @@
                                 <a @ref="_pageRefs[pageNumber]"
                                    @onclick="@(e => ChangePageFromLink(e, pageNumber))"
                                    href="@pageHref"
+                                   role="@(pageHref is null ? "link" : null)"
                                    aria-current="@(isSelected ? "page" : null)"
                                    aria-disabled="@(pageHref is null ? "true" : null)"
                                    aria-label="@GetPageLabel(pageNumber, isSelected)"
@@ -258,6 +264,7 @@
                         <a @ref="_nextButtonRef"
                            @onclick="@(e => ChangePageFromLink(e, FocusTarget.Next, _NextPage))"
                            href="@nextHref"
+                           role="@(nextHref is null ? "link" : null)"
                            rel="@(nextHref is null ? null : "next")"
                            title="@(NextButtonText.HasValue() ? null : NextButtonAriaLabel)"
                            aria-label="@NextButtonAriaLabel"
@@ -302,6 +309,7 @@
                         <a @ref="_lastButtonRef"
                            @onclick="@(e => ChangePageFromLink(e, FocusTarget.Last, _Count))"
                            href="@lastHref"
+                           role="@(lastHref is null ? "link" : null)"
                            title="@(LastButtonText.HasValue() ? null : LastButtonAriaLabel)"
                            aria-label="@LastButtonAriaLabel"
                            aria-disabled="@(lastHref is null ? "true" : null)"

@@ -1,0 +1,74 @@
+﻿@* Covers BitPaginationParams: the cascaded values fill in the parameters the pagination did not set itself, and
+   never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitPaginationParams[]
+                         {
+                             new()
+                             {
+                                 Alignment = BitAlignment.Center,
+                                 BoundaryCount = 1,
+                                 MiddleCount = 1,
+                                 ClickableEllipsis = true,
+                                 Color = BitColor.Error,
+                                 EllipsisAriaLabel = "Más páginas",
+                                 EllipsisText = "…",
+                                 FirstButtonAriaLabel = "Primera",
+                                 FirstButtonIconName = "Home",
+                                 FirstButtonText = "Inicio",
+                                 GetPageAriaLabel = (page, _) => $"Página {page}",
+                                 GetPageHref = page => $"?p={page}",
+                                 GetSummary = (page, count) => $"{page} de {count}",
+                                 GoToPageAriaLabel = "Ir a la página",
+                                 GoToPageText = "Ir",
+                                 LastButtonAriaLabel = "Última",
+                                 LastButtonText = "Fin",
+                                 Loop = true,
+                                 NextButtonAriaLabel = "Siguiente",
+                                 NextButtonText = "Sig",
+                                 PreviousButtonAriaLabel = "Anterior",
+                                 PreviousButtonText = "Ant",
+                                 Rounded = true,
+                                 ShowFirstButton = true,
+                                 ShowGoToPage = true,
+                                 ShowLastButton = true,
+                                 ShowSummary = true,
+                                 Size = BitSize.Large,
+                                 Variant = BitVariant.Outline,
+                                 Class = "cascaded",
+                                 Classes = new() { Button = "cascaded-button" },
+                                 Styles = new() { Root = "margin:1px" },
+                             }
+                         })">
+    <BitPagination Count="20" DefaultSelectedPage="10" />
+    <BitPagination Count="20"
+                   DefaultSelectedPage="10"
+                   Color="BitColor.Success"
+                   Size="BitSize.Small"
+                   Variant="BitVariant.Text"
+                   Rounded="false"
+                   ShowSummary="false"
+                   NextButtonAriaLabel="Own next"
+                   Class="own" />
+</BitParams>
+
+@* The page sizes are read while the pagination initializes, so the range the default selection is clamped into
+   already follows the cascaded ones; an empty label is a value of its own and drops the visible text. *@
+
+<BitParams Parameters="@(new BitPaginationParams[]
+                         {
+                             new()
+                             {
+                                 PageSizeOptions = [20, 40],
+                                 PageSizeText = "",
+                                 PageSizeAriaLabel = "Elementos por página",
+                                 ShowPageSizeSelector = true,
+                                 ShowPageButtons = false,
+                                 ShowNextButton = false,
+                                 ShowPreviousButton = false,
+                                 HideOnSinglePage = true,
+                                 Class = "sized",
+                             }
+                         })">
+    <BitPagination TotalItems="100" DefaultSelectedPage="9" ShowSummary />
+    <BitPagination TotalItems="5" />
+</BitParams>

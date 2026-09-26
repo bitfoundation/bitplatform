@@ -1,32 +1,47 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables (read here with a fallback and never declared, so they inherit: set one on
+// :root, on any ancestor, or on the Style of a single pagination):
+//   --bit-Pagination-gap                      room between the controls                          (default: spacing(0.5))
+//   --bit-Pagination-color                    text of the summary, the labels and the ellipsis   (default: inherited)
+//   --bit-Pagination-font-size                text size                                          (default: per Size, $tg-fs-*)
+//   --bit-Pagination-button-size              height and minimum width of a button               (default: per Size, $siz-ctrl-*)
+//   --bit-Pagination-button-radius            corner radius of the buttons and the ellipsis      (default: $shp-radius-control; Rounded wins)
+//   --bit-Pagination-button-border-width      border thickness of the buttons                    (default: $shp-border-width)
+//   --bit-Pagination-button-color             label color of a button at rest                    (default: per Color and Variant)
+//   --bit-Pagination-button-background        fill of a button at rest                           (default: per Color and Variant)
+//   --bit-Pagination-button-border-color      border color of a button at rest                   (default: per Color and Variant)
+//   --bit-Pagination-button-hover-color       label color of a hovered button                    (default: the Color role's on color)
+//   --bit-Pagination-button-hover-background  fill and border of a hovered button                (default: the Color role's hover color)
+//   --bit-Pagination-selected-color           label color of the current page                    (default: the Color role's on color)
+//   --bit-Pagination-selected-background      fill and border of the current page                (default: the Color role's dark color)
+//   --bit-Pagination-selected-font-weight     weight of the number of the current page           (default: $tg-font-weight)
+//   --bit-Pagination-focus-color              keyboard focus ring                                (default: the Color role's focus color)
+//   --bit-Pagination-input-background         fill of the page size select and the jump input    (default: $clr-bg-sec)
+//   --bit-Pagination-input-border-color       border of the page size select and the jump input  (default: $clr-brd-sec)
 .bit-pgn {
     flex-wrap: wrap;
-    gap: spacing(0.5);
     align-items: center;
     display: inline-flex;
-    font-size: var(--bit-pgn-font-size);
+    gap: var(--bit-Pagination-gap, #{spacing(0.5)});
+    color: var(--bit-Pagination-color, inherit);
+    font-size: var(--bit-Pagination-font-size, var(--bit-pgn-font-size));
     justify-content: var(--bit-pgn-justify-content, flex-start);
+    --bit-pgn-btn-size: var(--bit-Pagination-button-size, var(--bit-pgn-size-btn));
+    --bit-pgn-radius: var(--bit-Pagination-button-radius, #{$shp-radius-control});
     --bit-pgn-ico-transform-end: scaleX(1);
     --bit-pgn-ico-transform-start: scaleX(-1);
     --bit-pgn-clr-dis: var(--bit-pgn-clr-dis-bg, #{$clr-bg-dis});
     --bit-pgn-clr-txt-dis: var(--bit-pgn-clr-dis-text, #{$clr-fg-dis});
     --bit-pgn-clr-btn-txt-hover: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-bg-hover: var(--bit-pgn-clr-hover);
-    --bit-pgn-clr-btn-brd-hover: var(--bit-pgn-clr-hover);
     --bit-pgn-clr-btn-txt-active: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-bg-active: var(--bit-pgn-clr-active);
-    --bit-pgn-clr-btn-brd-active: var(--bit-pgn-clr-active);
     --bit-pgn-clr-btn-txt-dis: var(--bit-pgn-clr-txt-dis);
     --bit-pgn-clr-btn-sel-txt: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-sel-bg: var(--bit-pgn-clr-sel);
-    --bit-pgn-clr-btn-sel-brd: var(--bit-pgn-clr-sel);
-    --bit-pgn-clr-btn-sel-txt-hover: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-sel-bg-hover: var(--bit-pgn-clr-sel-hover);
-    --bit-pgn-clr-btn-sel-brd-hover: var(--bit-pgn-clr-sel-hover);
-    --bit-pgn-clr-btn-sel-txt-active: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-sel-bg-active: var(--bit-pgn-clr-sel-active);
-    --bit-pgn-clr-btn-sel-brd-active: var(--bit-pgn-clr-sel-active);
 
     &.bit-rtl {
         --bit-pgn-ico-transform-end: scaleX(-1);
@@ -44,6 +59,15 @@
 // controls has nothing to line them up inside of. It follows .bit-pgn so that it wins the display over it.
 .bit-pgn-aln {
     display: flex;
+}
+
+// Rounded is asked for by the instance itself, so it outranks a radius inherited from an ancestor: it follows
+// .bit-pgn, and wins the declaration over it on the same element.
+// The radius is the pill token rather than 50%: a button carrying a text (or a page number wide enough to
+// grow it) is wider than it is tall, where a relative radius would draw an ellipse instead of a pill, and
+// the ellipsis takes it as well, so the gaps keep the outline of the buttons they stand in for.
+.bit-pgn-rnd {
+    --bit-pgn-radius: #{$shp-radius-full};
 }
 
 // The list and its items only carry the semantics of the markup: they are removed from the box tree so the
@@ -76,7 +100,7 @@
     padding: 0 spacing(0.5);
     min-width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-pgn-radius);
 }
 
 // A gap that jumps into the pages it hides is a control, so it drops the surface a button is painted with and
@@ -88,27 +112,28 @@
     font: inherit;
     text-decoration: none;
     border-style: $shp-border-style;
-    border-width: $shp-border-width;
+    border-width: var(--bit-Pagination-button-border-width, #{$shp-border-width});
     border-color: transparent;
     background-color: transparent;
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-pgn-clr-btn-txt-hover);
-            border-color: var(--bit-pgn-clr-btn-brd-hover);
-            background-color: var(--bit-pgn-clr-btn-bg-hover);
+            color: var(--bit-Pagination-button-hover-color, var(--bit-pgn-clr-btn-txt-hover));
+            border-color: var(--bit-Pagination-button-hover-background, var(--bit-pgn-clr-btn-bg-hover));
+            background-color: var(--bit-Pagination-button-hover-background, var(--bit-pgn-clr-btn-bg-hover));
         }
     }
 
     &:active {
         color: var(--bit-pgn-clr-btn-txt-active);
-        border-color: var(--bit-pgn-clr-btn-brd-active);
+        border-color: var(--bit-pgn-clr-btn-bg-active);
         background-color: var(--bit-pgn-clr-btn-bg-active);
     }
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+        @include focus-ring(var(--bit-Pagination-focus-color, var(--bit-pgn-clr-fcs, #{$clr-pri-focus})));
     }
 
     &[disabled],
@@ -152,17 +177,25 @@
     // rather than added on top of it.
     box-sizing: border-box;
     color: $clr-fg-pri;
-    background: $clr-bg-sec;
+    background: var(--bit-Pagination-input-background, #{$clr-bg-sec});
     padding: 0 spacing(0.5);
     height: var(--bit-pgn-btn-size);
     border-style: $shp-border-style;
     border-width: $shp-border-width;
-    border-color: $clr-brd-sec;
+    border-color: var(--bit-Pagination-input-border-color, #{$clr-brd-sec});
     border-radius: $shp-radius-control;
+    transition: border-color $mot-duration-short $mot-easing;
+
+    // The hover darkens the border the way a text input does, which is the cue that the field takes input.
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-Pagination-input-border-color, #{$clr-brd-sec-hover});
+        }
+    }
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+        @include focus-ring(var(--bit-Pagination-focus-color, var(--bit-pgn-clr-fcs, #{$clr-pri-focus})));
     }
 
     &[disabled] {
@@ -219,32 +252,33 @@
     min-width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
     border-style: $shp-border-style;
-    border-width: $shp-border-width;
-    border-radius: $shp-radius-control;
-    color: var(--bit-pgn-clr-btn-txt);
-    border-color: var(--bit-pgn-clr-btn-brd);
-    background-color: var(--bit-pgn-clr-btn-bg);
+    border-width: var(--bit-Pagination-button-border-width, #{$shp-border-width});
+    border-radius: var(--bit-pgn-radius);
+    color: var(--bit-Pagination-button-color, var(--bit-pgn-clr-btn-txt));
+    border-color: var(--bit-Pagination-button-border-color, var(--bit-pgn-clr-btn-brd));
+    background-color: var(--bit-Pagination-button-background, var(--bit-pgn-clr-btn-bg));
 
     // The states below repaint all three, so they animate together from here.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    // The hover paints the border in the color of the fill in every variant, so one variable repaints both.
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-pgn-clr-btn-txt-hover);
-            border-color: var(--bit-pgn-clr-btn-brd-hover);
-            background-color: var(--bit-pgn-clr-btn-bg-hover);
+            color: var(--bit-Pagination-button-hover-color, var(--bit-pgn-clr-btn-txt-hover));
+            border-color: var(--bit-Pagination-button-hover-background, var(--bit-pgn-clr-btn-bg-hover));
+            background-color: var(--bit-Pagination-button-hover-background, var(--bit-pgn-clr-btn-bg-hover));
         }
     }
 
     &:active {
         color: var(--bit-pgn-clr-btn-txt-active);
-        border-color: var(--bit-pgn-clr-btn-brd-active);
+        border-color: var(--bit-pgn-clr-btn-bg-active);
         background-color: var(--bit-pgn-clr-btn-bg-active);
     }
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+        @include focus-ring(var(--bit-Pagination-focus-color, var(--bit-pgn-clr-fcs, #{$clr-pri-focus})));
     }
 
     // A link has no disabled attribute of its own, so a page control it cannot reach reports aria-disabled
@@ -260,42 +294,34 @@
 }
 
 // A navigation button carrying a text is no longer a square: it keeps the height of the others and grows
-// along the text, with the icon and the text sharing the room the way a labelled button does.
+// along the text, with the icon and the text sharing the room the way a labelled button does - padded by
+// the control padding of its size, like one.
 .bit-pgn-lbl {
     gap: spacing(0.5);
-    padding: 0 spacing(1);
+    padding: 0 var(--bit-pgn-pad-x);
 }
 
+// The current page paints its border in the color of its fill in every variant, so one variable repaints both.
+// A current page painted through its own variables keeps them under the pointer and the press as well: it is
+// not a target worth a hover cue, and one falling back to the role color would undo the custom paint.
 .bit-pgn-sel {
-    color: var(--bit-pgn-clr-btn-sel-txt);
-    border-color: var(--bit-pgn-clr-btn-sel-brd);
-    background-color: var(--bit-pgn-clr-btn-sel-bg);
+    font-weight: var(--bit-Pagination-selected-font-weight, #{$tg-font-weight});
+    color: var(--bit-Pagination-selected-color, var(--bit-pgn-clr-btn-sel-txt));
+    border-color: var(--bit-Pagination-selected-background, var(--bit-pgn-clr-btn-sel-bg));
+    background-color: var(--bit-Pagination-selected-background, var(--bit-pgn-clr-btn-sel-bg));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-pgn-clr-btn-sel-txt-hover);
-            border-color: var(--bit-pgn-clr-btn-sel-brd-hover);
-            background-color: var(--bit-pgn-clr-btn-sel-bg-hover);
+            color: var(--bit-Pagination-selected-color, var(--bit-pgn-clr-btn-sel-txt));
+            border-color: var(--bit-Pagination-selected-background, var(--bit-pgn-clr-btn-sel-bg-hover));
+            background-color: var(--bit-Pagination-selected-background, var(--bit-pgn-clr-btn-sel-bg-hover));
         }
     }
 
     &:active {
-        color: var(--bit-pgn-clr-btn-sel-txt-active);
-        border-color: var(--bit-pgn-clr-btn-sel-brd-active);
-        background-color: var(--bit-pgn-clr-btn-sel-bg-active);
-    }
-}
-
-
-// The pill shape applies to the ellipsis as well, so the gaps keep the outline of the buttons they stand
-// in for instead of breaking the row with a square.
-// The radius is the pill token rather than 50%: a button carrying a text (or a page number wide enough to
-// grow it) is wider than it is tall, where a relative radius would draw an ellipse instead of a pill, and
-// the token stays a pill at any height the theme or the consumer gives the button.
-.bit-pgn-rnd {
-    .bit-pgn-btn,
-    .bit-pgn-elp {
-        border-radius: $shp-radius-full;
+        color: var(--bit-Pagination-selected-color, var(--bit-pgn-clr-btn-sel-txt));
+        border-color: var(--bit-Pagination-selected-background, var(--bit-pgn-clr-btn-sel-bg-active));
+        background-color: var(--bit-Pagination-selected-background, var(--bit-pgn-clr-btn-sel-bg-active));
     }
 }
 
@@ -364,16 +390,19 @@
 
 
 .bit-pgn-sm {
-    --bit-pgn-btn-size: #{$siz-ctrl-sm};
+    --bit-pgn-size-btn: #{$siz-ctrl-sm};
     --bit-pgn-font-size: #{$tg-fs-xs};
+    --bit-pgn-pad-x: #{$siz-ctrl-pad-x-sm};
 }
 
 .bit-pgn-md {
-    --bit-pgn-btn-size: #{$siz-ctrl-md};
+    --bit-pgn-size-btn: #{$siz-ctrl-md};
     --bit-pgn-font-size: #{$tg-fs-sm};
+    --bit-pgn-pad-x: #{$siz-ctrl-pad-x-md};
 }
 
 .bit-pgn-lg {
-    --bit-pgn-btn-size: #{$siz-ctrl-lg};
+    --bit-pgn-size-btn: #{$siz-ctrl-lg};
     --bit-pgn-font-size: #{$tg-fs-md};
+    --bit-pgn-pad-x: #{$siz-ctrl-pad-x-lg};
 }

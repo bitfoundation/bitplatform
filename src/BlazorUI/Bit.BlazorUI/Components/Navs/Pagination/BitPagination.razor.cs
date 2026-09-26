@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -19,6 +20,10 @@ namespace Bit.BlazorUI;
 /// The range of pages is either given as a <see cref="Count"/> or worked out from <see cref="TotalItems"/> and
 /// <see cref="PageSize"/>. The second is the form to reach for whenever the size of the result set is known,
 /// since the range then follows the page size on its own.
+/// <br />
+/// Its look is themeable through the public --bit-Pagination-* CSS variables, which inherit, and a
+/// <see cref="BitPaginationParams"/> inside a <see cref="BitParams"/> sets the defaults (the texts and labels of a
+/// localized app included) of every pagination under it.
 /// </remarks>
 public partial class BitPagination : BitComponentBase
 {
@@ -120,6 +125,20 @@ public partial class BitPagination : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the pagination component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings (the texts and labels of a localized app
+    /// included) to be applied to multiple pagination components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPaginationParams.ParamName)]
+    public BitPaginationParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// The horizontal alignment of the pagination inside the room it is given.
     /// </summary>
     /// <remarks>
@@ -148,7 +167,8 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the pagination.
     /// </summary>
-    [Parameter] public BitPaginationClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitPaginationClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Turns every ellipsis into a control that jumps into the middle of the pages it collapses.
@@ -540,10 +560,15 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public string? PreviousButtonText { get; set; }
 
     /// <summary>
-    /// Renders the buttons of the pagination with fully rounded (circular) corners.
+    /// Renders the buttons and the ellipses of the pagination with fully rounded corners: circles, or pills where a
+    /// button is wider than it is tall.
     /// <br />
     /// The default value is <strong>false</strong>.
     /// </summary>
+    /// <remarks>
+    /// It wins over a --bit-Pagination-button-radius inherited from an ancestor, since it is asked for by the
+    /// instance itself.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Rounded { get; set; }
 
@@ -637,7 +662,8 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the pagination.
     /// </summary>
-    [Parameter] public BitPaginationClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitPaginationClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The total number of items the pagination pages through, which the number of pages is worked out from
@@ -761,8 +787,14 @@ public partial class BitPagination : BitComponentBase
         _ => null
     };
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPaginationParams))]
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is applied here as well as in OnParametersSetAsync, because the default selection is settled
+        // while initializing, which is before OnParametersSetAsync has run for the first time, and the range it is
+        // clamped into already follows the page sizes a cascade may be offering.
+        CascadingParameters?.UpdateParameters(this);
+
         // The offered page sizes are needed before the first parameter set is over, since the page size is what
         // the number of pages the default selection is clamped into follows from.
         UpdatePageSizeOptions();
@@ -782,6 +814,8 @@ public partial class BitPagination : BitComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         UpdatePageSizeOptions();
 
         // A page size that the selector cannot report (a value that is not positive) is written back the same
