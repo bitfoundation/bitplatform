@@ -1458,6 +1458,51 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSwiperShouldFireOnReachEndAndStartOnlyOnArrival()
+    {
+        var reachedEnd = 0;
+        var reachedStart = 0;
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.OnReachEnd, () => reachedEnd++);
+            parameters.Add(p => p.OnReachStart, () => reachedStart++);
+        });
+
+        // the place the swiper is first laid out on is not an arrival, even at an end
+        await PushState(component, atStart: false, atEnd: true);
+        Assert.AreEqual(0, reachedEnd);
+
+        await PushState(component, atStart: false, atEnd: false);
+        await PushState(component, atStart: false, atEnd: true);
+        Assert.AreEqual(1, reachedEnd);
+
+        // staying at the end does not fire it again
+        await PushState(component, index: 1, atStart: false, atEnd: true);
+        Assert.AreEqual(1, reachedEnd);
+
+        await PushState(component, atStart: true, atEnd: false);
+        Assert.AreEqual(1, reachedStart);
+
+        // a swiper everything fits in stands at both ends without having gone anywhere
+        await PushState(component, atStart: true, atEnd: true, scrollable: false);
+        Assert.AreEqual(1, reachedEnd);
+        Assert.AreEqual(1, reachedStart);
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldRespectPeek()
+    {
+        var component = RenderComponent<BitSwiper>();
+
+        Assert.IsFalse((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-peek"));
+
+        component.Render(parameters => parameters.Add(p => p.Peek, "2rem"));
+
+        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-peek:2rem"));
+    }
+
+    [TestMethod]
     public async Task BitSwiperShouldDisposeJsInteropOnDispose()
     {
         var component = RenderComponent<BitSwiperTest>();

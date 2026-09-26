@@ -3,6 +3,8 @@
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // swiper and one set on the Style of an instance re-skins that one alone:
 //   --bit-Swiper-gap                         space between the items                        (default: 0, the Gap parameter wins)
+//   --bit-Swiper-peek                        room at both ends the neighboring items peek
+//                                            into                                           (default: 0, the Peek parameter wins)
 //   --bit-Swiper-vertical-height             height of a vertical swiper                    (default: spacing(25))
 //   --bit-Swiper-focus-color                 color of every keyboard focus indicator        (default: $clr-pri-focus / the role's focus color)
 //   --bit-Swiper-button-color                glyph color of the next/prev and play/pause
@@ -51,6 +53,7 @@ $swp-target: 24px;
     --bit-swp-focus-def: #{$clr-pri-focus};
 
     --bit-swp-gap: var(--bit-Swiper-gap, 0px);
+    --bit-swp-peek: var(--bit-Swiper-peek, 0px);
     --bit-swp-focus: var(--bit-Swiper-focus-color, var(--bit-swp-focus-def));
     --bit-swp-dot-size: var(--bit-Swiper-dot-size, var(--bit-swp-dot-size-def));
 
@@ -83,6 +86,13 @@ $swp-target: 24px;
     min-height: 0;
     gap: var(--bit-swp-gap);
     overflow-x: auto;
+
+    // The peek is padding, so the fraction VisibleItemsCount sizes the items with is a fraction of what is
+    // left between the two ends, and scroll padding, so the snapping settles the items against it rather than
+    // against the edge of the box. The browser side reads it back off the box for its own alignment.
+    box-sizing: border-box;
+    padding-inline: var(--bit-swp-peek);
+    scroll-padding-inline: var(--bit-swp-peek);
     overflow-y: hidden;
     overscroll-behavior-x: contain;
     scroll-snap-type: var(--bit-swp-snap, none);
@@ -183,6 +193,10 @@ $swp-target: 24px;
         overflow-y: auto;
         overscroll-behavior-x: auto;
         overscroll-behavior-y: contain;
+        padding-inline: 0;
+        padding-block: var(--bit-swp-peek);
+        scroll-padding-inline: 0;
+        scroll-padding-block: var(--bit-swp-peek);
     }
 }
 

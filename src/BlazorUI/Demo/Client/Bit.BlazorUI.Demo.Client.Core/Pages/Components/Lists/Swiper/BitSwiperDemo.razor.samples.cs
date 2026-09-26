@@ -96,7 +96,7 @@ public partial class BitSwiperDemo
     private readonly string example3RazorCode = cardStyle + @"
 
 
-<BitSwiper VisibleItemsCount=""4"" Gap=""1rem"">
+<BitSwiper VisibleItemsCount=""3"" Gap=""1rem"" Peek=""3rem"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -232,7 +232,31 @@ private async Task GoToStart() => await swiper.GoToStart();
 
 private async Task GoToEnd() => await swiper.GoToEnd();";
 
-    private readonly string example10RazorCode = itemStyle + @"
+    private readonly string example10RazorCode = boxStyle + @"
+
+
+<BitSwiper VisibleItemsCount=""4"" Gap=""0.5rem"" OnReachEnd=""LoadMore"">
+    @for (int i = 1; i <= loadedCount; i++)
+    {
+        var index = i;
+        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
+    }
+</BitSwiper>
+
+<div>Loaded: @loadedCount items</div>";
+    private readonly string example10CsharpCode = @"
+private int loadedCount = 8;
+
+private async Task LoadMore()
+{
+    if (loadedCount >= 40) return;
+
+    await Task.Delay(300); // fetching the next page of items
+
+    loadedCount += 8;
+}";
+
+    private readonly string example11RazorCode = itemStyle + @"
 
 
 <BitSwiper AutoPlay
@@ -259,7 +283,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     }
 </BitSwiper>";
 
-    private readonly string example11RazorCode = cardStyle + @"
+    private readonly string example12RazorCode = cardStyle + @"
 
 
 <BitParams Parameters=""@swiperParams"">
@@ -279,7 +303,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
         }
     </BitSwiper>
 </BitParams>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private readonly BitSwiperParams[] swiperParams =
 [
     new()
@@ -293,7 +317,7 @@ private readonly BitSwiperParams[] swiperParams =
     }
 ];";
 
-    private readonly string example12RazorCode = cardStyle + @"
+    private readonly string example13RazorCode = cardStyle + @"
 
 
 <BitSwiper ShowDots Color=""BitColor.Primary"" VisibleItemsCount=""2"" Gap=""0.5rem"" Snap=""BitSwiperSnap.Start"">
@@ -344,7 +368,7 @@ private readonly BitSwiperParams[] swiperParams =
     }
 </BitSwiper>";
 
-    private readonly string example13RazorCode = itemStyle + @"
+    private readonly string example14RazorCode = itemStyle + @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -373,7 +397,7 @@ private readonly BitSwiperParams[] swiperParams =
     }
 </BitSwiper>";
 
-    private readonly string example14RazorCode = cardStyle + @"
+    private readonly string example15RazorCode = cardStyle + @"
 
 
 <BitSwiper ShowDots Size=""BitSize.Small"" VisibleItemsCount=""2"" Gap=""0.5rem"" Snap=""BitSwiperSnap.Start"">
@@ -400,7 +424,7 @@ private readonly BitSwiperParams[] swiperParams =
     }
 </BitSwiper>";
 
-    private readonly string example15RazorCode = boxStyle + @"
+    private readonly string example16RazorCode = boxStyle + @"
 <style>
     .custom-item {
         border-radius: 0.5rem;
@@ -460,7 +484,7 @@ private readonly BitSwiperParams[] swiperParams =
     </BitSwiper>
 </div>";
 
-    private readonly string example16RazorCode = boxStyle + @"
+    private readonly string example17RazorCode = boxStyle + @"
 
 
 <div dir=""rtl"">

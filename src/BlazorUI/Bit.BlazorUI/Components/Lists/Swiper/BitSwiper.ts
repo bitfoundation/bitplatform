@@ -33,6 +33,11 @@ namespace BitBlazorUI {
         scroll: number;
         viewport: number;
         max: number;
+        // The room kept at the ends of the swiper (its Peek), which the items settle against instead of
+        // against its edges, and the length left between the two, where a whole item is "in view".
+        padStart: number;
+        padEnd: number;
+        span: number;
         positions: number[];
         sizes: number[];
     }
@@ -354,6 +359,18 @@ namespace BitBlazorUI {
                 ? container.scrollHeight - container.clientHeight
                 : container.scrollWidth - container.clientWidth);
 
+            let padStart = 0;
+            let padEnd = 0;
+
+            try {
+                const cs = window.getComputedStyle(container);
+
+                padStart = parseFloat(vertical ? cs.paddingTop : (rtl ? cs.paddingRight : cs.paddingLeft)) || 0;
+                padEnd = parseFloat(vertical ? cs.paddingBottom : (rtl ? cs.paddingLeft : cs.paddingRight)) || 0;
+            } catch (e) { }
+
+            const span = Math.max(0, viewport - padStart - padEnd);
+
             const positions: number[] = [];
             const sizes: number[] = [];
 
@@ -373,16 +390,17 @@ namespace BitBlazorUI {
                 sizes.push(vertical ? r.height : r.width);
             }
 
-            return { rtl, scroll, viewport, max, positions, sizes };
+            return { rtl, scroll, viewport, max, padStart, padEnd, span, positions, sizes };
         }
 
         // Where the swiper has to stand for the given item to sit where the snap alignment asks for: at
         // the start of the view, in its middle, or at its end. A swiper that does not snap aligns to the
-        // start, which is what a rail of items scrolls to.
+        // start, which is what a rail of items scrolls to. The view is the span between the two peeks,
+        // which is also what the scroll padding tells the browser's snapping to align with.
         private alignedPos(g: SwiperGeometry, index: number): number {
             const align = this.options.snap ? (this.options.align || 0) : 0;
 
-            return g.positions[index] - align * (g.viewport - g.sizes[index]);
+            return g.positions[index] - g.padStart - align * (g.span - g.sizes[index]);
         }
 
         // The item the swiper is standing on is the one whose resting place is nearest to where it
@@ -411,7 +429,7 @@ namespace BitBlazorUI {
         // screenfuls (the gaps between the items alone are enough for that), one the swiper can never
         // reach the start of, so its dot would never be the current one.
         private pages(g: SwiperGeometry): number[] {
-            if (g.viewport <= 0) return [];
+            if (g.span <= 0) return [];
 
             const count = g.positions.length;
 
@@ -436,7 +454,7 @@ namespace BitBlazorUI {
                 // The next page starts at the first item that no longer fits next to the one this page
                 // starts with, and never before the item after it, so an item wider than the swiper still
                 // moves it on rather than paging in place.
-                const edge = g.positions[i] + g.viewport;
+                const edge = g.positions[i] + g.span;
 
                 let next = i + 1;
 

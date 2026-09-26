@@ -170,6 +170,20 @@ public partial class BitSwiperDemo
         },
         new()
         {
+            Name = "OnReachEnd",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The event that will be called each time the swiper arrives at its end (never for a swiper everything fits in), which is where more items are loaded."
+        },
+        new()
+        {
+            Name = "OnReachStart",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The event that will be called each time the swiper arrives back at its start (not for the start it is first laid out on)."
+        },
+        new()
+        {
             Name = "PauseButtonAriaLabel",
             Type = "string",
             DefaultValue = "Stop automatic slide show",
@@ -206,6 +220,13 @@ public partial class BitSwiperDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Pauses the auto scrolling while the pointer is over the swiper."
+        },
+        new()
+        {
+            Name = "Peek",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The room (any CSS length, for example 2rem) kept at both ends of the swiper, which the neighboring items peek into. VisibleItemsCount fits its items between the two, and the items settle against it."
         },
         new()
         {
@@ -638,6 +659,7 @@ public partial class BitSwiperDemo
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
         new() { Name = "--bit-Swiper-gap", DefaultValue = "0", Description = "Space between the items. The Gap parameter wins over it, and VisibleItemsCount takes it into account." },
+        new() { Name = "--bit-Swiper-peek", DefaultValue = "0", Description = "Room at both ends of the swiper the neighboring items peek into. The Peek parameter wins over it." },
         new() { Name = "--bit-Swiper-vertical-height", DefaultValue = "25 spacing units", Description = "Height of a vertical swiper that was not given one through Style or a class." },
         new() { Name = "--bit-Swiper-focus-color", DefaultValue = "The primary focus color / the Color's focus color", Description = "Color of every keyboard focus indicator: the root, the buttons and the dots." },
         new() { Name = "--bit-Swiper-button-color", DefaultValue = "The primary foreground / the Color's main color", Description = "Glyph color of the next/prev and play/pause buttons, and the text of templated dots." },
@@ -675,6 +697,7 @@ public partial class BitSwiperDemo
 
     private BitSwiperSnap snap = BitSwiperSnap.Center;
     private int number = 1;
+    private int loadedCount = 8;
     private int currentIndex;
     private BitSwiper swiper = default!;
 
@@ -687,4 +710,13 @@ public partial class BitSwiperDemo
     private async Task GoToStart() => await swiper.GoToStart();
 
     private async Task GoToEnd() => await swiper.GoToEnd();
+
+    private async Task LoadMore()
+    {
+        if (loadedCount >= 40) return;
+
+        await Task.Delay(300); // fetching the next page of items
+
+        loadedCount += 8;
+    }
 }

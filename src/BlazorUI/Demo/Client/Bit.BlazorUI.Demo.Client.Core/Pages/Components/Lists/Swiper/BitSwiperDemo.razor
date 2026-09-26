@@ -78,14 +78,15 @@
     <DemoExample Title="Multiple items" RazorCode="@example3RazorCode" Id="example3">
         <div>
             <b>VisibleItemsCount</b> sizes the items so that many fit at once, with <b>Gap</b> (any CSS length)
-            between them. The <b>Xs</b>-<b>Xxl</b> variants apply from their breakpoint up, measured on the swiper's
-            own width, not the window's.
+            between them. <b>Peek</b> keeps room at both ends for the neighbors to show through, a hint there is more.
+            The <b>Xs</b>-<b>Xxl</b> variants apply from their breakpoint up, measured on the swiper's own width, not
+            the window's.
         </div>
         <br />
-        <div>Four at a time, 1rem apart:</div>
+        <div>Three at a time, 1rem apart, the neighbors peeking in 3rem:</div>
         <br />
         <div>
-            <BitSwiper VisibleItemsCount="4" Gap="1rem">
+            <BitSwiper VisibleItemsCount="3" Gap="1rem" Peek="3rem">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -269,7 +270,26 @@
         <div>Current item: @(currentIndex + 1)</div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Load more" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>OnReachEnd</b> fires each time the swiper arrives at its end (<b>OnReachStart</b> at its start), never for
+            one that already fits, so it is where more items are loaded.
+        </div>
+        <br />
+        <div>
+            <BitSwiper VisibleItemsCount="4" Gap="0.5rem" OnReachEnd="LoadMore">
+                @for (int i = 1; i <= loadedCount; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br />
+        <div>Loaded: @loadedCount items</div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" Id="example11">
         <div>
             Built on the ARIA carousel pattern: a focusable region of labelled slides, real buttons with
             <b>aria-controls</b>, the play/pause button first in tab order, and dots with a 24px pointer target. The item
@@ -309,7 +329,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>BitParams</b> with a <b>BitSwiperParams</b> sets defaults for every swiper under it; a swiper's own
             value always wins. The items, <b>DefaultItem</b> and <b>OnChange</b> are not cascaded.
@@ -338,7 +358,7 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <b>Color</b> paints the current dot, the buttons and the focus ring. <b>Accent</b> only colors the current
             dot, from the primary/secondary/tertiary/transparent kinds.
@@ -408,7 +428,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>NextIcon</b>, <b>PrevIcon</b>, <b>PlayIcon</b> and <b>PauseIcon</b> take a <b>BitIconInfo</b> for
             external libraries (<b>BitIconInfo.Fa</b>, <b>.Bi</b>, <b>.Css</b>) and win over the <b>*IconName</b>
@@ -452,7 +472,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
         <div><b>Size</b> scales the dots and the navigation buttons.</div>
         <br />
         <div class="colors-container">
@@ -489,7 +509,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> address each part by name
             (see <a href="#class-styles">BitSwiperClassStyles</a>). The public <b>--bit-Swiper-*</b> variables
@@ -532,7 +552,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Dir="BitDir.Rtl"</b> lays the items out right to left and swaps the buttons; the arrow keys still move
             the view the way they point.

@@ -6,8 +6,9 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// It carries the look and the behavior shared by the swipers under a <see cref="BitParams"/>, not what belongs
 /// to one of them: <see cref="BitSwiper.ChildContent"/>, <see cref="BitSwiper.DefaultItem"/> and
-/// <see cref="BitSwiper.OnChange"/> are left off, since the items, the place a swiper starts on and what a page
-/// does when it moves are the business of the swiper they belong to.
+/// <see cref="BitSwiper.OnChange"/> (with <see cref="BitSwiper.OnReachStart"/> and <see cref="BitSwiper.OnReachEnd"/>)
+/// are left off, since the items, the place a swiper starts on and what a page does when it moves are the business
+/// of the swiper they belong to.
 /// </remarks>
 public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -145,6 +146,11 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
     /// Pauses the auto scrolling while the pointer is over the swiper.
     /// </summary>
     public bool? PauseOnHover { get; set; }
+
+    /// <summary>
+    /// The room (any CSS length) kept at both ends of the swiper, which the neighboring items peek into.
+    /// </summary>
+    public string? Peek { get; set; }
 
     /// <summary>
     /// The accessible label of the play/pause button while the auto scrolling is paused.
@@ -398,6 +404,13 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
         if (PauseButtonAriaLabel.HasValue() && bitSwiper.HasNotBeenSet(nameof(PauseButtonAriaLabel)))
         {
             bitSwiper.PauseButtonAriaLabel = PauseButtonAriaLabel;
+        }
+
+        if (Peek.HasValue() && bitSwiper.HasNotBeenSet(nameof(Peek)))
+        {
+            bitSwiper.Peek = Peek;
+
+            bitSwiper.StyleBuilder.Reset();
         }
 
         if (PauseIcon is not null && bitSwiper.HasNotBeenSet(nameof(PauseIcon)))

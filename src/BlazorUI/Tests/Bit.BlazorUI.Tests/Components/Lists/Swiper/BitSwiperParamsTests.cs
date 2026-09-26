@@ -117,6 +117,7 @@ public class BitSwiperParamsTests : BunitTestContext
         var component = RenderWithParams(new BitSwiperParams
         {
             Gap = "12px",
+            Peek = "2rem",
             VisibleItemsCount = 3,
             Styles = new() { Root = "outline: 1px solid red;" },
             Classes = new() { Root = "cascaded-root" },
@@ -126,6 +127,7 @@ public class BitSwiperParamsTests : BunitTestContext
         var style = root.GetAttribute("style") ?? string.Empty;
 
         Assert.IsTrue(style.Contains("--bit-swp-gap:12px"));
+        Assert.IsTrue(style.Contains("--bit-swp-peek:2rem"));
         Assert.IsTrue(style.Contains("--bit-swp-isz:calc((100% - 2 * var(--bit-swp-gap, 0px)) / 3)"));
         Assert.IsTrue(style.Contains("outline: 1px solid red;"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));

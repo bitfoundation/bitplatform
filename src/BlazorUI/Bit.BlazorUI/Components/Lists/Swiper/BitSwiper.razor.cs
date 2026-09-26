@@ -293,6 +293,24 @@ public partial class BitSwiper : BitComponentBase
     [Parameter] public EventCallback<int> OnChange { get; set; }
 
     /// <summary>
+    /// The event that will be called when the swiper is scrolled all the way to its end.
+    /// </summary>
+    /// <remarks>
+    /// It fires each time the swiper arrives at its end, not while it stays there, and never for a swiper
+    /// everything already fits in, which makes it the place to load more items: once they are added, the
+    /// swiper has somewhere to go again and fires the next time it gets there.
+    /// </remarks>
+    [Parameter] public EventCallback OnReachEnd { get; set; }
+
+    /// <summary>
+    /// The event that will be called when the swiper is scrolled all the way back to its start.
+    /// </summary>
+    /// <remarks>
+    /// It fires each time the swiper arrives at its start, not for the start it is first laid out on.
+    /// </remarks>
+    [Parameter] public EventCallback OnReachStart { get; set; }
+
+    /// <summary>
     /// The accessible label of the play/pause button while the auto scrolling is running.
     /// </summary>
     [Parameter] public string PauseButtonAriaLabel { get; set; } = "Stop automatic slide show";
@@ -322,6 +340,19 @@ public partial class BitSwiper : BitComponentBase
     /// Pauses the auto scrolling while the pointer is over the swiper (the default value is true).
     /// </summary>
     [Parameter] public bool PauseOnHover { get; set; } = true;
+
+    /// <summary>
+    /// The room (any CSS length, for example <c>2rem</c>) kept at both ends of the swiper, which the items
+    /// next to the ones in view peek into.
+    /// </summary>
+    /// <remarks>
+    /// A partly shown item is the clearest hint that there is more to scroll to. The room is taken out of
+    /// the swiper before <see cref="VisibleItemsCount"/> sizes its items, so the requested number of them
+    /// still fits whole between the two ends, and the items settle against it rather than against the edge
+    /// of the swiper, both when it navigates and when it snaps.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? Peek { get; set; }
 
     /// <summary>
     /// The accessible label of the play/pause button while the auto scrolling is paused.
@@ -700,6 +731,9 @@ public partial class BitSwiper : BitComponentBase
         if (IsDisposed || state is null) return;
 
         var previousIndex = _index;
+        var wasAtStart = _atStart;
+        var wasAtEnd = _atEnd;
+        var wasReported = _stateReported;
 
         _index = state.Index;
         _page = state.Page;
@@ -740,6 +774,21 @@ public partial class BitSwiper : BitComponentBase
         if (previousIndex != _index)
         {
             await OnChange.InvokeAsync(_index);
+        }
+
+        // Only an arrival counts: the place the swiper is first laid out on is not one, and neither is an end
+        // of a swiper everything fits in, which it stands at both ends of without having gone anywhere.
+        if (wasReported && _scrollable)
+        {
+            if (wasAtStart is false && _atStart)
+            {
+                await OnReachStart.InvokeAsync();
+            }
+
+            if (wasAtEnd is false && _atEnd)
+            {
+                await OnReachEnd.InvokeAsync();
+            }
         }
     }
 
@@ -851,6 +900,8 @@ public partial class BitSwiper : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-swp-gap:{Gap}" : string.Empty);
+
+        StyleBuilder.Register(() => Peek.HasValue() ? $"--bit-swp-peek:{Peek}" : string.Empty);
 
         // The size the items are given is handed to the stylesheet as a variable rather than written onto
         // every one of them, so a swiper that changes how many items it shows costs one style on the root
