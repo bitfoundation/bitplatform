@@ -554,6 +554,7 @@ public static partial class BitCss
                 public const string Button = "--bit-shp-radius-button";
                 public const string Chip = "--bit-shp-radius-chip";
                 public const string Selection = "--bit-shp-radius-selection";
+                public const string TabIndicator = "--bit-shp-radius-tab-indicator";
             }
         }
 

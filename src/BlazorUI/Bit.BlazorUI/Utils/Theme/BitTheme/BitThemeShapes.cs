@@ -71,6 +71,12 @@ public class BitThemeShapeRadii
     /// </summary>
     public string? Selection { get; set; }
 
+    /// <summary>
+    /// The selection indicator of a tab strip (<c>BitPivot</c>): square under Fluent, a capsule under
+    /// Fluent 2, rounded on the edge facing the label under Material.
+    /// </summary>
+    public string? TabIndicator { get; set; }
+
     /// <summary>Cards, accordions, messages, images, list rows.</summary>
     public string? Surface { get; set; }
 

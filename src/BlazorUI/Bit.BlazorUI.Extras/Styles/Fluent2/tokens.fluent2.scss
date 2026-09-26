@@ -44,6 +44,8 @@
     --bit-shp-radius-button: var(--bit-shp-radius-control);
     --bit-shp-radius-chip: var(--bit-shp-radius-control);
     --bit-shp-radius-selection: 0.125rem; //2px - Checkbox indicator
+    // The TabList selection indicator is a capsule (borderRadiusCircular).
+    --bit-shp-radius-tab-indicator: var(--bit-shp-radius-full);
     // strokeWidthThin / strokeWidthThick.
     --bit-shp-brd-width: 0.0625rem; //1px
     --bit-shp-brd-width-thick: 0.125rem; //2px

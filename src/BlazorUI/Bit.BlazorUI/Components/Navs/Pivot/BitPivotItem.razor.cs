@@ -126,6 +126,9 @@ public partial class BitPivotItem : BitComponentBase
 
     private bool _IsReorderable => Parent?.GetItemReorderable(this) is true;
 
+    // A tab of a disabled pivot cannot be activated either, so it says so like one disabled on its own.
+    private bool _IsDisabled => IsEnabled is false || Parent?.IsEnabled is false;
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Parent?.Classes?.HeaderItem);

@@ -48,6 +48,8 @@
     --bit-shp-radius-chip: 0.5rem; //8px
     // M3 checkbox: a 2dp corner on the 18dp box.
     --bit-shp-radius-selection: 0.125rem; //2px
+    // M3 primary tab indicator: 3dp corners on the edge facing the label.
+    --bit-shp-radius-tab-indicator: 0.1875rem 0.1875rem 0 0; //3px
     // M3 focus indicator: 3dp ring offset 2dp.
     --bit-shp-focus-ring-width: 0.1875rem; //3px
     --bit-shp-focus-ring-offset: 0.125rem; //2px

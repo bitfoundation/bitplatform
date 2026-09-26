@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -19,6 +21,7 @@ public partial class BitPivot : BitComponentBase
     private bool _keyCheckNeeded;
     private bool _orderCheckNeeded;
     private bool _focusMenuAfterRender;
+    private bool _lastIsEnabled = true;
     private int _menuFocusIndex = -1;
     private string? _preventedKeys;
     private ElementReference _moreRef;
@@ -50,6 +53,19 @@ public partial class BitPivot : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the pivot component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple pivot components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPivotParams.ParamName)]
+    public BitPivotParams? CascadingParameters { get; set; }
 
 
 
@@ -489,6 +505,23 @@ public partial class BitPivot : BitComponentBase
         }
 
         await base.OnInitializedAsync();
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPivotParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        // The tabs say whether they can be activated, and a tab whose own parameters did not change is not
+        // rendered again by the render of the pivot, so they are asked to when the whole pivot turns on or off.
+        if (_lastIsEnabled != IsEnabled)
+        {
+            _lastIsEnabled = IsEnabled;
+
+            RefreshAllItems();
+        }
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1566,8 +1599,8 @@ public partial class BitPivot : BitComponentBase
         StateHasChanged();
     }
 
-    // The button that opens the menu keeps the keys that belong to it: the arrows open it and step
-    // into it, and Escape closes it again without the tablist ever seeing any of them.
+    // The button that opens the menu answers to the keys of a menu button: the arrows open it and step
+    // into it, and Escape closes it again.
     private void HandleMoreKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;

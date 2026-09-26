@@ -25,7 +25,7 @@
      class="@ClassBuilder.Value @Parent?.GetItemDragClass(this) @Parent?.GetItemOverflowClass(this)"
      tabindex="@Parent?.GetItemTabIndex(this)"
      aria-controls="@Parent?.GetItemPanelId(this)"
-     aria-disabled="@(IsEnabled ? null : "true")"
+     aria-disabled="@(_IsDisabled ? "true" : null)"
      aria-selected="@(IsSelected ? "true": "false")">
     <span style="@Parent?.Styles?.HeaderItemContent" class="bit-pvti-cnt @Parent?.Classes?.HeaderItemContent">
         @{
@@ -33,7 +33,7 @@
         }
         @if (icon is not null)
         {
-            <span style="@Parent?.Styles?.HeaderIconContainer" class="@Parent?.Classes?.HeaderIconContainer">
+            <span style="@Parent?.Styles?.HeaderIconContainer" class="bit-pvti-icn @Parent?.Classes?.HeaderIconContainer">
                 <i aria-hidden="true" style="@Parent?.Styles?.HeaderIcon" class="@icon.GetCssClasses() @Parent?.Classes?.HeaderIcon" />
             </span>
         }
