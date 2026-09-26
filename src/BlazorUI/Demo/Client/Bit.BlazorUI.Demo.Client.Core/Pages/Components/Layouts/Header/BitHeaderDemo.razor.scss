@@ -1,9 +1,5 @@
 @import '../../../../Styles/abstracts/_functions.scss';
 
-.container {
-    border: 1px solid gray;
-}
-
 // The Position, Reveal and ElevateOnScroll examples all need a box that scrolls on its own, so the
 // header has something to stick to (and to slide over) without taking over the whole demo page.
 .scroll-demo {
@@ -72,6 +68,14 @@
     &:focus {
         outline: 2px dashed dodgerblue;
     }
+}
+
+// The CSS variables example: set on an ancestor, the public variables re-skin every header under it.
+.brand-headers {
+    --bit-Header-background: #fdf4ff;
+    --bit-Header-color: #86198f;
+    --bit-Header-border-color: #d946ef;
+    --bit-Header-padding-inline: 2rem;
 }
 
 // The header and its container are rendered by BitHeader itself, so they carry its own scope and
