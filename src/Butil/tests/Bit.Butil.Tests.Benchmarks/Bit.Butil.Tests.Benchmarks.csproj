@@ -22,7 +22,7 @@
          taken inside a real browser against a deployed sample app, and this project's own namespace
          would otherwise sit in the shadow of Butil's Console/Window/Screen services. The weight half
          reads the build artifacts off disk, which needs no reference either. -->
-    <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.63.0" />
   </ItemGroup>
 
   <ItemGroup>

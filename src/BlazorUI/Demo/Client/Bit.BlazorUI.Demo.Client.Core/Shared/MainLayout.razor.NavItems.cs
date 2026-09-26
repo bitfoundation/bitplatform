@@ -50,7 +50,7 @@ public partial class MainLayout
                     ChildItems =
                     [
                         new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = ["/components/circular-time-picker"] },
-                        new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = ["/components/color-picker"] },
+                        new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = ["/components/color-picker"], Description = "ColorPalette, Swatch", Data = "Hex, RGB, HSL, HSV, Alpha, Transparency, Eyedropper, Contrast" },
                         new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = ["/components/date-picker"] },
                         new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = ["/components/date-range-picker"] },
                         new() { Text = "TimePicker", Url = "/components/timepicker", AdditionalUrls = ["/components/time-picker"] },

@@ -2,6 +2,7 @@ name: bit platform CI - Websites
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
     - 'src/Websites/**'
