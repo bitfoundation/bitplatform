@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -40,6 +41,13 @@ public partial class BitMessage : BitComponentBase
     // starts over with the countdown it draws.
     private int _autoDismissGeneration;
 
+    // Whether the folded text is actually clipped, as the browser measured it: null until it has, which keeps the
+    // expander where it always was for a message that has not been measured (a prerender, a test renderer).
+    // The id is the one the observer was started under, so it can be stopped under it even after Id changes.
+    private bool? _isClipped;
+    private string? _observedOverflowId;
+    private DotNetObjectReference<BitMessage>? _dotnetObj;
+
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
     // delegate instance, which is what lets the diff leave the listener alone.
     private readonly Action<PointerEventArgs> _onPointerEnter;
@@ -48,6 +56,10 @@ public partial class BitMessage : BitComponentBase
     private readonly Action _onFocusOut;
     private readonly Func<KeyboardEventArgs, Task> _onRootKeyDown;
     private readonly RenderFragment _renderTitle;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -60,6 +72,19 @@ public partial class BitMessage : BitComponentBase
         _onRootKeyDown = HandleOnKeyDown;
         _renderTitle = RenderTitle;
     }
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the message component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple message components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitMessageParams.ParamName)]
+    public BitMessageParams? CascadingParameters { get; set; }
 
 
 
@@ -465,7 +490,9 @@ public partial class BitMessage : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is for the message that has to fit in a tight space: the content is clipped to one line and the button
-    /// unfolds it, so the whole of it is still reachable without the message taking the room to show it.
+    /// unfolds it, so the whole of it is still reachable without the message taking the room to show it. The
+    /// button is only rendered while something is actually clipped (or unfolded), as the browser measures it, so a
+    /// text that fits is not handed a button that unfolds nothing.
     /// <br />
     /// On a <see cref="Multiline"/> message there is nothing folded away to unfold, so this does nothing on its own
     /// there; give that message a <see cref="MaxLines"/> cap and the same button appears, unfolding it past the cap
@@ -542,6 +569,22 @@ public partial class BitMessage : BitComponentBase
     /// </remarks>
     public ValueTask FocusAsync() => Dismissed ? ValueTask.CompletedTask : RootElement.FocusAsync();
 
+    /// <summary>
+    /// Called by the overflow observer of a truncated message whenever its text goes from fitting to being
+    /// clipped or back, so the expander is only offered where there is something to unfold.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnOverflowChange")]
+    public void _OnOverflowChange(bool isClipped)
+    {
+        if (IsDisposed || _isClipped == isClipped) return;
+
+        _isClipped = isClipped;
+
+        StateHasChanged();
+    }
+
 
 
     protected override string RootElementClass => "bit-msg";
@@ -617,8 +660,13 @@ public partial class BitMessage : BitComponentBase
         ClassBuilder.Register(() => Square ? "bit-msg-sqr" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMessageParams))]
     protected override void OnParametersSet()
     {
+        // The cascade fills in what the message left unset before anything below reads it: the countdown is armed,
+        // and the listeners are wired up, off the values it hands over.
+        CascadingParameters?.UpdateParameters(this);
+
         base.OnParametersSet();
 
         RegisterInteractionHandlers();
@@ -640,6 +688,8 @@ public partial class BitMessage : BitComponentBase
         await HandleAutoFocus();
 
         HandleDelayedAnnouncement();
+
+        await SyncOverflowObserver();
     }
 
 
@@ -654,6 +704,42 @@ public partial class BitMessage : BitComponentBase
         _autoFocusDone = true;
 
         await RootElement.FocusAsync();
+    }
+
+    // Whether the folded text is clipped is something only the browser can tell, so a message that can fold asks
+    // it to watch, and stops asking once it cannot fold or is off the page. A message that comes back is a new
+    // element, so it is watched afresh.
+    private async Task SyncOverflowObserver()
+    {
+        var id = (_CanFold && Dismissed is false && IsDisposed is false) ? _Id : null;
+
+        if (id == _observedOverflowId) return;
+
+        if (_observedOverflowId is not null)
+        {
+            var previous = _observedOverflowId;
+
+            _observedOverflowId = null;
+            _isClipped = null;
+
+            try
+            {
+                await _js.BitMessageDispose(previous);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, and the observer with it
+        }
+
+        if (id is null) return;
+
+        _observedOverflowId = id;
+        _dotnetObj ??= DotNetObjectReference.Create(this);
+
+        try
+        {
+            await _js.BitMessageObserveOverflow(id, RootElement, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
+        catch (JSException) { } // without the observer the expander is rendered, as it always was
     }
 
     // A live region announces what changes inside it, so the text is handed to it one render after the region
@@ -698,9 +784,14 @@ public partial class BitMessage : BitComponentBase
     // already clips itself to one.
     private bool _HasMaxLines => Multiline && MaxLines is > 0;
 
-    // Something is folded away either because the message is held to one line, or because it is held to a
-    // number of them - and either way there is a button worth rendering to unfold it.
-    private bool _HasExpander => Truncate && (Multiline is false || _HasMaxLines);
+    // Something can be folded away either because the message is held to one line, or because it is held to a
+    // number of them.
+    private bool _CanFold => Truncate && (Multiline is false || _HasMaxLines);
+
+    // The button is only worth rendering where the fold actually hides something - a short text that fits would
+    // be handed a control that unfolds nothing - and it stays while the message is unfolded, so it can be folded
+    // back. Until the browser has measured, the button is rendered.
+    private bool _HasExpander => _CanFold && (_isClipped is not false || Expanded);
 
     // Expanded only means anything where there is something folded away to unfold, so it is read through
     // the same condition that decides whether the expander button renders at all.
@@ -1119,6 +1210,17 @@ public partial class BitMessage : BitComponentBase
         if (IsDisposed || disposing is false) return;
 
         StopAutoDismiss();
+
+        if (_observedOverflowId is not null)
+        {
+            try
+            {
+                await _js.BitMessageDispose(_observedOverflowId);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, and the observer with it
+        }
+
+        _dotnetObj?.Dispose();
 
         await base.DisposeAsync(disposing);
     }

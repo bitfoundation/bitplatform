@@ -1,18 +1,45 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// message and one set on the Style of an instance re-skins that one alone:
+//   --bit-Message-color                    text, glyph and button color                   (default: per variant - the role's on-color filled, its main color otherwise)
+//   --bit-Message-background               background of the surface                     (default: the role's main color filled, transparent otherwise)
+//   --bit-Message-border-color             border color                                   (default: the role's main color filled and outlined, transparent otherwise)
+//   --bit-Message-border-width             thickness of the border                        (default: $shp-border-width)
+//   --bit-Message-radius                   corner radius of the surface and its countdown (default: $shp-radius-surface, none when Square)
+//   --bit-Message-shadow                   elevation of the surface                       (default: none, the Elevation parameter wins)
+//   --bit-Message-focus-color              focus ring of the message and its buttons      (default: the role's focus color)
+//   --bit-Message-font-size                size of the title and the content              (default: per size, from the type ramp)
+//   --bit-Message-title-font-weight        weight of the title                            (default: $tg-fw-semibold)
+//   --bit-Message-icon-color               color of the severity icon (or IconTemplate)   (default: the message's own color)
+//   --bit-Message-icon-size                size of the severity icon                      (default: per size, $siz-icon-*)
+//   --bit-Message-progress-color           the auto-dismiss countdown bar                 (default: the message's own color)
+//   --bit-Message-progress-height          thickness of the countdown track               (default: per size, $siz-track-*)
+
 .bit-msg {
     width: 100%;
     display: flex;
-    font-weight: $tg-fw-regular;
     flex-flow: column;
     box-sizing: border-box;
     justify-content: center;
+    font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
-    border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-radius: $shp-radius-surface;
-    font-size: var(--bit-msg-fontsize);
-    box-shadow: var(--bit-msg-boxshadow);
+    // The variant classes write the -fg/-bg/-brd values and the public variables read them as their fallback, so
+    // a variant class and a variable set on :root never fight over the same property: the public name always wins.
+    color: var(--bit-Message-color, var(--bit-msg-fg));
+    background-color: var(--bit-Message-background, var(--bit-msg-bg));
+    border-color: var(--bit-Message-border-color, var(--bit-msg-brd));
+    border-width: var(--bit-Message-border-width, #{$shp-border-width});
+    border-radius: var(--bit-msg-radius);
+    font-size: var(--bit-Message-font-size, var(--bit-msg-fontsize));
+    // The Elevation parameter writes --bit-msg-boxshadow on the root itself, so it wins over the public variable.
+    box-shadow: var(--bit-msg-boxshadow, var(--bit-Message-shadow, none));
+    // A custom property inherits, so a message nested in the content of an elevated one would take its shadow
+    // too; each message starts from nothing, and only its own Elevation writes one back on top of this.
+    --bit-msg-boxshadow: initial;
+    --bit-msg-radius: var(--bit-Message-radius, #{$shp-radius-surface});
+    --bit-msg-focus: var(--bit-Message-focus-color, var(--bit-msg-clr-focus));
 
     // A disabled message stays readable - it is a notice, not a control - but its dismiss and expander
     // buttons stop responding, so the state cannot be changed while the message is turned off.
@@ -30,12 +57,12 @@
 // The root is focusable while it carries a TabIndex or an AutoFocus, so a keyboard user can land on the message
 // itself - and has to be able to see that they did.
 .bit-msg:focus-visible {
-    @include focus-ring(var(--bit-msg-clr-focus));
+    @include focus-ring(var(--bit-msg-focus));
 }
 
 // Squared off so the message can sit flush against the edges of its container as a banner.
 .bit-msg-sqr {
-    border-radius: $shp-radius-none;
+    --bit-msg-radius: #{$shp-radius-none};
 }
 
 .bit-msg-rct {
@@ -57,10 +84,11 @@
     display: flex;
     margin: var(--bit-msg-ico-margin);
     margin-inline-end: 0;
+    color: var(--bit-Message-icon-color, currentcolor);
 }
 
 .bit-msg-ico {
-    font-size: var(--bit-msg-ico-fontsize);
+    font-size: var(--bit-Message-icon-size, var(--bit-msg-ico-fontsize));
 }
 
 .bit-msg-cnc {
@@ -91,16 +119,18 @@
     align-items: baseline;
     column-gap: spacing(0.5);
 
-    // The title keeps its width where it can and gives way before the content does, so an over-long one
-    // ellipsizes instead of pushing the content out of the message.
+    // The content takes the room the title leaves and is the one that ellipsizes, so a short title is read
+    // whole however long the content is. The title only gives way once it would take more than its share, so an
+    // over-long one ellipsizes too instead of pushing the content out of the message.
     > .bit-msg-ttl {
-        flex: 0 1 auto;
         min-width: 0;
+        max-width: 60%;
+        flex: 0 1 auto;
     }
 
     > .bit-msg-cnt {
-        flex: 1 1 auto;
         min-width: 0;
+        flex: 1 1 0;
     }
 }
 
@@ -126,7 +156,7 @@
     font-size: inherit;
     line-height: inherit;
     text-overflow: ellipsis;
-    font-weight: $tg-fw-semibold;
+    font-weight: var(--bit-Message-title-font-weight, #{$tg-fw-semibold});
 }
 
 // A stacked title has a line of its own, so it wraps rather than inheriting the single-line clip of the
@@ -208,7 +238,9 @@
     justify-content: center;
     min-width: var(--bit-msg-btn-size);
     min-height: var(--bit-msg-btn-size);
-    color: var(--bit-msg-clr);
+    // The buttons take whatever color the message itself is drawn in - the variant's or a public override -
+    // rather than restating it, since a button does not inherit its color on its own.
+    color: inherit;
     border-radius: $shp-radius-button;
     background-color: transparent;
     transition: background-color $mot-duration-short $mot-easing;
@@ -226,13 +258,13 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-msg-clr-focus));
+        @include focus-ring(var(--bit-msg-focus));
     }
 }
 
 .bit-msg-exi,
 .bit-msg-dmi {
-    font-size: var(--bit-msg-btn-fontsize);
+    font-size: var(--bit-msg-btn-icosize);
 }
 
 // The countdown of the auto-dismiss feature, made visible. It runs off the same two states the countdown
@@ -242,22 +274,17 @@
     width: 100%;
     flex: 0 0 auto;
     overflow: hidden;
-    height: var(--bit-msg-track-size);
+    height: var(--bit-Message-progress-height, var(--bit-msg-track-size));
     background-color: translucent(currentcolor, 16%);
-    border-end-start-radius: $shp-radius-surface;
-    border-end-end-radius: $shp-radius-surface;
-}
-
-.bit-msg-sqr .bit-msg-prg {
-    border-end-start-radius: $shp-radius-none;
-    border-end-end-radius: $shp-radius-none;
+    border-end-start-radius: var(--bit-msg-radius);
+    border-end-end-radius: var(--bit-msg-radius);
 }
 
 .bit-msg-prb {
     width: 100%;
     height: 100%;
     transform-origin: left;
-    background-color: currentcolor;
+    background-color: var(--bit-Message-progress-color, currentcolor);
     animation-name: bit-msg-countdown;
     animation-fill-mode: forwards;
     animation-timing-function: linear;
@@ -316,32 +343,24 @@
     }
 }
 
+// The two variants that drop the fill also drop the fill's on-color, so their text takes the role color
+// instead of the color meant to sit on top of it.
 .bit-msg-fil {
-    color: var(--bit-msg-clr);
-    border-color: var(--bit-msg-clr-bg);
-    background-color: var(--bit-msg-clr-bg);
+    --bit-msg-fg: var(--bit-msg-clr);
+    --bit-msg-bg: var(--bit-msg-clr-bg);
+    --bit-msg-brd: var(--bit-msg-clr-bg);
 }
 
 .bit-msg-otl {
-    color: var(--bit-msg-clr-bg);
-    border-color: var(--bit-msg-clr-bg);
-    background-color: transparent;
+    --bit-msg-fg: var(--bit-msg-clr-bg);
+    --bit-msg-bg: transparent;
+    --bit-msg-brd: var(--bit-msg-clr-bg);
 }
 
 .bit-msg-txt {
-    color: var(--bit-msg-clr-bg);
-    border-color: transparent;
-    background-color: transparent;
-}
-
-// The two variants that drop the fill also drop the fill's on-color, so the buttons take the role color
-// the text is already using instead of the color meant to sit on top of it.
-.bit-msg-otl,
-.bit-msg-txt {
-    .bit-msg-exb,
-    .bit-msg-dmb {
-        color: var(--bit-msg-clr-bg);
-    }
+    --bit-msg-fg: var(--bit-msg-clr-bg);
+    --bit-msg-bg: transparent;
+    --bit-msg-brd: transparent;
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
@@ -371,7 +390,7 @@
     --bit-msg-ico-margin: #{spacing(1)};
     --bit-msg-ico-fontsize: #{$siz-icon-sm};
     --bit-msg-btn-size: #{$siz-ctrl-sm};
-    --bit-msg-btn-fontsize: #{$tg-fs-2xs};
+    --bit-msg-btn-icosize: #{$siz-icon-sm};
     --bit-msg-act-maxheight: #{$siz-ctrl-md};
     --bit-msg-track-size: #{$siz-track-sm};
 }
@@ -382,7 +401,7 @@
     --bit-msg-ico-margin: #{spacing(1.2)};
     --bit-msg-ico-fontsize: #{$siz-icon-md};
     --bit-msg-btn-size: #{$siz-ctrl-md};
-    --bit-msg-btn-fontsize: #{$tg-fs-2xs};
+    --bit-msg-btn-icosize: #{$siz-icon-sm};
     --bit-msg-act-maxheight: #{$siz-ctrl-md};
     --bit-msg-track-size: #{$siz-track-md};
 }
@@ -393,7 +412,7 @@
     --bit-msg-ico-margin: #{spacing(2)};
     --bit-msg-ico-fontsize: #{$siz-icon-lg};
     --bit-msg-btn-size: #{$siz-ctrl-lg};
-    --bit-msg-btn-fontsize: #{$tg-fs-xs};
+    --bit-msg-btn-icosize: #{$siz-icon-md};
     --bit-msg-act-maxheight: #{$siz-ctrl-lg};
     --bit-msg-track-size: #{$siz-track-lg};
 }
