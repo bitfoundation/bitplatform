@@ -7,7 +7,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// It renders a semantic <c>header</c> element and lays its content out in a horizontal line whose color, variant,
-/// size, alignment, wrapping, gutters and maximum width are all parameters. It can stay in the flow of the page or be
+/// size, alignment, wrapping, gutters and maximum width are all parameters, with an optional second row under it
+/// (<see cref="ExtensionContent"/>) for tabs or a search box. It can stay in the flow of the page or be
 /// pinned to the top of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page
 /// is scrolled up (<see cref="Reveal"/>), lifting itself off the content once the page is scrolled at all
 /// (<see cref="ElevateOnScroll"/>), or slid out of the way on demand (<see cref="Hidden"/>).
@@ -19,6 +20,7 @@ namespace Bit.BlazorUI;
 public partial class BitHeader : BitComponentBase
 {
     private bool _hidden;
+    private bool _extended;
     private bool _scrolled;
     private bool _slidable;
     private bool _settingUp;
@@ -136,6 +138,20 @@ public partial class BitHeader : BitComponentBase
     public bool Elevated { get; set; }
 
     /// <summary>
+    /// Gets or sets the content of a second row rendered under the main row of the BitHeader, such as a row of
+    /// tabs, a search box or a breadcrumb.
+    /// </summary>
+    /// <remarks>
+    /// The row shares the surface of the header - its background, its border, its shadow and every scroll
+    /// behavior - and lines up with the main row: it takes the same inline gutter and the same
+    /// <see cref="MaxWidth"/>, and it has no block padding of its own, so a row of tabs sits right on the
+    /// bottom edge. Only the main row takes <see cref="Alignment"/>, <see cref="Gap"/> and <see cref="Wrap"/>;
+    /// this one is a plain horizontal line whose content brings its own layout. With this row present,
+    /// <see cref="Height"/> is a minimum height for the whole header rather than an exact one.
+    /// </remarks>
+    [Parameter] public RenderFragment? ExtensionContent { get; set; }
+
+    /// <summary>
     /// Renders the header with a fixed position at the top of the page.
     /// </summary>
     /// <remarks>
@@ -166,6 +182,11 @@ public partial class BitHeader : BitComponentBase
     /// <remarks>
     /// The height includes the paddings and the border of the header (the root element is a border-box).
     /// <br />
+    /// With no <see cref="ExtensionContent"/> it is the exact height of the header. With an
+    /// <see cref="ExtensionContent"/> row it becomes a minimum height instead: the main row grows into whatever
+    /// that row leaves, but the header grows past it rather than clipping either row when the two together
+    /// need more room.
+    /// <br />
     /// A header that really sits at the top of the screen - <see cref="Fixed"/>, or <see cref="Sticky"/>
     /// without an <see cref="Absolute"/> outranking it - adds the top safe area inset of the device on top of
     /// it, so the content of the header keeps the height that was asked for instead of losing part of it to
@@ -185,7 +206,9 @@ public partial class BitHeader : BitComponentBase
     /// workflow (a distraction free reading mode, a full screen media view) needs.
     /// <br />
     /// A hidden header is also marked <c>inert</c>, so nothing inside it can be clicked or reached with the keyboard
-    /// while it is out of the view. Unlike <see cref="BitComponentBase.Visibility"/>, which switches the header off at
+    /// while it is out of the view - and a focus left inside it drops to the body of the page, so an action that
+    /// hides the header from within it should move the focus somewhere meaningful first.
+    /// Unlike <see cref="BitComponentBase.Visibility"/>, which switches the header off at
     /// once, this slides it in and out and keeps the room it occupies in the layout.
     /// <br />
     /// It only slides over a <see cref="Fixed"/> or <see cref="Sticky"/> header; a header in the normal flow is
@@ -240,7 +263,8 @@ public partial class BitHeader : BitComponentBase
     /// The header is always revealed at the very top of the scrolling area.
     /// <br />
     /// Unlike <see cref="Hidden"/>, a header rolled up by the scroll stays reachable: it comes back as soon as
-    /// anything inside it takes the focus, so a keyboard user is never stranded on a control they cannot see.
+    /// anything inside it takes the focus, and it does not roll up again while it holds the keyboard focus, so a
+    /// keyboard user is never stranded on a control they cannot see.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reveal { get; set; }
@@ -560,11 +584,18 @@ public partial class BitHeader : BitComponentBase
         // header shorter than it was asked to be. Adding the inset to the height keeps the two apart: the
         // height is the header, the inset is the room the device asks for above it. env() resolves to
         // the 0px fallback wherever there is no inset, which leaves the plain height untouched.
-        StyleBuilder.Register(() => Height.HasValue
-                                    ? (IsPinned
-                                        ? $"height:calc({Height}px + env(safe-area-inset-top, 0px))"
-                                        : $"height:{Height}px")
-                                    : string.Empty);
+        // With a second row the height is only a floor, so the two rows together decide the total height
+        // rather than the extension row eating into the main one or overflowing the header.
+        StyleBuilder.Register(() =>
+        {
+            if (Height.HasValue is false) return string.Empty;
+
+            var property = _extended ? "min-height" : "height";
+
+            return IsPinned
+                    ? $"{property}:calc({Height}px + env(safe-area-inset-top, 0px))"
+                    : $"{property}:{Height}px";
+        });
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-hdr-gap:{Gap}" : string.Empty);
 
@@ -587,6 +618,16 @@ public partial class BitHeader : BitComponentBase
             _slidable = true;
 
             ClassBuilder.Reset();
+        }
+
+        // Only whether there is a second row matters to the height, not the fragment itself, which is a new
+        // delegate on nearly every render of the parent - so the styles are reset only when that flips.
+        var extended = ExtensionContent is not null;
+        if (_extended != extended)
+        {
+            _extended = extended;
+
+            StyleBuilder.Reset();
         }
 
         base.OnParametersSet();

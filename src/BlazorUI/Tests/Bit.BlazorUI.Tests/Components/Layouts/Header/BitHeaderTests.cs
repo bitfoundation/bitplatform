@@ -106,6 +106,41 @@ public class BitHeaderTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(false, "min-height:56px")]
+    [DataRow(true, "min-height:calc(56px + env(safe-area-inset-top, 0px))")]
+    public void BitHeaderShouldTurnTheHeightIntoAMinimumWithAnExtensionRow(bool @fixed, string expected)
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Height, 56);
+            parameters.Add(p => p.Fixed, @fixed);
+            parameters.Add(p => p.ExtensionContent, "<nav>Tabs</nav>");
+        });
+
+        // Both rows decide the total height, so a tall second row grows the header instead of being clipped.
+        Assert.AreEqual(expected, component.Find(".bit-hdr").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldSwitchBetweenHeightAndMinHeightWhenTheExtensionRowComesAndGoes()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Height, 56);
+        });
+
+        Assert.AreEqual("height:56px", component.Find(".bit-hdr").GetAttribute("style"));
+
+        component.Render(parameters => parameters.Add(p => p.ExtensionContent, "<nav>Tabs</nav>"));
+
+        Assert.AreEqual("min-height:56px", component.Find(".bit-hdr").GetAttribute("style"));
+
+        component.Render(parameters => parameters.Add(p => p.ExtensionContent, (Microsoft.AspNetCore.Components.RenderFragment?)null));
+
+        Assert.AreEqual("height:56px", component.Find(".bit-hdr").GetAttribute("style"));
+    }
+
+    [TestMethod]
     [DataRow("1rem")]
     [DataRow("4px 8px")]
     public void BitHeaderShouldRespectGap(string gap)
@@ -1630,5 +1665,66 @@ public class BitHeaderTests : BunitTestContext
     <div class=""bit-hdr-gut"">
     </div>
 </header>");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotRenderTheExtensionRowByDefault()
+    {
+        var component = RenderComponent<BitHeader>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRespectExtensionContent()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.AddChildContent("Title");
+            parameters.Add(p => p.ExtensionContent, "<nav>Tabs</nav>");
+        });
+
+        // The second row follows the main one inside the same header, so it shares its surface.
+        component.MarkupMatches(@"
+<header class=""bit-hdr bit-hdr-fil"" id:ignore>
+    <div class=""bit-hdr-gut"">
+        Title
+    </div>
+    <div class=""bit-hdr-ext"">
+        <nav>Tabs</nav>
+    </div>
+</header>");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRespectClassesAndStylesOfTheExtensionRow()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ExtensionContent, "Tabs");
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Extension = "extension-class" });
+            parameters.Add(p => p.Styles, new BitHeaderClassStyles { Extension = "color:blue" });
+        });
+
+        var extension = component.Find(".bit-hdr-ext");
+
+        Assert.IsTrue(extension.ClassList.Contains("extension-class"));
+        Assert.AreEqual("color:blue", extension.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRespectExtensionContentChangedDynamically()
+    {
+        var component = RenderComponent<BitHeader>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+
+        component.Render(parameters => parameters.Add(p => p.ExtensionContent, "Tabs"));
+
+        Assert.AreEqual("Tabs", component.Find(".bit-hdr-ext").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.ExtensionContent, (Microsoft.AspNetCore.Components.RenderFragment?)null));
+
+        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
     }
 }
