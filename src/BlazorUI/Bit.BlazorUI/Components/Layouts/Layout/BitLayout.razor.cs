@@ -22,9 +22,16 @@ namespace Bit.BlazorUI;
 /// <see cref="FullHeightPanels"/> gives the shape of an application instead, with the panels running down the full
 /// height and the header between them.
 /// <br />
-/// Its look is set by the public <c>--bit-Layout-*</c> CSS variables (the backgrounds of the sections, the color and
-/// width of the dividers, and the sizes the parameters also set), which inherit, so one value on <c>:root</c>
-/// re-skins every layout of the app. A parameter set on the layout wins over its variable.
+/// Its look is set by the public <c>--bit-Layout-*</c> CSS variables (the backgrounds and text colors of the sections,
+/// the shadows of the header and the footer, the color and width of the dividers, and the sizes the parameters also
+/// set), which inherit, so one value on <c>:root</c> re-skins every layout of the app. A parameter set on the layout
+/// wins over its variable.
+/// <br />
+/// A <see cref="Nested"/> layout given a name (an <see cref="BitComponentBase.AriaLabel"/>, or an <c>aria-label</c> or
+/// <c>aria-labelledby</c> attribute) becomes a region landmark of that name, since a plain element cannot be named -
+/// which is what a workspace nested inside the content of a page wants. A top-level layout stays a plain element, so
+/// its main landmark stays at the top level and its header and footer keep their banner and contentinfo roles, and a
+/// <c>role</c> the page gives the layout itself is always the one it keeps.
 /// </remarks>
 public partial class BitLayout : BitComponentBase
 {
@@ -112,6 +119,7 @@ public partial class BitLayout : BitComponentBase
     /// <br />
     /// It is also the room a <see cref="StickyNavPanel"/> or a <see cref="StickyAside"/> leaves at the bottom of the
     /// viewport for a <see cref="StickyFooter"/>, so the last items of a pinned panel never sit behind the footer.
+    /// A layout with no footer rendered has no such room to leave, whatever this says.
     /// <br />
     /// When not set, the footer takes the <c>--bit-Layout-footer-height</c> CSS variable, and is as tall as its own
     /// content without one.
@@ -187,7 +195,8 @@ public partial class BitLayout : BitComponentBase
     /// The height includes the paddings and the border of the header, which is a border-box.
     /// <br />
     /// It is also the offset a <see cref="StickyNavPanel"/> or a <see cref="StickyAside"/> pins itself at, so a panel
-    /// pinned under a <see cref="StickyHeader"/> starts right below it instead of sliding underneath it.
+    /// pinned under a <see cref="StickyHeader"/> starts right below it instead of sliding underneath it. A layout with
+    /// no header rendered (none given, or <see cref="HideHeader"/>) has no offset to leave, whatever this says.
     /// <br />
     /// When not set, the <c>--bit-Layout-header-height</c> CSS variable plays both parts; without one, the header is
     /// as tall as its own content and the pinned panels stick to the top of the viewport.
@@ -503,6 +512,9 @@ public partial class BitLayout : BitComponentBase
         return style.HasValue() ? style : null;
     }
 
+    private bool _headerShown;
+    private bool _footerShown;
+
     private bool _ShowHeader => Header is not null && HideHeader is false;
     private bool _ShowFooter => Footer is not null && HideFooter is false;
     private bool _ShowNavPanel => NavPanel is not null && HideNavPanel is false;
@@ -553,6 +565,11 @@ public partial class BitLayout : BitComponentBase
         ClassBuilder.Register(() => ReverseNavPanel ? "bit-lyt-rnv" : string.Empty);
 
         ClassBuilder.Register(() => Bordered ? "bit-lyt-brd" : string.Empty);
+
+        // A missing header or footer leaves the pinned sections no room to keep clear of, whatever height a parameter
+        // or a variable set once for the whole app gives it.
+        ClassBuilder.Register(() => _ShowHeader ? string.Empty : "bit-lyt-nhd");
+        ClassBuilder.Register(() => _ShowFooter ? string.Empty : "bit-lyt-nft");
     }
 
 
@@ -561,6 +578,17 @@ public partial class BitLayout : BitComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // Whether the header and the footer are rendered follows from their content as much as from HideHeader and
+        // HideFooter (either of which may also come from the cascading parameters), so the classes that say so are
+        // rebuilt here, once the final values are known, rather than by the setters of four parameters.
+        if (_ShowHeader != _headerShown || _ShowFooter != _footerShown)
+        {
+            _headerShown = _ShowHeader;
+            _footerShown = _ShowFooter;
+
+            ClassBuilder.Reset();
+        }
 
         base.OnParametersSet();
     }

@@ -8,6 +8,14 @@
 //   --bit-Layout-nav-panel-background      background of the nav panel                   (default: transparent)
 //   --bit-Layout-aside-background          background of the aside                       (default: transparent)
 //   --bit-Layout-main-background           background of the main section                (default: transparent)
+//   --bit-Layout-color                     text color of the whole layout                (default: inherit)
+//   --bit-Layout-header-color              text color of the header                      (default: inherit)
+//   --bit-Layout-footer-color              text color of the footer                      (default: inherit)
+//   --bit-Layout-nav-panel-color           text color of the nav panel                   (default: inherit)
+//   --bit-Layout-aside-color               text color of the aside                       (default: inherit)
+//   --bit-Layout-main-color                text color of the main section                (default: inherit)
+//   --bit-Layout-header-shadow             box shadow of the header                      (default: none)
+//   --bit-Layout-footer-shadow             box shadow of the footer                      (default: none)
 //   --bit-Layout-border-color              color of the Bordered dividers                (default: $clr-brd-pri)
 //   --bit-Layout-border-width              thickness of the Bordered dividers            (default: $shp-border-width)
 //   --bit-Layout-header-height             height of the header, and the offset of the
@@ -40,8 +48,32 @@
     --bit-lyt-zin: var(--bit-Layout-z-index, #{$zindex-base});
     --bit-lyt-brd: var(--bit-Layout-border-width, #{$shp-border-width}) #{$shp-border-style} var(--bit-Layout-border-color, #{$clr-brd-pri});
 
+    // The room a header or a footer takes from the pinned sections, which is none at all where there is no such
+    // section to take it: a height given through a parameter or a variable (say, set once for the whole app) says
+    // nothing about a page that hides its header, and a pinned panel would otherwise leave a gap for a bar that
+    // is not there. The component knows which sections it renders, so it says so with a class of the root.
+    --bit-lyt-hdr-o: var(--bit-lyt-hdr-h, 0px);
+    --bit-lyt-ftr-o: var(--bit-lyt-ftr-h, 0px);
+
+    &.bit-lyt-nhd {
+        --bit-lyt-hdr-o: 0px;
+    }
+
+    &.bit-lyt-nft {
+        --bit-lyt-ftr-o: 0px;
+    }
+
+    // A section given a color of its own (--bit-Layout-*-color) would otherwise keep it and not dim with the rest.
     &.bit-dis {
         color: $clr-fg-dis;
+
+        > .bit-lyt-hdr,
+        > .bit-lyt-ftr,
+        > .bit-lyt-man > .bit-lyt-nmn,
+        > .bit-lyt-man > .bit-lyt-asd,
+        > .bit-lyt-man > .bit-lyt-mcn {
+            color: inherit;
+        }
     }
 }
 
@@ -56,18 +88,24 @@
 }
 
 // The header and the footer keep their own height rather than being squeezed by a middle row that grew
-// past the layout, and take the height they were given when there is one.
+// past the layout, and take the height they were given when there is one. They are stacked above the middle
+// row even when they are not pinned: a shadow is painted with the background of its box, so without a layer of
+// its own the shadow of a bar would be covered by the background of the sections next to it.
 .bit-lyt-hdr {
     width: 100%;
     flex-shrink: 0;
+    position: relative;
     box-sizing: border-box;
+    z-index: calc(var(--bit-lyt-zin) + 1);
     height: var(--bit-lyt-hdr-h, auto);
 }
 
 .bit-lyt-ftr {
     width: 100%;
     flex-shrink: 0;
+    position: relative;
     box-sizing: border-box;
+    z-index: calc(var(--bit-lyt-zin) + 1);
     height: var(--bit-lyt-ftr-h, auto);
 }
 
@@ -192,7 +230,7 @@
 // link first of all - from landing under the header it just scrolled past.
 .bit-lyt-shd {
     height: fit-content;
-    scroll-padding-block-start: var(--bit-lyt-hdr-h, 0px);
+    scroll-padding-block-start: var(--bit-lyt-hdr-o);
 
     > .bit-lyt-hdr {
         top: 0;
@@ -201,7 +239,7 @@
     }
 
     > .bit-lyt-man > .bit-lyt-mcn {
-        scroll-margin-block-start: var(--bit-lyt-hdr-h, 0px);
+        scroll-margin-block-start: var(--bit-lyt-hdr-o);
     }
 }
 
@@ -226,17 +264,17 @@
     align-self: flex-start;
     overscroll-behavior: contain;
     z-index: var(--bit-lyt-zin);
-    top: var(--bit-lyt-hdr-h, 0px);
-    max-height: calc(100vh - var(--bit-lyt-hdr-h, 0px));
-    max-height: calc(100dvh - var(--bit-lyt-hdr-h, 0px));
+    top: var(--bit-lyt-hdr-o);
+    max-height: calc(100vh - var(--bit-lyt-hdr-o));
+    max-height: calc(100dvh - var(--bit-lyt-hdr-o));
 }
 
 // A pinned footer is drawn over the bottom of a pinned panel, so the panel leaves it that room too: otherwise
 // its last items sit behind the footer, and a focus that lands on one of them is a focus nobody can see.
 .bit-lyt-sft.bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
 .bit-lyt-sft.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd {
-    max-height: calc(100vh - var(--bit-lyt-hdr-h, 0px) - var(--bit-lyt-ftr-h, 0px));
-    max-height: calc(100dvh - var(--bit-lyt-hdr-h, 0px) - var(--bit-lyt-ftr-h, 0px));
+    max-height: calc(100vh - var(--bit-lyt-hdr-o) - var(--bit-lyt-ftr-o));
+    max-height: calc(100dvh - var(--bit-lyt-hdr-o) - var(--bit-lyt-ftr-o));
 }
 
 // A panel that already spans the full height of the layout has no header above it to stay clear of.
@@ -291,31 +329,39 @@
     }
 }
 
-// The backgrounds are declared at zero specificity, so a class the app hands a section (Class, Classes) always
+// The colors, backgrounds and shadows are declared at zero specificity, so a class the app hands a section (Class, Classes) always
 // wins over them, pinned or not. A pinned bar passes over the content scrolling under it, so it is painted with
 // the page background unless it was given one of its own - a transparent one would show the text sliding
 // beneath it through the text of the bar.
 :where(.bit-lyt) {
+    color: var(--bit-Layout-color, inherit);
     background: var(--bit-Layout-background, transparent);
 }
 
 :where(.bit-lyt-hdr) {
+    color: var(--bit-Layout-header-color, inherit);
+    box-shadow: var(--bit-Layout-header-shadow, none);
     background: var(--bit-Layout-header-background, transparent);
 }
 
 :where(.bit-lyt-ftr) {
+    color: var(--bit-Layout-footer-color, inherit);
+    box-shadow: var(--bit-Layout-footer-shadow, none);
     background: var(--bit-Layout-footer-background, transparent);
 }
 
 :where(.bit-lyt-nmn) {
+    color: var(--bit-Layout-nav-panel-color, inherit);
     background: var(--bit-Layout-nav-panel-background, transparent);
 }
 
 :where(.bit-lyt-asd) {
+    color: var(--bit-Layout-aside-color, inherit);
     background: var(--bit-Layout-aside-background, transparent);
 }
 
 :where(.bit-lyt-mcn) {
+    color: var(--bit-Layout-main-color, inherit);
     background: var(--bit-Layout-main-background, transparent);
 }
 

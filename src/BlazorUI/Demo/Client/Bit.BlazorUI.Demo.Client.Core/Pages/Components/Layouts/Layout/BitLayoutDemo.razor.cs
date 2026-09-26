@@ -344,6 +344,54 @@ public partial class BitLayoutDemo
         },
         new()
         {
+            Name = "--bit-Layout-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the whole layout.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-header-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the header, the pair of --bit-Layout-header-background.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-footer-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the footer.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-nav-panel-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the nav panel.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-aside-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the aside.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-main-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the main section.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-header-shadow",
+            DefaultValue = "none",
+            Description = "Box shadow of the header, for example --bit-shd-appbar-top for the elevation of an app bar over the content scrolling under a sticky header.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-footer-shadow",
+            DefaultValue = "none",
+            Description = "Box shadow of the footer.",
+        },
+        new()
+        {
             Name = "--bit-Layout-border-color",
             DefaultValue = "--bit-clr-brd-pri",
             Description = "Color of the dividers drawn by Bordered.",
@@ -358,13 +406,13 @@ public partial class BitLayoutDemo
         {
             Name = "--bit-Layout-header-height",
             DefaultValue = "auto",
-            Description = "Height of the header, and the offset the pinned panels stick at. The HeaderHeight parameter wins over it.",
+            Description = "Height of the header, and the offset the pinned panels stick at (none while no header is rendered). The HeaderHeight parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Layout-footer-height",
             DefaultValue = "auto",
-            Description = "Height of the footer, and the room the pinned panels leave for a sticky footer. The FooterHeight parameter wins over it.",
+            Description = "Height of the footer, and the room the pinned panels leave for a sticky footer (none while no footer is rendered). The FooterHeight parameter wins over it.",
         },
         new()
         {

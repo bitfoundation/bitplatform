@@ -311,7 +311,7 @@
         <div>
             A page may hold one main landmark, so a layout inside another one sets <b>Nested</b>: its main section renders
             as a plain <code>div</code> with the same id and classes. The other sections need nothing - nested headers and
-            footers stop being banner and contentinfo on their own.
+            footers stop being banner and contentinfo on their own. An <b>AriaLabel</b> makes a nested layout a named region.
         </div>
         <br />
         <div class="container">
@@ -323,7 +323,7 @@
                     <div class="pad">NavPanel</div>
                 </NavPanel>
                 <Main>
-                    <BitLayout Nested Bordered NavPanelWidth="100" Padding="0.5rem">
+                    <BitLayout Nested Bordered NavPanelWidth="100" Padding="0.5rem" AriaLabel="Workspace">
                         <Header>
                             <div class="pad">Nested header</div>
                         </Header>
@@ -452,10 +452,12 @@
                               --bit-Layout-border-width: 2px;
                               --bit-Layout-border-color: var(--bit-clr-pri);
                               --bit-Layout-header-background: var(--bit-clr-pri);
+                              --bit-Layout-header-color: var(--bit-clr-pri-text);
+                              --bit-Layout-header-shadow: var(--bit-shd-appbar-top);
                               --bit-Layout-nav-panel-background: color-mix(in srgb, var(--bit-clr-pri) 10%, transparent);
                               --bit-Layout-footer-background: var(--bit-clr-bg-sec);">
                 <Header>
-                    <div class="pad" style="color: var(--bit-clr-pri-text)">Header</div>
+                    <div class="pad">Header</div>
                 </Header>
                 <NavPanel>
                     <div class="pad">NavPanel</div>

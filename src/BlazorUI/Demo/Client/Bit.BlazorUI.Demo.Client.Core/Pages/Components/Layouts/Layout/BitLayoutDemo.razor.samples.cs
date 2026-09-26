@@ -277,7 +277,7 @@ private bool isLtSm;";
         <div class=""pad"">NavPanel</div>
     </NavPanel>
     <Main>
-        <BitLayout Nested Bordered NavPanelWidth=""100"" Padding=""0.5rem"">
+        <BitLayout Nested Bordered NavPanelWidth=""100"" Padding=""0.5rem"" AriaLabel=""Workspace"">
             <Header>
                 <div class=""pad"">Nested header</div>
             </Header>
@@ -435,10 +435,12 @@ private readonly BitLayoutParams[] layoutParams =
                   --bit-Layout-border-width: 2px;
                   --bit-Layout-border-color: var(--bit-clr-pri);
                   --bit-Layout-header-background: var(--bit-clr-pri);
+                  --bit-Layout-header-color: var(--bit-clr-pri-text);
+                  --bit-Layout-header-shadow: var(--bit-shd-appbar-top);
                   --bit-Layout-nav-panel-background: color-mix(in srgb, var(--bit-clr-pri) 10%, transparent);
                   --bit-Layout-footer-background: var(--bit-clr-bg-sec);"">
     <Header>
-        <div class=""pad"" style=""color: var(--bit-clr-pri-text)"">Header</div>
+        <div class=""pad"">Header</div>
     </Header>
     <NavPanel>
         <div class=""pad"">NavPanel</div>
