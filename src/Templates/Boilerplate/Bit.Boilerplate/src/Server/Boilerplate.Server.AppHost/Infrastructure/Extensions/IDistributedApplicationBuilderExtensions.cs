@@ -5,9 +5,6 @@ using Aspire.Hosting.Azure;
 //#if (redis == true)
 using Azure.Provisioning.RedisEnterprise;
 //#endif
-//#if (filesStorage == "S3")
-using Aspire.Hosting.RustFs;
-//#endif
 
 namespace Aspire.Hosting;
 
@@ -270,6 +267,19 @@ public static class IDistributedApplicationBuilderExtensions
         }
 
         /// <summary>
+        /// Whether the app host runs in an environment that exists only to work on this project: a Dev Container,
+        /// GitHub Codespaces, a GitHub Actions runner or an Azure DevOps pipeline agent. There, containers that outlive
+        /// a run bother nobody - they are thrown away together with the environment, or stay on a build agent where the
+        /// next run reuses them - so <see cref="UsePersistentContainers"/> only makes every run after the first faster,
+        /// e.g. a CI job that runs the tests several times (Blazor Server, WebAssembly, another browser, ...).
+        /// </summary>
+        public bool IsDedicatedEnvironment
+            => IsSet("REMOTE_CONTAINERS") // Dev Containers
+            || IsSet("CODESPACES") // GitHub Codespaces
+            || IsSet("GITHUB_ACTIONS") // GitHub Actions runner
+            || IsSet("TF_BUILD"); // Azure DevOps pipeline agent
+
+        /// <summary>
         /// Gives every container of the application model a persistent lifetime, so that they are created once and are
         /// then reused by every subsequent run, instead of being re-created and booted up from scratch each and every time.
         /// </summary>
@@ -300,4 +310,8 @@ public static class IDistributedApplicationBuilderExtensions
             return builder;
         }
     }
+
+    /// <summary>These set their variable to "true" (Azure DevOps to "True").</summary>
+    private static bool IsSet(string environmentVariable)
+        => bool.TryParse(Environment.GetEnvironmentVariable(environmentVariable), out var value) && value;
 }

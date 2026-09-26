@@ -9,7 +9,7 @@
     "ghcr.io/devcontainers/features/docker-in-docker:4": {},
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
       "version": "1",
-      "helm": "3",
+      "helm": "4",
       "minikube": "1"
     },
     "ghcr.io/devcontainers/features/node:2": { "version": "24" }
