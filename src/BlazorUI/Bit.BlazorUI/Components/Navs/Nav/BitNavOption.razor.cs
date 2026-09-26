@@ -22,7 +22,8 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
 
     /// <summary>
-    /// Aria label for nav option. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.
+    /// The accessible name of the nav option, in place of its text. It also names a group header, whose
+    /// CollapseAriaLabel/ExpandAriaLabel only apply when it is not set.
     /// </summary>
     [Parameter] public string? AriaLabel { get; set; }
 

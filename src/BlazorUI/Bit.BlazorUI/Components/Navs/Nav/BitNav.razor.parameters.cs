@@ -3,7 +3,8 @@ namespace Bit.BlazorUI;
 public partial class BitNav<TItem>
 {
     /// <summary>
-    /// The accent color of the nav.
+    /// The accent color of the nav: the background of the hovered and the selected item. A background,
+    /// foreground or border role tints the item, while a semantic role fills it and recolors its content.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
@@ -39,7 +40,9 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The default aria-label of the expand/collapse button of an expanded item.
+    /// The default aria-label of the expand/collapse button of an expanded item: the chevron of a parent that
+    /// has a URL (a parent without one toggles on a click anywhere on it, so its chevron is decoration only),
+    /// or a group header in the Grouped render type.
     /// The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided
     /// the text of the item is used, so the button is never left without an accessible name.
     /// </summary>
@@ -57,7 +60,9 @@ public partial class BitNav<TItem>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
-    /// The default aria-label of the expand/collapse button of a collapsed item.
+    /// The default aria-label of the expand/collapse button of a collapsed item: the chevron of a parent that
+    /// has a URL (a parent without one toggles on a click anywhere on it, so its chevron is decoration only),
+    /// or a group header in the Grouped render type.
     /// The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided
     /// the text of the item is used, so the button is never left without an accessible name.
     /// </summary>

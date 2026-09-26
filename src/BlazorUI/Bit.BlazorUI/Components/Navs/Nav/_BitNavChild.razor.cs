@@ -9,6 +9,7 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     private ElementReference _headerElement;
     private ElementReference _registeredElement;
     private _BitNavItemContainer? _container;
+    private readonly string _descriptionId = $"bit-nav-des-{BitShortId.NewId()}";
 
 
 
@@ -137,13 +138,18 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
         await Nav.ToggleItem(Item);
     }
 
-    private string GetItemContainerClasses()
+    private string GetItemContainerClasses(bool isSelectedAncestor)
     {
         var classes = new List<string>();
 
         if (Nav.IsEnabled is false || Nav.GetIsEnabled(Item) is false)
         {
             classes.Add("bit-nav-dis");
+        }
+
+        if (isSelectedAncestor)
+        {
+            classes.Add("bit-nav-sca");
         }
 
         if (Nav.IsSelected(Item))

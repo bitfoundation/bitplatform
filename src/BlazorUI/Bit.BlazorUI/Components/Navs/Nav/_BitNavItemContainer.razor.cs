@@ -11,6 +11,8 @@ public partial class _BitNavItemContainer
 
     [Parameter] public string? AriaCurrent { get; set; }
 
+    [Parameter] public string? AriaDescribedBy { get; set; }
+
     [Parameter] public string? AriaExpanded { get; set; }
 
     [Parameter] public string? AriaLabel { get; set; }

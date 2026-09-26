@@ -8,7 +8,8 @@ public class BitNavItem
     public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
 
     /// <summary>
-    /// Aria label for nav item. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.
+    /// The accessible name of the nav item, in place of its text. It also names a group header, whose
+    /// CollapseAriaLabel/ExpandAriaLabel only apply when it is not set.
     /// </summary>
     public string? AriaLabel { get; set; }
 

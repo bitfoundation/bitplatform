@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -13,6 +14,9 @@ namespace Bit.BlazorUI;
 /// <br />
 /// Give the nav an accessible name through <see cref="BitComponentBase.AriaLabel"/> when a page holds more
 /// than one navigation landmark, since assistive technologies cannot tell two unlabeled ones apart.
+/// <br />
+/// The defaults of every nav of a page can be set at once through a <see cref="BitNavParams"/> handed to a
+/// <see cref="BitParams"/>.
 /// </remarks>
 public partial class BitNav<TItem> : BitComponentBase where TItem : class
 {
@@ -35,6 +39,19 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the nav component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple nav components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitNavParams.ParamName)]
+    public BitNavParams? CascadingParameters { get; set; }
 
 
 
@@ -201,6 +218,16 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// </summary>
     internal bool IsSelected(TItem? item) => AreEqual(item, SelectedItem);
 
+    /// <summary>
+    /// Whether the selected item is nested somewhere below an item, at any depth.
+    /// </summary>
+    internal bool HasSelectedDescendant(TItem item)
+    {
+        if (SelectedItem is null) return false;
+
+        return GetChildItems(item).Any(child => IsSelected(child) || HasSelectedDescendant(child));
+    }
+
 
 
     protected override string RootElementClass => "bit-nav";
@@ -272,8 +299,13 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNavParams))]
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is applied before anything reads the parameters it may fill in: the initial expansion
+        // state reads AllExpanded, and the initial selection reads Mode, both right here.
+        CascadingParameters?.UpdateParameters(this);
+
         SyncItems();
 
         // The subscription is not tied to the mode: the mode is a parameter that can flip after the
@@ -298,6 +330,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // The Items collection is re-read here rather than only when the parameter is assigned a new
         // instance, so a collection that is mutated in place (an item appended to the same list) is
         // picked up as well.
@@ -597,7 +631,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     // Both the mode and the matching behavior can change after the nav is rendered, and either one
     // changes which item the current URL points at, so the match is re-run once the change is in.
-    private void OnUrlMatchingChanged()
+    internal void OnUrlMatchingChanged()
     {
         if (Mode is not BitNavMode.Automatic) return;
 
