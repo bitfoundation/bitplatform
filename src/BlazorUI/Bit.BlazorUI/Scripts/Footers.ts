@@ -9,10 +9,25 @@ namespace BitBlazorUI {
             // and dispose has to take the scroll listener off the target it is bound to at that moment.
             target: { current: HTMLElement | Window },
             observer?: ResizeObserver,
+            // Gives up the claim of this footer on the scroll padding of the scroller, whichever box is
+            // carrying it at that moment, and puts the padding back once no footer is holding it anymore.
+            clearPadding: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
             frame: { handle: number }
         }>();
+
+        // The scroll padding of a box is shared ground: two pinned footers over the same scroller (an app
+        // shell whose pane carries both) would each otherwise capture the write of the other as "the
+        // value it had before", so the first one to go would wipe the padding the second still needs and
+        // the second would hand the box back a value the page never had. The value found before any of
+        // them touched the box is kept here instead, together with the height each footer is reserving on
+        // it: the box carries the tallest of them, and only the last one to let go puts the value back.
+        private static _paddings = new WeakMap<HTMLElement, { previous: string, owners: Map<string, number> }>();
+
+        private static writePadding(box: HTMLElement, owners: Map<string, number>) {
+            box.style.scrollPaddingBlockEnd = `${Math.max(...owners.values())}px`;
+        }
 
         // Scroll deltas below this many pixels are ignored, so the rubber-banding of touch devices and
         // the sub-pixel jitter of a trackpad cannot flip the footer back and forth on every frame.
@@ -21,28 +36,107 @@ namespace BitBlazorUI {
         // Slides the footer out of the view while the page is scrolled down and brings it back while it is
         // scrolled up (the classic "reveal" behavior of an app bar). The state lives here and only crosses
         // the interop boundary when it actually flips, so a scroll never costs more than a comparison.
-        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number) {
+        // It also reports whether there is content left underneath the footer (the "elevate on scroll"
+        // shadow, which fades out at the end of the scroller) and keeps the bottom scroll padding of the
+        // scroller in step with the height of the footer, so nothing scrolled to lands underneath a pinned one.
+        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean) {
             Footers.dispose(id);
 
             const element = document.getElementById(id);
             if (!element) return;
 
+            // An explicitly named scroller wins over the walk up the tree, which is what a footer that
+            // does not sit inside the box it reacts to (an app shell whose footer and content are
+            // siblings) needs. A selector that matches nothing falls back to the walk rather than
+            // leaving the footer without a scroller at all.
+            const resolveTarget = (): HTMLElement | Window => {
+                if (scrollTarget) {
+                    // A selector that is not valid CSS makes querySelector throw rather than return
+                    // nothing, and this runs again on every resize and every layout change, so a typo in
+                    // the parameter would otherwise break the setup and then every re-resolution after it.
+                    try {
+                        const found = document.querySelector(scrollTarget);
+
+                        if (found) return found as HTMLElement;
+                    } catch { }
+                }
+
+                return Footers.scrollParent(element);
+            };
+
             // The scroller is not always the window: an app shell (and any pane with its own overflow)
             // scrolls its own box, and a scroll event on an element does not bubble to the window.
-            const target = { current: Footers.scrollParent(element) };
+            const target = { current: resolveTarget() };
 
             // A negative offset would keep the footer hidden at the very top of the scroller, where the
             // first rule below is what has to win.
             const offset = Math.max(0, revealOffset || 0);
 
             let hidden = false;
+            let overlapping = false;
             let lastY = Footers.scrollTop(target.current);
 
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.
             const frame = { handle: 0 };
 
+            // The box this footer is reserving scroll padding on, if it is reserving any.
+            let padded: HTMLElement | undefined;
+
+            const clearPadding = () => {
+                if (!padded) return;
+
+                const shared = Footers._paddings.get(padded);
+
+                if (shared) {
+                    shared.owners.delete(id);
+
+                    // The footer leaving may be the tallest one, so the footers still on the box settle it
+                    // on their own tallest height, and the value is only put back once nothing is left.
+                    if (shared.owners.size === 0) {
+                        padded.style.scrollPaddingBlockEnd = shared.previous;
+
+                        Footers._paddings.delete(padded);
+                    } else {
+                        Footers.writePadding(padded, shared.owners);
+                    }
+                }
+
+                padded = undefined;
+            };
+
+            // A pinned footer covers the bottom of the scroller, so a control the browser brings into the
+            // view as the focus moves on, an anchor, or scrollIntoView, lands underneath it (WCAG 2.4.11).
+            // Reserving the height of the footer as the bottom scroll padding of the scroller is what stops
+            // the scroll short of it. The value is on the element that scrolls - the documentElement when
+            // that is the page - and it is re-read whenever the footer or the layout changes size.
+            const applyPadding = () => {
+                if (!scrollPadding) return;
+
+                const box = target.current === window
+                    ? document.documentElement
+                    : target.current as HTMLElement;
+
+                if (padded && padded !== box) {
+                    clearPadding();
+                }
+
+                let shared = Footers._paddings.get(box);
+
+                if (!shared) {
+                    shared = { previous: box.style.scrollPaddingBlockEnd, owners: new Map() };
+
+                    Footers._paddings.set(box, shared);
+                }
+
+                shared.owners.set(id, element.offsetHeight);
+
+                padded = box;
+
+                Footers.writePadding(box, shared.owners);
+            };
+
             const apply = (next: boolean) => {
-                if (next === hidden) return;
+                if (!reveal || next === hidden) return;
 
                 hidden = next;
 
@@ -52,8 +146,22 @@ namespace BitBlazorUI {
                 dotnetObj.invokeMethodAsync('OnRevealChange', hidden).catch(() => { });
             };
 
+            const applyOverlapping = (next: boolean) => {
+                if (!elevate || next === overlapping) return;
+
+                overlapping = next;
+
+                dotnetObj.invokeMethodAsync('OnOverlapChange', overlapping).catch(() => { });
+            };
+
             const evaluate = () => {
                 frame.handle = 0;
+
+                const end = Footers.atEnd(target.current);
+
+                applyOverlapping(!end);
+
+                if (!reveal) return;
 
                 const y = Footers.scrollTop(target.current);
                 const delta = y - lastY;
@@ -69,7 +177,7 @@ namespace BitBlazorUI {
                 // make room for yet, and at the end the footer is the content the user scrolled down to
                 // reach. The offset is what keeps a footer from flickering away on the first few pixels
                 // of a scroll that has barely started.
-                if (y <= offset || Footers.atEnd(target.current)) {
+                if (y <= offset || end) {
                     next = false;
                     lastY = y;
                 }
@@ -84,10 +192,10 @@ namespace BitBlazorUI {
                 frame.handle = requestAnimationFrame(evaluate);
             };
 
-            // A hidden footer is only translated out of the view, so everything inside it is still in the
-            // tab order: a keyboard user tabbing past the content lands on a control they cannot see.
-            // Revealing the footer as soon as anything inside it takes the focus keeps that control
-            // visible, and the scroll baseline is re-read so the next scroll is measured from here.
+            // A footer slid away by the scroll is only translated out of the view, so everything inside it
+            // is still in the tab order: a keyboard user tabbing past the content lands on a control they
+            // cannot see. Revealing the footer as soon as anything inside it takes the focus keeps that
+            // control visible, and the scroll baseline is re-read so the next scroll is measured from here.
             const focusHandler = () => {
                 lastY = Footers.scrollTop(target.current);
 
@@ -97,7 +205,8 @@ namespace BitBlazorUI {
             let observer: ResizeObserver | undefined;
 
             // The scroller is watched as well as the page, since a pane only becomes the scroller of the
-            // footer once its own content overflows it.
+            // footer once its own content overflows it. The footer itself is watched only when its height
+            // is being mirrored into the scroll padding of that scroller.
             const observe = () => {
                 if (!observer) return;
 
@@ -105,7 +214,20 @@ namespace BitBlazorUI {
                 observer.observe(document.documentElement);
 
                 if (target.current !== window) {
-                    observer.observe(target.current as HTMLElement);
+                    const box = target.current as HTMLElement;
+
+                    observer.observe(box);
+
+                    // A pane of a fixed height keeps the same border box however much content is put into
+                    // it, so watching the box alone never reports the growth that turns it into the scroller
+                    // of the footer. Its content wrapper is the box that actually grows with the content.
+                    if (box.firstElementChild) {
+                        observer.observe(box.firstElementChild);
+                    }
+                }
+
+                if (scrollPadding) {
+                    observer.observe(element);
                 }
             };
 
@@ -114,7 +236,7 @@ namespace BitBlazorUI {
             // content outgrows it, and the other way round. The scroller is re-resolved whenever the
             // layout or the content moves, and the scroll listener follows it.
             const layoutHandler = () => {
-                const next = Footers.scrollParent(element);
+                const next = resolveTarget();
 
                 if (next !== target.current) {
                     target.current.removeEventListener('scroll', scrollHandler);
@@ -127,6 +249,8 @@ namespace BitBlazorUI {
 
                     observe();
                 }
+
+                applyPadding();
 
                 scrollHandler();
             };
@@ -145,7 +269,14 @@ namespace BitBlazorUI {
                 observe();
             }
 
-            Footers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, frame });
+            Footers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearPadding, frame });
+
+            applyPadding();
+
+            // Whether there is content left underneath the footer is known before any scroll happens (a
+            // page taller than the viewport starts with its end out of the view), so the states are settled
+            // once up front instead of waiting for a scroll that may never come.
+            evaluate();
         }
 
         public static dispose(id: string) {
@@ -157,6 +288,8 @@ namespace BitBlazorUI {
             entry.element.removeEventListener('focusin', entry.focusHandler);
 
             entry.observer?.disconnect();
+
+            entry.clearPadding();
 
             // A frame scheduled by the last scroll before the disposal would still evaluate and call back
             // into a component that is on its way out, so it is dropped along with the listeners.

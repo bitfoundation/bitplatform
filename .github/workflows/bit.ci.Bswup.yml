@@ -6,6 +6,7 @@ name: bit platform CI - Bswup
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
     - 'src/Bswup/**'
