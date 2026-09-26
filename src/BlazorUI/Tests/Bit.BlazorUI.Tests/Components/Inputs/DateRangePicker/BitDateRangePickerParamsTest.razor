@@ -1,0 +1,20 @@
+﻿@* A picker that takes everything from the cascade next to one that writes a parameter of its own. *@
+<BitParams Parameters="@Parameters">
+    <BitDateRangePicker />
+
+    <BitDateRangePicker Color="BitColor.Success" />
+</BitParams>
+
+@code {
+    [Parameter]
+    public IEnumerable<IBitComponentParams> Parameters { get; set; } =
+    [
+        new BitDateRangePickerParams
+        {
+            Size = BitSize.Large,
+            MonthCount = 2,
+            Color = BitColor.Info,
+            Placeholder = "from the cascade",
+        }
+    ];
+}

@@ -1,5 +1,54 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// color picker and one set on the Style of an instance re-skins that one alone:
+//   --bit-ColorPicker-width                     width of the whole panel                       (default: per Size)
+//   --bit-ColorPicker-background                background behind the panel                    (default: transparent)
+//   --bit-ColorPicker-padding                   padding around the panel                       (default: 0)
+//   --bit-ColorPicker-radius                    corner radius of the panel                     (default: 0)
+//   --bit-ColorPicker-gap                       vertical rhythm between the rows of the panel  (default: spacing(1))
+//   --bit-ColorPicker-font-size                 text size of the panel                         (default: per Size, from the type ramp)
+//   --bit-ColorPicker-caption-font-size         text size of the field captions and of the
+//                                               contrast readout                               (default: one step below the panel)
+//   --bit-ColorPicker-border-color              color of every border the panel draws          (default: $clr-brd-pri)
+//   --bit-ColorPicker-focus-color               color of the keyboard focus ring               (default: $clr-pri-focus)
+//   --bit-ColorPicker-label-color               color of the label text                        (default: $clr-fg-pri)
+//   --bit-ColorPicker-saturation-height         height of the saturation-brightness area       (default: per Size)
+//   --bit-ColorPicker-saturation-radius         corner radius of that area                     (default: $shp-radius-control)
+//   --bit-ColorPicker-thumb-size                diameter of the saturation thumb and of the
+//                                               thumbs of both sliders                         (default: per Size)
+//   --bit-ColorPicker-thumb-color               fill of the slider thumbs                      (default: $clr-ntr-white)
+//   --bit-ColorPicker-thumb-ring-color          inner ring that keeps the saturation thumb
+//                                               readable over a dark area of the gradient      (default: $clr-ntr-white)
+//   --bit-ColorPicker-thumb-shadow              elevation under the saturation thumb           (default: $box-shadow-nm)
+//   --bit-ColorPicker-track-height              height of the hue and alpha tracks             (default: per Size)
+//   --bit-ColorPicker-track-radius              corner radius of both tracks                   (default: $shp-radius-control)
+//   --bit-ColorPicker-preview-size              width and height of the preview box            (default: per Size)
+//   --bit-ColorPicker-preview-radius            corner radius of the preview box               (default: $shp-radius-control)
+//   --bit-ColorPicker-button-size               square of the eye dropper and inputs-mode
+//                                               buttons, never below the 24px WCAG target      (default: per Size)
+//   --bit-ColorPicker-button-color              glyph color of those buttons                   (default: $clr-fg-pri)
+//   --bit-ColorPicker-button-radius             corner radius of those buttons                 (default: $shp-radius-button)
+//   --bit-ColorPicker-button-hover-background   background of those buttons on hover           (default: $clr-bg-sec-hover)
+//   --bit-ColorPicker-button-active-background  background of those buttons while pressed      (default: $clr-bg-sec-active)
+//   --bit-ColorPicker-icon-size                 glyph size inside those buttons                (default: per Size, $siz-icon-*)
+//   --bit-ColorPicker-field-color               text color of the hex and channel fields       (default: $clr-fg-pri)
+//   --bit-ColorPicker-field-background          background of those fields                     (default: $clr-bg-pri)
+//   --bit-ColorPicker-field-radius              corner radius of those fields                  (default: $shp-radius-control)
+//   --bit-ColorPicker-field-label-color         color of the caption under a field             (default: $clr-fg-sec)
+//   --bit-ColorPicker-swatch-size               square of a preset swatch                      (default: per Size)
+//   --bit-ColorPicker-swatch-radius             corner radius of a preset swatch               (default: $shp-radius-sm)
+//   --bit-ColorPicker-swatch-gap                space between preset swatches                  (default: spacing(0.5))
+//   --bit-ColorPicker-swatch-ring-color         inner ring marking the selected swatch         (default: $clr-ntr-white)
+//   --bit-ColorPicker-swatch-ring-shadow        outer ring that keeps that mark readable on a
+//                                               swatch of the inner ring's own color           (default: $clr-ntr-black)
+//   --bit-ColorPicker-checkerboard-size         square of the grid transparency is read on     (default: spacing(0.75), spacing(0.5) on a swatch)
+//   --bit-ColorPicker-checkerboard-color        darker square of that grid                     (default: $clr-brd-sec)
+//   --bit-ColorPicker-checkerboard-background   lighter square of that grid                    (default: $clr-ntr-white)
+//   --bit-ColorPicker-contrast-color            color of the contrast ratio                    (default: $clr-fg-pri)
+//   --bit-ColorPicker-contrast-pass-color       color of a badge that clears the WCAG bar      (default: $clr-suc)
+//   --bit-ColorPicker-contrast-fail-color       color of a badge that does not                 (default: $clr-err)
+
 /*
  * checkerboard($size)
  * --------------------------------------------------
@@ -7,25 +56,55 @@
  * slider, the preview box, a preset swatch - is drawn over it, so that a 50% white reads as half
  * transparent instead of as whatever lighter shade the page behind it happens to make it.
  * It is two offset gradients rather than an image, so it stays crisp at any zoom and costs no request.
+ * The square is passed in rather than read off the public variable inside, because a swatch draws a
+ * smaller grid than a track does while both still resolve through the same override.
  */
-@mixin checkerboard($size: spacing(0.75)) {
-    background-color: $clr-ntr-white;
-    background-image: linear-gradient(45deg, $clr-brd-sec 25%, transparent 25%, transparent 75%, $clr-brd-sec 75%),
-                      linear-gradient(45deg, $clr-brd-sec 25%, transparent 25%, transparent 75%, $clr-brd-sec 75%);
+@mixin checkerboard($size: var(--bit-ColorPicker-checkerboard-size, #{spacing(0.75)})) {
+    $square: var(--bit-ColorPicker-checkerboard-color, #{$clr-brd-sec});
+
+    background-color: var(--bit-ColorPicker-checkerboard-background, #{$clr-ntr-white});
+    background-image: linear-gradient(45deg, $square 25%, transparent 25%, transparent 75%, $square 75%),
+                      linear-gradient(45deg, $square 25%, transparent 25%, transparent 75%, $square 75%);
     background-size: calc(#{$size} * 2) calc(#{$size} * 2);
     background-position: 0 0, #{$size} #{$size};
 }
 
+// The default size, declared as a mixin so the root can fall back to it without a size class. Every value a
+// size class sets is named apart from the public variable it feeds, so a size class and a CSS variable never
+// fight over the same property: the public name wins whichever size the picker happens to be in.
+@mixin clp-size-medium {
+    --bit-clp-width-def: #{spacing(33.5)};
+    --bit-clp-sat-height-def: #{spacing(29.5)};
+    --bit-clp-track-height-def: #{spacing(2.5)};
+    --bit-clp-thumb-size-def: #{spacing(2.5)};
+    --bit-clp-button-size-def: #{spacing(3)};
+    --bit-clp-swatch-size-def: #{spacing(3)};
+    --bit-clp-preview-size-def: #{spacing(6)};
+    --bit-clp-fs-def: #{$tg-fs-sm};
+    --bit-clp-fs-sub-def: #{$tg-fs-xs};
+    --bit-clp-icon-size-def: #{$siz-icon-md};
+}
+
 .bit-clp {
+    @include clp-size-medium;
+
     display: flex;
-    font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     max-width: 100%;
     flex-direction: column;
-    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
-    width: var(--bit-clp-width, #{spacing(33.5)});
+    width: var(--bit-ColorPicker-width, var(--bit-clp-width-def));
+    padding: var(--bit-ColorPicker-padding, 0);
+    border-radius: var(--bit-ColorPicker-radius, 0);
+    background-color: var(--bit-ColorPicker-background, transparent);
+    font-size: var(--bit-ColorPicker-font-size, var(--bit-clp-fs-def));
+
+    // The two values every part of the panel resolves its own override through, computed once here so that a
+    // border color or a focus color set on :root reaches the sliders, the fields and the swatches alike.
+    --bit-clp-brd: var(--bit-ColorPicker-border-color, #{$clr-brd-pri});
+    --bit-clp-focus: var(--bit-ColorPicker-focus-color, #{$clr-pri-focus});
 
     // No height is declared here on purpose: the panel is as tall as the rows it holds, so turning the
     // inputs or the presets on grows it instead of squeezing the gradient. An explicit height from a
@@ -44,8 +123,9 @@
     }
 }
 
-// A read-only picker keeps its full contrast - it is showing a value, not refusing one - but nothing on it
-// responds to the pointer.
+// A read-only picker keeps its full contrast - it is showing a value, not refusing one - and keeps every
+// control in the tab order, so the color it is on can still be read out in full. Only the pointer is turned
+// away, and only on the controls a drag would otherwise move.
 .bit-clp-rdl {
     .bit-clp-rec, .bit-clp-sld, .bit-clp-eyd, .bit-clp-prt {
         cursor: default;
@@ -54,30 +134,33 @@
 }
 
 .bit-clp-sm {
-    --bit-clp-width: #{spacing(25)};
-    --bit-clp-sat-height: #{spacing(20)};
-    --bit-clp-track-height: #{spacing(2)};
-    --bit-clp-thumb-size: #{spacing(2)};
-    --bit-clp-target-size: #{spacing(3)};
-    --bit-clp-preview-size: #{spacing(4.5)};
+    --bit-clp-width-def: #{spacing(25)};
+    --bit-clp-sat-height-def: #{spacing(20)};
+    --bit-clp-track-height-def: #{spacing(2)};
+    --bit-clp-thumb-size-def: #{spacing(2)};
+    --bit-clp-button-size-def: #{spacing(3)};
+    --bit-clp-swatch-size-def: #{spacing(3)};
+    --bit-clp-preview-size-def: #{spacing(4.5)};
+    --bit-clp-fs-def: #{$tg-fs-xs};
+    --bit-clp-fs-sub-def: #{$tg-fs-2xs};
+    --bit-clp-icon-size-def: #{$siz-icon-sm};
 }
 
 .bit-clp-md {
-    --bit-clp-width: #{spacing(33.5)};
-    --bit-clp-sat-height: #{spacing(29.5)};
-    --bit-clp-track-height: #{spacing(2.5)};
-    --bit-clp-thumb-size: #{spacing(2.5)};
-    --bit-clp-target-size: #{spacing(3)};
-    --bit-clp-preview-size: #{spacing(6)};
+    @include clp-size-medium;
 }
 
 .bit-clp-lg {
-    --bit-clp-width: #{spacing(42)};
-    --bit-clp-sat-height: #{spacing(37)};
-    --bit-clp-track-height: #{spacing(3)};
-    --bit-clp-thumb-size: #{spacing(3)};
-    --bit-clp-target-size: #{spacing(3.5)};
-    --bit-clp-preview-size: #{spacing(7.5)};
+    --bit-clp-width-def: #{spacing(42)};
+    --bit-clp-sat-height-def: #{spacing(37)};
+    --bit-clp-track-height-def: #{spacing(3)};
+    --bit-clp-thumb-size-def: #{spacing(3)};
+    --bit-clp-button-size-def: #{spacing(3.5)};
+    --bit-clp-swatch-size-def: #{spacing(3.5)};
+    --bit-clp-preview-size-def: #{spacing(7.5)};
+    --bit-clp-fs-def: #{$tg-fs-md};
+    --bit-clp-fs-sub-def: #{$tg-fs-sm};
+    --bit-clp-icon-size-def: #{$siz-icon-lg};
 }
 
 .bit-clp-lbc {
@@ -86,9 +169,10 @@
 }
 
 .bit-clp-lbl {
-    color: $clr-fg-pri;
+    font-size: inherit;
     font-weight: $tg-fw-semibold;
-    font-size: $tg-fs-sm;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-ColorPicker-label-color, #{$clr-fg-pri});
 }
 
 // The contrast readout sits under the controls rather than beside them: it is the answer to a question
@@ -99,13 +183,13 @@
     flex-shrink: 0;
     gap: spacing(0.5);
     align-items: center;
-    margin-top: spacing(1);
-    font-size: $tg-fs-xs;
+    font-size: var(--bit-ColorPicker-caption-font-size, var(--bit-clp-fs-sub-def));
+    margin-top: var(--bit-ColorPicker-gap, #{spacing(1)});
 }
 
 .bit-clp-cnv {
-    color: $clr-fg-pri;
     font-weight: $tg-fw-semibold;
+    color: var(--bit-ColorPicker-contrast-color, #{$clr-fg-pri});
 }
 
 // Never the color alone: a pass marked only in green and a failure only in red would be exactly the
@@ -125,7 +209,7 @@
 }
 
 .bit-clp-cnp {
-    color: $clr-suc;
+    color: var(--bit-ColorPicker-contrast-pass-color, #{$clr-suc});
 
     &::before {
         content: "\2713"; // check mark
@@ -133,7 +217,7 @@
 }
 
 .bit-clp-cnf {
-    color: $clr-err;
+    color: var(--bit-ColorPicker-contrast-fail-color, #{$clr-err});
 
     &::before {
         content: "\2717"; // ballot x
@@ -148,11 +232,11 @@
     cursor: crosshair;
     position: relative;
     box-sizing: border-box;
-    margin-bottom: spacing(1);
     min-height: spacing(6);
-    border-radius: $shp-radius-control;
-    height: var(--bit-clp-sat-height);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    margin-bottom: var(--bit-ColorPicker-gap, #{spacing(1)});
+    height: var(--bit-ColorPicker-saturation-height, var(--bit-clp-sat-height-def));
+    border-radius: var(--bit-ColorPicker-saturation-radius, #{$shp-radius-control});
+    border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 
     // A drag across the gradient is a color gesture, not a scroll, so the browser is told not to claim it.
     // Scoped to the parts that are actually dragged rather than to the whole panel, which would stop the
@@ -160,7 +244,7 @@
     touch-action: none;
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-clp-focus));
     }
 }
 
@@ -183,12 +267,12 @@
 .bit-clp-thumb {
     position: absolute;
     border-radius: 50%;
-    width: var(--bit-clp-thumb-size);
-    height: var(--bit-clp-thumb-size);
     transform: translate(-50%, -50%);
     background: $clr-bg-sec;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    box-shadow: $box-shadow-nm;
+    width: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+    height: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+    box-shadow: var(--bit-ColorPicker-thumb-shadow, #{$box-shadow-nm});
+    border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 
     &::before {
         inset: 0;
@@ -196,7 +280,7 @@
         position: absolute;
         border-radius: 50%;
         box-sizing: border-box;
-        border: $shp-border-width $shp-border-style $clr-ntr-white;
+        border: $shp-border-width $shp-border-style var(--bit-ColorPicker-thumb-ring-color, #{$clr-ntr-white});
     }
 }
 
@@ -222,11 +306,18 @@
     position: relative;
     touch-action: none;
     box-sizing: border-box;
-    margin-bottom: spacing(1);
     forced-color-adjust: none;
-    border-radius: $shp-radius-control;
-    height: var(--bit-clp-track-height);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    margin-bottom: var(--bit-ColorPicker-gap, #{spacing(1)});
+    height: var(--bit-ColorPicker-track-height, var(--bit-clp-track-height-def));
+    border-radius: var(--bit-ColorPicker-track-radius, #{$shp-radius-control});
+    border: $shp-border-width $shp-border-style var(--bit-clp-brd);
+
+    // The ring is drawn around the rail rather than around the input, because the input is deliberately
+    // taller than the rail it sits on (see .bit-clp-inp): drawn on the input it would trace the hit area
+    // instead of the control, and a keyboard user would be shown a box that is not what they are looking at.
+    &:has(.bit-clp-inp:focus-visible) {
+        @include focus-ring(var(--bit-clp-focus));
+    }
 }
 
 .bit-clp-hsd {
@@ -247,45 +338,55 @@
 }
 
 .bit-clp-inp {
+    margin: 0;
+    top: 50%;
     background: none;
-    position: relative;
-    top: spacing(-0.0625);
+    position: absolute;
     -webkit-appearance: none;
-    margin: 0 calc(var(--bit-clp-thumb-size) / -2);
-    width: calc(100% + var(--bit-clp-thumb-size));
-    height: var(--bit-clp-track-height);
+    transform: translateY(-50%);
+    inset-inline-start: calc(var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)) / -2);
+    width: calc(100% + var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)));
+    // The hit area rather than the rail. A range whose box is only as tall as the rail it draws is a 16px
+    // target at the small size, under the 24 CSS pixels WCAG 2.2 asks a pointer target for (SC 2.5.8), and
+    // a thumb that is easy to see is still awkward to catch with a finger. The box is grown to that floor -
+    // or to the thumb, wherever the thumb is the larger of the two - and centred on the rail, so the target
+    // grows without the rail moving or anything around it giving way. The gap between the rows is wider
+    // than the overhang, so the two sliders never reach into one another.
+    height: max(var(--bit-ColorPicker-track-height, var(--bit-clp-track-height-def)),
+                var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)),
+                #{spacing(3)});
 
+    // The ring belongs to the rail, which is what the user is looking at - see .bit-clp-sld. The native
+    // outline is still taken off here, since it would be drawn around this box instead.
     &:focus-visible {
-        @include focus-ring;
-
-        border-radius: $shp-radius-control;
+        outline: none;
     }
 
     &::-webkit-slider-thumb {
         cursor: pointer;
         appearance: none;
         border-radius: 50%;
-        width: var(--bit-clp-thumb-size);
-        height: var(--bit-clp-thumb-size);
         -webkit-appearance: none;
-        background-color: $clr-ntr-white;
-        border: $shp-border-width $shp-border-style $clr-brd-pri;
+        width: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+        height: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+        background-color: var(--bit-ColorPicker-thumb-color, #{$clr-ntr-white});
+        border: $shp-border-width $shp-border-style var(--bit-clp-brd);
     }
 
     &::-moz-range-thumb {
         cursor: pointer;
         border-radius: 50%;
         box-sizing: border-box;
-        width: var(--bit-clp-thumb-size);
-        height: var(--bit-clp-thumb-size);
-        background-color: $clr-ntr-white;
-        border: $shp-border-width $shp-border-style $clr-brd-pri;
+        width: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+        height: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+        background-color: var(--bit-ColorPicker-thumb-color, #{$clr-ntr-white});
+        border: $shp-border-width $shp-border-style var(--bit-clp-brd);
     }
 
     // A track that will not move should not invite the drag. The thumb keeps its colors - a frozen picker
     // is showing a value, not refusing one - and only gives up the cursor that promises it can be dragged.
-    // The two vendor pseudo-elements are declared apart, since an engine that does not know one of them
-    // drops the whole selector list.
+    // The vendor pseudo-elements are declared apart, since an engine that does not know one of them drops
+    // the whole selector list.
     &:disabled::-webkit-slider-thumb {
         cursor: default;
     }
@@ -293,41 +394,71 @@
     &:disabled::-moz-range-thumb {
         cursor: default;
     }
+
+    &[aria-readonly="true"]::-webkit-slider-thumb {
+        cursor: default;
+    }
+
+    &[aria-readonly="true"]::-moz-range-thumb {
+        cursor: default;
+    }
 }
 
-// Sized by the target token rather than by the track it sits next to: the tracks can be as short as the
+// Sized by the button token rather than by the track it sits next to: the tracks can be as short as the
 // small preset allows, but a button has to stay at least the 24 CSS pixels WCAG 2.2 asks a target for.
-.bit-clp-eyd {
+.bit-clp-eyd, .bit-clp-swb {
     padding: 0;
     display: flex;
     flex-shrink: 0;
     cursor: pointer;
     align-items: center;
-    color: $clr-fg-pri;
     justify-content: center;
     box-sizing: border-box;
     background-color: transparent;
-    width: var(--bit-clp-target-size);
-    height: var(--bit-clp-target-size);
-    border-radius: $shp-radius-control;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    color: var(--bit-ColorPicker-button-color, #{$clr-fg-pri});
+    width: var(--bit-ColorPicker-button-size, var(--bit-clp-button-size-def));
+    height: var(--bit-ColorPicker-button-size, var(--bit-clp-button-size-def));
+    border-radius: var(--bit-ColorPicker-button-radius, #{$shp-radius-button});
+    border: $shp-border-width $shp-border-style var(--bit-clp-brd);
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
-    &:hover {
-        background-color: $clr-bg-sec-hover;
+    // Gated on a device that can actually hover, so a tap on a touch screen does not leave the button stuck
+    // in the hovered background until something else is touched.
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-ColorPicker-button-hover-background, #{$clr-bg-sec-hover});
+        }
     }
 
     &:active {
-        background-color: $clr-bg-sec-active;
+        background-color: var(--bit-ColorPicker-button-active-background, #{$clr-bg-sec-active});
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-clp-focus));
+    }
+
+    // A button the picker is refusing - one on a read-only panel - stays in the tab order so the panel can
+    // still be read through, and gives up the affordances that promise a press will do something.
+    &[aria-disabled="true"] {
+        cursor: default;
+        background-color: transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: transparent;
+            }
+        }
+
+        &:active {
+            background-color: transparent;
+        }
     }
 }
 
-.bit-clp-eyi {
-    font-size: $tg-fs-sm;
+.bit-clp-eyi, .bit-clp-swi {
     line-height: 1;
+    font-size: var(--bit-ColorPicker-icon-size, var(--bit-clp-icon-size-def));
 }
 
 .bit-clp-pre {
@@ -335,10 +466,10 @@
     flex-shrink: 0;
     position: relative;
     box-sizing: border-box;
-    border-radius: $shp-radius-control;
-    width: var(--bit-clp-preview-size);
-    height: var(--bit-clp-preview-size);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    width: var(--bit-ColorPicker-preview-size, var(--bit-clp-preview-size-def));
+    height: var(--bit-ColorPicker-preview-size, var(--bit-clp-preview-size-def));
+    border-radius: var(--bit-ColorPicker-preview-radius, #{$shp-radius-control});
+    border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 }
 
 .bit-clp-prc {
@@ -381,57 +512,23 @@
     flex: 0 0 auto;
 }
 
-// Sized by the target token, like the eye dropper: a button has to stay at least the 24 CSS pixels
-// WCAG 2.2 asks a target for, whatever the fields next to it end up as.
-.bit-clp-swb {
-    padding: 0;
-    display: flex;
-    cursor: pointer;
-    align-items: center;
-    color: $clr-fg-pri;
-    justify-content: center;
-    box-sizing: border-box;
-    background-color: transparent;
-    width: var(--bit-clp-target-size);
-    height: var(--bit-clp-target-size);
-    border-radius: $shp-radius-control;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-
-    &:hover {
-        background-color: $clr-bg-sec-hover;
-    }
-
-    &:active {
-        background-color: $clr-bg-sec-active;
-    }
-
-    &:focus-visible {
-        @include focus-ring;
-    }
-}
-
-.bit-clp-swi {
-    font-size: $tg-fs-sm;
-    line-height: 1;
-}
-
 .bit-clp-fin {
     width: 100%;
     min-width: 0;
     text-align: center;
     box-sizing: border-box;
-    color: $clr-fg-pri;
     font: inherit;
     // The panel suppresses text selection so that a drag across it never highlights anything, but the
     // fields are text: the value in them has to stay selectable and copyable.
     user-select: text;
     padding: spacing(0.5);
-    border-radius: $shp-radius-control;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    color: var(--bit-ColorPicker-field-color, #{$clr-fg-pri});
+    border-radius: var(--bit-ColorPicker-field-radius, #{$shp-radius-control});
+    background-color: var(--bit-ColorPicker-field-background, #{$clr-bg-pri});
+    border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-clp-focus));
     }
 
     // The spinners of the channel fields would take a third of their width for a control the arrow keys
@@ -451,17 +548,18 @@
 .bit-clp-flb {
     cursor: default;
     text-align: center;
-    color: $clr-fg-sec;
     padding-top: spacing(0.25);
-    font-size: $tg-fs-xs;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-ColorPicker-field-label-color, #{$clr-fg-sec});
+    font-size: var(--bit-ColorPicker-caption-font-size, var(--bit-clp-fs-sub-def));
 }
 
 .bit-clp-prs {
     display: flex;
     flex-wrap: wrap;
     flex-shrink: 0;
-    gap: spacing(0.5);
-    margin-top: spacing(1);
+    gap: var(--bit-ColorPicker-swatch-gap, #{spacing(0.5)});
+    margin-top: var(--bit-ColorPicker-gap, #{spacing(1)});
 }
 
 // A palette given a row length is laid out on a grid instead of being left to wrap, so a column of the
@@ -470,20 +568,21 @@
 .bit-clp-prg {
     display: grid;
     justify-content: start;
-    grid-template-columns: repeat(var(--bit-clp-prs-cols, 1), var(--bit-clp-target-size));
+    grid-template-columns: repeat(var(--bit-clp-prs-cols, 1), var(--bit-ColorPicker-swatch-size, var(--bit-clp-swatch-size-def)));
 }
 
 .bit-clp-prt {
-    @include checkerboard(spacing(0.5));
+    @include checkerboard(var(--bit-ColorPicker-checkerboard-size, #{spacing(0.5)}));
     padding: 0;
     flex-shrink: 0;
     cursor: pointer;
     position: relative;
     box-sizing: border-box;
-    width: var(--bit-clp-target-size);
-    height: var(--bit-clp-target-size);
-    border-radius: $shp-radius-sm;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    width: var(--bit-ColorPicker-swatch-size, var(--bit-clp-swatch-size-def));
+    height: var(--bit-ColorPicker-swatch-size, var(--bit-clp-swatch-size-def));
+    border-radius: var(--bit-ColorPicker-swatch-radius, #{$shp-radius-sm});
+    border: $shp-border-width $shp-border-style var(--bit-clp-brd);
+    transition: transform $mot-duration-short $mot-easing;
 
     // The swatch color rides on top of the checkerboard, so a semi-transparent preset advertises itself
     // as one instead of looking like a paler solid.
@@ -495,12 +594,26 @@
         background-color: var(--bit-clp-prt-clr);
     }
 
-    &:hover {
-        transform: scale(1.1);
+    @media (hover: hover) {
+        &:hover {
+            transform: scale(1.1);
+        }
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-clp-focus));
+    }
+
+    // A swatch the picker is refusing keeps its color and its place in the tab order - the palette is still
+    // worth reading through - and gives up the growth that promises a press will land.
+    &[aria-disabled="true"] {
+        cursor: default;
+
+        @media (hover: hover) {
+            &:hover {
+                transform: none;
+            }
+        }
     }
 }
 
@@ -516,8 +629,8 @@
     // Inherited rather than declared, so the ring keeps the shape of the swatch it marks: a consumer who
     // rounds the swatches into circles gets a round ring instead of a square one sitting inside a circle.
     border-radius: inherit;
-    border: $shp-border-width-thick $shp-border-style var(--bit-clp-prt-sel-clr, #{$clr-ntr-white});
-    box-shadow: 0 0 0 $shp-border-width var(--bit-clp-prt-sel-shd, #{$clr-ntr-black});
+    border: $shp-border-width-thick $shp-border-style var(--bit-ColorPicker-swatch-ring-color, #{$clr-ntr-white});
+    box-shadow: 0 0 0 $shp-border-width var(--bit-ColorPicker-swatch-ring-shadow, #{$clr-ntr-black});
 }
 
 
@@ -569,6 +682,14 @@
 
     .bit-clp-inp::-moz-range-thumb {
         border-color: Highlight;
+    }
+
+    // The ring on the selected swatch is the one mark a forced-colors user has to be able to make out, and
+    // the white-on-black pair it is drawn in is exactly what such a mode would otherwise replace with a
+    // single color, so it is restated in two system colors that are guaranteed to stand apart.
+    .bit-clp-prt-sel::before {
+        border-color: Highlight;
+        box-shadow: 0 0 0 $shp-border-width Canvas;
     }
 
     .bit-clp.bit-dis {

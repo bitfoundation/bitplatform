@@ -12,8 +12,14 @@ public enum BitDatePickerMode
 
     /// <summary>
     /// Month picker mode allowing selection of only month and year.
-    /// The day is automatically set to the 1st of the selected month.
+    /// The day is automatically set to the first selectable day of the selected month.
     /// </summary>
-    MonthPicker
+    MonthPicker,
+
+    /// <summary>
+    /// Year picker mode allowing selection of only the year.
+    /// The day is automatically set to the first selectable day of the selected year.
+    /// </summary>
+    YearPicker
 }
 
