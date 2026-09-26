@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using ErrorEventArgs = Microsoft.AspNetCore.Components.Web.ErrorEventArgs;
 
@@ -14,6 +15,19 @@ public partial class BitPersona : BitComponentBase
     private string? _rel;
     private bool _isLoaded;
     private bool _hasError;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the persona component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple persona components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPersonaParams.ParamName)]
+    public BitPersonaParams? CascadingParameters { get; set; }
 
 
 
@@ -554,6 +568,16 @@ public partial class BitPersona : BitComponentBase
     /// </remarks>
     [Parameter] public string? UnknownIconName { get; set; }
 
+    /// <summary>
+    /// Stacks the coin over the details and centers both, instead of laying them out side by side.
+    /// </summary>
+    /// <remarks>
+    /// This is the layout of a profile card or of a member tile in a call grid. Combined with
+    /// <see cref="Reversed"/> it puts the details over the coin.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
+
 
 
     protected override string RootElementClass => "bit-prs";
@@ -565,6 +589,8 @@ public partial class BitPersona : BitComponentBase
         ClassBuilder.Register(() => FullWidth ? "bit-prs-fwi" : string.Empty);
 
         ClassBuilder.Register(() => Reversed ? "bit-prs-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => Vertical ? "bit-prs-vrt" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
@@ -611,6 +637,14 @@ public partial class BitPersona : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPersonaParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
 
@@ -1074,7 +1108,10 @@ public partial class BitPersona : BitComponentBase
 
             if (ImageOverlayText.HasNoValue()) return false;
 
-            return OnImageClick.HasDelegate || HasNotBeenSet(nameof(ImageOverlayText)) is false;
+            // A text handed down by a BitParams ancestor is named by the caller just the same.
+            return OnImageClick.HasDelegate
+                || HasNotBeenSet(nameof(ImageOverlayText)) is false
+                || CascadingParameters?.ImageOverlayText.HasValue() is true;
         }
     }
 
@@ -1236,7 +1273,7 @@ public partial class BitPersona : BitComponentBase
         await OnImageLoad.InvokeAsync(e);
     }
 
-    private void OnSetImageSource()
+    internal void OnSetImageSource()
     {
         _hasError = false;
         _isLoaded = false;
@@ -1244,7 +1281,7 @@ public partial class BitPersona : BitComponentBase
         StateHasChanged();
     }
 
-    private void OnSetHrefAndRel()
+    internal void OnSetHrefAndRel()
     {
         if (Href.HasNoValue() || Href!.StartsWith('#'))
         {
