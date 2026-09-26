@@ -12,7 +12,7 @@
 //   --bit-Carousel-button-hover-background     next/prev button background on hover                (default: the rest background)
 //   --bit-Carousel-button-opacity              next/prev and play/pause opacity at rest            (default: 0.5)
 //   --bit-Carousel-button-hover-opacity        their opacity on hover                              (default: 0.9)
-//   --bit-Carousel-button-size                 next/prev glyph size                                (default: per size, from the type ramp)
+//   --bit-Carousel-button-size                 next/prev glyph size                                (default: per size, from the icon sizes)
 //   --bit-Carousel-button-width                next/prev hit area across the scrolling axis        (default: 10%)
 //   --bit-Carousel-dot-color                   dot color                                           (default: $clr-brd-pri)
 //   --bit-Carousel-dot-hover-color             dot color on hover                                  (default: $clr-brd-pri-hover)
@@ -38,7 +38,11 @@
     --bit-csl-btn: #{$clr-fg-pri};
     --bit-csl-btn-hover: #{$clr-fg-pri-hover};
     --bit-csl-dot-size: #{spacing(1.25)};
-    --bit-csl-btn-size: #{$tg-fs-2xl};
+
+    // The glyphs of the controls come from the icon sizes of the theme. The next/prev glyph sits over a
+    // whole slide rather than inside a field, so it is drawn half as large again as a control's own.
+    --bit-csl-btn-size: calc(#{$siz-icon-md} * 1.5);
+    --bit-csl-ppb-size: #{$siz-icon-md};
 
     // The space between the slides. It is declared here rather than read with a fallback where it is
     // used, so a carousel nested in another does not inherit the gap of the outer one, and the Gap
@@ -233,14 +237,14 @@
     --bit-csl-dots-gap: max(#{spacing(0.5)}, calc(24px - var(--bit-csl-dotsz)));
 }
 
-// The play/pause glyph follows the dots it sits next to, and its box is kept at the 24px minimum
-// target size however small that glyph gets.
+// The play/pause glyph grows and shrinks with the dots it sits next to (per size), and its box is kept
+// at the 24px minimum target size however small that glyph gets.
 .bit-csl-ppb {
     position: relative;
     min-width: 24px;
     min-height: 24px;
     border-radius: $shp-radius-full;
-    font-size: calc(var(--bit-csl-dotsz) + #{spacing(0.5)});
+    font-size: var(--bit-csl-ppb-size);
 }
 
 // The dots group scopes the accessible label to the dots alone (the play/pause button lives outside
@@ -371,17 +375,20 @@
 
 .bit-csl-sm {
     --bit-csl-dot-size: #{spacing(1)};
-    --bit-csl-btn-size: #{$tg-fs-md};
+    --bit-csl-btn-size: calc(#{$siz-icon-sm} * 1.5);
+    --bit-csl-ppb-size: #{$siz-icon-sm};
 }
 
 .bit-csl-md {
     --bit-csl-dot-size: #{spacing(1.25)};
-    --bit-csl-btn-size: #{$tg-fs-2xl};
+    --bit-csl-btn-size: calc(#{$siz-icon-md} * 1.5);
+    --bit-csl-ppb-size: #{$siz-icon-md};
 }
 
 .bit-csl-lg {
     --bit-csl-dot-size: #{spacing(1.75)};
-    --bit-csl-btn-size: #{$tg-fs-4xl};
+    --bit-csl-btn-size: calc(#{$siz-icon-lg} * 1.5);
+    --bit-csl-ppb-size: #{$siz-icon-lg};
 }
 
 

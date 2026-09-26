@@ -824,7 +824,7 @@ public partial class BitCarouselDemo
         new()
         {
             Name = "--bit-Carousel-button-size",
-            DefaultValue = "Per Size, from the type ramp (--bit-tpg-fs-md / -2xl / -4xl)",
+            DefaultValue = "Per Size, 1.5 times the icon size (--bit-siz-icon-sm / -md / -lg)",
             Description = "Glyph size of the next/prev buttons.",
         },
         new()
@@ -902,8 +902,7 @@ public partial class BitCarouselDemo
         new()
         {
             InfiniteScrolling = true,
-            Size = BitSize.Small,
-            Color = BitColor.Tertiary,
+            HideDots = true,
             AnimationDuration = 0.3,
         }
     ];

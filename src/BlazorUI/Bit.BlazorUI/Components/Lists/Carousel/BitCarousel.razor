@@ -10,7 +10,6 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      tabindex="@((NoKeyboard || IsEnabled is false) ? null : (TabIndex ?? "0"))"
-     @onkeydown="HandleKeyDown"
      @onfocusin="HandleFocusIn"
      @onfocusout="HandleFocusOut"
      @onmouseenter="HandleMouseEnter"
@@ -51,8 +50,7 @@
                         int index = i;
                         <button @ref="_dotRefs[index]"
                                 @onclick="(() => HandleGotoPage(index))"
-                                @onfocus="() => HandleControlFocus(FocusedControl.Dot)"
-                                @onblur="() => HandleControlBlur(FocusedControl.Dot)"
+                                data-bit-key-origin="@KeyOriginDot"
                                 type="button"
                                 tabindex="@GetDotTabIndex(index)"
                                 aria-controls="@_ContainerId"
@@ -98,8 +96,7 @@
             RenderFragment goLeftButton =
                 @<button @ref="_goLeftButtonRef"
                          @onclick="HandleGoLeftButtonClick"
-                         @onfocus="() => HandleControlFocus(FocusedControl.GoLeftButton)"
-                         @onblur="() => HandleControlBlur(FocusedControl.GoLeftButton)"
+                         data-bit-key-origin="@KeyOriginGoLeft"
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoLeftAriaLabel()"
@@ -114,8 +111,7 @@
             RenderFragment goRightButton =
                 @<button @ref="_goRightButtonRef"
                          @onclick="HandleGoRightButtonClick"
-                         @onfocus="() => HandleControlFocus(FocusedControl.GoRightButton)"
-                         @onblur="() => HandleControlBlur(FocusedControl.GoRightButton)"
+                         data-bit-key-origin="@KeyOriginGoRight"
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoRightAriaLabel()"

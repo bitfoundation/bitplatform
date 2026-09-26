@@ -10,8 +10,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      inert="@(InternalIsCurrent is false)"
-     @onfocusin="HandleFocusIn"
-     @onfocusout="HandleFocusOut"
+     data-bit-key-origin="@BitCarousel.KeyOriginSlide"
      aria-hidden="@(InternalIsCurrent ? null : "true")">
     @ChildContent
 </div>

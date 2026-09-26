@@ -36,6 +36,8 @@ public partial class BitCarousel : BitComponentBase
     private bool _isPointerDown;
     private bool _afterFirstRender;
     private bool _defaultPageApplied;
+    private bool _prefersReducedMotion;
+    private bool _autoPlayApplied;
     private int _laidOutItemsCount = -1;
     private (bool Playing, bool Paused) _playbackState;
     private string _layoutSignature = string.Empty;
@@ -59,11 +61,6 @@ public partial class BitCarousel : BitComponentBase
     // until the render that hides the button has landed.
     private ElementReference? _pendingFocus;
 
-    // The control of the carousel that holds the keyboard focus, so a move made with the keyboard can keep
-    // the focus where it belongs: on the dot of the new page when it was on a dot, and on a control that is
-    // still on screen when the button it was on hid itself at an end.
-    private FocusedControl _focusedControl;
-    private BitCarouselItem? _focusedItem;
     private readonly Dictionary<int, ElementReference> _dotRefs = [];
 
     // The one size the carousel is laid out against: the box the slides live in. Both places it can
@@ -76,12 +73,22 @@ public partial class BitCarousel : BitComponentBase
     private DotNetObjectReference<BitCarousel> _dotnetObj = default!;
 
     // The keys the carousel acts on are also the keys the browser scrolls the page with, so they are
-    // swallowed on the way in. They are handled in the browser rather than with Blazor's preventDefault
-    // directive, because the directive is static while the carousel only owns these keys while the
-    // keyboard is enabled. Only the keys of the axis the carousel actually scrolls on are taken, so a
+    // swallowed on the way in. They are picked up in the browser (registerNavigationKeys) rather than with
+    // Blazor's keydown and preventDefault directives: the directive is static while the carousel only owns
+    // these keys while the keyboard is enabled, and only the browser can tell from the target of a key
+    // whether it belongs to a control inside a slide, so that one decision both suppresses the default and
+    // moves the carousel. Only the keys of the axis the carousel actually scrolls on are taken, so a
     // horizontal carousel does not keep the page from being scrolled with the up/down arrow keys.
     private static readonly string[] _horizontalNavigationKeys = ["ArrowLeft", "ArrowRight", "Home", "End"];
     private static readonly string[] _verticalNavigationKeys = ["ArrowUp", "ArrowDown", "Home", "End"];
+
+    // The markers the controls and the slides carry (data-bit-key-origin), which the browser hands back with
+    // a navigation key to say where the focus was when it was pressed. Reading it off the key spares the
+    // carousel a focus and a blur event (and a render) per control the focus passes through.
+    internal const string KeyOriginDot = "dot";
+    internal const string KeyOriginGoLeft = "left";
+    internal const string KeyOriginGoRight = "right";
+    internal const string KeyOriginSlide = "slide";
 
 
 
@@ -721,26 +728,8 @@ public partial class BitCarousel : BitComponentBase
         StateHasChanged();
     }
 
-    internal void SetFocusedItem(BitCarouselItem item)
-    {
-        _focusedItem = item;
-    }
-
-    internal void ClearFocusedItem(BitCarouselItem item)
-    {
-        if (_focusedItem == item)
-        {
-            _focusedItem = null;
-        }
-    }
-
     internal void UnregisterItem(BitCarouselItem carouselItem)
     {
-        if (_focusedItem == carouselItem)
-        {
-            _focusedItem = null;
-        }
-
         if (_allItems.Remove(carouselItem) is false) return;
 
         // The indices of the items are what every calculation of the carousel is written in terms of, so
@@ -858,6 +847,16 @@ public partial class BitCarousel : BitComponentBase
             }
         }
 
+        // A reader who asked the system for less motion is not handed a slide show that starts moving on
+        // its own, including one whose AutoPlay is only switched on after the first render (the one it is
+        // on from the start is paused in OnAfterRenderAsync).
+        if (AutoPlay && _autoPlayApplied is false && _afterFirstRender && _prefersReducedMotion)
+        {
+            _isPaused = true;
+        }
+
+        _autoPlayApplied = AutoPlay;
+
         var signature = ComputeLayoutSignature();
 
         if (_layoutSignature != signature)
@@ -894,6 +893,18 @@ public partial class BitCarousel : BitComponentBase
             // are laid out in: the root also holds the row of dots, which is none of their business.
             await _js.BitObserversRegisterResize(UniqueId, _carouselContainer, _dotnetObj);
 
+            // A reader who asked the system for less motion is not handed a slide show that starts moving on
+            // its own: the rotation starts paused, and the play/pause button (or Resume) starts it. A
+            // carousel opted back into motion with ForceAnimation (itself or through an ancestor) plays.
+            // It is settled before anything below can start the timer, so a carousel that starts paused
+            // never renders (or moves) as a playing one first.
+            _prefersReducedMotion = await _js.BitUtilsPrefersReducedMotion(RootElement);
+
+            if (AutoPlay && _prefersReducedMotion)
+            {
+                _isPaused = true;
+            }
+
             _afterFirstRender = true;
             _needsReset = false;
             _needsRegister = false;
@@ -903,14 +914,6 @@ public partial class BitCarousel : BitComponentBase
             await RegisterPreventDefaultsAsync();
 
             await _pageVisibility.Init();
-
-            // A reader who asked the system for less motion is not handed a slide show that starts moving on
-            // its own: the rotation starts paused, and the play/pause button (or Resume) starts it. A
-            // carousel opted back into motion with ForceAnimation (itself or through an ancestor) plays.
-            if (AutoPlay && await _js.BitUtilsPrefersReducedMotion(RootElement))
-            {
-                _isPaused = true;
-            }
 
             UpdateAutoPlayTimer();
         }
@@ -932,7 +935,9 @@ public partial class BitCarousel : BitComponentBase
 
             // A page requested through SelectedPage is navigated to once the carousel is laid out and not
             // in the middle of another move; a move that is under way asks for a render when it is over.
-            if (_pendingSelectedPage is { } page && _navigating is false && _needsReset is false)
+            // A carousel with no pages (its items are being reloaded, for one) keeps the request until it
+            // has somewhere to go: the re-layout that brings the pages back renders it again.
+            if (_pendingSelectedPage is { } page && _navigating is false && _needsReset is false && _pagesCount > 0)
             {
                 _pendingSelectedPage = null;
 
@@ -948,7 +953,15 @@ public partial class BitCarousel : BitComponentBase
         {
             _pendingFocus = null;
 
-            await focusTarget.FocusAsync();
+            // The control the focus was meant for can be gone by the time the render lands (a dot taken
+            // away by a re-layout, a button by HideNextPrev), and a focus that cannot land is no reason to
+            // take the whole circuit down with it.
+            try
+            {
+                await focusTarget.FocusAsync();
+            }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -960,14 +973,16 @@ public partial class BitCarousel : BitComponentBase
     {
         var keys = (NoKeyboard || IsEnabled is false) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
 
-        await _js.BitUtilsRegisterPreventKeys(RootElement, keys);
+        await _js.BitUtilsRegisterNavigationKeys(RootElement, keys, _dotnetObj);
 
         // Dragging a slide must not start the browser's own drag of an image inside it, but it is
         // suppressed in the browser rather than with Blazor's static preventDefault directive, so a
         // pointerdown on the next/prev buttons is left alone and they can still take the focus.
         // The same threshold that turns a drag into a move also tells a drag from a click, so letting go
-        // of a slide that was dragged over a link or a button inside it does not also follow it.
-        await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled, Math.Max(1, DragThreshold));
+        // of a slide that was dragged over a link or a button inside it does not also follow it. It is
+        // measured along the axis HandlePointerMove measures it along, so a scroll across the carousel that
+        // ends on a link is not taken for a drag there either.
+        await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled, Math.Max(1, DragThreshold), Vertical ? "y" : "x");
 
         // Keeping the wheel to the carousel is suppressed in the browser as well, since the listener
         // Blazor's preventDefault directive goes through is a passive one before net10.0, which makes
@@ -1322,19 +1337,27 @@ public partial class BitCarousel : BitComponentBase
     }
 
     // The buttons are handled apart from the keys, the drag and the wheel that also go left and right,
-    // since only a button can hide itself from under the focus it holds.
+    // since only a button can hide itself from under the focus it holds. A click that left the focus
+    // outside the carousel (a click or a tap in Safari does not focus the button) has no focus to hand
+    // over, and pulling it in would scroll the page to the carousel and pause its rotation for nothing.
     private async Task HandleGoLeftButtonClick()
     {
         await HandleGoLeft();
 
-        KeepFocusOnControls(_goLeftButtonStyle, _goRightButtonStyle, _goRightButtonRef);
+        if (_focused)
+        {
+            KeepFocusOnControls(_goLeftButtonStyle, _goRightButtonStyle, _goRightButtonRef);
+        }
     }
 
     private async Task HandleGoRightButtonClick()
     {
         await HandleGoRight();
 
-        KeepFocusOnControls(_goRightButtonStyle, _goLeftButtonStyle, _goLeftButtonRef);
+        if (_focused)
+        {
+            KeepFocusOnControls(_goRightButtonStyle, _goLeftButtonStyle, _goLeftButtonRef);
+        }
     }
 
     // A button that reached its end is hidden, and a hidden element cannot keep the focus, so it is
@@ -1680,26 +1703,38 @@ public partial class BitCarousel : BitComponentBase
         await Go(isNext, count);
     }
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    [JSInvokable("OnNavigationKey")]
+    public async Task _OnNavigationKey(string key, string? origin, string? originId)
+    {
+        if (IsDisposed) return;
+
+        try
+        {
+            await HandleNavigationKey(key, origin, originId);
+        }
+        catch (JSDisconnectedException) { } // the circuit went away while the slides were being moved
+        catch (Exception ex)
+        {
+            // The key arrives from the browser rather than through an event handler of the renderer, so an
+            // exception (an OnChange callback that threw, for example) is handed back to the renderer
+            // instead of vanishing into the browser console, where an event handler's would have gone.
+            await DispatchExceptionAsync(ex);
+        }
+    }
+
+    // The browser only hands over a plain (unmodified) key of the axis the carousel navigates on, and only
+    // when no control inside a slide consumes it (registerNavigationKeys), so what is left here is the move.
+    private async Task HandleNavigationKey(string key, string? origin, string? originId)
     {
         if (NoKeyboard) return;
         if (IsEnabled is false) return;
 
-        // A carousel that swallowed a modified arrow key would take the browser shortcuts of the page
-        // with it, so only the plain keys are acted on.
-        if (e.CtrlKey || e.AltKey || e.MetaKey || e.ShiftKey) return;
-
-        var isNavigationKey = e.Key is "Home" or "End" || (Vertical ? e.Key is "ArrowUp" or "ArrowDown"
-                                                                    : e.Key is "ArrowLeft" or "ArrowRight");
+        var isNavigationKey = key is "Home" or "End" || (Vertical ? key is "ArrowUp" or "ArrowDown"
+                                                                  : key is "ArrowLeft" or "ArrowRight");
 
         if (isNavigationKey is false) return;
 
-        // A key typed into a field inside a slide (or pressed on a slider, a list or a radio group in
-        // it) belongs to that control, which moves its caret or its selection with it, so the carousel
-        // does not move along with it.
-        if (await _js.BitUtilsIsKeyConsumerFocused(RootElement)) return;
-
-        switch (e.Key)
+        switch (key)
         {
             case "ArrowRight" when Vertical is false:
             case "ArrowDown" when Vertical:
@@ -1720,7 +1755,11 @@ public partial class BitCarousel : BitComponentBase
                 break;
         }
 
-        KeepFocusAfterKeyboardMove();
+        KeepFocusAfterKeyboardMove(origin, originId);
+
+        // The key did not come through an event handler, so nothing renders after it on its own, and the
+        // focus handed over above lands in the render that follows.
+        if (_pendingFocus.HasValue) StateHasChanged();
     }
 
     // The dots are one stop of the tab sequence (only the current one is tabbable), so a key that moves the
@@ -1728,41 +1767,32 @@ public partial class BitCarousel : BitComponentBase
     // that hid itself at an end hands its focus over the same way a click on it does. A control inside a
     // slide that was just moved out of the view turns inert, which drops its focus, so the carousel itself
     // takes it over instead of the focus falling back to the start of the page.
-    private void KeepFocusAfterKeyboardMove()
+    private void KeepFocusAfterKeyboardMove(string? origin, string? originId)
     {
-        if (_focusedItem is { InternalIsCurrent: false })
+        switch (origin)
         {
-            _focusedItem = null;
-            _pendingFocus = RootElement;
-            return;
-        }
+            case KeyOriginSlide:
+                var item = originId.HasValue() ? _allItems.Find(i => i._Id == originId) : null;
 
-        switch (_focusedControl)
-        {
-            case FocusedControl.Dot when _dotRefs.TryGetValue(_currentPage, out var dot):
+                if (item is { InternalIsCurrent: false })
+                {
+                    _pendingFocus = RootElement;
+                }
+                break;
+
+            // The dots are only rendered while there is more than one page to show (see the markup), so a
+            // reference left behind by a dot that has since gone is never handed the focus.
+            case KeyOriginDot when HideDots is false && _pagesCount > 1 && _dotRefs.TryGetValue(_currentPage, out var dot):
                 _pendingFocus = dot;
                 break;
 
-            case FocusedControl.GoLeftButton:
+            case KeyOriginGoLeft:
                 KeepFocusOnControls(_goLeftButtonStyle, _goRightButtonStyle, _goRightButtonRef);
                 break;
 
-            case FocusedControl.GoRightButton:
+            case KeyOriginGoRight:
                 KeepFocusOnControls(_goRightButtonStyle, _goLeftButtonStyle, _goLeftButtonRef);
                 break;
-        }
-    }
-
-    private void HandleControlFocus(FocusedControl control)
-    {
-        _focusedControl = control;
-    }
-
-    private void HandleControlBlur(FocusedControl control)
-    {
-        if (_focusedControl == control)
-        {
-            _focusedControl = FocusedControl.None;
         }
     }
 
@@ -1892,10 +1922,10 @@ public partial class BitCarousel : BitComponentBase
         UpdateAutoPlayTimer();
     }
 
+    // Whether the focus is inside the carousel is tracked whatever PauseOnFocus says (ShouldAutoPlay is the
+    // one to ask it), since a click on a next/prev button also needs to know whether it brought the focus in.
     private void HandleFocusIn()
     {
-        if (PauseOnFocus is false) return;
-
         _focused = true;
 
         UpdateAutoPlayTimer();
@@ -1903,8 +1933,6 @@ public partial class BitCarousel : BitComponentBase
 
     private void HandleFocusOut()
     {
-        if (_focused is false) return;
-
         _focused = false;
 
         UpdateAutoPlayTimer();
@@ -2050,16 +2078,6 @@ public partial class BitCarousel : BitComponentBase
         if (GoRightAriaLabel.HasValue()) return GoRightAriaLabel;
 
         return (Vertical is false && Dir == BitDir.Rtl) ? "Next slide" : "Previous slide";
-    }
-
-
-
-    private enum FocusedControl
-    {
-        None,
-        Dot,
-        GoLeftButton,
-        GoRightButton
     }
 
 

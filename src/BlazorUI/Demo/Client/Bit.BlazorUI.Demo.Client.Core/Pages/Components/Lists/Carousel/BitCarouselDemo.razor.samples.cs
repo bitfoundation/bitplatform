@@ -526,7 +526,7 @@ private int thumbsPage = 1;";
         <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
     </BitCarousel>
 
-    <BitCarousel Style=""height: 100px"" Size=""BitSize.Large"">
+    <BitCarousel Style=""height: 100px"" HideDots=""false"">
         <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
@@ -539,8 +539,7 @@ private readonly BitCarouselParams[] carouselParams =
     new()
     {
         InfiniteScrolling = true,
-        Size = BitSize.Small,
-        Color = BitColor.Tertiary,
+        HideDots = true,
         AnimationDuration = 0.3,
     }
 ];";

@@ -162,18 +162,6 @@ public partial class BitCarouselItem : BitComponentBase
 
 
 
-    // The carousel is told which slide holds the keyboard focus, so a move made with the keyboard does not
-    // strand the focus on a slide it is about to take out of the view.
-    private void HandleFocusIn()
-    {
-        Carousel?.SetFocusedItem(this);
-    }
-
-    private void HandleFocusOut()
-    {
-        Carousel?.ClearFocusedItem(this);
-    }
-
     // The accessible name of a slide falls back to its position, which is what the carousel pattern
     // of the ARIA authoring practices asks for when a slide has nothing better to be called.
     private string? GetAriaLabel()

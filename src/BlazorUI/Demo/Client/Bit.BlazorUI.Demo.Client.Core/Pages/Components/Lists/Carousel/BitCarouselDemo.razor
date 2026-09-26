@@ -555,7 +555,7 @@
     <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
             <b>BitParams</b> carries a <b>BitCarouselParams</b> to every carousel under it, so a gallery sets the shared behavior
-            once. It is a default, not an override: a carousel keeps whatever it sets itself (the second one keeps its own Size).
+            once. It is a default, not an override: a carousel keeps whatever it sets itself (the second one keeps its dots).
         </div>
         <br />
         <div>
@@ -567,7 +567,7 @@
                         <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
                         <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
                     </BitCarousel>
-                    <BitCarousel Style="height: 100px" Size="BitSize.Large">
+                    <BitCarousel Style="height: 100px" HideDots="false">
                         <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
                         <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
                         <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
