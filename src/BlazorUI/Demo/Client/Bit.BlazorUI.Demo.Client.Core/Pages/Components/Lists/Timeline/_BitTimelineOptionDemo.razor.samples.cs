@@ -31,43 +31,24 @@ public partial class _BitTimelineOptionDemo
 
     private readonly string example4RazorCode = @"
 <BitTimeline Horizontal Variant=""BitVariant.Fill"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" />
-    <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" />
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
 
 <BitTimeline Horizontal Variant=""BitVariant.Outline"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" />
-    <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" />
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
 
 <BitTimeline Horizontal Variant=""BitVariant.Text"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" />
-    <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" />
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>";
 
     private readonly string example5RazorCode = @"
-<BitTimeline Horizontal Variant=""BitVariant.Fill"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-<BitTimeline Horizontal Variant=""BitVariant.Outline"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-<BitTimeline Horizontal Variant=""BitVariant.Text"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>";
-
-    private readonly string example6RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" Reversed>
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
@@ -90,9 +71,8 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" Reversed />
     <BitTimelineOption PrimaryText=""Option 3"" />
-</BitTimeline>";
+</BitTimeline>
 
-    private readonly string example7RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" Alternate>
     <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""10:30"" SecondaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
@@ -114,7 +94,7 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""16:45"" SecondaryText=""Option 4"" IconName=""@BitIconName.Accept"" />
 </BitTimeline>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" ReverseOrder>
     <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""10:30"" SecondaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
@@ -129,7 +109,7 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""16:45"" SecondaryText=""Option 4"" IconName=""@BitIconName.Accept"" />
 </BitTimeline>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
@@ -148,13 +128,6 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""Option 3"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" Horizontal TruncateLine=""BitTimelineTruncateLine.Both"">
-    <BitTimelineOption PrimaryText=""Option 1"" />
-    <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
-    <BitTimelineOption PrimaryText=""Option 3"" />
-</BitTimeline>";
-
-    private readonly string example10RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" LineVariant=""BitTimelineLineVariant.Dashed"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
@@ -173,13 +146,38 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""Delivered"" Variant=""BitVariant.Outline"" LineVariant=""BitTimelineLineVariant.Dashed"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" Horizontal LineVariant=""BitTimelineLineVariant.Dashed"">
+<BitTimeline TItem=""BitTimelineOption"" Horizontal LineVariant=""BitTimelineLineVariant.Dashed"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
     <BitTimelineOption PrimaryText=""Option 3"" />
 </BitTimeline>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example8RazorCode = @"
+<BitTimeline TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
+</BitTimeline>
+
+<BitTimeline TItem=""BitTimelineOption"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+    <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
+</BitTimeline>
+
+<BitTimeline TItem=""BitTimelineOption"" DotAlignment=""BitTimelineDotAlignment.End"">
+    <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
+</BitTimeline>
+
+<BitTimeline TItem=""BitTimelineOption"" Horizontal DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+    <BitTimelineOption PrimaryText=""Option 1"" />
+    <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
+    <BitTimelineOption PrimaryText=""Option 3"" />
+</BitTimeline>";
+
+    private readonly string example9RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Success"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" />
     <BitTimelineOption PrimaryText=""Warning"" IconName=""@BitIconName.Warning"" Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" />
@@ -187,7 +185,7 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""No dot"" HideDot />
 </BitTimeline>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .dot-template {
         z-index: 1;
@@ -286,7 +284,7 @@ public partial class _BitTimelineOptionDemo
     </Options>
 </BitTimeline>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" OnItemClick=""@(item => { clickedOption = $""{item.PrimaryText} (OnItemClick)""; })"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit""
@@ -295,8 +293,47 @@ public partial class _BitTimelineOptionDemo
 </BitTimeline>
 
 <div>Clicked item: <b>@clickedOption</b></div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string? clickedOption;";
+
+    private readonly string example12RazorCode = @"
+<BitTimeline TItem=""BitTimelineOption"" AriaLabel=""Order history"" TruncateLine=""BitTimelineTruncateLine.Both"">
+    <BitTimelineOption PrimaryText=""Ordered"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" AriaLabel=""Ordered, done"" Title=""Done on 3 March"" />
+    <BitTimelineOption PrimaryText=""Shipped"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" LineVariant=""BitTimelineLineVariant.Dashed"" AriaLabel=""Shipped, done"" Title=""Done on 4 March"" />
+    <BitTimelineOption PrimaryText=""Delivered"" Variant=""BitVariant.Outline"" LineVariant=""BitTimelineLineVariant.Dashed"" AriaLabel=""Delivered, pending"" Title=""Expected on 7 March"" />
+</BitTimeline>";
+
+    private readonly string example13RazorCode = @"
+<BitParams Parameters=""timelineParams"">
+    <BitTimeline TItem=""BitTimelineOption"">
+        <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+        <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
+        <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+    </BitTimeline>
+
+    <BitTimeline TItem=""BitTimelineOption"" Color=""BitColor.Error"">
+        <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+        <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
+        <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+    </BitTimeline>
+</BitParams>
+
+<BitTimeline TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+</BitTimeline>";
+    private readonly string example13CsharpCode = @"
+private readonly BitTimelineParams[] timelineParams =
+[
+    new()
+    {
+        Horizontal = true,
+        Color = BitColor.Success,
+        Variant = BitVariant.Outline,
+        TruncateLine = BitTimelineTruncateLine.Both,
+    }
+];";
 
     private readonly string example14RazorCode = @"
 <BitTimeline Horizontal Color=""BitColor.Primary"" TItem=""BitTimelineOption"">
@@ -432,8 +469,8 @@ private string? clickedOption;";
         color: blueviolet;
     }
 
-    .custom-divider::before {
-        background: blueviolet;
+    .custom-divider {
+        --bit-Timeline-line-color: blueviolet;
     }
 
     .custom-item-text {
@@ -479,7 +516,23 @@ private string? clickedOption;";
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>";
+</BitTimeline>
+
+
+<BitTimeline TItem=""BitTimelineOption"" TruncateLine=""BitTimelineTruncateLine.Both""
+             Style=""--bit-Timeline-line-color: #8b5cf6; --bit-Timeline-line-width: 3px; --bit-Timeline-dot-size: 2rem; --bit-Timeline-dot-radius: 0.5rem; --bit-Timeline-dot-background: #ede9fe; --bit-Timeline-dot-border-color: #8b5cf6; --bit-Timeline-icon-color: #6d28d9;"">
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+</BitTimeline>
+
+<div style=""--bit-Timeline-item-spacing: 1.25rem; --bit-Timeline-content-gap: 1.5rem; --bit-Timeline-dot-shadow: 0 0 0 0.25rem var(--bit-clr-bg-sec);"">
+    <BitTimeline TItem=""BitTimelineOption"" TruncateLine=""BitTimelineTruncateLine.Both"">
+        <BitTimelineOption PrimaryText=""Ordered"" IconName=""@BitIconName.Accept"" />
+        <BitTimelineOption PrimaryText=""Shipped"" IconName=""@BitIconName.Accept"" Style=""--bit-Timeline-dot-background: gold; --bit-Timeline-dot-border-color: goldenrod; --bit-Timeline-icon-color: black;"" />
+        <BitTimelineOption PrimaryText=""Delivered"" Variant=""BitVariant.Outline"" />
+    </BitTimeline>
+</div>";
 
     private readonly string example18RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" Dir=""BitDir.Rtl"">

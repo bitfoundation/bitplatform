@@ -1,0 +1,29 @@
+@using Bit.BlazorUI
+
+@* Covers BitTimelineParams: the cascaded values fill in the parameters a timeline did not set itself, never
+   overwrite the ones it did, and reach every timeline under the cascade whatever it is generic over. *@
+
+<BitParams Parameters="@(new BitTimelineParams[]
+                         {
+                             new()
+                             {
+                                 Color = BitColor.Success,
+                                 Variant = BitVariant.Outline,
+                                 Size = BitSize.Large,
+                                 Horizontal = true,
+                                 Alternate = true,
+                                 Reversed = true,
+                                 ReverseOrder = true,
+                                 DotAlignment = BitTimelineDotAlignment.Start,
+                                 LineVariant = BitTimelineLineVariant.Dashed,
+                                 TruncateLine = BitTimelineTruncateLine.Both,
+                                 Classes = new() { Root = "cascaded-root", Dot = "cascaded-dot" },
+                                 Styles = new() { Root = "margin: 1px;" },
+                             }
+                         })">
+    <BitTimeline Items="@(new BitTimelineItem[] { new() { PrimaryText = "Cascaded" } })" />
+    <BitTimeline Color="BitColor.Error" Horizontal="false" Items="@(new BitTimelineItem[] { new() { PrimaryText = "Own color" } })" />
+    <BitTimeline TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="Option" />
+    </BitTimeline>
+</BitParams>

@@ -61,8 +61,8 @@
         color: blueviolet;
     }
 
-    .custom-divider::before {
-        background: blueviolet;
+    .custom-divider {
+        --bit-Timeline-line-color: blueviolet;
     }
 
     .custom-item-text {

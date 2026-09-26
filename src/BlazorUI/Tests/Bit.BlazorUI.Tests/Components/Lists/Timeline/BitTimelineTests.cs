@@ -254,6 +254,8 @@ public class BitTimelineTests : BunitTestContext
 
         var root = component.Find(".bit-tln");
 
+        // An ordered list, which keeps its list role spelled out for WebKit (it hides the markers).
+        Assert.AreEqual("OL", root.TagName);
         Assert.AreEqual("list", root.GetAttribute("role"));
     }
 
@@ -285,12 +287,12 @@ public class BitTimelineTests : BunitTestContext
         if (isEnabled)
         {
             Assert.IsFalse(root.ClassList.Contains("bit-dis"));
-            Assert.IsNull(root.GetAttribute("aria-disabled"));
         }
         else
         {
             Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-            Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+            // aria-disabled does not apply to a list: the operable items announce the state themselves.
+            Assert.IsNull(root.GetAttribute("aria-disabled"));
         }
     }
 
@@ -664,7 +666,7 @@ public class BitTimelineTests : BunitTestContext
 
         var item = component.Find(".bit-tln-itm");
 
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
         Assert.IsNull(item.GetAttribute("tabindex"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-int"));
         // A presentational item hosts no button at all, so it stays out of the tab order entirely.
@@ -684,7 +686,7 @@ public class BitTimelineTests : BunitTestContext
         var button = component.Find(".bit-tln-btn");
 
         // The item keeps the list semantics and the nested element carries the button ones.
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
         Assert.IsNull(item.GetAttribute("tabindex"));
         Assert.IsTrue(item.ClassList.Contains("bit-tln-int"));
 
@@ -708,8 +710,8 @@ public class BitTimelineTests : BunitTestContext
 
         var items = component.FindAll(".bit-tln-itm");
 
-        Assert.AreEqual("listitem", items[0].GetAttribute("role"));
-        Assert.AreEqual("listitem", items[1].GetAttribute("role"));
+        Assert.AreEqual("LI", items[0].TagName);
+        Assert.AreEqual("LI", items[1].TagName);
 
         // Only the item that answers to a click hosts a button.
         Assert.AreEqual(1, component.FindAll(".bit-tln-btn").Count);
@@ -732,7 +734,7 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual("button", button.GetAttribute("role"));
         Assert.IsNull(button.GetAttribute("tabindex"));
         Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
-        Assert.AreEqual("true", item.GetAttribute("aria-disabled"));
+        Assert.IsNull(item.GetAttribute("aria-disabled"));
         Assert.IsTrue(item.ClassList.Contains("bit-tln-ids"));
     }
 
@@ -861,7 +863,7 @@ public class BitTimelineTests : BunitTestContext
 
         // A presentational item hosts no button, so there is nothing that answers to the keyboard and a
         // key press of the page is never swallowed by the timeline.
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
         Assert.AreEqual(0, component.FindAll(".bit-tln-btn").Count);
         Assert.ThrowsExactly<MissingEventHandlerException>(() => item.KeyDown("Enter"));
     }
@@ -1185,7 +1187,7 @@ public class BitTimelineTests : BunitTestContext
         Assert.IsFalse(item.ClassList.Contains("bit-tln-irv"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-ids"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-ils"));
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
     }
 
     [TestMethod]
@@ -1222,12 +1224,110 @@ public class BitTimelineTests : BunitTestContext
         var item = component.Find(".bit-tln-itm");
         var button = component.Find(".bit-tln-btn");
 
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
         Assert.AreEqual("button", button.GetAttribute("role"));
 
         button.Click();
 
         Assert.AreEqual("One", clickedText);
+    }
+
+    #endregion
+
+    #region dot alignment and cascading parameters
+
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitTimelineDotAlignment.Center, null),
+        DataRow(BitTimelineDotAlignment.Start, "bit-tln-das"),
+        DataRow(BitTimelineDotAlignment.End, "bit-tln-dae")]
+    public void BitTimelineShouldRespectDotAlignment(BitTimelineDotAlignment? alignment, string? expectedClass)
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.DotAlignment, alignment);
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One" }]);
+        });
+
+        var root = component.Find(".bit-tln");
+
+        // The centered dot is the default the stylesheet paints on its own, so it carries no class.
+        Assert.AreEqual(expectedClass == "bit-tln-das", root.ClassList.Contains("bit-tln-das"));
+        Assert.AreEqual(expectedClass == "bit-tln-dae", root.ClassList.Contains("bit-tln-dae"));
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldHideTheDecorativeDotFromAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", IconName = "Add" }]);
+        });
+
+        // The dot and its icon only decorate the item; its contents are what gets announced.
+        Assert.AreEqual("true", component.Find(".bit-tln-dot").GetAttribute("aria-hidden"));
+        Assert.IsNotNull(component.Find(".bit-tln-dot .bit-tln-ico"));
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitTimelineCascadingParamsTest>();
+
+        var timelines = component.FindAll(".bit-tln");
+
+        Assert.AreEqual(3, timelines.Count);
+
+        // The first timeline takes everything from the cascading parameters.
+        var first = timelines[0];
+        foreach (var cls in new[] { "bit-tln-suc", "bit-tln-otl", "bit-tln-lg", "bit-tln-hrz", "bit-tln-alt", "bit-tln-rvs",
+                                    "bit-tln-rvo", "bit-tln-das", "bit-tln-ldd", "bit-tln-tlb", "cascaded-root" })
+        {
+            Assert.IsTrue(first.ClassList.Contains(cls), cls);
+        }
+        StringAssert.Contains(first.GetAttribute("style")!, "margin: 1px;");
+        Assert.IsTrue(first.QuerySelector(".bit-tln-dot")!.ClassList.Contains("cascaded-dot"));
+
+        // The second one sets its own color and orientation, which the cascading parameters must not overwrite.
+        var second = timelines[1];
+        Assert.IsTrue(second.ClassList.Contains("bit-tln-err"));
+        Assert.IsFalse(second.ClassList.Contains("bit-tln-suc"));
+        Assert.IsFalse(second.ClassList.Contains("bit-tln-hrz"));
+        Assert.IsTrue(second.ClassList.Contains("bit-tln-otl"));
+
+        // One cascade reaches a timeline of another item type as well.
+        var third = timelines[2];
+        Assert.IsTrue(third.ClassList.Contains("bit-tln-suc"));
+        Assert.IsTrue(third.QuerySelector(".bit-tln-dot")!.ClassList.Contains("cascaded-dot"));
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldRespectACascadedIsEnabled()
+    {
+        var clicked = false;
+
+        var component = RenderComponent<CascadingValue<BitTimelineParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitTimelineParams.ParamName);
+            parameters.Add(p => p.Value, new BitTimelineParams { IsEnabled = false });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitTimeline<BitTimelineItem>>(0);
+                builder.AddComponentParameter(1, nameof(BitTimeline<BitTimelineItem>.Items),
+                    new[] { new BitTimelineItem { PrimaryText = "One", OnClick = _ => clicked = true } });
+                builder.CloseComponent();
+            }));
+        });
+
+        var button = component.Find(".bit-tln-btn");
+
+        Assert.IsTrue(component.Find(".bit-tln").ClassList.Contains("bit-dis"));
+        Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+        Assert.IsNull(button.GetAttribute("tabindex"));
+
+        button.Click();
+
+        Assert.IsFalse(clicked);
     }
 
     #endregion

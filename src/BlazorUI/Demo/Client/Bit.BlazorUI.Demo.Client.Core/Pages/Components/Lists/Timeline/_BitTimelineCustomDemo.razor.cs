@@ -22,6 +22,8 @@ public partial class _BitTimelineCustomDemo
         HideDot = { Selector = i => i.NoDot },
         Template = { Selector = i => i.Content },
         OnClick = { Selector = i => i.OnSelect },
+        AriaLabel = { Selector = i => i.Label },
+        Title = { Selector = i => i.Tooltip },
     };
 
     private List<Event> basicCustoms =
@@ -73,6 +75,38 @@ public partial class _BitTimelineCustomDemo
         new() { FirstText = "Warning", Icon = BitIconName.Warning, DotColor = BitColor.Warning, DotVariant = BitVariant.Outline },
         new() { FirstText = "Error", Icon = BitIconName.ErrorBadge, DotColor = BitColor.Error, DotSize = BitSize.Large },
         new() { FirstText = "No dot", NoDot = true }
+    ];
+
+    private List<Event> alignCustoms =
+    [
+        new() { FirstText = "09:00", SecondText = "Kickoff: the scope, the milestones and an owner for each of them are agreed on.", Icon = BitIconName.Add },
+        new() { FirstText = "11:30", SecondText = "Design review: the proposal is walked through and the open questions are collected.", Icon = BitIconName.Edit },
+        new() { FirstText = "15:00", SecondText = "Sign-off: the plan is approved and the work is scheduled.", Icon = BitIconName.Accept }
+    ];
+
+    private List<Event> a11yCustoms =
+    [
+        new() { FirstText = "Ordered", Icon = BitIconName.Accept, DotColor = BitColor.Success, Label = "Ordered, done", Tooltip = "Done on 3 March" },
+        new() { FirstText = "Shipped", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitTimelineLineVariant.Dashed, Label = "Shipped, done", Tooltip = "Done on 4 March" },
+        new() { FirstText = "Delivered", DotVariant = BitVariant.Outline, LineStyle = BitTimelineLineVariant.Dashed, Label = "Delivered, pending", Tooltip = "Expected on 7 March" }
+    ];
+
+    private List<Event> cssVarCustoms =
+    [
+        new() { FirstText = "Ordered", Icon = BitIconName.Accept },
+        new() { FirstText = "Shipped", Icon = BitIconName.Accept, Style = "--bit-Timeline-dot-background: gold; --bit-Timeline-dot-border-color: goldenrod; --bit-Timeline-icon-color: black;" },
+        new() { FirstText = "Delivered", DotVariant = BitVariant.Outline }
+    ];
+
+    private readonly BitTimelineParams[] timelineParams =
+    [
+        new()
+        {
+            Horizontal = true,
+            Color = BitColor.Success,
+            Variant = BitVariant.Outline,
+            TruncateLine = BitTimelineTruncateLine.Both,
+        }
     ];
 
     private List<Event> externalIconCustoms1 =
