@@ -55,6 +55,9 @@
     --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px;
 
+    //shape - the corner of the selection indicator of a tab strip, which Fluent draws square.
+    --bit-shp-radius-tab-indicator: 0;
+
     //focus ring (a11y) - width is the visible thickness, offset is the gap between the element and the ring.
     --bit-shp-focus-ring-width: 0.125rem; //2px
     --bit-shp-focus-ring-offset: 0.125rem; //2px

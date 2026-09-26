@@ -446,6 +446,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Button, bitTheme.Shape.Radius.Button);
         addCssVar(BitCss.Var.Shape.Radius.Chip, bitTheme.Shape.Radius.Chip);
         addCssVar(BitCss.Var.Shape.Radius.Selection, bitTheme.Shape.Radius.Selection);
+        addCssVar(BitCss.Var.Shape.Radius.TabIndicator, bitTheme.Shape.Radius.TabIndicator);
         addCssVar(BitCss.Var.Shape.Radius.Surface, bitTheme.Shape.Radius.Surface);
         addCssVar(BitCss.Var.Shape.Radius.Popup, bitTheme.Shape.Radius.Popup);
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
@@ -1216,6 +1217,7 @@ internal static class BitThemeMapper
         result.Shape.Radius.Button = bitTheme.Shape.Radius.Button ?? other.Shape.Radius.Button;
         result.Shape.Radius.Chip = bitTheme.Shape.Radius.Chip ?? other.Shape.Radius.Chip;
         result.Shape.Radius.Selection = bitTheme.Shape.Radius.Selection ?? other.Shape.Radius.Selection;
+        result.Shape.Radius.TabIndicator = bitTheme.Shape.Radius.TabIndicator ?? other.Shape.Radius.TabIndicator;
         result.Shape.Radius.Surface = bitTheme.Shape.Radius.Surface ?? other.Shape.Radius.Surface;
         result.Shape.Radius.Popup = bitTheme.Shape.Radius.Popup ?? other.Shape.Radius.Popup;
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;

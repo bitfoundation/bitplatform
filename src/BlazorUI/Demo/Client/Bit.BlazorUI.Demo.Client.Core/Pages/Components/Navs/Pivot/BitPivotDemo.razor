@@ -4,17 +4,12 @@
             Description="The Pivot switches between distinct sections of content from a row of headers, following the WAI-ARIA tabs pattern." />
 
 <DemoPage Name="Pivot" SecondaryNames="@(["Tab", "TabPage"])"
-          Description="The Pivot switches between two or more distinct sections of content from a single row (or column) of headers, where selecting a header shows the section it belongs to. Headers can carry an icon, a count and a dismiss button, be added to and dragged into a new order, run along any of the four sides, and fold into an overflow menu, a scroll area, a pair of slide buttons or extra lines when there is no room for all of them. The selection is a key you can bind, a change can be called off before it happens, and the whole header is a single tab stop that the arrow, Home and End keys navigate, as the WAI-ARIA tabs pattern describes."
+          Description="The Pivot switches between sections of content from a row (or column) of tab headers. Headers carry icons, counts and dismiss buttons, can be added and reordered, sit on any side, and fold into a menu, a scroll area, slide buttons or extra lines when they do not fit. The selection is a bindable key that can be vetoed before it moves, and the header is one tab stop navigated with the arrow, Home and End keys, as the WAI-ARIA tabs pattern describes."
           Parameters="componentParameters" SubClasses="componentSubClasses" SubEnums="componentSubEnums"
-          PublicMembers="componentPublicMembers"
+          PublicMembers="componentPublicMembers" CssVariables="componentCssVariables"
           GitHubUrl="Navs/Pivot/BitPivot.razor" GitHubDemoUrl="Navs/Pivot/BitPivotDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>
-            A pivot is a list of <strong>BitPivotItem</strong>s, each one a header and the content it
-            shows. The first item that can be selected takes the selection to begin with, and selecting a
-            header swaps the content underneath it. The whole header is a single tab stop: once it holds
-            the focus, the arrow keys move between the tabs and Home and End jump to either end.
-        </div>
+        <div>A list of <b>BitPivotItem</b>s, each a header and the content it shows. The first selectable item starts selected.</div>
         <br />
         <BitPivot>
             <BitPivotItem HeaderText="File">
@@ -32,60 +27,19 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Icon and Count" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Icon & count" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            A header can carry an icon before its text through <strong>IconName</strong>, and a number in
-            parentheses after it through <strong>ItemCount</strong>, which is the usual way of telling how
-            much a section holds without opening it. Both are optional and can be used on their own.
+            <b>IconName</b> puts an icon before the header text and <b>ItemCount</b> a number after it.
+            <b>Stacked</b> puts the icon above the text, for a shorter tab.
         </div>
         <br />
         <BitPivot>
-            <BitPivotItem HeaderText="Files" IconName="@BitIconName.FabricFolder">
-                <h3>Pivot #1: Files</h3>
-                <div>Everything that has been saved to this workspace, newest first.</div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me" ItemCount="32">
-                <h3>Pivot #2: Shared with me</h3>
-                <div>The files other people have given you access to, grouped by who shared them.</div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Recent" IconName="@BitIconName.Recent" ItemCount="12">
-                <h3>Pivot #3: Recent</h3>
-                <div>The documents you have opened over the last few days.</div>
-            </BitPivotItem>
-        </BitPivot>
-    </DemoExample>
-
-    <DemoExample Title="HeaderType" RazorCode="@example3RazorCode" Id="example3" PreventRenderForMcpClient>
-        <div>
-            The <strong>HeaderType</strong> picks the shape of the headers: <strong>Link</strong> (the
-            default) marks the selected one with an animated indicator under it, while <strong>Tab</strong>
-            fills the selected one with the color of the pivot. Link suits a page of content, Tab suits a
-            denser panel where the selection has to survive a quick glance.
-        </div>
-        <br />
-        <div>Link (default):</div>
-        <br />
-        <BitPivot HeaderType="@BitPivotHeaderType.Link">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+            <BitPivotItem HeaderText="Files" IconName="@BitIconName.FabricFolder"><div>Pivot #1: Files</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared with me" ItemCount="32"><div>Pivot #2: Shared with me</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent" IconName="@BitIconName.Recent" ItemCount="12"><div>Pivot #3: Recent</div></BitPivotItem>
         </BitPivot>
         <br /><br />
-        <div>Tab:</div>
-        <br />
-        <BitPivot HeaderType="@BitPivotHeaderType.Tab">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
-    </DemoExample>
-
-    <DemoExample Title="Stacked" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
-        <div>
-            <strong>Stacked</strong> puts the icon of each header above its text instead of beside it,
-            which is what makes a row of tabs fit a narrow screen without cutting the labels. It only
-            changes the layout of the headers, so everything else on the pivot keeps working as it does.
-        </div>
+        <div>Stacked:</div>
         <br />
         <BitPivot Stacked>
             <BitPivotItem HeaderText="Home" IconName="@BitIconName.Home"><div>Pivot #1: Home</div></BitPivotItem>
@@ -95,50 +49,35 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="FullWidth" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
+    <DemoExample Title="HeaderType" RazorCode="@example3RazorCode" Id="example3" PreventRenderForMcpClient>
         <div>
-            <strong>FullWidth</strong> shares the whole width of the header between the items instead of
-            leaving them huddled at one edge, which turns a handful of tabs into a segmented control. In a
-            vertical pivot it shares the height in the same way, and <strong>Gap</strong> is what leaves
-            room between the stretched items when they should read as separate rather than joined.
+            <b>Link</b> (default) marks the selected header with an animated indicator; <b>Tab</b> fills it with the pivot's color.
         </div>
         <br />
-        <div class="box">
-            <BitPivot FullWidth>
-                <BitPivotItem HeaderText="Overview"><div>Pivot #1: Overview</div></BitPivotItem>
-                <BitPivotItem HeaderText="Activity"><div>Pivot #2: Activity</div></BitPivotItem>
-                <BitPivotItem HeaderText="Settings"><div>Pivot #3: Settings</div></BitPivotItem>
-            </BitPivot>
-        </div>
+        <div>Link:</div>
+        <br />
+        <BitPivot HeaderType="BitPivotHeaderType.Link">
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        </BitPivot>
         <br /><br />
-        <div class="box">
-            <BitPivot FullWidth HeaderType="@BitPivotHeaderType.Tab">
-                <BitPivotItem HeaderText="Overview"><div>Pivot #1: Overview</div></BitPivotItem>
-                <BitPivotItem HeaderText="Activity"><div>Pivot #2: Activity</div></BitPivotItem>
-                <BitPivotItem HeaderText="Settings"><div>Pivot #3: Settings</div></BitPivotItem>
-            </BitPivot>
-        </div>
+        <div>Tab:</div>
+        <br />
+        <BitPivot HeaderType="BitPivotHeaderType.Tab">
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Alignment" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
+    <DemoExample Title="Alignment, FullWidth & Gap" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            The <strong>Alignment</strong> decides where the headers sit along the header line when they
-            do not fill it, taking any value of the <BitLink Href="#alignment-enum">BitAlignment</BitLink>
-            enum. Use <strong>FullWidth</strong> instead when the headers should share the whole line
-            rather than be pushed to one side of it.
+            <b>Alignment</b> places the headers along the header line (any <BitLink Href="#alignment-enum">BitAlignment</BitLink>),
+            <b>FullWidth</b> stretches them to share it - a segmented control - and <b>Gap</b> sets the room between them.
         </div>
         <br />
-        <div>Start (default):</div>
-        <br />
-        <div class="box">
-            <BitPivot Alignment="BitAlignment.Start">
-                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-                <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
-                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-            </BitPivot>
-        </div>
-        <br /><br />
-        <div>Center:</div>
+        <div>Alignment: <b>Center</b></div>
         <br />
         <div class="box">
             <BitPivot Alignment="BitAlignment.Center">
@@ -148,17 +87,7 @@
             </BitPivot>
         </div>
         <br /><br />
-        <div>End:</div>
-        <br />
-        <div class="box">
-            <BitPivot Alignment="BitAlignment.End">
-                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-                <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
-                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-            </BitPivot>
-        </div>
-        <br /><br />
-        <div>SpaceBetween:</div>
+        <div>Alignment: <b>SpaceBetween</b></div>
         <br />
         <div class="box">
             <BitPivot Alignment="BitAlignment.SpaceBetween">
@@ -167,241 +96,152 @@
                 <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
             </BitPivot>
         </div>
-    </DemoExample>
-
-    <DemoExample Title="Position" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            The <strong>Position</strong> moves the header to any of the four sides of the content:
-            <strong>Top</strong> (the default), <strong>Bottom</strong>, <strong>Start</strong> and
-            <strong>End</strong>. Start and End lay the headers out in a column and turn the selection
-            indicator on its side, and the tablist reports itself as vertical so that the up and down
-            arrows are what navigate it.
-        </div>
+        <br /><br />
+        <div><b>FullWidth</b> with <b>Gap</b> 4px:</div>
         <br />
-        <div>Pivot Position: <b>Top</b></div><br />
         <div class="box">
-            <BitPivot Position="BitPivotPosition.Top">
-                <BitPivotItem HeaderText="File">
-                    <h3>Pivot #1: File</h3>
-                    <div>Everything that has been saved to this workspace, newest first.</div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Shared">
-                    <h3>Pivot #2: Shared</h3>
-                    <div>The files other people have given you access to.</div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Recent">
-                    <h3>Pivot #3: Recent</h3>
-                    <div>The documents you have opened over the last few days.</div>
-                </BitPivotItem>
+            <BitPivot FullWidth Gap="4px" HeaderType="BitPivotHeaderType.Tab">
+                <BitPivotItem HeaderText="Overview"><div>Pivot #1: Overview</div></BitPivotItem>
+                <BitPivotItem HeaderText="Activity"><div>Pivot #2: Activity</div></BitPivotItem>
+                <BitPivotItem HeaderText="Settings"><div>Pivot #3: Settings</div></BitPivotItem>
             </BitPivot>
         </div>
         <br /><br />
-        <div>Pivot Position: <b>Bottom</b></div><br />
+        <div><b>Gap</b> 2rem:</div>
+        <br />
+        <div class="box">
+            <BitPivot Gap="2rem">
+                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+            </BitPivot>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Position" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            <b>Position</b> puts the header on any side: <b>Top</b> (default), <b>Bottom</b>, <b>Start</b> or <b>End</b>.
+            Start and End stack the headers in a column, which the up and down arrows navigate.
+        </div>
+        <br />
+        <div>Bottom:</div>
+        <br />
         <div class="box">
             <BitPivot Position="BitPivotPosition.Bottom">
-                <BitPivotItem HeaderText="File">
-                    <h3>Pivot #1: File</h3>
-                    <div>Everything that has been saved to this workspace, newest first.</div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Shared">
-                    <h3>Pivot #2: Shared</h3>
-                    <div>The files other people have given you access to.</div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Recent">
-                    <h3>Pivot #3: Recent</h3>
-                    <div>The documents you have opened over the last few days.</div>
-                </BitPivotItem>
+                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
             </BitPivot>
         </div>
         <br /><br />
-        <div>Pivot Position: <b>Start</b></div><br />
+        <div>Start:</div>
+        <br />
         <div class="box">
             <BitPivot Position="BitPivotPosition.Start">
-                <BitPivotItem HeaderText="File">
-                    <h3>Pivot #1: File</h3>
-                    <div>Everything that has been saved to this workspace, newest first.</div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">
-                    <h3>Pivot #2: Shared with me</h3>
-                    <div>The files other people have given you access to.</div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Recent">
-                    <h3>Pivot #3: Recent</h3>
-                    <div>The documents you have opened over the last few days.</div>
-                </BitPivotItem>
+                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
             </BitPivot>
         </div>
         <br /><br />
-        <div>Pivot Position: <b>End</b></div><br />
+        <div>End:</div>
+        <br />
         <div class="box">
             <BitPivot Position="BitPivotPosition.End">
-                <BitPivotItem HeaderText="File">
-                    <h3>Pivot #1: File</h3>
-                    <div>Everything that has been saved to this workspace, newest first.</div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">
-                    <h3>Pivot #2: Shared with me</h3>
-                    <div>The files other people have given you access to.</div>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Recent">
-                    <h3>Pivot #3: Recent</h3>
-                    <div>The documents you have opened over the last few days.</div>
-                </BitPivotItem>
+                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
             </BitPivot>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Overflow" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Overflow" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            The <strong>OverflowBehavior</strong> decides what happens when the headers no longer fit:
-            <strong>Menu</strong> folds the ones that do not fit into a menu behind a More button,
-            <strong>Slide</strong> adds a pair of buttons that scroll the header along,
-            <strong>Scroll</strong> leaves a scroll bar under (or beside) it, <strong>Wrap</strong> runs
-            them onto as many extra lines as they need, and <strong>None</strong> (the default) simply lets
-            them overflow. Selecting a tab from the keyboard or from the bound key brings it back into view
-            in the Scroll and Slide behaviors, including the tab the pivot starts on. The Slide header
-            hides its scroll bar, so the mouse wheel over it moves it along instead of scrolling the page
-            past it, and the page gets the wheel back at either end. The More button of the Menu behavior
-            answers to the keys of a menu - the arrows step through it, Home and End jump to either end,
-            Enter selects and Escape closes it, and Escape or a click away hands the focus back to the
-            button - and it marks itself as the selected one while it is the selected tab that is folded
-            away.
+            <b>OverflowBehavior</b> decides what happens to headers that do not fit: <b>Menu</b> folds them behind a More
+            button, <b>Slide</b> adds previous/next buttons, <b>Scroll</b> shows a scroll bar, <b>Wrap</b> runs them onto
+            more lines and <b>None</b> (default) lets them overflow. A tab selected from the keyboard or by key is scrolled
+            into view. <b>AutoHideSlideButtons</b> hides the slide buttons while everything fits.
         </div>
         <br />
-
-        <div><b>Menu</b> (overflown tabs are moved into an overflow menu):</div>
+        <div>Menu:</div>
         <br />
         <div style="max-width:450px" class="box">
-            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Menu">
-                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Menu">
+                @foreach (var tab in overflowTabs)
+                {
+                    <BitPivotItem HeaderText="@tab">Content of the @tab tab.</BitPivotItem>
+                }
             </BitPivot>
         </div>
         <br /><br />
-
-        <div><b>Slide</b> (next and previous buttons slide through the tabs):</div>
+        <div>Slide:</div>
         <br />
         <div style="max-width:450px" class="box">
-            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Slide">
-                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Slide">
+                @foreach (var tab in overflowTabs)
+                {
+                    <BitPivotItem HeaderText="@tab">Content of the @tab tab.</BitPivotItem>
+                }
             </BitPivot>
         </div>
         <br /><br />
-
-        <div><b>Scroll</b> (a scroll bar is shown below the tabs):</div>
+        <div>Scroll:</div>
         <br />
         <div style="max-width:450px" class="box">
-            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
-                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll">
+                @foreach (var tab in overflowTabs)
+                {
+                    <BitPivotItem HeaderText="@tab">Content of the @tab tab.</BitPivotItem>
+                }
             </BitPivot>
         </div>
         <br /><br />
-
-        <div><b>Wrap</b> (the tabs that do not fit run onto the next line):</div>
+        <div>Wrap:</div>
         <br />
         <div style="max-width:450px" class="box">
-            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Wrap">
-                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Wrap">
+                @foreach (var tab in overflowTabs)
+                {
+                    <BitPivotItem HeaderText="@tab">Content of the @tab tab.</BitPivotItem>
+                }
             </BitPivot>
         </div>
         <br /><br />
-
-        <div>
-            <b>AutoHideSlideButtons</b> takes the slide buttons away entirely while the whole header fits,
-            instead of leaving them in place in their disabled state:
-        </div>
+        <div>AutoHideSlideButtons (everything fits, so no buttons):</div>
         <br />
         <div class="box">
-            <BitPivot AutoHideSlideButtons OverflowBehavior="@BitPivotOverflowBehavior.Slide">
+            <BitPivot AutoHideSlideButtons OverflowBehavior="BitPivotOverflowBehavior.Slide">
                 <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
                 <BitPivotItem HeaderText="Shared">Content of the Shared tab.</BitPivotItem>
                 <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
             </BitPivot>
         </div>
         <br /><br />
-
-        <div>The overflow behavior also works with a vertical header (<b>Position</b> set to <b>Start</b> or
-            <b>End</b>). A constrained height is required for the header to overflow vertically.
-        </div>
-        <br />
-
-        <div><b>Menu</b> (vertical):</div>
+        <div>Vertical Menu and Slide (a vertical header needs a constrained height to overflow):</div>
         <br />
         <div class="box">
-            <BitPivot Position="@BitPivotPosition.Start" OverflowBehavior="@BitPivotOverflowBehavior.Menu"
-                      Style="height:200px">
-                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            <BitPivot Position="BitPivotPosition.Start" OverflowBehavior="BitPivotOverflowBehavior.Menu" Style="height:200px">
+                @foreach (var tab in overflowTabs)
+                {
+                    <BitPivotItem HeaderText="@tab">Content of the @tab tab.</BitPivotItem>
+                }
             </BitPivot>
         </div>
-        <br /><br />
-
-        <div><b>Slide</b> (vertical):</div>
         <br />
         <div class="box">
-            <BitPivot Position="@BitPivotPosition.Start" OverflowBehavior="@BitPivotOverflowBehavior.Slide"
-                      Style="height:200px">
-                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
-            </BitPivot>
-        </div>
-        <br /><br />
-
-        <div><b>Scroll</b> (vertical):</div>
-        <br />
-        <div class="box">
-            <BitPivot Position="@BitPivotPosition.Start" OverflowBehavior="@BitPivotOverflowBehavior.Scroll"
-                      Style="height:200px">
-                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
-                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            <BitPivot Position="BitPivotPosition.Start" OverflowBehavior="BitPivotOverflowBehavior.Slide" Style="height:200px">
+                @foreach (var tab in overflowTabs)
+                {
+                    <BitPivotItem HeaderText="@tab">Content of the @tab tab.</BitPivotItem>
+                }
             </BitPivot>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Header content" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Header content" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            <strong>HeaderStart</strong> and <strong>HeaderEnd</strong> put content of your own at either
-            end of the header line, beside the tabs but outside the tablist, which is where the actions
-            belonging to the whole pivot go. They keep their own place in the tab order, so the arrow keys
-            still walk only the tabs.
+            <b>HeaderStart</b> and <b>HeaderEnd</b> put your own content at either end of the header, outside the tablist,
+            so it keeps its own tab stop and the arrow keys still walk only the tabs.
         </div>
         <br />
         <div class="box">
@@ -410,8 +250,8 @@
                     <BitIcon IconName="@BitIconName.FabricFolder" />
                 </HeaderStart>
                 <HeaderEnd>
-                    <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Add" Title="New tab" />
                     <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Refresh" Title="Refresh" />
+                    <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Settings" Title="Settings" />
                 </HeaderEnd>
                 <ChildContent>
                     <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
@@ -422,95 +262,38 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Dismissible" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Templates" RazorCode="@example8RazorCode" Id="example8">
         <div>
-            <strong>Dismissible</strong> adds a dismiss button to every header (a single item overrides it
-            through its own <strong>Dismissible</strong>), and the Delete key does the same from the
-            keyboard. The pivot never removes an item on its own, because the items belong to the markup
-            that declares them, so <strong>OnItemDismiss</strong> is what takes it out of the list. When
-            the tab being removed is the selected one, the selection moves to its neighbour by itself, and
-            so does the focus. <strong>DismissIconName</strong>, <strong>DismissTitle</strong> and
-            <strong>DismissAriaLabelFormat</strong> are what the button is drawn and named with.
+            <b>Header</b> replaces the header text with your own markup; <b>Body</b> is the named alias of the content,
+            which tells the two apart. An icon still comes before a custom header and a count after it.
         </div>
         <br />
-        <BitPivot Dismissible OnItemDismiss="@(item => dismissibleTabs.Remove(item.Key!))">
-            @foreach (var tab in dismissibleTabs)
-            {
-                <BitPivotItem @key="tab" Key="@tab" HeaderText="@tab">
-                    <div>Content of the @tab tab.</div>
-                </BitPivotItem>
-            }
-        </BitPivot>
-        <br />
-        <BitButton Variant="BitVariant.Outline" IsEnabled="@(dismissibleTabs.Count != 4)" OnClick="ResetDismissibleTabs">
-            Reset
-        </BitButton>
-        <br /><br /><br />
-        <div>A single item opting out of the dismiss button of the pivot:</div>
-        <br />
-        <BitPivot Dismissible>
-            <BitPivotItem HeaderText="Home" Dismissible="false"><div>Pivot #1: Home</div></BitPivotItem>
-            <BitPivotItem HeaderText="Documents"><div>Pivot #2: Documents</div></BitPivotItem>
-            <BitPivotItem HeaderText="Pictures"><div>Pivot #3: Pictures</div></BitPivotItem>
+        <BitPivot>
+            <BitPivotItem>
+                <Header>
+                    <span style="color:red">Header #1</span>
+                </Header>
+                <Body>
+                    <div>Pivot #1: given through the Body template.</div>
+                </Body>
+            </BitPivotItem>
+            <BitPivotItem IconName="@BitIconName.Inbox" ItemCount="99">
+                <Header>
+                    <span style="color:blue">Header #2</span>
+                    <i style="color:green" class="bit-icon bit-icon--HeartFill"></i>
+                </Header>
+                <Body>
+                    <div>Pivot #2: a custom header keeps its icon and count.</div>
+                </Body>
+            </BitPivotItem>
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Keyboard" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
-            The header is one tab stop and the arrow keys move the focus inside it, wrapping around at
-            both ends; Home and End jump to the first and last tab, Enter and Space select the focused
-            one, and a vertical pivot swaps the horizontal arrows for the vertical ones (in a
-            right-to-left pivot the horizontal arrows are mirrored). Disabled and hidden tabs are stepped
-            over. Delete dismisses the focused tab of a <strong>Dismissible</strong> pivot and
-            <strong>Ctrl</strong> with an arrow key moves it in a <strong>Reorderable</strong> one, so the
-            header can be worked through without ever leaving the keyboard.
-        </div>
-        <br />
-        <div>
-            <strong>SelectOnFocus</strong> makes the selection follow the focus, so a tab is selected the
-            moment the arrow keys reach it - the automatic activation of the WAI-ARIA tabs pattern, which
-            suits sections that are cheap to show:
-        </div>
-        <br />
-        <BitPivot SelectOnFocus>
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
-        <br /><br /><br />
-        <div>
-            <strong>Navigable</strong> turned off gives every tab its own place in the tab order and takes
-            the arrow keys out of the picture, for the rare case where the tabs are really a row of links:
-        </div>
-        <br />
-        <BitPivot Navigable="false">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
-        <br /><br /><br />
-        <div>
-            <strong>Loop</strong> turned off stops the navigation at both ends of the header instead of
-            wrapping it around, so the last tab is really the last one the arrow keys reach:
-        </div>
-        <br />
-        <BitPivot Loop="false">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
-    </DemoExample>
-
-    <DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <div>
-            Give each item a <strong>Key</strong> and the selection becomes a value you own:
-            <strong>@@bind-SelectedKey</strong> follows the selection in both directions, while
-            <strong>DefaultSelectedKey</strong> only picks the tab to start on and then leaves it alone. A
-            key whose item is disabled or hidden is refused and the bound value goes back to the tab that is
-            actually selected; a key nobody answers to is given until the end of the render to be answered,
-            so adding a tab and selecting it can be one gesture. The pivot also hands over its
-            <strong>SelectedItem</strong> and its <strong>Items</strong>, and takes a selection through
-            <strong>SelectItemByKey</strong>, for the code that drives it from the outside.
+            Give each item a <b>Key</b>: <b>@@bind-SelectedKey</b> follows the selection both ways, <b>DefaultSelectedKey</b>
+            only picks the starting tab. A key of a disabled or hidden tab is refused. <b>SelectedItem</b>, <b>Items</b> and
+            <b>SelectItemByKey</b> drive the pivot from code.
         </div>
         <br />
         <BitPivot @bind-SelectedKey="selectedKey">
@@ -524,81 +307,44 @@
                    OnClick="(() => selectedKey = (int.Parse(selectedKey) - 1).ToString())">
             Prev
         </BitButton>
-        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.CaretSolidRight"
-                   IsEnabled="@(selectedKey != "4")" OnClick="(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())">
+        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.CaretSolidRight" IsEnabled="@(selectedKey != "4")"
+                   OnClick="(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())">
             Next
         </BitButton>
         <br /><br />
         <div>Selected key: <b>@selectedKey</b></div>
-    </DemoExample>
-
-    <DemoExample Title="Detached" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-        <div>
-            <strong>HeaderOnly</strong> renders the header without the panel underneath it, so the pivot
-            becomes a selector for content that lives somewhere else on the page entirely - a detail pane,
-            a section further up, or anything the selected key drives.
-        </div>
+        <br /><br />
+        <div>DefaultSelectedKey:</div>
         <br />
-        <div style="border:1px solid gray;padding:10px;">
-            @if (detachedSelectedKey == "Foo")
-            {
-                <div>Hello I am Fooooooooooooo</div>
-            }
-            else if (detachedSelectedKey == "Bar")
-            {
-                <div>Hello I am Barrrrrrrrrrrr</div>
-            }
-            else if (detachedSelectedKey == "Bas")
-            {
-                <div>Hello I am Bassssssssssss</div>
-            }
-            else if (detachedSelectedKey == "Biz")
-            {
-                <div>Hello I am Bizzzzzzzzzzzz</div>
-            }
-        </div>
-        <br />
-        <hr />
-        <br />
-        <BitPivot HeaderOnly="true" DefaultSelectedKey="Foo" OnItemClick="@(item => detachedSelectedKey = item?.Key)">
-            <BitPivotItem HeaderText="Foo" Key="Foo"></BitPivotItem>
-            <BitPivotItem HeaderText="Bar" Key="Bar"></BitPivotItem>
-            <BitPivotItem HeaderText="Bas" Key="Bas"></BitPivotItem>
-            <BitPivotItem HeaderText="Biz" Key="Biz"></BitPivotItem>
+        <BitPivot DefaultSelectedKey="B">
+            <BitPivotItem Key="A" HeaderText="A"><div>Pivot #1: A</div></BitPivotItem>
+            <BitPivotItem Key="B" HeaderText="B"><div>Pivot #2: B (starts here)</div></BitPivotItem>
+            <BitPivotItem Key="C" HeaderText="C"><div>Pivot #3: C</div></BitPivotItem>
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            <strong>OnChange</strong> reports every change of the selection, wherever it came from - a
-            click, the keyboard, the overflow menu or the bound key - while <strong>OnItemClick</strong>
-            only fires for a header the user actually activated, even when that header was already the
-            selected one. An item can also carry its own <strong>OnClick</strong>, and a
-            <strong>Title</strong> that becomes the tooltip of its header.
+            <b>OnChange</b> reports every selection change, whatever caused it; <b>OnItemClick</b> only an activated header,
+            even one already selected. An item has its own <b>OnClick</b> and a <b>Title</b> tooltip. <b>OnChanging</b> runs
+            first and vetoes the change with <b>Cancel</b>, e.g. for a tab holding unsaved work.
         </div>
         <br />
         <BitPivot OnChange="@(item => changedPivotItem = item)" OnItemClick="@(item => clickedPivotItem = item)">
             <BitPivotItem HeaderText="Foo" Title="The first tab"><div>Pivot #1: Foo</div></BitPivotItem>
             <BitPivotItem HeaderText="Bar" Title="The second tab"><div>Pivot #2: Bar</div></BitPivotItem>
-            <BitPivotItem HeaderText="Bas" Title="The third tab"><div>Pivot #3: Bas</div></BitPivotItem>
-            <BitPivotItem HeaderText="Biz" OnClick="@(() => itemClickCount++)"><div>Pivot #4: Biz (counts its own clicks)</div></BitPivotItem>
+            <BitPivotItem HeaderText="Biz" OnClick="@(() => itemClickCount++)"><div>Pivot #3: Biz (counts its own clicks)</div></BitPivotItem>
         </BitPivot>
-        <br /><br />
+        <br />
         <div>Last changed to: <b>@changedPivotItem?.HeaderText</b></div>
         <div>Last header clicked: <b>@clickedPivotItem?.HeaderText</b></div>
         <div>Clicks on the Biz header: <b>@itemClickCount</b></div>
-        <br /><br /><br />
-        <div>
-            <strong>OnChanging</strong> is asked just before the selection moves and calls the change off
-            by setting the <strong>Cancel</strong> of its arguments, which is what a tab holding unsaved
-            work, or one that is not ready to be shown, needs in order to refuse the selection. A change
-            that is called off never reaches <strong>OnChange</strong>, and a bound key that was already
-            moved goes back to the tab that is really selected:
-        </div>
+        <br /><br />
+        <div>OnChanging:</div>
         <br />
         <BitToggle @bind-Value="lockHistoryTab" Label="Keep the History tab from being selected" />
         <br />
-        <BitPivot OnChanging="@HandleChanging">
+        <BitPivot OnChanging="HandleChanging">
             <BitPivotItem HeaderText="Draft"><div>Pivot #1: Draft</div></BitPivotItem>
             <BitPivotItem HeaderText="Preview"><div>Pivot #2: Preview</div></BitPivotItem>
             <BitPivotItem HeaderText="History"><div>Pivot #3: History</div></BitPivotItem>
@@ -607,104 +353,92 @@
         <div>Last refused: <b>@refusedPivotItem?.HeaderText</b></div>
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Detached" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div><b>HeaderOnly</b> renders the header without its panel, so the selected key can drive content anywhere on the page.</div>
+        <br />
+        <BitPivot HeaderOnly @bind-SelectedKey="detachedSelectedKey">
+            <BitPivotItem HeaderText="Foo" Key="Foo" />
+            <BitPivotItem HeaderText="Bar" Key="Bar" />
+            <BitPivotItem HeaderText="Biz" Key="Biz" />
+        </BitPivot>
+        <br />
+        <div class="box">
+            @switch (detachedSelectedKey)
+            {
+                case "Foo":
+                    <div>Hello, I am Foo.</div>
+                    break;
+                case "Bar":
+                    <div>Hello, I am Bar.</div>
+                    break;
+                case "Biz":
+                    <div>Hello, I am Biz.</div>
+                    break;
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Mounting" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            <strong>Header</strong> replaces the text of a header with markup of your own, and
-            <strong>Body</strong> is the named alias of the content of the item, which is what lets the
-            two be told apart once a header template is in play. An item count still follows a custom
-            header, and an icon still comes before it.
+            Only the selected panel is rendered by default. <b>KeepMounted</b> keeps every panel that has been shown, so its
+            state survives a tab switch; <b>MountAll</b> renders every panel up front. Type into a box, switch tabs, come back.
         </div>
         <br />
+        <div>Default:</div>
+        <br />
         <BitPivot>
-            <BitPivotItem>
-                <Header>
-                    <span style="color:red">Header #1</span>
-                </Header>
-                <Body>
-                    <h3>Pivot #1</h3>
-                    <div>The content of the first item, given through the Body template.</div>
-                </Body>
-            </BitPivotItem>
-            <BitPivotItem ItemCount="99">
-                <Header>
-                    <i style="color:green" class="bit-icon bit-icon--HeartFill"></i>
-                    <span style="color:blue">Header #2</span>
-                    <i style="color:green" class="bit-icon bit-icon--HeartFill"></i>
-                </Header>
-                <Body>
-                    <h3>Pivot #2</h3>
-                    <div>A custom header keeps the item count that follows it.</div>
-                </Body>
-            </BitPivotItem>
-            <BitPivotItem IconName="@BitIconName.Inbox">
-                <Header>
-                    <span style="color:rebeccapurple">
-                        Header
-                        <i style="color:purple" class="bit-icon bit-icon--HeartFill"></i> #3
-                    </span>
-                </Header>
-                <Body>
-                    <h3>Pivot #3</h3>
-                    <div>An icon still comes before a custom header.</div>
-                </Body>
-            </BitPivotItem>
+            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>KeepMounted:</div>
+        <br />
+        <BitPivot KeepMounted>
+            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>MountAll:</div>
+        <br />
+        <BitPivot MountAll>
+            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Disabled" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Dismiss & add" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
-            <strong>IsEnabled</strong> turns off the whole pivot, or a single item when it is set on the
-            item itself. A disabled tab reports itself as such to assistive technologies, cannot be
-            selected by a key that points at it, and is stepped over by the arrow keys.
+            <b>Dismissible</b> adds a dismiss button to every header (an item overrides it with its own <b>Dismissible</b>);
+            the Delete key does the same. <b>Addable</b> adds a button that raises <b>OnAdd</b>. The items belong to your
+            markup, so <b>OnItemDismiss</b> and <b>OnAdd</b> are where you change the list; a dismissed selected tab hands the
+            selection and the focus to its neighbour.
         </div>
         <br />
-        <div>Disabled pivot:</div>
-        <br />
-        <BitPivot IsEnabled="false">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        <BitPivot Addable Dismissible
+                  @bind-SelectedKey="editableSelectedKey"
+                  OnAdd="AddTab"
+                  OnItemDismiss="@(item => editableTabs.Remove(item.Key!))">
+            <BitPivotItem Key="Home" HeaderText="Home" Dismissible="false">
+                <div>Home stays: its own Dismissible is false.</div>
+            </BitPivotItem>
+            @foreach (var tab in editableTabs)
+            {
+                <BitPivotItem @key="tab" Key="@tab" HeaderText="@tab">
+                    <div>Content of @tab.</div>
+                </BitPivotItem>
+            }
         </BitPivot>
-        <br /><br /><br />
-
-        <div>Disabled pivot item:</div>
         <br />
-        <BitPivot>
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared" IsEnabled="false"><div>Pivot #2: Shared</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
-        <br /><br /><br />
-
-        <div>Disabled tab:</div>
-        <br />
-        <BitPivot HeaderType="BitPivotHeaderType.Tab" IsEnabled="false">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
-        <br /><br /><br />
-
-        <div>Disabled tab item:</div>
-        <br />
-        <BitPivot HeaderType="BitPivotHeaderType.Tab">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared" IsEnabled="false"><div>Pivot #2: Shared</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
+        <div>Selected key: <b>@editableSelectedKey</b></div>
     </DemoExample>
 
-    <DemoExample Title="Reorderable" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="Reorderable" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
-            <strong>Reorderable</strong> lets the headers be dragged onto one another, and the focused one
-            be moved with <strong>Ctrl</strong> and an arrow key, so a header can be put in the order its
-            user works in. Like the dismiss button, the pivot only asks: the items belong to the markup
-            that declares them, so <strong>OnItemReorder</strong> hands over the item together with the
-            index it is leaving and the index it is going to, and the handler is what moves it. A single
-            item pins itself in place with its own <strong>Reorderable</strong> set to false.
+            <b>Reorderable</b> lets headers be dragged, or moved with <b>Ctrl</b>+arrow keys. <b>OnItemReorder</b> reports
+            the item with its old and new index, and your handler moves it. An item's own <b>Reorderable</b>="false" pins it.
         </div>
         <br />
-        <BitPivot Reorderable OnItemReorder="@HandleReorder">
+        <BitPivot Reorderable OnItemReorder="HandleReorder">
             @foreach (var tab in reorderableTabs)
             {
                 <BitPivotItem @key="tab" Key="@tab" HeaderText="@tab">
@@ -717,110 +451,96 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Mounting" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Keyboard & accessibility" RazorCode="@example15RazorCode" Id="example15">
         <div>
-            By default only the selected tab is rendered, and leaving a tab throws its content away.
-            <strong>KeepMounted</strong> keeps every tab that has been shown at least once around and
-            hides it instead, so coming back to it finds the scroll position, the form and the state it
-            was left in; a tab that has never been selected still costs nothing. <strong>MountAll</strong>
-            goes further and renders every tab up front, which is what a page that has to read or export
-            the content of the tabs it is not showing needs.
+            The header is one tab stop: arrows move between tabs (mirrored in RTL, up/down when vertical), Home/End jump to
+            the ends, Enter/Space select, and disabled or hidden tabs are skipped. Name the tablist with <b>AriaLabel</b>
+            or <b>AriaLabelledBy</b>. <b>SelectOnFocus</b> selects as the focus moves, <b>Loop</b>="false" stops at the
+            ends, and <b>Navigable</b>="false" gives every tab its own tab stop.
         </div>
         <br />
-        <div>Type into the boxes, switch tabs and come back:</div>
+        <div id="pivot-settings-label"><b>Account settings</b> (AriaLabelledBy + SelectOnFocus)</div>
         <br />
+        <BitPivot AriaLabelledBy="pivot-settings-label" SelectOnFocus>
+            <BitPivotItem HeaderText="Profile"><div>Pivot #1: Profile</div></BitPivotItem>
+            <BitPivotItem HeaderText="Security"><div>Pivot #2: Security</div></BitPivotItem>
+            <BitPivotItem HeaderText="Billing"><div>Pivot #3: Billing</div></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>Loop="false":</div>
+        <br />
+        <BitPivot AriaLabel="Documents" Loop="false">
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>Navigable="false":</div>
+        <br />
+        <BitPivot AriaLabel="Quick links" Navigable="false">
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        </BitPivot>
+    </DemoExample>
 
-        <div><b>Default</b> (the content of a tab that is left is thrown away):</div>
+    <DemoExample Title="Disabled" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            <b>IsEnabled</b>="false" disables the whole pivot, or one item when set on it. Disabled tabs are announced as
+            such, skipped by the arrow keys and refused as a selected key.
+        </div>
+        <br />
+        <div>Disabled pivot:</div>
+        <br />
+        <BitPivot IsEnabled="false">
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>Disabled item:</div>
         <br />
         <BitPivot>
-            <BitPivotItem HeaderText="First"><input placeholder="Type here..." /></BitPivotItem>
-            <BitPivotItem HeaderText="Second"><input placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared" IsEnabled="false"><div>Pivot #2: Shared</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
         </BitPivot>
-        <br /><br /><br />
-
-        <div><b>KeepMounted</b> (the content of a tab that has been shown is kept):</div>
+        <br /><br />
+        <div>Disabled Tab pivot:</div>
         <br />
-        <BitPivot KeepMounted>
-            <BitPivotItem HeaderText="First"><input placeholder="Type here..." /></BitPivotItem>
-            <BitPivotItem HeaderText="Second"><input placeholder="Type here..." /></BitPivotItem>
-        </BitPivot>
-        <br /><br /><br />
-
-        <div><b>MountAll</b> (every tab is rendered up front):</div>
-        <br />
-        <BitPivot MountAll>
-            <BitPivotItem HeaderText="First"><input placeholder="Type here..." /></BitPivotItem>
-            <BitPivotItem HeaderText="Second"><input placeholder="Type here..." /></BitPivotItem>
+        <BitPivot HeaderType="BitPivotHeaderType.Tab" IsEnabled="false">
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Addable" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+    <DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div>
-            <strong>Addable</strong> puts a button after the last header that reports a request for a new
-            tab through <strong>OnAdd</strong>. Like the dismiss button, the pivot only asks: the items
-            belong to the markup that declares them, so the handler is what puts the new tab into the list
-            and, through the bound key, what decides whether the pivot moves to it. The button sits beside
-            the tablist rather than inside it, so the arrow keys still walk only the tabs, and
-            <strong>AddIconName</strong>, <strong>AddTitle</strong> and <strong>AddAriaLabel</strong> are
-            what it is drawn and named with.
+            <b>BitParams</b> carries a <b>BitPivotParams</b> to every pivot under it. It fills in only what a pivot leaves
+            unset, so the second pivot keeps its own <b>Color</b>. Selection, templates and callbacks stay per pivot.
         </div>
         <br />
-        <BitPivot Addable Dismissible
-                  @bind-SelectedKey="addableSelectedKey"
-                  OnAdd="AddPivotTab"
-                  OnItemDismiss="@(item => addableTabs.Remove(item.Key!))">
-            @foreach (var tab in addableTabs)
-            {
-                <BitPivotItem @key="tab" Key="@tab" HeaderText="@tab">
-                    <div>Content of the @tab tab.</div>
-                </BitPivotItem>
-            }
-        </BitPivot>
-        <br />
-        <div>Selected key: <b>@addableSelectedKey</b></div>
-    </DemoExample>
-
-    <DemoExample Title="Gap" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
-        <div>
-            <strong>Gap</strong> sets the room left between the headers, taking any CSS length, which is
-            what turns an airy row of tabs into a compact switch or the other way around. A vertical pivot
-            spaces its column of headers with the same value.
-        </div>
-        <br />
-        <div>Default:</div>
-        <br />
-        <div class="box">
+        <BitParams Parameters="@pivotParams">
             <BitPivot>
                 <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
                 <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
                 <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
             </BitPivot>
-        </div>
-        <br /><br />
-        <div>Gap: <b>0</b></div>
-        <br />
-        <div class="box">
-            <BitPivot Gap="0" HeaderType="BitPivotHeaderType.Tab">
+            <br />
+            <BitPivot Color="BitColor.Tertiary">
                 <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
                 <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
                 <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
             </BitPivot>
-        </div>
-        <br /><br />
-        <div>Gap: <b>2rem</b></div>
-        <br />
-        <div class="box">
-            <BitPivot Gap="2rem">
-                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-                <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
-                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-            </BitPivot>
-        </div>
+        </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
-        <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
-        <div>Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:</div>
+    <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
+        <div>
+            <b>Color</b> (a <BitLink Href="#color-enum">BitColor</BitLink>) paints the indicator of a Link pivot and the
+            fill of a Tab pivot, as well as the focus ring.
+        </div>
         <br />
 
         <div>Primary:</div>
@@ -1043,109 +763,45 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
-        <div>Use icons from external libraries like FontAwesome, and Bootstrap Icons with the <b>Icon</b> parameter.
+    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            <b>Icon</b> takes icons from external libraries such as FontAwesome and Bootstrap Icons. See
+            <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> for usage.
         </div>
-        <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.
-        </div>
-
         <br />
-        <br />
-
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
         <div>FontAwesome:</div>
         <br />
         <BitPivot>
-            <BitPivotItem HeaderText="Home" Icon="@("fa-solid fa-house")">
-                <h1>Pivot #1: Home</h1>
-                <div>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared
-                    dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that
-                    moment
-                    when possibilities are limitless, waiting for content to emerge.
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Heart" Icon="@BitIconInfo.Css("fa-solid fa-heart")">
-                <h1>Pivot #2: Heart</h1>
-                <div>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and
-                    dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to
-                    take shape.
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Rocket" Icon="@BitIconInfo.Fa("solid rocket")">
-                <h1>Pivot #3: Rocket</h1>
-                <div>
-                    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where
-                    creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-                    infinite
-                    possibilities that lie ahead.
-                </div>
-            </BitPivotItem>
+            <BitPivotItem HeaderText="Home" Icon="@("fa-solid fa-house")"><div>Pivot #1: Home</div></BitPivotItem>
+            <BitPivotItem HeaderText="Heart" Icon="@BitIconInfo.Css("fa-solid fa-heart")"><div>Pivot #2: Heart</div></BitPivotItem>
+            <BitPivotItem HeaderText="Rocket" Icon="@BitIconInfo.Fa("solid rocket")"><div>Pivot #3: Rocket</div></BitPivotItem>
         </BitPivot>
-
-        <br /><br /><br /><br />
-
-        <link rel="stylesheet"
-              href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
+        <br /><br />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
         <div>Bootstrap:</div>
         <br />
         <BitPivot>
-            <BitPivotItem HeaderText="Home" Icon="@("bi bi-house-fill")">
-                <h1>Pivot #1: Home</h1>
-                <div>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared
-                    dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that
-                    moment
-                    when possibilities are limitless, waiting for content to emerge.
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Heart" Icon="@BitIconInfo.Css("bi bi-heart-fill")">
-                <h1>Pivot #2: Heart</h1>
-                <div>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and
-                    dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to
-                    take shape.
-                </div>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Gear" Icon="@BitIconInfo.Bi("gear-fill")">
-                <h1>Pivot #3: Gear</h1>
-                <div>
-                    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where
-                    creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-                    infinite
-                    possibilities that lie ahead.
-                </div>
-            </BitPivotItem>
+            <BitPivotItem HeaderText="Home" Icon="@("bi bi-house-fill")"><div>Pivot #1: Home</div></BitPivotItem>
+            <BitPivotItem HeaderText="Heart" Icon="@BitIconInfo.Css("bi bi-heart-fill")"><div>Pivot #2: Heart</div></BitPivotItem>
+            <BitPivotItem HeaderText="Gear" Icon="@BitIconInfo.Bi("gear-fill")"><div>Pivot #3: Gear</div></BitPivotItem>
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
-        <div>
-            The <strong>Size</strong> moves the headers along the type ramp - <strong>Small</strong>,
-            <strong>Medium</strong> (the default) and <strong>Large</strong> - so a pivot can be the
-            heading of a page or a quiet switch inside a panel without any styling of its own.
-        </div>
+    <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
+        <div><b>Size</b> moves the headers along the type ramp: <b>Small</b>, <b>Medium</b> (default) and <b>Large</b>.</div>
         <br />
         <div>Small:</div>
         <br />
-        <BitPivot Size="@BitSize.Small">
+        <BitPivot Size="BitSize.Small">
             <BitPivotItem HeaderText="File" IconName="@BitIconName.FabricFolder"><div>Pivot #1: File</div></BitPivotItem>
             <BitPivotItem HeaderText="Shared" ItemCount="32"><div>Pivot #2: Shared</div></BitPivotItem>
             <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
         </BitPivot>
         <br /><br />
-        <div>Medium (default):</div>
+        <div>Medium:</div>
         <br />
-        <BitPivot Size="@BitSize.Medium">
+        <BitPivot Size="BitSize.Medium">
             <BitPivotItem HeaderText="File" IconName="@BitIconName.FabricFolder"><div>Pivot #1: File</div></BitPivotItem>
             <BitPivotItem HeaderText="Shared" ItemCount="32"><div>Pivot #2: Shared</div></BitPivotItem>
             <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
@@ -1153,61 +809,87 @@
         <br /><br />
         <div>Large:</div>
         <br />
-        <BitPivot Size="@BitSize.Large">
+        <BitPivot Size="BitSize.Large">
             <BitPivotItem HeaderText="File" IconName="@BitIconName.FabricFolder"><div>Pivot #1: File</div></BitPivotItem>
             <BitPivotItem HeaderText="Shared" ItemCount="32"><div>Pivot #2: Shared</div></BitPivotItem>
             <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CodeFiles="@example21CodeFiles" Id="example21">
         <div>
-            <strong>Style</strong> and <strong>Class</strong> reach the root element of the pivot, while
-            <strong>Styles</strong> and <strong>Classes</strong> reach every part of it by name - the
-            header and its container, a header item and the selected one, the icon, the text, the count,
-            the dismiss and add buttons, the overflow menu and its items, and the body of the panel. See the
-            <BitLink Href="#pivot-class-styles">BitPivotClassStyles</BitLink> section of the parameters
-            table for the full list.
+            <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part by name (see
+            <BitLink Href="#pivot-class-styles">BitPivotClassStyles</BitLink>). The public <b>--bit-Pivot-*</b> CSS variables
+            re-skin the indicator, items, gap, dismiss button, panel and overflow menu, set on <code>:root</code>, an ancestor
+            or one pivot's <b>Style</b>.
         </div>
         <br />
-        <div>Component's Style &amp; Class:</div>
+        <div>Style & Class:</div>
         <br />
-        <BitPivot Style="border: 1px solid tomato;">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        <div class="pivot-custom">
+            <BitPivot Style="border: 1px solid tomato;">
+                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+            </BitPivot>
+            <br />
+            <BitPivot Class="custom-class">
+                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+            </BitPivot>
+            <br /><br />
+            <div>Styles & Classes:</div>
+            <br />
+            <BitPivot Styles="@(new() { HeaderIcon = "color: tomato;", HeaderText = "color: purple;", HeaderItemCount = "color: gray;" })">
+                <BitPivotItem HeaderText="File" IconName="@BitIconName.FabricFolder"><div>Pivot #1: File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me" ItemCount="32"><div>Pivot #2: Shared with me</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+            </BitPivot>
+            <br />
+            <BitPivot Classes="@(new() { Body = "custom-body", SelectedItem = "custom-selected-item", Header = "custom-header" })">
+                <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+        <div>CSS variables - pill tabs:</div>
+        <br />
+        <BitPivot HeaderType="BitPivotHeaderType.Tab"
+                  Style="--bit-Pivot-color: seagreen;
+                         --bit-Pivot-focus-color: seagreen;
+                         --bit-Pivot-item-radius: 999px;
+                         --bit-Pivot-item-padding-inline: 1rem;
+                         --bit-Pivot-gap: 0.25rem;
+                         --bit-Pivot-body-padding: 1rem 0.5rem;">
+            <BitPivotItem HeaderText="Day"><div>Pivot #1: Day</div></BitPivotItem>
+            <BitPivotItem HeaderText="Week"><div>Pivot #2: Week</div></BitPivotItem>
+            <BitPivotItem HeaderText="Month"><div>Pivot #3: Month</div></BitPivotItem>
         </BitPivot>
         <br /><br />
-        <BitPivot Class="custom-class">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
-        <br /><br /><br />
-        <div><b>Styles</b> &amp; <b>Classes</b>:</div>
+        <div>CSS variables - full-width rounded indicator:</div>
         <br />
-        <BitPivot Styles="@(new() { HeaderIcon = "color: tomato;", HeaderText = "color: purple;", HeaderItemCount = "color: gray;" })">
-            <BitPivotItem HeaderText="File" IconName="@BitIconName.FabricFolder"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me" ItemCount="32"><div>Pivot #2: Shared with me</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
-        </BitPivot>
-        <br /><br /><br />
-        <BitPivot Classes="@(new() { Body = "custom-body", SelectedItem = "custom-selected-item", Header = "custom-header" })">
-            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
-            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        <BitPivot Style="--bit-Pivot-color: tomato;
+                         --bit-Pivot-item-selected-color: tomato;
+                         --bit-Pivot-indicator-thickness: 4px;
+                         --bit-Pivot-indicator-inset: 0;
+                         --bit-Pivot-indicator-radius: 4px 4px 0 0;
+                         --bit-Pivot-item-hover-background: transparent;">
+            <BitPivotItem HeaderText="Overview"><div>Pivot #1: Overview</div></BitPivotItem>
+            <BitPivotItem HeaderText="Activity"><div>Pivot #2: Activity</div></BitPivotItem>
+            <BitPivotItem HeaderText="Settings"><div>Pivot #3: Settings</div></BitPivotItem>
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25">
+    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
         <div>
-            Setting <strong>Dir</strong> to <strong>Rtl</strong> mirrors the pivot: the headers run from
-            the right, the selection indicator and the slide buttons follow, the Start and End positions
-            swap sides, and the left and right arrow keys are mirrored along with them.
+            <b>Dir</b>="Rtl" mirrors the pivot: the headers, indicator and slide buttons, the Start and End positions, and
+            the left and right arrow keys.
         </div>
         <br />
         <div class="box">
-            <BitPivot Dir="BitDir.Rtl" OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
+            <BitPivot Dir="BitDir.Rtl" OverflowBehavior="BitPivotOverflowBehavior.Scroll">
                 <BitPivotItem HeaderText="اسناد" IconName="@BitIconName.FabricFolder">
                     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                 </BitPivotItem>
@@ -1219,23 +901,9 @@
                 </BitPivotItem>
             </BitPivot>
         </div>
-        <br /><br /><br />
+        <br /><br />
         <div class="box">
             <BitPivot Dir="BitDir.Rtl" Position="BitPivotPosition.Start">
-                <BitPivotItem HeaderText="اسناد">
-                    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-                </BitPivotItem>
-                <BitPivotItem HeaderText="آخرین ها">
-                    کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد.
-                </BitPivotItem>
-                <BitPivotItem HeaderText="شخصی">
-                    در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها به پایان رسد.
-                </BitPivotItem>
-            </BitPivot>
-        </div>
-        <br /><br /><br />
-        <div class="box">
-            <BitPivot Dir="BitDir.Rtl" Position="BitPivotPosition.End">
                 <BitPivotItem HeaderText="اسناد">
                     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                 </BitPivotItem>

@@ -46,7 +46,7 @@ public partial class BitPivotDemo
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Determines the alignment of the header section of the pivot.",
+            Description = "Determines the alignment of the header section of the pivot (default: Start).",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },
@@ -85,7 +85,7 @@ public partial class BitPivotDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the pivot.",
+            Description = "The general color of the pivot (default: Primary).",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -145,7 +145,7 @@ public partial class BitPivotDemo
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The gap between the pivot items of the header.",
+            Description = "The gap between the pivot items of the header (any CSS length), overriding the --bit-Pivot-gap CSS variable.",
         },
         new()
         {
@@ -171,9 +171,9 @@ public partial class BitPivotDemo
         new()
         {
             Name = "HeaderType",
-            Type = "BitPivotHeaderType",
-            DefaultValue = "BitPivotHeaderType.Link",
-            Description = "The type of the pivot header items.",
+            Type = "BitPivotHeaderType?",
+            DefaultValue = "null",
+            Description = "The type of the pivot header items (default: Link).",
             LinkType = LinkType.Link,
             Href = "#header-type-enum",
         },
@@ -196,7 +196,7 @@ public partial class BitPivotDemo
             Name = "MountAll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Mounts all tabs at render time and hide non-selected tabs with CSS styles instead of not-rendering them (useful for processing/extracting data).",
+            Description = "Mounts all tabs at render time and hides the non-selected ones instead of not rendering them (useful for processing or extracting their content).",
         },
         new()
         {
@@ -279,14 +279,14 @@ public partial class BitPivotDemo
             Name = "OverflowAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The aria-label of the overflow menu button in the Menu overflow behavior.",
+            Description = "The aria-label of the overflow menu button in the Menu overflow behavior (default: More).",
         },
         new()
         {
             Name = "OverflowBehavior",
             Type = "BitPivotOverflowBehavior?",
             DefaultValue = "null",
-            Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
+            Description = "Overflow behavior when there is not enough room to display all of the links/tabs (default: None).",
             LinkType = LinkType.Link,
             Href = "#overflowBehavior-enum",
         },
@@ -309,9 +309,9 @@ public partial class BitPivotDemo
         new()
         {
             Name = "Position",
-            Type = "BitPivotPosition",
-            DefaultValue = "BitPivotPosition.Top",
-            Description = "Position of the pivot header.",
+            Type = "BitPivotPosition?",
+            DefaultValue = "null",
+            Description = "Position of the pivot header (default: Top).",
             LinkType = LinkType.Link,
             Href = "#pivotPosition-enum",
         },
@@ -364,7 +364,7 @@ public partial class BitPivotDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the pivot header items.",
+            Description = "The size of the pivot header items (default: Medium).",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -412,6 +412,160 @@ public partial class BitPivotDemo
             Type = "Task SelectItemByKey(string? key)",
             DefaultValue = "",
             Description = "Selects the pivot item carrying the given key, if such an item exists and is enabled.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Pivot-color",
+            DefaultValue = "the Color's main color",
+            Description = "Accent: the Link indicator, the fill of the selected Tab, the drop marker and the More button that holds the selection.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-focus-color",
+            DefaultValue = "the Color's focus color",
+            Description = "Focus ring of the items, the panel and the header buttons.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-disabled-color",
+            DefaultValue = "the Color's disabled color",
+            Description = "Indicator and Tab fill of a disabled selection.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-disabled-text-color",
+            DefaultValue = "the Color's disabled text color",
+            Description = "Text of a disabled item or pivot.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-indicator-color",
+            DefaultValue = "--bit-Pivot-color",
+            Description = "Selection indicator of a Link pivot (transparent hides it).",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-indicator-thickness",
+            DefaultValue = "--bit-siz-tab-indicator",
+            Description = "Stroke of the selection indicator.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-indicator-inset",
+            DefaultValue = "spacing(1)",
+            Description = "Inset of the indicator from the item's edges (0 spans the whole item).",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-indicator-radius",
+            DefaultValue = "--bit-shp-radius-tab-indicator",
+            Description = "Corner radius of the indicator.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of an item at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-hover-color",
+            DefaultValue = "--bit-clr-fg-pri-hover (Tab: the Color's on-color)",
+            Description = "Text of a hovered item.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover (Tab: the Color's hover color)",
+            Description = "Background of a hovered item.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-selected-color",
+            DefaultValue = "--bit-clr-fg-pri (Tab: the Color's on-color)",
+            Description = "Text of the selected item.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-selected-background",
+            DefaultValue = "transparent (Tab: --bit-Pivot-color)",
+            Description = "Background of the selected item.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-selected-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the selected item's text; its room is reserved, so the tabs never shift.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-height",
+            DefaultValue = "--bit-siz-tab",
+            Description = "Height of an item and of the slide and add buttons.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-padding-inline",
+            DefaultValue = "spacing(1)",
+            Description = "Inline padding of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-radius",
+            DefaultValue = "0 (Tab: --bit-shp-radius-control)",
+            Description = "Corner radius of an item and its focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-font-size",
+            DefaultValue = "per Size, from the type ramp",
+            Description = "Text size of the items and the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-gap",
+            DefaultValue = "spacing(1); spacing(0.5) vertical or wrapped; 0 FullWidth",
+            Description = "Room between the items. The Gap parameter overrides it.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-icon-size",
+            DefaultValue = "inherited",
+            Description = "Size of an item's icon.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-dismiss-size",
+            DefaultValue = "spacing(3)",
+            Description = "Box of the dismiss button: its pointer target, 24px by default for WCAG 2.2 SC 2.5.8.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-body-padding",
+            DefaultValue = "0",
+            Description = "Padding of the tab panel.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-callout-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-callout-shadow",
+            DefaultValue = "the popup elevation token",
+            Description = "Elevation of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-callout-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the overflow menu.",
         },
     ];
 
@@ -1066,21 +1220,33 @@ public partial class BitPivotDemo
 
 
 
+    private readonly List<string> overflowTabs = ["File", "Shared with me", "Recent", "Favorites", "Documents", "Pictures", "Downloads"];
 
     private string selectedKey = "1";
-    private int itemClickCount;
-    private int addableTabCount = 3;
-    private bool lockHistoryTab = true;
-    private string? detachedSelectedKey = "Foo";
-    private string? addableSelectedKey = "Tab 1";
+
     private BitPivotItem? changedPivotItem;
     private BitPivotItem? clickedPivotItem;
+    private int itemClickCount;
+    private bool lockHistoryTab = true;
     private BitPivotItem? refusedPivotItem;
-    private List<string> addableTabs = ["Tab 1", "Tab 2", "Tab 3"];
-    private List<string> dismissibleTabs = ["Home", "Documents", "Pictures", "Settings"];
-    private List<string> reorderableTabs = ["File", "Shared", "Recent", "Favorites"];
 
-    private void ResetDismissibleTabs() => dismissibleTabs = ["Home", "Documents", "Pictures", "Settings"];
+    private string? detachedSelectedKey = "Foo";
+
+    private int editableTabCount = 2;
+    private string? editableSelectedKey = "Home";
+    private readonly List<string> editableTabs = ["Tab 1", "Tab 2"];
+
+    private readonly List<string> reorderableTabs = ["File", "Shared", "Recent", "Favorites"];
+
+    private readonly BitPivotParams[] pivotParams =
+    [
+        new()
+        {
+            HeaderType = BitPivotHeaderType.Tab,
+            Color = BitColor.Success,
+            Size = BitSize.Small,
+        }
+    ];
 
     private void HandleChanging(BitPivotChangeArgs args)
     {
@@ -1092,12 +1258,12 @@ public partial class BitPivotDemo
         refusedPivotItem = args.Item;
     }
 
-    private void AddPivotTab()
+    private void AddTab()
     {
-        var key = $"Tab {++addableTabCount}";
+        var key = $"Tab {++editableTabCount}";
 
-        addableTabs.Add(key);
-        addableSelectedKey = key;
+        editableTabs.Add(key);
+        editableSelectedKey = key;
     }
 
     private void HandleReorder(BitPivotReorderEventArgs args)
@@ -1110,798 +1276,4 @@ public partial class BitPivotDemo
         reorderableTabs.RemoveAt(oldIndex);
         reorderableTabs.Insert(newIndex, args.Item.Key!);
     }
-
-
-
-    private readonly string example1RazorCode = @"
-<BitPivot>
-    <BitPivotItem HeaderText=""File"">
-        <h3>Pivot #1: File</h3>
-        <div>Everything that has been saved to this workspace, newest first.</div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">
-        <h3>Pivot #2: Shared with me</h3>
-        <div>The files other people have given you access to, grouped by who shared them.</div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">
-        <h3>Pivot #3: Recent</h3>
-        <div>The documents you have opened over the last few days.</div>
-    </BitPivotItem>
-</BitPivot>";
-
-    private readonly string example2RazorCode = @"
-<BitPivot>
-    <BitPivotItem HeaderText=""Files"" IconName=""@BitIconName.FabricFolder"">
-        <h3>Pivot #1: Files</h3>
-        <div>Everything that has been saved to this workspace, newest first.</div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"" ItemCount=""32"">
-        <h3>Pivot #2: Shared with me</h3>
-        <div>The files other people have given you access to, grouped by who shared them.</div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"" IconName=""@BitIconName.Recent"" ItemCount=""12"">
-        <h3>Pivot #3: Recent</h3>
-        <div>The documents you have opened over the last few days.</div>
-    </BitPivotItem>
-</BitPivot>";
-
-    private readonly string example3RazorCode = @"
-<BitPivot HeaderType=""@BitPivotHeaderType.Link"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot HeaderType=""@BitPivotHeaderType.Tab"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example4RazorCode = @"
-<BitPivot Stacked>
-    <BitPivotItem HeaderText=""Home"" IconName=""@BitIconName.Home""><div>Pivot #1: Home</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Files"" IconName=""@BitIconName.FabricFolder"" ItemCount=""8""><div>Pivot #2: Files</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"" IconName=""@BitIconName.Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Settings"" IconName=""@BitIconName.Settings""><div>Pivot #4: Settings</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example5RazorCode = @"
-<BitPivot FullWidth>
-    <BitPivotItem HeaderText=""Overview""><div>Pivot #1: Overview</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Activity""><div>Pivot #2: Activity</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Settings""><div>Pivot #3: Settings</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot FullWidth HeaderType=""@BitPivotHeaderType.Tab"">
-    <BitPivotItem HeaderText=""Overview""><div>Pivot #1: Overview</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Activity""><div>Pivot #2: Activity</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Settings""><div>Pivot #3: Settings</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example6RazorCode = @"
-<BitPivot Alignment=""BitAlignment.Start"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Alignment=""BitAlignment.Center"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Alignment=""BitAlignment.End"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Alignment=""BitAlignment.SpaceBetween"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example7RazorCode = @"
-<BitPivot Position=""BitPivotPosition.Top"">
-    <BitPivotItem HeaderText=""File"">
-        <h3>Pivot #1: File</h3>
-        <div>Everything that has been saved to this workspace, newest first.</div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"">
-        <h3>Pivot #2: Shared</h3>
-        <div>The files other people have given you access to.</div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">
-        <h3>Pivot #3: Recent</h3>
-        <div>The documents you have opened over the last few days.</div>
-    </BitPivotItem>
-</BitPivot>
-
-<BitPivot Position=""BitPivotPosition.Bottom"">
-    <BitPivotItem HeaderText=""File"">...</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"">...</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
-</BitPivot>
-
-<BitPivot Position=""BitPivotPosition.Start"">
-    <BitPivotItem HeaderText=""File"">...</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">...</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
-</BitPivot>
-
-<BitPivot Position=""BitPivotPosition.End"">
-    <BitPivotItem HeaderText=""File"">...</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">...</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
-</BitPivot>";
-
-    private readonly string example8RazorCode = @"
-<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Menu"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Slide"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Wrap"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot AutoHideSlideButtons OverflowBehavior=""@BitPivotOverflowBehavior.Slide"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"">Content of the Shared tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Slide"" Style=""height:200px"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"" Style=""height:200px"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>";
-
-    private readonly string example9RazorCode = @"
-<BitPivot Alignment=""BitAlignment.Center"">
-    <HeaderStart>
-        <BitIcon IconName=""@BitIconName.FabricFolder"" />
-    </HeaderStart>
-    <HeaderEnd>
-        <BitButton Variant=""BitVariant.Text"" IconOnly IconName=""@BitIconName.Add"" Title=""New tab"" />
-        <BitButton Variant=""BitVariant.Text"" IconOnly IconName=""@BitIconName.Refresh"" Title=""Refresh"" />
-    </HeaderEnd>
-    <ChildContent>
-        <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-        <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-        <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-    </ChildContent>
-</BitPivot>";
-
-    private readonly string example10RazorCode = @"
-<BitPivot Dismissible OnItemDismiss=""@(item => dismissibleTabs.Remove(item.Key!))"">
-    @foreach (var tab in dismissibleTabs)
-    {
-        <BitPivotItem @key=""tab"" Key=""@tab"" HeaderText=""@tab"">
-            <div>Content of the @tab tab.</div>
-        </BitPivotItem>
-    }
-</BitPivot>
-
-<BitButton Variant=""BitVariant.Outline"" IsEnabled=""@(dismissibleTabs.Count != 4)"" OnClick=""ResetDismissibleTabs"">
-    Reset
-</BitButton>
-
-<BitPivot Dismissible>
-    <BitPivotItem HeaderText=""Home"" Dismissible=""false""><div>Pivot #1: Home</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Documents""><div>Pivot #2: Documents</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures""><div>Pivot #3: Pictures</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example10CsharpCode = @"
-private List<string> dismissibleTabs = [""Home"", ""Documents"", ""Pictures"", ""Settings""];
-
-private void ResetDismissibleTabs() => dismissibleTabs = [""Home"", ""Documents"", ""Pictures"", ""Settings""];";
-
-    private readonly string example11RazorCode = @"
-<BitPivot SelectOnFocus>
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Navigable=""false"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Loop=""false"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example12RazorCode = @"
-<BitPivot @bind-SelectedKey=""selectedKey"">
-    <BitPivotItem Key=""1"" HeaderText=""Samples""><div>Pivot #1: Samples</div></BitPivotItem>
-    <BitPivotItem Key=""2"" HeaderText=""Files""><div>Pivot #2: Files</div></BitPivotItem>
-    <BitPivotItem Key=""3"" HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-    <BitPivotItem Key=""4"" HeaderText=""Last""><div>Pivot #4: Last</div></BitPivotItem>
-</BitPivot>
-
-<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidLeft"" IsEnabled=""@(selectedKey != ""1"")""
-           OnClick=""(() => selectedKey = (int.Parse(selectedKey) - 1).ToString())"">
-    Prev
-</BitButton>
-<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidRight""
-           IsEnabled=""@(selectedKey != ""4"")"" OnClick=""(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())"">
-    Next
-</BitButton>
-
-<div>Selected key: <b>@selectedKey</b></div>";
-
-    private readonly string example12CsharpCode = @"
-private string selectedKey = ""1"";";
-
-    private readonly string example13RazorCode = @"
-<div style=""border:1px solid gray;padding:10px;"">
-    @if (detachedSelectedKey == ""Foo"")
-    {
-        <div>Hello I am Fooooooooooooo</div>
-    }
-    else if (detachedSelectedKey == ""Bar"")
-    {
-        <div>Hello I am Barrrrrrrrrrrr</div>
-    }
-    else if (detachedSelectedKey == ""Bas"")
-    {
-        <div>Hello I am Bassssssssssss</div>
-    }
-    else if (detachedSelectedKey == ""Biz"")
-    {
-        <div>Hello I am Bizzzzzzzzzzzz</div>
-    }
-</div>
-
-<BitPivot HeaderOnly=""true"" DefaultSelectedKey=""Foo"" OnItemClick=""@(item => detachedSelectedKey = item?.Key)"">
-    <BitPivotItem HeaderText=""Foo"" Key=""Foo""></BitPivotItem>
-    <BitPivotItem HeaderText=""Bar"" Key=""Bar""></BitPivotItem>
-    <BitPivotItem HeaderText=""Bas"" Key=""Bas""></BitPivotItem>
-    <BitPivotItem HeaderText=""Biz"" Key=""Biz""></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example13CsharpCode = @"
-private string? detachedSelectedKey = ""Foo"";";
-
-    private readonly string example14RazorCode = @"
-<BitPivot OnChange=""@(item => changedPivotItem = item)"" OnItemClick=""@(item => clickedPivotItem = item)"">
-    <BitPivotItem HeaderText=""Foo"" Title=""The first tab""><div>Pivot #1: Foo</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Bar"" Title=""The second tab""><div>Pivot #2: Bar</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Bas"" Title=""The third tab""><div>Pivot #3: Bas</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Biz"" OnClick=""@(() => itemClickCount++)""><div>Pivot #4: Biz (counts its own clicks)</div></BitPivotItem>
-</BitPivot>
-
-<div>Last changed to: <b>@changedPivotItem?.HeaderText</b></div>
-<div>Last header clicked: <b>@clickedPivotItem?.HeaderText</b></div>
-<div>Clicks on the Biz header: <b>@itemClickCount</b></div>
-
-<BitToggle @bind-Value=""lockHistoryTab"" Label=""Keep the History tab from being selected"" />
-
-<BitPivot OnChanging=""@HandleChanging"">
-    <BitPivotItem HeaderText=""Draft""><div>Pivot #1: Draft</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Preview""><div>Pivot #2: Preview</div></BitPivotItem>
-    <BitPivotItem HeaderText=""History""><div>Pivot #3: History</div></BitPivotItem>
-</BitPivot>
-
-<div>Last refused: <b>@refusedPivotItem?.HeaderText</b></div>";
-
-    private readonly string example14CsharpCode = @"
-private int itemClickCount;
-private bool lockHistoryTab = true;
-private BitPivotItem? changedPivotItem;
-private BitPivotItem? clickedPivotItem;
-private BitPivotItem? refusedPivotItem;
-
-private void HandleChanging(BitPivotChangeArgs args)
-{
-    refusedPivotItem = null;
-
-    if (lockHistoryTab is false || args.Item.HeaderText != ""History"") return;
-
-    args.Cancel = true;
-    refusedPivotItem = args.Item;
-}";
-
-    private readonly string example15RazorCode = @"
-<BitPivot>
-    <BitPivotItem>
-        <Header>
-            <span style=""color:red"">Header #1</span>
-        </Header>
-        <Body>
-            <h3>Pivot #1</h3>
-            <div>The content of the first item, given through the Body template.</div>
-        </Body>
-    </BitPivotItem>
-    <BitPivotItem ItemCount=""99"">
-        <Header>
-            <i style=""color:green"" class=""bit-icon bit-icon--HeartFill""></i>
-            <span style=""color:blue"">Header #2</span>
-            <i style=""color:green"" class=""bit-icon bit-icon--HeartFill""></i>
-        </Header>
-        <Body>
-            <h3>Pivot #2</h3>
-            <div>A custom header keeps the item count that follows it.</div>
-        </Body>
-    </BitPivotItem>
-    <BitPivotItem IconName=""@BitIconName.Inbox"">
-        <Header>
-            <span style=""color:rebeccapurple"">
-                Header
-                <i style=""color:purple"" class=""bit-icon bit-icon--HeartFill""></i> #3
-            </span>
-        </Header>
-        <Body>
-            <h3>Pivot #3</h3>
-            <div>An icon still comes before a custom header.</div>
-        </Body>
-    </BitPivotItem>
-</BitPivot>";
-
-    private readonly string example16RazorCode = @"
-<BitPivot IsEnabled=""false"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot>
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"" IsEnabled=""false""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot HeaderType=""BitPivotHeaderType.Tab"" IsEnabled=""false"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot HeaderType=""BitPivotHeaderType.Tab"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"" IsEnabled=""false""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example17RazorCode = @"
-<BitPivot Reorderable OnItemReorder=""@HandleReorder"">
-    @foreach (var tab in reorderableTabs)
-    {
-        <BitPivotItem @key=""tab"" Key=""@tab"" HeaderText=""@tab"">
-            <div>Content of the @tab tab.</div>
-        </BitPivotItem>
-    }
-    <BitPivotItem Key=""Pinned"" HeaderText=""Pinned"" Reorderable=""false"" IconName=""@BitIconName.Pinned"">
-        <div>This tab stays where it is.</div>
-    </BitPivotItem>
-</BitPivot>";
-
-    private readonly string example17CsharpCode = @"
-private List<string> reorderableTabs = [""File"", ""Shared"", ""Recent"", ""Favorites""];
-
-private void HandleReorder(BitPivotReorderEventArgs args)
-{
-    var oldIndex = reorderableTabs.IndexOf(args.Item.Key!);
-    var newIndex = args.NewIndex;
-
-    if (oldIndex < 0 || newIndex < 0 || newIndex >= reorderableTabs.Count) return;
-
-    reorderableTabs.RemoveAt(oldIndex);
-    reorderableTabs.Insert(newIndex, args.Item.Key!);
-}";
-
-    private readonly string example18RazorCode = @"
-<BitPivot>
-    <BitPivotItem HeaderText=""First""><input placeholder=""Type here..."" /></BitPivotItem>
-    <BitPivotItem HeaderText=""Second""><input placeholder=""Type here..."" /></BitPivotItem>
-</BitPivot>
-
-<BitPivot KeepMounted>
-    <BitPivotItem HeaderText=""First""><input placeholder=""Type here..."" /></BitPivotItem>
-    <BitPivotItem HeaderText=""Second""><input placeholder=""Type here..."" /></BitPivotItem>
-</BitPivot>
-
-<BitPivot MountAll>
-    <BitPivotItem HeaderText=""First""><input placeholder=""Type here..."" /></BitPivotItem>
-    <BitPivotItem HeaderText=""Second""><input placeholder=""Type here..."" /></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example19RazorCode = @"
-<BitPivot Addable Dismissible
-          @bind-SelectedKey=""addableSelectedKey""
-          OnAdd=""AddPivotTab""
-          OnItemDismiss=""@(item => addableTabs.Remove(item.Key!))"">
-    @foreach (var tab in addableTabs)
-    {
-        <BitPivotItem @key=""tab"" Key=""@tab"" HeaderText=""@tab"">
-            <div>Content of the @tab tab.</div>
-        </BitPivotItem>
-    }
-</BitPivot>
-
-<div>Selected key: <b>@addableSelectedKey</b></div>";
-
-    private readonly string example19CsharpCode = @"
-private int addableTabCount = 3;
-private string? addableSelectedKey = ""Tab 1"";
-private List<string> addableTabs = [""Tab 1"", ""Tab 2"", ""Tab 3""];
-
-private void AddPivotTab()
-{
-    var key = $""Tab {++addableTabCount}"";
-
-    addableTabs.Add(key);
-    addableSelectedKey = key;
-}";
-
-    private readonly string example20RazorCode = @"
-<BitPivot>
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Gap=""0"" HeaderType=""BitPivotHeaderType.Tab"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Gap=""2rem"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example21RazorCode = @"
-<BitPivot Color=""BitColor.Primary"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.Secondary"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.Tertiary"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.Info"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.Success"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.Warning"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.SevereWarning"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.Error"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-
-<BitPivot Color=""BitColor.PrimaryBackground"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.SecondaryBackground"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.TertiaryBackground"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.PrimaryForeground"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.SecondaryForeground"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.TertiaryForeground"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.PrimaryBorder"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.SecondaryBorder"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Color=""BitColor.TertiaryBorder"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-
-<BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Primary"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-
-<BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Success"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Error"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>";
-
-
-    private readonly string example22RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitPivot>
-    <BitPivotItem HeaderText=""Home"" Icon=""@(""fa-solid fa-house"")"">
-        <h1>Pivot #1: Home</h1>
-        <div>
-            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-            when possibilities are limitless, waiting for content to emerge.
-        </div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Heart"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"">
-        <h1>Pivot #2: Heart</h1>
-        <div>
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Rocket"" Icon=""@BitIconInfo.Fa(""solid rocket"")"">
-        <h1>Pivot #3: Rocket</h1>
-        <div>
-            In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
-            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-            possibilities that lie ahead.
-        </div>
-    </BitPivotItem>
-</BitPivot>
-
-
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
-<BitPivot>
-    <BitPivotItem HeaderText=""Home"" Icon=""@(""bi bi-house-fill"")"">
-        <h1>Pivot #1: Home</h1>
-        <div>
-            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-            when possibilities are limitless, waiting for content to emerge.
-        </div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Heart"" Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"">
-        <h1>Pivot #2: Heart</h1>
-        <div>
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"">
-        <h1>Pivot #3: Gear</h1>
-        <div>
-            In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
-            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-            possibilities that lie ahead.
-        </div>
-    </BitPivotItem>
-</BitPivot>";
-
-
-    private readonly string example23RazorCode = @"
-<BitPivot Size=""@BitSize.Small"">
-    <BitPivotItem HeaderText=""File"" IconName=""@BitIconName.FabricFolder""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"" ItemCount=""32""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Size=""@BitSize.Medium"">
-    <BitPivotItem HeaderText=""File"" IconName=""@BitIconName.FabricFolder""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"" ItemCount=""32""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Size=""@BitSize.Large"">
-    <BitPivotItem HeaderText=""File"" IconName=""@BitIconName.FabricFolder""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"" ItemCount=""32""><div>Pivot #2: Shared</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example24RazorCode = @"
-<style>
-    .custom-class {
-        margin: 1rem;
-        padding-left: 0.25rem;
-        box-shadow: 0 0 1rem lightskyblue;
-    }
-
-    .custom-selected-item {
-        background-color: goldenrod;
-    }
-
-    .custom-header {
-        overflow: hidden;
-        border-radius: 1rem;
-        border: 1px solid gray;
-    }
-
-    .custom-body {
-        padding: 0.5rem;
-        background-color: deepskyblue;
-    }
-</style>
-
-<BitPivot Style=""border: 1px solid tomato;"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Class=""custom-class"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Styles=""@(new() { HeaderIcon = ""color: tomato;"", HeaderText = ""color: purple;"", HeaderItemCount = ""color: gray;"" })"">
-    <BitPivotItem HeaderText=""File"" IconName=""@BitIconName.FabricFolder""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"" ItemCount=""32""><div>Pivot #2: Shared with me</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>
-
-<BitPivot Classes=""@(new() { Body = ""custom-body"", SelectedItem = ""custom-selected-item"", Header = ""custom-header"" })"">
-    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example25RazorCode = @"
-<BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
-    <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.FabricFolder"">
-        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""آخرین ها"" ItemCount=""8"">
-        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد.
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""شخصی"" IconName=""@BitIconName.Info"" ItemCount=""6"">
-        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها به پایان رسد.
-    </BitPivotItem>
-</BitPivot>
-
-<BitPivot Dir=""BitDir.Rtl"" Position=""BitPivotPosition.Start"">
-    <BitPivotItem HeaderText=""اسناد"">
-        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""آخرین ها"">
-        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد.
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""شخصی"">
-        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها به پایان رسد.
-    </BitPivotItem>
-</BitPivot>
-
-<BitPivot Dir=""BitDir.Rtl"" Position=""BitPivotPosition.End"">
-    <BitPivotItem HeaderText=""اسناد"">
-        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""آخرین ها"">
-        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد.
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""شخصی"">
-        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها به پایان رسد.
-    </BitPivotItem>
-</BitPivot>";
 }

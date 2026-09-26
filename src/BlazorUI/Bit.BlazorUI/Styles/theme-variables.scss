@@ -416,6 +416,10 @@ $shp-radius-button: var(--bit-shp-radius-button);
 $shp-radius-chip: var(--bit-shp-radius-chip);
 $shp-radius-selection: var(--bit-shp-radius-selection);
 
+//shape - the corner of the selection indicator of a tab strip (BitPivot): square under Fluent, a capsule
+//under Fluent 2, rounded on the edge facing the label under Material.
+$shp-radius-tab-indicator: var(--bit-shp-radius-tab-indicator);
+
 /*---- Size ----*/
 //The dimensions every design system decides once and every component repeats: control heights,
 //icon glyph sizes, selection-indicator (checkbox box / radio ring) sizes, the spinner stroke and
