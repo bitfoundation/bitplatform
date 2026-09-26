@@ -1,22 +1,67 @@
 @import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+// Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
+// drop menu and one set on the Style of an instance re-skins that one alone. The callout and the overlay are
+// rendered outside the root element, so the component copies the --bit-DropMenu-* declarations of Style,
+// Styles.Root (and Styles.Opened while open) onto them; Styles.Callout is applied after that copy.
+//   --bit-DropMenu-color                     text and icon color of the button at rest   (default: per variant, from the role)
+//   --bit-DropMenu-background                background of the button at rest           (default: per variant, from the role)
+//   --bit-DropMenu-border-color              border color of the button                  (default: per variant)
+//   --bit-DropMenu-border-width              border thickness of the button              (default: $shp-border-width)
+//   --bit-DropMenu-radius                    corner radius of the button and its ring    (default: $shp-radius-button)
+//   --bit-DropMenu-hover-color               text and icon color on hover                (default: per variant, from the role)
+//   --bit-DropMenu-hover-background          background on hover                         (default: the role's hover color)
+//   --bit-DropMenu-active-color              text and icon color while pressed or open   (default: per variant, from the role)
+//   --bit-DropMenu-active-background         background while pressed or open            (default: the role's active color)
+//   --bit-DropMenu-disabled-color            text and icon color when disabled/loading   (default: the role's disabled text color)
+//   --bit-DropMenu-disabled-background       background when disabled/loading            (default: per variant, the role's dis color)
+//   --bit-DropMenu-disabled-border-color     border color when disabled/loading          (default: per variant)
+//   --bit-DropMenu-focus-color               focus ring color                            (default: the role's focus color)
+//   --bit-DropMenu-min-height                smallest height of the button, and the width
+//                                            of a button that holds only an icon         (default: per size, $siz-ctrl-*)
+//   --bit-DropMenu-padding                   padding of the button                       (default: per size)
+//   --bit-DropMenu-gap                       room between the icon, text and chevron     (default: spacing(1))
+//   --bit-DropMenu-font-size                 text size of the button                     (default: per size, from the type ramp)
+//   --bit-DropMenu-icon-size                 glyph, chevron and spinner size             (default: per size, $siz-icon-*)
+//   --bit-DropMenu-callout-background        background of the callout                   (default: $clr-bg-pri, or the Background kind)
+//   --bit-DropMenu-callout-color             text color of the callout                   (default: $clr-fg-pri)
+//   --bit-DropMenu-callout-border-color      border color of the callout                 (default: none, or the Border kind)
+//   --bit-DropMenu-callout-border-width      border thickness of the callout             (default: 0, or $shp-border-width with Border)
+//   --bit-DropMenu-callout-radius            corner radius of the callout                (default: $shp-radius-popup)
+//   --bit-DropMenu-callout-shadow            elevation of the callout                    (default: $box-shadow-popup)
+//   --bit-DropMenu-callout-padding           padding around the content of the callout   (default: 0)
+//   --bit-DropMenu-callout-width             width of the callout                        (default: as wide as its content; Width)
+//   --bit-DropMenu-callout-min-width         narrowest the callout gets                  (default: none; MinWidth)
+//   --bit-DropMenu-callout-max-width         widest the callout gets                     (default: none; MaxWidth)
+//   --bit-DropMenu-callout-max-height        tallest the callout grows before it scrolls
+//                                            (only read when MaxHeight is set)           (default: the room the viewport leaves)
+//   --bit-DropMenu-overlay-background        the layer behind an open callout            (default: transparent)
+
 .bit-drm {
+    display: flex;
     width: fit-content;
+    position: relative;
     box-sizing: border-box;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
-    color: var(--bit-drm-clr-txt);
-    background-color: var(--bit-drm-clr);
-    border-radius: $shp-radius-control;
-    // The border is on the root rather than on the button so that it wraps the whole drop menu, and it
-    // is declared here rather than only in the outlined variant so that turning that variant on does not
-    // resize the button. It is transparent until a variant paints it, which is also what makes a border
-    // color the consumer sets through Style or Styles.Root land on something.
-    border-width: $shp-border-width;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    // The border is on the root rather than on the button so that it wraps the whole drop menu, and it is
+    // declared here rather than only in the outlined variant so that turning that variant on does not resize
+    // the button. It is transparent until a variant paints it, which is also what makes a border color the
+    // consumer sets through Style or Styles.Root land on something.
     border-style: $shp-border-style;
-    border-color: transparent;
-    // The variants below repaint all three on hover/active, so they animate together from here.
+    border-width: var(--bit-DropMenu-border-width, #{$shp-border-width});
+    border-radius: var(--bit-DropMenu-radius, #{$shp-radius-button});
+    // The control height of the size class, as a floor rather than a height, so the button still grows with a
+    // taller icon or a wrapped label. It is what lines a drop menu up with the other controls of its size in a
+    // toolbar, and what keeps the smallest one clear of the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8).
+    min-height: var(--bit-DropMenu-min-height, var(--bit-drm-min-height));
+    color: var(--bit-drm-cur-txt);
+    border-color: var(--bit-drm-cur-brd);
+    background-color: var(--bit-drm-cur-bg);
+    // The states below repaint all three together, so they animate together from here.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
     --bit-drm-transform-factor: 1;
 
@@ -31,32 +76,68 @@
     --bit-drm-clr-dis: #{$clr-bg-pri};
     --bit-drm-clr-dis-text: #{$clr-fg-dis};
 
+    // What each state paints the button with: the rest (rst), hover (hov), pressed-or-open (act) and
+    // disabled (dis) text, background and border. The variant classes below re-point these, and the state
+    // rules pick the set that applies into the cur- ones the properties above read, with the public variable
+    // of that state first - so a public variable restyles its state in every variant alike.
+    --bit-drm-rst-txt: var(--bit-drm-clr-txt);
+    --bit-drm-rst-bg: var(--bit-drm-clr);
+    --bit-drm-rst-brd: transparent;
+    --bit-drm-hov-txt: var(--bit-drm-clr-txt);
+    --bit-drm-hov-bg: var(--bit-drm-clr-hover);
+    --bit-drm-hov-brd: transparent;
+    --bit-drm-act-txt: var(--bit-drm-clr-txt);
+    --bit-drm-act-bg: var(--bit-drm-clr-active);
+    --bit-drm-act-brd: transparent;
+    --bit-drm-dis-bg: var(--bit-DropMenu-disabled-background, var(--bit-drm-clr-dis));
+    --bit-drm-dis-brd: transparent;
+
+    --bit-drm-cur-txt: var(--bit-DropMenu-color, var(--bit-drm-rst-txt));
+    --bit-drm-cur-bg: var(--bit-DropMenu-background, var(--bit-drm-rst-bg));
+    --bit-drm-cur-brd: var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd));
+
     &.bit-rtl {
         --bit-drm-transform-factor: -1;
     }
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-drm-clr-hover);
+            --bit-drm-cur-txt: var(--bit-DropMenu-hover-color, var(--bit-drm-hov-txt));
+            --bit-drm-cur-bg: var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg));
+            --bit-drm-cur-brd: var(--bit-DropMenu-border-color, var(--bit-drm-hov-brd));
         }
     }
 
-    &:active {
-        background-color: var(--bit-drm-clr-active);
+    // While the callout is open the button keeps the pressed look, so it stays visibly tied to it.
+    &:active,
+    &.bit-drm-omn {
+        --bit-drm-cur-txt: var(--bit-DropMenu-active-color, var(--bit-drm-act-txt));
+        --bit-drm-cur-bg: var(--bit-DropMenu-active-background, var(--bit-drm-act-bg));
+        --bit-drm-cur-brd: var(--bit-DropMenu-border-color, var(--bit-drm-act-brd));
     }
 
     &:has(.bit-drm-btn:focus-visible) {
-        @include focus-ring(var(--bit-drm-clr-focus));
+        @include focus-ring(var(--bit-DropMenu-focus-color, var(--bit-drm-clr-focus)));
     }
 
-    &.bit-dis {
+    // A drop menu that is loading takes no interaction either, so it wears the look of a disabled one rather
+    // than repainting under a pointer whose clicks its button no longer answers.
+    &.bit-dis,
+    &.bit-drm-ldg {
         pointer-events: none;
-        color: var(--bit-drm-clr-dis-text);
-        background-color: var(--bit-drm-clr-dis);
+        --bit-drm-cur-txt: var(--bit-DropMenu-disabled-color, var(--bit-drm-clr-dis-text));
+        --bit-drm-cur-bg: var(--bit-drm-dis-bg);
+        --bit-drm-cur-brd: var(--bit-DropMenu-disabled-border-color, var(--bit-drm-dis-brd));
 
         .bit-drm-btn {
             cursor: default;
         }
+    }
+
+    // A loading button keeps the focus (it is only aria-disabled), so its ring stays visible - but drawn in the
+    // disabled color, since the vivid ring of the enabled state reads as actionable.
+    &.bit-drm-ldg:has(.bit-drm-btn:focus-visible) {
+        @include focus-ring(var(--bit-DropMenu-disabled-color, var(--bit-drm-clr-dis-text)));
     }
 
     @keyframes bit-drm-spinner-animation {
@@ -71,22 +152,44 @@
 }
 
 .bit-drm-btn {
+    margin: 0;
+    border: none;
+    min-width: 0;
     color: inherit;
-    gap: spacing(1);
     cursor: pointer;
-    width: fit-content;
+    flex: 1 1 auto;
     align-items: center;
     display: inline-flex;
     outline: transparent;
+    // A button element's UA style is the `font` shorthand, which resets the family and the weight rather than
+    // inheriting them, so the type of the root is asked for by name.
     font-weight: inherit;
     font-family: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
     text-decoration: none;
     box-sizing: border-box;
     justify-content: center;
     background-color: transparent;
-    font-size: var(--bit-drm-font-size);
-    padding: var(--bit-drm-padding);
-    border-radius: $shp-radius-control;
+    -webkit-tap-highlight-color: transparent;
+    gap: var(--bit-DropMenu-gap, #{spacing(1)});
+    padding: var(--bit-DropMenu-padding, var(--bit-drm-padding));
+    font-size: var(--bit-DropMenu-font-size, var(--bit-drm-font-size));
+    border-radius: var(--bit-DropMenu-radius, #{$shp-radius-button});
+}
+
+// A button that holds nothing but a glyph is a square of the control's own height, the way every icon button in
+// the library is, so it clears the minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis too.
+.bit-drm-ion .bit-drm-btn {
+    min-width: calc(var(--bit-DropMenu-min-height, var(--bit-drm-min-height)) - 2 * var(--bit-DropMenu-border-width, #{$shp-border-width}));
+    padding: var(--bit-DropMenu-padding, var(--bit-drm-pad-y));
+}
+
+.bit-drm-icn,
+.bit-drm-chv {
+    line-height: 1;
+    flex-shrink: 0;
+    font-size: var(--bit-DropMenu-icon-size, var(--bit-drm-icon-size));
 }
 
 // The chevron flips over while the callout is open. The independent `rotate` property is used rather
@@ -105,19 +208,14 @@
 .bit-drm-flw {
     width: 100%;
 
-    .bit-drm-btn {
-        width: 100%;
-    }
-
     .bit-drm-txt {
         flex-grow: 1;
         text-align: start;
     }
 }
 
+// The spinner takes the icon's slot and its size, so entering the loading state moves nothing around it.
 .bit-drm-spn {
-    width: 1em;
-    height: 1em;
     flex-shrink: 0;
     border-radius: 50%;
     box-sizing: border-box;
@@ -125,7 +223,23 @@
     border-top-color: currentcolor;
     border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
+    width: var(--bit-DropMenu-icon-size, var(--bit-drm-icon-size));
+    height: var(--bit-DropMenu-icon-size, var(--bit-drm-icon-size));
     animation: bit-drm-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+// The description the button points at through aria-describedby: taken out of the flow rather than hidden,
+// since display:none would hide it from the screen readers it is written for too.
+.bit-drm-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-drm-ovl {
@@ -135,8 +249,11 @@
     height: 100%;
     display: none;
     position: fixed;
-    z-index: $zindex-overlay;
-    background-color: transparent;
+    // How deep the callout is in the stack of open ones is set on the wrapper both are moved into. A drop menu
+    // opened from inside another callout has to lift its overlay above that callout, or the click meant to
+    // dismiss it would land on the callout underneath instead.
+    z-index: calc(#{$zindex-overlay} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
+    background-color: var(--bit-DropMenu-overlay-background, transparent);
 }
 
 // A drop menu that opens on hover is closed by the pointer leaving it, and the overlay would be the one
@@ -158,19 +275,29 @@
     outline: transparent;
     position: fixed;
     box-sizing: border-box;
-    z-index: $zindex-callout;
+    z-index: calc(#{$zindex-callout} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
+    // Relocated to the body while open, the callout inherits the type and the color of the page rather than
+    // those of the drop menu, so it asks for the theme's own - the ones its background is paired with.
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    color: var(--bit-DropMenu-callout-color, #{$clr-fg-pri});
     // The sizing the consumer asked for, defaulted to what the callout does on its own: as wide as its
     // content needs it to be. The positioning code clears the inline width of the callout on every layout
     // pass and only writes it back for MatchWidth, which is why these are declared rather than inlined.
-    width: var(--bit-drm-cal-wid, auto);
-    min-width: var(--bit-drm-cal-mnw, auto);
-    max-width: var(--bit-drm-cal-mxw, none);
+    width: var(--bit-DropMenu-callout-width, auto);
+    min-width: var(--bit-DropMenu-callout-min-width, auto);
+    max-width: var(--bit-DropMenu-callout-max-width, none);
+    padding: var(--bit-DropMenu-callout-padding, 0);
     opacity: var(--bit-drm-cal-opa);
     transform: var(--bit-drm-cal-tra);
-    box-shadow: $box-shadow-popup;
-    border-radius: $shp-radius-popup;
-    background-color: $clr-bg-pri;
-    transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
+    box-shadow: var(--bit-DropMenu-callout-shadow, #{$box-shadow-popup});
+    border-radius: var(--bit-DropMenu-callout-radius, #{$shp-radius-popup});
+    border-style: $shp-border-style;
+    border-width: var(--bit-DropMenu-callout-border-width, 0);
+    border-color: var(--bit-DropMenu-callout-border-color, transparent);
+    background-color: var(--bit-DropMenu-callout-background, var(--bit-drm-cal-bg, #{$clr-bg-pri}));
+    // The entry is a popup appearing, so it decelerates into place.
+    transition: opacity $mot-duration-short $mot-easing-decelerate, transform $mot-duration $mot-easing-decelerate;
     --bit-drm-transform-factor: 1;
 
     // The callout is programmatically focusable, and the focus lands on it when the content holds nothing
@@ -178,12 +305,19 @@
     // is drawn inside the callout rather than through the shared focus-ring mixin, whose box-shadow would
     // take the place of the elevation the callout is drawn with.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri-focus;
+        outline: $shp-focus-ring-width solid var(--bit-DropMenu-focus-color, #{$clr-pri-focus});
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 
     &[data-bit-cal-pos="above"] {
         --bit-drm-cal-tra-ent: translateY(#{spacing(0.5)});
+    }
+
+    // Placed beside the button (DropDirection.All with no vertical room), the callout has no vertical side
+    // to slide out of, so it only fades in.
+    &[data-bit-cal-pos="left"],
+    &[data-bit-cal-pos="right"] {
+        --bit-drm-cal-tra-ent: none;
     }
 
     &.bit-drm-ocl {
@@ -214,8 +348,8 @@
         // positioning code measures, so the placement is decided against the height the callout really has.
         // dvh follows the browser chrome of a mobile device as it retracts, and vh is the fallback for the
         // engines that do not know it - the slightly too tall behavior there rather than no cap at all.
-        max-height: min(var(--bit-drm-cal-mxh), calc(100vh - #{spacing(2)}));
-        max-height: min(var(--bit-drm-cal-mxh), calc(100dvh - #{spacing(2)}));
+        max-height: min(var(--bit-DropMenu-callout-max-height), calc(100vh - #{spacing(2)}));
+        max-height: min(var(--bit-DropMenu-callout-max-height), calc(100dvh - #{spacing(2)}));
     }
 
     // The positioning code caps the callout to the room the viewport leaves; scrolling is what turns that
@@ -229,40 +363,45 @@
     }
 
     &.bit-drm-bpg {
-        background-color: $clr-bg-pri;
+        --bit-drm-cal-bg: #{$clr-bg-pri};
     }
 
     &.bit-drm-bsg {
-        background-color: $clr-bg-sec;
+        --bit-drm-cal-bg: #{$clr-bg-sec};
     }
 
     &.bit-drm-btg {
-        background-color: $clr-bg-ter;
+        --bit-drm-cal-bg: #{$clr-bg-ter};
     }
 
     &.bit-drm-brg {
-        background-color: transparent;
+        --bit-drm-cal-bg: transparent;
     }
 
     &.bit-drm-brd {
-        border-width: $shp-border-width;
-        border-style: $shp-border-style;
+        border-width: var(--bit-DropMenu-callout-border-width, #{$shp-border-width});
 
         &.bit-drm-bpr {
-            border-color: $clr-brd-pri;
+            border-color: var(--bit-DropMenu-callout-border-color, #{$clr-brd-pri});
         }
 
         &.bit-drm-bsr {
-            border-color: $clr-brd-sec;
+            border-color: var(--bit-DropMenu-callout-border-color, #{$clr-brd-sec});
         }
 
         &.bit-drm-btr {
-            border-color: $clr-brd-ter;
+            border-color: var(--bit-DropMenu-callout-border-color, #{$clr-brd-ter});
         }
 
         &.bit-drm-brr {
-            border-color: transparent;
+            border-color: var(--bit-DropMenu-callout-border-color, transparent);
         }
+    }
+
+    // The shadow is all that sets a callout off from the page, and forced colors strip every shadow, which
+    // would leave its content floating over the page with no edge at all. A system-colored border takes its place.
+    @media (forced-colors: active) {
+        border: $shp-border-width solid CanvasText;
     }
 }
 
@@ -352,153 +491,64 @@
 
 // The three looks shared by the button-like components of the library. Leaving Variant unset renders no
 // variant class at all, which leaves the drop menu with the filled look it has always had by default.
+// They only re-point the per-state colors; the state rules of .bit-drm pick the set that applies.
 .bit-drm-fil {
-    color: var(--bit-drm-clr-txt);
-    border-color: var(--bit-drm-clr);
-    background-color: var(--bit-drm-clr);
-
-    @media (hover: hover) {
-        &:hover {
-            border-color: var(--bit-drm-clr-hover);
-            background-color: var(--bit-drm-clr-hover);
-        }
-    }
-
-    &:active {
-        border-color: var(--bit-drm-clr-active);
-        background-color: var(--bit-drm-clr-active);
-    }
-
-    &.bit-dis {
-        border-color: var(--bit-drm-clr-dis);
-    }
+    --bit-drm-rst-brd: var(--bit-DropMenu-background, var(--bit-drm-clr));
+    --bit-drm-hov-brd: var(--bit-DropMenu-hover-background, var(--bit-drm-clr-hover));
+    --bit-drm-act-brd: var(--bit-DropMenu-active-background, var(--bit-drm-clr-active));
+    --bit-drm-dis-brd: var(--bit-drm-dis-bg);
 }
 
 .bit-drm-otl {
-    color: var(--bit-drm-clr-flt);
-    border-color: var(--bit-drm-clr);
-    background-color: transparent;
-
-    @media (hover: hover) {
-        &:hover {
-            color: var(--bit-drm-clr-txt);
-            border-color: var(--bit-drm-clr-hover);
-            background-color: var(--bit-drm-clr-hover);
-        }
-    }
-
-    &:active {
-        color: var(--bit-drm-clr-txt);
-        border-color: var(--bit-drm-clr-active);
-        background-color: var(--bit-drm-clr-active);
-    }
-
-    &.bit-dis {
-        border-color: var(--bit-drm-clr-dis);
-        background-color: transparent;
-    }
+    --bit-drm-rst-txt: var(--bit-drm-clr-flt);
+    --bit-drm-rst-bg: transparent;
+    --bit-drm-rst-brd: var(--bit-drm-clr);
+    --bit-drm-hov-brd: var(--bit-DropMenu-hover-background, var(--bit-drm-clr-hover));
+    --bit-drm-act-brd: var(--bit-DropMenu-active-background, var(--bit-drm-clr-active));
+    --bit-drm-dis-bg: var(--bit-DropMenu-disabled-background, transparent);
+    --bit-drm-dis-brd: var(--bit-drm-clr-dis);
 }
 
 .bit-drm-tex {
-    color: var(--bit-drm-clr-flt);
-    border-color: transparent;
-    background-color: transparent;
-
-    @media (hover: hover) {
-        &:hover {
-            color: var(--bit-drm-clr-txt);
-            background-color: var(--bit-drm-clr-hover);
-        }
-    }
-
-    &:active {
-        color: var(--bit-drm-clr-txt);
-        background-color: var(--bit-drm-clr-active);
-    }
-
-    &.bit-dis {
-        background-color: transparent;
-    }
+    --bit-drm-rst-txt: var(--bit-drm-clr-flt);
+    --bit-drm-rst-bg: transparent;
+    --bit-drm-dis-bg: var(--bit-DropMenu-disabled-background, transparent);
 }
 
-
-// The state classes come after the variants so that the look a state gives the button wins over the one
-// its variant gives it, which is what the two of them together are: a variant with a state on top of it.
-
-// While the callout is open the button keeps the pressed look, so it stays visibly tied to it.
-.bit-drm-omn {
-    background-color: var(--bit-drm-clr-active);
-
-    &.bit-drm-fil {
-        border-color: var(--bit-drm-clr-active);
-    }
-
-    // The pressed background is the color itself, so an unpainted variant switches its label over to the
-    // contrast color of that background the way it does on hover.
-    &.bit-drm-otl,
-    &.bit-drm-tex {
-        color: var(--bit-drm-clr-txt);
-    }
-
-    // A transparent drop menu never takes that background, so it never takes the label that goes with it
-    // either - which on an accent color is the one meant to be read on top of it, not next to it.
-    &.bit-drm-trn {
-        color: var(--bit-drm-clr-flt);
-    }
-}
-
+// A transparent drop menu never paints a surface, in any state, so it never takes the label that goes with
+// one either - which on an accent color is the one meant to be read on top of it, not next to it. Declared
+// after the variants so that it wins over the surface each of them paints.
 .bit-drm-trn {
-    color: var(--bit-drm-clr-flt);
-    background-color: transparent;
-
-    // The label is pinned along with the background, since the variants repaint the two together and the
-    // one they switch to is only readable on top of the background this drop menu is not painting.
-    &:hover,
-    &:active {
-        color: var(--bit-drm-clr-flt);
-        background-color: transparent;
-    }
-
-    &.bit-dis {
-        background-color: transparent;
-    }
-}
-
-// A drop menu that is loading takes no interaction either, so it wears the look of a disabled one rather
-// than repainting under a pointer whose clicks its button no longer answers.
-.bit-drm-ldg {
-    pointer-events: none;
-    color: var(--bit-drm-clr-dis-text);
-    background-color: var(--bit-drm-clr-dis);
-
-    .bit-drm-btn {
-        cursor: default;
-    }
-
-    &.bit-drm-fil,
-    &.bit-drm-otl {
-        border-color: var(--bit-drm-clr-dis);
-    }
-
-    &.bit-drm-otl,
-    &.bit-drm-tex,
-    &.bit-drm-trn {
-        background-color: transparent;
-    }
+    --bit-drm-rst-txt: var(--bit-drm-clr-flt);
+    --bit-drm-hov-txt: var(--bit-drm-clr-flt);
+    --bit-drm-act-txt: var(--bit-drm-clr-flt);
+    --bit-drm-rst-bg: transparent;
+    --bit-drm-hov-bg: transparent;
+    --bit-drm-act-bg: transparent;
+    --bit-drm-dis-bg: var(--bit-DropMenu-disabled-background, transparent);
 }
 
 
 .bit-drm-sm {
     --bit-drm-font-size: #{$tg-fs-xs};
-    --bit-drm-padding: #{spacing(0.5)} #{spacing(1.0)};
+    --bit-drm-min-height: #{$siz-ctrl-sm};
+    --bit-drm-icon-size: #{$siz-icon-sm};
+    --bit-drm-pad-y: #{$siz-ctrl-pad-y-sm};
+    --bit-drm-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
 }
 
 .bit-drm-md {
     --bit-drm-font-size: #{$tg-fs-sm};
-    --bit-drm-padding: #{spacing(1.0)} #{spacing(1.5)};
+    --bit-drm-min-height: #{$siz-ctrl-md};
+    --bit-drm-icon-size: #{$siz-icon-md};
+    --bit-drm-pad-y: #{$siz-ctrl-pad-y-md};
+    --bit-drm-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm};
 }
 
 .bit-drm-lg {
     --bit-drm-font-size: #{$tg-fs-md};
-    --bit-drm-padding: #{spacing(1.25)} #{spacing(2.0)};
+    --bit-drm-min-height: #{$siz-ctrl-lg};
+    --bit-drm-icon-size: #{$siz-icon-lg};
+    --bit-drm-pad-y: #{$siz-ctrl-pad-y-lg};
+    --bit-drm-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};
 }

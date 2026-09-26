@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -208,7 +209,9 @@ public class BitDropMenuTests : BunitTestContext
 
         var button = component.Find(".bit-drm-btn");
 
-        Assert.IsTrue(button.HasAttribute("disabled"));
+        // A loading button keeps the focus a keyboard user left on it, so it only says it is unavailable.
+        Assert.IsFalse(button.HasAttribute("disabled"));
+        Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
         Assert.IsTrue(component.Find(".bit-drm").ClassList.Contains("bit-drm-ldg"));
         Assert.IsNotNull(component.Find(".bit-drm-spn"));
         Assert.AreEqual(0, component.FindAll(".bit-drm-icn").Count);
@@ -225,13 +228,13 @@ public class BitDropMenuTests : BunitTestContext
 
         component.MarkupMatches(@"
 <div data-val-test=""bit"" class=""bit-drm bit-drm-md"" id:ignore>
-    <button type=""button"" aria-haspopup=""true"" aria-expanded=""false"" class=""bit-drm-btn "" id:ignore aria-controls:ignore>
+    <button type=""button"" aria-haspopup=""dialog"" aria-expanded=""false"" class=""bit-drm-btn "" id:ignore aria-controls:ignore>
         <span class=""bit-drm-txt "">Menu</span>
         <i aria-hidden=""true"" class=""bit-drm-chv bit-icon bit-icon--ChevronRight bit-ico-r90 ""></i>
     </button>
 </div>
-<div style=""display:none;"" class=""bit-drm-ovl "" id:ignore></div>
-<div tabindex=""-1"" class=""bit-drm-cal bit-drm-fit"" id:ignore aria-labelledby:ignore>
+<div aria-hidden=""true"" style=""display:none;"" class=""bit-drm-ovl "" id:ignore></div>
+<div tabindex=""-1"" role=""dialog"" class=""bit-drm-cal bit-drm-fit"" id:ignore aria-labelledby:ignore>
     <div>Body</div>
 </div>");
 
@@ -249,19 +252,22 @@ public class BitDropMenuTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.AriaLabel, "The menu");
-            parameters.Add(p => p.AriaDescription, "described-by-id");
+            parameters.Add(p => p.AriaDescription, "Opens the quick settings");
             parameters.Add(p => p.Title, "The tooltip");
         });
 
         var button = component.Find(".bit-drm-btn");
         var callout = component.Find(".bit-drm-cal");
 
-        Assert.AreEqual("true", button.GetAttribute("aria-haspopup"));
+        Assert.AreEqual("dialog", button.GetAttribute("aria-haspopup"));
         Assert.AreEqual("false", button.GetAttribute("aria-expanded"));
         Assert.AreEqual(callout.Id, button.GetAttribute("aria-controls"));
         Assert.AreEqual(button.Id, callout.GetAttribute("aria-labelledby"));
         Assert.AreEqual("The menu", button.GetAttribute("aria-label"));
-        Assert.AreEqual("described-by-id", button.GetAttribute("aria-describedby"));
+        // aria-describedby takes ids, so the text is rendered and pointed at rather than written into it.
+        var description = component.Find(".bit-drm-dsc");
+        Assert.AreEqual(description.Id, button.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Opens the quick settings", description.TextContent);
         Assert.AreEqual("The tooltip", button.GetAttribute("title"));
 
         // The accessible name belongs to the button, not to the container around it.
@@ -669,7 +675,7 @@ public class BitDropMenuTests : BunitTestContext
         var callout = component.Find(".bit-drm-cal");
 
         Assert.IsTrue(callout.ClassList.Contains("bit-drm-mxh"));
-        Assert.IsTrue(callout.GetAttribute("style")!.Contains("--bit-drm-cal-mxh:10rem"));
+        Assert.IsTrue(callout.GetAttribute("style")!.Contains("--bit-DropMenu-callout-max-height:10rem"));
     }
 
     [TestMethod]
@@ -974,7 +980,29 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropMenuShouldCloseOnEscapeFromTheCallout()
+    public async Task BitDropMenuShouldCloseOnEscapeFromTheCallout()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        // Escape inside the callout is answered on the JS side, which only reports it while no callout opened
+        // from inside this one is open - registered once, for the life of the component.
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.setupEscape");
+        Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
+
+        component.Find(".bit-drm-btn").Click();
+        Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.setupEscape"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldNotCloseOnAKeyDownBubblingUpToTheCallout()
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
@@ -982,11 +1010,13 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         component.Find(".bit-drm-btn").Click();
+
+        // An Escape bubbling up from a dropdown inside the content is that dropdown's to answer: the callout
+        // has no keydown handler of its own that could close the whole panel along with the dropdown's list.
+        Assert.ThrowsExactly<MissingEventHandlerException>(() =>
+            component.Find(".bit-drm-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" }));
+
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
-
-        component.Find(".bit-drm-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-
-        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
     }
 
     [TestMethod]
@@ -1141,9 +1171,9 @@ public class BitDropMenuTests : BunitTestContext
 
         var style = component.Find(".bit-drm-cal").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("--bit-drm-cal-wid:16rem"));
-        Assert.IsTrue(style.Contains("--bit-drm-cal-mnw:8rem"));
-        Assert.IsTrue(style.Contains("--bit-drm-cal-mxw:24rem"));
+        Assert.IsTrue(style.Contains("--bit-DropMenu-callout-width:16rem"));
+        Assert.IsTrue(style.Contains("--bit-DropMenu-callout-min-width:8rem"));
+        Assert.IsTrue(style.Contains("--bit-DropMenu-callout-max-width:24rem"));
     }
 
     [TestMethod]
@@ -1158,15 +1188,17 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropMenuShouldRenderTheDialogSemanticsOnlyWhenTheFocusIsTrapped()
+    public void BitDropMenuShouldRenderAModalDialogOnlyWhenTheFocusIsTrapped()
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
         });
 
-        Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-haspopup"));
-        Assert.IsNull(component.Find(".bit-drm-cal").GetAttribute("role"));
+        // The content is arbitrary, so the callout is a dialog in every mode rather than a menu whose items
+        // and arrow-key navigation it does not have; it is only a modal one while it keeps the keyboard.
+        Assert.AreEqual("dialog", component.Find(".bit-drm-btn").GetAttribute("aria-haspopup"));
+        Assert.AreEqual("dialog", component.Find(".bit-drm-cal").GetAttribute("role"));
         Assert.IsNull(component.Find(".bit-drm-cal").GetAttribute("aria-modal"));
 
         component.Render(parameters =>
@@ -1340,7 +1372,7 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropMenuShouldReturnTheFocusToTheButtonWhenTheCalloutHeldIt()
+    public async Task BitDropMenuShouldReturnTheFocusToTheButtonWhenTheCalloutHeldIt()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(true);
 
@@ -1353,7 +1385,7 @@ public class BitDropMenuTests : BunitTestContext
 
         var before = CountInvocations("Blazor._internal.domWrapper.focus");
 
-        component.Find(".bit-drm-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        await component.InvokeAsync(() => component.Instance._OnEscape());
 
         Assert.AreEqual(1, CountInvocations("Blazor._internal.domWrapper.focus") - before);
     }
@@ -2038,6 +2070,419 @@ public class BitDropMenuTests : BunitTestContext
         {
             Assert.IsTrue(style.Contains(expectedStyle));
         }
+    }
+
+
+    [TestMethod]
+    public void BitDropMenuParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitDropMenu)}", BitDropMenuParams.ParamName);
+
+        var @params = new BitDropMenuParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitDropMenuParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldApplyCascadingParametersFromBitParams()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitDropMenuParams
+                {
+                    Color = BitColor.Success,
+                    Size = BitSize.Large,
+                    Variant = BitVariant.Outline,
+                    FullWidth = true,
+                    NoChevron = true,
+                    IconName = "Add",
+                    Title = "Cascaded title",
+                    Background = BitColorKind.Secondary,
+                    NoShadow = true
+                }
+            });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropMenu>(0);
+                builder.AddAttribute(1, nameof(BitDropMenu.Text), "Menu");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-drm");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-otl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-flw"));
+        Assert.AreEqual(0, component.FindAll(".bit-drm-chv").Count);
+        Assert.IsTrue(component.Find(".bit-drm-icn").ClassList.Contains("bit-icon--Add"));
+        Assert.AreEqual("Cascaded title", component.Find(".bit-drm-btn").GetAttribute("title"));
+
+        var callout = component.Find(".bit-drm-cal");
+
+        Assert.IsTrue(callout.ClassList.Contains("bit-drm-bsg"));
+        Assert.IsTrue(callout.ClassList.Contains("bit-drm-nsh"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuDirectParametersShouldOverrideCascadingParameters()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitDropMenuParams
+                {
+                    Color = BitColor.Success,
+                    Size = BitSize.Large,
+                    IconName = "Add",
+                    Title = "Cascaded title"
+                }
+            });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropMenu>(0);
+                builder.AddAttribute(1, nameof(BitDropMenu.Text), "Menu");
+                builder.AddAttribute(2, nameof(BitDropMenu.Color), BitColor.Error);
+                builder.AddAttribute(3, nameof(BitDropMenu.Size), BitSize.Small);
+                builder.AddAttribute(4, nameof(BitDropMenu.Title), "Direct title");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-drm");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-drm-suc"));
+        Assert.AreEqual("Direct title", component.Find(".bit-drm-btn").GetAttribute("title"));
+
+        // What the markup left alone still comes from the cascade.
+        Assert.IsTrue(component.Find(".bit-drm-icn").ClassList.Contains("bit-icon--Add"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuParamsUpdateParametersShouldSetAllProperties()
+    {
+        var classes = new BitDropMenuClassStyles { Root = "cascaded-root" };
+        var styles = new BitDropMenuClassStyles { Root = "color:red" };
+        var icon = BitIconInfo.Css("fa-solid fa-house");
+        var chevron = BitIconInfo.Css("fa-solid fa-caret-down");
+
+        var @params = new BitDropMenuParams
+        {
+            Alignment = BitCalloutAlignment.End,
+            AriaDescription = "Description",
+            AriaHidden = true,
+            AutoClose = true,
+            AutoFocus = true,
+            Background = BitColorKind.Tertiary,
+            Border = BitColorKind.Primary,
+            ChevronDownIcon = chevron,
+            ChevronDownIconName = "ChevronDown",
+            Classes = classes,
+            Color = BitColor.Warning,
+            DropDirection = BitDropDirection.All,
+            FullWidth = true,
+            HoverCloseDelay = 300,
+            HoverOpenDelay = 200,
+            Icon = icon,
+            IconName = "Home",
+            IsLoading = true,
+            LazyRender = true,
+            MatchWidth = true,
+            MaxHeight = "10rem",
+            MaxWidth = "30rem",
+            MinWidth = "10rem",
+            NoChevron = true,
+            NoShadow = true,
+            OpenOnHover = true,
+            PanelPosition = BitPanelPosition.Bottom,
+            Responsive = true,
+            Size = BitSize.Small,
+            Styles = styles,
+            Title = "Title",
+            Transparent = true,
+            TrapFocus = true,
+            Variant = BitVariant.Text,
+            Width = "20rem",
+            AriaLabel = "Label",
+            TabIndex = "3"
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropMenu>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = component.FindComponent<BitDropMenu>().Instance;
+
+        Assert.AreEqual(BitCalloutAlignment.End, instance.Alignment);
+        Assert.AreEqual("Description", instance.AriaDescription);
+        Assert.IsTrue(instance.AriaHidden);
+        Assert.IsTrue(instance.AutoClose);
+        Assert.IsTrue(instance.AutoFocus);
+        Assert.AreEqual(BitColorKind.Tertiary, instance.Background);
+        Assert.AreEqual(BitColorKind.Primary, instance.Border);
+        Assert.AreSame(chevron, instance.ChevronDownIcon);
+        Assert.AreEqual("ChevronDown", instance.ChevronDownIconName);
+        Assert.AreSame(classes, instance.Classes);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
+        Assert.IsTrue(instance.FullWidth);
+        Assert.AreEqual(300, instance.HoverCloseDelay);
+        Assert.AreEqual(200, instance.HoverOpenDelay);
+        Assert.AreSame(icon, instance.Icon);
+        Assert.AreEqual("Home", instance.IconName);
+        Assert.IsTrue(instance.IsLoading);
+        Assert.IsTrue(instance.LazyRender);
+        Assert.IsTrue(instance.MatchWidth);
+        Assert.AreEqual("10rem", instance.MaxHeight);
+        Assert.AreEqual("30rem", instance.MaxWidth);
+        Assert.AreEqual("10rem", instance.MinWidth);
+        Assert.IsTrue(instance.NoChevron);
+        Assert.IsTrue(instance.NoShadow);
+        Assert.IsTrue(instance.OpenOnHover);
+        Assert.AreEqual(BitPanelPosition.Bottom, instance.PanelPosition);
+        Assert.IsTrue(instance.Responsive);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreSame(styles, instance.Styles);
+        Assert.AreEqual("Title", instance.Title);
+        Assert.IsTrue(instance.Transparent);
+        Assert.IsTrue(instance.TrapFocus);
+        Assert.AreEqual(BitVariant.Text, instance.Variant);
+        Assert.AreEqual("20rem", instance.Width);
+        Assert.AreEqual("Label", instance.AriaLabel);
+        Assert.AreEqual("3", instance.TabIndex);
+
+        var root = component.Find(".bit-drm");
+
+        Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("color:red"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldCarryItsPublicCssVariablesOverToTheCalloutAndTheOverlay()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Style, "color:blue; --bit-DropMenu-callout-background: pink; --bit-DropMenu-radius:0");
+            parameters.Add(p => p.Styles, new BitDropMenuClassStyles
+            {
+                Root = "--bit-DropMenu-callout-radius:2px",
+                Callout = "--bit-DropMenu-callout-background:gold"
+            });
+            parameters.Add(p => p.MinWidth, "8rem");
+        });
+
+        var calloutStyle = component.Find(".bit-drm-cal").GetAttribute("style")!;
+        var overlayStyle = component.Find(".bit-drm-ovl").GetAttribute("style")!;
+
+        // The callout is rendered outside the root and relocated to the body, so the public variables set on
+        // the drop menu reach it only by being copied - and only they are: color:blue belongs to the button.
+        Assert.IsTrue(calloutStyle.Contains("--bit-DropMenu-callout-background: pink;"));
+        Assert.IsTrue(calloutStyle.Contains("--bit-DropMenu-radius:0;"));
+        Assert.IsTrue(calloutStyle.Contains("--bit-DropMenu-callout-radius:2px;"));
+        Assert.IsFalse(calloutStyle.Contains("color:blue"));
+        Assert.IsTrue(overlayStyle.Contains("--bit-DropMenu-callout-background: pink;"));
+
+        // The sizing parameters come after the copy and Styles.Callout after them, so the most specific wins.
+        var copied = calloutStyle.IndexOf("--bit-DropMenu-callout-background: pink", StringComparison.Ordinal);
+        var minWidth = calloutStyle.IndexOf("--bit-DropMenu-callout-min-width:8rem", StringComparison.Ordinal);
+        var own = calloutStyle.IndexOf("--bit-DropMenu-callout-background:gold", StringComparison.Ordinal);
+
+        Assert.IsTrue(copied >= 0 && copied < minWidth && minWidth < own);
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldCarryTheOpenedStylesPublicCssVariablesOnlyWhileOpen()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Styles, new BitDropMenuClassStyles { Opened = "--bit-DropMenu-callout-shadow:none" });
+        });
+
+        Assert.IsNull(component.Find(".bit-drm-cal").GetAttribute("style"));
+
+        component.Find(".bit-drm-btn").Click();
+
+        Assert.IsTrue(component.Find(".bit-drm-cal").GetAttribute("style")!.Contains("--bit-DropMenu-callout-shadow:none"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldSquareOffAButtonThatHoldsOnlyAnIcon()
+    {
+        var iconOnly = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "More");
+            parameters.Add(p => p.AriaLabel, "More actions");
+        });
+
+        var withText = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "More");
+            parameters.Add(p => p.Text, "More");
+        });
+
+        Assert.IsTrue(iconOnly.Find(".bit-drm").ClassList.Contains("bit-drm-ion"));
+        Assert.IsFalse(withText.Find(".bit-drm").ClassList.Contains("bit-drm-ion"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldHandTheKeyboardBackToThePageWhenItDoesNotTrapIt()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
+
+        component.Find(".bit-drm-btn").Click();
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.setupTabOut");
+
+        Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
+        Assert.AreEqual(component.Find(".bit-drm-btn").Id, setup.Arguments[1]);
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+
+        component.Find(".bit-drm-ovl").Click();
+
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldSwitchBetweenTheTabOutAndTheFocusTrapWhileOpen()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        component.Render(parameters => parameters.Add(p => p.TrapFocus, true));
+
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.setupFocusTrap"));
+
+        component.Render(parameters => parameters.Add(p => p.TrapFocus, false));
+
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeFocusTrap"));
+        Assert.AreEqual(2, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
+    }
+
+    [TestMethod]
+    public async Task BitDropMenuShouldCloseWhenTheKeyboardTabsOutOfTheCallout()
+    {
+        var dismissed = 0;
+
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.OnDismiss, () => dismissed++);
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        await component.InvokeAsync(() => component.Instance._OnTabOut());
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, dismissed);
+        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    [DataRow(null, "")]
+    [DataRow(BitCalloutAlignment.Start, "")]
+    [DataRow(BitCalloutAlignment.Center, "center")]
+    [DataRow(BitCalloutAlignment.End, "end")]
+    public void BitDropMenuShouldHandTheAlignmentToThePositioningCode(BitCalloutAlignment? alignment, string expected)
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // Argument 22 of Callouts.toggle is the alignment.
+        Assert.AreEqual(expected, toggle.Arguments[22]);
+    }
+
+
+    [TestMethod]
+    public void BitDropMenuShouldRenderALazyContentOnlyFromTheFirstOpening()
+    {
+        var opened = 0;
+
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.LazyRender, true);
+            parameters.Add(p => p.OnOpen, () => opened++);
+            parameters.AddChildContent("<div class=\"lazy-content\">Body</div>");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".lazy-content").Count);
+
+        component.Find(".bit-drm-btn").Click();
+
+        // The callout is placed against its content, so it is only shown once the render put the content in.
+        Assert.AreEqual(1, component.FindAll(".lazy-content").Count);
+        Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+        Assert.AreEqual(1, CountCalloutToggles());
+        Assert.AreEqual(1, opened);
+
+        component.Find(".bit-drm-ovl").Click();
+
+        // Once rendered, the content stays, so whatever state it holds survives the close.
+        Assert.AreEqual(1, component.FindAll(".lazy-content").Count);
+        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldRenderTheContentUpFrontWithoutLazyRender()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.AddChildContent("<div class=\"eager-content\">Body</div>");
+        });
+
+        Assert.AreEqual(1, component.FindAll(".eager-content").Count);
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldOpenALazyCalloutDrivenByIsOpen()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.LazyRender, true);
+            parameters.AddChildContent("<div class=\"lazy-content\">Body</div>");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        Assert.AreEqual(1, component.FindAll(".lazy-content").Count);
+        Assert.AreEqual(1, CountCalloutToggles());
     }
 
     private int CountCalloutToggles()
