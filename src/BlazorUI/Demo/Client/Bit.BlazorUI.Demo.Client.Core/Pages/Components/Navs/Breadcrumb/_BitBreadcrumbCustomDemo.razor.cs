@@ -46,6 +46,14 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Custom 4", Address = "/components/breadcrumb", Icon = BitIconName.ClassNotebookLogo16, IsCurrent = true }
     ];
 
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithHomeIcon =
+    [
+        new() { Icon = BitIconName.Home, Label = "Home", Address = "/components/breadcrumb" },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb" },
+        new() { Name = "Custom 3", Address = "/components/breadcrumb" },
+        new() { Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true }
+    ];
+
     private readonly List<PageInfo> CustomBreadcrumbItemsWithClass =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb", HtmlClass = "custom-item-1" },
@@ -122,11 +130,23 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Laptops", IconInfo = BitIconInfo.Bi("laptop-fill"), IsCurrent = true }
     ];
 
+    private readonly BitBreadcrumbParams[] breadcrumbParams =
+    [
+        new()
+        {
+            DividerText = "/",
+            MaxDisplayedItems = 3,
+            OverflowIndex = 1,
+            SelectedItemAsText = true,
+        }
+    ];
+
     private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     {
         Text = { Selector = c => c.Name },
         Href = { Selector = c => c.Address },
         Title = { Selector = c => c.Tooltip },
+        AriaLabel = { Selector = c => c.Label },
         Target = { Selector = c => c.OpenIn },
         IsSelected = { Selector = c => c.IsCurrent },
         Class = { Selector = c => c.HtmlClass },
@@ -136,12 +156,6 @@ public partial class _BitBreadcrumbCustomDemo
         OverflowTemplate = { Name = nameof(PageInfo.OverflowFragment) },
         Icon = { Selector = c => c.IconInfo },
     };
-
-    private void HandleOnCustomClick(PageInfo model)
-    {
-        CustomBreadcrumbItemsWithControlled.First(i => i.IsCurrent).IsCurrent = false;
-        model.IsCurrent = true;
-    }
 
     private void HandleOnCustomizedCustomClick(PageInfo model)
     {

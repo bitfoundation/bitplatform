@@ -169,7 +169,7 @@ public partial class BitBreadcrumbDemo
             Name = "OverflowIconTemplate",
             Type = "RenderFragment?",
             DefaultValue= "null",
-            Description = "The custom template content to render each overflow icon."
+            Description = "The custom template content to render the overflow icon."
         },
         new()
         {
@@ -231,6 +231,136 @@ public partial class BitBreadcrumbDemo
             DefaultValue = "false",
             Description = "Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line. It turns AutoCollapse and Scrollable off while it is on, though a fixed MaxDisplayedItems still collapses what it is told to."
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Breadcrumb-color",
+            DefaultValue = "The Color role's main color (--bit-clr-fg-pri without a Color)",
+            Description = "Text of the items, in the trail and in the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-selected-color",
+            DefaultValue = "--bit-Breadcrumb-color",
+            Description = "Text of the current (selected) item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-selected-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the current (selected) item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text of a disabled item or of a disabled breadcrumb.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a hovered item, overflow button or menu item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background of a pressed item, overflow button or menu item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-focus-color",
+            DefaultValue = "The Color role's focus color (--bit-clr-pri-focus without a Color)",
+            Description = "Focus indicator color.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-font-size",
+            DefaultValue = "Per Size",
+            Description = "Text size of the items.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-height",
+            DefaultValue = "Per Size",
+            Description = "Line height of the items, which sets the height of the trail.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-padding",
+            DefaultValue = "0 8px",
+            Description = "Padding of the items.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-gap",
+            DefaultValue = "8px",
+            Description = "Space between the icon and the text of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the items and the overflow button.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-max-width",
+            DefaultValue = "none",
+            Description = "Width the text of an item truncates at. The MaxItemWidth parameter takes precedence and also adds the tooltips.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-divider-color",
+            DefaultValue = "The Color role's main color (--bit-clr-fg-sec without a Color)",
+            Description = "Color of the dividers and of the overflow button glyph.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-divider-size",
+            DefaultValue = "Per Size",
+            Description = "Size of the divider icons and of the overflow button glyph.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-divider-spacing",
+            DefaultValue = "0",
+            Description = "Space on each side of a divider.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-callout-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-callout-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-callout-shadow",
+            DefaultValue = "--bit-shd-popup",
+            Description = "Elevation of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-overflow-item-height",
+            DefaultValue = "Per Size (--bit-siz-item-*)",
+            Description = "Height of a row of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-overflow-font-size",
+            DefaultValue = "Per Size",
+            Description = "Text size of a row of the overflow menu.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

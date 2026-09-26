@@ -1,6 +1,68 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read with a fallback and never declared here, so they inherit: set one on :root,
+// on any ancestor, or on the Style of a single breadcrumb. The overflow menu is rendered outside the root
+// element (and moved to the body by the callout positioning), so the component copies the
+// --bit-Breadcrumb-* declarations of Style and Styles.Root onto it by hand - see GetCalloutStyles.
+//
+//   TRAIL
+//   --bit-Breadcrumb-color                  text of the items                          (default: the Color role's main color / $clr-fg-pri)
+//   --bit-Breadcrumb-selected-color         text of the current item                   (default: --bit-Breadcrumb-color)
+//   --bit-Breadcrumb-selected-font-weight   weight of the current item                 (default: $tg-fw-semibold)
+//   --bit-Breadcrumb-disabled-color         text of a disabled item                    (default: $clr-fg-dis)
+//   --bit-Breadcrumb-hover-background       background of a hovered item               (default: $clr-bg-pri-hover)
+//   --bit-Breadcrumb-active-background      background of a pressed item               (default: $clr-bg-pri-active)
+//   --bit-Breadcrumb-focus-color            focus indicator color                      (default: the Color role's focus color)
+//   --bit-Breadcrumb-font-size              text size of the items                     (default: per size, from the type ramp)
+//   --bit-Breadcrumb-item-height            line height of the items                   (default: per size)
+//   --bit-Breadcrumb-item-padding           padding of the items                       (default: 0 spacing(1))
+//   --bit-Breadcrumb-item-gap               room between the icon and the text         (default: spacing(1))
+//   --bit-Breadcrumb-item-radius            corner radius of the items                 (default: $shp-radius-control)
+//   --bit-Breadcrumb-item-max-width         width the text truncates at                (default: none; the MaxItemWidth parameter wins)
+//   --bit-Breadcrumb-divider-color          dividers and the overflow button glyph     (default: the Color role's main color / $clr-fg-sec)
+//   --bit-Breadcrumb-divider-size           size of those two glyphs                   (default: per size, from the type ramp)
+//   --bit-Breadcrumb-divider-spacing        room on each side of a divider             (default: 0)
+//
+//   OVERFLOW MENU
+//   --bit-Breadcrumb-callout-background     background of the menu                     (default: $clr-bg-pri)
+//   --bit-Breadcrumb-callout-radius         corner radius of the menu                  (default: $shp-radius-popup)
+//   --bit-Breadcrumb-callout-shadow         elevation of the menu                      (default: $box-shadow-popup)
+//   --bit-Breadcrumb-overflow-item-height   height of a menu row                       (default: per size, $siz-item-*)
+//   --bit-Breadcrumb-overflow-font-size     text size of a menu row                    (default: per size, from the type ramp)
+
+@mixin brc-size($fs, $h, $div, $ofi-h, $ofi-fs, $ofi-lh) {
+    --bit-brc-sz-fs: #{$fs};
+    --bit-brc-sz-h: #{$h};
+    --bit-brc-sz-div: #{$div};
+    --bit-brc-sz-ofi-h: #{$ofi-h};
+    --bit-brc-sz-ofi-fs: #{$ofi-fs};
+    --bit-brc-sz-ofi-lh: #{$ofi-lh};
+}
+
+// The one place the public variables meet the per-size and per-role defaults. Every rule below reads the
+// private variables this leaves behind, and the block is included on the callout as well, which is a
+// sibling of the root (a child of the body once it is open) and inherits nothing from it.
+@mixin brc-vars {
+    @include brc-size($tg-fs-sm, spacing(4.5), $tg-fs-md, $siz-item-md, $tg-fs-sm, spacing(2.5));
+
+    --bit-brc-fs: var(--bit-Breadcrumb-font-size, var(--bit-brc-sz-fs));
+    --bit-brc-h: var(--bit-Breadcrumb-item-height, var(--bit-brc-sz-h));
+    --bit-brc-div-sz: var(--bit-Breadcrumb-divider-size, var(--bit-brc-sz-div));
+    --bit-brc-ofi-h: var(--bit-Breadcrumb-overflow-item-height, var(--bit-brc-sz-ofi-h));
+    --bit-brc-ofi-fs: var(--bit-Breadcrumb-overflow-font-size, var(--bit-brc-sz-ofi-fs));
+
+    --bit-brc-clr: var(--bit-Breadcrumb-color, var(--bit-brc-role-main, #{$clr-fg-pri}));
+    --bit-brc-sel-clr: var(--bit-Breadcrumb-selected-color, var(--bit-Breadcrumb-color, var(--bit-brc-role-main, #{$clr-fg-pri})));
+    --bit-brc-dis-clr: var(--bit-Breadcrumb-disabled-color, #{$clr-fg-dis});
+    --bit-brc-div-clr: var(--bit-Breadcrumb-divider-color, var(--bit-brc-role-main, #{$clr-fg-sec}));
+    --bit-brc-fcs-clr: var(--bit-Breadcrumb-focus-color, var(--bit-brc-role-focus, #{$clr-pri-focus}));
+    --bit-brc-hover-bg: var(--bit-Breadcrumb-hover-background, #{$clr-bg-pri-hover});
+    --bit-brc-active-bg: var(--bit-Breadcrumb-active-background, #{$clr-bg-pri-active});
+}
+
 .bit-brc {
+    @include brc-vars;
+
     white-space: nowrap;
     font-family: $tg-font-family;
     --bit-brc-div-transform: scaleX(1);
@@ -12,7 +74,7 @@
     &.bit-dis {
         cursor: default;
         font-weight: $tg-fw-regular;
-        color: $clr-fg-dis;
+        color: var(--bit-brc-dis-clr);
         pointer-events: none;
 
         .bit-brc-obt,
@@ -21,7 +83,7 @@
         i {
             cursor: default;
             font-weight: $tg-fw-regular;
-            color: $clr-fg-dis;
+            color: var(--bit-brc-dis-clr);
             pointer-events: none;
         }
     }
@@ -39,13 +101,13 @@
 }
 
 // Hands a trail that does not fit a scrollbar of its own instead of letting it overflow its
-// container. The block padding is there because the focus ring of an item is a shadow around it,
+// container. The padding is there because the focus ring of an item is a shadow around it,
 // which a scroll container would otherwise clip.
 .bit-brc-scr {
     .bit-brc-icn {
         overflow: auto hidden;
         scrollbar-width: thin;
-        padding-block: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
+        padding: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     }
 }
 
@@ -63,31 +125,34 @@
 
     a {
         text-decoration: none;
-        border-radius: $shp-radius-control;
     }
 
     button {
         background-color: transparent;
-        border-radius: $shp-radius-control;
         // A button carries the font of the browser rather than the one of its page, so a step
         // rendered as one would read in another typeface than the steps rendered as links.
         font-family: inherit;
     }
 }
 
+.bit-brc-dvw {
+    margin-inline: var(--bit-Breadcrumb-divider-spacing, 0);
+}
+
 // A divider icon points the way the trail runs, so it is mirrored along with it in a RTL layout.
 // A text divider is not: a mirrored "/" is a different character.
 .bit-brc-div {
-    color: var(--bit-brc-clr-div, #{$clr-fg-sec});
+    color: var(--bit-brc-div-clr);
+    font-size: var(--bit-brc-div-sz);
     transform: var(--bit-brc-div-transform);
 }
 
 .bit-brc-dtx {
     user-select: none;
     padding: 0 spacing(0.5);
-    color: var(--bit-brc-clr-div, #{$clr-fg-sec});
-    font-size: var(--bit-brc-font-size, #{$tg-fs-sm});
-    line-height: var(--bit-brc-line-height, #{spacing(4.5)});
+    color: var(--bit-brc-div-clr);
+    font-size: var(--bit-brc-fs);
+    line-height: var(--bit-brc-h);
 }
 
 .bit-brc-obt {
@@ -96,29 +161,37 @@
     align-items: center;
     justify-content: center;
     padding: 0px spacing(1.25);
-    color: var(--bit-brc-clr-div, #{$clr-fg-sec});
-    line-height: var(--bit-brc-line-height, #{spacing(4.5)});
+    color: var(--bit-brc-div-clr);
+    font-size: var(--bit-brc-div-sz);
+    line-height: var(--bit-brc-h);
+    border-radius: var(--bit-Breadcrumb-item-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-brc-hover-bg);
         }
     }
 
+    &:active {
+        background-color: var(--bit-brc-active-bg);
+    }
+
     &:focus-visible {
-        @include focus-ring(var(--bit-brc-clr-fcs, #{$clr-pri-focus}));
+        @include focus-ring(var(--bit-brc-fcs-clr));
     }
 }
 
 .bit-brc-itm,
 .bit-brc-nii {
     display: flex;
-    gap: spacing(1);
     font-weight: $tg-fw-regular;
-    padding: 0 spacing(1);
-    color: var(--bit-brc-clr, #{$clr-fg-pri});
-    font-size: var(--bit-brc-font-size, #{$tg-fs-sm});
-    line-height: var(--bit-brc-line-height, #{spacing(4.5)});
+    color: var(--bit-brc-clr);
+    font-size: var(--bit-brc-fs);
+    line-height: var(--bit-brc-h);
+    gap: var(--bit-Breadcrumb-item-gap, #{spacing(1)});
+    padding: var(--bit-Breadcrumb-item-padding, 0 #{spacing(1)});
+    border-radius: var(--bit-Breadcrumb-item-radius, #{$shp-radius-control});
 }
 
 .bit-brc-nii {
@@ -127,25 +200,31 @@
 
 .bit-brc-itm {
     cursor: pointer;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-brc-hover-bg);
         }
     }
 
+    &:active {
+        background-color: var(--bit-brc-active-bg);
+    }
+
     &:focus-visible {
-        @include focus-ring(var(--bit-brc-clr-fcs, #{$clr-pri-focus}));
+        @include focus-ring(var(--bit-brc-fcs-clr));
     }
 }
 
 // Truncates the text of an item to the max width the consumer set, keeping the trail on one line
-// when a single step carries a long title. The title attribute of the item stays the way to read it.
+// when a single step carries a long title. The parameter is written on the instance, so it wins over
+// the public variable inherited from an ancestor. The title attribute of the item stays the way to read it.
 .bit-brc-itx {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    max-width: var(--bit-brc-itm-max-width, none);
+    max-width: var(--bit-brc-itm-max-width, var(--bit-Breadcrumb-item-max-width, none));
 }
 
 .bit-brc-rvi {
@@ -154,6 +233,8 @@
 }
 
 .bit-brc-cal {
+    @include brc-vars;
+
     display: none;
     position: fixed;
     font-weight: $tg-fw-regular;
@@ -163,12 +244,12 @@
     z-index: $zindex-callout;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
-    background-color: $clr-bg-pri;
-    box-shadow: $box-shadow-popup;
-    border-radius: $shp-radius-popup;
-    font-size: var(--bit-brc-of-font-size, #{$tg-fs-sm});
+    font-size: var(--bit-brc-ofi-fs);
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: $mot-easing-decelerate;
+    background-color: var(--bit-Breadcrumb-callout-background, #{$clr-bg-pri});
+    box-shadow: var(--bit-Breadcrumb-callout-shadow, #{$box-shadow-popup});
+    border-radius: var(--bit-Breadcrumb-callout-radius, #{$shp-radius-popup});
 
     ul {
         margin: 0;
@@ -186,7 +267,7 @@
 .bit-brc-ofn {
     width: 100%;
     display: flex;
-    gap: spacing(1);
+    gap: var(--bit-Breadcrumb-item-gap, #{spacing(1)});
     overflow: hidden;
     text-align: start;
     font-weight: $tg-fw-regular;
@@ -201,16 +282,19 @@
     box-sizing: border-box;
     text-overflow: ellipsis;
     min-width: spacing(22.5);
-    color: var(--bit-brc-clr, #{$clr-fg-pri});
-    height: var(--bit-brc-of-height, #{spacing(4.5)});
-    font-size: var(--bit-brc-of-font-size, #{$tg-fs-sm});
-    line-height: var(--bit-brc-of-line-height, #{spacing(2.5)});
+    color: var(--bit-brc-clr);
+    height: var(--bit-brc-ofi-h);
+    font-size: var(--bit-brc-ofi-fs);
+    line-height: var(--bit-brc-sz-ofi-lh);
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
     border-radius: $shp-radius-popup;
 
+    // The rows fill the width of a list that scrolls, which would clip the outward ring of focus-ring, so
+    // the indicator is an outline drawn inwards instead - one a forced-colors palette keeps as well.
     &:focus-visible {
-        @include focus-ring(var(--bit-brc-clr-fcs, #{$clr-pri-focus}));
+        outline: $shp-focus-ring-width $shp-border-style var(--bit-brc-fcs-clr);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 }
 
@@ -220,11 +304,16 @@
 
 .bit-brc-ofi {
     cursor: pointer;
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-brc-hover-bg);
         }
+    }
+
+    &:active {
+        background-color: var(--bit-brc-active-bg);
     }
 }
 
@@ -239,13 +328,15 @@
     background-color: transparent;
 }
 
-.bit-brc-dis {
-    color: $clr-fg-dis;
-    pointer-events: none;
+// The current page before the disabled state, so a disabled current page still reads as disabled.
+.bit-brc-sel {
+    color: var(--bit-brc-sel-clr);
+    font-weight: var(--bit-Breadcrumb-selected-font-weight, #{$tg-fw-semibold});
 }
 
-.bit-brc-sel {
-    font-weight: $tg-fw-semibold;
+.bit-brc-dis {
+    color: var(--bit-brc-dis-clr);
+    pointer-events: none;
 }
 
 // forced-colors: the current item is conveyed by a heavier weight only, which High Contrast keeps,
@@ -262,33 +353,20 @@
 // keeps reading as text rather than as a filled control.
 @each $role, $tokens in $bit-color-roles {
     .bit-brc-#{$role} {
-        --bit-brc-clr: #{role($tokens, main)};
-        --bit-brc-clr-div: #{role($tokens, main)};
-        --bit-brc-clr-fcs: #{role($tokens, focus)};
+        --bit-brc-role-main: #{role($tokens, main)};
+        --bit-brc-role-focus: #{role($tokens, focus)};
     }
 }
 
 
 .bit-brc-sm {
-    --bit-brc-font-size: #{$tg-fs-xs};
-    --bit-brc-line-height: #{spacing(3.5)};
-    --bit-brc-of-font-size: #{$tg-fs-xs};
-    --bit-brc-of-line-height: #{spacing(2)};
-    --bit-brc-of-height: #{$siz-item-sm};
+    @include brc-size($tg-fs-xs, spacing(3.5), $tg-fs-sm, $siz-item-sm, $tg-fs-xs, spacing(2));
 }
 
 .bit-brc-md {
-    --bit-brc-font-size: #{$tg-fs-sm};
-    --bit-brc-line-height: #{spacing(4.5)};
-    --bit-brc-of-font-size: #{$tg-fs-sm};
-    --bit-brc-of-line-height: #{spacing(2.5)};
-    --bit-brc-of-height: #{$siz-item-md};
+    @include brc-size($tg-fs-sm, spacing(4.5), $tg-fs-md, $siz-item-md, $tg-fs-sm, spacing(2.5));
 }
 
 .bit-brc-lg {
-    --bit-brc-font-size: #{$tg-fs-md};
-    --bit-brc-line-height: #{spacing(5.5)};
-    --bit-brc-of-font-size: #{$tg-fs-lg};
-    --bit-brc-of-line-height: #{spacing(3)};
-    --bit-brc-of-height: #{$siz-item-lg};
+    @include brc-size($tg-fs-md, spacing(5.5), $tg-fs-lg, $siz-item-lg, $tg-fs-lg, spacing(3));
 }

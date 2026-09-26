@@ -1,262 +1,64 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
-        Any class can feed the breadcrumb: NameSelectors maps its properties to what the component needs,
-        either by a lambda selector or by a property name. An item with a mapped Href becomes a link, the
-        item whose IsSelected mapping is true becomes the current page of the trail, and the IsEnabled
-        mapping keeps an item in the trail without making it actionable (aria-disabled). A Target mapping
-        opens the link in another browsing context, in which case the link is rendered with a rel of
-        "noopener noreferrer". SelectedItemAsText renders the current page as plain text instead of as a link,
-        which is what the breadcrumb pattern asks of the page the user is already on, without taking its
-        aria-current away.
+        Any class feeds the breadcrumb: <b>NameSelectors</b> maps its properties by selector or by name. A mapped
+        <b>Href</b> makes a link; the <b>IsSelected</b> mapping marks the current page (<code>aria-current="page"</code>)
+        and <b>SelectedItemAsText</b> renders it as plain text. <b>IsEnabled</b> disables the whole trail or a single item,
+        and a <b>Target</b> mapping opens a link elsewhere (with <code>rel="noopener noreferrer"</code>).
     </div>
-    <br /><br />
+    <br />
     <div class="example-box">
         <div>
             <div>Basic</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors" />
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" />
         </div>
         <div>
             <div>Selected item as text</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           SelectedItemAsText />
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" SelectedItemAsText />
         </div>
         <div>
             <div>Disabled</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           IsEnabled="false" />
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" IsEnabled="false" />
         </div>
         <div>
-            <div>Item Disabled</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsDisabled"
-                           NameSelectors="nameSelectors" />
+            <div>Item disabled</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsDisabled" NameSelectors="nameSelectors" />
         </div>
         <div>
-            <div>Item Target (opens in a new tab)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithTarget"
-                           NameSelectors="nameSelectors" />
+            <div>Item target (opens in a new tab)</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithTarget" NameSelectors="nameSelectors" />
         </div>
     </div>
 </DemoExample>
 
 <DemoExample Title="MaxDisplayedItems & OverflowIndex" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <div>
-        MaxDisplayedItems caps how many items stay in the trail, the rest are collapsed behind an overflow
-        button that opens them in a menu. OverflowIndex chooses where that button sits among the displayed
-        items, so the first and the last steps of the hierarchy can be kept visible while the middle collapses.
-        The collapsed steps open in a menu the keyboard drives: Enter, Space or the arrow keys open it, the
-        arrow keys and Home/End move inside it, typing a character jumps to the item that starts with it,
-        and Escape or Tab closes it back onto the button.
-    </div>
-    <br /><br />
-    <div class="example-box">
-        <div>
-            <div>Max displayed items (1)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="1" />
-        </div>
-        <div>
-            <div>Max displayed items (2)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="2" />
-        </div>
-        <div>
-            <div>Max displayed items (3)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3" />
-        </div>
-        <div>
-            <div>Max displayed items (3), Overflow index (0)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3"
-                           OverflowIndex="0" />
-        </div>
-        <div>
-            <div>Max displayed items (3), Overflow index (1)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3"
-                           OverflowIndex="1" />
-        </div>
-        <div>
-            <div>Max displayed items (3), Overflow index (2)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3"
-                           OverflowIndex="2" />
-        </div>
-    </div>
-</DemoExample>
-
-<DemoExample Title="Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-    <div>
-        Each item can carry an icon next to its text through the IconName mapping, and ReversedIcon swaps the
-        icon and the text around (per item, or for the whole breadcrumb). The icon of the overflow button is
-        configurable through OverflowIconName as well.
-    </div>
-    <br /><br />
-    <div class="example-box">
-        <div>
-            <div>Item icons (OverflowIcon: ChevronDown - DividerIcon: CaretRightSolid8)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3"
-                           OverflowIndex="2"
-                           DividerIconName="@BitIconName.CaretRightSolid8"
-                           OverflowIconName="@BitIconName.ChevronDown" />
-        </div>
-        <br />
-        <div>
-            <div>Item icons (OverflowIcon: CollapseMenu) with active ReversedIcon</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3"
-                           OverflowIndex="2"
-                           OverflowIconName="@BitIconName.CollapseMenu"
-                           ReversedIcon />
-        </div>
-    </div>
-</DemoExample>
-
-<DemoExample Title="Divider" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-    <div>
-        The chevron between the items can be replaced by any other icon with DividerIconName, or by a plain
-        text separator with DividerText (the classic "/" of a file path, for example). Dividers are
-        decorative, so they are always hidden from screen readers.
-    </div>
-    <br /><br />
-    <div class="example-box">
-        <div>
-            <div>Default divider</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" />
-        </div>
-        <div>
-            <div>DividerIconName</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors"
-                           DividerIconName="@BitIconName.CaretRightSolid8" />
-        </div>
-        <div>
-            <div>DividerText (/)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" DividerText="/" />
-        </div>
-        <div>
-            <div>DividerText (›)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" DividerText="›"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
-        </div>
-    </div>
-</DemoExample>
-
-<DemoExample Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-    <div>
-        Every part of the content is templatable: DividerIconTemplate for the separator, ItemTemplate and
-        OverflowTemplate for all of the items at once, and a Template and OverflowTemplate mapped on a single
-        item for a one-off. A template of an item wins over the template of the component.
-    </div>
-    <br /><br />
-    <div class="example-box">
-        <div>
-            <div>DividerIconTemplate</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors">
-                <DividerIconTemplate>
-                    <BitIcon IconName="@BitIconName.CaretRightSolid8" Color="BitColor.Warning" />
-                </DividerIconTemplate>
-            </BitBreadcrumb>
-        </div>
-        <br />
-        <div>
-            <div>ItemTemplate & OverflowTemplate</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3"
-                           OverflowIndex="2">
-                <ItemTemplate Context="item">
-                    <div style="font-weight: bold; color: #d13438; font-style:italic;">
-                        @item.Name
-                    </div>
-                </ItemTemplate>
-                <OverflowTemplate Context="item">
-                    <div style="font-weight: bold; color: blueviolet; font-style:italic;">
-                        @item.Name
-                    </div>
-                </OverflowTemplate>
-            </BitBreadcrumb>
-        </div>
-        <br />
-        <div>
-            <div>Item's Template & Item's OverflowTemplate</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemTemplateItems"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3"
-                           OverflowIndex="2" />
-        </div>
-    </div>
-</DemoExample>
-
-<DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-    <div>
-        OnItemClick reports every activated item, no matter whether it is rendered as a link or as a button
-        (a per-item handler can also be plugged in through the OnClick of the NameSelectors). Here the handler
-        moves the selection, which the SelectedItem and OverflowSelectedItem styles pick up.
-    </div>
-    <br /><br />
-    <div class="example-box">
-        <BitBreadcrumb Items="CustomBreadcrumbItemsWithControlled"
-                       NameSelectors="nameSelectors"
-                       MaxDisplayedItems="3"
-                       OverflowIndex="2"
-                       OnItemClick="(PageInfo model) => HandleOnCustomClick(model)"
-                       Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="Customizations" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-    <div>
-        The breadcrumb keeps up with an Items collection that changes at runtime, and with the collapsing
-        settings changing along with it. Add or remove items and move the two sliders to see how the trail
-        and the overflow menu are recomputed.
+        <b>MaxDisplayedItems</b> caps the visible items and collapses the rest into an overflow menu; <b>OverflowIndex</b>
+        places its button. Keyboard: Enter, Space or the arrows open the menu, arrows and Home/End move, a letter jumps to
+        the matching item, Escape or Tab closes it.
     </div>
     <br />
     <div class="example-box">
         <div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithCustomized"
-                           NameSelectors="nameSelectors"
-                           MaxDisplayedItems="@MaxDisplayedItems"
-                           OverflowIndex="@OverflowIndex"
-                           OnItemClick="(PageInfo model) => HandleOnCustomizedCustomClick(model)" />
+            <div>Max displayed items (2)</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" MaxDisplayedItems="2" />
         </div>
-        <div class="operators">
-            <div>
-                <BitButton OnClick="AddCustomItem">Add Item</BitButton>
-                <BitButton OnClick="RemoveCustomItem">Remove Item</BitButton>
-            </div>
-            <br />
-            <div>
-                <BitNumberField @bind-Value="MaxDisplayedItems" Label="Max displayed items" ShowButtons="true" />
-                <BitNumberField @bind-Value="OverflowIndex" Label="Overflow index" ShowButtons="true" />
-            </div>
+        <div>
+            <div>Max displayed items (3), Overflow index (1)</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" MaxDisplayedItems="3" OverflowIndex="1" />
+        </div>
+        <div>
+            <div>Max displayed items (3), Overflow index (2)</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" MaxDisplayedItems="3" OverflowIndex="2" />
         </div>
     </div>
 </DemoExample>
 
-<DemoExample Title="Truncation, Wrapping & Scrolling" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Truncation, Wrapping & Scrolling" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <div>
-        A trail of long titles is kept on a single line by default, which makes it overflow a container that is
-        too narrow for it. MaxItemWidth truncates the text of each item with an ellipsis at the given CSS length,
-        in which case the text of an item that carries no mapped Title of its own becomes its tooltip so the full
-        text stays reachable. Wrap lets the trail flow onto more than one line instead, and Scrollable keeps it on
-        a single line but hands it a scrollbar of its own, which is what a trail whose every step is worth keeping
-        in place asks for. Wrap wins over Scrollable, since a trail that may flow onto another line never runs out
-        of room on one.
+        A long trail stays on one line by default. <b>MaxItemWidth</b> truncates each item (its text becomes the tooltip
+        when it has no mapped <b>Title</b>), <b>Wrap</b> flows it onto more lines and <b>Scrollable</b> scrolls it sideways.
     </div>
-    <br /><br />
+    <br />
     <div class="example-box">
         <div>
             <div>Default (single line)</div>
@@ -265,7 +67,7 @@
             </div>
         </div>
         <div>
-            <div>MaxItemWidth (with the Title of each item as its tooltip)</div>
+            <div>MaxItemWidth</div>
             <div class="narrow-box">
                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText" NameSelectors="nameSelectors" MaxItemWidth="5rem" />
             </div>
@@ -285,17 +87,12 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Auto Collapse" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Auto Collapse" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>
-        AutoCollapse measures the trail and moves the items that do not fit into the overflow menu, bringing
-        them back as the room for them returns, so the breadcrumb always stays on a single line whatever the
-        width of its container is. MaxDisplayedItems, when it is set, still caps how many items may stay in
-        the trail and OverflowIndex still decides where the overflow button sits, so setting it to 1 keeps
-        the root of the hierarchy visible and collapses the middle of the trail instead.
-        Wrap turns the measuring off entirely, since a trail that may flow onto another line has no items
-        that do not fit.
+        <b>AutoCollapse</b> moves what does not fit into the overflow menu and brings it back as room returns.
+        MaxDisplayedItems and OverflowIndex still apply; Wrap turns it off.
     </div>
-    <br /><br />
+    <br />
     <div class="example-box">
         <div>
             <div>Drag the bottom-right corner of the box to resize it</div>
@@ -303,9 +100,8 @@
                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText" NameSelectors="nameSelectors" AutoCollapse />
             </div>
         </div>
-        <br />
         <div>
-            <div>Overflow index (1): the first item stays, the middle collapses</div>
+            <div>Overflow index (1): the root stays, the middle collapses</div>
             <div class="resizable-box">
                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText" NameSelectors="nameSelectors" AutoCollapse OverflowIndex="1" />
             </div>
@@ -313,60 +109,153 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Structured Data" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Expand Overflow" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <div>
-        StructuredData writes the trail next to the breadcrumb as a schema.org BreadcrumbList in a JSON-LD
-        script, which is what search engines read to show the hierarchy of a page in their results. The whole
-        hierarchy is written, the steps the overflow menu holds included, so what the crawlers are told does
-        not depend on how much of the trail fits the screen, and the mapped Href of each item is resolved into
-        an absolute address. Inspect the elements of the page to see the script the breadcrumb below renders.
+        <b>ExpandOverflow</b> makes the overflow button reveal the collapsed items in place instead of opening a menu, and
+        moves the focus to the first revealed item. Pair it with Wrap or Scrollable when room is tight.
     </div>
-    <br /><br />
-    <div class="example-box">
-        <BitBreadcrumb Items="CustomBreadcrumbItems"
-                       NameSelectors="nameSelectors"
-                       StructuredData
-                       MaxDisplayedItems="3"
-                       OverflowIndex="2" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="Expand Overflow" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-    <div>
-        ExpandOverflow turns the overflow button into a disclosure of the collapsed steps: pressing it puts them
-        back into the trail instead of opening them in a menu, and the button is gone along with the collapsing it
-        undid. The focus it held is handed over to the first of the steps it revealed, so the keyboard carries on
-        from where the trail grew. The expanded trail may be wider than the room it has, so pairing it with Wrap
-        (or with Scrollable) keeps it readable. It works the same way over an automatically collapsed trail, which
-        stops measuring once it is expanded.
-    </div>
-    <br /><br />
+    <br />
     <div class="example-box">
         <div>
-            <div>Expand the collapsed items in place</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithControlled"
-                           NameSelectors="nameSelectors"
-                           ExpandOverflow
-                           MaxDisplayedItems="3"
-                           OverflowIndex="1" />
+            <div>Expand in place</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithControlled" NameSelectors="nameSelectors" ExpandOverflow MaxDisplayedItems="3" OverflowIndex="1" />
         </div>
         <div>
-            <div>Wrapping the expanded trail of a narrow container</div>
+            <div>Expand and wrap in a narrow container</div>
             <div class="narrow-box">
-                <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText"
-                               NameSelectors="nameSelectors"
-                               ExpandOverflow
-                               Wrap
-                               MaxDisplayedItems="2"
-                               OverflowIndex="1" />
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText" NameSelectors="nameSelectors" ExpandOverflow Wrap MaxDisplayedItems="2" OverflowIndex="1" />
             </div>
         </div>
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-    <div>Offering a range of specific colors for the items and the divider of the breadcrumb.</div>
-    <br /><br />
+<DemoExample Title="Icons & Divider" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <div>
+        The <b>IconName</b> mapping adds an icon to an item and <b>ReversedIcon</b> puts it after the text. An icon-only
+        item needs an <b>AriaLabel</b> mapping. <b>DividerIconName</b>, <b>DividerText</b> and <b>OverflowIconName</b>
+        replace the default glyphs; dividers are always hidden from screen readers.
+    </div>
+    <br />
+    <div class="example-box">
+        <div>
+            <div>Item icons, DividerIconName & OverflowIconName</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon"
+                           NameSelectors="nameSelectors"
+                           DividerIconName="@BitIconName.CaretRightSolid8"
+                           OverflowIconName="@BitIconName.ChevronDown"
+                           MaxDisplayedItems="3"
+                           OverflowIndex="2" />
+        </div>
+        <div>
+            <div>ReversedIcon</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon" NameSelectors="nameSelectors" ReversedIcon />
+        </div>
+        <div>
+            <div>Icon-only root with an AriaLabel & DividerText</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithHomeIcon" NameSelectors="nameSelectors" DividerText="/" />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <div>
+        <b>DividerIconTemplate</b>, <b>ItemTemplate</b> and <b>OverflowTemplate</b> customize every item; the
+        <b>Template</b> and <b>OverflowTemplate</b> mapped on an item win over them.
+    </div>
+    <br />
+    <div class="example-box">
+        <div>
+            <div>DividerIconTemplate</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors">
+                <DividerIconTemplate>
+                    <BitIcon IconName="@BitIconName.CaretRightSolid8" Color="BitColor.Warning" />
+                </DividerIconTemplate>
+            </BitBreadcrumb>
+        </div>
+        <div>
+            <div>ItemTemplate & OverflowTemplate</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" MaxDisplayedItems="3" OverflowIndex="2">
+                <ItemTemplate Context="item">
+                    <div style="font-weight: bold; color: #d13438; font-style: italic;">
+                        @item.Name
+                    </div>
+                </ItemTemplate>
+                <OverflowTemplate Context="item">
+                    <div style="font-weight: bold; color: blueviolet; font-style: italic;">
+                        @item.Name
+                    </div>
+                </OverflowTemplate>
+            </BitBreadcrumb>
+        </div>
+        <div>
+            <div>Item's Template & OverflowTemplate</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemTemplateItems" NameSelectors="nameSelectors" MaxDisplayedItems="3" OverflowIndex="2" />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Events & Dynamic Items" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <div>
+        <b>OnItemClick</b> reports every activated item, link or button (the NameSelectors' <b>OnClick</b> adds a per-item
+        handler). Here it moves the selection, while the items and the collapsing settings change at runtime.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitBreadcrumb Items="CustomBreadcrumbItemsWithCustomized"
+                       NameSelectors="nameSelectors"
+                       MaxDisplayedItems="@MaxDisplayedItems"
+                       OverflowIndex="@OverflowIndex"
+                       OnItemClick="(PageInfo model) => HandleOnCustomizedCustomClick(model)"
+                       Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })" />
+        <div class="operators">
+            <div>
+                <BitButton OnClick="AddCustomItem">Add item</BitButton>
+                <BitButton OnClick="RemoveCustomItem">Remove item</BitButton>
+            </div>
+            <BitNumberField @bind-Value="MaxDisplayedItems" Label="Max displayed items" ShowButtons />
+            <BitNumberField @bind-Value="OverflowIndex" Label="Overflow index" ShowButtons />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Structured Data" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <div>
+        <b>StructuredData</b> renders the whole trail, collapsed items included, as a schema.org <code>BreadcrumbList</code>
+        JSON-LD script with absolute URLs for search engines. Inspect the page to see it.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" StructuredData MaxDisplayedItems="3" OverflowIndex="2" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <div>
+        <b>BitParams</b> hands a <b>BitBreadcrumbParams</b> to every breadcrumb under it, whatever its item type. The values
+        are defaults, not overrides: a parameter a breadcrumb sets itself wins.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitParams Parameters="@breadcrumbParams">
+            <div>
+                <div>Takes the divider, the collapsing and the plain text current page from the cascade</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" />
+            </div>
+            <div>
+                <div>Its own divider, the cascaded rest</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" DividerText="›" />
+            </div>
+        </BitParams>
+        <div>
+            <div>Outside the cascade, back to the defaults</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <div>The color role of the items, the dividers and the focus ring.</div>
+    <br />
     <div class="example-box">
         <div>
             <div>Primary</div>
@@ -403,10 +292,11 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
-    <br /><br />
+    <br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <div class="example-box">
         <div>
             <div>Implicit string conversion (auto-detects external icons)</div>
@@ -415,7 +305,6 @@
                            MaxDisplayedItems="3" OverflowIndex="2"
                            Styles="@(new() { ItemIcon = "line-height:unset" })" />
         </div>
-        <br />
         <div>
             <div>BitIconInfo.Css (uses CSS classes directly)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon2"
@@ -423,7 +312,6 @@
                            MaxDisplayedItems="3" OverflowIndex="2"
                            Styles="@(new() { ItemIcon = "line-height:unset" })" />
         </div>
-        <br />
         <div>
             <div>BitIconInfo.Fa (FontAwesome helper)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon3"
@@ -431,8 +319,6 @@
                            MaxDisplayedItems="3" OverflowIndex="2"
                            Styles="@(new() { ItemIcon = "line-height:unset" })" />
         </div>
-        <br />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
         <div>
             <div>BitIconInfo.Bi (Bootstrap Icons helper)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon4"
@@ -442,9 +328,9 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-    <div>Three sizes of the breadcrumb, driving the text and the overflow menu of the trail.</div>
-    <br /><br />
+<DemoExample Title="Size" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <div>Sizes the text, the glyphs and the overflow menu together.</div>
+    <br />
     <div class="example-box">
         <div>
             <div>Small</div>
@@ -461,36 +347,29 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+<DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>
-        The look of the breadcrumb is customizable at three levels: the Style and Class of the component,
-        the mapped Style and Class of a single item, and the Styles and Classes of every part of it (the root,
-        the items, the selected item, the dividers, the overflow button and menu, ...).
+        <b>Style</b>/<b>Class</b> reach the root, the mapped <b>Style</b>/<b>Class</b> of an item reach that item, and
+        <b>Styles</b>/<b>Classes</b> reach every part by name. The <BitLink Href="#css-variables-section">CSS variables</BitLink>
+        inherit: set on <code>:root</code> or an ancestor they re-skin every breadcrumb below it, and set in a
+        breadcrumb's <b>Style</b> they reach its overflow menu too.
     </div>
-    <br /><br />
+    <br />
     <div class="example-box">
         <div>
-            <div>Component's Style & Class:</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           Class="custom-class" />
+            <div>Component's Style & Class</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" Class="custom-class" />
             <br />
-            <BitBreadcrumb Items="CustomBreadcrumbItems"
-                           NameSelectors="nameSelectors"
-                           Style="font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;" />
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" Style="font-style: italic; text-shadow: aqua 0 0 0.5rem; border-bottom: 1px solid aqua;" />
         </div>
-        <br />
         <div>
-            <div>Item's Style & Class:</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass"
-                           NameSelectors="nameSelectors" />
+            <div>Item's Style & Class</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass" NameSelectors="nameSelectors" />
             <br />
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithStyle"
-                           NameSelectors="nameSelectors" />
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithStyle" NameSelectors="nameSelectors" />
         </div>
-        <br />
         <div>
-            <div>Styles & Classes:</div>
+            <div>Styles & Classes</div>
             <BitBreadcrumb Items="CustomBreadcrumbItems"
                            NameSelectors="nameSelectors"
                            Classes="@(new() { Item = "custom-item", SelectedItem = "custom-selected-item" })" />
@@ -499,45 +378,57 @@
                            NameSelectors="nameSelectors"
                            Styles="@(new() { Item = "color: green;", SelectedItem = "color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;" })" />
         </div>
+        <div>
+            <div>CSS variables</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems"
+                           NameSelectors="nameSelectors"
+                           MaxDisplayedItems="3"
+                           OverflowIndex="1"
+                           Style="--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #db2777; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;" />
+            <br />
+            <div style="--bit-Breadcrumb-font-size: 0.8125rem; --bit-Breadcrumb-item-height: 1.5rem; --bit-Breadcrumb-divider-spacing: 0.25rem; --bit-Breadcrumb-selected-font-weight: 700;">
+                <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" DividerText="/" />
+            </div>
+        </div>
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>Use BitBreadcrumb in right-to-left (RTL) layouts, where the dividers and the overflow menu flip along with the text.</div>
     <br />
     <div class="example-box">
         <BitBreadcrumb Dir="BitDir.Rtl"
-                       OverflowIndex="2"
-                       MaxDisplayedItems="3"
                        Items="RtlCustomBreadcrumbItems"
-                       NameSelectors="nameSelectors" />
+                       NameSelectors="nameSelectors"
+                       MaxDisplayedItems="3"
+                       OverflowIndex="2" />
     </div>
 </DemoExample>
 
 @code {
     private readonly List<PageInfo> CustomBreadcrumbItemTemplateItems =
-                [
+    [
         new()
         {
-            Name = "Item 1", Address = "/components/breadcrumb",
+            Name = "Custom 1", Address = "/components/breadcrumb",
             Fragment = (item => @<div style="color:green">@item.Name</div>),
             OverflowFragment = (item => @<div style="color:green;text-decoration:underline;">@item.Name</div>)
         },
-        new ()
+        new()
         {
-            Name = "Item 2", Address = "/components/breadcrumb",
-            Fragment = (item => @<div style="color:yellow">@item.Name</div>),
-            OverflowFragment = (item => @<div style="color:yellow;text-decoration:underline;">@item.Name</div>)
+            Name = "Custom 2", Address = "/components/breadcrumb",
+            Fragment = (item => @<div style="color:goldenrod">@item.Name</div>),
+            OverflowFragment = (item => @<div style="color:goldenrod;text-decoration:underline;">@item.Name</div>)
         },
         new()
         {
-            Name = "Item 3", Address = "/components/breadcrumb",
+            Name = "Custom 3", Address = "/components/breadcrumb",
             Fragment = (item => @<div style="color:red">@item.Name</div>),
             OverflowFragment = (item => @<div style="color:red;text-decoration:underline;">@item.Name</div>)
         },
         new()
         {
-            Name = "Item 4", Address = "/components/breadcrumb", IsCurrent = true,
+            Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true,
             Fragment = (item => @<div style="color:blue">@item.Name</div>),
             OverflowFragment = (item => @<div style="color:blue;text-decoration:underline;">@item.Name</div>)
         }
