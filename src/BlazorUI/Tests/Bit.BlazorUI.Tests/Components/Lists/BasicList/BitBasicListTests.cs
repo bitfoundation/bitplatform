@@ -332,8 +332,12 @@ public class BitBasicListTests : BunitTestContext
         Assert.IsTrue(children[0].ClassList.Contains("bit-bsl-hdr"));
         Assert.AreEqual("the header", children[0].TextContent);
 
-        Assert.IsTrue(children[1].ClassList.Contains("bit-bsl-itm"));
-        Assert.IsTrue(children[1].Children[0].ClassList.Contains("row"));
+        // The live region sits where the loading content shows, empty (and taking no room) until then.
+        Assert.IsTrue(children[1].ClassList.Contains("bit-bsl-sts"));
+        Assert.AreEqual(string.Empty, children[1].TextContent.Trim());
+
+        Assert.IsTrue(children[2].ClassList.Contains("bit-bsl-itm"));
+        Assert.IsTrue(children[2].Children[0].ClassList.Contains("row"));
 
         Assert.IsTrue(children[^1].ClassList.Contains("bit-bsl-ftr"));
         Assert.AreEqual("the footer", children[^1].TextContent);
@@ -370,13 +374,19 @@ public class BitBasicListTests : BunitTestContext
 
         var loading = component.Find(".bit-bsl-ldc");
 
-        Assert.AreEqual("status", loading.GetAttribute("role"));
+        // The loading content is announced by the live region that is always there and holds it, not by a
+        // status of its own, which would be inserted along with its text and skipped by several screen readers.
+        Assert.IsFalse(loading.HasAttribute("role"));
+        Assert.IsTrue(loading.ParentElement!.ClassList.Contains("bit-bsl-sts"));
+        Assert.AreEqual("status", loading.ParentElement.GetAttribute("role"));
         Assert.AreEqual("true", loading.QuerySelector(".bit-bsl-spn")!.GetAttribute("aria-hidden"));
         Assert.AreEqual("Loading...", loading.TextContent.Trim());
+        Assert.AreEqual("Loading...", component.Find(".bit-bsl-sts").TextContent.Trim());
 
         component.Render(p => p.Add(x => x.LoadingLabel, "Fetching"));
 
         Assert.AreEqual("Fetching", component.Find(".bit-bsl-ldc").TextContent.Trim());
+        Assert.AreEqual("Fetching", component.Find(".bit-bsl-sts").TextContent.Trim());
     }
 
     [TestMethod]
@@ -688,9 +698,10 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderList(p => p.Add(x => x.Loading, true));
 
-        // The loading content is a status of its own, so neither the root nor a list is marked busy by it.
+        // The loading content stands in for the rows and the live region announces it, so neither the root
+        // nor a list is marked busy by it.
         Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("aria-busy"));
-        Assert.AreEqual("status", component.Find(".bit-bsl-ldc").GetAttribute("role"));
+        Assert.AreEqual("Loading...", component.Find(".bit-bsl-sts").TextContent.Trim());
 
         component.Render(p => p.Add(x => x.Loading, false));
 
@@ -990,7 +1001,7 @@ public class BitBasicListTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(string.Empty, component.Find(".bit-bsl-sts").TextContent);
+        Assert.AreEqual(string.Empty, component.Find(".bit-bsl-sts").TextContent.Trim());
 
         var loading = component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
@@ -1000,8 +1011,11 @@ public class BitBasicListTests : BunitTestContext
         Assert.IsFalse(button.HasAttribute("disabled"));
         Assert.AreEqual("true", button.GetAttribute("aria-busy"));
         Assert.AreEqual("Loading...", button.TextContent.Trim());
+        // The status says the page is loading, so the button keeps its own name rather than saying it again.
+        Assert.AreEqual("Load more", button.GetAttribute("aria-label"));
         Assert.AreEqual("status", component.Find(".bit-bsl-sts").GetAttribute("role"));
-        Assert.AreEqual("Loading...", component.Find(".bit-bsl-sts").TextContent);
+        Assert.AreEqual("Loading...", component.Find(".bit-bsl-sts").TextContent.Trim());
+        Assert.AreEqual(1, component.FindAll(".bit-bsl-sts .bit-bsl-stt").Count);
         Assert.AreEqual("true", component.Find(".bit-bsl-itm").GetAttribute("aria-busy"));
 
         // A click while busy is ignored rather than queued.
@@ -1011,45 +1025,143 @@ public class BitBasicListTests : BunitTestContext
         await loading;
 
         Assert.AreEqual(10, component.FindAll(".row").Count);
-        Assert.AreEqual(string.Empty, component.Find(".bit-bsl-sts").TextContent);
+        Assert.AreEqual(string.Empty, component.Find(".bit-bsl-sts").TextContent.Trim());
         Assert.IsFalse(component.Find("button.bit-bsl-lmb").HasAttribute("aria-busy"));
+        Assert.IsFalse(component.Find("button.bit-bsl-lmb").HasAttribute("aria-label"));
         Assert.IsFalse(component.Find(".bit-bsl-itm").HasAttribute("aria-busy"));
     }
 
     [TestMethod]
-    public void BitBasicListShouldNotRenderTheStatusRegionOutsideOfTheLoadMoreMode()
+    public void BitBasicListShouldKeepTheStatusRegionBeforeTheLoadingStarts()
     {
         var component = RenderList();
 
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-sts").Count);
+        // A live region only announces what is added to it after it was rendered, so it is there, empty,
+        // before the list is ever asked to load.
+        Assert.AreEqual("status", component.Find(".bit-bsl-sts").GetAttribute("role"));
+        Assert.AreEqual(string.Empty, component.Find(".bit-bsl-sts").TextContent.Trim());
+
+        component.Render(p => p.Add(x => x.Loading, true));
+
+        Assert.AreEqual("Loading...", component.Find(".bit-bsl-sts").TextContent.Trim());
+
+        component.Render(p =>
+        {
+            p.Add(x => x.Loading, true);
+            p.Add(x => x.LoadingTemplate, (RenderFragment)(b => b.AddContent(0, "custom")));
+        });
+
+        // A template of its own is announced with its own text, which is what is on screen, and not
+        // with the label as well.
+        Assert.AreEqual("custom", component.Find(".bit-bsl-sts").TextContent.Trim());
+
+        component.Render(p => p.Add(x => x.Loading, false));
+
+        Assert.AreEqual(string.Empty, component.Find(".bit-bsl-sts").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitBasicListShouldPutTheLoadingContentInAfreshAfterTheFirstRender()
+    {
+        // Content already in a live region when it is rendered goes unannounced, so a list that starts out
+        // loading renders its loading content once more, as a new element, right after its first render.
+        var loading = RenderList(p => p.Add(x => x.Loading, true));
+
+        Assert.AreEqual(2, loading.RenderCount);
+        Assert.AreEqual(1, loading.FindAll(".bit-bsl-sts .bit-bsl-ldc").Count);
+
+        var loaded = RenderList();
+
+        Assert.AreEqual(1, loaded.RenderCount);
+    }
+
+    [TestMethod]
+    public void BitBasicListShouldKeepTheAriaLabelWhereverTheRowsHaveNoRoleToName()
+    {
+        var component = RenderComponent<BitBasicList<string>>(p =>
+        {
+            p.Add(x => x.AriaLabel, "the fruits");
+            p.Add(x => x.Items, new List<string>());
+        });
+
+        // A name is prohibited on an element with no role, so while the rows have none the root carries it,
+        // as a group.
+        Assert.IsFalse(component.Find(".bit-bsl-itm").HasAttribute("aria-label"));
+        Assert.AreEqual("group", component.Find(".bit-bsl").GetAttribute("role"));
+        Assert.AreEqual("the fruits", component.Find(".bit-bsl").GetAttribute("aria-label"));
+
+        component.Render(p => p.Add(x => x.Items, new List<string> { "apple" }));
+
+        Assert.AreEqual("the fruits", component.Find(".bit-bsl-itm").GetAttribute("aria-label"));
+        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("role"));
+        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("aria-label"));
+
+        component.Render(p => p.Add(x => x.Loading, true));
+
+        // The loading content stands in for the rows, so the list keeps its name on the root meanwhile.
+        Assert.AreEqual("the fruits", component.Find(".bit-bsl").GetAttribute("aria-label"));
+
+        component.Render(p =>
+        {
+            p.Add(x => x.Loading, false);
+            p.Add(x => x.Role, null);
+        });
+
+        Assert.IsFalse(component.Find(".bit-bsl-itm").HasAttribute("aria-label"));
+        Assert.AreEqual("group", component.Find(".bit-bsl").GetAttribute("role"));
+        Assert.AreEqual("the fruits", component.Find(".bit-bsl").GetAttribute("aria-label"));
+
+        component.Render(p => p.Add(x => x.Role, "None"));
+
+        Assert.IsFalse(component.Find(".bit-bsl-itm").HasAttribute("aria-label"));
+        Assert.AreEqual("the fruits", component.Find(".bit-bsl").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBasicListShouldNotGiveTheRootARoleWithoutAnAriaLabel()
+    {
+        var component = RenderComponent<BitBasicList<string>>(p =>
+        {
+            p.Add(x => x.Items, new List<string>());
+            p.Add(x => x.Role, null);
+        });
+
+        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("role"));
+        Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("aria-label"));
     }
 
     [TestMethod]
     public void BitBasicListShouldHandTheFocusToTheListWhenTheFocusedLoadMoreButtonGoesAway()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(true);
 
         var component = RenderLoadMoreList(5, GetTestData(10));
 
         Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("tabindex"));
 
-        component.Find("button.bit-bsl-lmb").FocusIn();
-        component.Find("button.bit-bsl-lmb").Click();
+        var button = component.Find("button.bit-bsl-lmb");
+        var buttonId = button.Id;
+
+        button.Click();
 
         Assert.AreEqual(0, component.FindAll(".bit-bsl-lmb").Count);
         Assert.AreEqual("-1", component.Find(".bit-bsl").GetAttribute("tabindex"));
         Context.JSInterop.VerifyFocusAsyncInvoke();
+
+        // The browser is asked about the LoadMore element itself, before it is taken away.
+        var asked = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.containsActiveElement");
+        Assert.AreEqual(buttonId, asked.Arguments[0]);
     }
 
     [TestMethod]
     public void BitBasicListShouldNotTakeTheFocusWhenTheLoadMoreButtonWasNotFocused()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(false);
 
         var component = RenderLoadMoreList(5, GetTestData(10));
 
-        component.Find("button.bit-bsl-lmb").FocusIn();
-        component.Find("button.bit-bsl-lmb").FocusOut();
         component.Find("button.bit-bsl-lmb").Click();
 
         Assert.IsFalse(component.Find(".bit-bsl").HasAttribute("tabindex"));
@@ -1057,9 +1169,25 @@ public class BitBasicListTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBasicListShouldNotAskAboutTheFocusBeforeTheLastPage()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderLoadMoreList(5, GetTestData(20));
+
+        // Focus moving in and out of the LoadMore element is none of the list's business until the element
+        // goes away, so no focus event re-renders it and no page but the last asks the browser.
+        component.Find("button.bit-bsl-lmb").Click();
+
+        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.containsActiveElement"));
+    }
+
+    [TestMethod]
     public void BitBasicListShouldKeepItsOwnTabIndexWhenHandedTheFocus()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(true);
 
         var component = RenderComponent<BitBasicList<Person>>(p =>
         {
@@ -1070,7 +1198,6 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.RowTemplate, RowTemplate);
         });
 
-        component.Find("button.bit-bsl-lmb").FocusIn();
         component.Find("button.bit-bsl-lmb").Click();
 
         Assert.AreEqual("0", component.Find(".bit-bsl").GetAttribute("tabindex"));

@@ -137,7 +137,7 @@ public partial class BitBasicListDemo
             Name = "LoadingLabel",
             Type = "string?",
             DefaultValue = "Loading...",
-            Description = "The text next to the spinner of the default loading content and of the default LoadMore button while a page loads; also announced to screen readers.",
+            Description = "The text next to the spinner of the default loading content and of the default LoadMore button while a page loads; announced to screen readers as the list starts loading (a LoadingTemplate is announced with its own text).",
         },
         new()
         {
@@ -198,7 +198,7 @@ public partial class BitBasicListDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "list",
-            Description = "The role of the element holding the rows (which also carries the AriaLabel). Without a RowTemplate each row is rendered as a listitem while the role is list. Left off while the EmptyContent shows; set it to null to leave it off altogether.",
+            Description = "The role of the element holding the rows (which also carries the AriaLabel). Without a RowTemplate each row is rendered as a listitem while the role is list. Left off while the EmptyContent shows; set it to null to leave it off altogether. Wherever the element has no role to name, the AriaLabel names the root, as a group, instead.",
         },
         new()
         {

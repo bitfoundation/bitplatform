@@ -10,7 +10,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private int _loadMoreSkip = 0;
     private long _lastFetchTime;
     private bool _isLoadingMore;
-    private bool _loadMoreHasFocus;
+    private int _loadingKey;
     private bool _focusRootPending;
     private bool _focusHandedToRoot;
     private bool _loadMoreFinished;
@@ -84,6 +84,16 @@ public partial class BitBasicList<TItem> : BitComponentBase
                                       && (Virtualize && ItemsProvider is not null && LoadMore is false) is false
                                       ? null
                                       : Role;
+
+    // The AriaLabel names the element holding the rows wherever that element carries a role a name is allowed
+    // on. Everywhere else - the loading content standing in for the rows, the role left off while empty or by
+    // a null Role, a role of none or presentation - the name goes to the root instead, which takes the group
+    // role for it, so a list never loses its name to the state it happens to be in.
+    private bool _LabelOnItems => _ShowLoading is false && IsNameableRole(_EffectiveRole);
+
+    private bool _LabelOnRoot => AriaLabel.HasValue() && _LabelOnItems is false;
+
+    private string _LoadMoreId => $"{_Id}-lmb";
 
     private bool _ShowSentinel => LoadMore && AutoLoad && IsEnabled && _loadMoreFinished is false;
 
@@ -239,6 +249,12 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// <br />
     /// The default value is <strong>Loading...</strong>.
     /// </summary>
+    /// <remarks>
+    /// The loading content is rendered inside the status region of the list, so it announces itself: a
+    /// <see cref="LoadingTemplate"/> is read out with its own text, and this label only where it is the one
+    /// shown. A page of the <see cref="LoadMore"/> mode loaded while the items stay on screen is announced
+    /// with this label whatever the LoadMore element shows.
+    /// </remarks>
     [Parameter] public string? LoadingLabel { get; set; } = "Loading...";
 
     /// <summary>
@@ -300,7 +316,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// one). Set this to null to leave the role off altogether where the rows carry a structure of their own.
     /// <br />
     /// The role is also left off while the list shows its <see cref="EmptyContent"/>, since a list is required
-    /// to own list items.
+    /// to own list items. Wherever the element holding the rows has no role a name is allowed on (that case,
+    /// the loading content standing in for the rows, a null role, or a role of none or presentation), the
+    /// AriaLabel names the root instead, which takes the group role for it.
     /// </remarks>
     [Parameter] public string? Role { get; set; } = "list";
 
@@ -527,6 +545,15 @@ public partial class BitBasicList<TItem> : BitComponentBase
     {
         if (IsDisposed) return;
 
+        // A live region only announces what is added to it after it was rendered, so loading content that was
+        // already in it on the first render would go unannounced. It is put in afresh once (a new key replaces
+        // the element rather than updating it), which is what has a list that starts out loading read out.
+        if (firstRender && _ShowLoading)
+        {
+            _loadingKey++;
+            StateHasChanged();
+        }
+
         if (_focusRootPending)
         {
             _focusRootPending = false;
@@ -584,6 +611,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
     private async Task LoadMoreItems(bool reset)
     {
+        // Whether the LoadMore element is on the page right now, which is the only case it can hold the focus in.
+        var loadMoreShown = IsRendered && _loadMoreFinished is false;
+
         if (reset)
         {
             // A load that is still in flight would append its page on top of the reset one, so it is
@@ -609,6 +639,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
         _globalCts = localCts;
 
         var loaded = false;
+        var loadMoreHadFocus = false;
 
         try
         {
@@ -620,6 +651,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
                 {
                     var items = Items ?? [];
                     var page = items.Skip(_loadMoreSkip).Take(LoadMoreSize).ToArray();
+                    var finished = _viewItems.Count + page.Length >= items.Count;
+
+                    loadMoreHadFocus = finished && loadMoreShown && await LoadMoreHasFocus();
 
                     if (localCts.IsCancellationRequested is false)
                     {
@@ -628,26 +662,28 @@ public partial class BitBasicList<TItem> : BitComponentBase
                         // The skip advances by what was actually appended, so a provider (or a collection)
                         // that returns a short page does not leave a hole in the next one.
                         _loadMoreSkip += page.Length;
-                        _loadMoreFinished = _viewItems.Count >= items.Count;
+                        _loadMoreFinished = finished;
                         loaded = true;
                     }
                 }
                 else
                 {
                     var result = await FetchItems(_loadMoreSkip, LoadMoreSize, localCts.Token, false);
+                    var page = result.Items ?? [];
+
+                    //var finished = _viewItems.Count + page.Count >= result.TotalItemCount; // for performance purposes we won't use TotalItemCount here!
+                    // A page shorter than the one asked for is the last one, which saves the extra
+                    // round trip an empty page would have cost to discover the same thing.
+                    var finished = page.Count < LoadMoreSize;
+
+                    loadMoreHadFocus = finished && loadMoreShown && await LoadMoreHasFocus();
 
                     if (localCts.IsCancellationRequested is false)
                     {
-                        var page = result.Items ?? [];
-
                         _viewItems = [.. _viewItems, .. page];
 
                         _loadMoreSkip += page.Count;
-
-                        //_loadMoreFinished = _viewItems.Count >= result.TotalItemCount; // for performance purposes we won't use TotalItemCount here!
-                        // A page shorter than the one asked for is the last one, which saves the extra
-                        // round trip an empty page would have cost to discover the same thing.
-                        _loadMoreFinished = page.Count < LoadMoreSize;
+                        _loadMoreFinished = finished;
                         loaded = true;
                     }
                 }
@@ -678,9 +714,11 @@ public partial class BitBasicList<TItem> : BitComponentBase
         // The last page takes the LoadMore element away, and the keyboard focus it held would fall back to
         // the start of the page with it. The focus is handed to the list itself instead, so the user stays
         // on the items that were just loaded: the arrow keys scroll them and the next Tab moves on from there.
-        if (_loadMoreFinished && _loadMoreHasFocus)
+        // Whether the element held it is asked of the browser before the element goes, rather than tracked
+        // with focus events: those would re-render the whole list on every focus move, and a focusout the
+        // browser never fires (for an element taken away while focused) would leave a stale answer behind.
+        if (loaded && loadMoreHadFocus && _loadMoreFinished)
         {
-            _loadMoreHasFocus = false;
             _focusHandedToRoot = true;
             _focusRootPending = true;
         }
@@ -691,6 +729,28 @@ public partial class BitBasicList<TItem> : BitComponentBase
         {
             await OnLoadMore.InvokeAsync(_viewItems.Count);
         }
+    }
+
+    private async Task<bool> LoadMoreHasFocus()
+    {
+        if (IsDisposed) return false;
+
+        try
+        {
+            return await _js.BitUtilsContainsActiveElement(_LoadMoreId);
+        }
+        catch (JSDisconnectedException) { return false; } // we can ignore this exception here
+    }
+
+    private static bool IsNameableRole(string? role)
+    {
+        if (role.HasNoValue()) return false;
+
+        role = role!.Trim();
+
+        return role.Equals("none", StringComparison.OrdinalIgnoreCase) is false
+            && role.Equals("presentation", StringComparison.OrdinalIgnoreCase) is false
+            && role.Equals("generic", StringComparison.OrdinalIgnoreCase) is false;
     }
 
     private async Task LoadAllItems()

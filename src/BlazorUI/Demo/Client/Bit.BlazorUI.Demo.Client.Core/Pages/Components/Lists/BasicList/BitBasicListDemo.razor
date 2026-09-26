@@ -79,7 +79,7 @@
 
     <DemoExample Title="Loading" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            <b>Loading</b> swaps the rows for a spinner and the <b>LoadingLabel</b> text (announced as a status), or for your own <b>LoadingTemplate</b>.
+            <b>Loading</b> swaps the rows for a spinner and the <b>LoadingLabel</b> text, or for your own <b>LoadingTemplate</b>; either one is announced as a status with the text it shows.
             The list raises the same state itself while it fetches from an ItemsProvider, and reports every change through <b>OnLoadingChange</b>.
         </div>
         <br />
@@ -342,6 +342,7 @@
         <div>
             The element holding the rows carries <code>role="list"</code> (<b>Role</b>; null removes it), the <b>AriaLabel</b> and <code>aria-busy</code> while a page loads;
             the header, footer and LoadMore button sit beside it, since a list may only own list items.
+            Where that element has no role to name (while empty or loading, or with a null Role) the <b>AriaLabel</b> names the scrolling root, as a group, instead.
             A list whose rows hold nothing focusable needs <b>TabIndex</b> <code>0</code> on its scrolling root so it can be scrolled from the keyboard (WCAG 2.1.1).
             A page being loaded is announced with <b>LoadingLabel</b>, and when the last page removes the focused LoadMore button the focus moves to the list instead of being lost.
         </div>

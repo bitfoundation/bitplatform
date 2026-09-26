@@ -51,13 +51,22 @@
 
     // The parts that span the width of a column of items are as wide as their own content in a row of
     // them, where a full width would leave the items with nothing to be laid out in.
-    > .bit-bsl-hdr, > .bit-bsl-ftr, > .bit-bsl-ldc, > .bit-bsl-lmb {
+    > .bit-bsl-hdr, > .bit-bsl-ftr, > .bit-bsl-sts > .bit-bsl-ldc, > .bit-bsl-lmb {
         width: auto;
     }
 }
 
 .bit-bsl-hdr, .bit-bsl-ftr {
     flex-shrink: 0;
+}
+
+// The live region of the list, always present and holding the loading content while there is one. It has no
+// look of its own: empty, it takes no room at all. It is the containing block of the hidden label below, so
+// that label stays inside the scrolling region, which clips it, instead of being placed against an ancestor
+// out past the end of the whole scrolled content, where it would stretch the scrolling of the page.
+.bit-bsl-sts {
+    flex-shrink: 0;
+    position: relative;
 }
 
 .bit-bsl-ldc {
@@ -195,10 +204,12 @@ button.bit-bsl-lmb {
     padding: var(--bit-BasicList-load-more-padding, #{spacing(2)});
 }
 
-// The live region that announces a page of the LoadMore mode being loaded, for a screen reader and for
-// nobody else. It is taken out of the flow rather than hidden, since display:none is also hidden from
-// the readers it is written for.
-.bit-bsl-sts {
+// The label the live region announces a page of the LoadMore mode with while the items stay on screen, for a
+// screen reader and for nobody else (the loading content, when there is one, is its own announcement). It is
+// taken out of the flow rather than hidden, since display:none is also hidden from the readers it is written for.
+.bit-bsl-stt {
+    top: 0;
+    inset-inline-start: 0;
     border: 0;
     padding: 0;
     width: 1px;
