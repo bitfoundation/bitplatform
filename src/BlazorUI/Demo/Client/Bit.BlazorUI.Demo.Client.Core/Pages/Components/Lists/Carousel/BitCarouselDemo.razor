@@ -188,13 +188,15 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Vertical" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Vertical & DotsPosition" RazorCode="@example6RazorCode" Id="example6">
         <div>
-            Scrolls up and down: the buttons move to the top and bottom edges and the up/down arrow keys navigate. Give it a height.
+            <b>Vertical</b> scrolls up and down: the buttons move to the top and bottom edges and the up/down arrow keys
+            navigate. Give it a height. <b>DotsPosition</b> places the dots at the Bottom (default), Top, or in a column at the
+            Start or End.
         </div>
         <br />
         <div>
-            <BitCarousel Vertical Style="height: 200px" InfiniteScrolling>
+            <BitCarousel Vertical Style="height: 200px" InfiniteScrolling DotsPosition="BitCarouselDotsPosition.End">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
                     <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
@@ -211,6 +213,13 @@
                     <div class="number">4 / 4</div>
                     <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                 </BitCarouselItem>
+            </BitCarousel>
+            <br /><br />
+            <BitCarousel Style="height: 100px" InfiniteScrolling DotsPosition="BitCarouselDotsPosition.Top">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
             </BitCarousel>
         </div>
     </DemoExample>
@@ -471,10 +480,11 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            It follows the ARIA carousel pattern: a labelled region of labelled slides, real buttons pointing at the slides with
-            aria-controls, off-screen slides taken out of the reading and tab order, and the play/pause button reached first.
-            The focus stays on a control when a button hides itself at an end, and the arrow keys typed into a field inside a
-            slide stay with that field. Every label is yours to set:
+            Follows the ARIA carousel pattern: a labelled region of labelled slides, buttons wired with aria-controls, off-screen
+            slides made inert, and the play/pause button first in the tab order. The dots are a single tab stop, and the focus is
+            never lost: it follows the arrow keys to the new dot, and leaves a button or a slide that moves out of view. Arrow keys
+            typed into a field stay with the field. The dots meet 3:1 contrast, and the current one is also marked by its shape.
+            Every label is yours to set:
         </div>
         <ul>
             <li><b>AriaLabel</b> names the region; a slide's own <b>AriaLabel</b> names that slide.</li>
@@ -524,7 +534,7 @@
                                 --bit-Carousel-button-background: rgba(0, 0, 0, 0.35);
                                 --bit-Carousel-button-hover-background: rgba(0, 0, 0, 0.55);
                                 --bit-Carousel-dot-radius: 0.25rem;
-                                --bit-Carousel-dot-current-width: 1.5rem;
+                                --bit-Carousel-dot-current-length: 1.5rem;
                                 --bit-Carousel-dot-current-color: #9787e5;">
                 <BitCarouselItem>
                     <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />

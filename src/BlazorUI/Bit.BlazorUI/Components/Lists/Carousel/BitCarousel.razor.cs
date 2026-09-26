@@ -59,6 +59,13 @@ public partial class BitCarousel : BitComponentBase
     // until the render that hides the button has landed.
     private ElementReference? _pendingFocus;
 
+    // The control of the carousel that holds the keyboard focus, so a move made with the keyboard can keep
+    // the focus where it belongs: on the dot of the new page when it was on a dot, and on a control that is
+    // still on screen when the button it was on hid itself at an end.
+    private FocusedControl _focusedControl;
+    private BitCarouselItem? _focusedItem;
+    private readonly Dictionary<int, ElementReference> _dotRefs = [];
+
     // The one size the carousel is laid out against: the box the slides live in. Both places it can
     // arrive from (the resize observer and the measurement of ResetDimensionsAsync) look at that same
     // element, so the breakpoints below and the sizes the slides are given cannot disagree with each
@@ -195,6 +202,17 @@ public partial class BitCarousel : BitComponentBase
     /// The accessible label of the dots container of the carousel.
     /// </summary>
     [Parameter] public string DotsAriaLabel { get; set; } = "Choose slide to display";
+
+    /// <summary>
+    /// Where the dots (and the play/pause button) are placed around the slides (the default value is Bottom).
+    /// </summary>
+    /// <remarks>
+    /// Start and End place them in a column beside the slides, at the start and end of the reading direction,
+    /// which suits a <see cref="Vertical"/> carousel. The space between the slides and the dots is the
+    /// <c>--bit-Carousel-dots-margin</c> CSS variable.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitCarouselDotsPosition? DotsPosition { get; set; }
 
     /// <summary>
     /// The custom content of a dot of the carousel, receiving the zero based index of the page the dot
@@ -703,8 +721,26 @@ public partial class BitCarousel : BitComponentBase
         StateHasChanged();
     }
 
+    internal void SetFocusedItem(BitCarouselItem item)
+    {
+        _focusedItem = item;
+    }
+
+    internal void ClearFocusedItem(BitCarouselItem item)
+    {
+        if (_focusedItem == item)
+        {
+            _focusedItem = null;
+        }
+    }
+
     internal void UnregisterItem(BitCarouselItem carouselItem)
     {
+        if (_focusedItem == carouselItem)
+        {
+            _focusedItem = null;
+        }
+
         if (_allItems.Remove(carouselItem) is false) return;
 
         // The indices of the items are what every calculation of the carousel is written in terms of, so
@@ -730,6 +766,14 @@ public partial class BitCarousel : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => Vertical ? "bit-csl-vrt" : string.Empty);
+
+        ClassBuilder.Register(() => DotsPosition switch
+        {
+            BitCarouselDotsPosition.Top => "bit-csl-dtop",
+            BitCarouselDotsPosition.Start => "bit-csl-dstr",
+            BitCarouselDotsPosition.End => "bit-csl-dend",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => Size switch
         {
@@ -1030,7 +1074,7 @@ public partial class BitCarousel : BitComponentBase
     // in RegisterCssStyles), so the stylesheet can collapse it under 'prefers-reduced-motion: reduce'.
     private string Transition()
     {
-        return "transition:transform var(--bit-csl-dur)";
+        return "transition:transform var(--bit-csl-dur) var(--bit-csl-ease)";
     }
 
     private async Task ResetDimensionsAsync()
@@ -1422,7 +1466,7 @@ public partial class BitCarousel : BitComponentBase
 
         if (Fade)
         {
-            var transition = "transition:opacity var(--bit-csl-dur)";
+            var transition = "transition:opacity var(--bit-csl-dur) var(--bit-csl-ease)";
 
             _navigating = true;
 
@@ -1675,6 +1719,60 @@ public partial class BitCarousel : BitComponentBase
                 await HandleGotoPage(_pagesCount - 1);
                 break;
         }
+
+        KeepFocusAfterKeyboardMove();
+    }
+
+    // The dots are one stop of the tab sequence (only the current one is tabbable), so a key that moves the
+    // carousel while a dot is focused takes the focus along to the dot of the new page. A next/prev button
+    // that hid itself at an end hands its focus over the same way a click on it does. A control inside a
+    // slide that was just moved out of the view turns inert, which drops its focus, so the carousel itself
+    // takes it over instead of the focus falling back to the start of the page.
+    private void KeepFocusAfterKeyboardMove()
+    {
+        if (_focusedItem is { InternalIsCurrent: false })
+        {
+            _focusedItem = null;
+            _pendingFocus = RootElement;
+            return;
+        }
+
+        switch (_focusedControl)
+        {
+            case FocusedControl.Dot when _dotRefs.TryGetValue(_currentPage, out var dot):
+                _pendingFocus = dot;
+                break;
+
+            case FocusedControl.GoLeftButton:
+                KeepFocusOnControls(_goLeftButtonStyle, _goRightButtonStyle, _goRightButtonRef);
+                break;
+
+            case FocusedControl.GoRightButton:
+                KeepFocusOnControls(_goRightButtonStyle, _goLeftButtonStyle, _goLeftButtonRef);
+                break;
+        }
+    }
+
+    private void HandleControlFocus(FocusedControl control)
+    {
+        _focusedControl = control;
+    }
+
+    private void HandleControlBlur(FocusedControl control)
+    {
+        if (_focusedControl == control)
+        {
+            _focusedControl = FocusedControl.None;
+        }
+    }
+
+    // A dot is only taken out of the tab sequence when the arrow keys can reach it, so a carousel without
+    // keyboard navigation keeps every one of its dots tabbable.
+    private string? GetDotTabIndex(int index)
+    {
+        if (NoKeyboard) return null;
+
+        return _currentPage == index ? "0" : "-1";
     }
 
     private async Task HandleWheel(WheelEventArgs e)
@@ -1952,6 +2050,16 @@ public partial class BitCarousel : BitComponentBase
         if (GoRightAriaLabel.HasValue()) return GoRightAriaLabel;
 
         return (Vertical is false && Dir == BitDir.Rtl) ? "Next slide" : "Previous slide";
+    }
+
+
+
+    private enum FocusedControl
+    {
+        None,
+        Dot,
+        GoLeftButton,
+        GoRightButton
     }
 
 

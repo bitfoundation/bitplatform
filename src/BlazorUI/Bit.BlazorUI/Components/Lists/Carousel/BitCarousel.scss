@@ -4,6 +4,7 @@
 // carousel and one set on the Style of an instance re-skins that one alone:
 //   --bit-Carousel-height                      height of the carousel                              (default: spacing(25))
 //   --bit-Carousel-gap                         space between the slides; the Gap parameter wins    (default: 0)
+//   --bit-Carousel-easing                      timing function of the slide and fade motion        (default: $mot-easing)
 //   --bit-Carousel-focus-color                 focus ring color of the carousel and its controls   (default: $clr-pri-focus)
 //   --bit-Carousel-button-color                next/prev and play/pause glyph color                (default: $clr-fg-pri / the Color role's main color)
 //   --bit-Carousel-button-hover-color          the same glyphs on hover                            (default: $clr-fg-pri-hover / the Color role's hover color)
@@ -13,12 +14,12 @@
 //   --bit-Carousel-button-hover-opacity        their opacity on hover                              (default: 0.9)
 //   --bit-Carousel-button-size                 next/prev glyph size                                (default: per size, from the type ramp)
 //   --bit-Carousel-button-width                next/prev hit area across the scrolling axis        (default: 10%)
-//   --bit-Carousel-dot-color                   dot color                                           (default: $clr-bg-ter)
-//   --bit-Carousel-dot-hover-color             dot color on hover                                  (default: $clr-bg-ter-hover)
+//   --bit-Carousel-dot-color                   dot color                                           (default: $clr-brd-pri)
+//   --bit-Carousel-dot-hover-color             dot color on hover                                  (default: $clr-brd-pri-hover)
 //   --bit-Carousel-dot-current-color           current dot color                                   (default: the Accent / Color role's main color)
 //   --bit-Carousel-dot-current-hover-color     current dot color on hover                          (default: the Accent / Color role's hover color)
 //   --bit-Carousel-dot-size                    dot diameter                                        (default: per size)
-//   --bit-Carousel-dot-current-width           current dot width, for a pill shaped indicator      (default: the dot size)
+//   --bit-Carousel-dot-current-length          current dot length along the dots row (the pill)    (default: twice the dot size)
 //   --bit-Carousel-dot-radius                  dot corner radius                                   (default: $shp-radius-full)
 //   --bit-Carousel-dots-gap                    space between the dots                              (default: the room that keeps them 24px apart)
 //   --bit-Carousel-dots-margin                 space between the slides and the dots row           (default: spacing(1.25))
@@ -53,6 +54,13 @@
     // motion.fluent.scss, so the reduced-motion query below can still collapse a duration that was
     // set inline. The fallback is the default of the parameter.
     --bit-csl-dur: var(--bit-csl-dur-full, 0.5s);
+
+    // The timing function of the slide and fade motion, read by the transitions the carousel writes inline.
+    --bit-csl-ease: var(--bit-Carousel-easing, #{$mot-easing});
+
+    // The space between the slides and the row of dots. It is a gap of the root rather than a margin of the
+    // row, so it lands on whichever side of the slides the row is placed (DotsPosition).
+    gap: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
 
     &:focus-visible {
         @include focus-ring(var(--bit-csl-focus));
@@ -110,6 +118,7 @@
 
 .bit-csl-ndr {
     cursor: default;
+    user-select: auto;
 }
 
 .bit-csl-lbt,
@@ -215,8 +224,8 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     gap: var(--bit-Carousel-dots-gap, var(--bit-csl-dots-gap));
-    margin-top: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
 
     // The dots are spaced so their centers sit at least 24px apart, which is the spacing exception of
     // the "target size (minimum)" success criterion of WCAG 2.2 for targets smaller than 24px. The
@@ -254,12 +263,14 @@
     width: var(--bit-csl-dotsz);
     height: var(--bit-csl-dotsz);
     border-radius: var(--bit-Carousel-dot-radius, #{$shp-radius-full});
-    background-color: var(--bit-Carousel-dot-color, #{$clr-bg-ter});
-    transition: background-color $mot-duration-long $mot-easing, width $mot-duration-long $mot-easing;
+    // A border token rather than a background one: the dots are controls, and the border family is the one
+    // held to the 3:1 non-text contrast WCAG asks of them against the surface they sit on.
+    background-color: var(--bit-Carousel-dot-color, #{$clr-brd-pri});
+    transition: background-color $mot-duration-long $mot-easing, width $mot-duration-long $mot-easing, height $mot-duration-long $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Carousel-dot-hover-color, #{$clr-bg-ter-hover});
+            background-color: var(--bit-Carousel-dot-hover-color, #{$clr-brd-pri-hover});
         }
     }
 
@@ -269,7 +280,7 @@
 
     &:disabled {
         cursor: default;
-        background-color: $clr-bg-dis;
+        background-color: $clr-brd-pri-dis;
     }
 }
 
@@ -310,10 +321,12 @@
     }
 }
 
-// Only a plain dot is widened: a templated one keeps the width of its content (and whatever width the
-// Dots / CurrentDot classes give it). The :where keeps the rule as light as the one sizing every dot.
+// The current dot is stretched into a pill along the row, so it is told apart from the others by its shape
+// and not by its color alone. Only a plain dot is stretched: a templated one keeps the size of its content
+// (and whatever size the Dots / CurrentDot classes give it). The :where keeps the rule as light as the one
+// sizing every dot.
 .bit-csl-cud:where(:not(.bit-csl-dtt)) {
-    width: var(--bit-Carousel-dot-current-width, var(--bit-csl-dotsz));
+    width: var(--bit-Carousel-dot-current-length, calc(var(--bit-csl-dotsz) * 2));
 }
 
 .bit-csl-dtt.bit-csl-cud {
@@ -325,6 +338,33 @@
             background-color: transparent;
             color: var(--bit-Carousel-dot-current-hover-color, var(--bit-csl-clr-hover));
         }
+    }
+}
+
+
+// DotsPosition: the row of controls is ordered before the slides, or turned into a column beside them. A
+// column stretches the current dot along its own axis, which is the height.
+.bit-csl-dtop > .bit-csl-dcn,
+.bit-csl-dstr > .bit-csl-dcn {
+    order: 0;
+}
+
+.bit-csl-dstr,
+.bit-csl-dend {
+    flex-direction: row;
+
+    > .bit-csl-cnt {
+        min-width: 0;
+    }
+
+    .bit-csl-dcn,
+    .bit-csl-dts {
+        flex-direction: column;
+    }
+
+    .bit-csl-cud:where(:not(.bit-csl-dtt)) {
+        width: var(--bit-csl-dotsz);
+        height: var(--bit-Carousel-dot-current-length, calc(var(--bit-csl-dotsz) * 2));
     }
 }
 

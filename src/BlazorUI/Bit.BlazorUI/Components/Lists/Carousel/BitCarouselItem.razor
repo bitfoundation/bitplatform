@@ -10,6 +10,8 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      inert="@(InternalIsCurrent is false)"
+     @onfocusin="HandleFocusIn"
+     @onfocusout="HandleFocusOut"
      aria-hidden="@(InternalIsCurrent ? null : "true")">
     @ChildContent
 </div>

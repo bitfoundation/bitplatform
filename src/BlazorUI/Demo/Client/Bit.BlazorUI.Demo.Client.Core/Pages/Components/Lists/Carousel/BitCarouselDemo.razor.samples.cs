@@ -191,7 +191,7 @@ public partial class BitCarouselDemo
 </BitCarousel>";
 
     private readonly string example6RazorCode = @"
-<BitCarousel Vertical Style=""height: 200px"" InfiniteScrolling>
+<BitCarousel Vertical Style=""height: 200px"" InfiniteScrolling DotsPosition=""BitCarouselDotsPosition.End"">
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
@@ -208,6 +208,13 @@ public partial class BitCarouselDemo
         <div class=""number"">4 / 4</div>
         <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
     </BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel Style=""height: 100px"" InfiniteScrolling DotsPosition=""BitCarouselDotsPosition.Top"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
 </BitCarousel>";
 
     private readonly string example7RazorCode = @"
@@ -494,7 +501,7 @@ private int thumbsPage = 1;";
                     --bit-Carousel-button-background: rgba(0, 0, 0, 0.35);
                     --bit-Carousel-button-hover-background: rgba(0, 0, 0, 0.55);
                     --bit-Carousel-dot-radius: 0.25rem;
-                    --bit-Carousel-dot-current-width: 1.5rem;
+                    --bit-Carousel-dot-current-length: 1.5rem;
                     --bit-Carousel-dot-current-color: #9787e5;"">
     <BitCarouselItem>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />

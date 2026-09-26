@@ -89,6 +89,15 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "DotsPosition",
+            Type = "BitCarouselDotsPosition?",
+            DefaultValue = "null",
+            Description = "Where the dots (and the play/pause button) are placed around the slides: Bottom (the default), Top, or in a column at the Start or End.",
+            LinkType = LinkType.Link,
+            Href = "#dots-position-enum",
+        },
+        new()
+        {
             Name = "DotTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
@@ -608,6 +617,19 @@ public partial class BitCarouselDemo
     [
         new()
         {
+            Id = "dots-position-enum",
+            Name = "BitCarouselDotsPosition",
+            Description = "Where the dots of the carousel are placed around its slides.",
+            Items =
+            [
+                new() { Name = "Bottom", Description = "Below the slides.", Value = "0" },
+                new() { Name = "Top", Description = "Above the slides.", Value = "1" },
+                new() { Name = "Start", Description = "In a column beside the slides, at the start of the reading direction.", Value = "2" },
+                new() { Name = "End", Description = "In a column beside the slides, at the end of the reading direction.", Value = "3" },
+            ]
+        },
+        new()
+        {
             Id = "color-kind-enum",
             Name = "BitColorKind",
             Description = "Defines the color kinds available in the bit BlazorUI.",
@@ -753,6 +775,12 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "--bit-Carousel-easing",
+            DefaultValue = "--bit-mot-easing",
+            Description = "Timing function of the slide and fade motion.",
+        },
+        new()
+        {
             Name = "--bit-Carousel-focus-color",
             DefaultValue = "--bit-clr-pri-focus (the Color role's focus color)",
             Description = "Focus ring color of the carousel and of its buttons and dots.",
@@ -808,13 +836,13 @@ public partial class BitCarouselDemo
         new()
         {
             Name = "--bit-Carousel-dot-color",
-            DefaultValue = "--bit-clr-bg-ter",
+            DefaultValue = "--bit-clr-brd-pri",
             Description = "Color of the dots.",
         },
         new()
         {
             Name = "--bit-Carousel-dot-hover-color",
-            DefaultValue = "--bit-clr-bg-ter-hover",
+            DefaultValue = "--bit-clr-brd-pri-hover",
             Description = "Color of a hovered dot.",
         },
         new()
@@ -837,9 +865,9 @@ public partial class BitCarouselDemo
         },
         new()
         {
-            Name = "--bit-Carousel-dot-current-width",
-            DefaultValue = "The dot size",
-            Description = "Width of the current dot; set it wider for a pill-shaped indicator.",
+            Name = "--bit-Carousel-dot-current-length",
+            DefaultValue = "Twice the dot size",
+            Description = "Length of the current dot along the dots row (its height in a Start/End column); the dot size makes it a circle again.",
         },
         new()
         {
@@ -857,7 +885,7 @@ public partial class BitCarouselDemo
         {
             Name = "--bit-Carousel-dots-margin",
             DefaultValue = "spacing(1.25)",
-            Description = "Space between the slides and the row of dots.",
+            Description = "Space between the slides and the dots, on whichever side DotsPosition puts them.",
         },
     ];
 

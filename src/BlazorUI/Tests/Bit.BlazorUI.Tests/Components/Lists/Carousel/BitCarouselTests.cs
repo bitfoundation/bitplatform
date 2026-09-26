@@ -427,6 +427,139 @@ public partial class BitCarouselTests : BunitTestContext
         });
     }
 
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitCarouselDotsPosition.Bottom, null),
+        DataRow(BitCarouselDotsPosition.Top, "bit-csl-dtop"),
+        DataRow(BitCarouselDotsPosition.Start, "bit-csl-dstr"),
+        DataRow(BitCarouselDotsPosition.End, "bit-csl-dend")
+    ]
+    public void BitCarouselShouldRespectDotsPosition(BitCarouselDotsPosition? position, string? expectedClass)
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.DotsPosition, position);
+        });
+
+        var classes = component.Find(".bit-csl").ClassList;
+
+        foreach (var cls in new[] { "bit-csl-dtop", "bit-csl-dstr", "bit-csl-dend" })
+        {
+            Assert.AreEqual(cls == expectedClass, classes.Contains(cls), cls);
+        }
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldMakeTheDotsASingleTabStop()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var dots = component.FindAll(".bit-csl-dot");
+        Assert.AreEqual("0", dots[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", dots[1].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", dots[2].GetAttribute("tabindex"));
+
+        dots[2].Click();
+
+        component.WaitForAssertion(() =>
+        {
+            var current = component.FindAll(".bit-csl-dot");
+            Assert.AreEqual("-1", current[0].GetAttribute("tabindex"));
+            Assert.AreEqual("0", current[2].GetAttribute("tabindex"));
+        });
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldKeepEveryDotTabbableWithoutKeyboardNavigation()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.NoKeyboard, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        foreach (var dot in component.FindAll(".bit-csl-dot"))
+        {
+            Assert.IsFalse(dot.HasAttribute("tabindex"));
+        }
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldMoveTheFocusToTheNewDotOnKeyboardNavigation()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        component.FindAll(".bit-csl-dot")[0].Focus();
+
+        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
+
+        // the focus is moved once the render of the move has landed, after the last render there is to wait for
+        Assert.IsTrue(System.Threading.SpinWait.SpinUntil(() => FocusCalls() == 1, 1000));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNotMoveTheFocusOnKeyboardNavigationFromTheRoot()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
+
+        Assert.IsFalse(System.Threading.SpinWait.SpinUntil(() => FocusCalls() > 0, 300));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldTakeTheFocusOverWhenAKeyMovesTheFocusedSlideAway()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        // a control inside the first slide holds the focus when the carousel is moved past that slide
+        component.FindAll(".bit-crsi")[0].FocusIn();
+
+        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, component.Instance.Carousel.CurrentPage);
+            Assert.AreEqual("true", component.FindAll(".bit-crsi")[0].GetAttribute("aria-hidden"));
+        });
+
+        Assert.IsTrue(System.Threading.SpinWait.SpinUntil(() => FocusCalls() == 1, 1000));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldHandTheFocusOverWhenAKeyHidesTheFocusedButton()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        // the "left" button goes forwards in a left-to-right carousel, and hides itself on the last page
+        component.Find(".bit-csl-lbt").Focus();
+
+        component.Find(".bit-csl").KeyDown(new KeyboardEventArgs { Key = "End" });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(2, component.Instance.Carousel.CurrentPage);
+            Assert.Contains("display:none", component.Find(".bit-csl-lbt").GetAttribute("style") ?? "");
+        });
+
+        Assert.IsTrue(System.Threading.SpinWait.SpinUntil(() => FocusCalls() == 1, 1000));
+    }
+
     [TestMethod]
     public void BitCarouselShouldMarkOffscreenItemsHidden()
     {
@@ -2326,6 +2459,7 @@ public partial class BitCarouselTests : BunitTestContext
             Color = BitColor.Warning,
             DotAriaLabel = "Page",
             DotsAriaLabel = "Pages",
+            DotsPosition = BitCarouselDotsPosition.End,
             DotTemplate = dotTemplate,
             DragThreshold = 40,
             Fade = true,
@@ -2381,6 +2515,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.AreEqual(BitColor.Warning, carousel.Color);
         Assert.AreEqual("Page", carousel.DotAriaLabel);
         Assert.AreEqual("Pages", carousel.DotsAriaLabel);
+        Assert.AreEqual(BitCarouselDotsPosition.End, carousel.DotsPosition);
         Assert.AreSame(dotTemplate, carousel.DotTemplate);
         Assert.AreEqual(40, carousel.DragThreshold);
         Assert.IsTrue(carousel.Fade);
@@ -2433,6 +2568,20 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsNull(component.Instance.Carousel.CascadingParameters);
         Assert.IsFalse(root.ClassList.Contains("bit-csl-vrt"));
         Assert.IsFalse(root.ClassList.Contains("bit-csl-lg"));
+    }
+
+    // The focus call lands on the renderer's thread while the test polls for it, so a read that races a write
+    // to the log of invocations is simply taken as "not yet".
+    private int FocusCalls()
+    {
+        try
+        {
+            return Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+        }
+        catch (InvalidOperationException)
+        {
+            return -1;
+        }
     }
 
     private IRenderedComponent<BitParams> RenderCarouselInBitParams(BitCarouselParams @params, Action<Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder>? addAttributes = null)

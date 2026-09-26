@@ -67,6 +67,11 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
     public string? DotsAriaLabel { get; set; }
 
     /// <summary>
+    /// Where the dots (and the play/pause button) are placed around the slides.
+    /// </summary>
+    public BitCarouselDotsPosition? DotsPosition { get; set; }
+
+    /// <summary>
     /// The custom content of a dot of the carousel, receiving the zero based index of the page the dot navigates to.
     /// </summary>
     public RenderFragment<int>? DotTemplate { get; set; }
@@ -339,6 +344,13 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
         if (DotsAriaLabel.HasValue() && bitCarousel.HasNotBeenSet(nameof(DotsAriaLabel)))
         {
             bitCarousel.DotsAriaLabel = DotsAriaLabel!;
+        }
+
+        if (DotsPosition.HasValue && bitCarousel.HasNotBeenSet(nameof(DotsPosition)))
+        {
+            bitCarousel.DotsPosition = DotsPosition.Value;
+
+            bitCarousel.ClassBuilder.Reset();
         }
 
         if (DotTemplate is not null && bitCarousel.HasNotBeenSet(nameof(DotTemplate)))

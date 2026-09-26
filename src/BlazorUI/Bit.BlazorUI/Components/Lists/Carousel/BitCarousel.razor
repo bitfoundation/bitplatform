@@ -49,8 +49,12 @@
                     @for (int i = 0; i < _pagesCount; i++)
                     {
                         int index = i;
-                        <button @onclick="(() => HandleGotoPage(index))"
+                        <button @ref="_dotRefs[index]"
+                                @onclick="(() => HandleGotoPage(index))"
+                                @onfocus="() => HandleControlFocus(FocusedControl.Dot)"
+                                @onblur="() => HandleControlBlur(FocusedControl.Dot)"
                                 type="button"
+                                tabindex="@GetDotTabIndex(index)"
                                 aria-controls="@_ContainerId"
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_currentPage == index ? "true" : null)"
@@ -77,7 +81,7 @@
          @onpointerdown="HandlePointerDown"
          aria-atomic="false"
          aria-live="@(IsPlaying ? "off" : "polite")"
-         class="bit-csl-cnt @(NoDrag ? "bit-csl-ndr" : null) @Classes?.Container"
+         class="bit-csl-cnt @((NoDrag || IsEnabled is false) ? "bit-csl-ndr" : null) @Classes?.Container"
          style="@_directionStyle @Styles?.Container">
 
         @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
@@ -94,6 +98,8 @@
             RenderFragment goLeftButton =
                 @<button @ref="_goLeftButtonRef"
                          @onclick="HandleGoLeftButtonClick"
+                         @onfocus="() => HandleControlFocus(FocusedControl.GoLeftButton)"
+                         @onblur="() => HandleControlBlur(FocusedControl.GoLeftButton)"
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoLeftAriaLabel()"
@@ -108,6 +114,8 @@
             RenderFragment goRightButton =
                 @<button @ref="_goRightButtonRef"
                          @onclick="HandleGoRightButtonClick"
+                         @onfocus="() => HandleControlFocus(FocusedControl.GoRightButton)"
+                         @onblur="() => HandleControlBlur(FocusedControl.GoRightButton)"
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoRightAriaLabel()"
