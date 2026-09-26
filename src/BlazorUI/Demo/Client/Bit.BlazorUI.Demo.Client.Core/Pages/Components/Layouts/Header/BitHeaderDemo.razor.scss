@@ -1,9 +1,5 @@
 @import '../../../../Styles/abstracts/_functions.scss';
 
-.container {
-    border: 1px solid gray;
-}
-
 // The Position, Reveal and ElevateOnScroll examples all need a box that scrolls on its own, so the
 // header has something to stick to (and to slide over) without taking over the whole demo page.
 .scroll-demo {
