@@ -45,7 +45,25 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Alignment" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Border & elevation" RazorCode="@example3RazorCode" Id="example3">
+        <div><b>Bordered</b> draws a bottom divider, <b>Elevated</b> casts a shadow - both separate the header from the content below it.</div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered>Bordered</BitHeader>
+        </div>
+        <br />
+        <br />
+        <div class="container">
+            <BitHeader Elevated>Elevated</BitHeader>
+        </div>
+        <br />
+        <br />
+        <div class="container">
+            <BitHeader Bordered Elevated Color="BitColor.Tertiary" Variant="BitVariant.Outline">Bordered & Elevated</BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Alignment" RazorCode="@example4RazorCode" Id="example4">
         <div>
             <b>Alignment</b> distributes the content along the line (SpaceBetween is the classic brand-left, actions-right bar).
             <b>VerticalAlign</b> places it in the height of the header (centered by default).
@@ -96,7 +114,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Layout" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Layout" RazorCode="@example5RazorCode" Id="example5">
         <div>
             <b>Gap</b> spaces the children (any CSS length), <b>Wrap</b> lets them break onto more lines on a narrow screen,
             <b>NoGutter</b> removes the paddings, and <b>MaxWidth</b> caps and centers the content while the surface stays full width.
@@ -137,7 +155,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Extension" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Extension" RazorCode="@example6RazorCode" Id="example6">
         <div>
             <b>ExtensionContent</b> adds a second row under the main one - tabs, a search box, a breadcrumb - sharing the
             surface and the scroll behaviors of the header, and lining up with the main row's gutter and <b>MaxWidth</b>.
@@ -159,24 +177,6 @@
                     </BitPivot>
                 </ExtensionContent>
             </BitHeader>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Border & elevation" RazorCode="@example6RazorCode" Id="example6">
-        <div><b>Bordered</b> draws a bottom divider, <b>Elevated</b> casts a shadow - both separate the header from the content below it.</div>
-        <br />
-        <div class="container">
-            <BitHeader Bordered>Bordered</BitHeader>
-        </div>
-        <br />
-        <br />
-        <div class="container">
-            <BitHeader Elevated>Elevated</BitHeader>
-        </div>
-        <br />
-        <br />
-        <div class="container">
-            <BitHeader Bordered Elevated Color="BitColor.Tertiary" Variant="BitVariant.Outline">Bordered & Elevated</BitHeader>
         </div>
     </DemoExample>
 

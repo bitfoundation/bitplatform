@@ -17,6 +17,13 @@ public partial class BitHeaderDemo
 <BitHeader Variant=""BitVariant.Text"" Color=""BitColor.Info"">Text</BitHeader>";
 
     private readonly string example3RazorCode = @"
+<BitHeader Bordered>Bordered</BitHeader>
+
+<BitHeader Elevated>Elevated</BitHeader>
+
+<BitHeader Bordered Elevated Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"">Bordered & Elevated</BitHeader>";
+
+    private readonly string example4RazorCode = @"
 <BitHeader Alignment=""BitAlignment.Start"" Bordered>
     <BitTag Text=""Start"" />
     <BitTag Text=""of"" />
@@ -50,7 +57,7 @@ public partial class BitHeaderDemo
     <BitTag Text=""VerticalAlign: End"" />
 </BitHeader>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitHeader Bordered Gap=""0.5rem"">
     <BitTag Text=""A"" />
     <BitTag Text=""0.5rem"" />
@@ -75,7 +82,7 @@ public partial class BitHeaderDemo
     <BitTag Text=""And centered"" />
 </BitHeader>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitHeader Bordered Gap=""0.5rem"" MaxWidth=""40rem"">
     <ChildContent>
         <BitText Typography=""BitTypography.Subtitle1"">Project Atlas</BitText>
@@ -91,13 +98,6 @@ public partial class BitHeaderDemo
         </BitPivot>
     </ExtensionContent>
 </BitHeader>";
-
-    private readonly string example6RazorCode = @"
-<BitHeader Bordered>Bordered</BitHeader>
-
-<BitHeader Elevated>Elevated</BitHeader>
-
-<BitHeader Bordered Elevated Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"">Bordered & Elevated</BitHeader>";
 
     private readonly string example7RazorCode = @"
 <style>

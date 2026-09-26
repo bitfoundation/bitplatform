@@ -99,7 +99,7 @@ public partial class BitHeaderDemo
             Name = "Height",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Gets or sets the height of the BitHeader (in pixels). The height includes the paddings and the border of the header, and a header that really sits at the top of the screen (Fixed, or Sticky without an Absolute outranking it) adds the top safe area inset of the device on top of it.",
+            Description = "Gets or sets the height of the BitHeader (in pixels). The height includes the paddings and the border of the header. It is the exact height of a header with no ExtensionContent, and a minimum height of one with an ExtensionContent row, so the two rows together can grow the header past it rather than being clipped. A header that really sits at the top of the screen (Fixed, or Sticky without an Absolute outranking it) adds the top safe area inset of the device on top of it.",
         },
         new()
         {

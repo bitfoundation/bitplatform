@@ -20,6 +20,7 @@ namespace Bit.BlazorUI;
 public partial class BitHeader : BitComponentBase
 {
     private bool _hidden;
+    private bool _extended;
     private bool _scrolled;
     private bool _slidable;
     private bool _settingUp;
@@ -144,8 +145,9 @@ public partial class BitHeader : BitComponentBase
     /// The row shares the surface of the header - its background, its border, its shadow and every scroll
     /// behavior - and lines up with the main row: it takes the same inline gutter and the same
     /// <see cref="MaxWidth"/>, and it has no block padding of its own, so a row of tabs sits right on the
-    /// bottom edge. Only the main row takes <see cref="Height"/>, <see cref="Alignment"/>, <see cref="Gap"/>
-    /// and <see cref="Wrap"/>; this one is a plain horizontal line whose content brings its own layout.
+    /// bottom edge. Only the main row takes <see cref="Alignment"/>, <see cref="Gap"/> and <see cref="Wrap"/>;
+    /// this one is a plain horizontal line whose content brings its own layout. With this row present,
+    /// <see cref="Height"/> is a minimum height for the whole header rather than an exact one.
     /// </remarks>
     [Parameter] public RenderFragment? ExtensionContent { get; set; }
 
@@ -178,8 +180,12 @@ public partial class BitHeader : BitComponentBase
     /// Gets or sets the height of the BitHeader (in pixels).
     /// </summary>
     /// <remarks>
-    /// The height includes the paddings and the border of the header (the root element is a border-box), and the
-    /// <see cref="ExtensionContent"/> row when there is one; the main row takes whatever that row leaves.
+    /// The height includes the paddings and the border of the header (the root element is a border-box).
+    /// <br />
+    /// With no <see cref="ExtensionContent"/> it is the exact height of the header. With an
+    /// <see cref="ExtensionContent"/> row it becomes a minimum height instead: the main row grows into whatever
+    /// that row leaves, but the header grows past it rather than clipping either row when the two together
+    /// need more room.
     /// <br />
     /// A header that really sits at the top of the screen - <see cref="Fixed"/>, or <see cref="Sticky"/>
     /// without an <see cref="Absolute"/> outranking it - adds the top safe area inset of the device on top of
@@ -578,11 +584,18 @@ public partial class BitHeader : BitComponentBase
         // header shorter than it was asked to be. Adding the inset to the height keeps the two apart: the
         // height is the header, the inset is the room the device asks for above it. env() resolves to
         // the 0px fallback wherever there is no inset, which leaves the plain height untouched.
-        StyleBuilder.Register(() => Height.HasValue
-                                    ? (IsPinned
-                                        ? $"height:calc({Height}px + env(safe-area-inset-top, 0px))"
-                                        : $"height:{Height}px")
-                                    : string.Empty);
+        // With a second row the height is only a floor, so the two rows together decide the total height
+        // rather than the extension row eating into the main one or overflowing the header.
+        StyleBuilder.Register(() =>
+        {
+            if (Height.HasValue is false) return string.Empty;
+
+            var property = _extended ? "min-height" : "height";
+
+            return IsPinned
+                    ? $"{property}:calc({Height}px + env(safe-area-inset-top, 0px))"
+                    : $"{property}:{Height}px";
+        });
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-hdr-gap:{Gap}" : string.Empty);
 
@@ -605,6 +618,16 @@ public partial class BitHeader : BitComponentBase
             _slidable = true;
 
             ClassBuilder.Reset();
+        }
+
+        // Only whether there is a second row matters to the height, not the fragment itself, which is a new
+        // delegate on nearly every render of the parent - so the styles are reset only when that flips.
+        var extended = ExtensionContent is not null;
+        if (_extended != extended)
+        {
+            _extended = extended;
+
+            StyleBuilder.Reset();
         }
 
         base.OnParametersSet();
