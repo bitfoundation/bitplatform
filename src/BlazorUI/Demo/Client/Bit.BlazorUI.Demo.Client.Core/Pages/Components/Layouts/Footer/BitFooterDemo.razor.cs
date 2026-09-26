@@ -54,6 +54,13 @@ public partial class BitFooterDemo
         },
         new()
         {
+            Name = "ElevateOnScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shadows a Fixed or Sticky footer only while there is content left underneath it, and fades the shadow out at the end of the scrolling area. Elevated takes precedence.",
+        },
+        new()
+        {
             Name = "Elevated",
             Type = "bool",
             DefaultValue = "false",
@@ -89,10 +96,24 @@ public partial class BitFooterDemo
         },
         new()
         {
+            Name = "MaxWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the maximum width of the content of the BitFooter, which is then centered in the footer. The footer itself keeps spanning the full width.",
+        },
+        new()
+        {
             Name = "NoGutter",
             Type = "bool",
             DefaultValue = "false",
             Description = "Removes the default paddings around the content of the BitFooter, so it can span the full width of the footer.",
+        },
+        new()
+        {
+            Name = "OnOverlapChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "Callback for when the overlap state of the footer changes. The provided value is true while there is content left underneath the footer. Only invoked while ElevateOnScroll is enabled.",
         },
         new()
         {
@@ -106,7 +127,7 @@ public partial class BitFooterDemo
             Name = "Reveal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer, since the others have nothing to slide over.",
+            Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer, and the footer comes back as soon as anything inside it takes the focus.",
         },
         new()
         {
@@ -114,6 +135,20 @@ public partial class BitFooterDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "Gets or sets how far (in pixels) the scroll has to travel from the top before a Reveal footer starts hiding itself. The footer stays revealed while the scroll is still within this offset.",
+        },
+        new()
+        {
+            Name = "ScrollPadding",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reserves the height of a Fixed or Sticky BitFooter as the bottom scroll padding of the scrolling area, so a focused control, an anchor or a scrollIntoView target never lands underneath it (WCAG 2.4.11).",
+        },
+        new()
+        {
+            Name = "ScrollTarget",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the CSS selector of the element whose scrolling drives the BitFooter (Reveal and ScrollPadding). When not set, or when it matches nothing, the nearest scrolling ancestor (or the page) is used.",
         },
         new()
         {
@@ -178,10 +213,93 @@ public partial class BitFooterDemo
     [
         new()
         {
+            Name = "IsOverlapping",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gets a value indicating whether there is content left underneath the footer (its scrolling area is not at its end). It is always false unless ElevateOnScroll is enabled.",
+        },
+        new()
+        {
             Name = "IsRevealed",
             Type = "bool",
             DefaultValue = "true",
             Description = "Gets a value indicating whether the footer is currently revealed. It reports the scroll driven reveal state alone, so it is always true unless Reveal is enabled, and stays true for a footer slid out of the view with Hidden.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Footer-background",
+            DefaultValue = "The Color role's main color (--bit-clr-bg-pri without a Color)",
+            Description = "Background of the Fill variant, softened by Translucent.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-color",
+            DefaultValue = "The Color role's on color (Fill) or main color (Outline, Text)",
+            Description = "Text color.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-border-color",
+            DefaultValue = "The Color role's main color (--bit-clr-brd-pri without a Color)",
+            Description = "Color of the Outline border and of the Bordered divider.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-padding",
+            DefaultValue = "Per Size",
+            Description = "Padding around the content. NoGutter still removes it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-gap",
+            DefaultValue = "0",
+            Description = "Space between the children. The Gap parameter takes precedence.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-max-width",
+            DefaultValue = "none",
+            Description = "Maximum width of the centered content. The MaxWidth parameter takes precedence.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-min-height",
+            DefaultValue = "auto",
+            Description = "Smallest height of the footer.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-font-size",
+            DefaultValue = "inherit",
+            Description = "Text size of the content.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-radius",
+            DefaultValue = "0",
+            Description = "Corner radius, for a floating or card-like footer.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-shadow",
+            DefaultValue = "--bit-shd-appbar-bottom",
+            Description = "Shadow of an Elevated (or ElevateOnScroll) footer.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-blur",
+            DefaultValue = "12px",
+            Description = "Backdrop blur of a Translucent footer.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-z-index",
+            DefaultValue = "--bit-zin-base",
+            Description = "Stacking order of a Fixed, Sticky or Absolute footer.",
         },
     ];
 
@@ -285,5 +403,16 @@ public partial class BitFooterDemo
 
 
     private bool isFooterRevealed = true;
+    private bool isFooterOverlapping;
     private bool isSelectionMode;
+
+    private readonly BitFooterParams[] footerParams =
+    [
+        new()
+        {
+            Bordered = true,
+            Color = BitColor.Success,
+            Variant = BitVariant.Outline,
+        }
+    ];
 }
