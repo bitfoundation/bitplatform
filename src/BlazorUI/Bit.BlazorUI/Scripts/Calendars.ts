@@ -85,13 +85,21 @@ namespace BitBlazorUI {
 
             // The field opens the callout with the very keys the browser scrolls the page with, so a key it
             // has just opened its callout with must not also scroll the page out from under it. The space
-            // bar counts only while the field is read-only, which is exactly when nothing is typed with it:
-            // an editable one types a space instead.
+            // bar and Enter count only while the field is read-only, which is exactly when nothing is typed
+            // with them: there they open the callout of a closed field instead of scrolling the page or
+            // submitting the form around it. An editable field types a space and submits with Enter.
             if (!input.matches(Calendars._fields)) return;
 
-            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown' && (e.key !== ' ' || input.readOnly === false)) return;
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                return;
+            }
 
-            e.preventDefault();
+            if (!input.readOnly) return;
+
+            if (e.key === ' ' || (e.key === 'Enter' && input.getAttribute('aria-expanded') !== 'true')) {
+                e.preventDefault();
+            }
         }
 
     }

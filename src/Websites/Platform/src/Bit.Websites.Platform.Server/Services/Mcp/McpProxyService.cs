@@ -28,7 +28,7 @@ public partial class McpProxyService : IAsyncDisposable
     [AutoInject] private McpVersions versions = default!;
 
     /// <summary>
-    /// The description DeepWiki gives its ask_question tool says no more than that it answers questions about a
+    /// The description DeepWiki gives its ask_wiki_question tool says no more than that it answers questions about a
     /// GitHub repository, which leaves the agent to guess whether a repository worth asking exists at all. Naming
     /// the third party repositories the bit platform team relies on, and what each one is the right source for, turns
     /// it into a tool an agent reaches for on its own instead of one it only uses when it is told to. The template's
@@ -90,11 +90,11 @@ public partial class McpProxyService : IAsyncDisposable
     private readonly Upstream[] sharedUpstreams =
     [
         new("MicrosoftLearn", new("https://learn.microsoft.com/api/mcp")),
-        // Only ask_question is exposed: it answers against the whole repository by itself, while the
+        // Only ask_wiki_question is exposed: it answers against the whole repository by itself, while the
         // read_wiki_structure and read_wiki_contents tools of the same server dump the generated wiki
         // of a repository, which is a slower and far more token hungry way to reach the same answer.
         // Renamed, as a developer may have DeepWiki's own server installed next to this one.
-        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_question", "AskGitHubRepository", askQuestionDescription)])
+        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_wiki_question", "AskGitHubRepository", askQuestionDescription)])
     ];
 
     /// <summary>

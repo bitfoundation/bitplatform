@@ -22,4 +22,10 @@
         }
         @ChildContent
     </div>
+    @if (ExtensionContent is not null)
+    {
+        <div style="@Styles?.Extension" class="bit-hdr-ext @Classes?.Extension">
+            @ExtensionContent
+        </div>
+    }
 </header>

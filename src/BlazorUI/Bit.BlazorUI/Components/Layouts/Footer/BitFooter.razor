@@ -1,9 +1,12 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* Only the explicit Hidden takes the content of the footer out of reach (inert). A footer that the
+   scroll slid away is still meant to be reachable: it brings itself back as soon as anything inside
+   it takes the focus, and an inert footer can never receive that focus in the first place. *@
 <footer @ref=RootElement @attributes="HtmlAttributes"
         id="@_Id"
-        inert="@(Hidden || (Reveal && _hidden))"
+        inert="@Hidden"
         aria-label="@AriaLabel"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"

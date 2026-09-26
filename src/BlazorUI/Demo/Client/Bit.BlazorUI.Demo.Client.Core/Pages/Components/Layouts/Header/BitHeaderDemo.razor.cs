@@ -75,6 +75,13 @@ public partial class BitHeaderDemo
         },
         new()
         {
+            Name = "ExtensionContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Gets or sets the content of a second row rendered under the main row of the BitHeader, such as a row of tabs, a search box or a breadcrumb. It shares the surface and the scroll behaviors of the header, takes the same inline gutter and MaxWidth as the main row, and has no block padding of its own.",
+        },
+        new()
+        {
             Name = "Fixed",
             Type = "bool",
             DefaultValue = "false",
@@ -92,7 +99,7 @@ public partial class BitHeaderDemo
             Name = "Height",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Gets or sets the height of the BitHeader (in pixels). The height includes the paddings and the border of the header, and a header that really sits at the top of the screen (Fixed, or Sticky without an Absolute outranking it) adds the top safe area inset of the device on top of it.",
+            Description = "Gets or sets the height of the BitHeader (in pixels). The height includes the paddings and the border of the header. It is the exact height of a header with no ExtensionContent, and a minimum height of one with an ExtensionContent row, so the two rows together can grow the header past it rather than being clipped. A header that really sits at the top of the screen (Fixed, or Sticky without an Absolute outranking it) adds the top safe area inset of the device on top of it.",
         },
         new()
         {
@@ -134,7 +141,7 @@ public partial class BitHeaderDemo
             Name = "Reveal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Slides the header out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky header, since the others have nothing to slide over.",
+            Description = "Slides the header out of the view while the page is scrolled down and brings it back while the page is scrolled up. It comes back when anything inside it takes the focus, and stays while it holds the keyboard focus. It only has an effect on a Fixed or Sticky header, since the others have nothing to slide over.",
         },
         new()
         {
@@ -272,6 +279,13 @@ public partial class BitHeaderDemo
                 },
                 new()
                 {
+                    Name = "Extension",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the second row of the BitHeader, which is only rendered when an ExtensionContent is provided."
+                },
+                new()
+                {
                     Name = "SkipLink",
                     Type = "string?",
                     DefaultValue = "null",
@@ -353,6 +367,131 @@ public partial class BitHeaderDemo
     ];
 
 
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Header-background",
+            DefaultValue = "The Color kind (--bit-clr-bg-pri)",
+            Description = "Fill of the Fill variant.",
+        },
+        new()
+        {
+            Name = "--bit-Header-color",
+            DefaultValue = "The Color kind (--bit-clr-fg-pri)",
+            Description = "Color of the content.",
+        },
+        new()
+        {
+            Name = "--bit-Header-border-color",
+            DefaultValue = "The Color kind (--bit-clr-brd-pri)",
+            Description = "Border of the Outline variant, and the divider of a Bordered header.",
+        },
+        new()
+        {
+            Name = "--bit-Header-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of that border and divider.",
+        },
+        new()
+        {
+            Name = "--bit-Header-border-radius",
+            DefaultValue = "0",
+            Description = "Corners of the surface, for a floating header inset from the edges of its page or card.",
+        },
+        new()
+        {
+            Name = "--bit-Header-padding-block",
+            DefaultValue = "The Size",
+            Description = "Room above and below the main row. NoGutter outranks it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-padding-inline",
+            DefaultValue = "The Size",
+            Description = "Room on the two sides of both rows. NoGutter outranks it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-min-height",
+            DefaultValue = "0",
+            Description = "Minimum height of the main row (for example the 64px of a Material top app bar).",
+        },
+        new()
+        {
+            Name = "--bit-Header-gap",
+            DefaultValue = "0",
+            Description = "Space between the children of the main row. The Gap parameter outranks it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-max-width",
+            DefaultValue = "none",
+            Description = "Maximum width of the content of both rows. The MaxWidth parameter outranks it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-shadow",
+            DefaultValue = "--bit-shd-appbar-top",
+            Description = "Shadow of an Elevated header, or of an ElevateOnScroll one once scrolled.",
+        },
+        new()
+        {
+            Name = "--bit-Header-z-index",
+            DefaultValue = "--bit-zin-base",
+            Description = "Stacking order of a Fixed, Sticky or Absolute header.",
+        },
+        new()
+        {
+            Name = "--bit-Header-backdrop-blur",
+            DefaultValue = "12px",
+            Description = "Blur of what passes behind a Translucent header.",
+        },
+        new()
+        {
+            Name = "--bit-Header-translucent-opacity",
+            DefaultValue = "72%",
+            Description = "How much of its fill a Translucent header keeps.",
+        },
+        new()
+        {
+            Name = "--bit-Header-disabled-color",
+            DefaultValue = "The Color kind (--bit-clr-fg-dis)",
+            Description = "Content color of a disabled header, and the border of a disabled Outline one.",
+        },
+        new()
+        {
+            Name = "--bit-Header-disabled-background",
+            DefaultValue = "The Color kind (--bit-clr-bg-pri)",
+            Description = "Fill of a disabled Fill header.",
+        },
+        new()
+        {
+            Name = "--bit-Header-skip-link-color",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color of the focused skip link.",
+        },
+        new()
+        {
+            Name = "--bit-Header-skip-link-background",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Fill of the focused skip link.",
+        },
+    ];
+
+
+
+    private readonly BitHeaderParams[] headerParams =
+    [
+        new()
+        {
+            Bordered = true,
+            Size = BitSize.Small,
+            Color = BitColor.Info,
+            Variant = BitVariant.Outline,
+        }
+    ];
 
     private bool isHeaderRevealed = true;
     private bool isHeaderScrolled;

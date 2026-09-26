@@ -47,6 +47,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Keeps the footer flat at the end of its scrolling area and shadowed while content is left underneath it.
+    /// </summary>
+    public bool? ElevateOnScroll { get; set; }
+
+    /// <summary>
     /// Renders the footer with a shadow cast upwards.
     /// </summary>
     public bool? Elevated { get; set; }
@@ -72,6 +77,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     public bool? Hidden { get; set; }
 
     /// <summary>
+    /// The maximum width of the content of the footer, which is then centered in the footer.
+    /// </summary>
+    public string? MaxWidth { get; set; }
+
+    /// <summary>
     /// Removes the default paddings around the content of the footer.
     /// </summary>
     public bool? NoGutter { get; set; }
@@ -85,6 +95,16 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     /// How far (in pixels) the scroll has to travel from the top before a Reveal footer starts hiding itself.
     /// </summary>
     public int? RevealOffset { get; set; }
+
+    /// <summary>
+    /// Reserves the height of the footer at the bottom of the scrolling area, so nothing scrolled to lands underneath it.
+    /// </summary>
+    public bool? ScrollPadding { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the element whose scrolling drives the footer.
+    /// </summary>
+    public string? ScrollTarget { get; set; }
 
     /// <summary>
     /// The size of the footer, which determines the paddings around its content.
@@ -175,6 +195,13 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
             bitFooter.ClassBuilder.Reset();
         }
 
+        if (ElevateOnScroll.HasValue && bitFooter.HasNotBeenSet(nameof(ElevateOnScroll)))
+        {
+            bitFooter.ElevateOnScroll = ElevateOnScroll.Value;
+
+            bitFooter.ClassBuilder.Reset();
+        }
+
         if (Elevated.HasValue && bitFooter.HasNotBeenSet(nameof(Elevated)))
         {
             bitFooter.Elevated = Elevated.Value;
@@ -210,6 +237,13 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
             bitFooter.ClassBuilder.Reset();
         }
 
+        if (MaxWidth is not null && bitFooter.HasNotBeenSet(nameof(MaxWidth)))
+        {
+            bitFooter.MaxWidth = MaxWidth;
+
+            bitFooter.StyleBuilder.Reset();
+        }
+
         if (NoGutter.HasValue && bitFooter.HasNotBeenSet(nameof(NoGutter)))
         {
             bitFooter.NoGutter = NoGutter.Value;
@@ -227,6 +261,16 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
         if (RevealOffset.HasValue && bitFooter.HasNotBeenSet(nameof(RevealOffset)))
         {
             bitFooter.RevealOffset = RevealOffset.Value;
+        }
+
+        if (ScrollPadding.HasValue && bitFooter.HasNotBeenSet(nameof(ScrollPadding)))
+        {
+            bitFooter.ScrollPadding = ScrollPadding.Value;
+        }
+
+        if (ScrollTarget is not null && bitFooter.HasNotBeenSet(nameof(ScrollTarget)))
+        {
+            bitFooter.ScrollTarget = ScrollTarget;
         }
 
         if (Size.HasValue && bitFooter.HasNotBeenSet(nameof(Size)))
