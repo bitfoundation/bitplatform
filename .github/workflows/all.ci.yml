@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       boilerplate:
-        description: Boilerplate solution
+        description: Boilerplate solution (bit.ci.Templates.yml)
         type: boolean
         default: true
       boilerplate_postgres:
@@ -31,6 +31,10 @@ on:
         description: NuGet packages
         type: boolean
         default: true
+      blazorui:
+        description: BlazorUI solution
+        type: boolean
+        default: true
       bswup:
         description: Bswup solution
         type: boolean
@@ -47,8 +51,16 @@ on:
         description: Bmotion solution
         type: boolean
         default: true
+      besql:
+        description: Besql solution
+        type: boolean
+        default: true
+      blazores2019:
+        description: BlazorES2019 project
+        type: boolean
+        default: true
       tooling:
-        description: CodeAnalyzers, ResxTranslator and SourceGenerators solutions
+        description: CodeAnalyzers, Minifier, ResxTranslator and SourceGenerators solutions
         type: boolean
         default: true
       websites:
@@ -65,36 +77,10 @@ permissions:
 
 jobs:
 
-# Bit.BlazorUI solution is being built in bit.ci.yml
-
-  build_boilerplate:
-    name: build boilerplate itself
+  boilerplate:
+    name: boilerplate
     if: ${{ inputs.boilerplate }}
-    runs-on: ubuntu-24.04
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm and maui
-      run: cd src && dotnet workload install maui-android wasm-tools
-
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-
-    - name: Build Boilerplate solution in Release mode
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -c Release -p:EnforceCodeStyleInBuild=true
+    uses: ./.github/workflows/bit.ci.Templates.yml
 
 
 
@@ -363,7 +349,7 @@ jobs:
         dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
 
     - name: Install sql server
-      uses: potatoqualitee/mssqlsuite@2291d923e83859edd871679c05b379037376761f # v1.12
+      uses: potatoqualitee/mssqlsuite@bc850f242e5fe551e36cea6fa4bed608c58fa489 # v2
       with:
         version: 2025
         install: sqlengine
@@ -698,191 +684,62 @@ jobs:
 
 
 
-  build_bswup_solution:
-    name: build bswup solution
+  blazorui:
+    name: blazorui
+    if: ${{ inputs.blazorui }}
+    uses: ./.github/workflows/bit.ci.BlazorUI.yml
+
+  bswup:
+    name: bswup
     if: ${{ inputs.bswup }}
-    runs-on: ubuntu-24.04
+    uses: ./.github/workflows/bit.ci.Bswup.yml
 
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm and maui
-      run: cd src && dotnet workload install maui-android wasm-tools
-
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-
-    - name: Build Bswup solution in Release mode
-      run: dotnet build src/Bswup/Bit.Bswup.slnx -c Release
-
-
-
-  build_butil_solution:
-    name: build butil solution
+  butil:
+    name: butil
     if: ${{ inputs.butil }}
-    runs-on: ubuntu-24.04
+    uses: ./.github/workflows/bit.ci.Butil.yml
 
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm and maui
-      run: cd src && dotnet workload install maui-android wasm-tools
-
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-
-    - name: Build Butil solution in Release mode
-      run: dotnet build src/Butil/Bit.Butil.slnx -c Release
-
-
-
-  build_brouter_solution:
-    name: build brouter solution
+  brouter:
+    name: brouter
     if: ${{ inputs.brouter }}
-    runs-on: ubuntu-24.04
+    uses: ./.github/workflows/bit.ci.Brouter.yml
 
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm and maui
-      run: cd src && dotnet workload install maui-android wasm-tools
-
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-
-    - name: Build Brouter solution in Release mode
-      run: dotnet build src/Brouter/Bit.Brouter.slnx -c Release
-
-
-
-  build_bmotion_solution:
-    name: build bmotion solution
+  bmotion:
+    name: bmotion
     if: ${{ inputs.bmotion }}
-    runs-on: ubuntu-24.04
+    uses: ./.github/workflows/bit.ci.Bmotion.yml
 
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
+  besql:
+    name: besql
+    if: ${{ inputs.besql }}
+    uses: ./.github/workflows/bit.ci.Besql.yml
 
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
+  blazores2019:
+    name: blazores2019
+    if: ${{ inputs.blazores2019 }}
+    uses: ./.github/workflows/bit.ci.BlazorES2019.yml
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm and maui
-      run: cd src && dotnet workload install maui-android wasm-tools
-
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-
-    - name: Build Bmotion solution in Release mode
-      run: dotnet build src/Bmotion/Bit.Bmotion.slnx -c Release
-
-
-
-  build_tooling_solutions:
-    name: build tooling solutions
+  codeanalyzers:
+    name: codeanalyzers
     if: ${{ inputs.tooling }}
-    runs-on: ubuntu-24.04
+    uses: ./.github/workflows/bit.ci.CodeAnalyzers.yml
 
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
+  minifier:
+    name: minifier
+    if: ${{ inputs.tooling }}
+    uses: ./.github/workflows/bit.ci.Minifier.yml
 
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
+  resxtranslator:
+    name: resxtranslator
+    if: ${{ inputs.tooling }}
+    uses: ./.github/workflows/bit.ci.ResxTranslator.yml
 
-    - name: Build CodeAnalyzers solution in Release mode
-      run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx -c Release
+  sourcegenerators:
+    name: sourcegenerators
+    if: ${{ inputs.tooling }}
+    uses: ./.github/workflows/bit.ci.SourceGenerators.yml
 
-    - name: Build Minifier solution in Release mode
-      run: dotnet build src/Minifier/Bit.Minifier.slnx -c Release
-
-    - name: Test Minifier
-      run: cd src/Minifier && dotnet test --project Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj -c Release --no-build
-
-    - name: Build ResxTranslator solution in Release mode
-      run: dotnet build src/ResxTranslator/Bit.ResxTranslator.slnx -c Release
-
-    - name: Build SourceGenerators solution in Release mode
-      run: dotnet build src/SourceGenerators/Bit.SourceGenerators.slnx -c Release
-
-
-
-  build_websites:
-    name: build website solutions
+  websites:
+    name: websites
     if: ${{ inputs.websites }}
-    runs-on: ubuntu-24.04
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm
-      run: cd src && dotnet workload install wasm-tools
-
-    - name: Build Careers website in Release mode
-      run: dotnet build src/Websites/Careers/Bit.Websites.Careers.slnx -c Release
-
-    - name: Build Platform website in Release mode
-      run: dotnet build src/Websites/Platform/Bit.Websites.Platform.slnx -c Release
-
-    - name: Build Sales website in Release mode
-      run: dotnet build src/Websites/Sales/Bit.Websites.Sales.slnx -c Release
+    uses: ./.github/workflows/bit.ci.Websites.yml

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 
@@ -6,13 +7,19 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileUpload wraps the HTML file input element(s) and uploads them to a given URL, with support for
-/// drag-and-drop, clipboard paste, folder and camera capture selection, image previews, chunked and resumable
-/// uploads, a concurrency limit, pause/cancel, automatic retries, validation, and server-side removal.
+/// drag-and-drop onto the component, a built-in drop area or drop zones of the app's own (flagging a drag the
+/// rules will refuse before it lands), clipboard paste, folder and camera capture selection, image previews,
+/// chunked and resumable uploads, a concurrency limit, pause/cancel, batch actions, automatic retries,
+/// validation, and server-side removal.
 /// </summary>
 public partial class BitFileUpload : BitComponentBase
 {
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
+
+    // A preloaded file has no picked file behind it and so no uploader in JavaScript to be named by an
+    // index. It gets one no uploader can ever have, so that a call meant for it reaches no other file's.
+    private const int PRELOADED_FILE_INDEX = -1;
 
     // roughly three repaints a second, which is as often as a progress bar is worth redrawing and
     // far less often than the browser reports the progress of the requests behind it.
@@ -24,14 +31,33 @@ public partial class BitFileUpload : BitComponentBase
     private DateTime _lastProgressRender = DateTime.MinValue;
     private bool _allowPaste = true;
     private bool _expandDirectories;
+    private string? _dropZoneSelector;
     private string? _dragClass;
     private string? _dragStyle;
+    private string? _rejectClass;
+    private string? _rejectStyle;
+    private string[]? _acceptedMimeTypes;
+    private int _remainingSlots = -1;
     private string? _announcement;
     private bool _announcementMarker;
     private int _removingCount;
+    // The collection of preloaded files the list was last built from, and what was in it, so that the same
+    // files arriving again with every render do not put the ones the user has since removed back.
+    private IReadOnlyCollection<BitFileInfo>? _appliedPreloadedFiles;
+    private string[] _appliedPreloadedSignature = [];
     private string _buttonId = default!;
     private string _descriptionId = default!;
     private ElementReference _inputRef;
+    private ElementReference _labelRef;
+    // The button of which file the focus is to be put on after the next render, with the neighbour to fall
+    // back to. An action taken from inside a file item - removing it, starting, pausing or canceling its
+    // upload - takes the very button that was pressed out of the DOM, and without this the focus would go
+    // with it and land back on the document body, dropping a keyboard user at the top of the page.
+    private bool _pendingFocus;
+    private string? _pendingFocusFileId;
+    private string? _pendingFocusFallbackFileId;
+    private BitFileUploadFocusTarget _pendingFocusTarget;
+    private readonly Dictionary<string, _BitFileUploadItem> _itemRefs = [];
     private List<BitFileInfo> _files = [];
     private List<BitFileInfo> _uploadQueue = [];
     private long _internalChunkSize = MIN_CHUNK_SIZE;
@@ -43,6 +69,19 @@ public partial class BitFileUpload : BitComponentBase
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     [Inject] private HttpClient _httpClient { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the file upload component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple file upload components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitFileUploadParams.ParamName)]
+    public BitFileUploadParams? CascadingParameters { get; set; }
 
 
 
@@ -63,7 +102,9 @@ public partial class BitFileUpload : BitComponentBase
     /// Whether a file that is already in the file list can be selected again.
     /// When disabled, a newly selected file matching an existing one by name, size and last modified time
     /// is rejected with the <see cref="DuplicateErrorMessage"/> instead of being uploaded a second time,
-    /// becoming eligible again once the file it duplicates is removed.
+    /// becoming eligible again once the file it duplicates is removed. A file of <see cref="PreloadedFiles"/>
+    /// counts as one already in the list, matched by name and size alone since a server reports no
+    /// modification time, which is what keeps an attachment the record already has from being sent again.
     /// The default value is true.
     /// </summary>
     [Parameter] public bool AllowDuplicates { get; set; } = true;
@@ -111,6 +152,15 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public TimeSpan? AutoRetryDelay { get; set; }
 
     /// <summary>
+    /// Custom delay before each automatic retry, which is what turns the fixed <see cref="AutoRetryDelay"/>
+    /// into a backoff: it receives the file - whose <see cref="BitFileInfo.ResponseStatus"/> says what the
+    /// server answered - and the number of the attempt about to be made, counting from 1, and returns how
+    /// long to wait before it. Returning null falls back to the <see cref="AutoRetryDelay"/>, which is also
+    /// what a provider that throws does, so a miscalculated delay never swallows the retry itself.
+    /// </summary>
+    [Parameter] public Func<BitFileInfo, int, TimeSpan?>? AutoRetryDelayProvider { get; set; }
+
+    /// <summary>
     /// Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.
     /// </summary>
     [Parameter] public bool AutoChunkSize { get; set; }
@@ -156,6 +206,11 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public string? CancelButtonTitle { get; set; }
 
     /// <summary>
+    /// The text of the "Cancel all" button of the batch actions (see <see cref="ShowBatchActions"/>).
+    /// </summary>
+    [Parameter] public string CancelAllText { get; set; } = "Cancel all";
+
+    /// <summary>
     /// The message shown for canceled file uploads.
     /// </summary>
     [Parameter] public string CanceledUploadMessage { get; set; } = "File upload canceled";
@@ -186,6 +241,12 @@ public partial class BitFileUpload : BitComponentBase
     /// Custom CSS classes for different parts of the BitFileUpload.
     /// </summary>
     [Parameter] public BitFileUploadClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The text of the "Clear" button of the batch actions (see <see cref="ShowBatchActions"/>), which resets
+    /// the component through <see cref="Reset"/>.
+    /// </summary>
+    [Parameter] public string ClearText { get; set; } = "Clear";
 
     /// <summary>
     /// The general color of the file upload, applied to the browse button, the drag-and-drop indicator,
@@ -220,6 +281,18 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public bool Directory { get; set; }
 
     /// <summary>
+    /// A CSS selector of one or more elements outside the component that accept a drop as well, which is how
+    /// a whole form, a card or the page itself becomes the drop target while the browse button stays where it
+    /// is. The root element of the component is always a drop zone and needs no selector of its own; the
+    /// elements this one names are matched whenever a drag reaches them, so one rendered after the component
+    /// - or replaced later on - is a drop zone from the moment it matches. While files are dragged over any
+    /// of them, all of them (the root included) carry the <see cref="Classes"/>.Dragging class and the
+    /// <see cref="Styles"/>.Dragging inline style, and the focus being inside one of them is also what lets
+    /// a paste land in this component.
+    /// </summary>
+    [Parameter] public string? DropZoneSelector { get; set; }
+
+    /// <summary>
     /// The message shown for the files rejected for being already in the file list
     /// while <see cref="AllowDuplicates"/> is disabled.
     /// </summary>
@@ -250,6 +323,13 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public Func<BitFileInfo, string?>? FileValidator { get; set; }
 
     /// <summary>
+    /// The accessible name of the file list, so that a screen reader user landing on it is told what the list
+    /// they are in holds instead of only how many items it has. Set it to an empty string to leave the list
+    /// unnamed. The default value is "Selected files".
+    /// </summary>
+    [Parameter] public string FileListAriaLabel { get; set; } = "Selected files";
+
+    /// <summary>
     /// Custom Razor template rendering each item of the file list in place of the built-in one, receiving
     /// the file as its context with its name, size, progress, speed and status all available. It is only
     /// asked for the files that are actually in the list, so a removed file leaves no empty item behind.
@@ -272,6 +352,32 @@ public partial class BitFileUpload : BitComponentBase
     /// The text of the browse button. Setting it to an empty string hides the button altogether.
     /// </summary>
     [Parameter] public string Label { get; set; } = "Browse";
+
+    /// <summary>
+    /// The icon of the browse button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="LabelIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render an icon from external libraries like FontAwesome or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="LabelIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? LabelIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the browse button from the built-in Fluent UI icons.
+    /// Defaults to <c>CloudUpload</c> in the <see cref="ShowDropArea"/> mode, and to no icon otherwise.
+    /// </summary>
+    /// <remarks>
+    /// For external icon libraries, use <see cref="LabelIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? LabelIconName { get; set; }
+
+    /// <summary>
+    /// The position of the icon of the browse button relative to its text: before it (the default) or after it.
+    /// In the <see cref="ShowDropArea"/> mode the icon is stacked above or below the text instead.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitIconPosition? LabelIconPosition { get; set; }
 
     /// <summary>
     /// Custom Razor template rendered in place of the browse button, which also replaces the built-in
@@ -427,6 +533,28 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public string? PauseButtonTitle { get; set; }
 
     /// <summary>
+    /// The status message shown for the files of <see cref="PreloadedFiles"/>, which are already on the
+    /// server rather than freshly uploaded and would otherwise read as an upload that just succeeded.
+    /// </summary>
+    [Parameter] public string PreloadedFileMessage { get; set; } = "Already uploaded";
+
+    /// <summary>
+    /// The files that are already on the server, shown in the list from the start so that a form editing a
+    /// record can present the attachments it already has next to the ones the user is adding. They carry no
+    /// content on this side, so they are never uploaded: each of them starts out completed, counts towards
+    /// <see cref="MaxCount"/> and <see cref="MaxTotalSize"/> like any other file, and offers the same remove
+    /// button, which deletes it from the server through the <see cref="RemoveUrl"/> with the
+    /// <see cref="BitFileInfo.FileId"/> in the BIT_FILE_ID header - so that id is what the server's own id
+    /// belongs in. A <see cref="BitFileInfo.PreviewUrl"/> pointing at a thumbnail the server serves is
+    /// rendered by <see cref="ShowPreview"/> just like a locally generated one.
+    /// The list is built from the collection again whenever the files in it change - which files, by their
+    /// <see cref="BitFileInfo.FileId"/>, rather than which array they arrive in, so one written inline in the
+    /// markup does not undo what the user has done on every render. The instances are the very ones the list
+    /// then holds, so their <see cref="BitFileInfo.Status"/> is where to read what became of each of them.
+    /// </summary>
+    [Parameter] public IReadOnlyCollection<BitFileInfo>? PreloadedFiles { get; set; }
+
+    /// <summary>
     /// The message shown for the files waiting in the queue for a free slot of the <see cref="ConcurrentUploads"/>
     /// limit, which is what tells a file that is about to start apart from one that was never asked to upload.
     /// </summary>
@@ -542,9 +670,27 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public Func<BitFileInfo, int, bool>? ShouldAutoRetry { get; set; }
 
     /// <summary>
+    /// Whether an action bar with "Upload all", "Cancel all" and "Clear" buttons is rendered under the file
+    /// list of picked files. The buttons keep their places, and one with nothing to act on is marked
+    /// aria-disabled rather than removed, so a keyboard user never loses the focus to it. The texts come from
+    /// <see cref="UploadAllText"/>, <see cref="CancelAllText"/> and <see cref="ClearText"/>.
+    /// </summary>
+    [Parameter] public bool ShowBatchActions { get; set; }
+
+    /// <summary>
+    /// Whether the browse button is rendered as a large drop area - a full-width dashed panel with an icon
+    /// over the <see cref="Label"/> - instead of a regular button. It is still a real button, so it is reached
+    /// with Tab and opens the file dialog with Enter or Space.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool ShowDropArea { get; set; }
+
+    /// <summary>
     /// Whether a thumbnail of every selected image is shown at the head of its file item, produced
     /// entirely in the browser from an object URL that is handed back as soon as the file is removed or
     /// the component is reset. The same URL is on the <see cref="BitFileInfo.PreviewUrl"/> of each file.
+    /// A file that is not an image takes a glyph of its type in a box of the same size instead, so that
+    /// the names of a mixed list stay lined up along one edge.
     /// </summary>
     [Parameter] public bool ShowPreview { get; set; }
 
@@ -569,6 +715,11 @@ public partial class BitFileUpload : BitComponentBase
     /// The message shown for successful file uploads.
     /// </summary>
     [Parameter] public string SuccessfulUploadMessage { get; set; } = "File upload succeeded";
+
+    /// <summary>
+    /// The text of the "Upload all" button of the batch actions (see <see cref="ShowBatchActions"/>).
+    /// </summary>
+    [Parameter] public string UploadAllText { get; set; } = "Upload all";
 
     /// <summary>
     /// Gets or sets the icon to use for the upload button using custom CSS classes for external icon libraries.
@@ -935,13 +1086,19 @@ public partial class BitFileUpload : BitComponentBase
     }
 
     /// <summary>
-    /// Resets the file upload.
+    /// Resets the file upload, taking the whole selection and its upload state back to where they started.
+    /// The files of <see cref="PreloadedFiles"/> stay: they belong to the record rather than to this
+    /// selection - except the ones already deleted from the server, which nothing on this side brings back.
     /// </summary>
     public async Task Reset()
     {
         if (IsDisposed) return;
 
+        // a reset undoes what was picked here, and what is on the server was never picked here.
+        var preloaded = _files.Where(f => f.IsPreloaded && f.Status is not BitFileUploadStatus.Removed).ToArray();
+
         _files.Clear();
+        _files.AddRange(preloaded);
         _uploadQueue.Clear();
         // the removals of the files that just went away have nobody left to report to, so the counter
         // they were holding is dropped with them rather than leaving the component removing forever.
@@ -963,9 +1120,7 @@ public partial class BitFileUpload : BitComponentBase
     [JSInvokable("HandleChunkUploadProgress")]
     public async Task __HandleChunkUploadProgress(int index, long loaded)
     {
-        if (index < 0 || index >= _files.Count) return;
-
-        var file = _files[index];
+        if (GetFileByUploaderIndex(index) is not { } file) return;
         if (file.Status != BitFileUploadStatus.InProgress) return;
 
         file.LastChunkUploadedSize = loaded;
@@ -992,12 +1147,11 @@ public partial class BitFileUpload : BitComponentBase
     [JSInvokable("HandleChunkUpload")]
     public async Task __HandleChunkUpload(int fileIndex, int responseStatus, string responseText)
     {
-        if (fileIndex < 0 || fileIndex >= _files.Count) return;
-
-        var file = _files[fileIndex];
+        if (GetFileByUploaderIndex(fileIndex) is not { } file) return;
 
         // whatever this response says, the request it answers is over and the file is free again.
         file.IsRequestInFlight = false;
+        file.ResponseStatus = responseStatus;
 
         if (file.Status != BitFileUploadStatus.InProgress) return;
 
@@ -1008,7 +1162,7 @@ public partial class BitFileUpload : BitComponentBase
             file.TotalUploadedSize += file.PendingChunkSize;
             file.AutoRetryAttempts = 0;
 
-            UpdateChunkSize(fileIndex);
+            UpdateChunkSize(file);
 
             if (file.TotalUploadedSize < file.Size)
             {
@@ -1030,7 +1184,7 @@ public partial class BitFileUpload : BitComponentBase
             {
                 file.AutoRetryAttempts++;
 
-                if (AutoRetryDelay is { } delay && delay > TimeSpan.Zero)
+                if (GetAutoRetryDelay(file) is { } delay && delay > TimeSpan.Zero)
                 {
                     await Task.Delay(delay);
                 }
@@ -1104,6 +1258,10 @@ public partial class BitFileUpload : BitComponentBase
             BitSize.Large => "bit-upl-lg",
             _ => "bit-upl-md"
         });
+
+        ClassBuilder.Register(() => ShowDropArea ? "bit-upl-dra" : string.Empty);
+
+        ClassBuilder.Register(() => LabelIconPosition is BitIconPosition.End ? "bit-upl-eni" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -1120,9 +1278,23 @@ public partial class BitFileUpload : BitComponentBase
         return base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileUploadParams))]
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
+
+        if (ShouldApplyPreloadedFiles())
+        {
+            ApplyPreloadedFiles();
+
+            // the preloaded files take their share of the count and total size budgets, so the files the
+            // user had already picked are judged against the list as it stands with them in it.
+            ApplyListValidations();
+
+            Announce();
+        }
 
         if (_dropZoneRef is null) return;
 
@@ -1131,18 +1303,36 @@ public partial class BitFileUpload : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender is false) return;
+        if (firstRender is false)
+        {
+            // the room MaxCount leaves changes with every selection and removal rather than only with the
+            // parameters, so the drop zone is brought up to date after each render; it only calls into
+            // JavaScript when something it judges a drag by has actually moved.
+            if (_dropZoneRef is not null)
+            {
+                await UpdateDropZone();
+            }
+
+            await RestorePendingFocus();
+            return;
+        }
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
         _allowDrop = AllowDrop;
         _allowPaste = AllowPaste;
         _expandDirectories = Directory;
+        _dropZoneSelector = DropZoneSelector;
         _dragClass = GetDragClass();
         _dragStyle = Styles?.Dragging;
+        _rejectClass = GetRejectClass();
+        _rejectStyle = Styles?.DraggingRejected;
+        _acceptedMimeTypes = GetDragAcceptedMimeTypes();
+        _remainingSlots = GetRemainingSlots();
 
         _dropZoneRef = await _js.BitFileUploadSetupDragDrop(RootElement, _inputRef, _dragClass, _dragStyle,
-                                                           _allowDrop, _allowPaste, _expandDirectories);
+                                                           _allowDrop, _allowPaste, _expandDirectories, _dropZoneSelector,
+                                                           _rejectClass, _rejectStyle, _acceptedMimeTypes, _remainingSlots);
 
         if (IsDisposed) return;
         if (_dropZoneRef is null) return;
@@ -1153,6 +1343,99 @@ public partial class BitFileUpload : BitComponentBase
     }
 
 
+
+    // The built-in file items report themselves here so that the focus can be handed to a button of another
+    // item once the button that was pressed is gone. A custom FileViewTemplate registers nothing, which is
+    // exactly right: the focus then falls back to the browse button rather than into markup this component
+    // knows nothing about.
+    internal void RegisterItem(string fileId, _BitFileUploadItem item) => _itemRefs[fileId] = item;
+
+    internal void UnregisterItem(string fileId, _BitFileUploadItem item)
+    {
+        if (_itemRefs.TryGetValue(fileId, out var registered) && ReferenceEquals(registered, item))
+        {
+            _itemRefs.Remove(fileId);
+        }
+    }
+
+    internal async Task HandleItemUpload(BitFileInfo file)
+    {
+        // the upload button is replaced by the pause and cancel pair of a running file.
+        RequestFocus(file, BitFileUploadFocusTarget.Pause);
+
+        await Upload(file);
+    }
+
+    internal async Task HandleItemPause(BitFileInfo file)
+    {
+        // the pause button is replaced by the resume (upload) button of a paused file.
+        RequestFocus(file, BitFileUploadFocusTarget.Upload);
+
+        await PauseUpload(file);
+    }
+
+    internal async Task HandleItemCancel(BitFileInfo file)
+    {
+        // the cancel button is replaced by the retry (upload) button of a canceled file.
+        RequestFocus(file, BitFileUploadFocusTarget.Upload);
+
+        await CancelUpload(file);
+    }
+
+    internal async Task HandleItemRemove(BitFileInfo file)
+    {
+        // the whole item goes away with its remove button, so the focus moves to the item that takes its
+        // place - or to the one before it at the end of the list. A removal that fails leaves the item
+        // where it was, and the focus then stays on the very button that was pressed.
+        var visible = _files.Where(f => f.Status != BitFileUploadStatus.Removed).ToList();
+        var index = visible.IndexOf(file);
+        var neighbor = index < 0 ? null
+                     : index + 1 < visible.Count ? visible[index + 1]
+                     : index > 0 ? visible[index - 1]
+                     : null;
+
+        RequestFocus(file, BitFileUploadFocusTarget.Remove, neighbor);
+
+        await RemoveFile(file);
+    }
+
+    // an aria-disabled button still takes a click, so each handler asks for itself whether it has anything to do.
+    private async Task HandleUploadAll()
+    {
+        if (_CanUploadAll is false) return;
+
+        await Upload();
+    }
+
+    private async Task HandleCancelAll()
+    {
+        if (_CanCancelAll is false) return;
+
+        await CancelUpload();
+    }
+
+    private async Task HandleClear()
+    {
+        if (_CanClear is false) return;
+
+        // the whole list goes away with the action bar, so the focus returns to where a new selection starts.
+        RequestFocus(null, BitFileUploadFocusTarget.Upload);
+
+        await Reset();
+    }
+
+    private bool _HasPickedFiles => _files.Any(f => f.IsPreloaded is false && f.Status is not BitFileUploadStatus.Removed);
+
+    // "Upload all" is offered while a file that nobody has started yet - or that was paused, failed or was
+    // canceled - is waiting for it; a file already on the wire or in the queue has been asked already.
+    private bool _CanUploadAll => AutoUpload is false &&
+                                  _files.Any(f => f.IsQueued is false && f.Status is not BitFileUploadStatus.InProgress && HasPendingWork(f));
+
+    private bool _CanCancelAll => _files.Any(f => f.IsQueued || f.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused);
+
+    // clearing mid-transfer would throw away the uploads in flight, so "Clear" waits for the list to settle.
+    private bool _CanClear => IsRemoving is false && _HasPickedFiles &&
+                              _files.Any(f => f.IsQueued || f.Status is BitFileUploadStatus.InProgress) is false;
 
     internal bool IsFileTypeNotAllowed(BitFileInfo file)
     {
@@ -1165,7 +1448,9 @@ public partial class BitFileUpload : BitComponentBase
     {
         return file.Status switch
         {
-            BitFileUploadStatus.Completed => SuccessfulUploadMessage,
+            // a file that was already on the server when the list was built did not just finish uploading,
+            // and saying that it did would credit this visit with something that happened long before it.
+            BitFileUploadStatus.Completed => file.IsPreloaded ? PreloadedFileMessage : SuccessfulUploadMessage,
             BitFileUploadStatus.Failed => FailedUploadMessage,
             BitFileUploadStatus.Canceled => CanceledUploadMessage,
             BitFileUploadStatus.RemoveFailed => FailedRemoveMessage,
@@ -1188,30 +1473,128 @@ public partial class BitFileUpload : BitComponentBase
         StateHasChanged();
     }
 
+    private void RequestFocus(BitFileInfo? file, BitFileUploadFocusTarget target, BitFileInfo? fallback = null)
+    {
+        _pendingFocus = true;
+        _pendingFocusTarget = target;
+        _pendingFocusFileId = file?.FileId;
+        _pendingFocusFallbackFileId = fallback?.FileId;
+    }
+
+    private async Task RestorePendingFocus()
+    {
+        if (_pendingFocus is false) return;
+
+        // a removal on its way to the server keeps its item in place, with a spinner where the button that
+        // was pressed used to be, and renders again when it settles. moving the focus on already would take
+        // it away from an item that is still there - and away from the failure message if the removal fails.
+        if (IsRemoving) return;
+
+        _pendingFocus = false;
+
+        var target = _pendingFocusTarget;
+        var fileId = _pendingFocusFileId;
+        var fallbackId = _pendingFocusFallbackFileId;
+
+        _pendingFocusFileId = null;
+        _pendingFocusFallbackFileId = null;
+
+        try
+        {
+            // the item the action was taken on comes first: it is still there whenever the action left it in
+            // place, and the focus then belongs on the button that took over from the one that was pressed.
+            if (fileId is not null && _itemRefs.TryGetValue(fileId, out var item) && await item.TryFocus(target)) return;
+
+            if (fallbackId is not null && _itemRefs.TryGetValue(fallbackId, out var neighbor) && await neighbor.TryFocus(target)) return;
+
+            if (_ShowLabelButton && IsEnabled)
+            {
+                await _labelRef.FocusAsync();
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // an element taken out of the DOM between the render and this call cannot be focused
+    }
+
+    // The file an uploader of the JavaScript side speaks for. The index is that uploader's own, which is the
+    // position of the file among the ones picked here - the preloaded files sit in the list beside them
+    // without an uploader of their own, so the list cannot simply be indexed into.
+    private BitFileInfo? GetFileByUploaderIndex(int index)
+    {
+        if (index < 0) return null;
+
+        return _files.FirstOrDefault(f => f.IsPreloaded is false && f.Index == index);
+    }
+
     private static bool IsCountedInOverallProgress(BitFileInfo file)
     {
-        return file.Status is not BitFileUploadStatus.NotAllowed and not BitFileUploadStatus.Removed;
+        // a file that is already on the server is not part of this transfer at all, and counting it would
+        // report a batch nobody has started yet as complete and water down the progress of a real one.
+        return file.IsPreloaded is false
+            && file.Status is not BitFileUploadStatus.NotAllowed and not BitFileUploadStatus.Removed;
     }
 
     private string GetDragClass() => $"bit-upl-drg {Classes?.Dragging}".Trim();
+
+    private string GetRejectClass() => $"bit-upl-drj {Classes?.DraggingRejected}".Trim();
+
+    // What a drag in flight can be judged against. A browser exposes the MIME type of a dragged file but
+    // never its name until it is dropped, so the rule can only be checked mid-drag when every entry of it is
+    // a MIME type; an extension anywhere in it leaves the drag unjudged rather than guessed at.
+    private string[]? GetDragAcceptedMimeTypes()
+    {
+        if (AllowsAllFileTypes(AllowedExtensions)) return null;
+
+        var entries = GetNormalizedExtensions(AllowedExtensions).ToArray();
+
+        if (entries.Length == 0 || entries.Any(e => e.Contains('/') is false)) return null;
+
+        return entries;
+    }
+
+    // How many more files the list can take before MaxCount turns them away (-1 for no limit). A selection
+    // that does not append replaces everything picked here, so only the record's own files count against it.
+    private int GetRemainingSlots()
+    {
+        if (MaxCount <= 0) return -1;
+
+        var taken = _files.Count(f => f.Status is not BitFileUploadStatus.NotAllowed and not BitFileUploadStatus.Removed
+                                      && (Append || f.IsPreloaded));
+
+        return Math.Max(0, MaxCount - taken);
+    }
 
     private async Task UpdateDropZone()
     {
         var dragClass = GetDragClass();
         var dragStyle = Styles?.Dragging;
+        var rejectClass = GetRejectClass();
+        var rejectStyle = Styles?.DraggingRejected;
+        var acceptedMimeTypes = GetDragAcceptedMimeTypes();
+        var remainingSlots = GetRemainingSlots();
 
         if (_allowDrop == AllowDrop && _allowPaste == AllowPaste && _expandDirectories == Directory &&
-            _dragClass == dragClass && _dragStyle == dragStyle) return;
+            _dropZoneSelector == DropZoneSelector && _dragClass == dragClass && _dragStyle == dragStyle &&
+            _rejectClass == rejectClass && _rejectStyle == rejectStyle && _remainingSlots == remainingSlots &&
+            (_acceptedMimeTypes ?? []).SequenceEqual(acceptedMimeTypes ?? [], StringComparer.Ordinal) &&
+            (_acceptedMimeTypes is null) == (acceptedMimeTypes is null)) return;
 
         _allowDrop = AllowDrop;
         _allowPaste = AllowPaste;
         _expandDirectories = Directory;
+        _dropZoneSelector = DropZoneSelector;
         _dragClass = dragClass;
         _dragStyle = dragStyle;
+        _rejectClass = rejectClass;
+        _rejectStyle = rejectStyle;
+        _acceptedMimeTypes = acceptedMimeTypes;
+        _remainingSlots = remainingSlots;
 
         try
         {
-            await _dropZoneRef.InvokeVoidAsync("update", _allowDrop, _allowPaste, _expandDirectories, _dragClass, _dragStyle);
+            await _dropZoneRef.InvokeVoidAsync("update", _allowDrop, _allowPaste, _expandDirectories,
+                                               _dragClass, _dragStyle, _dropZoneSelector,
+                                               _rejectClass, _rejectStyle, _acceptedMimeTypes, _remainingSlots);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1331,7 +1714,10 @@ public partial class BitFileUpload : BitComponentBase
 
         if (Append is false)
         {
-            _files.Clear();
+            // a selection replaces the selection, not the record: the files that are already on the server
+            // are not this component's to drop from the view, and taking them out here would hide
+            // attachments that are still very much there.
+            _files.RemoveAll(f => f.IsPreloaded is false);
             _uploadQueue.Clear();
             UploadStatus = BitFileUploadStatus.Pending;
         }
@@ -1346,11 +1732,6 @@ public partial class BitFileUpload : BitComponentBase
         if (IsDisposed) return;
 
         _files.AddRange(newFiles);
-
-        for (var i = 0; i < _files.Count; i++)
-        {
-            _files[i].Index = i;
-        }
 
         if (_files.Any() is false) return;
 
@@ -1398,6 +1779,84 @@ public partial class BitFileUpload : BitComponentBase
         return $"{file.Name}|{file.Size}|{file.LastModified}";
     }
 
+    // a file the server reported has no last modified time of a file system behind it, so a file picked
+    // here is the same one as an attachment already on the record when its name and size are - which is
+    // as much as the two of them have in common to be compared on.
+    private static string GetServerFileIdentity(BitFileInfo file)
+    {
+        return $"{file.Name}|{file.Size}";
+    }
+
+    // Whether the list has to be built from the preloaded files again. The collection arriving as another
+    // instance is the obvious case, but a collection written inline in the markup is another instance on
+    // every single render: rebuilding on that alone would put the files the user has removed back and
+    // announce the whole list again each time, so what decides is which files are in it rather than which
+    // array they came in.
+    private bool ShouldApplyPreloadedFiles()
+    {
+        if (ReferenceEquals(_appliedPreloadedFiles, PreloadedFiles)) return false;
+
+        _appliedPreloadedFiles = PreloadedFiles;
+
+        var signature = GetPreloadedSignature();
+
+        if (signature.SequenceEqual(_appliedPreloadedSignature, StringComparer.Ordinal)) return false;
+
+        _appliedPreloadedSignature = signature;
+
+        return true;
+    }
+
+    // What a preloaded file is recognized by from one render to the next: the id the app gave it, and
+    // failing that - the component mints one for a file handed over without it - what it says about itself.
+    private string[] GetPreloadedSignature()
+    {
+        if (PreloadedFiles is null) return [];
+
+        return [.. PreloadedFiles.Where(f => f is not null)
+                                 .Select(f => f.FileId.HasValue() ? f.FileId : GetServerFileIdentity(f))];
+    }
+
+    // The files that are already on the server take the head of the list, ahead of anything picked here, and
+    // are rebuilt from scratch whenever the collection they come from is replaced - a form that has just
+    // loaded the record it edits hands its attachments over exactly that way. They are adopted rather than
+    // copied, so the very instances the app holds are the ones the list works on and their Status is what
+    // tells it what became of each of them.
+    private void ApplyPreloadedFiles()
+    {
+        _files.RemoveAll(f => f.IsPreloaded);
+
+        if (PreloadedFiles is null) return;
+
+        var position = 0;
+
+        foreach (var file in PreloadedFiles)
+        {
+            if (file is null) continue;
+
+            file.IsPreloaded = true;
+            // there is no picked file and so no uploader behind this one, and the index is what would name
+            // that uploader: it is left invalid on purpose, so that a stray call cannot reach another file's.
+            file.Index = PRELOADED_FILE_INDEX;
+            file.IsQueued = false;
+            file.IsRequestInFlight = false;
+            file.Status = BitFileUploadStatus.Completed;
+            // the whole file is on the server already, which is what makes it count as fully uploaded
+            // towards the progress of the batch instead of dragging it down to nothing.
+            file.TotalUploadedSize = file.Size;
+            file.LastChunkUploadedSize = 0;
+
+            // the id travels to the server in the BIT_FILE_ID header of the remove request, so the one the
+            // app gave it stands; only a file handed over without one needs something to be named by.
+            if (file.FileId.HasNoValue())
+            {
+                file.FileId = Guid.NewGuid().ToString();
+            }
+
+            _files.Insert(position++, file);
+        }
+    }
+
     // the rules that judge a file against the rest of the list - being a duplicate, the maximum count and the
     // maximum total size - are re-evaluated from scratch every time the list changes, so that a file rejected
     // by one of them can be taken back as soon as a removal frees up room or drops the original it duplicated.
@@ -1415,6 +1874,9 @@ public partial class BitFileUpload : BitComponentBase
         if (AllowDuplicates is false)
         {
             var knownFiles = new HashSet<string>(StringComparer.Ordinal);
+            // the attachments the record already has, which sit at the head of the list, so a file picked
+            // here is judged against them by the time it is reached.
+            var knownServerFiles = new HashSet<string>(StringComparer.Ordinal);
 
             foreach (var file in _files)
             {
@@ -1422,7 +1884,18 @@ public partial class BitFileUpload : BitComponentBase
 
                 // every file registers its identity, even a rejected one, so that a re-selection of a file
                 // already in the list is caught no matter why that file was rejected.
-                if (knownFiles.Add(GetFileIdentity(file))) continue;
+                var isFirstOfItsKind = knownFiles.Add(GetFileIdentity(file));
+
+                // what the server says is on the record is the truth about it, so one of its files is never
+                // turned away as the copy of another - it only ever makes copies of itself out of the ones
+                // picked here.
+                if (file.IsPreloaded)
+                {
+                    knownServerFiles.Add(GetServerFileIdentity(file));
+                    continue;
+                }
+
+                if (isFirstOfItsKind && knownServerFiles.Contains(GetServerFileIdentity(file)) is false) continue;
 
                 // a file that already failed a validation of its own keeps that message, which would
                 // otherwise be lost as soon as the duplication is resolved, and one that already started
@@ -1501,6 +1974,23 @@ public partial class BitFileUpload : BitComponentBase
 
     // whether the file still has bytes to send, which is what tells an upload call that is worth
     // starting apart from one landing on an already settled batch.
+    // How long to wait before the attempt the file is about to make, its number being the number of
+    // automatic retries already spent on it - the first retry is attempt 1.
+    private TimeSpan? GetAutoRetryDelay(BitFileInfo file)
+    {
+        if (AutoRetryDelayProvider is null) return AutoRetryDelay;
+
+        try
+        {
+            return AutoRetryDelayProvider(file, file.AutoRetryAttempts) ?? AutoRetryDelay;
+        }
+        catch
+        {
+            // a provider that throws decides nothing, and the retry it was asked about still happens.
+            return AutoRetryDelay;
+        }
+    }
+
     private static bool HasPendingWork(BitFileInfo file)
     {
         return file.Status is not BitFileUploadStatus.Completed
@@ -1533,6 +2023,8 @@ public partial class BitFileUpload : BitComponentBase
     private async Task UploadOneFile(BitFileInfo fileInfo, string? uploadUrl = null)
     {
         if (_files.Any() is false) return;
+        // a file that is already on the server has nothing on this side to send.
+        if (fileInfo.IsPreloaded) return;
         if (fileInfo.Status is BitFileUploadStatus.NotAllowed or BitFileUploadStatus.Removed) return;
 
         // a file whose request is already on the wire is busy: sending a second one would take the
@@ -1703,7 +2195,7 @@ public partial class BitFileUpload : BitComponentBase
             _uploadQueue.Remove(file);
             file.IsQueued = false;
 
-            await PauseUploadOneFile(file.Index);
+            await PauseUploadOneFile(file);
             return;
         }
 
@@ -1713,7 +2205,7 @@ public partial class BitFileUpload : BitComponentBase
 
         // aborting right away instead of waiting for the next chunk boundary, so that pausing
         // also works for non-chunked uploads whose only request is already in flight.
-        await PauseUploadOneFile(file.Index);
+        await PauseUploadOneFile(file);
     }
 
     private async Task CancelOneFile(BitFileInfo file)
@@ -1733,35 +2225,36 @@ public partial class BitFileUpload : BitComponentBase
         _uploadQueue.Remove(file);
         file.IsQueued = false;
 
-        await CancelUploadOneFile(file.Index);
+        await CancelUploadOneFile(file);
     }
 
-    private async Task PauseUploadOneFile(int index)
+    private async Task PauseUploadOneFile(BitFileInfo file)
     {
-        if (index < 0 || index >= _files.Count) return;
-
-        var file = _files[index];
-
         // the status changes before the abort, so that the abort callback coming back from JavaScript
         // finds the file already paused instead of mistaking the aborted request for a failed upload.
         await UpdateStatus(BitFileUploadStatus.Paused, file);
         file.IsRequestInFlight = false;
 
-        await _js.BitFileUploadPause(UniqueId, index);
+        await AbortRequestOf(file);
     }
 
-    private async Task CancelUploadOneFile(int index)
+    private async Task CancelUploadOneFile(BitFileInfo file)
     {
-        if (index < 0 || index >= _files.Count) return;
-
-        var file = _files[index];
-
         // the status changes before the abort, so that the abort callback coming back from JavaScript
         // finds the file already canceled instead of mistaking the aborted request for a failed upload.
         await UpdateStatus(BitFileUploadStatus.Canceled, file);
         file.IsRequestInFlight = false;
 
-        await _js.BitFileUploadPause(UniqueId, index);
+        await AbortRequestOf(file);
+    }
+
+    // a file with no uploader of its own - a preloaded one - has no request to abort, and the index it
+    // carries names no uploader, which the JavaScript side would read as "every file of this component".
+    private async Task AbortRequestOf(BitFileInfo file)
+    {
+        if (file.IsPreloaded) return;
+
+        await _js.BitFileUploadPause(UniqueId, file.Index);
     }
 
     // the speed of an upload is what turns a progress bar into an answer to "how long is this going to
@@ -1792,12 +2285,9 @@ public partial class BitFileUpload : BitComponentBase
         file.RemainingTime = TimeSpan.FromSeconds(remaining / speed);
     }
 
-    private void UpdateChunkSize(int fileIndex)
+    private void UpdateChunkSize(BitFileInfo file)
     {
-        if (fileIndex < 0 || fileIndex >= _files.Count) return;
         if (AutoChunkSize is false || ChunkedUpload is false) return;
-
-        var file = _files[fileIndex];
 
         var dtNow = DateTime.UtcNow;
         var duration = (dtNow - file.StartTimeUpload.GetValueOrDefault(dtNow)).TotalMilliseconds;
@@ -1847,11 +2337,19 @@ public partial class BitFileUpload : BitComponentBase
 
         if (files.Length == 0) return "No file selected.";
 
-        var completed = files.Count(f => f.Status is BitFileUploadStatus.Completed);
-        var failed = files.Count(f => f.Status is BitFileUploadStatus.Failed);
-        var notAllowed = files.Count(f => f.Status is BitFileUploadStatus.NotAllowed);
+        // the files that were already on the server were never selected here and never uploaded here, so
+        // they are counted apart rather than credited to a batch that may not have sent a single byte.
+        var attached = files.Count(f => f.IsPreloaded);
+        var selected = files.Where(f => f.IsPreloaded is false).ToArray();
 
-        return $"{files.Length} file{(files.Length == 1 ? string.Empty : "s")} selected." +
+        var completed = selected.Count(f => f.Status is BitFileUploadStatus.Completed);
+        var failed = selected.Count(f => f.Status is BitFileUploadStatus.Failed);
+        var notAllowed = selected.Count(f => f.Status is BitFileUploadStatus.NotAllowed);
+
+        return (selected.Length > 0
+                    ? $"{selected.Length} file{(selected.Length == 1 ? string.Empty : "s")} selected."
+                    : "No file selected.") +
+               (attached > 0 ? $" {attached} already attached." : string.Empty) +
                (completed > 0 ? $" {completed} uploaded." : string.Empty) +
                (failed > 0 ? $" {failed} failed." : string.Empty) +
                (notAllowed > 0 ? $" {notAllowed} not allowed." : string.Empty);
@@ -1941,7 +2439,7 @@ public partial class BitFileUpload : BitComponentBase
         // told to delete them.
         if (fileInfo.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
         {
-            await _js.BitFileUploadPause(UniqueId, fileInfo.Index);
+            await AbortRequestOf(fileInfo);
         }
 
         // a completed file counts as being on the server even when it carried no byte at all,
@@ -1967,6 +2465,10 @@ public partial class BitFileUpload : BitComponentBase
         // a removed file is never going to be sent again, so everything the browser was holding on to for
         // it is handed back: the picked file itself, which would otherwise stay in memory for the whole
         // life of the page, and the object URL of the thumbnail that is not rendered anymore.
+        // a preloaded file's thumbnail is a URL of the server's own, which this side neither created nor
+        // gets to hand back, and there is no uploader holding anything for it either.
+        if (fileInfo.IsPreloaded) return;
+
         fileInfo.PreviewUrl = null;
 
         try
@@ -2010,6 +2512,8 @@ public partial class BitFileUpload : BitComponentBase
 
             var response = await _httpClient.SendAsync(request);
 
+            fileInfo.ResponseStatus = (int)response.StatusCode;
+
             if (response.IsSuccessStatusCode)
             {
                 await UpdateStatus(BitFileUploadStatus.Removed, fileInfo);
@@ -2022,6 +2526,10 @@ public partial class BitFileUpload : BitComponentBase
         }
         catch (Exception ex)
         {
+            // the request never came back with a status of its own, which is reported the same way the
+            // upload side reports a request that never reached the server.
+            fileInfo.ResponseStatus = 0;
+
             // only the message of the exception, since this text is rendered right in the file item and
             // a full stack trace there says nothing to the user while telling a stranger far too much.
             fileInfo.Message = ex.Message;
@@ -2070,7 +2578,7 @@ public partial class BitFileUpload : BitComponentBase
         return sb.ToString();
     }
 
-    private void OnSetChunkSize()
+    internal void OnSetChunkSize()
     {
         _internalChunkSize = ChunkSize.HasValue is false || AutoChunkSize
                                 ? MIN_CHUNK_SIZE
