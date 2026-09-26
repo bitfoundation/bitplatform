@@ -11,6 +11,9 @@ namespace Bit.BlazorUI;
 /// left over (optionally in proportion to other spacers through Grow).
 /// <br />
 /// It is hidden from assistive technologies unless it is given an AriaLabel, which renders it as a named separator.
+/// That separator is announced as vertical (dividing the items of a row), or as horizontal (dividing the items of a column)
+/// when the spacer is marked as Vertical or only given a Height. A flexible spacer cannot tell the direction of its container,
+/// so one dividing a column sets aria-orientation="horizontal" itself.
 /// </summary>
 public partial class BitSpacer : BitComponentBase
 {
@@ -149,6 +152,11 @@ public partial class BitSpacer : BitComponentBase
     // that only describe how it flexes (Grow and MinGap) stop applying to it.
     private bool IsFixed => InlineGap.HasValue() || BlockGap.HasValue();
 
+    // A spacer that creates its space along the block axis sits between the items of a column, which makes it a
+    // horizontal separator; any other one is taken to divide the items of a row (the default inline axis of the
+    // spacer), which makes it a vertical one.
+    private bool IsHorizontalSeparator => Vertical || (BlockGap.HasValue() && InlineGap.HasValue() is false);
+
 
 
     protected override string RootElementClass => "bit-spc";
@@ -205,18 +213,20 @@ public partial class BitSpacer : BitComponentBase
 
         // The spacer carries no content, so it is hidden from assistive technologies by default. A labelled one is
         // meant to be announced, and ARIA does not allow naming a generic element, so it becomes a separator between
-        // the groups on either side of it instead. Both are added before the splatted attributes so an explicit
-        // aria-hidden or role in HtmlAttributes can still take them back.
+        // the groups on either side of it instead. A separator is horizontal unless told otherwise, so one dividing
+        // the items of a row states its orientation. All of them are added before the splatted attributes so an
+        // explicit aria-hidden, role or aria-orientation in HtmlAttributes can still take them back.
         var isLabelled = AriaLabel.HasValue();
         builder.AddAttribute(1, "aria-hidden", isLabelled ? null : "true");
         builder.AddAttribute(2, "role", isLabelled ? "separator" : null);
-        builder.AddMultipleAttributes(3, RuntimeHelpers.TypeCheck(HtmlAttributes));
-        builder.AddAttribute(4, "id", _Id);
-        builder.AddAttribute(5, "aria-label", AriaLabel);
-        builder.AddAttribute(6, "style", StyleBuilder.Value);
-        builder.AddAttribute(7, "class", ClassBuilder.Value);
-        builder.AddAttribute(8, "dir", Dir?.ToString().ToLower());
-        builder.AddElementReferenceCapture(9, v => RootElement = v);
+        builder.AddAttribute(3, "aria-orientation", (isLabelled && IsHorizontalSeparator is false) ? "vertical" : null);
+        builder.AddMultipleAttributes(4, RuntimeHelpers.TypeCheck(HtmlAttributes));
+        builder.AddAttribute(5, "id", _Id);
+        builder.AddAttribute(6, "aria-label", AriaLabel);
+        builder.AddAttribute(7, "style", StyleBuilder.Value);
+        builder.AddAttribute(8, "class", ClassBuilder.Value);
+        builder.AddAttribute(9, "dir", Dir?.ToString().ToLower());
+        builder.AddElementReferenceCapture(10, v => RootElement = v);
         builder.CloseElement();
 
         base.BuildRenderTree(builder);

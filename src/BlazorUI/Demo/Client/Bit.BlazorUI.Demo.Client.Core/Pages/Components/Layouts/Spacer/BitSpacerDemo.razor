@@ -130,7 +130,10 @@
         <div class="example-desc">
             A spacer is <code>aria-hidden</code> by default, so screen readers skip the empty box. Give it an
             <b>AriaLabel</b> when the gap marks a boundary worth announcing: it then renders as a named
-            <code>separator</code>. An explicit <code>role</code> or <code>aria-hidden</code> attribute still wins.
+            <code>separator</code>, announced as vertical, since it divides the items of a row, or as horizontal when it is
+            <b>Vertical</b> or only given a <b>Height</b>. A flexible spacer dividing a column adds
+            <code>aria-orientation="horizontal"</code> itself. An explicit <code>role</code>, <code>aria-hidden</code> or
+            <code>aria-orientation</code> attribute still wins.
         </div>
         <div class="example-content">
             <div class="demo-row" role="toolbar" aria-label="Document">
