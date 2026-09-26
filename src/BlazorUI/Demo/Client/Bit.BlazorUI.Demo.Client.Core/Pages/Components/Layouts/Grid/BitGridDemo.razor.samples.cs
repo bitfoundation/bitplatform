@@ -26,6 +26,17 @@ public partial class BitGridDemo
     }
 </BitGrid>
 
+<div style=""--bit-Grid-columns: 3;"">
+    <BitGrid>
+        @for (int i = 0; i < 6; i++)
+        {
+            var item = i + 1;
+
+            <BitGridItem Class=""grid-item"">Item @item</BitGridItem>
+        }
+    </BitGrid>
+</div>
+
 <BitGrid Span=""4"">
     @for (int i = 0; i < 6; i++)
     {

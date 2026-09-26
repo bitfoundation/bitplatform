@@ -32,9 +32,9 @@ public partial class BitGridDemo
         new()
         {
             Name = "Columns",
-            Type = "int",
-            DefaultValue = "12",
-            Description = "Defines the number of columns the width of the grid is divided into. It is the count of every breakpoint that is not overridden, and values below 1 are treated as 1.",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Defines the number of columns the width of the grid is divided into. It is the count of every breakpoint that is not overridden, and values below 1 are treated as 1. Unset, it follows the --bit-Grid-columns CSS variable (12 when that is unset too).",
         },
         new()
         {
@@ -681,6 +681,12 @@ public partial class BitGridDemo
 
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
+        new()
+        {
+            Name = "--bit-Grid-columns",
+            DefaultValue = "12",
+            Description = "Column count of every grid that sets no Columns of its own (a unitless integer, values below 1 are treated as 1). Inherits, so it can be set on :root or an ancestor; set on a grid's Style it also reaches every grid nested in it, so use Columns to change a single grid.",
+        },
         new()
         {
             Name = "--bit-Grid-spacing",

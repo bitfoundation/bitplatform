@@ -30,6 +30,23 @@
                 }
             </BitGrid>
             <br /><br />
+            <div>
+                A grid that sets no <b>Columns</b> reads the inherited <b>--bit-Grid-columns</b> variable instead, so one
+                declaration (on <b>:root</b>, a page or a panel) sets the column count of every grid under it, nested
+                grids included. <b>Columns</b> is the way to change a single grid.
+            </div>
+            <br />
+            <div style="--bit-Grid-columns: 3;">
+                <BitGrid>
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        var item = i + 1;
+
+                        <BitGridItem Class="grid-item">Item @item</BitGridItem>
+                    }
+                </BitGrid>
+            </div>
+            <br /><br />
             <div>Span="4": every item takes 4 of the 12 columns</div>
             <br />
             <BitGrid Span="4">

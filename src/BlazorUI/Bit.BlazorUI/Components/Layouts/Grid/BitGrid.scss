@@ -130,18 +130,22 @@ $bit-grd-bands: ( 'xs': '(max-width: #{$mq-xs-max})',
  * point at whichever breakpoint currently applies.
  */
 /*
- * Public CSS variables - read with a fallback and never declared, so they inherit and set the gutter of every grid
+ * Public CSS variables - read with a fallback and never declared, so they inherit and set the defaults of every grid
  * under the element that declares them (:root, a page, a panel, or a grid's own Style):
  *
+ *     --bit-Grid-columns             the number of columns (default: 12, values below 1 are treated as 1)
  *     --bit-Grid-spacing             the room between the items on both axes (default: half the theme spacing unit)
  *     --bit-Grid-horizontal-spacing  the room between the columns (default: --bit-Grid-spacing)
  *     --bit-Grid-vertical-spacing    the room between the rows (default: --bit-Grid-spacing)
  *
- * A Spacing, HorizontalSpacing or VerticalSpacing parameter is written onto the grid itself and wins over them.
+ * A Columns, Spacing, HorizontalSpacing or VerticalSpacing parameter is written onto the grid itself and wins over them.
+ * Declared on a grid's own Style, a variable also reaches every grid nested in it - which is what inheriting means,
+ * and why a single grid is changed through its parameter instead.
  */
 .bit-grd {
     --bit-grd-span: 1;
-    --bit-grd-cols: 12;
+    /* Clamped the way the Columns parameter is, since every width is divided by the column count. */
+    --bit-grd-cols: max(1, var(--bit-Grid-columns, 12));
     --bit-grd-cgap: var(--bit-Grid-horizontal-spacing, var(--bit-Grid-spacing, #{spacing(0.5)}));
     --bit-grd-rgap: var(--bit-Grid-vertical-spacing, var(--bit-Grid-spacing, #{spacing(0.5)}));
     --bit-grd-cols-xs: var(--bit-grd-cols);

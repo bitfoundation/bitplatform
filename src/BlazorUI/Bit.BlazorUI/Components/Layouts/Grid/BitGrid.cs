@@ -86,7 +86,8 @@ public partial class BitGrid : BitComponentBase
     /// <summary>
     /// Defines the number of columns the width of the BitGrid is divided into.
     /// <br />
-    /// The default value is <strong>12</strong>.
+    /// When not set, the inherited <c>--bit-Grid-columns</c> CSS variable decides, which is <strong>12</strong>
+    /// unless it is declared.
     /// </summary>
     /// <remarks>
     /// A <see cref="BitGridItem"/> asks for a number of these columns with its
@@ -98,9 +99,15 @@ public partial class BitGrid : BitComponentBase
     /// (<see cref="ColumnsXs"/> to <see cref="ColumnsXxl"/>) replace it from their own breakpoint upwards.
     /// <br />
     /// Values below 1 are treated as 1, since a width cannot be divided into no columns at all.
+    /// <br />
+    /// A grid that sets no column count of its own, here or through <see cref="BitGridParams"/>, reads it from the
+    /// inherited <c>--bit-Grid-columns</c> CSS variable instead, so one declaration on <c>:root</c> or an ancestor
+    /// changes the default of every grid under it - including the grids nested in a grid whose own <c>Style</c>
+    /// declares it, which is why a single grid is given its count here rather than through the variable. Being
+    /// resolved by the stylesheet, that count is not known here, so the value stays <see langword="null"/>.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public int Columns { get; set; } = 12;
+    public int? Columns { get; set; }
 
     /// <summary>
     /// Number of columns in the extra small breakpoint (from 0px).
@@ -606,7 +613,10 @@ public partial class BitGrid : BitComponentBase
         // A default of no columns would leave every item that named no span of its own with no width and no way
         // of saying so, since only an item can ask to be hidden, so the default falls back to a single column.
         StyleBuilder.Register(() => $"--bit-grd-span:{Math.Max(1, Span).ToString(CultureInfo.InvariantCulture)}");
-        StyleBuilder.Register(() => $"--bit-grd-cols:{Math.Max(1, Columns).ToString(CultureInfo.InvariantCulture)}");
+        // The column count is only declared once it was asked for, so a grid left at the default follows the public
+        // --bit-Grid-columns variable the stylesheet falls back to. It is read off the value alone, which is what
+        // resets the builder, so a count that comes or goes between renders is never left behind in the style.
+        StyleBuilder.Register(() => GetColumnsVar(null, Columns));
         // A grid that was told nothing about its spacing declares none, and the stylesheet resolves the gap from
         // the public variables and the spacing unit of the theme instead.
         StyleBuilder.Register(() => GetSpacingVar("cgap", HorizontalSpacing));
@@ -755,11 +765,13 @@ public partial class BitGrid : BitComponentBase
         return $"{number.ToString(CultureInfo.InvariantCulture)}px";
     }
 
-    private static string GetColumnsVar(string breakpoint, int? columns)
+    private static string GetColumnsVar(string? breakpoint, int? columns)
     {
         if (columns.HasValue is false) return string.Empty;
 
-        return $"--bit-grd-cols-{breakpoint}:{Math.Max(1, columns.Value).ToString(CultureInfo.InvariantCulture)}";
+        var name = breakpoint is null ? "--bit-grd-cols" : $"--bit-grd-cols-{breakpoint}";
+
+        return $"{name}:{Math.Max(1, columns.Value).ToString(CultureInfo.InvariantCulture)}";
     }
 
     // The spacing of a single axis at a breakpoint, falling back to the spacing of both axes at that same
