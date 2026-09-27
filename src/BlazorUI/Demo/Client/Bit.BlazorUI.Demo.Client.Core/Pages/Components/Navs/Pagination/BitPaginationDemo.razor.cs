@@ -107,6 +107,13 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "GetItemsSummary",
+            Type = "Func<int, int, int, string>?",
+            DefaultValue = "null",
+            Description = "Provides the text of the summary while TotalItems is set, from the first item of the page, its last one and the total, replacing \"{first} - {last} of {total}\". Wins over GetSummary there."
+        },
+        new()
+        {
             Name = "GetPageAriaLabel",
             Type = "Func<int, bool, string>?",
             DefaultValue = "null",
@@ -124,7 +131,7 @@ public partial class BitPaginationDemo
             Name = "GetSummary",
             Type = "Func<int, int, string>?",
             DefaultValue = "null",
-            Description = "Provides the text of the summary from the selected page and the page count, replacing \"Page {number} of {count}\" (\"1 - 10 of 240\" while TotalItems is set)."
+            Description = "Provides the text of the summary from the selected page and the page count, replacing \"Page {number} of {count}\" (and \"1 - 10 of 240\" while TotalItems is set, unless GetItemsSummary is)."
         },
         new()
         {
@@ -864,6 +871,12 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "--bit-Pagination-input-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the page size select and the go to page input.",
+        },
+        new()
+        {
             Name = "--bit-Pagination-input-background",
             DefaultValue = "--bit-clr-bg-sec",
             Description = "Fill of the page size select and the go to page input.",
@@ -881,11 +894,6 @@ public partial class BitPaginationDemo
     private int oneWaySelectedPage = 1;
     private int twoWaySelectedPage = 2;
     private int onChangeSelectedPage = 3;
-
-    private string GetItemsRangeSummary(int page, int count)
-    {
-        return $"Showing {(page - 1) * 10 + 1} to {page * 10} of {count * 10} results";
-    }
 
     private int totalItemsPageSize = 10;
     private int totalItemsSelectedPage = 1;
@@ -924,7 +932,7 @@ public partial class BitPaginationDemo
 
     private string GetResultsRangeLabel(int page, bool isSelected)
     {
-        return $"Results {(page - 1) * 10 + 1} to {page * 10}";
+        return $"Page {page}, results {(page - 1) * 10 + 1} to {page * 10}";
     }
 
     private readonly BitPaginationParams[] paginationParams =
@@ -944,6 +952,7 @@ public partial class BitPaginationDemo
             EllipsisAriaLabel = "Más páginas",
             GetPageAriaLabel = (page, _) => $"Página {page}",
             GetSummary = (page, count) => $"Página {page} de {count}",
+            GetItemsSummary = (first, last, total) => $"{first} - {last} de {total}",
         }
     ];
 }

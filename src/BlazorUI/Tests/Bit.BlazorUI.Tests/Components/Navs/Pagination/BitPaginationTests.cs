@@ -2011,6 +2011,50 @@ public class BitPaginationTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPaginationShouldHandTheItemRangeToGetItemsSummary()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 245);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.ShowSummary, true);
+            parameters.Add(p => p.DefaultSelectedPage, 24);
+            parameters.Add(p => p.GetItemsSummary, (int first, int last, int total) => $"{first} a {last} de {total}");
+        });
+
+        Assert.AreEqual("231 a 240 de 245", comp.Find(".bit-pgn-sum").TextContent.Trim());
+
+        FindByAriaLabel(comp, "Next page")!.Click();
+
+        // The last page stops at the last item, which the hook is handed rather than having to work out.
+        Assert.AreEqual("241 a 245 de 245", comp.Find(".bit-pgn-sum").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldLetGetItemsSummaryWinOverGetSummaryOnlyWithTheTotalItems()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 240);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.ShowSummary, true);
+            parameters.Add(p => p.GetSummary, (int page, int count) => $"{page}/{count}");
+            parameters.Add(p => p.GetItemsSummary, (int first, int last, int total) => $"{first}-{last}/{total}");
+        });
+
+        Assert.AreEqual("1-10/240", comp.Find(".bit-pgn-sum").TextContent.Trim());
+
+        // Without a number of items there is no item range to hand over, so the page hook is the one left.
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 0);
+            parameters.Add(p => p.Count, 12);
+        });
+
+        Assert.AreEqual("1/12", comp.Find(".bit-pgn-sum").TextContent.Trim());
+    }
+
+    [TestMethod]
     public void BitPaginationShouldKeepReportingThePagesInTheSummaryWithoutTheTotalItems()
     {
         var comp = RenderComponent<BitPagination>(parameters =>
@@ -3093,7 +3137,8 @@ public class BitPaginationTests : BunitTestContext
 
         Assert.IsTrue(sized.ClassList.Contains("sized"));
         Assert.AreEqual(5, paginations[2].Instance.SelectedPage);
-        Assert.AreEqual("81 - 100 of 100", sized.QuerySelector(".bit-pgn-sum")!.TextContent.Trim());
+        // One cascaded hook localizes the item range of every pagination, since it is handed the numbers.
+        Assert.AreEqual("81 a 100 de 100", sized.QuerySelector(".bit-pgn-sum")!.TextContent.Trim());
         CollectionAssert.AreEqual(new[] { "20", "40" }, sized.QuerySelectorAll(".bit-pgn-pse option").Select(o => o.TextContent.Trim()).ToArray());
 
         // The cascaded empty text drops the visible label, and the select is named by the cascaded aria-label.

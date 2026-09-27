@@ -5,7 +5,7 @@
             Description="Pagination component helps users easily navigate through content, allowing swift browsing across multiple pages or sections." />
 
 <DemoPage Name="Pagination"
-          Description="Pagination splits long content into pages and renders the navigation between them: pages collapsing into (optionally clickable) ellipses, first/previous/next/last buttons, a position summary, a page size selector and a jump to a page number. The range comes from a page count or from the number of items and the page size; every control is a button, or a link once it is given an address; and the whole thing is a navigation landmark that names each of its controls."
+          Description="Pagination renders the navigation across a paged range: page buttons with ellipses, first/previous/next/last buttons, a position summary, a page size selector and a go to page input. Every control is a button, or a link once given an address, inside a named navigation landmark."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -14,11 +14,16 @@
           GitHubUrl="Navs/Pagination/BitPagination.razor"
           GitHubDemoUrl="Navs/Pagination/BitPaginationDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div><b>Count</b> is all it needs. <b>DefaultSelectedPage</b> picks the page it starts on (the first by default).</div>
+        <div>
+            <b>Count</b> is all it needs. <b>DefaultSelectedPage</b> picks the page it starts on (the first by default);
+            <b>IsEnabled="false"</b> disables every control.
+        </div>
         <br />
         <BitPagination Count="5" />
         <br /><br />
         <BitPagination Count="5" DefaultSelectedPage="3" />
+        <br /><br />
+        <BitPagination Count="5" DefaultSelectedPage="3" IsEnabled="false" />
     </DemoExample>
 
     <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
@@ -54,7 +59,7 @@
         <br /><br />
         <BitPagination Count="5" Variant="BitVariant.Text" />
         <br /><br />
-        <BitPagination Count="9" Rounded ShowFirstButton ShowLastButton DefaultSelectedPage="5" />
+        <BitPagination Count="9" Rounded DefaultSelectedPage="5" />
         <br /><br />
         <BitPagination Count="9" Rounded Variant="BitVariant.Outline" DefaultSelectedPage="5" />
     </DemoExample>
@@ -111,29 +116,31 @@
                        LastButtonIconName="@BitIconName.DoubleChevronRight" />
     </DemoExample>
 
-    <DemoExample Title="Compact & Summary" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Compact & Summary" RazorCode="@example8RazorCode" Id="example8">
         <div>
             <b>ShowPageButtons="false"</b> leaves the navigation buttons alone. <b>ShowSummary</b> adds <i>"Page 4 of 12"</i>, a status
-            region a screen reader announces as the page changes; <b>GetSummary</b> rewrites it.
+            region a screen reader announces as the page changes; <b>GetSummary</b> rewrites it from the page and the page count.
         </div>
         <br />
         <BitPagination Count="12" ShowSummary DefaultSelectedPage="4" />
         <br /><br />
         <BitPagination Count="12" ShowSummary ShowPageButtons="false" ShowFirstButton ShowLastButton DefaultSelectedPage="4" />
         <br /><br />
-        <BitPagination Count="24" ShowSummary ShowPageButtons="false" GetSummary="@GetItemsRangeSummary" DefaultSelectedPage="3" />
+        <BitPagination Count="12" ShowSummary ShowPageButtons="false" GetSummary="@((page, count) => $"{page} / {count}")" DefaultSelectedPage="4" />
     </DemoExample>
 
     <DemoExample Title="Total items & Page size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
-            <b>TotalItems</b> replaces <b>Count</b>: the range follows <b>PageSize</b>, the summary counts items, and a new size
-            keeps the first item of the page in view. <b>ShowPageSizeSelector</b> picks the size out of <b>PageSizeOptions</b>.
+            <b>TotalItems</b> replaces <b>Count</b>: the range follows <b>PageSize</b>, the summary counts items (<i>"1 - 10 of 240"</i>,
+            reworded by <b>GetItemsSummary</b> from the first item, the last one and the total), and a new size keeps the first item of the
+            page in view. <b>ShowPageSizeSelector</b> picks the size out of <b>PageSizeOptions</b>.
         </div>
         <br />
         <BitPagination ShowSummary
                        ShowPageSizeSelector
                        TotalItems="240"
                        PageSizeOptions="@([10, 25, 100])"
+                       GetItemsSummary="@((first, last, total) => $"Showing {first} to {last} of {total} results")"
                        @bind-PageSize="totalItemsPageSize"
                        @bind-SelectedPage="totalItemsSelectedPage" />
         <br /><br />
@@ -217,7 +224,7 @@
         <div>
             A <code>nav</code> landmark (named by <b>AriaLabel</b>; give each one its own name) holding a list, with the current page marked
             <code>aria-current="page"</code>. The <b>*ButtonAriaLabel</b> parameters name the icon buttons (and double as tooltips),
-            <b>GetPageAriaLabel</b> names the pages. A button that disables itself hands the focus to the selected page, and
+            <b>GetPageAriaLabel</b> names the pages - keep the visible number in it for speech input. A button that disables itself hands the focus to the selected page, and
             <b>FocusAsync</b> puts it back after a reload.
         </div>
         <br />
@@ -244,6 +251,8 @@
         <br />
         <BitParams Parameters="@paginationParams">
             <BitPagination Count="12" DefaultSelectedPage="4" />
+            <br /><br />
+            <BitPagination TotalItems="240" DefaultSelectedPage="4" />
             <br /><br />
             <BitPagination Count="12" DefaultSelectedPage="4" Variant="BitVariant.Fill" ShowSummary="false" />
         </BitParams>

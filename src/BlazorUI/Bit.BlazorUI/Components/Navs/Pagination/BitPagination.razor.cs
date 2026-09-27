@@ -265,7 +265,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="FirstButtonAriaLabel"/>, so a short visible
-    /// text can sit next to a fuller spoken one.
+    /// text can sit next to a fuller spoken one. Keep the text inside that name ("Next" beside
+    /// "Next page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? FirstButtonText { get; set; }
 
@@ -275,7 +276,8 @@ public partial class BitPagination : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the hook to localize the page buttons, or to make them announce what the page holds
-    /// (for example "Page 3 of 12" or "Results 21 to 30").
+    /// (for example "Page 3 of 12" or "Page 3, results 21 to 30"). Keep the page number in the label: it is
+    /// the text the button shows, and a name that leaves it out is one speech input cannot reach the button by.
     /// <br />
     /// The selected page also reports aria-current, so the label does not have to say that it is the
     /// current one for a screen reader to announce it as such.
@@ -302,15 +304,31 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public Func<int, string?>? GetPageHref { get; set; }
 
     /// <summary>
+    /// Provides the text of the summary while <see cref="TotalItems"/> is set, from the one-based numbers of the
+    /// first and the last items of the selected page and the total number of items, replacing the default
+    /// "{first} - {last} of {total}" text.
+    /// </summary>
+    /// <remarks>
+    /// This is the hook to localize or reword the item range (for example "Showing 21 to 30 of 240 results").
+    /// It is handed the numbers the pagination worked out itself, the last page stopping at the last item, so a
+    /// single one set through a <see cref="BitPaginationParams"/> serves every pagination of an app whatever
+    /// each of them pages through.
+    /// <br />
+    /// It wins over <see cref="GetSummary"/> while <see cref="TotalItems"/> is set, and is not called otherwise.
+    /// It is only called while <see cref="ShowSummary"/> is on.
+    /// </remarks>
+    [Parameter] public Func<int, int, int, string>? GetItemsSummary { get; set; }
+
+    /// <summary>
     /// Provides the text of the summary, from the selected page and the total number of pages, replacing the
     /// default "Page {number} of {count}" text.
     /// </summary>
     /// <remarks>
-    /// This is the hook to localize the summary, or to report the position in terms of the items rather than
-    /// the pages (for example "Showing 21 to 30 of 240 results") from numbers only the consumer holds.
+    /// This is the hook to localize the summary, or to reword it (for example "3 / 12").
     /// <br />
-    /// The default text already counts the items ("1 - 10 of 240") whenever <see cref="TotalItems"/> is set, so
-    /// this is only needed there to word or localize that text differently.
+    /// The default text already counts the items ("1 - 10 of 240") whenever <see cref="TotalItems"/> is set, and
+    /// <see cref="GetItemsSummary"/> is the hook that words that text differently: it is handed the item range,
+    /// and wins over this one there.
     /// <br />
     /// It is only called while <see cref="ShowSummary"/> is on.
     /// </remarks>
@@ -384,7 +402,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="LastButtonAriaLabel"/>, so a short visible
-    /// text can sit next to a fuller spoken one.
+    /// text can sit next to a fuller spoken one. Keep the text inside that name ("Next" beside
+    /// "Next page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? LastButtonText { get; set; }
 
@@ -442,7 +461,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="NextButtonAriaLabel"/>, so a short visible
-    /// text can sit next to a fuller spoken one.
+    /// text can sit next to a fuller spoken one. Keep the text inside that name ("Next" beside
+    /// "Next page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? NextButtonText { get; set; }
 
@@ -555,7 +575,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="PreviousButtonAriaLabel"/>, so a short
-    /// visible text can sit next to a fuller spoken one.
+    /// visible text can sit next to a fuller spoken one. Keep the text inside that name ("Next" beside
+    /// "Next page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? PreviousButtonText { get; set; }
 
@@ -584,6 +605,8 @@ public partial class BitPagination : BitComponentBase
 
     /// <summary>
     /// Determines whether to show the first button.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
     [Parameter] public bool ShowFirstButton { get; set; }
 
@@ -601,11 +624,15 @@ public partial class BitPagination : BitComponentBase
 
     /// <summary>
     /// Determines whether to show the last button.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
     [Parameter] public bool ShowLastButton { get; set; }
 
     /// <summary>
     /// Determines whether to show the next button.
+    /// <br />
+    /// The default value is <strong>true</strong>.
     /// </summary>
     [Parameter] public bool ShowNextButton { get; set; } = true;
 
@@ -636,6 +663,8 @@ public partial class BitPagination : BitComponentBase
 
     /// <summary>
     /// Determines whether to show the previous button.
+    /// <br />
+    /// The default value is <strong>true</strong>.
     /// </summary>
     [Parameter] public bool ShowPreviousButton { get; set; } = true;
 
@@ -1039,16 +1068,21 @@ public partial class BitPagination : BitComponentBase
 
     private string GetSummaryText()
     {
-        if (GetSummary is not null) return GetSummary(_SelectedPage, _Count);
-
         // A known number of items is what the position is worth reporting in: "1 - 10 of 240" says how far along
-        // the result set the page sits, which the page number on its own does not.
-        if (TotalItems > 0)
+        // the result set the page sits, which the page number on its own does not. The range is only worked out
+        // here, where it is handed to the one hook that is given it, so that a hook shared across paginations
+        // does not have to know what each of them pages through.
+        if (TotalItems > 0 && (GetItemsSummary is not null || GetSummary is null))
         {
-            var first = (long)(_SelectedPage - 1) * _PageSize + 1;
+            // The math runs in long, since the page before the last one times a big page size can run past an
+            // int, and the first item of a page never lies past the total, which is what makes the cast safe.
+            var first = (int)Math.Min((long)(_SelectedPage - 1) * _PageSize + 1, TotalItems);
+            var last = (int)Math.Min((long)first + _PageSize - 1, TotalItems);
 
-            return $"{first} - {Math.Min(first + _PageSize - 1, TotalItems)} of {TotalItems}";
+            return GetItemsSummary?.Invoke(first, last, TotalItems) ?? $"{first} - {last} of {TotalItems}";
         }
+
+        if (GetSummary is not null) return GetSummary(_SelectedPage, _Count);
 
         return $"Page {_SelectedPage} of {_Count}";
     }

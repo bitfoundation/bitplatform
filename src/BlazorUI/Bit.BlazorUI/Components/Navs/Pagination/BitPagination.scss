@@ -17,6 +17,7 @@
 //   --bit-Pagination-selected-background      fill and border of the current page                (default: the Color role's dark color)
 //   --bit-Pagination-selected-font-weight     weight of the number of the current page           (default: $tg-font-weight)
 //   --bit-Pagination-focus-color              keyboard focus ring                                (default: the Color role's focus color)
+//   --bit-Pagination-input-color              text of the page size select and the jump input    (default: $clr-fg-pri)
 //   --bit-Pagination-input-background         fill of the page size select and the jump input    (default: $clr-bg-sec)
 //   --bit-Pagination-input-border-color       border of the page size select and the jump input  (default: $clr-brd-sec)
 .bit-pgn {
@@ -176,7 +177,7 @@
     // The height is the one every control of the pagination stands at, so the border is counted into it
     // rather than added on top of it.
     box-sizing: border-box;
-    color: $clr-fg-pri;
+    color: var(--bit-Pagination-input-color, #{$clr-fg-pri});
     background: var(--bit-Pagination-input-background, #{$clr-bg-sec});
     padding: 0 spacing(0.5);
     height: var(--bit-pgn-btn-size);

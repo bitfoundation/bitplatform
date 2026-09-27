@@ -31,6 +31,7 @@ public class BitPaginationStylesheetTests
         "--bit-Pagination-selected-background",
         "--bit-Pagination-selected-font-weight",
         "--bit-Pagination-focus-color",
+        "--bit-Pagination-input-color",
         "--bit-Pagination-input-background",
         "--bit-Pagination-input-border-color",
     ];
@@ -50,6 +51,18 @@ public class BitPaginationStylesheetTests
         var read = Regex.Matches(stylesheet, @"var\((--bit-Pagination-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct();
 
         CollectionAssert.IsSubsetOf(read.ToArray(), PublicVariables);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldDocumentEveryPublicVariableOnTheDemoPage()
+    {
+        // The demo page's CSS variables table is the only source of these names the site and the MCP server have,
+        // so a variable the stylesheet reads but the table leaves out is one nobody gets to know about.
+        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Navs", "Pagination", "BitPaginationDemo.razor.cs");
+
+        var documented = Regex.Matches(demo, @"Name = ""(--bit-Pagination-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
+
+        CollectionAssert.AreEquivalent(PublicVariables, documented);
     }
 
     [TestMethod]
@@ -99,13 +112,20 @@ public class BitPaginationStylesheetTests
         return stylesheet[start..end];
     }
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
+    private static string ReadStylesheet()
     {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Navs", "Pagination", "BitPagination.scss"));
+        return ReadFile("Bit.BlazorUI", "Components", "Navs", "Pagination", "BitPagination.scss");
+    }
+
+    // The path is relative to the BlazorUI folder this test file sits five levels under.
+    private static string ReadFile(params string[] segments)
+    {
+        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(GetThisFile())!, "..", "..", "..", "..", "..", .. segments]));
 
         Assert.IsTrue(File.Exists(path), $"Missing {path}.");
 
         return File.ReadAllText(path).Replace("\r\n", "\n");
     }
+
+    private static string GetThisFile([CallerFilePath] string thisFile = "") => thisFile;
 }

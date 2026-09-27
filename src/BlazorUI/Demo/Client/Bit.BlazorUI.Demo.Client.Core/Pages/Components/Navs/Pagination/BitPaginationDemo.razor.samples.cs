@@ -5,7 +5,9 @@ public partial class BitPaginationDemo
     private readonly string example1RazorCode = @"
 <BitPagination Count=""5"" />
 
-<BitPagination Count=""5"" DefaultSelectedPage=""3"" />";
+<BitPagination Count=""5"" DefaultSelectedPage=""3"" />
+
+<BitPagination Count=""5"" DefaultSelectedPage=""3"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
 <BitPagination Count=""5"" SelectedPage=""oneWaySelectedPage"" />
@@ -26,7 +28,7 @@ private int onChangeSelectedPage = 3;";
 <BitPagination Count=""5"" Variant=""BitVariant.Outline"" />
 <BitPagination Count=""5"" Variant=""BitVariant.Text"" />
 
-<BitPagination Count=""9"" Rounded ShowFirstButton ShowLastButton DefaultSelectedPage=""5"" />
+<BitPagination Count=""9"" Rounded DefaultSelectedPage=""5"" />
 <BitPagination Count=""9"" Rounded Variant=""BitVariant.Outline"" DefaultSelectedPage=""5"" />";
 
     private readonly string example4RazorCode = @"
@@ -62,18 +64,14 @@ private int onChangeSelectedPage = 3;";
 
 <BitPagination Count=""12"" ShowSummary ShowPageButtons=""false"" ShowFirstButton ShowLastButton DefaultSelectedPage=""4"" />
 
-<BitPagination Count=""24"" ShowSummary ShowPageButtons=""false"" GetSummary=""@GetItemsRangeSummary"" DefaultSelectedPage=""3"" />";
-    private readonly string example8CsharpCode = @"
-private string GetItemsRangeSummary(int page, int count)
-{
-    return $""Showing {(page - 1) * 10 + 1} to {page * 10} of {count * 10} results"";
-}";
+<BitPagination Count=""12"" ShowSummary ShowPageButtons=""false"" GetSummary=""@((page, count) => $""{page} / {count}"")"" DefaultSelectedPage=""4"" />";
 
     private readonly string example9RazorCode = @"
 <BitPagination ShowSummary
                ShowPageSizeSelector
                TotalItems=""240""
                PageSizeOptions=""@([10, 25, 100])""
+               GetItemsSummary=""@((first, last, total) => $""Showing {first} to {last} of {total} results"")""
                @bind-PageSize=""totalItemsPageSize""
                @bind-SelectedPage=""totalItemsSelectedPage"" />
 
@@ -179,12 +177,13 @@ private BitPagination accessiblePagination = default!;
 
 private string GetResultsRangeLabel(int page, bool isSelected)
 {
-    return $""Results {(page - 1) * 10 + 1} to {page * 10}"";
+    return $""Page {page}, results {(page - 1) * 10 + 1} to {page * 10}"";
 }";
 
     private readonly string example15RazorCode = @"
 <BitParams Parameters=""@paginationParams"">
     <BitPagination Count=""12"" DefaultSelectedPage=""4"" />
+    <BitPagination TotalItems=""240"" DefaultSelectedPage=""4"" />
     <BitPagination Count=""12"" DefaultSelectedPage=""4"" Variant=""BitVariant.Fill"" ShowSummary=""false"" />
 </BitParams>
 
@@ -207,6 +206,7 @@ private readonly BitPaginationParams[] paginationParams =
         EllipsisAriaLabel = ""Más páginas"",
         GetPageAriaLabel = (page, _) => $""Página {page}"",
         GetSummary = (page, count) => $""Página {page} de {count}"",
+        GetItemsSummary = (first, last, total) => $""{first} - {last} de {total}"",
     }
 ];";
 

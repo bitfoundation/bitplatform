@@ -83,6 +83,12 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
     public string? FirstButtonText { get; set; }
 
     /// <summary>
+    /// Provides the text of the summary while TotalItems is set, from the first and the last items of the selected
+    /// page and the total number of items.
+    /// </summary>
+    public Func<int, int, int, string>? GetItemsSummary { get; set; }
+
+    /// <summary>
     /// Provides the accessible label of a page button, from its one-based number and whether it is the selected one.
     /// </summary>
     public Func<int, bool, string>? GetPageAriaLabel { get; set; }
@@ -340,6 +346,11 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
         if (FirstButtonText is not null && bitPagination.HasNotBeenSet(nameof(FirstButtonText)))
         {
             bitPagination.FirstButtonText = FirstButtonText;
+        }
+
+        if (GetItemsSummary is not null && bitPagination.HasNotBeenSet(nameof(GetItemsSummary)))
+        {
+            bitPagination.GetItemsSummary = GetItemsSummary;
         }
 
         if (GetPageAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(GetPageAriaLabel)))
