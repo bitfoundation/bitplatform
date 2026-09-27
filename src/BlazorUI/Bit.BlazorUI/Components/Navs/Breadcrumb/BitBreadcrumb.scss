@@ -3,8 +3,7 @@
 // Public CSS variables, read with a fallback and never declared here, so they inherit: set one on :root,
 // on any ancestor, or on the Style of a single breadcrumb. The overflow menu is rendered outside the root
 // element (and moved to the body by the callout positioning), so the component copies the
-// --bit-Breadcrumb-* declarations of Style and Styles.Root onto it by hand - see GetCalloutStyles - and
-// the values the root resolves from an ancestor or a class onto the wrapper the callout is moved into.
+// --bit-Breadcrumb-* declarations of Style and Styles.Root onto it by hand - see GetCalloutStyles.
 //
 //   TRAIL
 //   --bit-Breadcrumb-color                  text of the items                          (default: the Color role's main color / $clr-fg-pri)

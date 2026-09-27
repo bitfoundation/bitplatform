@@ -880,8 +880,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // callout once it has moved (only :root and body stay ancestors of it), so the public --bit-Breadcrumb-*
     // declarations of Style and Styles.Root are carried across by hand: ONE Style on the component restyles the
     // trail and the menu it opens together. Styles.Callout is appended last, so a value written for the callout
-    // still wins over the copy. What the root resolves from an ancestor or a class is carried by the callout JS
-    // instead (see ToggleCallout), onto the wrapper it moves the callout into, so it ranks below all of these.
+    // still wins over the copy.
     private string GetCalloutStyles()
     {
         return string.Join(';', new[] { GetMaxItemWidthStyle(), GetPublicCssVariables(Style), GetPublicCssVariables(Styles?.Root), Styles?.Callout }
@@ -1389,8 +1388,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 footerId: "",
                 setCalloutWidth: false,
                 fixedCalloutWidth: false,
-                maxWindowWidth: 0,
-                inheritedVariablePrefix: PUBLIC_CSS_VARIABLE_PREFIX);
+                maxWindowWidth: 0);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, there is no callout left to move
         catch (JSException) { } // a JS-side failure must not escape into the render lifecycle
