@@ -59,6 +59,11 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
     public BitTimelineLineVariant? LineVariant { get; set; }
 
     /// <summary>
+    /// Where the connecting line runs: through the middle of the timeline, or along its start or end edge.
+    /// </summary>
+    public BitTimelineLinePosition? LinePosition { get; set; }
+
+    /// <summary>
     /// Renders the items in the reverse order, so the last item of the list is rendered first.
     /// </summary>
     public bool? ReverseOrder { get; set; }
@@ -145,6 +150,13 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
         if (LineVariant.HasValue && bitTimeline.HasNotBeenSet(nameof(LineVariant)))
         {
             bitTimeline.LineVariant = LineVariant.Value;
+
+            bitTimeline.ClassBuilder.Reset();
+        }
+
+        if (LinePosition.HasValue && bitTimeline.HasNotBeenSet(nameof(LinePosition)))
+        {
+            bitTimeline.LinePosition = LinePosition.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }

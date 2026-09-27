@@ -47,6 +47,16 @@ public partial class _BitTimelineCustomDemo
         new() { FirstText = "Custom 3", Icon = BitIconName.Delete }
     ];
 
+    private List<Event> variantCustoms =
+    [
+        new() { FirstText = "Fill", Icon = BitIconName.Accept, DotVariant = BitVariant.Fill },
+        new() { FirstText = "Outline", Icon = BitIconName.Accept, DotVariant = BitVariant.Outline },
+        new() { FirstText = "Text", Icon = BitIconName.Accept, DotVariant = BitVariant.Text },
+        new() { FirstText = "Fill", SecondText = "Disabled", Icon = BitIconName.Accept, DotVariant = BitVariant.Fill, Disabled = true },
+        new() { FirstText = "Outline", SecondText = "Disabled", Icon = BitIconName.Accept, DotVariant = BitVariant.Outline, Disabled = true },
+        new() { FirstText = "Text", SecondText = "Disabled", Icon = BitIconName.Accept, DotVariant = BitVariant.Text, Disabled = true }
+    ];
+
     private List<Event> reversedCustoms =
     [
         new() { FirstText = "Custom 1" },

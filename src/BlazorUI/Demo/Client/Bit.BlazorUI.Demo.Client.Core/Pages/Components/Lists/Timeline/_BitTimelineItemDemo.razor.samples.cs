@@ -156,8 +156,29 @@ private List<BitTimelineItem> basicItems =
 ];";
 
     private readonly string example9RazorCode = @"
-<BitTimeline Items=""customizedItems"" />";
+<BitTimeline LinePosition=""BitTimelineLinePosition.Start"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignItems"" />
+
+<BitTimeline LinePosition=""BitTimelineLinePosition.End"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignItems"" />
+
+<BitTimeline Horizontal LinePosition=""BitTimelineLinePosition.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicItems"" />";
     private readonly string example9CsharpCode = @"
+private List<BitTimelineItem> alignItems =
+[
+    new() { PrimaryText = ""09:00"", SecondaryText = ""Kickoff: the scope, the milestones and an owner for each of them are agreed on."", IconName = BitIconName.Add },
+    new() { PrimaryText = ""11:30"", SecondaryText = ""Design review: the proposal is walked through and the open questions are collected."", IconName = BitIconName.Edit },
+    new() { PrimaryText = ""15:00"", SecondaryText = ""Sign-off: the plan is approved and the work is scheduled."", IconName = BitIconName.Accept }
+];
+
+private List<BitTimelineItem> basicItems =
+[
+    new() { PrimaryText = ""Item 1"" },
+    new() { PrimaryText = ""Item 2"", SecondaryText = ""Item 2 Secondary"" },
+    new() { PrimaryText = ""Item 3"" }
+];";
+
+    private readonly string example10RazorCode = @"
+<BitTimeline Items=""customizedItems"" />";
+    private readonly string example10CsharpCode = @"
 private List<BitTimelineItem> customizedItems =
 [
     new() { PrimaryText = ""Success"", IconName = BitIconName.Accept, Color = BitColor.Success },
@@ -166,7 +187,7 @@ private List<BitTimelineItem> customizedItems =
     new() { PrimaryText = ""No dot"", HideDot = true }
 ];";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .dot-template {
         z-index: 1;
@@ -197,7 +218,7 @@ private List<BitTimelineItem> customizedItems =
         <div class=""dot-template""><BitIcon IconName=""@BitIconName.CheckMark"" /></div>
     </DotTemplate>
 </BitTimeline>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private List<BitTimelineItem> templateItems =
 [
     new()
@@ -251,11 +272,11 @@ private List<BitTimelineItem> fullTemplateItems =
     new() { PrimaryText = ""Delivered"" }
 ];";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitTimeline Items=""clickItems"" OnItemClick=""@(item => { clickedItem = $""{item.PrimaryText} (OnItemClick)""; })"" />
 
 <div>Clicked item: <b>@clickedItem</b></div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string? clickedItem;
 private List<BitTimelineItem> clickItems = [];
 
@@ -277,9 +298,9 @@ private void HandleOnItemClick(BitTimelineItem item)
     StateHasChanged();
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitTimeline AriaLabel=""Order history"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""a11yItems"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private List<BitTimelineItem> a11yItems =
 [
     new() { PrimaryText = ""Ordered"", IconName = BitIconName.Accept, Color = BitColor.Success, AriaLabel = ""Ordered, done"", Title = ""Done on 3 March"" },
@@ -287,7 +308,7 @@ private List<BitTimelineItem> a11yItems =
     new() { PrimaryText = ""Delivered"", Variant = BitVariant.Outline, LineVariant = BitTimelineLineVariant.Dashed, AriaLabel = ""Delivered, pending"", Title = ""Expected on 7 March"" }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitParams Parameters=""timelineParams"">
     <BitTimeline Items=""iconItems"" />
 
@@ -295,7 +316,7 @@ private List<BitTimelineItem> a11yItems =
 </BitParams>
 
 <BitTimeline Items=""iconItems"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private readonly BitTimelineParams[] timelineParams =
 [
     new()
@@ -314,82 +335,36 @@ private List<BitTimelineItem> iconItems =
     new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete }
 ];";
 
-    private readonly string example14RazorCode = @"
-<BitTimeline Horizontal Color=""BitColor.Primary"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Color=""BitColor.Secondary"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Color=""BitColor.Tertiary"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Color=""BitColor.Info"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Color=""BitColor.Success"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Color=""BitColor.Warning"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Color=""BitColor.SevereWarning"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Color=""BitColor.Error"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-
-<div><b>Disabled</b>:</div>
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconItems"" />";
-    private readonly string example14CsharpCode = @"
-private List<BitTimelineItem> iconItems =
+    private readonly string example15RazorCode = @"
+<BitTimeline Horizontal Color=""BitColor.Primary"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.Secondary"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.Tertiary"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.Info"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.Success"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.Warning"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.SevereWarning"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.Error"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.PrimaryBackground"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.SecondaryBackground"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.TertiaryBackground"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.PrimaryForeground"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.SecondaryForeground"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.TertiaryForeground"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.PrimaryBorder"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.SecondaryBorder"" Items=""variantItems"" />
+<BitTimeline Horizontal Color=""BitColor.TertiaryBorder"" Items=""variantItems"" />";
+    private readonly string example15CsharpCode = @"
+private List<BitTimelineItem> variantItems =
 [
-    new() { PrimaryText = ""Item 1"", IconName = BitIconName.Add },
-    new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, SecondaryText = ""Item 2 Secondary"", IsEnabled = false },
-    new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete }
+    new() { PrimaryText = ""Fill"", IconName = BitIconName.Accept, Variant = BitVariant.Fill },
+    new() { PrimaryText = ""Outline"", IconName = BitIconName.Accept, Variant = BitVariant.Outline },
+    new() { PrimaryText = ""Text"", IconName = BitIconName.Accept, Variant = BitVariant.Text },
+    new() { PrimaryText = ""Fill"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsEnabled = false },
+    new() { PrimaryText = ""Outline"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsEnabled = false },
+    new() { PrimaryText = ""Text"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsEnabled = false }
 ];";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTimeline Horizontal Items=""externalIconItems1"" />
@@ -406,7 +381,7 @@ private List<BitTimelineItem> iconItems =
 <BitTimeline Horizontal Items=""bootstrapIconItems2"" Variant=""BitVariant.Outline"" />
 
 <BitTimeline Horizontal Items=""bootstrapIconItems3"" Variant=""BitVariant.Text"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private List<BitTimelineItem> externalIconItems1 =
 [
     new() { PrimaryText = ""Item 1"", Icon = ""fa-solid fa-plus"" },
@@ -449,27 +424,22 @@ private List<BitTimelineItem> bootstrapIconItems3 =
     new() { PrimaryText = ""Item 3"", Icon = BitIconInfo.Bi(""trash"") }
 ];";
 
-    private readonly string example16RazorCode = @"
-<BitTimeline Horizontal Size=""BitSize.Small"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitSize.Small"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitSize.Small"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Size=""BitSize.Medium"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitSize.Medium"" Variant=""BitVariant.Text"" Items=""iconItems"" />
-
-<BitTimeline Horizontal Size=""BitSize.Large"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""iconItems"" />";
-    private readonly string example16CsharpCode = @"
-private List<BitTimelineItem> iconItems =
+    private readonly string example17RazorCode = @"
+<BitTimeline Horizontal Size=""BitSize.Small"" Items=""variantItems"" />
+<BitTimeline Horizontal Size=""BitSize.Medium"" Items=""variantItems"" />
+<BitTimeline Horizontal Size=""BitSize.Large"" Items=""variantItems"" />";
+    private readonly string example17CsharpCode = @"
+private List<BitTimelineItem> variantItems =
 [
-    new() { PrimaryText = ""Item 1"", IconName = BitIconName.Add },
-    new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, SecondaryText = ""Item 2 Secondary"", IsEnabled = false },
-    new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete }
+    new() { PrimaryText = ""Fill"", IconName = BitIconName.Accept, Variant = BitVariant.Fill },
+    new() { PrimaryText = ""Outline"", IconName = BitIconName.Accept, Variant = BitVariant.Outline },
+    new() { PrimaryText = ""Text"", IconName = BitIconName.Accept, Variant = BitVariant.Text },
+    new() { PrimaryText = ""Fill"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsEnabled = false },
+    new() { PrimaryText = ""Outline"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsEnabled = false },
+    new() { PrimaryText = ""Text"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsEnabled = false }
 ];";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -533,7 +503,7 @@ private List<BitTimelineItem> iconItems =
 <div style=""--bit-Timeline-item-spacing: 1.25rem; --bit-Timeline-content-gap: 1.5rem; --bit-Timeline-dot-shadow: 0 0 0 0.25rem var(--bit-clr-bg-sec);"">
     <BitTimeline TruncateLine=""BitTimelineTruncateLine.Both"" Items=""cssVarItems"" />
 </div>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private List<BitTimelineItem> basicItems =
 [
     new() { PrimaryText = ""Item 1"" },
@@ -561,11 +531,11 @@ private List<BitTimelineItem> cssVarItems =
     new() { PrimaryText = ""Delivered"", Variant = BitVariant.Outline }
 ];";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitTimeline Dir=""BitDir.Rtl"" Items=""basicRtlItems"" />
 
 <BitTimeline Horizontal Dir=""BitDir.Rtl"" Items=""basicRtlItems"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private List<BitTimelineItem> basicRtlItems =
 [
     new() { PrimaryText = ""گزینه ۱"" },

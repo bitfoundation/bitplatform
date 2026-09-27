@@ -26,6 +26,16 @@ public partial class _BitTimelineItemDemo
         new() { PrimaryText = "Item 3", IconName = BitIconName.Delete }
     ];
 
+    private List<BitTimelineItem> variantItems =
+    [
+        new() { PrimaryText = "Fill", IconName = BitIconName.Accept, Variant = BitVariant.Fill },
+        new() { PrimaryText = "Outline", IconName = BitIconName.Accept, Variant = BitVariant.Outline },
+        new() { PrimaryText = "Text", IconName = BitIconName.Accept, Variant = BitVariant.Text },
+        new() { PrimaryText = "Fill", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsEnabled = false },
+        new() { PrimaryText = "Outline", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsEnabled = false },
+        new() { PrimaryText = "Text", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsEnabled = false }
+    ];
+
     private List<BitTimelineItem> reversedItems =
     [
         new() { PrimaryText = "Item 1" },

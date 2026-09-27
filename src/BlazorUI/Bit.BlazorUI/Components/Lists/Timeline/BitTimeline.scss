@@ -24,6 +24,12 @@
  * a var() is substituted on the element that declares it, so declaring the dot colors on the root
  * would freeze them to the root color and an item-level color or variant class could never win.
  */
+/*
+ * Only a filled dot is opaque, so only a filled dot has the line run under it. The hollow dots of the outline and
+ * the text variants are transparent, and the line stops at their edge instead (--bit-tln-dvd-gap, half a dot from
+ * its center), which keeps them hollow on whatever surface the timeline sits: painting them with the page color to
+ * hide the line would show a disc on a card or on any other surface of another color.
+ */
 @mixin timeline-variant-fill {
     --bit-tln-dot-clr: var(--bit-tln-clr-fg);
     --bit-tln-dot-clr-bg: var(--bit-tln-clr);
@@ -32,6 +38,7 @@
     --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: auto;
     --bit-tln-dot-ico-height: auto;
+    --bit-tln-dvd-gap: 0px;
 }
 
 @mixin timeline-variant-fill-disabled {
@@ -42,16 +49,17 @@
 
 @mixin timeline-variant-outline {
     --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-clr-bg: transparent;
     --bit-tln-dot-clr-brd: var(--bit-tln-clr);
     --bit-tln-dot-ico-clr: var(--bit-tln-clr);
     --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: auto;
     --bit-tln-dot-ico-height: auto;
+    --bit-tln-dvd-gap: calc(var(--bit-tln-dot-size) / 2);
 }
 
 @mixin timeline-variant-outline-disabled {
-    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-clr-bg: transparent;
     --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
     --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
 }
@@ -61,12 +69,17 @@
     --bit-tln-dot-clr-bg: transparent;
     --bit-tln-dot-clr-brd: transparent;
     --bit-tln-dot-ico-clr: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
     --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
+    --bit-tln-dvd-gap: calc(var(--bit-tln-dot-size) / 2);
 }
 
+// It repeats the transparent dot of the variant, because a disabled text item of a filled or an outlined timeline
+// also matches the disabled rule of that timeline, which outweighs the item-level variant and would paint its dot.
 @mixin timeline-variant-text-disabled {
+    --bit-tln-dot-clr-bg: transparent;
+    --bit-tln-dot-clr-brd: transparent;
     --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
 }
 
@@ -257,6 +270,8 @@
      * direction to move from there, by the padding and half a dot). The offsets of the axis the timeline does not run along are left
      * at auto, so the line keeps the centered static position of the divider on that axis.
      *
+     * Each half stops --bit-tln-dvd-gap short of that center, which the hollow dot variants set to half a dot.
+     *
      * --bit-tln-dvd-clr is the line color the older versions documented, still honored behind the public one.
      */
     &::before,
@@ -270,16 +285,16 @@
     &::before {
         top: 0;
         display: var(--bit-tln-dvd-dsp-s);
-        height: var(--bit-tln-split);
+        height: calc(var(--bit-tln-split) - var(--bit-tln-dvd-gap, 0px));
         background: repeating-linear-gradient(var(--bit-tln-dvd-dir-s),
                 var(--bit-Timeline-line-color, var(--bit-tln-dvd-clr, #{$clr-brd-sec})) 0 var(--bit-tln-dvd-dash, 100%),
                 transparent var(--bit-tln-dvd-dash, 100%) var(--bit-tln-dvd-period, 100%));
     }
 
     &::after {
-        top: var(--bit-tln-split);
         display: var(--bit-tln-dvd-dsp-e);
-        height: calc(100% - var(--bit-tln-split));
+        top: calc(var(--bit-tln-split) + var(--bit-tln-dvd-gap, 0px));
+        height: calc(100% - var(--bit-tln-split) - var(--bit-tln-dvd-gap, 0px));
         background: repeating-linear-gradient(var(--bit-tln-dvd-dir-e),
                 var(--bit-Timeline-line-color, var(--bit-tln-dvd-clr, #{$clr-brd-sec})) 0 var(--bit-tln-dvd-dash, 100%),
                 transparent var(--bit-tln-dvd-dash, 100%) var(--bit-tln-dvd-period, 100%));
@@ -301,6 +316,11 @@
     border-width: var(--bit-Timeline-dot-border-width, #{$shp-border-width});
     border-color: var(--bit-Timeline-dot-border-color, var(--bit-tln-dot-clr-brd));
     background-color: var(--bit-Timeline-dot-background, var(--bit-tln-dot-clr-bg));
+}
+
+// A hidden dot leaves no gap in the line, whatever the variant of its item.
+.bit-tln-dvd:has(> .bit-tln-hdd) {
+    --bit-tln-dvd-gap: 0px;
 }
 
 // The placeholder of a hidden dot paints nothing and only reserves the box of a dot. It repeats the
@@ -423,13 +443,13 @@
         }
 
         &::before {
-            width: var(--bit-tln-split);
             inset-inline-start: 0;
+            width: calc(var(--bit-tln-split) - var(--bit-tln-dvd-gap, 0px));
         }
 
         &::after {
-            width: calc(100% - var(--bit-tln-split));
-            inset-inline-start: var(--bit-tln-split);
+            width: calc(100% - var(--bit-tln-split) - var(--bit-tln-dvd-gap, 0px));
+            inset-inline-start: calc(var(--bit-tln-split) + var(--bit-tln-dvd-gap, 0px));
         }
     }
 
@@ -451,6 +471,109 @@
 
     &.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
         --bit-tln-itm-flexdir: column;
+    }
+}
+
+/*
+ * A line along the start or the end edge stacks the two contents of each item on one side of it, as an activity
+ * feed does, so neither content keeps half of the item for itself. The stack is laid out by whatever holds the parts
+ * of the item (the item itself, or the button of a clickable one), and only while it holds them: a whole-item
+ * Template brings its own layout. The dot keeps the place DotAlignment gives it along the line, and Reversed and
+ * Alternate, which pick a side of a centered line, have no side left to pick.
+ */
+.bit-tln-lps,
+.bit-tln-lpe {
+    .bit-tln-pcn,
+    .bit-tln-scn {
+        min-width: 0;
+        min-height: 0;
+    }
+}
+
+// In a vertical timeline the divider spans both rows of the stack, so the line runs the whole height of the item.
+.bit-tln-lps:not(.bit-tln-hrz),
+.bit-tln-lpe:not(.bit-tln-hrz) {
+    .bit-tln-itm:has(> .bit-tln-dvd),
+    .bit-tln-btn:has(> .bit-tln-dvd) {
+        display: grid;
+        grid-template-rows: auto auto;
+        align-content: var(--bit-tln-align, center);
+    }
+
+    .bit-tln-dvd {
+        grid-row: 1 / span 2;
+    }
+
+    // Stacked, the two contents share the room kept along the line instead of each keeping all of it. Declared after
+    // the DotAlignment paddings above, so the edge between the two contents stays closed whatever the alignment.
+    .bit-tln-pcn {
+        grid-row: 1;
+        padding-block-end: 0;
+    }
+
+    .bit-tln-scn {
+        grid-row: 2;
+        padding-block-start: 0;
+    }
+}
+
+.bit-tln-lps:not(.bit-tln-hrz) {
+    .bit-tln-itm:has(> .bit-tln-dvd),
+    .bit-tln-btn:has(> .bit-tln-dvd) {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .bit-tln-dvd {
+        grid-column: 1;
+    }
+
+    .bit-tln-pcn,
+    .bit-tln-scn {
+        grid-column: 2;
+        flex-flow: row;
+    }
+}
+
+.bit-tln-lpe:not(.bit-tln-hrz) {
+    .bit-tln-itm:has(> .bit-tln-dvd),
+    .bit-tln-btn:has(> .bit-tln-dvd) {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .bit-tln-dvd {
+        grid-column: 2;
+    }
+
+    // Toward the line, as the contents of a centered line are.
+    .bit-tln-pcn,
+    .bit-tln-scn {
+        grid-column: 1;
+        flex-flow: row-reverse;
+    }
+}
+
+// In a horizontal timeline the parts of an item already stack, so only the divider moves: above the contents or below.
+.bit-tln-hrz.bit-tln-lps,
+.bit-tln-hrz.bit-tln-lpe {
+    .bit-tln-itm,
+    .bit-tln-btn {
+        flex-direction: column;
+    }
+}
+
+.bit-tln-hrz.bit-tln-lps .bit-tln-dvd {
+    order: -1;
+}
+
+.bit-tln-hrz.bit-tln-lpe .bit-tln-dvd {
+    order: 1;
+}
+
+// The items stretch to the tallest of them, so the stack is pushed down to keep every dot on the same line.
+.bit-tln-hrz.bit-tln-lpe {
+    .bit-tln-itm,
+    .bit-tln-btn {
+        justify-content: flex-end;
     }
 }
 
@@ -572,8 +695,8 @@
     @include timeline-line-dotted;
 }
 
-// The text variant paints an opaque plate behind the icon so the connecting line does not run through it. The plate
-// is the only fill a text dot has, so it takes the shape of the dot and the public dot background as well.
+// The icon of the text variant sits on a plate of the size and the shape of a dot, transparent by default, which is
+// the only fill a text dot has: the public dot background paints it.
 .bit-tln-txt .bit-tln-ico,
 .bit-tln-itm.bit-tln-ivt .bit-tln-ico {
     display: flex;
@@ -585,10 +708,17 @@
     background-color: var(--bit-Timeline-dot-background, var(--bit-tln-dot-ico-clr-bg));
 }
 
-// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
-// Each role also gets an item-level alias class: "i" + the role's first two letters (pri > ipr).
-@each $role, $tokens in $bit-semantic-color-roles {
-    .bit-tln-#{$role}, .bit-tln-i#{role-abbr($role)} {
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Each role also gets
+// an item-level alias class: "i" + the first two letters of a semantic role (pri > ipr), whose classes predate the
+// surface roles, or "i" + the whole name of a surface role (pbg > ipbg), whose first two letters are not unique.
+@each $role, $tokens in $bit-color-roles {
+    $item-role: $role;
+
+    @if role($tokens, kind) == semantic {
+        $item-role: role-abbr($role);
+    }
+
+    .bit-tln-#{$role}, .bit-tln-i#{$item-role} {
         --bit-tln-clr: #{role($tokens, main)};
         --bit-tln-clr-fg: #{role($tokens, on)};
         --bit-tln-clr-focus: #{role($tokens, focus)};

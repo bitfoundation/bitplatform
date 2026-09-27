@@ -82,6 +82,14 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     public BitTimelineLineVariant? LineVariant { get; set; }
 
     /// <summary>
+    /// Where the connecting line runs: through the middle of the timeline (Center, the default), with the contents on
+    /// both sides of it, or along its Start or End edge, with the contents of each item stacked on one side of it.
+    /// Reversed and Alternate only apply to the centered line.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitTimelineLinePosition? LinePosition { get; set; }
+
+    /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitTimelineNameSelectors<TItem>? NameSelectors { get; set; }
@@ -171,6 +179,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             BitColor.Warning => "bit-tln-wrn",
             BitColor.SevereWarning => "bit-tln-swr",
             BitColor.Error => "bit-tln-err",
+            BitColor.PrimaryBackground => "bit-tln-pbg",
+            BitColor.SecondaryBackground => "bit-tln-sbg",
+            BitColor.TertiaryBackground => "bit-tln-tbg",
+            BitColor.PrimaryForeground => "bit-tln-pfg",
+            BitColor.SecondaryForeground => "bit-tln-sfg",
+            BitColor.TertiaryForeground => "bit-tln-tfg",
+            BitColor.PrimaryBorder => "bit-tln-pbr",
+            BitColor.SecondaryBorder => "bit-tln-sbr",
+            BitColor.TertiaryBorder => "bit-tln-tbr",
             _ => "bit-tln-pri"
         });
 
@@ -198,6 +215,14 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             BitTimelineTruncateLine.Start => "bit-tln-tls",
             BitTimelineTruncateLine.End => "bit-tln-tle",
             BitTimelineTruncateLine.Both => "bit-tln-tlb",
+            _ => string.Empty
+        });
+
+        // The centered line is what the stylesheet paints on its own, so only the other two carry a class.
+        ClassBuilder.Register(() => LinePosition switch
+        {
+            BitTimelineLinePosition.Start => "bit-tln-lps",
+            BitTimelineLinePosition.End => "bit-tln-lpe",
             _ => string.Empty
         });
 
@@ -321,6 +346,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
                 BitColor.Warning => " bit-tln-iwr",
                 BitColor.SevereWarning => " bit-tln-isw",
                 BitColor.Error => " bit-tln-ier",
+                BitColor.PrimaryBackground => " bit-tln-ipbg",
+                BitColor.SecondaryBackground => " bit-tln-isbg",
+                BitColor.TertiaryBackground => " bit-tln-itbg",
+                BitColor.PrimaryForeground => " bit-tln-ipfg",
+                BitColor.SecondaryForeground => " bit-tln-isfg",
+                BitColor.TertiaryForeground => " bit-tln-itfg",
+                BitColor.PrimaryBorder => " bit-tln-ipbr",
+                BitColor.SecondaryBorder => " bit-tln-isbr",
+                BitColor.TertiaryBorder => " bit-tln-itbr",
                 _ => " bit-tln-ipr"
             });
         }

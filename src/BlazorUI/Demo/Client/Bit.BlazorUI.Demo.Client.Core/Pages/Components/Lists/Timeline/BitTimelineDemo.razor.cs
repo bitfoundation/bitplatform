@@ -88,6 +88,15 @@ public partial class BitTimelineDemo
         },
         new()
         {
+            Name = "LinePosition",
+            Type = "BitTimelineLinePosition?",
+            DefaultValue = "null",
+            Description = "Where the connecting line runs: through the middle (Center), or along the Start or End edge with the contents of each item stacked beside it. Reversed and Alternate only apply to the centered line.",
+            LinkType = LinkType.Link,
+            Href = "#line-position-enum",
+        },
+        new()
+        {
             Name = "NameSelectors",
             Type = "BitTimelineNameSelectors<TItem>?",
             DefaultValue = "null",
@@ -988,6 +997,60 @@ public partial class BitTimelineDemo
                     Name= "Error",
                     Description="Error general color.",
                     Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
                 }
             ]
         },
@@ -1041,6 +1104,33 @@ public partial class BitTimelineDemo
                 {
                     Name= "Dotted",
                     Description="A line drawn as a series of dots, a lighter version of the dashed line.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "line-position-enum",
+            Name = "BitTimelineLinePosition",
+            Description = "Determines where the connecting line of the timeline runs across its items.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Center",
+                    Description="The line runs through the middle, with the primary contents on one side of it and the secondary ones on the other.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Start",
+                    Description="The line runs along the start edge (the top in a horizontal timeline), with the contents of each item stacked after it.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="The line runs along the end edge (the bottom in a horizontal timeline), with the contents of each item stacked before it.",
                     Value="2",
                 }
             ]

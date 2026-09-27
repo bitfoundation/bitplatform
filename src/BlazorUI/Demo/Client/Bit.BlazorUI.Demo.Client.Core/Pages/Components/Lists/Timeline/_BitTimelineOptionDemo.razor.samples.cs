@@ -178,6 +178,25 @@ public partial class _BitTimelineOptionDemo
 </BitTimeline>";
 
     private readonly string example9RazorCode = @"
+<BitTimeline TItem=""BitTimelineOption"" LinePosition=""BitTimelineLinePosition.Start"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+    <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
+</BitTimeline>
+
+<BitTimeline TItem=""BitTimelineOption"" LinePosition=""BitTimelineLinePosition.End"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+    <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
+</BitTimeline>
+
+<BitTimeline TItem=""BitTimelineOption"" Horizontal LinePosition=""BitTimelineLinePosition.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+    <BitTimelineOption PrimaryText=""Option 1"" />
+    <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
+    <BitTimelineOption PrimaryText=""Option 3"" />
+</BitTimeline>";
+
+    private readonly string example10RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Success"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" />
     <BitTimelineOption PrimaryText=""Warning"" IconName=""@BitIconName.Warning"" Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" />
@@ -185,7 +204,7 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""No dot"" HideDot />
 </BitTimeline>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .dot-template {
         z-index: 1;
@@ -284,7 +303,7 @@ public partial class _BitTimelineOptionDemo
     </Options>
 </BitTimeline>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" OnItemClick=""@(item => { clickedOption = $""{item.PrimaryText} (OnItemClick)""; })"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit""
@@ -293,17 +312,17 @@ public partial class _BitTimelineOptionDemo
 </BitTimeline>
 
 <div>Clicked item: <b>@clickedOption</b></div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string? clickedOption;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" AriaLabel=""Order history"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""Ordered"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" AriaLabel=""Ordered, done"" Title=""Done on 3 March"" />
     <BitTimelineOption PrimaryText=""Shipped"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" LineVariant=""BitTimelineLineVariant.Dashed"" AriaLabel=""Shipped, done"" Title=""Done on 4 March"" />
     <BitTimelineOption PrimaryText=""Delivered"" Variant=""BitVariant.Outline"" LineVariant=""BitTimelineLineVariant.Dashed"" AriaLabel=""Delivered, pending"" Title=""Expected on 7 March"" />
 </BitTimeline>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitParams Parameters=""timelineParams"">
     <BitTimeline TItem=""BitTimelineOption"">
         <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
@@ -323,7 +342,7 @@ private string? clickedOption;";
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private readonly BitTimelineParams[] timelineParams =
 [
     new()
@@ -335,51 +354,161 @@ private readonly BitTimelineParams[] timelineParams =
     }
 ];";
 
-    private readonly string example14RazorCode = @"
-<BitTimeline Horizontal Color=""BitColor.Primary"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-<BitTimeline Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-<BitTimeline Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Text"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-@* the same three timelines are repeated for Secondary, Tertiary, Info, Success, Warning, SevereWarning and Error *@
-
-
-<div><b>Disabled</b>:</div>
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Text"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-@* the same three timelines are repeated for Secondary, Tertiary, Info, Success, Warning, SevereWarning and Error *@";
-
     private readonly string example15RazorCode = @"
+<BitTimeline Horizontal Color=""BitColor.Primary"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.Secondary"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.Tertiary"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.Info"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.Success"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.Warning"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.SevereWarning"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.Error"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.PrimaryBackground"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.SecondaryBackground"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.TertiaryBackground"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.PrimaryForeground"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.SecondaryForeground"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.TertiaryForeground"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.PrimaryBorder"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.SecondaryBorder"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Color=""BitColor.TertiaryBorder"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>";
+
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTimeline Horizontal TItem=""BitTimelineOption"">
@@ -421,28 +550,35 @@ private readonly BitTimelineParams[] timelineParams =
     <BitTimelineOption PrimaryText=""Option 3"" Icon=""@BitIconInfo.Bi(""trash"")"" />
 </BitTimeline>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitTimeline Horizontal Size=""BitSize.Small"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
 </BitTimeline>
 
 <BitTimeline Horizontal Size=""BitSize.Medium"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
 </BitTimeline>
 
 <BitTimeline Horizontal Size=""BitSize.Large"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
+    <BitTimelineOption PrimaryText=""Fill"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+    <BitTimelineOption PrimaryText=""Outline"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+    <BitTimelineOption PrimaryText=""Text"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
+    <BitTimelineOption PrimaryText=""Fill"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Outline"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
+    <BitTimelineOption PrimaryText=""Text"" SecondaryText=""Disabled"" IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+</BitTimeline>";
 
-@* each size is also shown with the Outline and the Text variants *@";
-
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -534,7 +670,7 @@ private readonly BitTimelineParams[] timelineParams =
     </BitTimeline>
 </div>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitTimeline TItem=""BitTimelineOption"" Dir=""BitDir.Rtl"">
     <BitTimelineOption PrimaryText=""گزینه ۱"" />
     <BitTimelineOption PrimaryText=""گزینه ۲"" SecondaryText=""گزینه ۲ ثانویه"" />

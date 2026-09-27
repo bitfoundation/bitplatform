@@ -392,6 +392,52 @@ public class BitTimelineTests : BunitTestContext
         }
     }
 
+    [TestMethod,
+        // A centered line is the default layout of the stylesheet, so it carries no class of its own.
+        DataRow(null, null),
+        DataRow(BitTimelineLinePosition.Center, null),
+        DataRow(BitTimelineLinePosition.Start, "bit-tln-lps"),
+        DataRow(BitTimelineLinePosition.End, "bit-tln-lpe")]
+    public void BitTimelineShouldApplyTheLinePositionClass(BitTimelineLinePosition? linePosition, string? expectedClass)
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
+        {
+            parameters.Add(p => p.LinePosition, linePosition);
+            TwoOptions()(parameters);
+        });
+
+        var root = component.Find(".bit-tln");
+
+        foreach (var cls in new[] { "bit-tln-lps", "bit-tln-lpe" })
+        {
+            Assert.AreEqual(cls == expectedClass, root.ClassList.Contains(cls), cls);
+        }
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-tln-pri", "bit-tln-ipr"),
+        DataRow(BitColor.Error, "bit-tln-err", "bit-tln-ier"),
+        DataRow(BitColor.PrimaryBackground, "bit-tln-pbg", "bit-tln-ipbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-tln-sbg", "bit-tln-isbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-tln-tbg", "bit-tln-itbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-tln-pfg", "bit-tln-ipfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-tln-sfg", "bit-tln-isfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-tln-tfg", "bit-tln-itfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-tln-pbr", "bit-tln-ipbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-tln-sbr", "bit-tln-isbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-tln-tbr", "bit-tln-itbr")]
+    public void BitTimelineShouldApplyTheColorClassOfTheTimelineAndOfTheItem(BitColor color, string rootClass, string itemClass)
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", Color = color }]);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tln").ClassList.Contains(rootClass));
+        Assert.IsTrue(component.Find(".bit-tln-itm").ClassList.Contains(itemClass));
+    }
+
     [TestMethod]
     public void BitTimelineShouldApplyStyleAndClassOfTheComponent()
     {
@@ -1281,7 +1327,7 @@ public class BitTimelineTests : BunitTestContext
         // The first timeline takes everything from the cascading parameters.
         var first = timelines[0];
         foreach (var cls in new[] { "bit-tln-suc", "bit-tln-otl", "bit-tln-lg", "bit-tln-hrz", "bit-tln-alt", "bit-tln-rvs",
-                                    "bit-tln-rvo", "bit-tln-das", "bit-tln-ldd", "bit-tln-tlb", "cascaded-root" })
+                                    "bit-tln-rvo", "bit-tln-das", "bit-tln-ldd", "bit-tln-lps", "bit-tln-tlb", "cascaded-root" })
         {
             Assert.IsTrue(first.ClassList.Contains(cls), cls);
         }
