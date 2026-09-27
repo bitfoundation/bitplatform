@@ -1,24 +1,72 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// navbar and one set on the Style of an instance re-skins that one alone:
+//   --bit-NavBar-background              fill of the bar                                   (default: transparent)
+//   --bit-NavBar-border-radius           corners of the bar (a floating tab bar)           (default: 0)
+//   --bit-NavBar-shadow                  shadow of the bar                                 (default: none)
+//   --bit-NavBar-padding-block           room above and below the items                    (default: 0; SafeArea adds the inset below it)
+//   --bit-NavBar-padding-inline          room on the two sides of the items                (default: 0)
+//   --bit-NavBar-gap                     space between the items                           (default: 0)
+//   --bit-NavBar-item-color              content color of an item                          (default: $clr-fg-pri)
+//   --bit-NavBar-item-hover-color        content color of a hovered item                   (default: per Color and Filled)
+//   --bit-NavBar-item-hover-background   fill of a hovered item (its pill with Pill)       (default: per Color when Filled, transparent)
+//   --bit-NavBar-item-border-radius      corners of an item                                (default: $shp-radius-control)
+//   --bit-NavBar-item-padding            padding of an item, one length on every side      (default: per Size)
+//   --bit-NavBar-item-min-size           minimum width and height of an item               (default: per Size)
+//   --bit-NavBar-icon-size               size of the icon of an item                       (default: per Size)
+//   --bit-NavBar-text-size               font size of the text of an item                  (default: per Size)
+//   --bit-NavBar-selected-color          content color of the selected item                (default: per Color and Filled)
+//   --bit-NavBar-selected-background     fill of the selected item (its pill with Pill)    (default: per Color when Filled, transparent)
+//   --bit-NavBar-selected-font-weight    font weight of the selected item                  (default: $tg-fw-semibold)
+//   --bit-NavBar-indicator-color         color of the Line indicator                       (default: per Color and Filled)
+//   --bit-NavBar-indicator-thickness     thickness of the Line indicator                   (default: $siz-tab-indicator)
+//   --bit-NavBar-indicator-inset         inset of the Line from both ends of the item      (default: 0)
+//   --bit-NavBar-badge-color             text color of a badge                             (default: $clr-err-text)
+//   --bit-NavBar-badge-background        fill of a badge and a dot                         (default: $clr-err)
+//   --bit-NavBar-disabled-color          content color of a disabled item                  (default: per Color)
+//   --bit-NavBar-focus-color             color of the focus ring of an item                (default: per Color)
+
+// The look of an item under the pointer, which a press also takes: a touch screen has no hover, and the
+// press is then the only feedback a tap gets before the selection lands (the browser's grey tap flash is
+// turned off on the item, since it ignores the shape and the colors of the bar).
+@mixin nbr-item-hover {
+    color: var(--bit-NavBar-item-hover-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
+    background-color: var(--bit-NavBar-item-hover-background, var(--bit-nbr-clr-acc-hover, transparent));
+}
+
+// The pill mode puts that look on the pill alone, and leaves the label beside it on the Color role. An
+// item with nothing to draw the pill on keeps the look on itself, the way its selection keeps the fill.
+@mixin nbr-pill-hover {
+    &:has(.bit-nbr-icc) {
+        color: var(--bit-nbr-clr);
+        background-color: transparent;
+    }
+
+    .bit-nbr-icc {
+        @include nbr-item-hover;
+    }
+}
+
 .bit-nbr {
     // The bar itself is a flex line, so the header and the footer sit beside (or above and below) the
     // items instead of on their own row, and the list of items takes whatever room is left over.
     display: flex;
     align-items: stretch;
     flex-direction: row;
+    box-sizing: border-box;
     // The item buttons inherit this weight and the selected one steps up to semibold below, so the
     // bar sits at the body weight: taking $tg-font-weight - a control label's own weight, which is
     // semibold under Fluent - would put every item at the weight that marks the selected one.
     font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
-
-    // The size tokens live on the root so a single class swaps the metrics of every part at once.
-    --bit-nbr-ico-fs: #{$tg-fs-md};
-    --bit-nbr-txt-fs: #{$tg-fs-sm};
-    --bit-nbr-gap: #{spacing(0.5)};
-    --bit-nbr-pad: #{spacing(1)};
-    --bit-nbr-row-pad: #{spacing(2)};
-    --bit-nbr-min: #{$siz-ctrl-md};
+    // The bar is transparent by default and takes the surface of whatever it is placed on (a footer, a
+    // card, a rail); the variables turn it into a surface of its own, a floating tab bar for instance.
+    background: var(--bit-NavBar-background, transparent);
+    border-radius: var(--bit-NavBar-border-radius, 0);
+    box-shadow: var(--bit-NavBar-shadow, none);
+    padding-block: var(--bit-NavBar-padding-block, 0);
+    padding-inline: var(--bit-NavBar-padding-inline, 0);
 
     // The label's line box is fixed rather than inherited from the page, so the room an item needs with
     // its label shown can be worked out before it is shown: the padding on both sides of the item, the
@@ -27,15 +75,6 @@
     --bit-nbr-txt-lh: 1.5;
     --bit-nbr-lbl-min: calc(var(--bit-nbr-pad) * 2 + var(--bit-nbr-ico-fs) + var(--bit-nbr-gap) + var(--bit-nbr-txt-fs) * var(--bit-nbr-txt-lh));
 
-    &.bit-dis {
-        cursor: default;
-        pointer-events: none;
-
-        .bit-nbr-itm {
-            color: var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor));
-            background-color: transparent;
-        }
-    }
 }
 
 .bit-nbr-ftw {
@@ -47,9 +86,14 @@
 }
 
 // The home indicator of a phone sits over the bottom edge of the screen, so a bar pinned there reserves
-// the space the device asks for. The fallback keeps it a no-op everywhere the inset is not reported.
-.bit-nbr-sfa {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+// the space the device asks for, on top of its own padding. The inset is kept off the padding, which the
+// public variable owns whatever it is written as (one value or two, which no calc() could add to): it is
+// the margin under the parts of the bar instead, all of them side by side in a bar and the last one in a
+// rail, and the fill of the bar runs on under it. The fallback keeps it a no-op everywhere the inset is
+// not reported.
+.bit-nbr-sfa:not(.bit-nbr-vrt) > *,
+.bit-nbr-sfa.bit-nbr-vrt > :last-child {
+    margin-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .bit-nbr-cnt {
@@ -60,6 +104,7 @@
     list-style: none;
     flex: 1 1 auto;
     display: flex;
+    gap: var(--bit-NavBar-gap, 0);
     justify-content: space-around;
 }
 
@@ -83,7 +128,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--bit-nbr-gap);
-    padding: var(--bit-nbr-pad);
+    padding: var(--bit-nbr-sec-pad);
 }
 
 .bit-nbr-itm {
@@ -96,7 +141,7 @@
     display: flex;
     cursor: pointer;
     text-align: center;
-    color: $clr-fg-pri;
+    color: var(--bit-NavBar-item-color, #{$clr-fg-pri});
     gap: var(--bit-nbr-gap);
     font-family: inherit;
     font-weight: inherit;
@@ -106,19 +151,25 @@
     justify-content: center;
     background: transparent;
     padding: var(--bit-nbr-pad);
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-NavBar-item-border-radius, #{$shp-radius-control});
     letter-spacing: $tg-ctrl-letter-spacing;
+    -webkit-tap-highlight-color: transparent;
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    // The selected item keeps its own look under the pointer: a hover fill over it would wipe out the
+    // selected fill (or the transparent hover of an unfilled bar, the selected-background of an author).
     @media (hover: hover) {
-        &:hover {
-            color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
-            background-color: var(--bit-nbr-clr-acc-hover, transparent);
+        &:not(.bit-nbr-sel):not(.bit-nbr-dis):hover {
+            @include nbr-item-hover;
         }
     }
 
+    &:not(.bit-nbr-sel):not(.bit-nbr-dis):active {
+        @include nbr-item-hover;
+    }
+
     &:focus-visible {
-        @include focus-ring(var(--bit-nbr-clr-fcs, #{$clr-pri-focus}));
+        @include focus-ring(var(--bit-NavBar-focus-color, var(--bit-nbr-clr-fcs, #{$clr-pri-focus})));
     }
 }
 
@@ -144,11 +195,29 @@
     // A label of a known line box is what lets the HideUnselectedText mode reserve the room it takes
     // before it is shown, instead of inheriting whatever line height the page happens to carry.
     line-height: var(--bit-nbr-txt-lh);
+
+    // The label of the selected item turns bolder, which is wider than the same words in the regular
+    // weight and would shove every item after it sideways on each selection change. An invisible bold
+    // copy of the label shares the text's grid cell and reserves that room up front, so an item is the
+    // same width selected or not. It sits beside the text rather than inside it, which keeps the text a
+    // plain line its own ellipsis applies to.
+    &::after {
+        grid-area: 1 / 1;
+        height: 0;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        visibility: hidden;
+        pointer-events: none;
+        content: attr(data-content);
+        font-weight: var(--bit-NavBar-selected-font-weight, #{$tg-fw-semibold});
+    }
 }
 
 // The text clips itself rather than being clipped by the element around it: a track only shrinks past the
 // content of the item in it when that item is what hides its own overflow.
 .bit-nbr-txc {
+    grid-area: 1 / 1;
     min-width: 0;
     overflow: hidden;
     white-space: nowrap;
@@ -158,11 +227,11 @@
 .bit-nbr-bdg {
     top: 0;
     display: flex;
-    color: $clr-err-text;
+    color: var(--bit-NavBar-badge-color, #{$clr-err-text});
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    background-color: $clr-err;
+    background-color: var(--bit-NavBar-badge-background, #{$clr-err});
     font-size: $tg-fs-2xs;
     font-weight: $tg-fw-semibold;
     line-height: 1;
@@ -301,10 +370,23 @@
     .bit-nbr-lit {
         flex-shrink: 0;
     }
+
+    // The scrolling list clips whatever an item draws outside of itself, and the focus ring is drawn around
+    // the item, so all that would be left of it is the two sides between the items. The ring is drawn inside
+    // the item instead: along its edge, with the gap that sets it off the item's fill inside it.
+    .bit-nbr-itm:focus-visible {
+        box-shadow: inset 0 0 0 $shp-focus-ring-width var(--bit-NavBar-focus-color, var(--bit-nbr-clr-fcs, #{$clr-pri-focus})),
+                    inset 0 0 0 calc(#{$shp-focus-ring-width} + #{$shp-focus-ring-offset}) #{$clr-bg-pri};
+
+        @media (forced-colors: active) {
+            outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        }
+    }
 }
 
+// ForceAnimation (bit-fam) keeps the smooth scroll the way it keeps every other motion of the library.
 @media (prefers-reduced-motion: reduce) {
-    .bit-nbr-scr > .bit-nbr-cnt {
+    .bit-nbr-scr:not(.bit-fam):not(.bit-fam *) > .bit-nbr-cnt {
         scroll-behavior: auto;
     }
 }
@@ -348,34 +430,58 @@
 }
 
 .bit-nbr-sel {
-    font-weight: $tg-fw-semibold;
-    color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
-    background-color: var(--bit-nbr-clr-acc-active, transparent);
+    font-weight: var(--bit-NavBar-selected-font-weight, #{$tg-fw-semibold});
+    color: var(--bit-NavBar-selected-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
+    background-color: var(--bit-NavBar-selected-background, var(--bit-nbr-clr-acc-active, transparent));
 }
 
 // The line runs along the edge of the selected item - the bottom edge across a bar, the leading edge down a
-// rail - which is how a tab strip marks its current tab. It is drawn on the item itself rather than on a
-// wrapper of its own, so a templated item carries it exactly like a default one does.
+// rail, or the opposite ones with FlipIndicator - which is how a tab strip marks its current tab. It is drawn
+// on the item itself rather than on a wrapper of its own, so a templated item carries it exactly like a
+// default one does.
+// Every item carries the line, scaled away to nothing unless it is the selected one: a pseudo element that
+// is only generated on selection has no previous style to transition from and would pop into place, where
+// this way the outgoing line shrinks away while the incoming one grows in (the BitPivot way).
 .bit-nbr-lin {
     .bit-nbr-itm {
         position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset-block-end: 0;
+            inset-inline: var(--bit-NavBar-indicator-inset, 0);
+            block-size: var(--bit-NavBar-indicator-thickness, #{$siz-tab-indicator});
+            transform: scaleX(0);
+            border-radius: $shp-radius-full;
+            background-color: var(--bit-NavBar-indicator-color, var(--bit-nbr-clr-ind, currentColor));
+            transition: transform $mot-duration $mot-easing;
+        }
     }
 
     .bit-nbr-sel::after {
-        content: "";
-        position: absolute;
-        inset-inline: 0;
-        inset-block-end: 0;
-        block-size: $siz-tab-indicator;
-        border-radius: $shp-radius-full;
-        background-color: var(--bit-nbr-clr-ind, currentColor);
+        transform: none;
     }
 
-    &.bit-nbr-vrt .bit-nbr-sel::after {
-        inset-block: 0;
+    &.bit-nbr-fli .bit-nbr-itm::after {
+        inset-block: 0 auto;
+    }
+
+    &.bit-nbr-vrt .bit-nbr-itm::after {
+        inset-block: var(--bit-NavBar-indicator-inset, 0);
         inset-inline: 0 auto;
-        inline-size: $siz-tab-indicator;
+        inline-size: var(--bit-NavBar-indicator-thickness, #{$siz-tab-indicator});
         block-size: auto;
+        transform: scaleY(0);
+    }
+
+    &.bit-nbr-vrt.bit-nbr-fli .bit-nbr-itm::after {
+        inset-inline: auto 0;
+    }
+
+    // Restated at the weight of the rail's rule above, which would otherwise keep the rail's line collapsed.
+    &.bit-nbr-vrt .bit-nbr-sel::after {
+        transform: none;
     }
 }
 
@@ -390,65 +496,96 @@
         transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
     }
 
+    // The pill is the only filled part in this mode, so the on-color of the fill belongs inside it alone:
+    // the label beside it sits on the untouched background and stays on the Color role.
     @media (hover: hover) {
-        .bit-nbr-itm:hover {
-            background-color: transparent;
-
-            .bit-nbr-icc {
-                color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
-                background-color: var(--bit-nbr-clr-acc-hover, transparent);
-            }
-        }
-
-        // The pill is the only filled part in this mode, so the on-color of the fill belongs inside it
-        // alone: the label beside it sits on the untouched background and stays on the Color role.
-        .bit-nbr-itm:has(.bit-nbr-icc):hover {
-            color: var(--bit-nbr-clr);
+        .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):hover {
+            @include nbr-pill-hover;
         }
     }
 
+    .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):active {
+        @include nbr-pill-hover;
+    }
+
     .bit-nbr-sel:has(.bit-nbr-icc) {
-        color: var(--bit-nbr-clr);
+        color: var(--bit-NavBar-selected-color, var(--bit-nbr-clr));
         background-color: transparent;
     }
 
     .bit-nbr-sel .bit-nbr-icc {
-        color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
-        background-color: var(--bit-nbr-clr-acc-active, #{$clr-bg-ter});
+        color: var(--bit-NavBar-selected-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
+        background-color: var(--bit-NavBar-selected-background, var(--bit-nbr-clr-acc-active, #{$clr-bg-ter}));
     }
 }
 
-.bit-nbr-dis {
-    color: var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor));
-    pointer-events: none;
-    background-color: transparent;
+// A disabled navbar leaves the pointer to its items (below) and to its list, which a wheel still scrolls,
+// but takes it from everything else it renders - the header, the footer and a template that replaces its
+// item - whose controls the navbar has no say over otherwise and would stay clickable in a disabled bar.
+.bit-nbr.bit-dis {
+    > .bit-nbr-hdr,
+    > .bit-nbr-ftr,
+    .bit-nbr-lit:not(:has(> .bit-nbr-itm)) {
+        pointer-events: none;
+    }
 }
 
+// A disabled item still takes the pointer, so the tooltip of an icon-only item can say what it is; the
+// click itself goes nowhere (the anchor has no href, the button is natively disabled). A selected one
+// keeps showing where the reader is, in the disabled color: its fill is dropped, and its indicator - the
+// line and the pill - dims along with its content instead of staying in the full Color.
+.bit-nbr-dis {
+    cursor: default;
+    color: var(--bit-NavBar-disabled-color, var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor)));
+    background-color: transparent;
+
+    .bit-nbr-lin &.bit-nbr-sel::after {
+        background-color: currentColor;
+    }
+
+    .bit-nbr-pil &.bit-nbr-sel {
+        color: var(--bit-NavBar-disabled-color, var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor)));
+
+        .bit-nbr-icc {
+            color: inherit;
+            background-color: $clr-bg-dis;
+        }
+    }
+}
+
+// The size classes swap the metrics every part reads, and each one yields to its public variable, so a
+// value set for the icon size (say) holds at every Size. The padding variable sets both the stacked
+// padding and the wider one of a single-line item, since an author setting it means the item's padding;
+// it is a single length because the room a label reserves is worked out from it. The header and the
+// footer keep a padding of their own, which that variable is not about.
 .bit-nbr-sm {
-    --bit-nbr-ico-fs: #{$tg-fs-sm};
-    --bit-nbr-txt-fs: #{$tg-fs-2xs};
+    --bit-nbr-ico-fs: var(--bit-NavBar-icon-size, #{$tg-fs-sm});
+    --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-2xs});
     --bit-nbr-gap: #{spacing(0.25)};
-    --bit-nbr-pad: #{spacing(0.75)};
-    --bit-nbr-row-pad: #{spacing(1.5)};
-    --bit-nbr-min: #{$siz-ctrl-sm};
+    --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(0.75)});
+    --bit-nbr-sec-pad: #{spacing(0.75)};
+    --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(1.5)});
+    --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-sm});
 }
 
 .bit-nbr-md {
-    --bit-nbr-ico-fs: #{$tg-fs-md};
-    --bit-nbr-txt-fs: #{$tg-fs-sm};
+    --bit-nbr-ico-fs: var(--bit-NavBar-icon-size, #{$tg-fs-md});
+    --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-sm});
     --bit-nbr-gap: #{spacing(0.5)};
-    --bit-nbr-pad: #{spacing(1)};
-    --bit-nbr-row-pad: #{spacing(2)};
-    --bit-nbr-min: #{$siz-ctrl-md};
+    --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(1)});
+    --bit-nbr-sec-pad: #{spacing(1)};
+    --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(2)});
+    --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-md});
 }
 
 .bit-nbr-lg {
-    --bit-nbr-ico-fs: #{$tg-fs-xl};
-    --bit-nbr-txt-fs: #{$tg-fs-md};
+    --bit-nbr-ico-fs: var(--bit-NavBar-icon-size, #{$tg-fs-xl});
+    --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-md});
     --bit-nbr-gap: #{spacing(0.75)};
-    --bit-nbr-pad: #{spacing(1.5)};
-    --bit-nbr-row-pad: #{spacing(2.5)};
-    --bit-nbr-min: #{$siz-ctrl-lg};
+    --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(1.5)});
+    --bit-nbr-sec-pad: #{spacing(1.5)};
+    --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(2.5)});
+    --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-lg});
 }
 
 // forced-colors: selection is conveyed by text color and a background fill, both of which High Contrast
@@ -463,6 +600,42 @@
         background-color: Highlight;
     }
 
+    // Without an indicator of its own the selection was a color and a fill: the fill is flattened here, and
+    // Highlight is close to LinkText in several system palettes, so the selected item takes the line the
+    // Line indicator draws. A Pill bar keeps its pill, except on an item with no icon to draw it on.
+    .bit-nbr:not(.bit-nbr-lin):not(.bit-nbr-pil) .bit-nbr-sel,
+    .bit-nbr-pil .bit-nbr-sel:not(:has(.bit-nbr-icc)) {
+        position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            inset-block-end: 0;
+            block-size: $shp-border-width-thick;
+            background-color: Highlight;
+        }
+    }
+
+    .bit-nbr-vrt:not(.bit-nbr-lin):not(.bit-nbr-pil) .bit-nbr-sel::after,
+    .bit-nbr-vrt.bit-nbr-pil .bit-nbr-sel:not(:has(.bit-nbr-icc))::after {
+        inset-block: 0;
+        inset-inline: 0 auto;
+        inline-size: $shp-border-width-thick;
+        block-size: auto;
+    }
+
+    // That line takes the edge FlipIndicator asks for, as the Line indicator does.
+    .bit-nbr-fli:not(.bit-nbr-vrt):not(.bit-nbr-lin):not(.bit-nbr-pil) .bit-nbr-sel::after,
+    .bit-nbr-fli.bit-nbr-pil:not(.bit-nbr-vrt) .bit-nbr-sel:not(:has(.bit-nbr-icc))::after {
+        inset-block: 0 auto;
+    }
+
+    .bit-nbr-vrt.bit-nbr-fli:not(.bit-nbr-lin):not(.bit-nbr-pil) .bit-nbr-sel::after,
+    .bit-nbr-vrt.bit-nbr-fli.bit-nbr-pil .bit-nbr-sel:not(:has(.bit-nbr-icc))::after {
+        inset-inline: auto 0;
+    }
+
     .bit-nbr-pil .bit-nbr-sel .bit-nbr-icc {
         color: HighlightText;
         background-color: Highlight;
@@ -470,6 +643,16 @@
 
     .bit-nbr-dis {
         color: GrayText;
+    }
+
+    // Carries the weight of the selection line rules above, so a disabled selected item's line dims too.
+    .bit-nbr .bit-nbr-itm.bit-nbr-dis.bit-nbr-sel::after {
+        background-color: GrayText;
+    }
+
+    .bit-nbr-pil .bit-nbr-dis.bit-nbr-sel .bit-nbr-icc {
+        color: Canvas;
+        background-color: GrayText;
     }
 
     .bit-nbr-bdg {
