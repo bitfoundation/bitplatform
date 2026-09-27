@@ -40,6 +40,9 @@ public class BitThemeSizes
     /// <summary>The thickness of the tab selection indicator (<c>--bit-siz-tab-indicator</c>).</summary>
     public string? TabIndicator { get; set; }
 
+    /// <summary>The thickness of the rule a tab strip draws under its whole header (<c>--bit-siz-tab-divider</c>; none under Fluent, the divider hairline under Material).</summary>
+    public string? TabDivider { get; set; }
+
     /// <summary>The thickness of a divider rule - separators and menu dividers (<c>--bit-siz-divider</c>; defaults to the hairline border width).</summary>
     public string? Divider { get; set; }
 
