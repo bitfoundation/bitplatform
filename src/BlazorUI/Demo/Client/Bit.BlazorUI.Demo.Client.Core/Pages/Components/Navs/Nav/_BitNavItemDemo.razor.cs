@@ -348,7 +348,7 @@ public partial class _BitNavItemDemo
 
     private readonly BitNavParams[] navParams =
     [
-        new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
+        new() { Mode = BitNavMode.Manual, FitWidth = true, IconOnly = true }
     ];
 
     private static readonly List<BitNavItem> mailNavItems =

@@ -2919,5 +2919,147 @@ public class BitNavTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-nav-sca").Count);
     }
 
+    [TestMethod]
+    public void BitNavShouldMarkACollapsedGroupHeaderThatHoldsTheSelection()
+    {
+        var items = TreeItems();
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.DefaultSelectedItem, items[0].ChildItems[1]);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sca").Count);
+
+        component.FindAll("button.bit-nav-gcb")[0].Click();
+
+        // A collapsed group leading to the current page is marked just like a collapsed parent is.
+        var headers = component.FindAll("button.bit-nav-gcb");
+        Assert.IsTrue(headers[0].ClassList.Contains("bit-nav-sca"));
+        Assert.IsFalse(headers[1].ClassList.Contains("bit-nav-sca"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldFollowTheSelectionWhenMarkingACollapsedBranch()
+    {
+        var items = TreeItems();
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedItem, items[0].ChildItems[0]);
+        });
+
+        component.InvokeAsync(() => component.Instance.CollapseAll());
+        Assert.IsTrue(component.FindAll(".bit-nav-ict")[0].ClassList.Contains("bit-nav-sca"));
+
+        component.Render(p => p.Add(c => c.SelectedItem, (BitNavItem?)null));
+        component.InvokeAsync(() => component.Instance.CollapseAll());
+
+        // The ancestors of the selection are looked up again once the selection has moved.
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sca").Count);
+    }
+
+    #endregion
+
+    #region edge cases
+
+    [TestMethod]
+    public void BitNavShouldKeepTheChevronOfAForcedAnchorWithoutAnHrefInteractive()
+    {
+        var items = TreeItems();
+        items[0].ForceAnchor = true;
+
+        var component = RenderNav(items);
+
+        // Enter does not activate an anchor without an href, so its chevron is the keyboard's way to open it.
+        var chevrons = component.FindAll(".bit-nav-cbt");
+        Assert.AreEqual("button", chevrons[0].GetAttribute("role"));
+        Assert.AreEqual("0", chevrons[0].GetAttribute("tabindex"));
+        Assert.IsNull(chevrons[1].GetAttribute("role"));
+        Assert.AreEqual("true", chevrons[1].GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNameAStaticGroupHeaderInTheIconOnlyMode()
+    {
+        var items = TreeItems();
+        items[0].IconName = "Home";
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.NoCollapse, true);
+            p.Add(c => c.IconOnly, true);
+        });
+
+        var header = component.FindAll(".bit-nav-gst")[0];
+
+        // The rail hides the text, so the header keeps a tooltip and a visually hidden name.
+        Assert.AreEqual("Fruits", header.GetAttribute("title"));
+        Assert.AreEqual("Fruits", header.QuerySelector(".bit-nav-vhd")!.TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNameTheListOfAGroupAfterItsAriaLabel()
+    {
+        var items = TreeItems();
+        items[0].AriaLabel = "Fruit group";
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.AllExpanded, true);
+        });
+
+        var lists = component.FindAll("li > ul");
+        Assert.AreEqual("Fruit group", lists[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Drinks", lists[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotDescribeAGroupHeaderByADescriptionItsTemplateReplaced()
+    {
+        var items = TreeItems();
+        items[0].Description = "Fresh ones";
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.HeaderTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, $"<span>{item.Text}</span>"));
+        });
+
+        var header = component.FindAll("button.bit-nav-gcb")[0];
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-des").Count);
+        Assert.IsNull(header.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotToggleAnyItemWithNoCollapse()
+    {
+        var items = TreeItems();
+        var toggleCount = 0;
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.NoCollapse, true);
+            p.Add(c => c.OnItemToggle, (BitNavItem _) => { toggleCount++; });
+        });
+
+        component.InvokeAsync(() => component.Instance.CollapseItem(items[0]));
+        component.InvokeAsync(() => component.Instance.ExpandItem(items[0]));
+        component.InvokeAsync(() => component.Instance.ToggleItem(items[1]));
+
+        // Every branch is shown while the nav has no expanders, so nothing can be toggled and nothing is reported.
+        Assert.AreEqual(0, toggleCount);
+        Assert.IsTrue(component.Instance.IsItemExpanded(items[0]));
+        Assert.IsTrue(component.Instance.IsItemExpanded(items[1]));
+        Assert.IsFalse(items[0].IsExpanded);
+        Assert.IsFalse(items[1].IsExpanded);
+    }
+
     #endregion
 }

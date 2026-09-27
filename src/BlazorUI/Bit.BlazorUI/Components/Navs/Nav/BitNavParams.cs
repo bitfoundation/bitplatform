@@ -40,7 +40,8 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// The icon for the chevron-down element of each nav item, from an external icon library.
-    /// Takes precedence over <see cref="ChevronDownIconName"/> when both are set.
+    /// Takes precedence over <see cref="ChevronDownIconName"/> when both are set, and is not applied to a nav
+    /// that sets its own ChevronDownIcon or ChevronDownIconName.
     /// </summary>
     public BitIconInfo? ChevronDownIcon { get; set; }
 
@@ -185,7 +186,11 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.AllExpanded = AllExpanded.Value;
         }
 
-        if (ChevronDownIcon is not null && bitNav.HasNotBeenSet(nameof(ChevronDownIcon)))
+        // The icon takes precedence over the icon name, so a cascaded icon is only a default for a nav that has
+        // set neither: applied over a nav's own ChevronDownIconName it would override it rather than default it.
+        if (ChevronDownIcon is not null &&
+            bitNav.HasNotBeenSet(nameof(ChevronDownIcon)) &&
+            bitNav.HasNotBeenSet(nameof(ChevronDownIconName)))
         {
             bitNav.ChevronDownIcon = ChevronDownIcon;
         }

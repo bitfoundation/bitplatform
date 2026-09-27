@@ -24,7 +24,7 @@ public partial class _BitNavOptionDemo
 
     private readonly BitNavParams[] navParams =
     [
-        new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
+        new() { Mode = BitNavMode.Manual, FitWidth = true, IconOnly = true }
     ];
 
     private static readonly BitIconInfo fontAwesomeHomeIcon = BitIconInfo.Css("fa-solid fa-house");

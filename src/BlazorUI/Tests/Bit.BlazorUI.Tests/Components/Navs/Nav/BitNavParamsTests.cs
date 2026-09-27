@@ -264,4 +264,21 @@ public class BitNavParamsTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-nav").ClassList.Contains("bit-nav-md"));
     }
+
+    [TestMethod]
+    public void BitNavParamsShouldNotOverrideTheNavsOwnChevronIconNameWithACascadedIcon()
+    {
+        var component = RenderWithParams(new BitNavParams
+        {
+            ChevronDownIcon = BitIconInfo.Css("fa-solid fa-angle-right"),
+        }, GetItems(), builder =>
+        {
+            builder.AddAttribute(2, nameof(BitNav<BitNavItem>.ChevronDownIconName), "Add");
+        });
+
+        // The icon takes precedence over the icon name, so the cascaded icon would override the nav's own name.
+        var chevronIcon = component.Find(".bit-nav-cbt i");
+        Assert.IsTrue(chevronIcon.ClassList.Contains("bit-icon--Add"));
+        Assert.IsFalse(chevronIcon.ClassList.Contains("fa-angle-right"));
+    }
 }

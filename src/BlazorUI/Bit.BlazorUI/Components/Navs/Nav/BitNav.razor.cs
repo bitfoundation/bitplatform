@@ -35,6 +35,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // the same way the rendered items are keyed.
     private readonly Dictionary<TItem, string> _itemIdentities = [];
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
+    // The items the selected item is nested in, found once and read by every collapsed branch that renders
+    // rather than walked again below each of them; reset whenever the tree may have changed shape.
+    private TItem? _selectedAncestorsOf;
+    private List<TItem>? _selectedAncestors;
 
 
 
@@ -80,10 +84,14 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     }
 
     /// <summary>
-    /// Toggles an item.
+    /// Toggles an item. Does nothing while <see cref="NoCollapse"/> is set, since every branch is shown then.
     /// </summary>
     public async Task ToggleItem(TItem item)
     {
+        // A nav without expanders shows every branch whatever its state says, so a toggle would change
+        // nothing on screen while still reporting one through OnItemToggle.
+        if (NoCollapse) return;
+
         var isExpanded = GetItemExpanded(item) is false;
 
         if (SingleExpand && isExpanded)
@@ -111,14 +119,14 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     }
 
     /// <summary>
-    /// Expands an item, and does nothing when it is already expanded.
+    /// Expands an item, and does nothing when it is already expanded (which every item is while <see cref="NoCollapse"/> is set).
     /// </summary>
-    public Task ExpandItem(TItem item) => GetItemExpanded(item) ? Task.CompletedTask : ToggleItem(item);
+    public Task ExpandItem(TItem item) => IsItemOpen(item) ? Task.CompletedTask : ToggleItem(item);
 
     /// <summary>
-    /// Collapses an item, and does nothing when it is already collapsed.
+    /// Collapses an item, and does nothing when it is already collapsed or while <see cref="NoCollapse"/> is set.
     /// </summary>
-    public Task CollapseItem(TItem item) => GetItemExpanded(item) ? ToggleItem(item) : Task.CompletedTask;
+    public Task CollapseItem(TItem item) => NoCollapse is false && GetItemExpanded(item) ? ToggleItem(item) : Task.CompletedTask;
 
     /// <summary>
     /// Whether the children of an item are currently shown, which is always the case while <see cref="NoCollapse"/> is set.
@@ -229,7 +237,25 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     {
         if (SelectedItem is null) return false;
 
-        return GetChildItems(item).Any(child => IsSelected(child) || HasSelectedDescendant(child));
+        if (_selectedAncestors is null || AreEqual(_selectedAncestorsOf, SelectedItem) is false)
+        {
+            _selectedAncestors = [];
+            _selectedAncestorsOf = SelectedItem;
+
+            if (CollectAncestors(_items, SelectedItem, _selectedAncestors) is false)
+            {
+                _selectedAncestors.Clear();
+            }
+        }
+
+        return _selectedAncestors.Any(ancestor => AreEqual(ancestor, item));
+    }
+
+    // Drops the ancestors of the selected item found so far, for a tree that may have changed shape: the nav
+    // re-renders, or an option is added to or removed from any level of it.
+    internal void InvalidateSelectedAncestors()
+    {
+        _selectedAncestors = null;
     }
 
 
@@ -405,11 +431,12 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // A root item of the Grouped render type that cannot be toggled - a group without children, or any group
     // of a nav without expanders - is the label of its group rather than a control, so it renders as plain
     // text that the keyboard does not stop on.
-    internal bool IsStaticGroupHeader(TItem item)
-    {
-        if (RenderType is not BitNavRenderType.Grouped || GetIsSeparator(item)) return false;
+    internal bool IsStaticGroupHeader(TItem item) => IsStaticGroupHeader(item, _items.Any(root => AreEqual(root, item)));
 
-        if (_items.Any(root => AreEqual(root, item)) is false) return false;
+    // The same, for a caller that already knows whether the item is a root, so no scan of the roots is needed.
+    private bool IsStaticGroupHeader(TItem item, bool isRoot)
+    {
+        if (isRoot is false || RenderType is not BitNavRenderType.Grouped || GetIsSeparator(item)) return false;
 
         return NoCollapse || GetChildItems(item).Count == 0;
     }
@@ -848,18 +875,18 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     {
         List<TItem> result = [];
 
-        Collect(_items);
+        Collect(_items, true);
 
         return result;
 
-        void Collect(IList<TItem> items)
+        void Collect(IList<TItem> items, bool areRoots)
         {
             foreach (var item in items)
             {
                 if (GetIsSeparator(item)) continue;
 
                 // A static group header is a label that takes no focus, but its group is walked all the same.
-                if (GetIsEnabled(item) && IsStaticGroupHeader(item) is false)
+                if (GetIsEnabled(item) && IsStaticGroupHeader(item, areRoots) is false)
                 {
                     result.Add(item);
                 }
@@ -869,7 +896,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 var childItems = GetChildItems(item);
                 if (childItems.Count > 0 && IsItemOpen(item))
                 {
-                    Collect(childItems);
+                    Collect(childItems, false);
                 }
             }
         }
@@ -911,6 +938,21 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         }
 
         return true;
+    }
+
+    // Fills the path with the items the target is nested in, outermost first, and tells whether it was found.
+    private bool CollectAncestors(IList<TItem> items, TItem target, List<TItem> path)
+    {
+        foreach (var candidate in items)
+        {
+            if (AreEqual(candidate, target)) return true;
+
+            path.Add(candidate);
+            if (CollectAncestors(GetChildItems(candidate), target, path)) return true;
+            path.RemoveAt(path.Count - 1);
+        }
+
+        return false;
     }
 
     private TItem? FindParentOf(IList<TItem> items, TItem item, TItem? parent = null)

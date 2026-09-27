@@ -172,6 +172,10 @@ public partial class BitNavOption : ComponentBase, IDisposable
             Parent.ChildItems.Add(this);
         }
 
+        // A nested option only re-renders its parent, not the nav, so the tree the nav has cached the
+        // ancestors of its selected item from is told it changed shape.
+        Nav?.InvalidateSelectedAncestors();
+
         if (Nav is not null)
         {
             Nav.SetItemExpanded(this, Nav.AllExpanded || (Nav.GetIsExpanded(this) ?? false));
@@ -209,6 +213,8 @@ public partial class BitNavOption : ComponentBase, IDisposable
         {
             Parent.ChildItems.Remove(this);
         }
+
+        Nav?.InvalidateSelectedAncestors();
 
         Nav?.SetSelectedItemByCurrentUrl();
 

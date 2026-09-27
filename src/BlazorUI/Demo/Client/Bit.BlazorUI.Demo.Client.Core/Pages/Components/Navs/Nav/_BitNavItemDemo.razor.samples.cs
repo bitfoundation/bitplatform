@@ -523,12 +523,12 @@ private static readonly List<BitNavItem> a11yNavItems =
     private readonly string example13RazorCode = @"
 <BitParams Parameters=""navParams"">
     <BitNav Items=""colorNavItems"" />
-    <BitNav Items=""colorNavItems"" Color=""BitColor.Warning"" Accent=""BitColor.Warning"" />
+    <BitNav Items=""colorNavItems"" IconOnly=""false"" />
 </BitParams>";
     private readonly string example13CsharpCode = @"
 private readonly BitNavParams[] navParams =
 [
-    new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
+    new() { Mode = BitNavMode.Manual, FitWidth = true, IconOnly = true }
 ];";
 
     private readonly string example14RazorCode = @"

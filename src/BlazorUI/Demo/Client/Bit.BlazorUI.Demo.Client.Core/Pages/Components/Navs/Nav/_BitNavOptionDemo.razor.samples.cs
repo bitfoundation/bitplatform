@@ -464,7 +464,7 @@ private BitNavOption SelectedOption = default!;";
         <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
         <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
     </BitNav>
-    <BitNav TItem=""BitNavOption"" Color=""BitColor.Warning"" Accent=""BitColor.Warning"">
+    <BitNav TItem=""BitNavOption"" IconOnly=""false"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
         <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
         <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
@@ -473,7 +473,7 @@ private BitNavOption SelectedOption = default!;";
     private readonly string example13CsharpCode = @"
 private readonly BitNavParams[] navParams =
 [
-    new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
+    new() { Mode = BitNavMode.Manual, FitWidth = true, IconOnly = true }
 ];";
 
     private readonly string example14RazorCode = @"

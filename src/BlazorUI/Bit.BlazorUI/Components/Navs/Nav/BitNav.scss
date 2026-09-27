@@ -67,23 +67,25 @@
     --bit-nav-header-font-size: #{$tg-fs-lg};
     --bit-nav-header-height: #{spacing(5.5)};
 
-    ul {
+    // Only the nav's own lists (.bit-nav-lst) are laid out here: a template can render a list of its own
+    // inside an item, and a descendant selector would force it into the nav's column and gaps.
+    .bit-nav-lst {
         margin: 0;
         padding: 0;
         display: flex;
         list-style-type: none;
         flex-direction: column;
         gap: var(--bit-Nav-item-gap, 0);
-    }
 
-    // A nested list starts right below the item that owns it, so the gap between two items is put between
-    // that item and its first child too, which is what keeps the rhythm of a tree the same at every level.
-    li > ul {
-        margin-top: var(--bit-Nav-item-gap, 0);
-    }
+        > li {
+            padding: 0;
+        }
 
-    li {
-        padding: 0;
+        // A nested list starts right below the item that owns it, so the gap between two items is put between
+        // that item and its first child too, which is what keeps the rhythm of a tree the same at every level.
+        > li > .bit-nav-lst {
+            margin-top: var(--bit-Nav-item-gap, 0);
+        }
     }
 
     &.bit-dis {
@@ -178,6 +180,20 @@
 .bit-nav-gst {
     cursor: default;
     user-select: text;
+}
+
+// The name of a static group header in the rail, which hides its visible text: read by assistive
+// technologies, drawn nowhere.
+.bit-nav-vhd {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-nav-ghd {
@@ -343,6 +359,12 @@
     .bit-nav-itm {
         font-weight: $tg-fw-semibold;
     }
+}
+
+// A collapsed group header that holds the selected item takes the same cue: the selected background, the
+// indicator color on the rule under it, and the selected text color for its text and chevron.
+.bit-nav-gcb.bit-nav-sca {
+    color: var(--bit-Nav-selected-color, var(--bit-nav-clr-text));
 }
 
 .bit-nav-dis {

@@ -375,7 +375,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-font-size",
-            DefaultValue = "Per size (--bit-tg-fs-xs / -sm / -md)",
+            DefaultValue = "Per size (--bit-tpg-fs-xs / -sm / -md)",
             Description = "Text size of an item.",
         },
         new()
@@ -387,7 +387,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-description-font-size",
-            DefaultValue = "Per size (--bit-tg-fs-2xs / -xs / -sm)",
+            DefaultValue = "Per size (--bit-tpg-fs-2xs / -xs / -sm)",
             Description = "Text size of the description of an item.",
         },
         new()
@@ -399,7 +399,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-header-font-size",
-            DefaultValue = "Per size (--bit-tg-fs-sm / -lg / -xl)",
+            DefaultValue = "Per size (--bit-tpg-fs-sm / -lg / -xl)",
             Description = "Text size of a group header.",
         },
         new()
