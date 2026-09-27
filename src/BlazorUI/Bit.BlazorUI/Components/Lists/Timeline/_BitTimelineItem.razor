@@ -16,6 +16,10 @@
 
     icon = BitIconInfo.From(icon, iconName);
 
+    // Whatever holds the parts of the item (the item itself, or the button of a clickable one) is marked, so the
+    // stylesheet can lay them out without asking the DOM what was rendered. A whole-item template brings its own layout.
+    var partsClass = template is null ? " bit-tln-prt" : null;
+
     RenderFragment content =@<text>
         @if (template is not null)
         {
@@ -33,7 +37,7 @@
                     <span style="@Timeline.Styles?.PrimaryText" class="bit-tln-ttx @Timeline.Classes?.PrimaryText">@primaryText</span>
                 }
             </div>
-            <div style="@Timeline.Styles?.Divider" class="bit-tln-dvd @Timeline.Classes?.Divider">
+            <div style="@Timeline.Styles?.Divider" class="bit-tln-dvd@(hideDot ? " bit-tln-dvh" : null) @Timeline.Classes?.Divider">
                 @if (hideDot)
                 {
                     @* The dot is what gives the divider its size, so an item without one reserves the space of
@@ -73,20 +77,23 @@
 @* The item itself always stays a list item, so the timeline remains a valid list for assistive
    technologies. A nested button is only rendered while something listens to the item's click, so a
    presentational timeline exposes no controls and stays out of the keyboard tab order. The disabled
-   state is announced by that button alone, since a list item is not an element aria-disabled applies to. *@
-<li aria-label="@(isInteractive ? null : Timeline.GetAriaLabel(Item))"
+   state is announced once: by that button when there is one, and otherwise by the item itself, which is
+   then all there is to carry it. *@
+<li aria-disabled="@(isInteractive || isEnabled ? null : "true")"
+    aria-label="@(isInteractive ? null : Timeline.GetAriaLabel(Item))"
     title="@Timeline.GetTitle(Item)"
     style="@Timeline.GetItemStyles(Item)"
-    class="bit-tln-itm@(Timeline.GetItemClasses(Item, isInteractive)) @Timeline.Classes?.Item">
+    class="bit-tln-itm@(Timeline.GetItemClasses(Item, isInteractive) + (isInteractive ? null : partsClass)) @Timeline.Classes?.Item">
     @if (isInteractive)
     {
-        <div @onclick="() => Timeline.HandleOnItemClick(Item)"
-             @onkeydown="HandleOnItemKeyDown"
+        @* Its keyboard activation is registered in the browser (see OnAfterRenderAsync). *@
+        <div @ref="_buttonElement"
+             @onclick="() => Timeline.HandleOnItemClick(Item)"
              role="button"
              tabindex="@(isEnabled ? "0" : null)"
              aria-disabled="@(isEnabled ? null : "true")"
              aria-label="@Timeline.GetAriaLabel(Item)"
-             class="bit-tln-btn">
+             class="bit-tln-btn@(partsClass)">
             @content
         </div>
     }

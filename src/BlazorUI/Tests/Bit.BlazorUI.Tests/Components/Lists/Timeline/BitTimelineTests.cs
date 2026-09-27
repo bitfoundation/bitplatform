@@ -291,8 +291,13 @@ public class BitTimelineTests : BunitTestContext
         else
         {
             Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-            // aria-disabled does not apply to a list: the operable items announce the state themselves.
+            // aria-disabled does not apply to a list: the items announce the state themselves.
             Assert.IsNull(root.GetAttribute("aria-disabled"));
+        }
+
+        foreach (var item in component.FindAll(".bit-tln-itm"))
+        {
+            Assert.AreEqual(isEnabled ? null : "true", item.GetAttribute("aria-disabled"));
         }
     }
 
@@ -626,6 +631,13 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual(1, placeholders.Count);
         Assert.AreEqual("true", placeholders[0].GetAttribute("aria-hidden"));
         Assert.IsTrue(component.FindAll(".bit-tln-itm")[2].QuerySelector(".bit-tln-hdd") is not null);
+
+        // The divider of the hidden dot is marked, so the two halves of its line meet across the placeholder.
+        var dividers = component.FindAll(".bit-tln-dvd");
+
+        Assert.IsFalse(dividers[0].ClassList.Contains("bit-tln-dvh"));
+        Assert.IsFalse(dividers[1].ClassList.Contains("bit-tln-dvh"));
+        Assert.IsTrue(dividers[2].ClassList.Contains("bit-tln-dvh"));
     }
 
     [TestMethod]
@@ -780,8 +792,28 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual("button", button.GetAttribute("role"));
         Assert.IsNull(button.GetAttribute("tabindex"));
         Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+        // The button announces the state, so the item does not announce it a second time.
         Assert.IsNull(item.GetAttribute("aria-disabled"));
         Assert.IsTrue(item.ClassList.Contains("bit-tln-ids"));
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldAnnounceTheDisabledStateOfANonInteractiveItem()
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items,
+            [
+                new BitTimelineItem { PrimaryText = "One", IsEnabled = false },
+                new BitTimelineItem { PrimaryText = "Two" }
+            ]);
+        });
+
+        var items = component.FindAll(".bit-tln-itm");
+
+        // With no button to carry it, the item itself is all there is to announce the state.
+        Assert.AreEqual("true", items[0].GetAttribute("aria-disabled"));
+        Assert.IsNull(items[1].GetAttribute("aria-disabled"));
     }
 
     [TestMethod]
@@ -861,44 +893,28 @@ public class BitTimelineTests : BunitTestContext
         Assert.IsNull(clicked);
     }
 
-    [TestMethod,
-        DataRow("Enter"),
-        DataRow(" "),
-        DataRow("Spacebar")]
-    public void BitTimelineShouldInvokeCallbackOnActivationKeys(string key)
+    [TestMethod]
+    public void BitTimelineShouldRegisterTheButtonKeysOfAClickableItemInTheBrowser()
     {
-        BitTimelineOption? clicked = null;
-
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.OnItemClick, (BitTimelineOption item) => clicked = item);
+            parameters.Add(p => p.OnItemClick, (BitTimelineOption _) => { });
             TwoOptions()(parameters);
         });
 
-        component.Find(".bit-tln-btn").KeyDown(key);
+        // The keys are wired up in the browser, where a key pressed on the item can be told apart from one typed
+        // into a control of a custom template; the item holds no keyboard handler of its own to fire twice.
+        Assert.IsTrue(component.FindAll(".bit-tln-btn").All(b => b.HasAttribute("blazor:onkeydown") is false));
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
 
-        Assert.IsNotNull(clicked);
-        Assert.AreEqual("First", clicked!.PrimaryText);
+        component.Render();
+
+        // A re-render keeps the same elements, so they are not registered again.
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
     }
 
     [TestMethod]
-    public void BitTimelineShouldIgnoreOtherKeys()
-    {
-        BitTimelineOption? clicked = null;
-
-        var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
-        {
-            parameters.Add(p => p.OnItemClick, (BitTimelineOption item) => clicked = item);
-            TwoOptions()(parameters);
-        });
-
-        component.Find(".bit-tln-btn").KeyDown("A");
-
-        Assert.IsNull(clicked);
-    }
-
-    [TestMethod]
-    public void BitTimelineShouldIgnoreKeysOnANonInteractiveItem()
+    public void BitTimelineShouldNotRegisterButtonKeysForANonInteractiveItem()
     {
         var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
         {
@@ -911,7 +927,7 @@ public class BitTimelineTests : BunitTestContext
         // key press of the page is never swallowed by the timeline.
         Assert.AreEqual("LI", item.TagName);
         Assert.AreEqual(0, component.FindAll(".bit-tln-btn").Count);
-        Assert.ThrowsExactly<MissingEventHandlerException>(() => item.KeyDown("Enter"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
     }
 
     #endregion
@@ -942,6 +958,28 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual("One", component.Find(".the-template").TextContent);
         Assert.AreEqual(0, component.FindAll(".bit-tln-dvd").Count);
         Assert.AreEqual(0, component.FindAll(".bit-tln-pcn").Count);
+        // The template brings its own layout, so the item is not marked as holding the parts.
+        Assert.AreEqual(0, component.FindAll(".bit-tln-prt").Count);
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldMarkWhateverHoldsThePartsOfTheItem()
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items,
+            [
+                new BitTimelineItem { PrimaryText = "One" },
+                new BitTimelineItem { PrimaryText = "Two", OnClick = _ => { } }
+            ]);
+        });
+
+        var items = component.FindAll(".bit-tln-itm");
+
+        // A presentational item holds its parts itself, a clickable one through its button.
+        Assert.IsTrue(items[0].ClassList.Contains("bit-tln-prt"));
+        Assert.IsFalse(items[1].ClassList.Contains("bit-tln-prt"));
+        Assert.IsTrue(component.Find(".bit-tln-btn").ClassList.Contains("bit-tln-prt"));
     }
 
     [TestMethod]
