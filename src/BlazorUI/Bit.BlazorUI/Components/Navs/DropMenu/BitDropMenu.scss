@@ -558,3 +558,30 @@
     --bit-drm-pad-y: #{$siz-ctrl-pad-y-lg};
     --bit-drm-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
 }
+
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair and every background is
+// stripped, so the default look and the Text variant would lose the only edge the button has, the open state
+// would lose the pressed surface it is shown with, a loading drop menu - aria-disabled rather than disabled -
+// would look enabled, and the spinner's track and arc would be painted the same color and stop reading as
+// motion. Each is re-established in system colors. Declared last, so they win over the state rules above.
+@media (forced-colors: active) {
+    .bit-drm {
+        border-color: ButtonBorder;
+    }
+
+    .bit-drm.bit-drm-omn {
+        border-color: Highlight;
+    }
+
+    .bit-drm.bit-dis,
+    .bit-drm.bit-drm-ldg {
+        color: GrayText;
+        border-color: GrayText;
+    }
+
+    .bit-drm-spn {
+        border-color: GrayText;
+        border-top-color: CanvasText;
+    }
+}
