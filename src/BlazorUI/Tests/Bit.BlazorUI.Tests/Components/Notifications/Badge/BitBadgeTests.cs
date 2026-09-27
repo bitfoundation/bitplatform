@@ -1714,6 +1714,28 @@ public class BitBadgeTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
+    public void BitBadgeAnchorShouldStayALinkToAssistiveTechnologiesWhileNotEnabled(bool isEnabled)
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        var badge = component.Find("a.bit-bdg-ctn");
+
+        // An anchor without an href is a generic element, whose aria-disabled nothing reports, so the disabled
+        // one is given the link role back; an enabled one is a link through its href alone. The target of a
+        // link that cannot be followed goes with the href.
+        Assert.AreEqual(isEnabled ? null : "link", badge.GetAttribute("role"));
+        Assert.AreEqual(isEnabled ? "_blank" : null, badge.GetAttribute("target"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void BitBadgeAnchorOnClickBehaviorDependsOnIsEnabled(bool isEnabled)
     {
         var clicked = false;

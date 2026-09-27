@@ -1,4 +1,4 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // badge and one set on the Style of an instance re-skins that one alone:
@@ -46,6 +46,9 @@
     --bit-bdg-dis-txt: initial;
     --bit-bdg-dis-bg: initial;
     --bit-bdg-dis-brd: initial;
+    // The offsets are set on the style of the root that asks for them, so the same goes for them.
+    --bit-bdg-ofs-x: initial;
+    --bit-bdg-ofs-y: initial;
 
     // A disabled badge is painted from the disabled colors alone, whatever the public colors say.
     &.bit-dis {
@@ -219,7 +222,7 @@
 }
 
 .bit-bdg-rvs {
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         flex-direction: row-reverse;
     }
 }
@@ -227,23 +230,22 @@
 // The ring is painted behind the badge in the color of the page, so a badge landing on an avatar or a
 // picture keeps an edge of its own instead of dissolving into whatever is underneath it.
 .bit-bdg-brd {
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         box-shadow: 0 0 0 var(--bit-Badge-ring-width, #{$shp-border-width-thick}) var(--bit-Badge-ring-color, #{$clr-bg-pri});
     }
 
     // The ring above is a box-shadow of its own, so the focus indicator has to be restated here to win it back.
-    .bit-bdg-clk:focus-visible {
+    > .bit-bdg-wrp > .bit-bdg-clk:focus-visible {
         @include focus-ring(var(--bit-Badge-focus-color, var(--bit-bdg-clr-fcs, #{$clr-pri-focus})));
     }
 }
 
-// A ring expanding out of the badge and fading, for a state that is still going. It loops, so it takes the
-// loop factor rather than a motion duration: under a reduced-motion preference it slows down instead of
-// collapsing to nothing (see the motion notes in theme-variables.scss).
+// A ring expanding out of the badge and fading, for a state that is still going. It loops, so its literal
+// duration is multiplied by the loop factor (see the motion notes in theme-variables.scss).
 .bit-bdg-pls {
     // A ring rather than a disc: it is painted over the badge, so anything solid would hide the count
     // underneath it as it grows.
-    .bit-bdg-ctn::after {
+    > .bit-bdg-wrp > .bit-bdg-ctn::after {
         content: "";
         inset: 0;
         position: absolute;
@@ -252,6 +254,19 @@
         border-radius: inherit;
         border: $shp-border-width $shp-border-style var(--bit-Badge-pulse-color, var(--bit-bdg-clr));
         animation: bit-bdg-pls-anm calc(1.2s * #{$mot-loop-factor}) $mot-easing-decelerate infinite;
+    }
+
+    // Unlike a loader, the pulse is never the only thing saying the state is still going - it is an
+    // attention cue that would otherwise run on for as long as the page is open, which is exactly what WCAG
+    // 2.2.2 asks to be stoppable. So reduced motion stops it the way it stops a shimmer, and leaves the ring
+    // standing still where the pulse is at its most visible, so the cue survives without the motion.
+    // ForceAnimation renders .bit-fam on the root or on an ancestor, so the opt-out is matched on both.
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) > .bit-bdg-wrp > .bit-bdg-ctn::after {
+            opacity: 0.5;
+            animation: none;
+            transform: scale(1.4);
+        }
     }
 }
 
@@ -270,12 +285,16 @@
 
 // Each position anchors the badge to one side or corner of its child: the wrapper lines it up along the edge
 // and the inset pulls it back in over the edge by --bit-bdg-ins (which Overlap deepens, see .bit-bdg-orp).
+//
+// These, like the Reversed, Bordered and Pulse rules above, reach the badge through child combinators only:
+// a badge can sit in the child content of another one (an avatar badge inside a badged card), and a plain
+// descendant selector would hand the outer badge's corner, ring or pulse to the inner one as well.
 
 .bit-bdg-tlf {
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: auto;
         left: auto;
         right: calc(100% - var(--bit-bdg-ins));
@@ -287,7 +306,7 @@
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: center;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         bottom: calc(100% - var(--bit-bdg-ins));
     }
 }
@@ -296,7 +315,7 @@
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: auto;
         right: auto;
         left: calc(100% - var(--bit-bdg-ins));
@@ -308,7 +327,7 @@
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: auto;
         inset-inline-start: auto;
         bottom: calc(100% - var(--bit-bdg-ins));
@@ -320,7 +339,7 @@
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: auto;
         inset-inline-end: auto;
         bottom: calc(100% - var(--bit-bdg-ins));
@@ -332,7 +351,7 @@
     --bit-bdg-alitems: center;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         right: calc(100% - var(--bit-bdg-ins));
     }
 }
@@ -346,7 +365,7 @@
     --bit-bdg-alitems: center;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         left: calc(100% - var(--bit-bdg-ins));
     }
 }
@@ -355,7 +374,7 @@
     --bit-bdg-alitems: center;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         inset-inline-end: calc(100% - var(--bit-bdg-ins));
     }
 }
@@ -364,7 +383,7 @@
     --bit-bdg-alitems: center;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         inset-inline-start: calc(100% - var(--bit-bdg-ins));
     }
 }
@@ -373,7 +392,7 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         left: auto;
         bottom: auto;
         top: calc(100% - var(--bit-bdg-ins));
@@ -385,7 +404,7 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: center;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: calc(100% - var(--bit-bdg-ins));
     }
 }
@@ -394,7 +413,7 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         right: auto;
         bottom: auto;
         top: calc(100% - var(--bit-bdg-ins));
@@ -406,7 +425,7 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         bottom: auto;
         inset-inline-start: auto;
         top: calc(100% - var(--bit-bdg-ins));
@@ -418,7 +437,7 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         bottom: auto;
         inset-inline-end: auto;
         top: calc(100% - var(--bit-bdg-ins));
@@ -460,9 +479,9 @@
 }
 
 // The insets every position block sets on the badge have nothing left to anchor to once the wrapper is
-// no longer stretched over a child, so they are undone here. The leading .bit-bdg carries this rule above
-// the weight of every position block.
-.bit-bdg .bit-bdg-stl .bit-bdg-ctn {
+// no longer stretched over a child, so they are undone here. This rule weighs as much as every position
+// block and follows all of them, so it wins over each.
+.bit-bdg > .bit-bdg-stl > .bit-bdg-ctn {
     inset: auto;
     position: relative;
     pointer-events: auto;
@@ -581,18 +600,18 @@
 // dot an empty outline and a disabled badge looking like an enabled one. A dot is nothing but its fill, so it
 // keeps one in the system text color; a disabled badge takes the system disabled color.
 @media (forced-colors: active) {
-    .bit-bdg-dot .bit-bdg-ctn {
+    .bit-bdg-dot > .bit-bdg-wrp > .bit-bdg-ctn {
         forced-color-adjust: none;
         border-color: CanvasText;
         background-color: CanvasText;
     }
 
-    .bit-bdg.bit-dis .bit-bdg-ctn {
+    .bit-bdg.bit-dis > .bit-bdg-wrp > .bit-bdg-ctn {
         color: GrayText;
         border-color: GrayText;
     }
 
-    .bit-bdg.bit-dis.bit-bdg-dot .bit-bdg-ctn {
+    .bit-bdg.bit-dis.bit-bdg-dot > .bit-bdg-wrp > .bit-bdg-ctn {
         background-color: GrayText;
     }
 }

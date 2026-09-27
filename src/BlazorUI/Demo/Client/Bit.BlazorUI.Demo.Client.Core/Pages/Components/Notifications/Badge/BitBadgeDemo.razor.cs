@@ -166,7 +166,7 @@ public partial class BitBadgeDemo
             Name = "Pulse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders an expanding ring around the badge to report that something is in progress."
+            Description = "Renders an expanding ring around the badge to report that something is in progress. Under reduced motion it stops and stays as a still halo."
         },
         new()
         {

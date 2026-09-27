@@ -106,6 +106,50 @@ public partial class BitBadgeStylesheetTests
         StringAssert.Contains(block, $"--bit-bdg-dotsize: #{{$siz-badge-dot-{size}}};");
     }
 
+    [TestMethod]
+    public void BitBadgeShouldKeepItsOwnLookAwayFromABadgeNestedInItsChildContent()
+    {
+        var rules = RulesOf(ReadStylesheet()).Split('\n');
+
+        // A badge can sit in the child content of another one, so every rule that reaches the badge from a class of
+        // the root does it through child combinators: a descendant selector would hand the outer badge's corner,
+        // ring, pulse or order to the inner one too.
+        var nested = rules.Where(line => NestedBadgeSelector().IsMatch(line) && line.StartsWith('.') is false).ToArray();
+
+        Assert.IsTrue(nested.Length > 0, "No rule reaches the badge from a class of the root.");
+
+        foreach (var line in nested)
+        {
+            StringAssert.Contains(line, "> .bit-bdg-wrp > ", $"'{line.Trim()}' reaches the badge through a descendant selector.");
+        }
+
+        Assert.IsFalse(rules.Any(line => line.StartsWith('.') && DescendantBadgeSelector().IsMatch(line)),
+                       "A top-level rule reaches the badge through a descendant selector.");
+
+        // The offsets are handed over through custom properties set on the root's style, which inherit just as well,
+        // so each root starts them out unset.
+        var stylesheet = ReadStylesheet();
+        StringAssert.Contains(stylesheet, "--bit-bdg-ofs-x: initial;");
+        StringAssert.Contains(stylesheet, "--bit-bdg-ofs-y: initial;");
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldStopThePulseUnderReducedMotionUnlessAnimationIsForced()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var start = stylesheet.IndexOf("\n.bit-bdg-pls {", System.StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0, "The pulse has no rule of its own.");
+
+        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+
+        // An endless attention cue has to be stoppable (WCAG 2.2.2), so reduced motion stops it outright rather than
+        // slowing it the way it slows a loader, while ForceAnimation - on the root or on an ancestor - opts back in.
+        StringAssert.Contains(block, "@media (prefers-reduced-motion: reduce)");
+        StringAssert.Contains(block, "&:not(.bit-fam):not(.bit-fam *) > .bit-bdg-wrp > .bit-bdg-ctn::after {");
+        StringAssert.Contains(block, "animation: none;");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
@@ -135,4 +179,12 @@ public partial class BitBadgeStylesheetTests
 
     [GeneratedRegex(@"(^|[;{\s])--bit-Badge-[a-z-]+\s*:", RegexOptions.Multiline)]
     private static partial Regex DeclaredVariable();
+
+    // A selector, rather than a declaration, that ends on the badge or on the clickable badge.
+    [GeneratedRegex(@"\.bit-bdg-(ctn|clk)\b[^;]*\{\s*$")]
+    private static partial Regex NestedBadgeSelector();
+
+    // A top-level selector that reaches the badge from an ancestor class without a child combinator.
+    [GeneratedRegex(@"\.bit-bdg[a-z-]*\s+\.bit-bdg-(wrp|stl|ctn|clk)\b")]
+    private static partial Regex DescendantBadgeSelector();
 }

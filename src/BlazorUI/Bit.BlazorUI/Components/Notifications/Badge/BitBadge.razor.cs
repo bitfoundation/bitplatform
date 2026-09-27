@@ -382,8 +382,9 @@ public partial class BitBadge : BitComponentBase
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
-    /// The ring is decorative: it slows down rather than stops under a reduced-motion preference, and it
-    /// carries no meaning of its own, so pair it with a <see cref="Description"/> when the state matters.
+    /// The ring is an attention cue that carries no meaning of its own, so pair it with a <see cref="Description"/>
+    /// when the state matters. Under a reduced-motion preference it stops and stays as a still halo around the
+    /// badge, unless <c>ForceAnimation</c> asks for the motion back.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Pulse { get; set; }

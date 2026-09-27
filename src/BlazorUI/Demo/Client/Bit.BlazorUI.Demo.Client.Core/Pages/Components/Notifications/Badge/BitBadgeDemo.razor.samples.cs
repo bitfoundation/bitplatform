@@ -69,7 +69,7 @@ public partial class BitBadgeDemo
 <BitBadge Max=""63"" Content=""100"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Max=""99"" Content=""12345L"" Title=""12345 unread messages"">
+<BitBadge Max=""99"" Content=""12345L"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 
@@ -148,6 +148,8 @@ private readonly List<BitDropdownItem<BitPosition>> badgePositionList = Enum.Get
 <BitBadge Content=""@(""Draft"")"" />
 <BitBadge Content=""@(""Beta"")"" IconName=""@BitIconName.TestBeaker"" Shape=""BitBadgeShape.Rounded"" Variant=""BitVariant.Outline"" />
 <BitBadge Dot Description=""Degraded"" />
+<BitBadge Content=""12345"" Max=""999"" />
+<BitBadge Content=""1234"" Max=""999"" Title=""1,234 downloads this week"" Variant=""BitVariant.Outline"" />
 
 
 <BitBadge Inline Content=""24"">
@@ -189,8 +191,8 @@ private int counter;";
 private int unread = 3;";
 
     private readonly string example12RazorCode = @"
-<span style=""--bit-Badge-background: var(--bit-clr-pri-light); --bit-Badge-color: var(--bit-clr-pri);"">
-    <BitBadge Content=""@(""Tint"")"" />
+<span style=""--bit-Badge-background: var(--bit-clr-bg-sec); --bit-Badge-color: var(--bit-clr-fg-pri); --bit-Badge-border-color: var(--bit-clr-pri);"">
+    <BitBadge Content=""@(""Subtle"")"" />
 </span>
 <span style=""--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;"">
     <BitBadge Content=""@(""Custom"")"" />

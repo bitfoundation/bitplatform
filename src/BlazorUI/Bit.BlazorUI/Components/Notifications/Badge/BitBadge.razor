@@ -77,15 +77,18 @@
             {
                 @* A badge that leads somewhere is a real link: it comes with the context menu, the middle click,
                    the status bar and the announcement that every anchor of the page comes with, none of which a
-                   click handler on a span can reproduce. A disabled one keeps neither the href nor the focus. *@
+                   click handler on a span can reproduce. A disabled one keeps neither the href, the target nor the
+                   focus - and an anchor without an href is no longer a link to assistive technologies, so it is
+                   given the role back explicitly, which is what lets them report it as a dimmed link at all. *@
                 <a @onclick="HandleOnClick"
                    @onclick:stopPropagation="true"
                    @onclick:preventDefault="@(IsEnabled is false)"
                    style="@Styles?.Badge"
                    class="bit-bdg-ctn bit-bdg-clk @_bumpClass @Classes?.Badge"
                    href="@(IsEnabled ? Href : null)"
+                   role="@(IsEnabled ? null : "link")"
                    rel="@_rel"
-                   target="@Target"
+                   target="@(IsEnabled ? Target : null)"
                    title="@_titleText"
                    tabindex="@(IsEnabled ? TabIndex : "-1")"
                    aria-disabled="@(IsEnabled ? null : "true")"

@@ -98,8 +98,8 @@
 
     <DemoExample Title="Max, ShowZero & Hidden" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            <b>Max</b> caps a number of any numeric type (<code>99+</code>) and spells the real figure out as its tooltip; <b>Title</b> replaces that tooltip. An overlaid badge lets the pointer through to its child, so the tooltip shows on a badge that takes the pointer itself.
-            <b>ShowZero</b>=false takes an emptied counter off the page, and <b>Hidden</b> removes the badge while its child keeps rendering.
+            <b>Max</b> caps a number of any numeric type (<code>99+</code>). <b>ShowZero</b>=false takes an emptied counter off the page,
+            and <b>Hidden</b> removes the badge while its child keeps rendering.
         </div>
         <br /><br />
         <div class="example-content">
@@ -109,7 +109,7 @@
             <BitBadge Max="63" Content="100">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-            <BitBadge Max="99" Content="12345L" Title="12345 unread messages">
+            <BitBadge Max="99" Content="12345L">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
@@ -189,7 +189,7 @@
     <DemoExample Title="Bordered & Pulse" RazorCode="@example8RazorCode" Id="example8">
         <div>
             <b>Bordered</b> rings the badge in the page color so it keeps an edge over a busy child. <b>Pulse</b> sends a fading ring out of it for a
-            state still in progress; it is decorative and only slows down under reduced motion.
+            state still in progress; under reduced motion it stops and stays as a still halo.
         </div>
         <br /><br />
         <div class="example-content">
@@ -210,14 +210,17 @@
 
     <DemoExample Title="Standalone & Inline" RazorCode="@example9RazorCode" Id="example9">
         <div>
-            Without child content the badge stands alone in the flow - a status in a table cell or a heading. <b>Inline</b> keeps the child and lays the badge
-            beside it; only the side of <b>Position</b> is read (Start/Left before the child, the rest after).
+            Without child content the badge stands alone in the flow - a status in a table cell or a heading. It takes the pointer there (an overlaid one
+            leaves it to its child), so a capped count shows its real figure on hover, which <b>Title</b> replaces.
+            <b>Inline</b> keeps the child and lays the badge beside it; only the side of <b>Position</b> is read (Start/Left before the child, the rest after).
         </div>
         <br /><br />
         <div class="example-content">
             <BitBadge Content="@("Draft")" />
             <BitBadge Content="@("Beta")" IconName="@BitIconName.TestBeaker" Shape="BitBadgeShape.Rounded" Variant="BitVariant.Outline" />
             <BitBadge Dot Description="Degraded" />
+            <BitBadge Content="12345" Max="999" />
+            <BitBadge Content="1234" Max="999" Title="1,234 downloads this week" Variant="BitVariant.Outline" />
         </div>
         <br /><br />
         <div class="example-content">
@@ -284,8 +287,8 @@
         </div>
         <br /><br />
         <div class="example-content">
-            <span style="--bit-Badge-background: var(--bit-clr-pri-light); --bit-Badge-color: var(--bit-clr-pri);">
-                <BitBadge Content="@("Tint")" />
+            <span style="--bit-Badge-background: var(--bit-clr-bg-sec); --bit-Badge-color: var(--bit-clr-fg-pri); --bit-Badge-border-color: var(--bit-clr-pri);">
+                <BitBadge Content="@("Subtle")" />
             </span>
             <span style="--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;">
                 <BitBadge Content="@("Custom")" />
