@@ -21,6 +21,12 @@ public partial class BitMessage : BitComponentBase
     private bool _isFocusInside;
     private bool _isPausedByApi;
 
+    // The two page-level reasons to hold the countdown, reported by the shared page visibility utility. They are
+    // facts about the page rather than about this showing of the message, so a dismissal leaves them alone.
+    private bool _isPageHidden;
+    private bool _isWindowBlurred;
+    private BitPageVisibility? _pageVisibility;
+
     // A hold has no length of its own: a pointer can rest on the message, and a PauseAutoDismiss can go unanswered,
     // for as long as the reader likes. So a held countdown waits on the resume rather than waking four times a
     // second to find the hold still on. This is what the resume opens.
@@ -60,6 +66,11 @@ public partial class BitMessage : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    // PauseOnPageHidden and PauseOnWindowBlur need the shared BitPageVisibility utility, which only exists where
+    // the app registered the bit BlazorUI services. It is resolved through the provider rather than injected, so a
+    // message keeps working in an app that never registered them and only those two opt-in features turn off.
+    [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
 
 
 
@@ -108,7 +119,8 @@ public partial class BitMessage : BitComponentBase
     /// - and while the message is enabled. It is held for as long as a pointer that can rest on the message - a
     /// mouse or a pen, never a touch, which is a tap that is over as soon as it began - is over it, or the focus is
     /// inside it, so the message cannot vanish while it is being read or acted upon (WCAG 2.2.1 Timing
-    /// Adjustable). Assigning a different value re-arms the countdown.
+    /// Adjustable); <see cref="PauseOnPageHidden"/> and <see cref="PauseOnWindowBlur"/> hold it while the page is
+    /// not being looked at too. Assigning a different value re-arms the countdown.
     /// </remarks>
     [Parameter] public TimeSpan? AutoDismissTime { get; set; }
 
@@ -413,6 +425,27 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public EventCallback<BitMessageDismissArgs> OnDismissing { get; set; }
 
     /// <summary>
+    /// Holds the <see cref="AutoDismissTime"/> countdown while the page is hidden - a background tab, a minimized
+    /// window - so the message is not gone before anyone has looked at it.
+    /// </summary>
+    /// <remarks>
+    /// It needs the bit BlazorUI services to be registered (<c>AddBitBlazorUIServices</c>); without them the
+    /// countdown runs as it otherwise would.
+    /// </remarks>
+    [Parameter] public bool PauseOnPageHidden { get; set; }
+
+    /// <summary>
+    /// Holds the <see cref="AutoDismissTime"/> countdown while the window does not have the focus.
+    /// </summary>
+    /// <remarks>
+    /// A window covered by another one, or whose focus went to the dev tools, is not hidden, so
+    /// <see cref="PauseOnPageHidden"/> alone lets the countdown run behind whatever is in front of it. It needs the
+    /// bit BlazorUI services to be registered (<c>AddBitBlazorUIServices</c>); without them the countdown runs as it
+    /// otherwise would.
+    /// </remarks>
+    [Parameter] public bool PauseOnWindowBlur { get; set; }
+
+    /// <summary>
     /// How urgently the message interrupts a screen reader, independently of the role it is announced under.
     /// </summary>
     /// <remarks>
@@ -503,6 +536,10 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// The variant of the message.
     /// </summary>
+    /// <remarks>
+    /// Fill paints the surface in the role color and the text in its on-color. Outline and Text leave the surface to
+    /// the page, so their text takes the role color shaded toward the foreground, which keeps it at a 4.5:1 contrast.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
 
@@ -671,6 +708,10 @@ public partial class BitMessage : BitComponentBase
 
         RegisterInteractionHandlers();
 
+        // A PauseOnPageHidden or PauseOnWindowBlur turned off while it is holding the countdown has no event of its
+        // own coming - the next visibility change might never happen - so the hold is weighed again here.
+        RefreshAutoDismissHold();
+
         // Before the first render the timer is armed by OnAfterRenderAsync instead, so that a message that
         // never makes it to the DOM never starts counting down.
         if (IsRendered) ArmAutoDismiss();
@@ -690,6 +731,8 @@ public partial class BitMessage : BitComponentBase
         HandleDelayedAnnouncement();
 
         await SyncOverflowObserver();
+
+        await SyncPageVisibility();
     }
 
 
@@ -740,6 +783,27 @@ public partial class BitMessage : BitComponentBase
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
         catch (JSException) { } // without the observer the expander is rendered, as it always was
+    }
+
+    // Subscribed the first time a countdown asks for it, and kept until the message is disposed: the hold is read
+    // through the parameters that asked for it (see _IsPageHeld), so a subscription nobody asks for any more holds
+    // nothing. The utility is a scoped service of the library, so an app that registered none simply goes without.
+    private async Task SyncPageVisibility()
+    {
+        if (_pageVisibility is not null || IsDisposed) return;
+        if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _HasAutoDismiss is false) return;
+
+        _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
+        if (_pageVisibility is null) return;
+
+        _pageVisibility.OnChange += HandlePageVisibilityChange;
+        _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
+
+        try
+        {
+            await _pageVisibility.Init();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
     }
 
     // A live region announces what changes inside it, so the text is handed to it one render after the region
@@ -1117,7 +1181,7 @@ public partial class BitMessage : BitComponentBase
     // loop has to ask for the render that shows it, which the pointer and focus listeners would have got for free.
     private void RefreshAutoDismissHold()
     {
-        var paused = _isPointerOver || _isFocusInside || _isPausedByApi;
+        var paused = _isPointerOver || _isFocusInside || _isPausedByApi || _IsPageHeld;
 
         if (_isAutoDismissPaused == paused) return;
 
@@ -1139,6 +1203,30 @@ public partial class BitMessage : BitComponentBase
         if (IsDisposed || _ShowsAutoDismissProgress is false) return;
 
         _ = InvokeAsync(StateHasChanged);
+    }
+
+    // The page-level reasons are read through the parameters that asked for them rather than off the flags alone,
+    // since the subscription outlives a PauseOnPageHidden or a PauseOnWindowBlur that is turned off again.
+    private bool _IsPageHeld => (PauseOnPageHidden && _isPageHidden) || (PauseOnWindowBlur && _isWindowBlurred);
+
+    private Task HandlePageVisibilityChange(bool hidden)
+    {
+        return InvokeAsync(() =>
+        {
+            _isPageHidden = hidden;
+
+            RefreshAutoDismissHold();
+        });
+    }
+
+    private Task HandleWindowFocusChange(bool blurred)
+    {
+        return InvokeAsync(() =>
+        {
+            _isWindowBlurred = blurred;
+
+            RefreshAutoDismissHold();
+        });
     }
 
     // Lets go of a countdown waiting on the gate, and leaves nothing behind for the next hold to trip over.
@@ -1210,6 +1298,13 @@ public partial class BitMessage : BitComponentBase
         if (IsDisposed || disposing is false) return;
 
         StopAutoDismiss();
+
+        if (_pageVisibility is not null)
+        {
+            _pageVisibility.OnChange -= HandlePageVisibilityChange;
+            _pageVisibility.OnWindowFocusChange -= HandleWindowFocusChange;
+            _pageVisibility = null;
+        }
 
         if (_observedOverflowId is not null)
         {

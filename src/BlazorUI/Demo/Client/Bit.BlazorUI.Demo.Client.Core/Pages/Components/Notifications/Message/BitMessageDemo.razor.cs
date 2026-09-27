@@ -25,7 +25,7 @@ public partial class BitMessageDemo
             Name = "AutoDismissTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "Enables the auto-dismiss feature and sets the time to automatically dismiss the message. It runs wherever dismissing would do something - an OnDismiss handler, Dismissible, or a Dismissed binding - and is held while the pointer is over the message, the focus is inside it, or PauseAutoDismiss was called.",
+            Description = "Enables the auto-dismiss feature and sets the time to automatically dismiss the message. It runs wherever dismissing would do something - an OnDismiss handler, Dismissible, or a Dismissed binding - and is held while the pointer is over the message, the focus is inside it, or PauseAutoDismiss was called (and, with PauseOnPageHidden / PauseOnWindowBlur, while the page is not being looked at).",
         },
         new()
         {
@@ -266,6 +266,20 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "PauseOnPageHidden",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Holds the AutoDismissTime countdown while the page is hidden (a background tab, a minimized window). Needs the bit BlazorUI services (AddBitBlazorUIServices).",
+        },
+        new()
+        {
+            Name = "PauseOnWindowBlur",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Holds the AutoDismissTime countdown while the window does not have the focus. Needs the bit BlazorUI services (AddBitBlazorUIServices).",
+        },
+        new()
+        {
             Name = "Politeness",
             Type = "BitPoliteness?",
             DefaultValue = "null",
@@ -345,7 +359,7 @@ public partial class BitMessageDemo
             Name = "Variant",
             Type = "BitVariant?",
             DefaultValue = "null",
-            Description = "The variant of the message.",
+            Description = "The variant of the message. Outline and Text shade the role color toward the foreground for the text, so it keeps a 4.5:1 contrast on the page.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
         },
@@ -680,7 +694,7 @@ public partial class BitMessageDemo
         new()
         {
             Name = "--bit-Message-color",
-            DefaultValue = "The role's on-color (Fill), its main color (Outline, Text)",
+            DefaultValue = "The role's on-color (Fill); its main color shaded toward the foreground for 4.5:1 contrast (Outline, Text)",
             Description = "Color of the text, the icon and the buttons.",
         },
         new()
@@ -724,6 +738,18 @@ public partial class BitMessageDemo
             Name = "--bit-Message-font-size",
             DefaultValue = "Per Size, from the type ramp",
             Description = "Size of the title and the content.",
+        },
+        new()
+        {
+            Name = "--bit-Message-line-height",
+            DefaultValue = "normal",
+            Description = "Line height of the title and the content, e.g. a roomier 1.5 for multiline text.",
+        },
+        new()
+        {
+            Name = "--bit-Message-title-color",
+            DefaultValue = "The message's own color",
+            Description = "Color of the title.",
         },
         new()
         {

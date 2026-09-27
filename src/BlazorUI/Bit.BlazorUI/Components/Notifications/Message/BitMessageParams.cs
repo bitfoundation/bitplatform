@@ -155,6 +155,16 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
     public bool? Multiline { get; set; }
 
     /// <summary>
+    /// Holds the AutoDismissTime countdown while the page is hidden.
+    /// </summary>
+    public bool? PauseOnPageHidden { get; set; }
+
+    /// <summary>
+    /// Holds the AutoDismissTime countdown while the window does not have the focus.
+    /// </summary>
+    public bool? PauseOnWindowBlur { get; set; }
+
+    /// <summary>
     /// Renders a bar along the bottom edge of the message that runs down as its AutoDismissTime does.
     /// </summary>
     public bool? ShowAutoDismissProgress { get; set; }
@@ -329,6 +339,16 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.Multiline = Multiline.Value;
 
             bitMessage.StyleBuilder.Reset();
+        }
+
+        if (PauseOnPageHidden.HasValue && bitMessage.HasNotBeenSet(nameof(PauseOnPageHidden)))
+        {
+            bitMessage.PauseOnPageHidden = PauseOnPageHidden.Value;
+        }
+
+        if (PauseOnWindowBlur.HasValue && bitMessage.HasNotBeenSet(nameof(PauseOnWindowBlur)))
+        {
+            bitMessage.PauseOnWindowBlur = PauseOnWindowBlur.Value;
         }
 
         if (ShowAutoDismissProgress.HasValue && bitMessage.HasNotBeenSet(nameof(ShowAutoDismissProgress)))

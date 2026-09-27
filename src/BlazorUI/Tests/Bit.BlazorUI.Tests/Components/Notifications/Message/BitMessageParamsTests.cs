@@ -147,6 +147,22 @@ public class BitMessageParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMessageShouldApplyCascadedPageHolds()
+    {
+        var component = RenderWithParams(new BitMessageParams
+        {
+            PauseOnPageHidden = true,
+            PauseOnWindowBlur = true,
+        }, builder => builder.AddAttribute(1, nameof(BitMessage.PauseOnWindowBlur), false));
+
+        var instance = component.FindComponent<BitMessage>().Instance;
+
+        Assert.IsTrue(instance.PauseOnPageHidden);
+        // The message's own value wins, false included.
+        Assert.IsFalse(instance.PauseOnWindowBlur);
+    }
+
+    [TestMethod]
     public void BitMessageDirectParametersShouldOverrideCascadingParameters()
     {
         var component = RenderWithParams(new BitMessageParams

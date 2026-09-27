@@ -42,6 +42,7 @@
         <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
             <div>
                 <b>Fill</b> (the default) paints the surface, <b>Outline</b> keeps only the border, and <b>Text</b> tints the text alone.
+                Without a fill the color is shaded toward the foreground, so the text keeps a 4.5:1 contrast on the page.
             </div>
             <br />
             <div class="box">
@@ -227,7 +228,8 @@
         <DemoExample Title="Auto-dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>AutoDismissTime</b> dismisses the message after a delay. The countdown holds while a mouse or pen is
-                over the message or the focus is inside it (WCAG 2.2.1), and <b>PauseAutoDismiss</b> /
+                over the message or the focus is inside it (WCAG 2.2.1); <b>PauseOnPageHidden</b> and
+                <b>PauseOnWindowBlur</b> hold it while the page is not being looked at, and <b>PauseAutoDismiss</b> /
                 <b>ResumeAutoDismiss</b> hold it from code. <b>ShowAutoDismissProgress</b> draws it as a bar. It starts
                 over when the time changes, when the message comes back, and when <b>OnDismissing</b> cancels it.
             </div>
@@ -247,10 +249,12 @@
             <br />
             <div class="box">
                 <BitMessage Dismissible
+                            PauseOnPageHidden
+                            PauseOnWindowBlur
                             ShowAutoDismissProgress
                             AutoDismissTime="TimeSpan.FromSeconds(10)"
                             @bind-Dismissed="isProgressDismissed">
-                    Ten seconds, drawn along the bottom edge.
+                    Ten seconds, drawn along the bottom edge. Switch to another tab or window and it waits for you.
                 </BitMessage>
                 @if (isProgressDismissed)
                 {
@@ -442,6 +446,7 @@
                             Style="--bit-Message-background: color-mix(in srgb, var(--bit-clr-err) 12%, var(--bit-clr-bg-pri));
                                    --bit-Message-border-color: var(--bit-clr-err);
                                    --bit-Message-icon-color: var(--bit-clr-err);
+                                   --bit-Message-title-color: var(--bit-clr-err);
                                    --bit-Message-color: var(--bit-clr-fg-pri);">
                     A tinted surface: the card was declined. Try another payment method.
                 </BitMessage>
@@ -461,9 +466,13 @@
                  style="--bit-Message-radius: 1rem;
                         --bit-Message-shadow: var(--bit-shd-4);
                         --bit-Message-icon-size: 1.25rem;
+                        --bit-Message-line-height: 1.5;
                         --bit-Message-title-font-weight: 700;
                         --bit-Message-progress-height: 6px;">
-                <BitMessage Title="Set on an ancestor">Both messages in this box take its variables.</BitMessage>
+                <BitMessage Multiline Title="Set on an ancestor">
+                    Both messages in this box take its variables: a larger radius, a shadow, a bigger icon, a bolder
+                    title and a roomier line height for text that wraps.
+                </BitMessage>
                 <BitMessage Dismissible
                             ShowAutoDismissProgress
                             Color="BitColor.Success"

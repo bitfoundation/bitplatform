@@ -191,10 +191,12 @@ else
 
 
 <BitMessage Dismissible
+            PauseOnPageHidden
+            PauseOnWindowBlur
             ShowAutoDismissProgress
             AutoDismissTime=""TimeSpan.FromSeconds(10)""
             @bind-Dismissed=""isProgressDismissed"">
-    Ten seconds, drawn along the bottom edge.
+    Ten seconds, drawn along the bottom edge. Switch to another tab or window and it waits for you.
 </BitMessage>
 @if (isProgressDismissed)
 {
@@ -345,6 +347,7 @@ private bool isDisabledSampleDismissed;";
             Style=""--bit-Message-background: color-mix(in srgb, var(--bit-clr-err) 12%, var(--bit-clr-bg-pri));
                    --bit-Message-border-color: var(--bit-clr-err);
                    --bit-Message-icon-color: var(--bit-clr-err);
+                   --bit-Message-title-color: var(--bit-clr-err);
                    --bit-Message-color: var(--bit-clr-fg-pri);"">
     A tinted surface: the card was declined. Try another payment method.
 </BitMessage>
@@ -363,9 +366,13 @@ private bool isDisabledSampleDismissed;";
 <div style=""--bit-Message-radius: 1rem;
             --bit-Message-shadow: var(--bit-shd-4);
             --bit-Message-icon-size: 1.25rem;
+            --bit-Message-line-height: 1.5;
             --bit-Message-title-font-weight: 700;
             --bit-Message-progress-height: 6px;"">
-    <BitMessage Title=""Set on an ancestor"">Both messages in this box take its variables.</BitMessage>
+    <BitMessage Multiline Title=""Set on an ancestor"">
+        Both messages in this box take its variables: a larger radius, a shadow, a bigger icon, a bolder
+        title and a roomier line height for text that wraps.
+    </BitMessage>
     <BitMessage Dismissible
                 ShowAutoDismissProgress
                 Color=""BitColor.Success""

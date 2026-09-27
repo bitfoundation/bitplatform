@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
@@ -1814,6 +1815,133 @@ public class BitMessageTests : BunitTestContext
         Assert.AreEqual(0, dismissCount);
 
         component.Instance.ResumeAutoDismiss();
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldHoldTheCountdownWhileThePageIsHidden()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.ShowAutoDismissProgress, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        Thread.Sleep(400);
+
+        // A message in a background tab keeps its countdown for when it is looked at, and its bar holds with it.
+        Assert.AreEqual(0, dismissCount);
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+
+        await visibility._VisibilityChanged(false);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldHoldTheCountdownWhileTheWindowIsBlurred()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnWindowBlur, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._WindowFocusChanged(true);
+
+        Thread.Sleep(400);
+
+        Assert.AreEqual(0, dismissCount);
+
+        await visibility._WindowFocusChanged(false);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldNotHoldTheCountdownForAHiddenPageWithoutBeingAsked()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldLetGoOfThePageHoldOnceItIsTurnedOff()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        Thread.Sleep(400);
+
+        Assert.AreEqual(0, dismissCount);
+
+        // No visibility change is coming to let go of it, so turning the parameter off has to.
+        component.Render(parameters => parameters.Add(p => p.PauseOnPageHidden, false));
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldCountDownAsUsualWithoutThePageVisibilityService()
+    {
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.PauseOnWindowBlur, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
 
         WaitUntil(() => dismissCount == 1);
 
