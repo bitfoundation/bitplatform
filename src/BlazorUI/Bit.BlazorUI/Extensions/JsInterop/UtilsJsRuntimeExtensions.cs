@@ -67,6 +67,12 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask<bool> BitUtilsPrefersReducedMotion(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.prefersReducedMotion", element);
+    }
+
+
     internal static ValueTask<bool> BitUtilsIsHoverDevice(this IJSRuntime jsRuntime)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isHoverDevice");
@@ -84,6 +90,37 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsDisposeFocusTrap(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusTrap", elementId);
+    }
+
+
+    // Hands the keyboard back to the page around the trigger when Tab leaves either end of a popup that is
+    // relocated to the body, and reports it through the OnTabOut callback; see Utils.setupTabOut.
+    internal static ValueTask BitUtilsSetupTabOut<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, string triggerId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupTabOut", elementId, triggerId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeTabOut(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeTabOut", elementId);
+    }
+
+
+    // Reports Escape pressed inside an open callout through the OnEscape callback, unless a callout opened from
+    // inside it is the innermost open one and so the one the key belongs to; see Utils.setupEscape. With a
+    // triggerId, an Escape pressed anywhere outside the callout and that trigger is reported as well.
+    internal static ValueTask BitUtilsSetupEscape<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj, string? triggerId = null) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupEscape", elementId, dotnetObj, triggerId);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeEscape", elementId);
     }
 
 
@@ -237,9 +274,9 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsRegisterPreventPointerDown(this IJSRuntime jsRuntime, ElementReference element, bool active)
+    internal static ValueTask BitUtilsRegisterPreventPointerDown(this IJSRuntime jsRuntime, ElementReference element, bool active, int clickThreshold = 0, string? clickAxis = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventPointerDown", element, active);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventPointerDown", element, active, clickThreshold, clickAxis);
     }
 
 
@@ -252,6 +289,12 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsRegisterPreventKeys(this IJSRuntime jsRuntime, ElementReference element, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventKeys", element, keys);
+    }
+
+
+    internal static ValueTask BitUtilsRegisterNavigationKeys<T>(this IJSRuntime jsRuntime, ElementReference element, string[] keys, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerNavigationKeys", element, keys, dotnetObj);
     }
 
 

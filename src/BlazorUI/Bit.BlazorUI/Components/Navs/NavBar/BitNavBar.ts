@@ -70,6 +70,66 @@ namespace BitBlazorUI {
         }
 
 
+        // A horizontal Scrollable navbar hides its scrollbar, which leaves a mouse on a desktop with nothing
+        // to reach the items past the edge with: a vertical wheel does not scroll a horizontal overflow.
+        // The wheel is turned into a horizontal scroll while the bar can still move that way, and handed
+        // back to the page at either end so the bar never traps the page scroll. A wheel that already
+        // scrolls sideways (a trackpad, Shift+wheel) and a pinch zoom (Ctrl+wheel) are left alone.
+        public static setupWheel(containerId: string) {
+            const container = document.getElementById(containerId) as (HTMLElement & { bitNbrWheel?: boolean }) | null;
+            if (!container || container.bitNbrWheel) return;
+            container.bitNbrWheel = true;
+
+            container.addEventListener('wheel', (e: WheelEvent) => {
+                if (e.ctrlKey || e.deltaY === 0 || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+
+                // The mode is read at the time of the event, so a navbar that stops being a horizontal
+                // scrolling one keeps the listener without it doing anything.
+                const root = container.parentElement;
+                if (!root || !root.classList.contains('bit-nbr-scr') || root.classList.contains('bit-nbr-vrt')) return;
+
+                const max = container.scrollWidth - container.clientWidth;
+                if (max <= 0) return;
+
+                // Content an item template renders may scroll down its own length; a wheel over it that
+                // can still move it that way is its own, not the bar's.
+                if (NavBar.hasVerticalScroller(e.target as Element | null, container, e.deltaY)) return;
+
+                // The direction is read off the dir attribute rather than the computed style: this handler
+                // runs for every wheel tick and holds the page scroll until it returns, and a style read there
+                // is a forced recalculation on each one.
+                const rtl = (container.closest('[dir]') as HTMLElement | null)?.dir.toLowerCase() === 'rtl';
+                const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * container.clientWidth : e.deltaY;
+                // In RTL scrollLeft runs from 0 down to -max, so the distance travelled is its magnitude.
+                const position = Math.abs(container.scrollLeft);
+
+                if ((delta < 0 && position <= 0) || (delta > 0 && position >= max - 1)) return;
+
+                e.preventDefault();
+                // The list scrolls smoothly (scroll-behavior), and a relative scroll started while the previous
+                // one is still animating would add to where that one has got to rather than to where it is
+                // going, losing distance on every tick of a fast spin. The wheel's own ticks are the motion here,
+                // so each one lands at once.
+                container.scrollBy({ left: rtl ? -delta : delta, behavior: 'instant' as ScrollBehavior });
+            }, { passive: false });
+        }
+
+
+        private static hasVerticalScroller(target: Element | null, container: HTMLElement, deltaY: number): boolean {
+            for (let el = target; el && el !== container; el = el.parentElement) {
+                if (el.scrollHeight <= el.clientHeight) continue;
+
+                // Whether the element could still move that way is checked first, since it is cheap: the style
+                // is only read for an element that could, to tell a scroller from one that merely overflows.
+                if (deltaY < 0 ? el.scrollTop <= 0 : el.scrollTop >= el.scrollHeight - el.clientHeight - 1) continue;
+
+                const overflowY = getComputedStyle(el).overflowY;
+                if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') return true;
+            }
+
+            return false;
+        }
+
         private static isEditable(element: HTMLElement): boolean {
             if (element.isContentEditable) return true;
 

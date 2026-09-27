@@ -198,6 +198,98 @@
             }
         }
 
+        // True when the reader has asked for less motion ('prefers-reduced-motion: reduce') and the given
+        // element has not been opted back into it: an element inside a subtree marked with bit-fam (which is
+        // what BitComponentBase.ForceAnimation renders) keeps its motion, the same way the stylesheets
+        // restore the motion tokens there.
+        public static prefersReducedMotion(element: HTMLElement) {
+            try {
+                if (typeof window.matchMedia !== "function") return false;
+                if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+
+                return !(element && element.closest && element.closest(".bit-fam"));
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.prefersReducedMotion:", e);
+                return false;
+            }
+        }
+
+        // True when the target of a key sits on something inside the given container that consumes the
+        // arrow keys (and Home/End) on its own: an editable field moves its caret with them, and a slider,
+        // a list, a radio group or a grid moves its own selection. The container itself does not count,
+        // and neither does an element outside of it.
+        private static isKeyConsumer(container: HTMLElement, target: HTMLElement) {
+            if (target === container || !container.contains(target)) return false;
+
+            if (target.isContentEditable) return true;
+
+            const tag = target.tagName;
+            if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+            if (tag === 'INPUT') {
+                const type = ((target as HTMLInputElement).type || '').toLowerCase();
+                if (['button', 'submit', 'reset', 'checkbox', 'image', 'file', 'color'].indexOf(type) < 0) return true;
+            }
+
+            const owner = target.closest('[role="slider"],[role="spinbutton"],[role="textbox"],[role="searchbox"],[role="combobox"],' +
+                                         '[role="listbox"],[role="menu"],[role="menubar"],[role="tablist"],[role="radiogroup"],' +
+                                         '[role="grid"],[role="treegrid"],[role="tree"],[role="scrollbar"]');
+
+            return owner != null && owner !== container && container.contains(owner);
+        }
+
+        // Registers a keydown listener on an element that navigates with the given keys itself (a carousel,
+        // for one), which takes each of those keys away from the browser and hands it to the
+        // OnNavigationKey method of the .NET object. Both halves are decided here, at once and from the
+        // target of the event, so the element never moves without its default being suppressed or the
+        // other way around, and a key costs a call to .NET only when it is actually one to act on.
+        // A key is left alone when it carries a modifier (a browser shortcut), when a control inside the
+        // element consumes it (isKeyConsumer), and when something deeper already took it (a nested
+        // element of the same kind, whose listener runs first).
+        // With the key, .NET is told where the focus was: the data-bit-key-origin value (and the id) of the
+        // outermost element carrying one between the target and the element, which is how the element
+        // tells its own controls apart without a focus event per control. Calling it again updates the
+        // keys and the .NET object in place, and an empty key list turns it off, so no separate
+        // unregister call is needed - the listener is garbage-collected with the element itself.
+        public static registerNavigationKeys(element: HTMLElement, keys: string[], dotnetObj: DotNetObject) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                el.__bitNavigationKeys = keys || [];
+                el.__bitNavigationKeysDotnetObj = dotnetObj;
+
+                if (el.__bitNavigationKeysRegistered) return;
+                el.__bitNavigationKeysRegistered = true;
+
+                element.addEventListener('keydown', (e: KeyboardEvent) => {
+                    const el = element as any;
+                    const currentKeys = el.__bitNavigationKeys as string[];
+
+                    if (!currentKeys || currentKeys.indexOf(e.key) < 0) return;
+                    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+                    if (e.defaultPrevented) return;
+
+                    const target = e.target instanceof HTMLElement ? e.target : null;
+
+                    if (target && Utils.isKeyConsumer(element, target)) return;
+
+                    e.preventDefault();
+
+                    let origin: HTMLElement | null = null;
+                    for (let n = target; n && n !== element; n = n.parentElement) {
+                        if (n.hasAttribute('data-bit-key-origin')) origin = n;
+                    }
+
+                    const dotnet = el.__bitNavigationKeysDotnetObj as DotNetObject | undefined;
+
+                    dotnet?.invokeMethodAsync('OnNavigationKey', e.key,
+                                              origin?.getAttribute('data-bit-key-origin') ?? null,
+                                              origin?.id || null)
+                          .catch(err => console.error("BitBlazorUI.Utils.registerNavigationKeys:", err));
+                });
+            } catch (e) { console.error("BitBlazorUI.Utils.registerNavigationKeys:", e); }
+        }
+
         // Whether the pointer of the device is one that can actually hover, which the interactions that
         // are driven by hovering have to know: a touch screen reports a mouseover for a tap, so a popup
         // opening on hover would fight the tap that is also meant to toggle it.
@@ -279,6 +371,183 @@
 
             controller.abort();
             Utils._focusTraps.delete(elementId);
+        }
+
+        private static _tabOuts = new Map<string, AbortController>();
+
+        // Hands the keyboard back to the page around the trigger of a popup that does not trap it. The popup is
+        // relocated to the end of the body while it is open, so the browser's own tab order runs from its last
+        // element off the end of the page, and from its first one backwards into whatever ends the page - neither
+        // anywhere near the trigger the user opened it from, and the popup is left open behind the keyboard. The
+        // content is made to read as if it sat right after the trigger instead: Tab on the trigger goes into it,
+        // Tab from its last element moves on to what follows the trigger in the page and reports it through the
+        // OnTabOut callback so the popup closes, and Shift+Tab from its first element goes back to the trigger,
+        // leaving the popup open for the Tab that brings the user back in.
+        public static setupTabOut(elementId: string, triggerId: string, dotnetObj: DotNetObject) {
+            Utils.disposeTabOut(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+
+            const isPlainTab = (e: KeyboardEvent) => e.key === 'Tab' && !e.defaultPrevented && !e.altKey && !e.ctrlKey && !e.metaKey;
+
+            const getFocusables = () => Array.from(element.querySelectorAll<HTMLElement>(Utils._focusables)).filter(Utils.isFocusable);
+
+            element.addEventListener('keydown', e => {
+                if (!isPlainTab(e)) return;
+
+                // A trap registered on something nested inside the popup owns the key.
+                if (Utils.hasNearerFocusTrap(element, e.target as Element | null)) return;
+
+                const trigger = document.getElementById(triggerId);
+                if (!trigger) return;
+
+                const focusables = getFocusables();
+                const active = document.activeElement;
+
+                if (e.shiftKey) {
+                    // The popup itself holding the focus is where it is parked when it opens, which is ahead of
+                    // everything it holds.
+                    if (active !== element && active !== focusables[0]) return;
+
+                    e.preventDefault();
+                    trigger.focus();
+                    return;
+                }
+
+                // From the popup itself, a Tab still has its content to go into first.
+                const onLastEdge = focusables.length === 0
+                    ? active === element
+                    : active === focusables[focusables.length - 1];
+
+                if (!onLastEdge) return;
+
+                e.preventDefault();
+
+                (Utils.findFocusableAfter(trigger, element) ?? trigger).focus();
+
+                dotnetObj.invokeMethodAsync('OnTabOut');
+            }, { signal: controller.signal });
+
+            // The trigger's half of the same order: a Tab on it goes into the content rather than past it. The
+            // trigger is looked up once, since it stays where it is for as long as the popup is open, and the
+            // registration goes with the popup's.
+            document.getElementById(triggerId)?.addEventListener('keydown', e => {
+                if (!isPlainTab(e) || e.shiftKey) return;
+
+                e.preventDefault();
+
+                (getFocusables()[0] ?? element).focus();
+            }, { signal: controller.signal });
+
+            Utils._tabOuts.set(elementId, controller);
+        }
+
+        private static _escapes = new Map<string, AbortController>();
+
+        // Dismisses an open callout on Escape through the OnEscape callback - but only when it is the innermost
+        // open one. A dropdown or a menu opened from inside the callout closes its own popup on the same key,
+        // and the keydown goes on bubbling from it up through this callout: a handler that only looked at the
+        // key would close both with one press, taking away the panel the user was still working in. This
+        // listener is on the element, so it runs before Blazor's document-level delegation lets the nested
+        // component close anything, which is what makes the stack of open callouts a reliable answer here.
+        // It is registered once for the life of the component and ignores the key while the callout is closed.
+        // `triggerId` names the element that opens the callout: an Escape pressed anywhere in the page OUTSIDE
+        // both of them then dismisses the callout too, as long as it is the innermost open one. A callout opened
+        // by hovering is shown while the focus is wherever the user left it, and content that appears on hover
+        // has to be dismissible without moving the pointer or the focus (WCAG 1.4.13); the trigger itself is
+        // left out, since it answers the key on its own.
+        public static setupEscape(elementId: string, dotnetObj: DotNetObject, triggerId?: string | null) {
+            Utils.disposeEscape(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+
+                if (Callouts.current.calloutId !== elementId) return;
+
+                dotnetObj.invokeMethodAsync('OnEscape');
+            }, { signal: controller.signal });
+
+            if (triggerId) {
+                // In the capture phase, for the same reason the listener above is on the element: the stack of
+                // open callouts is read before Blazor's document-level delegation lets a popup the key belongs to
+                // (a dropdown list relocated to the body, holding the focus in its search box) close itself.
+                document.addEventListener('keydown', e => {
+                    if (e.key !== 'Escape') return;
+
+                    if (Callouts.current.calloutId !== elementId) return;
+
+                    const target = e.target as Node | null;
+                    if (target && (element.contains(target) || document.getElementById(triggerId)?.contains(target))) return;
+
+                    dotnetObj.invokeMethodAsync('OnEscape');
+                }, { signal: controller.signal, capture: true });
+            }
+
+            Utils._escapes.set(elementId, controller);
+        }
+
+        public static disposeEscape(elementId: string) {
+            const controller = Utils._escapes.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._escapes.delete(elementId);
+        }
+
+        public static disposeTabOut(elementId: string) {
+            const controller = Utils._tabOuts.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._tabOuts.delete(elementId);
+        }
+
+        // The first element of the tab order that follows the given one in the document, leaving out the element
+        // itself, what it contains, and the popup being tabbed out of. The tab order is the one the anchor is in:
+        // an anchor inside a dialog that keeps the keyboard in itself (a modal, a registered focus trap) looks no
+        // further than that dialog, and wraps around to its first element past its last one, as the dialog's own
+        // trap would - the page behind it is out of reach of the keyboard, however it is arranged in the document.
+        private static findFocusableAfter(anchor: HTMLElement, exclude: HTMLElement) {
+            const scope = Utils.findTabScope(anchor);
+
+            const candidates = Array.from((scope ?? document).querySelectorAll<HTMLElement>(Utils._focusables)).filter(el =>
+                !anchor.contains(el)
+                && !exclude.contains(el)
+                && Utils.isFocusable(el));
+
+            const next = candidates.find(el => (anchor.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
+
+            return next ?? (scope ? candidates[0] ?? null : null);
+        }
+
+        // The nearest ancestor of the element that keeps the keyboard inside itself, or null when it is in the
+        // page's own tab order.
+        private static findTabScope(element: HTMLElement): HTMLElement | null {
+            for (let node = element.parentElement; node && node !== document.body; node = node.parentElement) {
+                if (node.id && Utils._focusTraps.has(node.id)) return node;
+
+                if (node.getAttribute('aria-modal') === 'true') return node;
+
+                if (node.tagName === 'DIALOG' && Utils.isModalDialog(node)) return node;
+            }
+
+            return null;
+        }
+
+        private static isModalDialog(dialog: HTMLElement) {
+            try {
+                return dialog.matches(':modal');
+            } catch {
+                return false;
+            }
         }
 
         private static _focusOrigins = new Map<string, HTMLElement>();
@@ -843,18 +1112,36 @@
         // input inside it from being selected with the pointer). The event itself is always left to
         // travel on: Blazor dispatches pointerdown from a single listener on the document, so
         // stopping it here would take it away from every Blazor handler in the tree, including the
-        // ones of the components sitting inside the element. Calling it again updates the active
-        // flag in place, so no separate unregister call is needed - the listener is
-        // garbage-collected with the element itself.
-        public static registerPreventPointerDown(element: HTMLElement, active: boolean) {
+        // ones of the components sitting inside the element. Calling it again updates the flags in
+        // place, so no separate unregister call is needed - the listeners are garbage-collected with
+        // the element itself.
+        // While it is active, the native drag of a link (or of anything else draggable) inside the
+        // element is cancelled too, since it would swallow the pointer events of the drag the element
+        // performs itself. And with a positive clickThreshold, the click that ends a drag which
+        // travelled further than that is swallowed before anything else sees it, so letting go of a
+        // slide that was dragged over a link (or a button) does not also follow it. With a clickAxis
+        // ('x' or 'y') only the travel along that axis counts, and a drag that went further across it
+        // than along it is not one either, which is how the element itself tells a drag from a scroll.
+        public static registerPreventPointerDown(element: HTMLElement, active: boolean, clickThreshold?: number, clickAxis?: string) {
             if (!element) return;
 
             try {
                 const el = element as any;
                 el.__bitPreventPointerDown = active;
+                el.__bitPreventPointerDownClickThreshold = clickThreshold || 0;
+                el.__bitPreventPointerDownClickAxis = clickAxis || null;
 
                 if (el.__bitPreventPointerDownRegistered) return;
                 el.__bitPreventPointerDownRegistered = true;
+
+                // Where the pointer went down is recorded in the capture phase, so a control inside the
+                // element that stops the pointerdown from bubbling cannot leave a stale position behind
+                // for the click to be measured against.
+                element.addEventListener('pointerdown', (e: PointerEvent) => {
+                    const el = element as any;
+                    el.__bitPointerDownX = e.clientX;
+                    el.__bitPointerDownY = e.clientY;
+                }, true);
 
                 element.addEventListener('pointerdown', (e: PointerEvent) => {
                     if (!(element as any).__bitPreventPointerDown) return;
@@ -872,6 +1159,41 @@
 
                     e.preventDefault();
                 });
+
+                element.addEventListener('dragstart', (e: DragEvent) => {
+                    if (!(element as any).__bitPreventPointerDown) return;
+
+                    e.preventDefault();
+                });
+
+                element.addEventListener('click', (e: MouseEvent) => {
+                    const el = element as any;
+                    const threshold = el.__bitPreventPointerDownClickThreshold as number;
+                    const downX = el.__bitPointerDownX as number | undefined;
+                    const downY = el.__bitPointerDownY as number | undefined;
+
+                    // The position belongs to the one click it started, so it is used up here.
+                    el.__bitPointerDownX = el.__bitPointerDownY = undefined;
+
+                    if (!el.__bitPreventPointerDown || !(threshold > 0)) return;
+                    if (downX === undefined || downY === undefined) return;
+
+                    // A click raised from the keyboard carries no pointer travel of its own, so only a
+                    // click that ends a pointer drag longer than the threshold is taken away.
+                    if (e.detail === 0) return;
+
+                    const dx = Math.abs(e.clientX - downX);
+                    const dy = Math.abs(e.clientY - downY);
+                    const axis = el.__bitPreventPointerDownClickAxis as string | null;
+
+                    const along = axis === 'x' ? dx : axis === 'y' ? dy : Math.max(dx, dy);
+                    const across = axis === 'x' ? dy : axis === 'y' ? dx : 0;
+
+                    if (along <= threshold || across > along) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, true);
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventPointerDown:", e); }
         }
 
