@@ -91,6 +91,10 @@ namespace BitBlazorUI {
                 const max = container.scrollWidth - container.clientWidth;
                 if (max <= 0) return;
 
+                // Content an item template renders may scroll down its own length; a wheel over it that
+                // can still move it that way is its own, not the bar's.
+                if (NavBar.hasVerticalScroller(e.target as Element | null, container, e.deltaY)) return;
+
                 const rtl = getComputedStyle(container).direction === 'rtl';
                 const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * container.clientWidth : e.deltaY;
                 // In RTL scrollLeft runs from 0 down to -max, so the distance travelled is its magnitude.
@@ -103,6 +107,19 @@ namespace BitBlazorUI {
             }, { passive: false });
         }
 
+
+        private static hasVerticalScroller(target: Element | null, container: HTMLElement, deltaY: number): boolean {
+            for (let el = target; el && el !== container; el = el.parentElement) {
+                if (el.scrollHeight <= el.clientHeight) continue;
+
+                const overflowY = getComputedStyle(el).overflowY;
+                if (overflowY !== 'auto' && overflowY !== 'scroll' && overflowY !== 'overlay') continue;
+
+                if (deltaY < 0 ? el.scrollTop > 0 : el.scrollTop < el.scrollHeight - el.clientHeight - 1) return true;
+            }
+
+            return false;
+        }
 
         private static isEditable(element: HTMLElement): boolean {
             if (element.isContentEditable) return true;
