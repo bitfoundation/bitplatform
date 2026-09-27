@@ -1,21 +1,16 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
         Each item puts a dot on the line, its PrimaryText before the line and its SecondaryText after it.
+        Horizontal runs the line from start to end, with the contents above and below each dot.
     </div>
     <br />
     <BitTimeline Items="basicItems" />
-</DemoExample>
-
-<DemoExample Title="Horizontal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-    <div>
-        Horizontal runs the line from start to end and stacks the contents of each item above and below its
-        dot.
-    </div>
-    <br />
+    <br /><br /><br />
+    <div>Horizontal</div><br />
     <BitTimeline Horizontal Items="basicItems" />
 </DemoExample>
 
-<DemoExample Title="Disabled" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
+<DemoExample Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>
         IsEnabled="false" on the timeline disables every item; the IsEnabled of an item disables that item
         alone.
@@ -28,7 +23,7 @@
     <BitTimeline Horizontal Items="disabledItems" />
 </DemoExample>
 
-<DemoExample Title="Icon & variant" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Icon & variant" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <div>
         IconName puts an icon in the dot. Variant sets how the dot is painted: Fill (default), Outline
         (hollow, with a colored border) or Text (the icon alone).
@@ -44,7 +39,7 @@
     <BitTimeline Horizontal Items="iconItems" Variant="BitVariant.Text" />
 </DemoExample>
 
-<DemoExample Title="Reversed & alternate" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="Reversed & alternate" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>
         Reversed swaps the sides of the line, for every item when set on the timeline, or for a single
         item through its own Reversed. Alternate flips every second item so the items zig-zag around
@@ -72,10 +67,11 @@
     <BitTimeline Alternate Horizontal Items="twoSidedItems" />
 </DemoExample>
 
-<DemoExample Title="Reverse order" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Reverse order" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <div>
         ReverseOrder renders the last item first, turning a chronological list into a most-recent-first one
-        without reordering the data.
+        without reordering the data. Only the painted order changes: screen readers and the Tab key still
+        follow the order of the data.
     </div>
     <br /><br /><br />
     <div>Vertical</div><br />
@@ -85,7 +81,7 @@
     <BitTimeline ReverseOrder Horizontal Items="twoSidedItems" />
 </DemoExample>
 
-<DemoExample Title="Line" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Line" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>
         TruncateLine ends the line at the first dot (Start), at the last one (End) or at both. LineVariant
         paints it Solid, Dashed or Dotted, and an item can override it for its own stretch, which is how the
@@ -114,7 +110,7 @@
     <BitTimeline Horizontal LineVariant="BitTimelineLineVariant.Dashed" TruncateLine="BitTimelineTruncateLine.Both" Items="basicItems" />
 </DemoExample>
 
-<DemoExample Title="Dot alignment" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Dot alignment" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div>
         DotAlignment pins the dot, and the contents with it, to the Center (default), the Start or the End of
         each item. Start keeps the dot beside the first line of contents that run over several lines.
@@ -133,7 +129,7 @@
     <BitTimeline Horizontal DotAlignment="BitTimelineDotAlignment.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="basicItems" />
 </DemoExample>
 
-<DemoExample Title="Line position" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Line position" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>
         LinePosition moves the line from the middle (Center, default) to the Start or the End edge, stacking the
         contents of each item beside it, as an activity feed does. Reversed and Alternate only apply to a
@@ -150,7 +146,7 @@
     <BitTimeline Horizontal LinePosition="BitTimelineLinePosition.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="basicItems" />
 </DemoExample>
 
-<DemoExample Title="Item customization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Item customization" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <div>
         The Color, Size and Variant of an item override the values of the timeline for that item alone, and
         HideDot removes its dot while keeping its place on the line.
@@ -159,7 +155,7 @@
     <BitTimeline Items="customizedItems" />
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div>
         PrimaryContent, SecondaryContent and DotTemplate replace one part of an item; Template replaces all of
         it, dot and line included. The ItemTemplate and DotTemplate of the timeline serve every item that
@@ -180,7 +176,7 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <div>
         OnItemClick fires for every item, and the OnClick of an item for that item alone; both run on
         the same click. Only clickable items become buttons: focusable, with a hover plate and a focus
@@ -192,7 +188,7 @@
     <div>Clicked item: <b>@clickedItem</b></div>
 </DemoExample>
 
-<DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>
         The timeline is an ordered list named by its AriaLabel, and each item a list item. The dot and its
         icon are decoration hidden from screen readers, so what an icon or a color means belongs in the text
@@ -203,7 +199,7 @@
     <BitTimeline AriaLabel="Order history" TruncateLine="BitTimelineTruncateLine.Both" Items="a11yItems" />
 </DemoExample>
 
-<DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>
         BitParams hands a BitTimelineParams to every timeline under it. The values are defaults, not
         overrides: a parameter a timeline sets itself wins. The params carry only what does not depend on the
@@ -222,7 +218,7 @@
     <BitTimeline Items="iconItems" />
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
     <div>
         Color sets the palette of the dots and of the focus ring; the Color of an item overrides it for that
         item. Each timeline shows the three dot variants, enabled and disabled.
@@ -280,7 +276,7 @@
     <BitTimeline Horizontal Color="BitColor.TertiaryBorder" Items="variantItems" />
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>
         The Icon takes the CSS classes of any icon library, such as FontAwesome or Bootstrap Icons, and wins
         over IconName.
@@ -312,7 +308,7 @@
     <BitTimeline Horizontal Items="bootstrapIconItems3" Variant="BitVariant.Text" />
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
     <div>
         Size scales the dots and the text: Small, Medium (default) or Large.
     </div>
@@ -327,7 +323,7 @@
     <BitTimeline Horizontal Size="BitSize.Large" Items="variantItems" />
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+<DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>
         Style and Class reach the root, the Style and Class of an item reach that item, and Styles and Classes
         reach each part by name: the item, the two contents and their texts, the divider, the dot and the
@@ -370,7 +366,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
     <div>
         Use the BitTimeline component in right-to-left (RTL).
     </div>

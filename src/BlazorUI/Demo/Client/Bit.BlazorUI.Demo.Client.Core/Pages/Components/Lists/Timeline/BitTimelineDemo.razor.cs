@@ -108,7 +108,7 @@ public partial class BitTimelineDemo
         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
-            Description = "The callback that is called when an item of the timeline is clicked."
+            Description = "The callback that is called when an item is clicked. A clickable item is a button whose contents are read as its name, so it should hold no links or controls of its own."
         },
         new()
         {
@@ -122,7 +122,7 @@ public partial class BitTimelineDemo
             Name = "ReverseOrder",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the items in the reverse order, so the last item of the list is rendered first.",
+            Description = "Renders the items in the reverse order, so the last item of the list is painted first. The reading and the focus order keep the order of the list.",
         },
         new()
         {

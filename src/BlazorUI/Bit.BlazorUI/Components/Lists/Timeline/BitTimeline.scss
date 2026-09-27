@@ -419,33 +419,38 @@
         --bit-tln-dvd-dir-e: to left;
     }
 
-    // The contents stack above and below the dot, so they take the place of the dot along the line.
-    .bit-tln-pcn,
-    .bit-tln-scn {
-        flex-flow: row;
-        justify-content: var(--bit-tln-align, center);
-        padding: 0 var(--bit-tln-pad);
-    }
-
-    // Along the line is now the inline axis, so the halves of the line and the dot between them lay out in a row.
-    .bit-tln-dvd {
-        flex-direction: row;
-        padding: var(--bit-Timeline-content-gap, calc(var(--bit-tln-dot-size) / 2)) 0;
-
-        &::before,
-        &::after {
-            width: auto;
-            height: var(--bit-Timeline-line-width, #{$shp-border-width-thick});
+    // Only the parts of the timeline's own items are selected, so a vertical timeline nested in the template of an
+    // item keeps its own layout. Whatever holds the parts carries bit-tln-prt, set by the item as it renders them.
+    > .bit-tln-prt,
+    > .bit-tln-itm > .bit-tln-prt {
+        // The contents stack above and below the dot, so they take the place of the dot along the line.
+        > .bit-tln-pcn,
+        > .bit-tln-scn {
+            flex-flow: row;
+            justify-content: var(--bit-tln-align, center);
+            padding: 0 var(--bit-tln-pad);
         }
 
-        &::before {
-            margin-block-end: 0;
-            margin-inline-end: calc(-1 * var(--bit-tln-dvd-ovl));
-        }
+        // Along the line is now the inline axis, so the halves of the line and the dot between them lay out in a row.
+        > .bit-tln-dvd {
+            flex-direction: row;
+            padding: var(--bit-Timeline-content-gap, calc(var(--bit-tln-dot-size) / 2)) 0;
 
-        &::after {
-            margin-block-start: 0;
-            margin-inline-start: calc(-1 * var(--bit-tln-dvd-ovl));
+            &::before,
+            &::after {
+                width: auto;
+                height: var(--bit-Timeline-line-width, #{$shp-border-width-thick});
+            }
+
+            &::before {
+                margin-block-end: 0;
+                margin-inline-end: calc(-1 * var(--bit-tln-dvd-ovl));
+            }
+
+            &::after {
+                margin-block-start: 0;
+                margin-inline-start: calc(-1 * var(--bit-tln-dvd-ovl));
+            }
         }
     }
 
@@ -457,7 +462,7 @@
         --bit-tln-itm-flexdir: column-reverse;
     }
 
-    .bit-tln-itm.bit-tln-irv {
+    > .bit-tln-itm.bit-tln-irv {
         --bit-tln-itm-flexdir: column-reverse;
     }
 
@@ -625,15 +630,15 @@
     --bit-tln-dvd-vis-e: hidden;
 }
 
-.bit-tln-fil .bit-tln-itm {
+.bit-tln-fil > .bit-tln-itm {
     @include timeline-variant-fill;
 }
 
-.bit-tln-otl .bit-tln-itm {
+.bit-tln-otl > .bit-tln-itm {
     @include timeline-variant-outline;
 }
 
-.bit-tln-txt .bit-tln-itm {
+.bit-tln-txt > .bit-tln-itm {
     @include timeline-variant-text;
 }
 
@@ -651,41 +656,41 @@
     @include timeline-variant-text;
 }
 
-.bit-tln-fil.bit-dis .bit-tln-itm,
-.bit-tln-fil .bit-tln-itm.bit-tln-ids {
+.bit-tln-fil.bit-dis > .bit-tln-itm,
+.bit-tln-fil > .bit-tln-itm.bit-tln-ids {
     @include timeline-variant-fill-disabled;
 }
 
-.bit-tln-otl.bit-dis .bit-tln-itm,
-.bit-tln-otl .bit-tln-itm.bit-tln-ids {
+.bit-tln-otl.bit-dis > .bit-tln-itm,
+.bit-tln-otl > .bit-tln-itm.bit-tln-ids {
     @include timeline-variant-outline-disabled;
 }
 
-.bit-tln-txt.bit-dis .bit-tln-itm,
-.bit-tln-txt .bit-tln-itm.bit-tln-ids {
+.bit-tln-txt.bit-dis > .bit-tln-itm,
+.bit-tln-txt > .bit-tln-itm.bit-tln-ids {
     @include timeline-variant-text-disabled;
 }
 
-.bit-dis .bit-tln-itm.bit-tln-ivf,
+.bit-dis > .bit-tln-itm.bit-tln-ivf,
 .bit-tln-itm.bit-tln-ivf.bit-tln-ids {
     @include timeline-variant-fill-disabled;
 }
 
-.bit-dis .bit-tln-itm.bit-tln-ivo,
+.bit-dis > .bit-tln-itm.bit-tln-ivo,
 .bit-tln-itm.bit-tln-ivo.bit-tln-ids {
     @include timeline-variant-outline-disabled;
 }
 
-.bit-dis .bit-tln-itm.bit-tln-ivt,
+.bit-dis > .bit-tln-itm.bit-tln-ivt,
 .bit-tln-itm.bit-tln-ivt.bit-tln-ids {
     @include timeline-variant-text-disabled;
 }
 
-.bit-tln-ldd .bit-tln-itm {
+.bit-tln-ldd > .bit-tln-itm {
     @include timeline-line-dashed;
 }
 
-.bit-tln-ldt .bit-tln-itm {
+.bit-tln-ldt > .bit-tln-itm {
     @include timeline-line-dotted;
 }
 

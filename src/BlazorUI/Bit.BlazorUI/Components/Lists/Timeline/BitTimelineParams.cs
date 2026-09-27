@@ -64,7 +64,8 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
     public BitTimelineLinePosition? LinePosition { get; set; }
 
     /// <summary>
-    /// Renders the items in the reverse order, so the last item of the list is rendered first.
+    /// Renders the items in the reverse order, so the last item of the list is painted first.
+    /// The reading and the focus order keep the order of the list.
     /// </summary>
     public bool? ReverseOrder { get; set; }
 

@@ -95,7 +95,8 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitTimelineNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback that is called when an item is clicked.
+    /// The callback that is called when an item is clicked. A clickable item is rendered as a button, whose contents
+    /// are read as its name, so its templates should hold no links or controls of their own.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
@@ -105,7 +106,8 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// Renders the items in the reverse order, so the last item of the list is rendered first.
+    /// Renders the items in the reverse order, so the last item of the list is painted first.
+    /// The reading and the focus order keep the order of the list.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool ReverseOrder { get; set; }
