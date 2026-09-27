@@ -191,6 +191,16 @@ private string? twoWaySelectedKey;";
     <BitNavBarOption Text=""Reports"" IconName=""@BitIconName.ReportDocument"" />
     <BitNavBarOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
     <BitNavBarOption Text=""Support"" IconName=""@BitIconName.Help"" />
+    <BitNavBarOption Text=""Calendar"" IconName=""@BitIconName.Calendar"" />
+    <BitNavBarOption Text=""Chat"" IconName=""@BitIconName.Chat"" />
+    <BitNavBarOption Text=""People"" IconName=""@BitIconName.People"" />
+    <BitNavBarOption Text=""News"" IconName=""@BitIconName.News"" />
+    <BitNavBarOption Text=""Photos"" IconName=""@BitIconName.Photo2"" />
+    <BitNavBarOption Text=""Videos"" IconName=""@BitIconName.Video"" />
+    <BitNavBarOption Text=""Music"" IconName=""@BitIconName.MusicNote"" />
+    <BitNavBarOption Text=""Documents"" IconName=""@BitIconName.Document"" />
+    <BitNavBarOption Text=""Cloud"" IconName=""@BitIconName.Cloud"" />
+    <BitNavBarOption Text=""Maps"" IconName=""@BitIconName.MapPin"" />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" Key=""profile"" />
 </BitNavBar>
 
@@ -250,7 +260,7 @@ private string? scrollableSelectedKey;";
     </FooterTemplate>
 </BitNavBar>
 
-<BitNavBar TItem=""BitNavBarOption"" Scrollable Vertical FitWidth Style=""height:16rem"" Mode=""BitNavMode.Manual"">
+<BitNavBar TItem=""BitNavBarOption"" Scrollable Vertical FitWidth Style=""height:28rem"" Mode=""BitNavMode.Manual"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
@@ -260,6 +270,16 @@ private string? scrollableSelectedKey;";
     <BitNavBarOption Text=""Reports"" IconName=""@BitIconName.ReportDocument"" />
     <BitNavBarOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
     <BitNavBarOption Text=""Support"" IconName=""@BitIconName.Help"" />
+    <BitNavBarOption Text=""Calendar"" IconName=""@BitIconName.Calendar"" />
+    <BitNavBarOption Text=""Chat"" IconName=""@BitIconName.Chat"" />
+    <BitNavBarOption Text=""People"" IconName=""@BitIconName.People"" />
+    <BitNavBarOption Text=""News"" IconName=""@BitIconName.News"" />
+    <BitNavBarOption Text=""Photos"" IconName=""@BitIconName.Photo2"" />
+    <BitNavBarOption Text=""Videos"" IconName=""@BitIconName.Video"" />
+    <BitNavBarOption Text=""Music"" IconName=""@BitIconName.MusicNote"" />
+    <BitNavBarOption Text=""Documents"" IconName=""@BitIconName.Document"" />
+    <BitNavBarOption Text=""Cloud"" IconName=""@BitIconName.Cloud"" />
+    <BitNavBarOption Text=""Maps"" IconName=""@BitIconName.MapPin"" />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 

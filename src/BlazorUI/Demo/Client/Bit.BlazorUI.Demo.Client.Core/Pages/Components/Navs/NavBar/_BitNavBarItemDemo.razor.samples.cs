@@ -211,6 +211,16 @@ private static readonly List<BitNavBarItem> scrollableNavBarItems =
     new() { Text = ""Reports"", IconName = BitIconName.ReportDocument },
     new() { Text = ""Settings"", IconName = BitIconName.Settings },
     new() { Text = ""Support"", IconName = BitIconName.Help },
+    new() { Text = ""Calendar"", IconName = BitIconName.Calendar },
+    new() { Text = ""Chat"", IconName = BitIconName.Chat },
+    new() { Text = ""People"", IconName = BitIconName.People },
+    new() { Text = ""News"", IconName = BitIconName.News },
+    new() { Text = ""Photos"", IconName = BitIconName.Photo2 },
+    new() { Text = ""Videos"", IconName = BitIconName.Video },
+    new() { Text = ""Music"", IconName = BitIconName.MusicNote },
+    new() { Text = ""Documents"", IconName = BitIconName.Document },
+    new() { Text = ""Cloud"", IconName = BitIconName.Cloud },
+    new() { Text = ""Maps"", IconName = BitIconName.MapPin },
     new() { Text = ""Profile"", IconName = BitIconName.Contact },
 ];
 
@@ -257,7 +267,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 <BitNavBar Scrollable
            Vertical
            FitWidth
-           Style=""height:16rem""
+           Style=""height:28rem""
            Mode=""BitNavMode.Manual""
            Items=""scrollableNavBarItems"" />";
     private readonly string example10CsharpCode = @"
@@ -280,6 +290,16 @@ private static readonly List<BitNavBarItem> scrollableNavBarItems =
     new() { Text = ""Reports"", IconName = BitIconName.ReportDocument },
     new() { Text = ""Settings"", IconName = BitIconName.Settings },
     new() { Text = ""Support"", IconName = BitIconName.Help },
+    new() { Text = ""Calendar"", IconName = BitIconName.Calendar },
+    new() { Text = ""Chat"", IconName = BitIconName.Chat },
+    new() { Text = ""People"", IconName = BitIconName.People },
+    new() { Text = ""News"", IconName = BitIconName.News },
+    new() { Text = ""Photos"", IconName = BitIconName.Photo2 },
+    new() { Text = ""Videos"", IconName = BitIconName.Video },
+    new() { Text = ""Music"", IconName = BitIconName.MusicNote },
+    new() { Text = ""Documents"", IconName = BitIconName.Document },
+    new() { Text = ""Cloud"", IconName = BitIconName.Cloud },
+    new() { Text = ""Maps"", IconName = BitIconName.MapPin },
     new() { Text = ""Profile"", IconName = BitIconName.Contact },
 ];";
 

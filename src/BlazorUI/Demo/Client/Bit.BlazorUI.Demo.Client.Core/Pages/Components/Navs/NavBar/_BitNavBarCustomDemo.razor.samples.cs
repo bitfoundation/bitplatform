@@ -299,6 +299,16 @@ private static readonly List<MenuItem> scrollableNavBarCustoms =
     new() { Title = ""Reports"", ImageName = BitIconName.ReportDocument },
     new() { Title = ""Settings"", ImageName = BitIconName.Settings },
     new() { Title = ""Support"", ImageName = BitIconName.Help },
+    new() { Title = ""Calendar"", ImageName = BitIconName.Calendar },
+    new() { Title = ""Chat"", ImageName = BitIconName.Chat },
+    new() { Title = ""People"", ImageName = BitIconName.People },
+    new() { Title = ""News"", ImageName = BitIconName.News },
+    new() { Title = ""Photos"", ImageName = BitIconName.Photo2 },
+    new() { Title = ""Videos"", ImageName = BitIconName.Video },
+    new() { Title = ""Music"", ImageName = BitIconName.MusicNote },
+    new() { Title = ""Documents"", ImageName = BitIconName.Document },
+    new() { Title = ""Cloud"", ImageName = BitIconName.Cloud },
+    new() { Title = ""Maps"", ImageName = BitIconName.MapPin },
     new() { Title = ""Profile"", ImageName = BitIconName.Contact },
 ];
 
@@ -353,7 +363,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 <BitNavBar Scrollable
            Vertical
            FitWidth
-           Style=""height:16rem""
+           Style=""height:28rem""
            Mode=""BitNavMode.Manual""
            Items=""scrollableNavBarCustoms""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
@@ -378,6 +388,16 @@ private static readonly List<MenuItem> scrollableNavBarCustoms =
     new() { Title = ""Reports"", ImageName = BitIconName.ReportDocument },
     new() { Title = ""Settings"", ImageName = BitIconName.Settings },
     new() { Title = ""Support"", ImageName = BitIconName.Help },
+    new() { Title = ""Calendar"", ImageName = BitIconName.Calendar },
+    new() { Title = ""Chat"", ImageName = BitIconName.Chat },
+    new() { Title = ""People"", ImageName = BitIconName.People },
+    new() { Title = ""News"", ImageName = BitIconName.News },
+    new() { Title = ""Photos"", ImageName = BitIconName.Photo2 },
+    new() { Title = ""Videos"", ImageName = BitIconName.Video },
+    new() { Title = ""Music"", ImageName = BitIconName.MusicNote },
+    new() { Title = ""Documents"", ImageName = BitIconName.Document },
+    new() { Title = ""Cloud"", ImageName = BitIconName.Cloud },
+    new() { Title = ""Maps"", ImageName = BitIconName.MapPin },
     new() { Title = ""Profile"", ImageName = BitIconName.Contact },
 ];";
 
