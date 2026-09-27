@@ -71,6 +71,18 @@ public class BitThemeShapeRadii
     /// </summary>
     public string? Selection { get; set; }
 
+    /// <summary>
+    /// The corners of the selection indicator of a tab strip (<c>BitPivot</c>) on the edge facing the label:
+    /// square under Fluent, a capsule under Fluent 2, rounded under Material.
+    /// </summary>
+    public string? TabIndicator { get; set; }
+
+    /// <summary>
+    /// The corners of the selection indicator of a tab strip (<c>BitPivot</c>) on the edge it stands on, away
+    /// from the label. Follows <see cref="TabIndicator"/> when unset; Material draws them square.
+    /// </summary>
+    public string? TabIndicatorBase { get; set; }
+
     /// <summary>Cards, accordions, messages, images, list rows.</summary>
     public string? Surface { get; set; }
 

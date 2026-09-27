@@ -446,6 +446,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Button, bitTheme.Shape.Radius.Button);
         addCssVar(BitCss.Var.Shape.Radius.Chip, bitTheme.Shape.Radius.Chip);
         addCssVar(BitCss.Var.Shape.Radius.Selection, bitTheme.Shape.Radius.Selection);
+        addCssVar(BitCss.Var.Shape.Radius.TabIndicator, bitTheme.Shape.Radius.TabIndicator);
+        addCssVar(BitCss.Var.Shape.Radius.TabIndicatorBase, bitTheme.Shape.Radius.TabIndicatorBase);
         addCssVar(BitCss.Var.Shape.Radius.Surface, bitTheme.Shape.Radius.Surface);
         addCssVar(BitCss.Var.Shape.Radius.Popup, bitTheme.Shape.Radius.Popup);
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
@@ -615,6 +617,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.Item.Lg, bitTheme.Size.Item.Lg);
         addCssVar(BitCss.Var.Size.Tab, bitTheme.Size.Tab);
         addCssVar(BitCss.Var.Size.TabIndicator, bitTheme.Size.TabIndicator);
+        addCssVar(BitCss.Var.Size.TabDivider, bitTheme.Size.TabDivider);
         addCssVar(BitCss.Var.Size.Divider, bitTheme.Size.Divider);
         addCssVar(BitCss.Var.Size.Track.Sm, bitTheme.Size.Track.Sm);
         addCssVar(BitCss.Var.Size.Track.Md, bitTheme.Size.Track.Md);
@@ -835,6 +838,7 @@ internal static class BitThemeMapper
             Item = src.Item ?? new(),
             Tab = src.Tab,
             TabIndicator = src.TabIndicator,
+            TabDivider = src.TabDivider,
             Divider = src.Divider,
             Track = src.Track ?? new(),
             Switch = NormalizeSwitchSize(src.Switch),
@@ -1216,6 +1220,8 @@ internal static class BitThemeMapper
         result.Shape.Radius.Button = bitTheme.Shape.Radius.Button ?? other.Shape.Radius.Button;
         result.Shape.Radius.Chip = bitTheme.Shape.Radius.Chip ?? other.Shape.Radius.Chip;
         result.Shape.Radius.Selection = bitTheme.Shape.Radius.Selection ?? other.Shape.Radius.Selection;
+        result.Shape.Radius.TabIndicator = bitTheme.Shape.Radius.TabIndicator ?? other.Shape.Radius.TabIndicator;
+        result.Shape.Radius.TabIndicatorBase = bitTheme.Shape.Radius.TabIndicatorBase ?? other.Shape.Radius.TabIndicatorBase;
         result.Shape.Radius.Surface = bitTheme.Shape.Radius.Surface ?? other.Shape.Radius.Surface;
         result.Shape.Radius.Popup = bitTheme.Shape.Radius.Popup ?? other.Shape.Radius.Popup;
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;
@@ -1384,6 +1390,7 @@ internal static class BitThemeMapper
         result.Size.Item.Lg = bitTheme.Size.Item.Lg ?? other.Size.Item.Lg;
         result.Size.Tab = bitTheme.Size.Tab ?? other.Size.Tab;
         result.Size.TabIndicator = bitTheme.Size.TabIndicator ?? other.Size.TabIndicator;
+        result.Size.TabDivider = bitTheme.Size.TabDivider ?? other.Size.TabDivider;
         result.Size.Divider = bitTheme.Size.Divider ?? other.Size.Divider;
         result.Size.Track.Sm = bitTheme.Size.Track.Sm ?? other.Size.Track.Sm;
         result.Size.Track.Md = bitTheme.Size.Track.Md ?? other.Size.Track.Md;
