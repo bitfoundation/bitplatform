@@ -79,4 +79,33 @@ public partial class BitSpacerDemo
             ]
         },
     ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Spacer-small-size",
+            DefaultValue = "1 theme spacing unit",
+            Description = "The fixed space of a spacer with Size Small.",
+        },
+        new()
+        {
+            Name = "--bit-Spacer-medium-size",
+            DefaultValue = "2 theme spacing units",
+            Description = "The fixed space of a spacer with Size Medium.",
+        },
+        new()
+        {
+            Name = "--bit-Spacer-large-size",
+            DefaultValue = "4 theme spacing units",
+            Description = "The fixed space of a spacer with Size Large.",
+        },
+    ];
+
+
+
+    private readonly BitSpacerParams[] spacerParams =
+    [
+        new() { Gap = "1.5rem" }
+    ];
 }

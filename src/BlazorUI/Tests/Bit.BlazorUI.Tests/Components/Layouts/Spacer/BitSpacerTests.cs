@@ -470,9 +470,88 @@ public class BitSpacerTests : BunitTestContext
 
         var root = component.Find(".bit-spc");
 
-        // A labelled spacer is meant to be announced, so the default aria-hidden steps aside.
+        // A labelled spacer is meant to be announced, so the default aria-hidden steps aside and the element takes
+        // a role that allows a name, since a generic one cannot carry an aria-label.
         Assert.AreEqual("spacer", root.GetAttribute("aria-label"));
+        Assert.AreEqual("separator", root.GetAttribute("role"));
         Assert.IsFalse(root.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldBeAVerticalSeparatorByDefaultWhenLabelled()
+    {
+        var component = RenderComponent<BitSpacer>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "spacer");
+        });
+
+        // A separator is horizontal unless told otherwise, while a spacer creates its space along the inline axis
+        // by default, which puts it between the items of a row.
+        Assert.AreEqual("vertical", component.Find(".bit-spc").GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldBeAVerticalSeparatorWhenLabelledWithInlineSpace()
+    {
+        var component = RenderComponent<BitSpacer>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "spacer");
+            parameters.Add(p => p.Width, 20);
+            parameters.Add(p => p.Height, 10);
+        });
+
+        Assert.AreEqual("vertical", component.Find(".bit-spc").GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    [DataRow(true, null)]
+    [DataRow(false, 20)]
+    public void BitSpacerShouldBeAHorizontalSeparatorWhenLabelledWithBlockSpace(bool vertical, int? height)
+    {
+        var component = RenderComponent<BitSpacer>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "spacer");
+            parameters.Add(p => p.Vertical, vertical);
+            parameters.Add(p => p.Height, height);
+        });
+
+        // Horizontal is the implicit orientation of a separator, so it is left unstated.
+        Assert.IsFalse(component.Find(".bit-spc").HasAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldRenderNoOrientationWhenNotLabelled()
+    {
+        var component = RenderComponent<BitSpacer>();
+
+        Assert.IsFalse(component.Find(".bit-spc").HasAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldLetHtmlAttributesOverrideAriaOrientation()
+    {
+        var component = RenderComponent<BitSpacerAriaOrientationOverrideTest>();
+
+        var root = component.Find(".bit-spc");
+
+        Assert.AreEqual("separator", root.GetAttribute("role"));
+        Assert.AreEqual("horizontal", root.GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldRenderNoRoleWhenNotLabelled()
+    {
+        var component = RenderComponent<BitSpacer>();
+
+        Assert.IsFalse(component.Find(".bit-spc").HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldLetHtmlAttributesOverrideRole()
+    {
+        var component = RenderComponent<BitSpacerRoleOverrideTest>();
+
+        Assert.AreEqual("presentation", component.Find(".bit-spc").GetAttribute("role"));
     }
 
     [TestMethod]
