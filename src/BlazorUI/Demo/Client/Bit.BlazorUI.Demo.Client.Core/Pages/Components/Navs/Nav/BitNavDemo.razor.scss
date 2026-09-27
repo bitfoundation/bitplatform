@@ -34,11 +34,17 @@
 
     .nav-custom-item {
         gap: 4px;
+        flex-grow: 1;
         display: flex;
         color: #ff7800;
         font-weight: 600;
         align-items: center;
         flex-flow: row nowrap;
+    }
+
+    // The count sits at the far end of the row, where a sidebar keeps its badges.
+    .nav-custom-item .bit-bdg {
+        margin-inline-start: auto;
     }
 
     .custom-class {

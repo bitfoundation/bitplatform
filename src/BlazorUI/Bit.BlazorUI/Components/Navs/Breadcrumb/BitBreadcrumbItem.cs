@@ -29,6 +29,11 @@ public class BitBreadcrumbItem
     public string? IconName { get; set; }
 
     /// <summary>
+    /// Where the icon is rendered relative to the text, in place of the IconPosition of the breadcrumb.
+    /// </summary>
+    public BitIconPosition? IconPosition { get; set; }
+
+    /// <summary>
     /// Whether an item is enabled or not.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
@@ -52,11 +57,6 @@ public class BitBreadcrumbItem
     /// The custom template for the item in overflow list.
     /// </summary>
     public RenderFragment<BitBreadcrumbItem>? OverflowTemplate { get; set; }
-
-    /// <summary>
-    /// Reverses the positions of the icon and the item text of the item content.
-    /// </summary>
-    public bool? ReversedIcon { get; set; }
 
     /// <summary>
     /// Style attribute for breadcrumb item.
