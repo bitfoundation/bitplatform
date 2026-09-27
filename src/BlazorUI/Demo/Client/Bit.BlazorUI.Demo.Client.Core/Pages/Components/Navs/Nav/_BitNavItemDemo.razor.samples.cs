@@ -56,8 +56,51 @@ private static readonly List<BitNavItem> basicNavItems =
 
 <BitNav Items=""basicNavItems"" FullWidth />";
     private readonly string example2CsharpCode = @"
-// the very same items the Basic example above lists in full
-private static readonly List<BitNavItem> basicNavItems = [ /* ... */ ];";
+private static readonly List<BitNavItem> basicNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Description = ""the bit platform description"",
+        ChildItems =
+        [
+            new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                ChildItems =
+                [
+                    new()
+                    {
+                        Text = ""Project Templates"",
+                        ChildItems =
+                        [
+                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                        ]
+                    },
+                    new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", IconName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", IconName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                ]
+            },
+            new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new()
+    {
+        Text = ""Community"",
+        ChildItems =
+        [
+            new() { Text = ""LinkedIn"", IconName = BitIconName.LinkedInLogo , Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", IconName = BitIconName.Globe , Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""GitHub repo"", IconName = BitIconName.GitGraph , Url = ""https://github.com/bitfoundation/bitplatform"" },
+        ]
+    },
+    new() { Text = ""Iconography"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];";
 
     private readonly string example3RazorCode = @"
 <BitNav Items=""carNavItems"" RenderType=""BitNavRenderType.Grouped"" />
@@ -283,8 +326,51 @@ private static readonly List<BitNavItem> singleExpandNavItems =
     },
 ];
 
-// the very same items the Basic example above lists in full
-private static readonly List<BitNavItem> noCollapseNavItems = [ /* ... */ ];";
+private static readonly List<BitNavItem> noCollapseNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Description = ""the bit platform description"",
+        ChildItems =
+        [
+            new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                ChildItems =
+                [
+                    new()
+                    {
+                        Text = ""Project Templates"",
+                        ChildItems =
+                        [
+                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                        ]
+                    },
+                    new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", IconName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", IconName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                ]
+            },
+            new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new()
+    {
+        Text = ""Community"",
+        ChildItems =
+        [
+            new() { Text = ""LinkedIn"", IconName = BitIconName.LinkedInLogo , Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", IconName = BitIconName.Globe , Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""GitHub repo"", IconName = BitIconName.GitGraph , Url = ""https://github.com/bitfoundation/bitplatform"" },
+        ]
+    },
+    new() { Text = ""Iconography"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];";
 
     private readonly string example7RazorCode = @"
 <BitNav Items=""chevronNavItems"" ReversedChevron AllExpanded FitWidth />
@@ -364,6 +450,65 @@ private static readonly List<BitNavItem> colorNavItems =
     new() { Text = ""Home"", IconName = BitIconName.Home },
     new() { Text = ""Products"", IconName = BitIconName.Product },
     new() { Text = ""Settings"", IconName = BitIconName.Settings },
+];
+
+private static readonly List<BitNavItem> carNavItems =
+[
+    new()
+    {
+        Text = ""Mercedes-Benz"",
+        ExpandAriaLabel = ""Mercedes-Benz Expanded"",
+        CollapseAriaLabel = ""Mercedes-Benz Collapsed"",
+        Title = ""Mercedes-Benz Car Models"",
+        IsExpanded = true,
+        Description = ""Cars manufactured under the brand of Mercedes-Benz"",
+        ChildItems =
+        [
+            new()
+            {
+                Text = ""SUVs"",
+                ChildItems =
+                [
+                    new() { Text = ""GLA"", Url = ""https://www.mbusa.com/en/vehicles/class/gla/suv"", Target = ""_blank"" },
+                    new() { Text = ""GLB"", Url = ""https://www.mbusa.com/en/vehicles/class/glb/suv"", Target = ""_blank"" },
+                    new() { Text = ""GLC"", Url = ""https://www.mbusa.com/en/vehicles/class/glc/suv"", Target = ""_blank"" },
+                ]
+            },
+            new()
+            {
+                Text = ""Sedans & Wagons"",
+                ChildItems =
+                [
+                    new() { Text = ""A Class"", Url = ""https://www.mbusa.com/en/vehicles/class/a-class/sedan"", Target = ""_blank"" },
+                    new() { Text = ""C Class"", Url = ""https://www.mbusa.com/en/vehicles/class/c-class/sedan"", Target = ""_blank"" },
+                    new() { Text = ""E Class"", Url = ""https://www.mbusa.com/en/vehicles/class/e-class/sedan"", Target = ""_blank"" },
+                ]
+            },
+            new()
+            {
+                Text = ""Coupes"",
+                ChildItems =
+                [
+                    new() { Text = ""CLA Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/cla/coupe"", Target = ""_blank"" },
+                    new() { Text = ""C Class Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/c-class/coupe"", Target = ""_blank"" },
+                    new() { Text = ""E Class Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/e-class/coupe"", Target = ""_blank"" },
+                ]
+            },
+        ]
+    },
+    new()
+    {
+        Text = ""Tesla"",
+        ExpandAriaLabel = ""Tesla Expanded"",
+        CollapseAriaLabel= ""Tesla Collapsed"",
+        Title = ""Tesla Car Models"",
+        ChildItems =
+        [
+            new() { Text = ""Model S"", Url = ""https://www.tesla.com/models"", Target = ""_blank"" },
+            new() { Text = ""Model X"", Url = ""https://www.tesla.com/modelx"", Target = ""_blank"" },
+            new() { Text = ""Model Y"", Url = ""https://www.tesla.com/modely"", Target = ""_blank"" },
+        ]
+    },
 ];";
 
     private readonly string example9RazorCode = @"
@@ -428,7 +573,58 @@ private readonly List<BitNavItem> apiNavItems =
     private readonly string example10CsharpCode = @"
 private BitNavItem ClickedItem = default!;
 private BitNavItem SelectedItem = default!;
-private BitNavItem ToggledItem = default!;";
+private BitNavItem ToggledItem = default!;
+
+private static readonly List<BitNavItem> foodNavItems =
+[
+    new()
+    {
+        Text = ""Fast foods"",
+        IconName = BitIconName.HeartBroken,
+        IsExpanded = true,
+        Description = ""List of fast foods"",
+        ChildItems =
+        [
+            new()
+            {
+                Text = ""Burgers"",
+                Description = ""List of burgers"",
+                ChildItems =
+                [
+                    new() { Text = ""Beef Burger"" },
+                    new() { Text = ""Veggie Burger"" },
+                    new() { Text = ""Bison Burger"" },
+                    new() { Text = ""Wild Salmon Burger"" },
+                ]
+            },
+            new()
+            {
+                Text = ""Pizza"",
+                ChildItems =
+                [
+                    new() { Text = ""Cheese Pizza"" },
+                    new() { Text = ""Veggie Pizza"" },
+                    new() { Text = ""Pepperoni Pizza"" },
+                    new() { Text = ""Meat Pizza"" },
+                ]
+            },
+            new() { Text = ""French Fries"" },
+        ]
+    },
+    new()
+    {
+        Text = ""Fruits"",
+        IconName = BitIconName.Health,
+        ChildItems =
+        [
+            new() { Text = ""Apple"" },
+            new() { Text = ""Orange"" },
+            new() { Text = ""Banana"" },
+        ]
+    },
+    new() { Text = ""Ice Cream"" },
+    new() { Text = ""Cookie"" },
+];";
 
     private readonly string example11RazorCode = @"
 <BitNav Items=""matchNavItems"" FitWidth />
@@ -529,6 +725,13 @@ private static readonly List<BitNavItem> a11yNavItems =
 private readonly BitNavParams[] navParams =
 [
     new() { Mode = BitNavMode.Manual, FitWidth = true, IconOnly = true }
+];
+
+private static readonly List<BitNavItem> colorNavItems =
+[
+    new() { Text = ""Home"", IconName = BitIconName.Home },
+    new() { Text = ""Products"", IconName = BitIconName.Product },
+    new() { Text = ""Settings"", IconName = BitIconName.Settings },
 ];";
 
     private readonly string example14RazorCode = @"
@@ -704,6 +907,13 @@ private static readonly List<BitNavItem> customClassNavItems =
         IconName = BitIconName.Group,
         ChildItems = [new() { Text = ""GitHub repo"", IconName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" }]
     },
+];
+
+private static readonly List<BitNavItem> colorNavItems =
+[
+    new() { Text = ""Home"", IconName = BitIconName.Home },
+    new() { Text = ""Products"", IconName = BitIconName.Product },
+    new() { Text = ""Settings"", IconName = BitIconName.Settings },
 ];";
 
     private readonly string example18RazorCode = @"

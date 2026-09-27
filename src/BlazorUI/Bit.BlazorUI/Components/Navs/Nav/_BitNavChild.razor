@@ -201,6 +201,11 @@
 
             var desPadding = Nav.ReversedChevron is false && (childItems.Any() && Nav.NoCollapse is false) ? Nav.IndentPadding : 0;
 
+            // The chevron takes exactly the room a childless item makes up for it with (IndentPadding), and so
+            // does the description under it, so the text of a parent lines up with the text of its siblings and
+            // with its own description whatever IndentPadding and the layout density are.
+            var chevronStyle = $"min-width:{Nav.IndentPadding}px;{Nav.Styles?.ToggleButton}";
+
 
             @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
             {
@@ -241,7 +246,7 @@
                                  @onclick:stopPropagation="true"
                                  @onkeydown="HandleToggleKeyDown"
                                  role="button"
-                                 style="@Nav.Styles?.ToggleButton"
+                                 style="@chevronStyle"
                                  class="bit-nav-cbt @Nav.Classes?.ToggleButton"
                                  tabindex="@(isEnabled ? "0" : "-1")"
                                  aria-disabled="@(isEnabled ? null : "true")"
@@ -255,7 +260,7 @@
                         else if (hasChevron)
                         {
                             @* A click on it reaches the item, which is what toggles it. *@
-                            <span style="@Nav.Styles?.ToggleButton"
+                            <span style="@chevronStyle"
                                   class="bit-nav-cbt @Nav.Classes?.ToggleButton"
                                   aria-hidden="true">
                                 <i style="@Nav.Styles?.ToggleIcon"

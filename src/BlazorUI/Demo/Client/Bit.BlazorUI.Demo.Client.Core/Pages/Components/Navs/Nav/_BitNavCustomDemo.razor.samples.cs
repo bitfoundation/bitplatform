@@ -79,8 +79,61 @@ private static readonly List<Section> customBasicNavItems =
 
 <BitNav Items=""customBasicNavItems"" FullWidth NameSelectors=""sectionSelectors"" />";
     private readonly string example2CsharpCode = @"
-// the very same items the Basic example above lists in full
-private static readonly List<Section> customBasicNavItems = [ /* ... */ ];";
+private static readonly List<Section> customBasicNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Comment = ""the bit platform description"",
+        Links =
+        [
+            new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                Links =
+                [
+                    new()
+                    {
+                        Text = ""Project Templates"",
+                        Links =
+                        [
+                            new() { Text = ""Todo sample"", ImageName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", ImageName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                        ]
+                    },
+                    new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", ImageName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", ImageName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                ]
+            },
+            new() { Text = ""Pricing"", ImageName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", ImageName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new()
+    {
+        Text = ""Community"",
+        Links =
+        [
+            new() { Text = ""LinkedIn"", ImageName = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", ImageName = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""GitHub repo"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+        ]
+    },
+    new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example3RazorCode = @"
 <BitNav Items=""customCarNavItems"" RenderType=""BitNavRenderType.Grouped"" NameSelectors=""carSelectors"" />
@@ -181,7 +234,17 @@ private static readonly List<Section> customSeparatorNavItems =
     new() { Text = ""GitHub repo"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
     new() { IsDivider = true },
     new() { Text = ""Contact us"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
-];";
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example4RazorCode = @"
 <BitNav Items=""customFoodNavItems""
@@ -295,7 +358,17 @@ private static readonly List<Section> customIconOnlyNavItems =
     new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools },
     new() { Text = ""Bit academy"", ImageName = BitIconName.LearningTools, IsEnabled = false },
     new() { Text = ""Contact us"", ImageName = BitIconName.Contact },
-];";
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example6RazorCode = @"
 <BitNav Items=""customSingleExpandNavItems"" SingleExpand FitWidth NameSelectors=""sectionSelectors"" />
@@ -329,8 +402,61 @@ private static readonly List<Section> customSingleExpandNavItems =
     },
 ];
 
-// the very same items the Basic example above lists in full
-private static readonly List<Section> customNoCollapseNavItems = [ /* ... */ ];";
+private static readonly List<Section> customNoCollapseNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Comment = ""the bit platform description"",
+        Links =
+        [
+            new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                Links =
+                [
+                    new()
+                    {
+                        Text = ""Project Templates"",
+                        Links =
+                        [
+                            new() { Text = ""Todo sample"", ImageName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", ImageName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                        ]
+                    },
+                    new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", ImageName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", ImageName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                ]
+            },
+            new() { Text = ""Pricing"", ImageName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", ImageName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new()
+    {
+        Text = ""Community"",
+        Links =
+        [
+            new() { Text = ""LinkedIn"", ImageName = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", ImageName = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""GitHub repo"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+        ]
+    },
+    new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example7RazorCode = @"
 <BitNav Items=""customChevronNavItems"" ReversedChevron AllExpanded FitWidth NameSelectors=""sectionSelectors"" />
@@ -361,7 +487,17 @@ private static readonly List<Section> customChevronNavItems =
         ]
     },
     new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault },
-];";
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example8RazorCode = @"
 <BitNav Items=""customCarNavItems"" RenderType=""BitNavRenderType.Grouped"" NameSelectors=""carSelectors"">
@@ -416,7 +552,89 @@ private static readonly List<Section> customColorNavItems =
     new() { Text = ""Home"", ImageName = BitIconName.Home },
     new() { Text = ""Products"", ImageName = BitIconName.Product },
     new() { Text = ""Settings"", ImageName = BitIconName.Settings },
-];";
+];
+
+private static readonly List<CarMenu> customCarNavItems =
+[
+    new()
+    {
+        Name = ""Mercedes-Benz"",
+        ExpandedAriaLabel = ""Mercedes-Benz Expanded"",
+        CollapsedAriaLabel = ""Mercedes-Benz Collapsed"",
+        Tooltip = ""Mercedes-Benz Car Models"",
+        IsExpandedParent = true,
+        Comment = ""Cars manufactured under the brand of Mercedes-Benz"",
+        Links =
+        [
+            new()
+            {
+                Name = ""SUVs"",
+                Links =
+                [
+                    new() { Name = ""GLA"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/gla/suv"", UrlTarget = ""_blank"" },
+                    new() { Name = ""GLB"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/glb/suv"", UrlTarget = ""_blank"" },
+                    new() { Name = ""GLC"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/glc/suv"", UrlTarget = ""_blank"" },
+                ]
+            },
+            new()
+            {
+                Name = ""Sedans & Wagons"",
+                Links =
+                [
+                    new() { Name = ""A Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/a-class/sedan"", UrlTarget = ""_blank"" },
+                    new() { Name = ""C Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/c-class/sedan"", UrlTarget = ""_blank"" },
+                    new() { Name = ""E Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/e-class/sedan"", UrlTarget = ""_blank"" },
+                ]
+            },
+            new()
+            {
+                Name = ""Coupes"",
+                Links =
+                [
+                    new() { Name = ""CLA Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/cla/coupe"", UrlTarget = ""_blank"" },
+                    new() { Name = ""C Class Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/c-class/coupe"", UrlTarget = ""_blank"" },
+                    new() { Name = ""E Class Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/e-class/coupe"", UrlTarget = ""_blank"" },
+                ]
+            },
+        ]
+    },
+    new()
+    {
+        Name = ""Tesla"",
+        ExpandedAriaLabel = ""Tesla Expanded"",
+        CollapsedAriaLabel = ""Tesla Collapsed"",
+        Tooltip = ""Tesla Car Models"",
+        Links =
+        [
+            new() { Name = ""Model S"", PageUrl = ""https://www.tesla.com/models"", UrlTarget = ""_blank"" },
+            new() { Name = ""Model X"", PageUrl = ""https://www.tesla.com/modelx"", UrlTarget = ""_blank"" },
+            new() { Name = ""Model Y"", PageUrl = ""https://www.tesla.com/modely"", UrlTarget = ""_blank"" },
+        ]
+    },
+];
+
+private static readonly BitNavNameSelectors<CarMenu> carSelectors = new()
+{
+    Text = { Name = nameof(CarMenu.Name) },
+    Url = { Name = nameof(CarMenu.PageUrl) },
+    Target = { Name = nameof(CarMenu.UrlTarget) },
+    Title = { Name = nameof(CarMenu.Tooltip) },
+    IsExpanded = { Name = nameof(CarMenu.IsExpandedParent) },
+    CollapseAriaLabel = { Name = nameof(CarMenu.CollapsedAriaLabel) },
+    ExpandAriaLabel = { Name = nameof(CarMenu.ExpandedAriaLabel) },
+    ChildItems = { Name = nameof(CarMenu.Links) },
+    Description = { Name = nameof(CarMenu.Comment) },
+};
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example9RazorCode = @"
 <BitStack Horizontal Wrap>
@@ -463,7 +681,17 @@ private readonly List<Section> customApiNavItems =
     },
     new() { Text = ""Ice Cream"", ImageName = BitIconName.Emoji2 },
     new() { Text = ""Cookie"", ImageName = BitIconName.Cake },
-];";
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example10RazorCode = @"
 <BitNav Items=""customFoodNavItems""
@@ -481,7 +709,68 @@ private readonly List<Section> customApiNavItems =
     private readonly string example10CsharpCode = @"
 private FoodMenu CustomClickedItem = default!;
 private FoodMenu CustomSelectedItem = default!;
-private FoodMenu CustomToggledItem = default!;";
+private FoodMenu CustomToggledItem = default!;
+
+private static readonly List<FoodMenu> customFoodNavItems =
+[
+    new()
+    {
+        Name = ""Fast foods"",
+        Image = BitIconName.HeartBroken,
+        IsExpanded = true,
+        Comment = ""List of fast foods"",
+        Childs =
+        [
+            new()
+            {
+                Name = ""Burgers"",
+                Comment = ""List of burgers"",
+                Childs =
+                [
+                    new() { Name = ""Beef Burger"" },
+                    new() { Name = ""Veggie Burger"" },
+                    new() { Name = ""Bison Burger"" },
+                    new() { Name = ""Wild Salmon Burger"" },
+                ]
+            },
+            new()
+            {
+                Name = ""Pizza"",
+                Childs =
+                [
+                    new() { Name = ""Cheese Pizza"" },
+                    new() { Name = ""Veggie Pizza"" },
+                    new() { Name = ""Pepperoni Pizza"" },
+                    new() { Name = ""Meat Pizza"" },
+                ]
+            },
+            new() { Name = ""French Fries"" },
+        ]
+    },
+    new()
+    {
+        Name = ""Fruits"",
+        Image = BitIconName.Health,
+        Childs =
+        [
+            new() { Name = ""Apple"" },
+            new() { Name = ""Orange"" },
+            new() { Name = ""Banana"" },
+        ]
+    },
+    new() { Name = ""Ice Cream"" },
+    new() { Name = ""Cookie"" },
+];
+
+// The same mapping, written with Selector lambdas instead of property names: it skips the reflection and
+// is checked by the compiler, at the cost of one lambda per member.
+private static readonly BitNavNameSelectors<FoodMenu> foodSelectors = new()
+{
+    Text = { Selector = item => item.Name },
+    IconName = { Selector = item => item.Image },
+    ChildItems = { Selector = item => item.Childs },
+    Description = { Selector = item => item.Comment },
+};";
 
     private readonly string example11RazorCode = @"
 <BitNav Items=""customMatchNavItems"" NameSelectors=""matchSelectors"" FitWidth />
@@ -617,7 +906,24 @@ private static readonly List<Section> customA11yNavItems =
 private readonly BitNavParams[] navParams =
 [
     new() { Mode = BitNavMode.Manual, FitWidth = true, IconOnly = true }
-];";
+];
+
+private static readonly List<Section> customColorNavItems =
+[
+    new() { Text = ""Home"", ImageName = BitIconName.Home },
+    new() { Text = ""Products"", ImageName = BitIconName.Product },
+    new() { Text = ""Settings"", ImageName = BitIconName.Settings },
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example14RazorCode = @"
 <BitNav FitWidth Color=""BitColor.Primary"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
@@ -639,7 +945,17 @@ private static readonly List<Section> customColorNavItems =
     new() { Text = ""Home"", ImageName = BitIconName.Home },
     new() { Text = ""Products"", ImageName = BitIconName.Product },
     new() { Text = ""Settings"", ImageName = BitIconName.Settings },
-];";
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
@@ -723,7 +1039,17 @@ private static readonly List<Section> customSizeNavItems =
     new() { Text = ""Home"", ImageName = BitIconName.Home, Comment = ""The main page"" },
     new() { Text = ""Products"", ImageName = BitIconName.Product, Comment = ""All of the products"" },
     new() { Text = ""Settings"", ImageName = BitIconName.Settings, Comment = ""The app settings"" },
-];";
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example17RazorCode = @"
 <BitNav Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Style=""max-width: max-content; border: 1px solid tomato;"" />
@@ -812,7 +1138,24 @@ private static readonly List<Section> customClassesNavItems =
         ImageName = BitIconName.Group,
         Links = [new() { Text = ""GitHub repo"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" }]
     },
-];";
+];
+
+private static readonly List<Section> customColorNavItems =
+[
+    new() { Text = ""Home"", ImageName = BitIconName.Home },
+    new() { Text = ""Products"", ImageName = BitIconName.Product },
+    new() { Text = ""Settings"", ImageName = BitIconName.Settings },
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 
     private readonly string example18RazorCode = @"
 <div dir=""rtl"">
@@ -863,5 +1206,15 @@ private static readonly List<Section> customRtlNavItems =
         ]
     },
     new() { Text = ""شمایل نگاری"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
-];";
+];
+
+// The Section class only renames a handful of the members the nav expects, so only those are mapped and
+// the rest (Text, Url, IsEnabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    ChildItems = { Name = nameof(Section.Links) },
+    Description = { Name = nameof(Section.Comment) },
+    IsSeparator = { Name = nameof(Section.IsDivider) },
+};";
 }

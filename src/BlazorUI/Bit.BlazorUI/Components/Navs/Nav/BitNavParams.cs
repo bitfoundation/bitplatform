@@ -91,7 +91,7 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
     public bool? IconOnly { get; set; }
 
     /// <summary>
-    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// The width in px of the chevron, which the items without children keep as padding in its place so every text lines up.
     /// </summary>
     public int? IndentPadding { get; set; }
 

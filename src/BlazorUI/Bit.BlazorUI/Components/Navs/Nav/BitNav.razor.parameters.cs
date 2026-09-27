@@ -97,7 +97,7 @@ public partial class BitNav<TItem>
     public bool IconOnly { get; set; }
 
     /// <summary>
-    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// The width in px of the chevron, which the items without children keep as padding in its place so every text lines up.
     /// </summary>
     [Parameter] public int IndentPadding { get; set; } = 27;
 
@@ -127,7 +127,7 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
 
     /// <summary>
-    /// Gets or sets a value representing the global URL matching behavior of the nav.
+    /// The URL matching behavior of the nav in the Automatic mode.
     /// The Match of an item takes precedence over this value, and when neither is provided the URL of an
     /// item has to match the current one exactly.
     /// </summary>
@@ -158,7 +158,7 @@ public partial class BitNav<TItem>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// Callback invoked when a group header is clicked and Expanded or Collapse.
+    /// Callback invoked when an item (or a group header) is expanded or collapsed.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemToggle { get; set; }
 

@@ -683,6 +683,31 @@ public class BitNavTests : BunitTestContext
         StringAssert.Contains(component.Find(".bit-nav-ict").GetAttribute("style"), "padding-inline-start:33px");
     }
 
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)]
+    public void BitNavShouldGiveTheChevronTheRoomAChildlessItemMakesUpForIt(bool hasUrl)
+    {
+        var items = hasUrl ? LinkTreeItems() : TreeItems();
+
+        var component = RenderNav(items, p => p.Add(c => c.IndentPadding, 33));
+
+        // A childless sibling starts its content IndentPadding in, so the chevron of a parent takes exactly that
+        // room, and the text of the two lines up whatever IndentPadding (or the layout density) is.
+        StringAssert.Contains(component.Find(".bit-nav-cbt").GetAttribute("style"), "min-width:33px");
+    }
+
+    [TestMethod]
+    public void BitNavShouldKeepTheToggleButtonStylesAfterTheChevronWidth()
+    {
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.Styles, new BitNavClassStyles { ToggleButton = "min-width:50px" }));
+
+        var style = component.Find(".bit-nav-cbt").GetAttribute("style")!;
+
+        // The custom style comes last, so it still wins over the width the nav gives the chevron.
+        Assert.IsTrue(style.IndexOf("min-width:27px", StringComparison.Ordinal) < style.IndexOf("min-width:50px", StringComparison.Ordinal));
+    }
+
     [TestMethod]
     public void BitNavShouldRespectTheIndentReversedPaddingInTheReversedChevronMode()
     {

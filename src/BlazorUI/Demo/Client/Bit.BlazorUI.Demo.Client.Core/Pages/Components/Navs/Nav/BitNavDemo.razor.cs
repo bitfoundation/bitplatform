@@ -126,7 +126,7 @@ public partial class BitNavDemo
             Name = "IndentPadding",
             Type = "int",
             DefaultValue = "27",
-            Description = "The indentation padding in px for items without children (compensation space for chevron icon)."
+            Description = "The width in px of the chevron, which the items without children keep as padding in its place so every text lines up."
         },
         new()
         {
@@ -172,7 +172,7 @@ public partial class BitNavDemo
             Name = "Match",
             Type = "BitNavMatch?",
             DefaultValue = "null",
-            Description = "Gets or sets a value representing the global URL matching behavior of the nav. The Match of an item takes precedence over this value, and when neither is provided the URL of an item has to match the current one exactly.",
+            Description = "The URL matching behavior of the nav in the Automatic mode. The Match of an item takes precedence over this value, and when neither is provided the URL of an item has to match the current one exactly.",
             Href = "#nav-match-enum",
             LinkType = LinkType.Link,
         },
@@ -326,6 +326,12 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "--bit-Nav-pressed-background",
+            DefaultValue = "The Accent role's active color",
+            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen).",
+        },
+        new()
+        {
             Name = "--bit-Nav-selected-background",
             DefaultValue = "The Accent role's active color",
             Description = "Background of the selected item, and of a collapsed branch that holds it.",
@@ -404,9 +410,9 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "--bit-Nav-header-height",
+            Name = "--bit-Nav-header-min-height",
             DefaultValue = "Per size (36px / 44px / 52px)",
-            Description = "Height of a group header.",
+            Description = "Smallest height of a group header; one with a description grows past it.",
         },
         new()
         {

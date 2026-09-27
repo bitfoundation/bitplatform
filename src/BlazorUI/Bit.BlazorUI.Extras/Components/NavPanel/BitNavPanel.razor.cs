@@ -219,7 +219,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? IconUrl { get; set; }
 
     /// <summary>
-    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// The width in px of the chevron, which the items without children keep as padding in its place so every text lines up.
     /// </summary>
     [Parameter] public int IndentPadding { get; set; } = 27;
 

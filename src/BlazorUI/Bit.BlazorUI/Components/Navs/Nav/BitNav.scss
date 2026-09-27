@@ -9,6 +9,7 @@
 //   --bit-Nav-disabled-color         everything a disabled item draws               (default: $clr-fg-dis)
 //   --bit-Nav-hover-background       background of a hovered item                   (default: the Accent role's hover color)
 //   --bit-Nav-hover-color            text and chevron color of a hovered item       (default: the Accent role's on color)
+//   --bit-Nav-pressed-background     background of a pressed item                   (default: the Accent role's active color)
 //   --bit-Nav-selected-background    background of the selected item                (default: the Accent role's active color)
 //   --bit-Nav-selected-color         text and chevron color of the selected item    (default: the Accent role's on color)
 //   --bit-Nav-indicator-color        leading bar of the selected item               (default: the Color role's main color)
@@ -22,7 +23,7 @@
 //   --bit-Nav-description-font-size  item description size                          (default: per size, from the type ramp)
 //   --bit-Nav-header-color           group header text color                        (default: $clr-fg-pri)
 //   --bit-Nav-header-font-size       group header text size                         (default: per size, from the type ramp)
-//   --bit-Nav-header-height          group header height                            (default: per size)
+//   --bit-Nav-header-min-height      smallest height of a group header              (default: per size)
 //   --bit-Nav-header-border-color    rule under a group header                      (default: $clr-brd-pri)
 //   --bit-Nav-header-hover-background background of a hovered group header          (default: $clr-bg-pri-hover)
 //   --bit-Nav-separator-color        separator color                                (default: $clr-brd-sec)
@@ -65,7 +66,8 @@
     --bit-nav-icon-size: #{$siz-icon-md};
     --bit-nav-des-font-size: #{$tg-fs-xs};
     --bit-nav-header-font-size: #{$tg-fs-lg};
-    --bit-nav-header-height: #{spacing(5.5)};
+    --bit-nav-header-min-height: #{spacing(5.5)};
+    --bit-nav-chevron-size: #{$tg-fs-xs};
 
     // Only the nav's own lists (.bit-nav-lst) are laid out here: a template can render a list of its own
     // inside an item, and a descendant selector would force it into the nav's column and gaps.
@@ -114,7 +116,7 @@
 .bit-nav-cbt {
     cursor: pointer;
     user-select: none;
-    font-size: $tg-fs-xs;
+    font-size: var(--bit-nav-chevron-size);
     min-width: spacing(3.375);
     background-color: transparent;
 
@@ -142,7 +144,7 @@
     // A button does not inherit the font of the page, so the header would be set in the browser's own.
     font-family: inherit;
     color: var(--bit-Nav-header-color, #{$clr-fg-pri});
-    height: var(--bit-Nav-header-height, var(--bit-nav-header-height));
+    min-height: var(--bit-Nav-header-min-height, var(--bit-nav-header-min-height));
     border-bottom: $siz-divider $shp-border-style var(--bit-Nav-header-border-color, #{$clr-brd-pri});
     transition: background-color $mot-duration-short $mot-easing;
 
@@ -156,6 +158,10 @@
         &:hover:not(:disabled, .bit-nav-gst) {
             background-color: var(--bit-Nav-header-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    &:active:not(:disabled, .bit-nav-gst) {
+        background-color: $clr-bg-pri-active;
     }
 
     &:focus-visible {
@@ -244,12 +250,22 @@
             @include accented-item-content(var(--bit-Nav-hover-color, var(--bit-nav-clr-text)));
         }
     }
+
+    // Unlike the hover, the pressed state is not kept to the pointers that can hover: on a touch screen it is
+    // the one feedback a tap gets before the page changes.
+    &:active {
+        background-color: var(--bit-Nav-pressed-background, var(--bit-nav-clr-active));
+
+        @include accented-item-content(var(--bit-Nav-hover-color, var(--bit-nav-clr-text)));
+    }
 }
 
+// No gap between the chevron and the content: a childless item makes up for the chevron it lacks with
+// IndentPadding alone, and so does the description under a parent, so any room added here would push the
+// text of a parent out of line with the text of its siblings and with its own description.
 .bit-nav-mct {
     flex-grow: 1;
     display: flex;
-    gap: spacing(0.25);
 }
 
 .bit-nav-itm {
@@ -393,7 +409,8 @@
     --bit-nav-icon-size: #{$siz-icon-sm};
     --bit-nav-des-font-size: #{$tg-fs-2xs};
     --bit-nav-header-font-size: #{$tg-fs-sm};
-    --bit-nav-header-height: #{spacing(4.5)};
+    --bit-nav-header-min-height: #{spacing(4.5)};
+    --bit-nav-chevron-size: #{$tg-fs-2xs};
 }
 
 .bit-nav-md {
@@ -402,7 +419,8 @@
     --bit-nav-icon-size: #{$siz-icon-md};
     --bit-nav-des-font-size: #{$tg-fs-xs};
     --bit-nav-header-font-size: #{$tg-fs-lg};
-    --bit-nav-header-height: #{spacing(5.5)};
+    --bit-nav-header-min-height: #{spacing(5.5)};
+    --bit-nav-chevron-size: #{$tg-fs-xs};
 }
 
 .bit-nav-lg {
@@ -411,7 +429,8 @@
     --bit-nav-icon-size: #{$siz-icon-lg};
     --bit-nav-des-font-size: #{$tg-fs-sm};
     --bit-nav-header-font-size: #{$tg-fs-xl};
-    --bit-nav-header-height: #{spacing(6.5)};
+    --bit-nav-header-min-height: #{spacing(6.5)};
+    --bit-nav-chevron-size: #{$tg-fs-sm};
 }
 
 
