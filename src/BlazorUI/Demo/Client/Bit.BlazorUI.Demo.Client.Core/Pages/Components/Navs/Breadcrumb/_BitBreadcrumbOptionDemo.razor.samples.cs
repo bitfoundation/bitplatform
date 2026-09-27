@@ -54,7 +54,7 @@ public partial class _BitBreadcrumbOptionDemo
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" AriaLabel=""You are here"" OverflowAriaLabel=""Show hidden levels"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
@@ -177,7 +177,7 @@ public partial class _BitBreadcrumbOptionDemo
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" ReversedIcon>
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" IconPosition=""BitIconPosition.End"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />
@@ -244,40 +244,22 @@ public partial class _BitBreadcrumbOptionDemo
 
     private readonly string example8RazorCode = @"
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
-               MaxDisplayedItems=""@MaxDisplayedItems""
-               OverflowIndex=""@OverflowIndex""
-               Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"">
-    @for (int i = 0; i < ItemsCount; i++)
+               MaxDisplayedItems=""4""
+               OverflowIndex=""1""
+               SelectedItemAsText>
+    @for (int i = 1; i <= ItemsCount; i++)
     {
-        int index = i + 1;
+        int index = i;
         <BitBreadcrumbOption Text=""@($""Option {index}"")""
-                             OnClick=""() => SelectedOptionNumber = index""
-                             IsSelected=""@(SelectedOptionNumber == index)"" />
+                             OnClick=""() => ItemsCount = index""
+                             IsSelected=""@(index == ItemsCount)"" />
     }
 </BitBreadcrumb>
 
-<BitButton OnClick=""() => ItemsCount++"">Add option</BitButton>
-<BitButton OnClick=""RemoveOption"">Remove option</BitButton>
-
-<BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed options"" ShowButtons />
-<BitNumberField @bind-Value=""OverflowIndex"" Label=""Overflow index"" ShowButtons />";
+<BitButton OnClick=""() => ItemsCount++"">Add option</BitButton>";
     private readonly string example8CsharpCode = @"
-private int ItemsCount = 4;
-private uint OverflowIndex = 2;
-private uint MaxDisplayedItems = 3;
-private int SelectedOptionNumber = 4;
-
-private void RemoveOption()
-{
-    if (ItemsCount <= 1) return;
-
-    ItemsCount--;
-
-    if (SelectedOptionNumber > ItemsCount)
-    {
-        SelectedOptionNumber = ItemsCount;
-    }
-}";
+// The options after the current one are the levels below it, so going back up is just a shorter trail.
+private int ItemsCount = 4;";
 
     private readonly string example9RazorCode = @"
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" StructuredData MaxDisplayedItems=""3"" OverflowIndex=""2"">
@@ -352,8 +334,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"">
+               MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <BitBreadcrumbOption Text=""Home"" Icon=""@(""fa-solid fa-house"")"" />
     <BitBreadcrumbOption Text=""Products"" Icon=""@(""fa-solid fa-box"")"" />
     <BitBreadcrumbOption Text=""Electronics"" Icon=""@(""fa-solid fa-microchip"")"" />
@@ -361,8 +342,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
 </BitBreadcrumb>
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"">
+               MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"" />
     <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Css(""fa-solid fa-box"")"" />
     <BitBreadcrumbOption Text=""Electronics"" Icon=""@BitIconInfo.Css(""fa-solid fa-microchip"")"" />
@@ -370,8 +350,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
 </BitBreadcrumb>
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"">
+               MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Fa(""solid house"")"" />
     <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Fa(""solid box"")"" />
     <BitBreadcrumbOption Text=""Electronics"" Icon=""@BitIconInfo.Fa(""solid microchip"")"" />
@@ -495,7 +474,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
                MaxDisplayedItems=""3""
                OverflowIndex=""1""
-               Style=""--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #db2777; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;"">
+               Style=""--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #be185d; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-color: #5b21b6; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
@@ -514,10 +493,10 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
     private readonly string example15RazorCode = @"
 <BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <BitBreadcrumbOption Text=""پوشه اول"" />
-    <BitBreadcrumbOption Text=""پوشه دوم"" IsSelected />
+    <BitBreadcrumbOption Text=""پوشه دوم"" />
     <BitBreadcrumbOption Text=""پوشه سوم"" />
     <BitBreadcrumbOption Text=""پوشه چهارم"" />
     <BitBreadcrumbOption Text=""پوشه پنجم"" />
-    <BitBreadcrumbOption Text=""پوشه ششم"" />
+    <BitBreadcrumbOption Text=""پوشه ششم"" IsSelected />
 </BitBreadcrumb>";
 }

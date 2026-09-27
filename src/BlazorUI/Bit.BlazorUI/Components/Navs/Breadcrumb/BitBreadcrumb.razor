@@ -28,7 +28,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <ol role="list" style="@Styles?.ItemContainer" class="bit-brc-icn @Classes?.ItemContainer">
+    <ol @ref="_itemContainerRef" role="list" style="@Styles?.ItemContainer" class="bit-brc-icn @Classes?.ItemContainer">
         @foreach (var (item, idx) in _displayItems.Select((item, index) => (item, index)))
         {
             <li @key="@GetItemKey(item, idx.ToString())" role="listitem" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
@@ -94,13 +94,45 @@
                             }
                         </a>
                     }
+                    else if (IsDisabledLink(item))
+                    {
+                        @* A disabled link is still a link: it keeps the role and says it is unavailable, rather
+                           than turning into text that gives no hint there is a step to follow once it is enabled.
+                           Without an href it takes no focus and navigates nowhere. *@
+                        <a role="link"
+                           title="@GetItemTitle(item)"
+                           aria-label="@GetItemAriaLabel(item)"
+                           aria-current="@(GetIsSelected(item) ? "page" : null)"
+                           aria-disabled="true"
+                           style="@GetStyles(item, false)"
+                           class="bit-brc-nii @GetClasses(item, false)">
+                            @if (template is not null)
+                            {
+                                @template(item)
+                            }
+                            else if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                var icon = GetIcon(item);
+                                @if (icon is not null)
+                                {
+                                    <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                }
+                                <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
+                            }
+                        </a>
+                    }
                     else if (HasClickHandler(item))
                     {
+                        @* The native disabled attribute already tells assistive technologies the button is
+                           unavailable, so no aria-disabled is repeated on it. *@
                         <button type="button"
                                 title="@GetItemTitle(item)"
                                 aria-label="@GetItemAriaLabel(item)"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                aria-disabled="@(GetIsEnabled(item) ? null : "true")"
                                 disabled="@(GetIsEnabled(item) is false)"
                                 style="@GetStyles(item, false)"
                                 class="bit-brc-itm @GetClasses(item, false)" @onclick="() => HandleOnItemClick(item)">
@@ -125,29 +157,39 @@
                     }
                     else
                     {
+                        @* A plain span has no role an aria-label is allowed on (ARIA 1.2 prohibits naming a generic
+                           element), so the accessible label of a step that is only text - an icon-only current page,
+                           most often - is written out as visually hidden text, and what is on screen is hidden from
+                           assistive technologies instead of being read after it. *@
+                        var ariaLabel = GetItemAriaLabel(item);
                         <span title="@GetItemTitle(item)"
-                              aria-label="@GetItemAriaLabel(item)"
                               aria-current="@(GetIsSelected(item) ? "page" : null)"
                               aria-disabled="@(GetIsEnabled(item) ? null : "true")"
                               style="@GetStyles(item, false)"
                               class="bit-brc-nii @GetClasses(item, false)">
-                            @if (template is not null)
+                            @if (ariaLabel.HasValue())
                             {
-                                @template(item)
+                                <span class="bit-brc-vhd">@ariaLabel</span>
                             }
-                            else if (ItemTemplate is not null)
-                            {
-                                @ItemTemplate(item)
-                            }
-                            else
-                            {
-                                var icon = GetIcon(item);
-                                @if (icon is not null)
+                            <span aria-hidden="@(ariaLabel.HasValue() ? "true" : null)" class="bit-brc-nic">
+                                @if (template is not null)
                                 {
-                                    <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                    @template(item)
                                 }
-                                <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
-                            }
+                                else if (ItemTemplate is not null)
+                                {
+                                    @ItemTemplate(item)
+                                }
+                                else
+                                {
+                                    var icon = GetIcon(item);
+                                    @if (icon is not null)
+                                    {
+                                        <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                    }
+                                    <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
+                                }
+                            </span>
                         </span>
                     }
                 }

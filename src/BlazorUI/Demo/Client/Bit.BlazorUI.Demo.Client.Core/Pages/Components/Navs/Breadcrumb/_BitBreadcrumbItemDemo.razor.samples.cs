@@ -42,7 +42,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithTarget =
 
 <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""1"" />
 
-<BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+<BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" AriaLabel=""You are here"" OverflowAriaLabel=""Show hidden levels"" />";
     private readonly string example2CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
@@ -155,7 +155,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithLongText =
                MaxDisplayedItems=""3""
                OverflowIndex=""2"" />
 
-<BitBreadcrumb Items=""BreadcrumbItemsWithIcon"" ReversedIcon />
+<BitBreadcrumb Items=""BreadcrumbItemsWithIcon"" IconPosition=""BitIconPosition.End"" />
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithHomeIcon"" DividerText=""/"" />";
     private readonly string example6CsharpCode = @"
@@ -235,21 +235,13 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemTemplateItems =
 
     private readonly string example8RazorCode = @"
 <BitBreadcrumb Items=""BreadcrumbItemsWithCustomized""
-               MaxDisplayedItems=""@MaxDisplayedItems""
-               OverflowIndex=""@OverflowIndex""
-               OnItemClick=""(BitBreadcrumbItem item) => HandleOnCustomizedItemClick(item)""
-               Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"" />
+               MaxDisplayedItems=""4""
+               OverflowIndex=""1""
+               SelectedItemAsText
+               OnItemClick=""(BitBreadcrumbItem item) => HandleOnCustomizedItemClick(item)"" />
 
-<BitButton OnClick=""AddBreadcrumbItem"">Add item</BitButton>
-<BitButton OnClick=""RemoveBreadcrumbItem"">Remove item</BitButton>
-
-<BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed items"" ShowButtons />
-<BitNumberField @bind-Value=""OverflowIndex"" Label=""Overflow index"" ShowButtons />";
+<BitButton OnClick=""AddBreadcrumbItem"">Add item</BitButton>";
     private readonly string example8CsharpCode = @"
-private int ItemsCount = 4;
-private uint OverflowIndex = 2;
-private uint MaxDisplayedItems = 3;
-
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized =
 [
     new() { Text = ""Item 1"" },
@@ -258,35 +250,21 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized =
     new() { Text = ""Item 4"", IsSelected = true }
 ];
 
+// Going back up to an item drops the levels below it, which makes it the current page.
 private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
 {
-    BreadcrumbItemsWithCustomized.First(i => i.IsSelected).IsSelected = false;
+    var index = BreadcrumbItemsWithCustomized.IndexOf(item);
+
+    BreadcrumbItemsWithCustomized.RemoveRange(index + 1, BreadcrumbItemsWithCustomized.Count - index - 1);
+
     item.IsSelected = true;
 }
 
 private void AddBreadcrumbItem()
 {
-    ItemsCount++;
-    BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
-    {
-        Text = $""Item {ItemsCount}""
-    });
-}
+    BreadcrumbItemsWithCustomized[^1].IsSelected = false;
 
-private void RemoveBreadcrumbItem()
-{
-    if (BreadcrumbItemsWithCustomized.Count > 1)
-    {
-        ItemsCount--;
-
-        var item = BreadcrumbItemsWithCustomized[^1];
-        BreadcrumbItemsWithCustomized.Remove(item);
-
-        if (item.IsSelected)
-        {
-            BreadcrumbItemsWithCustomized[^1].IsSelected = true;
-        }
-    }
+    BreadcrumbItemsWithCustomized.Add(new() { Text = $""Item {BreadcrumbItemsWithCustomized.Count + 1}"", IsSelected = true });
 }";
 
     private readonly string example9RazorCode = @"
@@ -358,16 +336,13 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithExternalIcon1""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithExternalIcon2""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithExternalIcon3""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithExternalIcon4""
                MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
@@ -486,7 +461,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 <BitBreadcrumb Items=""BreadcrumbItems""
                MaxDisplayedItems=""3""
                OverflowIndex=""1""
-               Style=""--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #db2777; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;"" />
+               Style=""--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #be185d; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-color: #5b21b6; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;"" />
 
 <div style=""--bit-Breadcrumb-font-size: 0.8125rem; --bit-Breadcrumb-item-height: 1.5rem; --bit-Breadcrumb-divider-spacing: 0.25rem; --bit-Breadcrumb-selected-font-weight: 700;"">
     <BitBreadcrumb Items=""BreadcrumbItems"" DividerText=""/"" />
@@ -522,10 +497,10 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle =
 private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems =
 [
     new() { Text = ""پوشه اول"" },
-    new() { Text = ""پوشه دوم"", IsSelected = true },
+    new() { Text = ""پوشه دوم"" },
     new() { Text = ""پوشه سوم"" },
     new() { Text = ""پوشه چهارم"" },
     new() { Text = ""پوشه پنجم"" },
-    new() { Text = ""پوشه ششم"" },
+    new() { Text = ""پوشه ششم"", IsSelected = true },
 ];";
 }

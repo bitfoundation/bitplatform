@@ -2,8 +2,9 @@
     <div>
         Any class feeds the breadcrumb: <b>NameSelectors</b> maps its properties by selector or by name. A mapped
         <b>Href</b> makes a link; the <b>IsSelected</b> mapping marks the current page (<code>aria-current="page"</code>)
-        and <b>SelectedItemAsText</b> renders it as plain text. <b>IsEnabled</b> disables the whole trail or a single item,
-        and a <b>Target</b> mapping opens a link elsewhere (with <code>rel="noopener noreferrer"</code>).
+        and <b>SelectedItemAsText</b> renders it as plain text. <b>IsEnabled</b> disables the whole trail or a single item
+        (a disabled link stays a link, announced as unavailable), and a <b>Target</b> mapping opens a link elsewhere
+        (with <code>rel="noopener noreferrer"</code>).
     </div>
     <br />
     <div class="example-box">
@@ -34,7 +35,8 @@
     <div>
         <b>MaxDisplayedItems</b> caps the visible items and collapses the rest into an overflow menu; <b>OverflowIndex</b>
         places its button. Keyboard: Enter, Space or the arrows open the menu, arrows and Home/End move, a letter jumps to
-        the matching item, Escape or Tab closes it.
+        the matching item, Escape or Tab closes it. <b>AriaLabel</b> names the landmark ("Breadcrumb" by default) and
+        <b>OverflowAriaLabel</b> the button ("More items"), for example to localize them.
     </div>
     <br />
     <div class="example-box">
@@ -47,8 +49,9 @@
             <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" MaxDisplayedItems="3" OverflowIndex="1" />
         </div>
         <div>
-            <div>Max displayed items (3), Overflow index (2)</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" MaxDisplayedItems="3" OverflowIndex="2" />
+            <div>Max displayed items (3), Overflow index (2), AriaLabel & OverflowAriaLabel</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" MaxDisplayedItems="3" OverflowIndex="2"
+                           AriaLabel="You are here" OverflowAriaLabel="Show hidden levels" />
         </div>
     </div>
 </DemoExample>
@@ -56,7 +59,7 @@
 <DemoExample Title="Truncation, Wrapping & Scrolling" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <div>
         A long trail stays on one line by default. <b>MaxItemWidth</b> truncates each item (its text becomes the tooltip
-        when it has no mapped <b>Title</b>), <b>Wrap</b> flows it onto more lines and <b>Scrollable</b> scrolls it sideways.
+        when it has no mapped <b>Title</b>), <b>Wrap</b> flows it onto more lines and <b>Scrollable</b> scrolls it sideways, opening on its end.
     </div>
     <br />
     <div class="example-box">
@@ -131,7 +134,7 @@
 
 <DemoExample Title="Icons & Divider" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>
-        The <b>IconName</b> mapping adds an icon to an item and <b>ReversedIcon</b> puts it after the text. An icon-only
+        The <b>IconName</b> mapping adds an icon to an item and <b>IconPosition</b> <code>End</code> puts it after the text. An icon-only
         item needs an <b>AriaLabel</b> mapping. <b>DividerIconName</b>, <b>DividerText</b> and <b>OverflowIconName</b>
         replace the default glyphs; dividers are always hidden from screen readers.
     </div>
@@ -147,8 +150,8 @@
                            OverflowIndex="2" />
         </div>
         <div>
-            <div>ReversedIcon</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon" NameSelectors="nameSelectors" ReversedIcon />
+            <div>IconPosition End</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon" NameSelectors="nameSelectors" IconPosition="BitIconPosition.End" />
         </div>
         <div>
             <div>Icon-only root with an AriaLabel & DividerText</div>
@@ -197,23 +200,18 @@
 <DemoExample Title="Events & Dynamic Items" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>
         <b>OnItemClick</b> reports every activated item, link or button (the NameSelectors' <b>OnClick</b> adds a per-item
-        handler). Here it moves the selection, while the items and the collapsing settings change at runtime.
+        handler). Here a click goes back up to that item and <i>Add item</i> goes one level deeper; the overflow follows the trail.
     </div>
     <br />
     <div class="example-box">
         <BitBreadcrumb Items="CustomBreadcrumbItemsWithCustomized"
                        NameSelectors="nameSelectors"
-                       MaxDisplayedItems="@MaxDisplayedItems"
-                       OverflowIndex="@OverflowIndex"
-                       OnItemClick="(PageInfo model) => HandleOnCustomizedCustomClick(model)"
-                       Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })" />
-        <div class="operators">
-            <div>
-                <BitButton OnClick="AddCustomItem">Add item</BitButton>
-                <BitButton OnClick="RemoveCustomItem">Remove item</BitButton>
-            </div>
-            <BitNumberField @bind-Value="MaxDisplayedItems" Label="Max displayed items" ShowButtons />
-            <BitNumberField @bind-Value="OverflowIndex" Label="Overflow index" ShowButtons />
+                       MaxDisplayedItems="4"
+                       OverflowIndex="1"
+                       SelectedItemAsText
+                       OnItemClick="(PageInfo model) => HandleOnCustomizedCustomClick(model)" />
+        <div>
+            <BitButton OnClick="AddCustomItem">Add item</BitButton>
         </div>
     </div>
 </DemoExample>
@@ -302,22 +300,19 @@
             <div>Implicit string conversion (auto-detects external icons)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon1"
                            NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3" OverflowIndex="2"
-                           Styles="@(new() { ItemIcon = "line-height:unset" })" />
+                           MaxDisplayedItems="3" OverflowIndex="2" />
         </div>
         <div>
             <div>BitIconInfo.Css (uses CSS classes directly)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon2"
                            NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3" OverflowIndex="2"
-                           Styles="@(new() { ItemIcon = "line-height:unset" })" />
+                           MaxDisplayedItems="3" OverflowIndex="2" />
         </div>
         <div>
             <div>BitIconInfo.Fa (FontAwesome helper)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon3"
                            NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3" OverflowIndex="2"
-                           Styles="@(new() { ItemIcon = "line-height:unset" })" />
+                           MaxDisplayedItems="3" OverflowIndex="2" />
         </div>
         <div>
             <div>BitIconInfo.Bi (Bootstrap Icons helper)</div>
@@ -384,7 +379,7 @@
                            NameSelectors="nameSelectors"
                            MaxDisplayedItems="3"
                            OverflowIndex="1"
-                           Style="--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #db2777; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;" />
+                           Style="--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #be185d; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-color: #5b21b6; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;" />
             <br />
             <div style="--bit-Breadcrumb-font-size: 0.8125rem; --bit-Breadcrumb-item-height: 1.5rem; --bit-Breadcrumb-divider-spacing: 0.25rem; --bit-Breadcrumb-selected-font-weight: 700;">
                 <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" DividerText="/" />

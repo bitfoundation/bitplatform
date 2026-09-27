@@ -2,10 +2,6 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public partial class _BitBreadcrumbCustomDemo
 {
-    private int ItemsCount = 4;
-    private uint OverflowIndex = 2;
-    private uint MaxDisplayedItems = 3;
-
     private readonly List<PageInfo> CustomBreadcrumbItems =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb" },
@@ -91,11 +87,11 @@ public partial class _BitBreadcrumbCustomDemo
     private readonly List<PageInfo> RtlCustomBreadcrumbItems =
     [
         new() { Name = "پوشه اول" },
-        new() { Name = "پوشه دوم", IsCurrent = true },
+        new() { Name = "پوشه دوم" },
         new() { Name = "پوشه سوم" },
         new() { Name = "پوشه چهارم" },
         new() { Name = "پوشه پنجم" },
-        new() { Name = "پوشه ششم" },
+        new() { Name = "پوشه ششم", IsCurrent = true },
     ];
 
     private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon1 =
@@ -157,34 +153,20 @@ public partial class _BitBreadcrumbCustomDemo
         Icon = { Selector = c => c.IconInfo },
     };
 
+    // Going back up to an item drops the levels below it, which makes it the current page.
     private void HandleOnCustomizedCustomClick(PageInfo model)
     {
-        CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
+        var index = CustomBreadcrumbItemsWithCustomized.IndexOf(model);
+
+        CustomBreadcrumbItemsWithCustomized.RemoveRange(index + 1, CustomBreadcrumbItemsWithCustomized.Count - index - 1);
+
         model.IsCurrent = true;
     }
 
     private void AddCustomItem()
     {
-        ItemsCount++;
-        CustomBreadcrumbItemsWithCustomized.Add(new PageInfo()
-        {
-            Name = $"Custom {ItemsCount}"
-        });
-    }
+        CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = false;
 
-    private void RemoveCustomItem()
-    {
-        if (CustomBreadcrumbItemsWithCustomized.Count > 1)
-        {
-            ItemsCount--;
-
-            var item = CustomBreadcrumbItemsWithCustomized[^1];
-            CustomBreadcrumbItemsWithCustomized.Remove(item);
-
-            if (item.IsCurrent)
-            {
-                CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = true;
-            }
-        }
+        CustomBreadcrumbItemsWithCustomized.Add(new() { Name = $"Custom {CustomBreadcrumbItemsWithCustomized.Count + 1}", IsCurrent = true });
     }
 }

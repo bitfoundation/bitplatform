@@ -22,6 +22,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private bool _resizeObserverRegistered;
     private bool _measureRequested;
     private bool _focusRevealedItems;
+    private bool _lastScrolls;
+    private bool _scrollToEndRequested;
     private uint _revealedOverflowIndex;
     private int _measurePasses;
     private uint _autoMaxDisplayedItems;
@@ -38,6 +40,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private readonly List<TItem> _overflowItems = [];
     private ElementReference _calloutRef;
     private ElementReference _overflowButtonRef;
+    private ElementReference _itemContainerRef;
     private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
 
     private string _calloutId = default!;
@@ -73,6 +76,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // The automatic collapsing is what keeps the trail on a single line, which is the very thing a wrapping
     // breadcrumb is asked not to do: a trail that may flow onto another line has no items that do not fit.
     private bool IsAutoCollapsing => AutoCollapse && Wrap is false;
+
+    // The same goes for the sideways scrolling, which a trail that may flow onto another line never needs.
+    private bool IsScrolling => Scrollable && Wrap is false;
 
 
 
@@ -148,6 +154,13 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// readable. The next change of the items or of the collapsing settings starts the breadcrumb over as collapsed.
     /// </summary>
     [Parameter] public bool ExpandOverflow { get; set; }
+
+    /// <summary>
+    /// Where the icon of each item is rendered relative to its text: before it (the default) or after it.
+    /// <br />
+    /// An item that sets an IconPosition of its own keeps it.
+    /// </summary>
+    [Parameter] public BitIconPosition? IconPosition { get; set; }
 
     /// <summary>
     /// Collection of the items to render in the breadcrumb.
@@ -226,16 +239,12 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem>? OverflowTemplate { get; set; }
 
     /// <summary>
-    /// Reverses the positions of the icon and the item text of the item content.
-    /// </summary>
-    [Parameter] public bool ReversedIcon { get; set; }
-
-    /// <summary>
     /// Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it.
     /// <br />
     /// It is what a trail whose every step is worth keeping in place asks for, rather than collapsing the
-    /// steps that do not fit or letting them flow onto another line. It has nothing to do while Wrap is on,
-    /// since a trail that may flow onto another line never runs out of room on one.
+    /// steps that do not fit or letting them flow onto another line. The trail is scrolled to its end whenever
+    /// its items change, so the current page (its last step) is the one in view. It has nothing to do while Wrap
+    /// is on, since a trail that may flow onto another line never runs out of room on one.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Scrollable { get; set; }
@@ -376,7 +385,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => Wrap ? "bit-brc-wrp" : null);
 
-        ClassBuilder.Register(() => Scrollable && Wrap is false ? "bit-brc-scr" : null);
+        ClassBuilder.Register(() => IsScrolling ? "bit-brc-scr" : null);
     }
 
     protected override void RegisterCssStyles()
@@ -436,6 +445,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         {
             RefreshItems();
         }
+
+        // A trail that just started to scroll starts at its end as well, the way it does when its items change.
+        if (IsScrolling && _lastScrolls is false)
+        {
+            _scrollToEndRequested = true;
+        }
+
+        _lastScrolls = IsScrolling;
 
         base.OnParametersSet();
     }
@@ -530,6 +547,23 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             _focusRevealedItems = false;
 
             await FocusRevealedItem();
+        }
+
+        // A scrolling trail opened at its start would show the root and hide the page the user is on, so it is
+        // scrolled to its end instead: the current page is where a breadcrumb is read from.
+        if (_scrollToEndRequested)
+        {
+            _scrollToEndRequested = false;
+
+            if (IsScrolling)
+            {
+                try
+                {
+                    await _js.BitUtilsScrollToEnd(_itemContainerRef, horizontal: true, smooth: false);
+                }
+                catch (JSDisconnectedException) { } // the circuit is gone, nothing to scroll
+                catch (JSException) { } // a JS-side failure only leaves the trail where it is
+            }
         }
 
         if (_optionsOrderDirty)
@@ -627,6 +661,13 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return SelectedItemAsText && GetIsSelected(item);
     }
 
+    // A disabled item that would have been a link stays one, without the address it cannot be followed to.
+    // The current page rendered as text is not a link at all, disabled or not.
+    private bool IsDisabledLink(TItem item)
+    {
+        return GetIsEnabled(item) is false && IsPlainText(item) is false && GetRawItemHref(item).HasValue();
+    }
+
     // An item is rendered as a button when it has no Href but something to run on click, either the
     // component level OnItemClick or a click handler of its own.
     private bool HasClickHandler(TItem item)
@@ -649,6 +690,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         // A trail the user expanded is a trail they expanded as it was: once its items (or the settings
         // around them) change it is a different one, which starts collapsed the way it would have.
         _isOverflowExpanded = false;
+
+        _scrollToEndRequested = IsScrolling;
 
         if (IsAutoCollapsing)
         {
@@ -918,9 +961,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             classes.Add("bit-brc-dis");
         }
 
-        if (GetReversedIcon(item))
+        if (GetIconPosition(item) is BitIconPosition.End)
         {
-            classes.Add("bit-brc-rvi");
+            classes.Add("bit-brc-eni");
         }
 
         return string.Join(" ", classes);
@@ -1179,26 +1222,26 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return BitIconInfo.From(icon, iconName);
     }
 
-    private bool GetReversedIcon(TItem item)
+    private BitIconPosition? GetIconPosition(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
-            return breadcrumbItem.ReversedIcon ?? ReversedIcon;
+            return breadcrumbItem.IconPosition ?? IconPosition;
         }
 
         if (item is BitBreadcrumbOption bitBreadcrumbOption)
         {
-            return bitBreadcrumbOption.ReversedIcon ?? ReversedIcon;
+            return bitBreadcrumbOption.IconPosition ?? IconPosition;
         }
 
-        if (NameSelectors is null) return ReversedIcon;
+        if (NameSelectors is null) return IconPosition;
 
-        if (NameSelectors.ReversedIcon.Selector is not null)
+        if (NameSelectors.IconPosition.Selector is not null)
         {
-            return NameSelectors.ReversedIcon.Selector!(item) ?? ReversedIcon;
+            return NameSelectors.IconPosition.Selector!(item) ?? IconPosition;
         }
 
-        return item.GetValueFromProperty(NameSelectors.ReversedIcon.Name, ReversedIcon);
+        return item.GetValueFromProperty<BitIconPosition?>(NameSelectors.IconPosition.Name) ?? IconPosition;
     }
 
     private bool GetIsSelected(TItem item)

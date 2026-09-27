@@ -76,6 +76,11 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
     public bool? ExpandOverflow { get; set; }
 
     /// <summary>
+    /// Where the icon of each item is rendered relative to its text.
+    /// </summary>
+    public BitIconPosition? IconPosition { get; set; }
+
+    /// <summary>
     /// The maximum number of items to display before coalescing.
     /// </summary>
     public uint? MaxDisplayedItems { get; set; }
@@ -109,11 +114,6 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
     /// Optional index where overflow items will be collapsed.
     /// </summary>
     public uint? OverflowIndex { get; set; }
-
-    /// <summary>
-    /// Reverses the positions of the icon and the item text of the item content.
-    /// </summary>
-    public bool? ReversedIcon { get; set; }
 
     /// <summary>
     /// Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it.
@@ -213,6 +213,11 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.ExpandOverflow = ExpandOverflow.Value;
         }
 
+        if (IconPosition.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(IconPosition)))
+        {
+            bitBreadcrumb.IconPosition = IconPosition.Value;
+        }
+
         if (MaxDisplayedItems.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(MaxDisplayedItems)))
         {
             bitBreadcrumb.MaxDisplayedItems = MaxDisplayedItems.Value;
@@ -248,11 +253,6 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
         if (OverflowIndex.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(OverflowIndex)))
         {
             bitBreadcrumb.OverflowIndex = OverflowIndex.Value;
-        }
-
-        if (ReversedIcon.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(ReversedIcon)))
-        {
-            bitBreadcrumb.ReversedIcon = ReversedIcon.Value;
         }
 
         if (Scrollable.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Scrollable)))

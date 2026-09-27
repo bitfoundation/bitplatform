@@ -2,8 +2,8 @@
     <div>
         The options are written as markup and render in its order. An option with an <b>Href</b> is a link;
         <b>IsSelected</b> marks the current page (<code>aria-current="page"</code>) and <b>SelectedItemAsText</b> renders it
-        as plain text. <b>IsEnabled</b> disables the whole trail or a single option, and <b>Target</b> opens a link elsewhere
-        (with <code>rel="noopener noreferrer"</code>).
+        as plain text. <b>IsEnabled</b> disables the whole trail or a single option (a disabled link stays a link, announced
+        as unavailable), and <b>Target</b> opens a link elsewhere (with <code>rel="noopener noreferrer"</code>).
     </div>
     <br />
     <div class="example-box">
@@ -60,7 +60,8 @@
     <div>
         <b>MaxDisplayedItems</b> caps the visible options and collapses the rest into an overflow menu; <b>OverflowIndex</b>
         places its button. Keyboard: Enter, Space or the arrows open the menu, arrows and Home/End move, a letter jumps to
-        the matching option, Escape or Tab closes it.
+        the matching option, Escape or Tab closes it. <b>AriaLabel</b> names the landmark ("Breadcrumb" by default) and
+        <b>OverflowAriaLabel</b> the button ("More items"), for example to localize them.
     </div>
     <br />
     <div class="example-box">
@@ -83,8 +84,8 @@
             </BitBreadcrumb>
         </div>
         <div>
-            <div>Max displayed options (3), Overflow index (2)</div>
-            <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2">
+            <div>Max displayed options (3), Overflow index (2), AriaLabel & OverflowAriaLabel</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" AriaLabel="You are here" OverflowAriaLabel="Show hidden levels">
                 <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
@@ -97,7 +98,7 @@
 <DemoExample Title="Truncation, Wrapping & Scrolling" RazorCode="@example3RazorCode" Id="example3">
     <div>
         A long trail stays on one line by default. <b>MaxItemWidth</b> truncates each option (its text becomes the tooltip
-        when it has no <b>Title</b>), <b>Wrap</b> flows it onto more lines and <b>Scrollable</b> scrolls it sideways.
+        when it has no <b>Title</b>), <b>Wrap</b> flows it onto more lines and <b>Scrollable</b> scrolls it sideways, opening on its end.
     </div>
     <br />
     <div class="example-box">
@@ -214,7 +215,7 @@
 
 <DemoExample Title="Icons & Divider" RazorCode="@example6RazorCode" Id="example6">
     <div>
-        <b>IconName</b> adds an icon to an option and <b>ReversedIcon</b> puts it after the text. An icon-only option needs
+        <b>IconName</b> adds an icon to an option and <b>IconPosition</b> <code>End</code> puts it after the text. An icon-only option needs
         an <b>AriaLabel</b>. <b>DividerIconName</b>, <b>DividerText</b> and <b>OverflowIconName</b> replace the default
         glyphs; dividers are always hidden from screen readers.
     </div>
@@ -234,8 +235,8 @@
             </BitBreadcrumb>
         </div>
         <div>
-            <div>ReversedIcon</div>
-            <BitBreadcrumb TItem="BitBreadcrumbOption" ReversedIcon>
+            <div>IconPosition End</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption" IconPosition="BitIconPosition.End">
                 <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" IconName="@BitIconName.AdminELogoInverse32" />
                 <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" IconName="@BitIconName.AppsContent" />
                 <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" IconName="@BitIconName.AzureIcon" />
@@ -323,29 +324,24 @@
 <DemoExample Title="Events & Dynamic Items" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>
         Each option's <b>OnClick</b> makes it actionable even without an Href (<b>OnItemClick</b> reports every option).
-        Here it moves the selection, while the options and the collapsing settings change at runtime.
+        Here a click goes back up to that option and <i>Add option</i> goes one level deeper; the overflow follows the trail.
     </div>
     <br />
     <div class="example-box">
         <BitBreadcrumb TItem="BitBreadcrumbOption"
-                       MaxDisplayedItems="@MaxDisplayedItems"
-                       OverflowIndex="@OverflowIndex"
-                       Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })">
-            @for (int i = 0; i < ItemsCount; i++)
+                       MaxDisplayedItems="4"
+                       OverflowIndex="1"
+                       SelectedItemAsText>
+            @for (int i = 1; i <= ItemsCount; i++)
             {
-                int index = i + 1;
+                int index = i;
                 <BitBreadcrumbOption Text="@($"Option {index}")"
-                                     OnClick="() => SelectedOptionNumber = index"
-                                     IsSelected="@(SelectedOptionNumber == index)" />
+                                     OnClick="() => ItemsCount = index"
+                                     IsSelected="@(index == ItemsCount)" />
             }
         </BitBreadcrumb>
-        <div class="operators">
-            <div>
-                <BitButton OnClick="() => ItemsCount++">Add option</BitButton>
-                <BitButton OnClick="RemoveOption">Remove option</BitButton>
-            </div>
-            <BitNumberField @bind-Value="MaxDisplayedItems" Label="Max displayed options" ShowButtons />
-            <BitNumberField @bind-Value="OverflowIndex" Label="Overflow index" ShowButtons />
+        <div>
+            <BitButton OnClick="() => ItemsCount++">Add option</BitButton>
         </div>
     </div>
 </DemoExample>
@@ -433,8 +429,7 @@
         <div>
             <div>Implicit string conversion (auto-detects external icons)</div>
             <BitBreadcrumb TItem="BitBreadcrumbOption"
-                           MaxDisplayedItems="3" OverflowIndex="2"
-                           Styles="@(new() { ItemIcon = "line-height:unset" })">
+                           MaxDisplayedItems="3" OverflowIndex="2">
                 <BitBreadcrumbOption Text="Home" Icon="@("fa-solid fa-house")" />
                 <BitBreadcrumbOption Text="Products" Icon="@("fa-solid fa-box")" />
                 <BitBreadcrumbOption Text="Electronics" Icon="@("fa-solid fa-microchip")" />
@@ -444,8 +439,7 @@
         <div>
             <div>BitIconInfo.Css (uses CSS classes directly)</div>
             <BitBreadcrumb TItem="BitBreadcrumbOption"
-                           MaxDisplayedItems="3" OverflowIndex="2"
-                           Styles="@(new() { ItemIcon = "line-height:unset" })">
+                           MaxDisplayedItems="3" OverflowIndex="2">
                 <BitBreadcrumbOption Text="Home" Icon="@BitIconInfo.Css("fa-solid fa-house")" />
                 <BitBreadcrumbOption Text="Products" Icon="@BitIconInfo.Css("fa-solid fa-box")" />
                 <BitBreadcrumbOption Text="Electronics" Icon="@BitIconInfo.Css("fa-solid fa-microchip")" />
@@ -455,8 +449,7 @@
         <div>
             <div>BitIconInfo.Fa (FontAwesome helper)</div>
             <BitBreadcrumb TItem="BitBreadcrumbOption"
-                           MaxDisplayedItems="3" OverflowIndex="2"
-                           Styles="@(new() { ItemIcon = "line-height:unset" })">
+                           MaxDisplayedItems="3" OverflowIndex="2">
                 <BitBreadcrumbOption Text="Home" Icon="@BitIconInfo.Fa("solid house")" />
                 <BitBreadcrumbOption Text="Products" Icon="@BitIconInfo.Fa("solid box")" />
                 <BitBreadcrumbOption Text="Electronics" Icon="@BitIconInfo.Fa("solid microchip")" />
@@ -556,7 +549,7 @@
             <BitBreadcrumb TItem="BitBreadcrumbOption"
                            MaxDisplayedItems="3"
                            OverflowIndex="1"
-                           Style="--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #db2777; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;">
+                           Style="--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #be185d; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-color: #5b21b6; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;">
                 <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
@@ -581,11 +574,11 @@
     <div class="example-box">
         <BitBreadcrumb Dir="BitDir.Rtl" TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2">
             <BitBreadcrumbOption Text="پوشه اول" />
-            <BitBreadcrumbOption Text="پوشه دوم" IsSelected />
+            <BitBreadcrumbOption Text="پوشه دوم" />
             <BitBreadcrumbOption Text="پوشه سوم" />
             <BitBreadcrumbOption Text="پوشه چهارم" />
             <BitBreadcrumbOption Text="پوشه پنجم" />
-            <BitBreadcrumbOption Text="پوشه ششم" />
+            <BitBreadcrumbOption Text="پوشه ششم" IsSelected />
         </BitBreadcrumb>
     </div>
 </DemoExample>

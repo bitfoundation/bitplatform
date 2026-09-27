@@ -10,17 +10,18 @@
 //   --bit-Breadcrumb-selected-color         text of the current item                   (default: --bit-Breadcrumb-color)
 //   --bit-Breadcrumb-selected-font-weight   weight of the current item                 (default: $tg-fw-semibold)
 //   --bit-Breadcrumb-disabled-color         text of a disabled item                    (default: $clr-fg-dis)
+//   --bit-Breadcrumb-hover-color            text of a hovered item                     (default: unchanged from rest)
 //   --bit-Breadcrumb-hover-background       background of a hovered item               (default: $clr-bg-pri-hover)
 //   --bit-Breadcrumb-active-background      background of a pressed item               (default: $clr-bg-pri-active)
 //   --bit-Breadcrumb-focus-color            focus indicator color                      (default: the Color role's focus color)
 //   --bit-Breadcrumb-font-size              text size of the items                     (default: per size, from the type ramp)
-//   --bit-Breadcrumb-item-height            line height of the items                   (default: per size)
+//   --bit-Breadcrumb-item-height            line height of the items                   (default: per size, $siz-ctrl-*)
 //   --bit-Breadcrumb-item-padding           padding of the items                       (default: 0 spacing(1))
 //   --bit-Breadcrumb-item-gap               room between the icon and the text         (default: spacing(1))
 //   --bit-Breadcrumb-item-radius            corner radius of the items                 (default: $shp-radius-control)
 //   --bit-Breadcrumb-item-max-width         width the text truncates at                (default: none; the MaxItemWidth parameter wins)
 //   --bit-Breadcrumb-divider-color          dividers and the overflow button glyph     (default: the Color role's main color / $clr-fg-sec)
-//   --bit-Breadcrumb-divider-size           size of those two glyphs                   (default: per size, from the type ramp)
+//   --bit-Breadcrumb-divider-size           size of the divider glyphs                 (default: per size, from the type ramp)
 //   --bit-Breadcrumb-divider-spacing        room on each side of a divider             (default: 0)
 //
 //   OVERFLOW MENU
@@ -30,10 +31,13 @@
 //   --bit-Breadcrumb-overflow-item-height   height of a menu row                       (default: per size, $siz-item-*)
 //   --bit-Breadcrumb-overflow-font-size     text size of a menu row                    (default: per size, from the type ramp)
 
-@mixin brc-size($fs, $h, $div, $ofi-h, $ofi-fs, $ofi-lh) {
+// The divider is a separator set in the text, so it follows the type ramp; the overflow glyph sits inside a
+// control, so it follows the icon scale of the controls.
+@mixin brc-size($fs, $h, $div, $obt, $ofi-h, $ofi-fs, $ofi-lh) {
     --bit-brc-sz-fs: #{$fs};
     --bit-brc-sz-h: #{$h};
     --bit-brc-sz-div: #{$div};
+    --bit-brc-sz-obt: #{$obt};
     --bit-brc-sz-ofi-h: #{$ofi-h};
     --bit-brc-sz-ofi-fs: #{$ofi-fs};
     --bit-brc-sz-ofi-lh: #{$ofi-lh};
@@ -43,7 +47,7 @@
 // private variables this leaves behind, and the block is included on the callout as well, which is a
 // sibling of the root (a child of the body once it is open) and inherits nothing from it.
 @mixin brc-vars {
-    @include brc-size($tg-fs-sm, spacing(4.5), $tg-fs-md, $siz-item-md, $tg-fs-sm, spacing(2.5));
+    @include brc-size($tg-fs-sm, $siz-ctrl-md, $tg-fs-md, $siz-icon-md, $siz-item-md, $tg-fs-sm, spacing(2.5));
 
     --bit-brc-fs: var(--bit-Breadcrumb-font-size, var(--bit-brc-sz-fs));
     --bit-brc-h: var(--bit-Breadcrumb-item-height, var(--bit-brc-sz-h));
@@ -139,12 +143,18 @@
     margin-inline: var(--bit-Breadcrumb-divider-spacing, 0);
 }
 
-// A divider icon points the way the trail runs, so it is mirrored along with it in a RTL layout.
-// A text divider is not: a mirrored "/" is a different character.
+// A divider icon points the way the trail runs, so it is mirrored along with it in a RTL layout - the one the
+// Dir parameter asks for, and the one a breadcrumb inherits from an RTL page without being told (:dir reads
+// the direction that is in effect rather than an attribute). A text divider is not: a mirrored "/" is a
+// different character.
 .bit-brc-div {
     color: var(--bit-brc-div-clr);
     font-size: var(--bit-brc-div-sz);
     transform: var(--bit-brc-div-transform);
+
+    &:dir(rtl) {
+        transform: scaleX(-1);
+    }
 }
 
 .bit-brc-dtx {
@@ -160,16 +170,19 @@
     cursor: pointer;
     align-items: center;
     justify-content: center;
-    padding: 0px spacing(1.25);
+    padding: 0 spacing(0.5);
+    // An icon button, so a square as tall as the items rather than a glyph with some room around it.
+    min-width: var(--bit-brc-h);
     color: var(--bit-brc-div-clr);
-    font-size: var(--bit-brc-div-sz);
+    font-size: var(--bit-brc-sz-obt);
     line-height: var(--bit-brc-h);
     border-radius: var(--bit-Breadcrumb-item-radius, #{$shp-radius-control});
-    transition: background-color $mot-duration-short $mot-easing;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-brc-hover-bg);
+            color: var(--bit-Breadcrumb-hover-color, var(--bit-brc-div-clr));
         }
     }
 
@@ -182,11 +195,15 @@
     }
 }
 
+// The color of an item goes through a private variable its state classes re-point (.bit-brc-sel, .bit-brc-dis),
+// so the hover color falls back to the color the item has at rest, whichever state that is.
 .bit-brc-itm,
 .bit-brc-nii {
     display: flex;
+    align-items: center;
     font-weight: $tg-fw-regular;
-    color: var(--bit-brc-clr);
+    --bit-brc-itm-clr: var(--bit-brc-clr);
+    color: var(--bit-brc-itm-clr);
     font-size: var(--bit-brc-fs);
     line-height: var(--bit-brc-h);
     gap: var(--bit-Breadcrumb-item-gap, #{spacing(1)});
@@ -198,6 +215,30 @@
     cursor: default;
 }
 
+// The content of a text-only step, laid out the way the step itself lays it out: it is only there so the
+// visible content can be hidden from assistive technologies while the label written out beside it is read.
+.bit-brc-nic {
+    min-width: 0;
+    gap: inherit;
+    display: inherit;
+    align-items: inherit;
+    flex-direction: inherit;
+    justify-content: inherit;
+}
+
+.bit-brc-vhd {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    border: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    clip: rect(0 0 0 0);
+}
+
 .bit-brc-itm {
     cursor: pointer;
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
@@ -205,6 +246,7 @@
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-brc-hover-bg);
+            color: var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr));
         }
     }
 
@@ -227,7 +269,7 @@
     max-width: var(--bit-brc-itm-max-width, var(--bit-Breadcrumb-item-max-width, none));
 }
 
-.bit-brc-rvi {
+.bit-brc-eni {
     flex-direction: row-reverse;
     justify-content: space-between;
 }
@@ -282,13 +324,15 @@
     box-sizing: border-box;
     text-overflow: ellipsis;
     min-width: spacing(22.5);
-    color: var(--bit-brc-clr);
+    --bit-brc-itm-clr: var(--bit-brc-clr);
+    color: var(--bit-brc-itm-clr);
     height: var(--bit-brc-ofi-h);
     font-size: var(--bit-brc-ofi-fs);
     line-height: var(--bit-brc-sz-ofi-lh);
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
-    border-radius: $shp-radius-popup;
+    // The rows span the full width of the menu, so they follow its corners rather than a radius of their own.
+    border-radius: var(--bit-Breadcrumb-callout-radius, #{$shp-radius-popup});
 
     // The rows fill the width of a list that scrolls, which would clip the outward ring of focus-ring, so
     // the indicator is an outline drawn inwards instead - one a forced-colors palette keeps as well.
@@ -304,11 +348,12 @@
 
 .bit-brc-ofi {
     cursor: pointer;
-    transition: background-color $mot-duration-short $mot-easing;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-brc-hover-bg);
+            color: var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr));
         }
     }
 
@@ -330,20 +375,27 @@
 
 // The current page before the disabled state, so a disabled current page still reads as disabled.
 .bit-brc-sel {
-    color: var(--bit-brc-sel-clr);
+    --bit-brc-itm-clr: var(--bit-brc-sel-clr);
+    color: var(--bit-brc-itm-clr);
     font-weight: var(--bit-Breadcrumb-selected-font-weight, #{$tg-fw-semibold});
 }
 
 .bit-brc-dis {
-    color: var(--bit-brc-dis-clr);
+    --bit-brc-itm-clr: var(--bit-brc-dis-clr);
+    color: var(--bit-brc-itm-clr);
     pointer-events: none;
 }
 
 // forced-colors: the current item is conveyed by a heavier weight only, which High Contrast keeps,
-// but the disabled items lose their dimmed color, so they are repainted with the system color.
+// but the disabled items lose their dimmed color, so they are repainted with the system color, and the
+// overflow menu loses the shadow that sets it apart from the page, so it is given a border instead.
 @media (forced-colors: active) {
     .bit-brc-dis {
         color: GrayText;
+    }
+
+    .bit-brc-cal {
+        border: $shp-border-width $shp-border-style CanvasText;
     }
 }
 
@@ -360,13 +412,13 @@
 
 
 .bit-brc-sm {
-    @include brc-size($tg-fs-xs, spacing(3.5), $tg-fs-sm, $siz-item-sm, $tg-fs-xs, spacing(2));
+    @include brc-size($tg-fs-xs, $siz-ctrl-sm, $tg-fs-sm, $siz-icon-sm, $siz-item-sm, $tg-fs-xs, spacing(2));
 }
 
 .bit-brc-md {
-    @include brc-size($tg-fs-sm, spacing(4.5), $tg-fs-md, $siz-item-md, $tg-fs-sm, spacing(2.5));
+    @include brc-size($tg-fs-sm, $siz-ctrl-md, $tg-fs-md, $siz-icon-md, $siz-item-md, $tg-fs-sm, spacing(2.5));
 }
 
 .bit-brc-lg {
-    @include brc-size($tg-fs-md, spacing(5.5), $tg-fs-lg, $siz-item-lg, $tg-fs-lg, spacing(3));
+    @include brc-size($tg-fs-md, $siz-ctrl-lg, $tg-fs-lg, $siz-icon-lg, $siz-item-lg, $tg-fs-md, spacing(3));
 }

@@ -84,6 +84,15 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "IconPosition",
+            Type = "BitIconPosition?",
+            DefaultValue = "null",
+            Description = "Where the icon of each item is rendered relative to its text: before it (Start, the default) or after it (End). An item's own IconPosition wins.",
+            LinkType = LinkType.Link,
+            Href = "#icon-position-enum",
+        },
+        new()
+        {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "[]",
@@ -180,13 +189,6 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "ReversedIcon",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reverses the positions of the icon and the item text of the item content."
-        },
-        new()
-        {
             Name = "Scrollable",
             Type = "bool",
             DefaultValue = "false",
@@ -261,6 +263,12 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "--bit-Breadcrumb-hover-color",
+            DefaultValue = "The color at rest",
+            Description = "Text of a hovered item or menu item, and the glyph of a hovered overflow button.",
+        },
+        new()
+        {
             Name = "--bit-Breadcrumb-hover-background",
             DefaultValue = "--bit-clr-bg-pri-hover",
             Description = "Background of a hovered item, overflow button or menu item.",
@@ -286,7 +294,7 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "--bit-Breadcrumb-item-height",
-            DefaultValue = "Per Size",
+            DefaultValue = "Per Size (--bit-siz-ctrl-*)",
             Description = "Line height of the items, which sets the height of the trail.",
         },
         new()
@@ -323,7 +331,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "--bit-Breadcrumb-divider-size",
             DefaultValue = "Per Size",
-            Description = "Size of the divider icons and of the overflow button glyph.",
+            Description = "Size of the divider icons.",
         },
         new()
         {
@@ -417,9 +425,11 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "ReversedIcon",
-                   Type = "bool?",
-                   Description = "Reverses the positions of the icon and the item text of the item content.",
+                   Name = "IconPosition",
+                   Type = "BitIconPosition?",
+                   Description = "Where the icon is rendered relative to the text, in place of the IconPosition of the breadcrumb.",
+                   LinkType = LinkType.Link,
+                   Href = "#icon-position-enum",
                },
                new()
                {
@@ -524,9 +534,11 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "ReversedIcon",
-                   Type = "bool?",
-                   Description = "Reverses the positions of the icon and the item text of the item content.",
+                   Name = "IconPosition",
+                   Type = "BitIconPosition?",
+                   Description = "Where the icon is rendered relative to the text, in place of the IconPosition of the breadcrumb.",
+                   LinkType = LinkType.Link,
+                   Href = "#icon-position-enum",
                },
                new()
                {
@@ -800,10 +812,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "ReversedIcon",
-                   Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitBreadcrumbItem.ReversedIcon))",
-                   Description = "The ReversedIcon field name and selector of the custom input class.",
+                   Name = "IconPosition",
+                   Type = "BitNameSelectorPair<TItem, BitIconPosition?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IconPosition))",
+                   Description = "The IconPosition field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },
@@ -947,6 +959,17 @@ public partial class BitBreadcrumbDemo
                 new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
                 new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
                 new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
+            ]
+        },
+        new()
+        {
+            Id = "icon-position-enum",
+            Name = "BitIconPosition",
+            Description = "Describes the placement of an icon relative to other content.",
+            Items =
+            [
+                new() { Name = "Start", Description = "Icon renders before the content (default).", Value = "0" },
+                new() { Name = "End", Description = "Icon renders after the content.", Value = "1" }
             ]
         },
         new()

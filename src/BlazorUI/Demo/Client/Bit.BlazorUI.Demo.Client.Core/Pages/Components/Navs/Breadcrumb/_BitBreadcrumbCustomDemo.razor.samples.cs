@@ -62,7 +62,8 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 
 <BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" MaxDisplayedItems=""3"" OverflowIndex=""1"" />
 
-<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" MaxDisplayedItems=""3"" OverflowIndex=""2""
+               AriaLabel=""You are here"" OverflowAriaLabel=""Show hidden levels"" />";
     private readonly string example2CsharpCode = @"
 private readonly List<PageInfo> CustomBreadcrumbItems =
 [
@@ -207,7 +208,7 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                MaxDisplayedItems=""3""
                OverflowIndex=""2"" />
 
-<BitBreadcrumb Items=""CustomBreadcrumbItemsWithIcon"" NameSelectors=""nameSelectors"" ReversedIcon />
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithIcon"" NameSelectors=""nameSelectors"" IconPosition=""BitIconPosition.End"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithHomeIcon"" NameSelectors=""nameSelectors"" DividerText=""/"" />";
     private readonly string example6CsharpCode = @"
@@ -324,21 +325,13 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     private readonly string example8RazorCode = @"
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithCustomized""
                NameSelectors=""nameSelectors""
-               MaxDisplayedItems=""@MaxDisplayedItems""
-               OverflowIndex=""@OverflowIndex""
-               OnItemClick=""(PageInfo model) => HandleOnCustomizedCustomClick(model)""
-               Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"" />
+               MaxDisplayedItems=""4""
+               OverflowIndex=""1""
+               SelectedItemAsText
+               OnItemClick=""(PageInfo model) => HandleOnCustomizedCustomClick(model)"" />
 
-<BitButton OnClick=""AddCustomItem"">Add item</BitButton>
-<BitButton OnClick=""RemoveCustomItem"">Remove item</BitButton>
-
-<BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed items"" ShowButtons />
-<BitNumberField @bind-Value=""OverflowIndex"" Label=""Overflow index"" ShowButtons />";
+<BitButton OnClick=""AddCustomItem"">Add item</BitButton>";
     private readonly string example8CsharpCode = @"
-private int ItemsCount = 4;
-private uint OverflowIndex = 2;
-private uint MaxDisplayedItems = 3;
-
 private readonly List<PageInfo> CustomBreadcrumbItemsWithCustomized =
 [
     new() { Name = ""Custom 1"" },
@@ -353,35 +346,21 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     IsSelected = { Selector = c => c.IsCurrent }
 };
 
+// Going back up to an item drops the levels below it, which makes it the current page.
 private void HandleOnCustomizedCustomClick(PageInfo model)
 {
-    CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
+    var index = CustomBreadcrumbItemsWithCustomized.IndexOf(model);
+
+    CustomBreadcrumbItemsWithCustomized.RemoveRange(index + 1, CustomBreadcrumbItemsWithCustomized.Count - index - 1);
+
     model.IsCurrent = true;
 }
 
 private void AddCustomItem()
 {
-    ItemsCount++;
-    CustomBreadcrumbItemsWithCustomized.Add(new PageInfo()
-    {
-        Name = $""Custom {ItemsCount}""
-    });
-}
+    CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = false;
 
-private void RemoveCustomItem()
-{
-    if (CustomBreadcrumbItemsWithCustomized.Count > 1)
-    {
-        ItemsCount--;
-
-        var item = CustomBreadcrumbItemsWithCustomized[^1];
-        CustomBreadcrumbItemsWithCustomized.Remove(item);
-
-        if (item.IsCurrent)
-        {
-            CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = true;
-        }
-    }
+    CustomBreadcrumbItemsWithCustomized.Add(new() { Name = $""Custom {CustomBreadcrumbItemsWithCustomized.Count + 1}"", IsCurrent = true });
 }";
 
     private readonly string example9RazorCode = @"
@@ -475,18 +454,15 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon1""
                NameSelectors=""nameSelectors""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon2""
                NameSelectors=""nameSelectors""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon3""
                NameSelectors=""nameSelectors""
-               MaxDisplayedItems=""3"" OverflowIndex=""2""
-               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon4""
                NameSelectors=""nameSelectors""
@@ -630,7 +606,7 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3""
                OverflowIndex=""1""
-               Style=""--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #db2777; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;"" />
+               Style=""--bit-Breadcrumb-color: #7c3aed; --bit-Breadcrumb-selected-color: #be185d; --bit-Breadcrumb-divider-color: #a78bfa; --bit-Breadcrumb-hover-color: #5b21b6; --bit-Breadcrumb-hover-background: rgb(124 58 237 / 0.12); --bit-Breadcrumb-item-radius: 999px; --bit-Breadcrumb-callout-radius: 12px;"" />
 
 <div style=""--bit-Breadcrumb-font-size: 0.8125rem; --bit-Breadcrumb-item-height: 1.5rem; --bit-Breadcrumb-divider-spacing: 0.25rem; --bit-Breadcrumb-selected-font-weight: 700;"">
     <BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" DividerText=""/"" />
@@ -688,11 +664,11 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 private readonly List<PageInfo> RtlCustomBreadcrumbItems =
 [
     new() { Name = ""پوشه اول"" },
-    new() { Name = ""پوشه دوم"", IsCurrent = true },
+    new() { Name = ""پوشه دوم"" },
     new() { Name = ""پوشه سوم"" },
     new() { Name = ""پوشه چهارم"" },
     new() { Name = ""پوشه پنجم"" },
-    new() { Name = ""پوشه ششم"" },
+    new() { Name = ""پوشه ششم"", IsCurrent = true },
 ];
 
 private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
