@@ -198,6 +198,98 @@
             }
         }
 
+        // True when the reader has asked for less motion ('prefers-reduced-motion: reduce') and the given
+        // element has not been opted back into it: an element inside a subtree marked with bit-fam (which is
+        // what BitComponentBase.ForceAnimation renders) keeps its motion, the same way the stylesheets
+        // restore the motion tokens there.
+        public static prefersReducedMotion(element: HTMLElement) {
+            try {
+                if (typeof window.matchMedia !== "function") return false;
+                if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+
+                return !(element && element.closest && element.closest(".bit-fam"));
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.prefersReducedMotion:", e);
+                return false;
+            }
+        }
+
+        // True when the target of a key sits on something inside the given container that consumes the
+        // arrow keys (and Home/End) on its own: an editable field moves its caret with them, and a slider,
+        // a list, a radio group or a grid moves its own selection. The container itself does not count,
+        // and neither does an element outside of it.
+        private static isKeyConsumer(container: HTMLElement, target: HTMLElement) {
+            if (target === container || !container.contains(target)) return false;
+
+            if (target.isContentEditable) return true;
+
+            const tag = target.tagName;
+            if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+            if (tag === 'INPUT') {
+                const type = ((target as HTMLInputElement).type || '').toLowerCase();
+                if (['button', 'submit', 'reset', 'checkbox', 'image', 'file', 'color'].indexOf(type) < 0) return true;
+            }
+
+            const owner = target.closest('[role="slider"],[role="spinbutton"],[role="textbox"],[role="searchbox"],[role="combobox"],' +
+                                         '[role="listbox"],[role="menu"],[role="menubar"],[role="tablist"],[role="radiogroup"],' +
+                                         '[role="grid"],[role="treegrid"],[role="tree"],[role="scrollbar"]');
+
+            return owner != null && owner !== container && container.contains(owner);
+        }
+
+        // Registers a keydown listener on an element that navigates with the given keys itself (a carousel,
+        // for one), which takes each of those keys away from the browser and hands it to the
+        // OnNavigationKey method of the .NET object. Both halves are decided here, at once and from the
+        // target of the event, so the element never moves without its default being suppressed or the
+        // other way around, and a key costs a call to .NET only when it is actually one to act on.
+        // A key is left alone when it carries a modifier (a browser shortcut), when a control inside the
+        // element consumes it (isKeyConsumer), and when something deeper already took it (a nested
+        // element of the same kind, whose listener runs first).
+        // With the key, .NET is told where the focus was: the data-bit-key-origin value (and the id) of the
+        // outermost element carrying one between the target and the element, which is how the element
+        // tells its own controls apart without a focus event per control. Calling it again updates the
+        // keys and the .NET object in place, and an empty key list turns it off, so no separate
+        // unregister call is needed - the listener is garbage-collected with the element itself.
+        public static registerNavigationKeys(element: HTMLElement, keys: string[], dotnetObj: DotNetObject) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                el.__bitNavigationKeys = keys || [];
+                el.__bitNavigationKeysDotnetObj = dotnetObj;
+
+                if (el.__bitNavigationKeysRegistered) return;
+                el.__bitNavigationKeysRegistered = true;
+
+                element.addEventListener('keydown', (e: KeyboardEvent) => {
+                    const el = element as any;
+                    const currentKeys = el.__bitNavigationKeys as string[];
+
+                    if (!currentKeys || currentKeys.indexOf(e.key) < 0) return;
+                    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+                    if (e.defaultPrevented) return;
+
+                    const target = e.target instanceof HTMLElement ? e.target : null;
+
+                    if (target && Utils.isKeyConsumer(element, target)) return;
+
+                    e.preventDefault();
+
+                    let origin: HTMLElement | null = null;
+                    for (let n = target; n && n !== element; n = n.parentElement) {
+                        if (n.hasAttribute('data-bit-key-origin')) origin = n;
+                    }
+
+                    const dotnet = el.__bitNavigationKeysDotnetObj as DotNetObject | undefined;
+
+                    dotnet?.invokeMethodAsync('OnNavigationKey', e.key,
+                                              origin?.getAttribute('data-bit-key-origin') ?? null,
+                                              origin?.id || null)
+                          .catch(err => console.error("BitBlazorUI.Utils.registerNavigationKeys:", err));
+                });
+            } catch (e) { console.error("BitBlazorUI.Utils.registerNavigationKeys:", e); }
+        }
+
         // Whether the pointer of the device is one that can actually hover, which the interactions that
         // are driven by hovering have to know: a touch screen reports a mouseover for a tap, so a popup
         // opening on hover would fight the tap that is also meant to toggle it.
@@ -720,49 +812,59 @@
 
         // Scrolls a scroll container to an absolute offset on its scrolling axis. The axis is passed in
         // rather than guessed, since a container can be scrollable on both and only the component knows
-        // which one its items are laid out along.
+        // which one its items are laid out along. The offset is measured from the start edge the content
+        // flows from, so a horizontal RTL container (whose scrollLeft runs from 0 towards the negative)
+        // is handed its negation. The smooth scroll is dropped for a reader who has asked for less motion.
         public static scrollTo(element: HTMLElement, offset: number, horizontal: boolean, smooth: boolean) {
             if (!element) return;
 
             try {
+                const rtl = horizontal && getComputedStyle(element).direction === 'rtl';
+                const reduce = smooth && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
                 element.scrollTo({
-                    [horizontal ? 'left' : 'top']: offset,
-                    behavior: smooth ? 'smooth' : 'auto'
+                    [horizontal ? 'left' : 'top']: rtl ? -offset : offset,
+                    behavior: smooth && !reduce ? 'smooth' : 'auto'
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.scrollTo:", e); }
         }
 
         // Scrolls a scroll container to its far end. scrollHeight/scrollWidth overshoot the maximum
         // scroll offset, which the browser clamps, so no measuring of the viewport is needed here.
-        // The far end of an RTL container sits at a negative scrollLeft, so the offset is negated there.
         public static scrollToEnd(element: HTMLElement, horizontal: boolean, smooth: boolean) {
             if (!element) return;
 
             try {
-                const rtl = horizontal && getComputedStyle(element).direction === 'rtl';
-                const offset = horizontal
-                    ? (rtl ? -element.scrollWidth : element.scrollWidth)
-                    : element.scrollHeight;
-
-                Utils.scrollTo(element, offset, horizontal, smooth);
+                Utils.scrollTo(element, horizontal ? element.scrollWidth : element.scrollHeight, horizontal, smooth);
             } catch (e) { console.error("BitBlazorUI.Utils.scrollToEnd:", e); }
         }
 
-        // Scrolls a scroll container to a position measured off one of its children rather than off the
-        // container itself, which is what a list that renders anything before its items (a header) needs:
-        // the child is the one the items start at, and extraOffset is how far into them to go. A list of
-        // items of differing sizes points at the item itself and passes no extra offset; a virtualized one
-        // points at the spacer the items start after and passes the offset it calculated from its item size.
-        public static scrollToChild(element: HTMLElement, index: number, extraOffset: number, horizontal: boolean, smooth: boolean) {
-            if (!element) return;
+        // Scrolls a scroll container to a position measured off one of the children of an element inside
+        // it rather than off the container itself, which is what a list that renders anything before its
+        // items (a header) needs: the child is the one the items start at, and extraOffset is how far into
+        // them to go. A list of items of differing sizes points at the item itself and passes no extra
+        // offset; a virtualized one points at the spacer the items start after and passes the offset it
+        // calculated from its item size. The offset is measured from the inner (padding) edge of the
+        // container, so neither its border nor, in RTL, its right-hand side throws the item off its edge.
+        public static scrollToChild(element: HTMLElement, container: HTMLElement, index: number, extraOffset: number, horizontal: boolean, smooth: boolean) {
+            if (!element || !container) return;
 
             try {
-                const child = element.children[index] as HTMLElement;
+                const child = container.children[index] as HTMLElement;
                 if (!child) return;
 
-                const offset = horizontal
-                    ? child.getBoundingClientRect().left - element.getBoundingClientRect().left + element.scrollLeft
-                    : child.getBoundingClientRect().top - element.getBoundingClientRect().top + element.scrollTop;
+                const box = element.getBoundingClientRect();
+                const rect = child.getBoundingClientRect();
+
+                let offset: number;
+                if (horizontal) {
+                    const innerLeft = box.left + element.clientLeft;
+                    offset = getComputedStyle(element).direction === 'rtl'
+                        ? (innerLeft + element.clientWidth) - rect.right - element.scrollLeft
+                        : rect.left - innerLeft + element.scrollLeft;
+                } else {
+                    offset = rect.top - (box.top + element.clientTop) + element.scrollTop;
+                }
 
                 Utils.scrollTo(element, offset + extraOffset, horizontal, smooth);
             } catch (e) { console.error("BitBlazorUI.Utils.scrollToChild:", e); }
@@ -833,18 +935,36 @@
         // input inside it from being selected with the pointer). The event itself is always left to
         // travel on: Blazor dispatches pointerdown from a single listener on the document, so
         // stopping it here would take it away from every Blazor handler in the tree, including the
-        // ones of the components sitting inside the element. Calling it again updates the active
-        // flag in place, so no separate unregister call is needed - the listener is
-        // garbage-collected with the element itself.
-        public static registerPreventPointerDown(element: HTMLElement, active: boolean) {
+        // ones of the components sitting inside the element. Calling it again updates the flags in
+        // place, so no separate unregister call is needed - the listeners are garbage-collected with
+        // the element itself.
+        // While it is active, the native drag of a link (or of anything else draggable) inside the
+        // element is cancelled too, since it would swallow the pointer events of the drag the element
+        // performs itself. And with a positive clickThreshold, the click that ends a drag which
+        // travelled further than that is swallowed before anything else sees it, so letting go of a
+        // slide that was dragged over a link (or a button) does not also follow it. With a clickAxis
+        // ('x' or 'y') only the travel along that axis counts, and a drag that went further across it
+        // than along it is not one either, which is how the element itself tells a drag from a scroll.
+        public static registerPreventPointerDown(element: HTMLElement, active: boolean, clickThreshold?: number, clickAxis?: string) {
             if (!element) return;
 
             try {
                 const el = element as any;
                 el.__bitPreventPointerDown = active;
+                el.__bitPreventPointerDownClickThreshold = clickThreshold || 0;
+                el.__bitPreventPointerDownClickAxis = clickAxis || null;
 
                 if (el.__bitPreventPointerDownRegistered) return;
                 el.__bitPreventPointerDownRegistered = true;
+
+                // Where the pointer went down is recorded in the capture phase, so a control inside the
+                // element that stops the pointerdown from bubbling cannot leave a stale position behind
+                // for the click to be measured against.
+                element.addEventListener('pointerdown', (e: PointerEvent) => {
+                    const el = element as any;
+                    el.__bitPointerDownX = e.clientX;
+                    el.__bitPointerDownY = e.clientY;
+                }, true);
 
                 element.addEventListener('pointerdown', (e: PointerEvent) => {
                     if (!(element as any).__bitPreventPointerDown) return;
@@ -862,6 +982,41 @@
 
                     e.preventDefault();
                 });
+
+                element.addEventListener('dragstart', (e: DragEvent) => {
+                    if (!(element as any).__bitPreventPointerDown) return;
+
+                    e.preventDefault();
+                });
+
+                element.addEventListener('click', (e: MouseEvent) => {
+                    const el = element as any;
+                    const threshold = el.__bitPreventPointerDownClickThreshold as number;
+                    const downX = el.__bitPointerDownX as number | undefined;
+                    const downY = el.__bitPointerDownY as number | undefined;
+
+                    // The position belongs to the one click it started, so it is used up here.
+                    el.__bitPointerDownX = el.__bitPointerDownY = undefined;
+
+                    if (!el.__bitPreventPointerDown || !(threshold > 0)) return;
+                    if (downX === undefined || downY === undefined) return;
+
+                    // A click raised from the keyboard carries no pointer travel of its own, so only a
+                    // click that ends a pointer drag longer than the threshold is taken away.
+                    if (e.detail === 0) return;
+
+                    const dx = Math.abs(e.clientX - downX);
+                    const dy = Math.abs(e.clientY - downY);
+                    const axis = el.__bitPreventPointerDownClickAxis as string | null;
+
+                    const along = axis === 'x' ? dx : axis === 'y' ? dy : Math.max(dx, dy);
+                    const across = axis === 'x' ? dy : axis === 'y' ? dx : 0;
+
+                    if (along <= threshold || across > along) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, true);
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventPointerDown:", e); }
         }
 
@@ -930,6 +1085,48 @@
                     e.preventDefault();
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventKeys:", e); }
+        }
+
+        // Makes an element carrying the button role activate from the keyboard the way a real button
+        // does: Enter clicks it as the key goes down, Space as the key comes back up, and neither key
+        // scrolls the page. Only a key pressed on the element itself counts - one pressed on a control
+        // inside it (a button a template brought along) already clicks that control, and the click
+        // bubbles up to the element's own handler, so answering the key here too would act twice.
+        // The listeners are garbage-collected with the element, so no unregister call is needed.
+        public static registerButtonKeys(element: HTMLElement) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                if (el.__bitButtonKeysRegistered) return;
+                el.__bitButtonKeysRegistered = true;
+
+                const plain = (e: KeyboardEvent) => e.target === element && !e.ctrlKey && !e.altKey && !e.metaKey;
+
+                element.addEventListener('keydown', (e: KeyboardEvent) => {
+                    if (!plain(e)) return;
+
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        element.click();
+                    } else if (e.key === ' ') {
+                        e.preventDefault();
+                        el.__bitButtonKeysSpace = true;
+                    }
+                });
+
+                element.addEventListener('keyup', (e: KeyboardEvent) => {
+                    if (e.key !== ' ' || !el.__bitButtonKeysSpace) return;
+                    el.__bitButtonKeysSpace = false;
+
+                    if (!plain(e)) return;
+
+                    e.preventDefault();
+                    element.click();
+                });
+
+                element.addEventListener('blur', () => el.__bitButtonKeysSpace = false);
+            } catch (e) { console.error("BitBlazorUI.Utils.registerButtonKeys:", e); }
         }
 
         public static selectText(element: HTMLInputElement) {
