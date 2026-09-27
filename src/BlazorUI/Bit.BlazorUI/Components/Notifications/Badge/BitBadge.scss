@@ -1,14 +1,67 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// badge and one set on the Style of an instance re-skins that one alone:
+//   --bit-Badge-color                text and icon color                            (default: per variant, from the Color role)
+//   --bit-Badge-background           background                                     (default: per variant, from the Color role)
+//   --bit-Badge-border-color         border color                                   (default: the background in Fill, the text
+//                                                                                   color in Outline, transparent in Text)
+//   --bit-Badge-hover-background     background of a clickable badge on hover       (default: the background when it is set,
+//                                                                                   otherwise per variant, from the Color role)
+//   --bit-Badge-active-background    background of a clickable badge while pressed  (default: the hover background, then the
+//                                                                                   background, when either is set, otherwise
+//                                                                                   per variant, from the Color role)
+//   --bit-Badge-focus-color          focus ring color of a clickable badge          (default: the role's focus color)
+//   --bit-Badge-border-width         border width                                   (default: $shp-border-width)
+//   --bit-Badge-radius               corner radius                                  (default: per Shape)
+//   --bit-Badge-height               height, and the smallest width                 (default: $siz-badge-sm/md/lg)
+//   --bit-Badge-padding              padding                                        (default: per size)
+//   --bit-Badge-font-size            text size                                      (default: per size, from the type ramp)
+//   --bit-Badge-font-weight          text weight                                    (default: $tg-fw-semibold)
+//   --bit-Badge-gap                  room between the icon and the content          (default: spacing(0.5))
+//   --bit-Badge-dot-size             diameter of a Dot badge                        (default: $siz-badge-dot-sm/md/lg)
+//   --bit-Badge-inset                how far an overlaid badge reaches back in over
+//                                    the edge of its child                          (default: spacing(0.5))
+//   --bit-Badge-overlap-inset        the same with Overlap                          (default: spacing(1.5))
+//   --bit-Badge-inline-gap           room between an Inline badge and its child     (default: spacing(0.75))
+//   --bit-Badge-z-index              layer an overlaid badge is painted on          (default: 1, one above its child)
+//   --bit-Badge-ring-color           color of the Bordered ring                     (default: $clr-bg-pri)
+//   --bit-Badge-ring-width           width of the Bordered ring                     (default: $shp-border-width-thick)
+//   --bit-Badge-pulse-color          color of the Pulse ring                        (default: the role's main color)
+//
+// A disabled badge ignores the color, background and border-color above and keeps the disabled colors of the
+// theme, so it never reads as an enabled one. A Dot badge ignores the height, padding and radius above and is
+// a circle of --bit-Badge-dot-size.
 
 .bit-bdg {
     position: relative;
     display: inline-block;
+    --bit-bdg-ins: var(--bit-Badge-inset, #{spacing(0.5)});
+    // The dot and the disabled state hand the badge values that win over the public variables (see .bit-bdg-ctn).
+    // Custom properties inherit, which would pass a dot or a disabled state on to every badge in the child
+    // content, so each root starts them out unset - which leaves every var() reading them to its fallback.
+    --bit-bdg-dot-size: initial;
+    --bit-bdg-dot-padding: initial;
+    --bit-bdg-dot-radius: initial;
+    --bit-bdg-dis-txt: initial;
+    --bit-bdg-dis-bg: initial;
+    --bit-bdg-dis-brd: initial;
+    // The offsets are set on the style of the root that asks for them, so the same goes for them.
+    --bit-bdg-ofs-x: initial;
+    --bit-bdg-ofs-y: initial;
 
+    // A disabled badge is painted from the disabled colors alone, whatever the public colors say.
     &.bit-dis {
-        --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-dis-text);
-        --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr-bg-dis);
-        --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr-brd-dis);
+        --bit-bdg-dis-txt: var(--bit-bdg-clr-dis-text);
+        --bit-bdg-dis-bg: var(--bit-bdg-clr-bg-dis);
+        --bit-bdg-dis-brd: var(--bit-bdg-clr-brd-dis);
     }
+}
+
+// Overlap pulls the badge further in over its child. Every position reads the same inset, so this is the one
+// place that deepens it; it follows the root rule, which declares the regular inset at the same weight.
+.bit-bdg-orp {
+    --bit-bdg-ins: var(--bit-Badge-overlap-inset, #{spacing(1.5)});
 }
 
 // The overlay layer the badge is positioned inside of. It covers the child content rather than
@@ -17,10 +70,10 @@
 //
 // It is lifted one layer above the child it covers, so a child that carries a stacking order of its
 // own - a card, a raised button, an image with a filter over it - cannot paint over the badge that
-// belongs to it. A badge that has to give way to something else instead reads its own --bit-bdg-zin.
+// belongs to it. A badge that has to give way to something else instead reads --bit-Badge-z-index.
 .bit-bdg-wrp {
     top: 0;
-    z-index: var(--bit-bdg-zin, 1);
+    z-index: var(--bit-Badge-z-index, 1);
     width: 100%;
     height: 100%;
     display: flex;
@@ -41,30 +94,33 @@
     animation: bit-bdg-anm $mot-duration-short $mot-easing-decelerate;
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
     font-family: $tg-font-family;
-    font-weight: $tg-fw-semibold;
+    font-weight: var(--bit-Badge-font-weight, #{$tg-fw-semibold});
     letter-spacing: $tg-ctrl-letter-spacing;
     line-height: 1;
     white-space: nowrap;
-    gap: spacing(0.5);
+    gap: var(--bit-Badge-gap, #{spacing(0.5)});
     position: absolute;
     align-items: center;
     justify-content: center;
     pointer-events: none;
     display: inline-flex;
     box-sizing: border-box;
-    width: var(--bit-bdg-width);
-    height: var(--bit-bdg-height);
+    // The dot and the disabled colors come first in each chain rather than from a rule of their own, so this
+    // stays the one rule painting the badge and a single class passed through Classes.Badge still competes
+    // with it at equal weight. Both are unset on a badge that is neither (see .bit-bdg).
+    width: var(--bit-bdg-dot-size);
+    height: var(--bit-bdg-dot-size, var(--bit-Badge-height, var(--bit-bdg-height)));
     // A counter is only ever as wide as it is tall until a second digit pushes it wider, which is what
     // keeps a single digit a circle instead of an upright oval.
-    min-width: var(--bit-bdg-width, var(--bit-bdg-height));
-    padding: var(--bit-bdg-padding);
-    border-width: $shp-border-width;
+    min-width: var(--bit-bdg-dot-size, var(--bit-Badge-height, var(--bit-bdg-height)));
+    padding: var(--bit-bdg-dot-padding, var(--bit-Badge-padding, var(--bit-bdg-padding)));
     border-style: $shp-border-style;
-    color: var(--bit-bdg-cnt-clr-txt);
-    font-size: var(--bit-bdg-fontsize);
-    border-radius: var(--bit-bdg-radius);
-    border-color: var(--bit-bdg-cnt-clr-brd);
-    background-color: var(--bit-bdg-cnt-clr-bg);
+    border-width: var(--bit-Badge-border-width, #{$shp-border-width});
+    font-size: var(--bit-Badge-font-size, var(--bit-bdg-fontsize));
+    border-radius: var(--bit-bdg-dot-radius, var(--bit-Badge-radius, var(--bit-bdg-radius)));
+    color: var(--bit-bdg-dis-txt, var(--bit-Badge-color, var(--bit-bdg-cnt-clr-txt)));
+    border-color: var(--bit-bdg-dis-brd, var(--bit-Badge-border-color, var(--bit-bdg-cnt-clr-brd)));
+    background-color: var(--bit-bdg-dis-bg, var(--bit-Badge-background, var(--bit-bdg-cnt-clr-bg)));
     translate: var(--bit-bdg-ofs-x, 0) var(--bit-bdg-ofs-y, 0);
 }
 
@@ -100,19 +156,19 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-bdg-cnt-clr-brd-hover, var(--bit-bdg-cnt-clr-brd));
-            background-color: var(--bit-bdg-cnt-clr-bg-hover, var(--bit-bdg-cnt-clr-bg));
+            border-color: var(--bit-Badge-border-color, var(--bit-bdg-cnt-clr-brd-hover));
+            background-color: var(--bit-Badge-hover-background, var(--bit-bdg-cnt-clr-bg-hover));
         }
     }
 
     &:active {
-        border-color: var(--bit-bdg-cnt-clr-brd-active, var(--bit-bdg-cnt-clr-brd));
-        background-color: var(--bit-bdg-cnt-clr-bg-active, var(--bit-bdg-cnt-clr-bg));
+        border-color: var(--bit-Badge-border-color, var(--bit-bdg-cnt-clr-brd-active));
+        background-color: var(--bit-Badge-active-background, var(--bit-bdg-cnt-clr-bg-active));
     }
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-bdg-clr-fcs, #{$clr-pri-focus}));
+        @include focus-ring(var(--bit-Badge-focus-color, var(--bit-bdg-clr-fcs, #{$clr-pri-focus})));
     }
 
     // WCAG asks a pointer target to be at least 24x24, and a dot badge or a small counter is well under it.
@@ -166,7 +222,7 @@
 }
 
 .bit-bdg-rvs {
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         flex-direction: row-reverse;
     }
 }
@@ -174,31 +230,43 @@
 // The ring is painted behind the badge in the color of the page, so a badge landing on an avatar or a
 // picture keeps an edge of its own instead of dissolving into whatever is underneath it.
 .bit-bdg-brd {
-    .bit-bdg-ctn {
-        box-shadow: 0 0 0 $shp-border-width-thick var(--bit-bdg-clr-ring, #{$clr-bg-pri});
+    > .bit-bdg-wrp > .bit-bdg-ctn {
+        box-shadow: 0 0 0 var(--bit-Badge-ring-width, #{$shp-border-width-thick}) var(--bit-Badge-ring-color, #{$clr-bg-pri});
     }
 
     // The ring above is a box-shadow of its own, so the focus indicator has to be restated here to win it back.
-    .bit-bdg-clk:focus-visible {
-        @include focus-ring(var(--bit-bdg-clr-fcs, #{$clr-pri-focus}));
+    > .bit-bdg-wrp > .bit-bdg-clk:focus-visible {
+        @include focus-ring(var(--bit-Badge-focus-color, var(--bit-bdg-clr-fcs, #{$clr-pri-focus})));
     }
 }
 
-// A ring expanding out of the badge and fading, for a state that is still going. It loops, so it takes the
-// loop factor rather than a motion duration: under a reduced-motion preference it slows down instead of
-// collapsing to nothing (see the motion notes in theme-variables.scss).
+// A ring expanding out of the badge and fading, for a state that is still going. It loops, so its literal
+// duration is multiplied by the loop factor (see the motion notes in theme-variables.scss).
 .bit-bdg-pls {
     // A ring rather than a disc: it is painted over the badge, so anything solid would hide the count
     // underneath it as it grows.
-    .bit-bdg-ctn::after {
+    > .bit-bdg-wrp > .bit-bdg-ctn::after {
         content: "";
         inset: 0;
         position: absolute;
         box-sizing: border-box;
         pointer-events: none;
         border-radius: inherit;
-        border: $shp-border-width $shp-border-style var(--bit-bdg-clr);
+        border: $shp-border-width $shp-border-style var(--bit-Badge-pulse-color, var(--bit-bdg-clr));
         animation: bit-bdg-pls-anm calc(1.2s * #{$mot-loop-factor}) $mot-easing-decelerate infinite;
+    }
+
+    // Unlike a loader, the pulse is never the only thing saying the state is still going - it is an
+    // attention cue that would otherwise run on for as long as the page is open, which is exactly what WCAG
+    // 2.2.2 asks to be stoppable. So reduced motion stops it the way it stops a shimmer, and leaves the ring
+    // standing still where the pulse is at its most visible, so the cue survives without the motion.
+    // ForceAnimation renders .bit-fam on the root or on an ancestor, so the opt-out is matched on both.
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) > .bit-bdg-wrp > .bit-bdg-ctn::after {
+            opacity: 0.5;
+            animation: none;
+            transform: scale(1.4);
+        }
     }
 }
 
@@ -215,37 +283,31 @@
 }
 
 
+// Each position anchors the badge to one side or corner of its child: the wrapper lines it up along the edge
+// and the inset pulls it back in over the edge by --bit-bdg-ins (which Overlap deepens, see .bit-bdg-orp).
+//
+// These, like the Reversed, Bordered and Pulse rules above, reach the badge through child combinators only:
+// a badge can sit in the child content of another one (an avatar badge inside a badged card), and a plain
+// descendant selector would hand the outer badge's corner, ring or pulse to the inner one as well.
+
 .bit-bdg-tlf {
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: auto;
         left: auto;
-        right: calc(100% - #{spacing(0.5)});
-        bottom: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            right: calc(100% - #{spacing(1.5)});
-            bottom: calc(100% - #{spacing(1.5)});
-        }
+        right: calc(100% - var(--bit-bdg-ins));
+        bottom: calc(100% - var(--bit-bdg-ins));
     }
 }
 
 .bit-bdg-tcr {
-    --bit-bdg-juscontent: center;
     --bit-bdg-alitems: flex-start;
+    --bit-bdg-juscontent: center;
 
-    .bit-bdg-ctn {
-        bottom: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            bottom: calc(100% - #{spacing(1.5)});
-        }
+    > .bit-bdg-wrp > .bit-bdg-ctn {
+        bottom: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -253,18 +315,11 @@
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: auto;
         right: auto;
-        left: calc(100% - #{spacing(0.5)});
-        bottom: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            left: calc(100% - #{spacing(1.5)});
-            bottom: calc(100% - #{spacing(1.5)});
-        }
+        left: calc(100% - var(--bit-bdg-ins));
+        bottom: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -272,18 +327,11 @@
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: auto;
         inset-inline-start: auto;
-        bottom: calc(100% - #{spacing(0.5)});
-        inset-inline-end: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            bottom: calc(100% - #{spacing(1.5)});
-            inset-inline-end: calc(100% - #{spacing(1.5)});
-        }
+        bottom: calc(100% - var(--bit-bdg-ins));
+        inset-inline-end: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -291,18 +339,11 @@
     --bit-bdg-alitems: flex-start;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         top: auto;
         inset-inline-end: auto;
-        bottom: calc(100% - #{spacing(0.5)});
-        inset-inline-start: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            bottom: calc(100% - #{spacing(1.5)});
-            inset-inline-start: calc(100% - #{spacing(1.5)});
-        }
+        bottom: calc(100% - var(--bit-bdg-ins));
+        inset-inline-start: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -310,34 +351,22 @@
     --bit-bdg-alitems: center;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
-        right: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            right: calc(100% - #{spacing(1.5)});
-        }
+    > .bit-bdg-wrp > .bit-bdg-ctn {
+        right: calc(100% - var(--bit-bdg-ins));
     }
 }
 
 .bit-bdg-ctr {
     --bit-bdg-alitems: center;
-    --bit-bdg-juscontent: center
+    --bit-bdg-juscontent: center;
 }
 
 .bit-bdg-crg {
     --bit-bdg-alitems: center;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
-        left: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            left: calc(100% - #{spacing(1.5)});
-        }
+    > .bit-bdg-wrp > .bit-bdg-ctn {
+        left: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -345,14 +374,8 @@
     --bit-bdg-alitems: center;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
-        inset-inline-end: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            inset-inline-end: calc(100% - #{spacing(1.5)});
-        }
+    > .bit-bdg-wrp > .bit-bdg-ctn {
+        inset-inline-end: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -360,14 +383,8 @@
     --bit-bdg-alitems: center;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
-        inset-inline-start: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            inset-inline-start: calc(100% - #{spacing(1.5)});
-        }
+    > .bit-bdg-wrp > .bit-bdg-ctn {
+        inset-inline-start: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -375,18 +392,11 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         left: auto;
         bottom: auto;
-        top: calc(100% - #{spacing(0.5)});
-        right: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            right: calc(100% - #{spacing(1.5)});
-            top: calc(100% - #{spacing(1.5)});
-        }
+        top: calc(100% - var(--bit-bdg-ins));
+        right: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -394,14 +404,8 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: center;
 
-    .bit-bdg-ctn {
-        top: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            top: calc(100% - #{spacing(1.5)});
-        }
+    > .bit-bdg-wrp > .bit-bdg-ctn {
+        top: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -409,18 +413,11 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         right: auto;
         bottom: auto;
-        top: calc(100% - #{spacing(0.5)});
-        left: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            top: calc(100% - #{spacing(1.5)});
-            left: calc(100% - #{spacing(1.5)});
-        }
+        top: calc(100% - var(--bit-bdg-ins));
+        left: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -428,18 +425,11 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: flex-start;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         bottom: auto;
         inset-inline-start: auto;
-        top: calc(100% - #{spacing(0.5)});
-        inset-inline-end: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            top: calc(100% - #{spacing(1.5)});
-            inset-inline-end: calc(100% - #{spacing(1.5)});
-        }
+        top: calc(100% - var(--bit-bdg-ins));
+        inset-inline-end: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -447,18 +437,11 @@
     --bit-bdg-alitems: flex-end;
     --bit-bdg-juscontent: flex-end;
 
-    .bit-bdg-ctn {
+    > .bit-bdg-wrp > .bit-bdg-ctn {
         bottom: auto;
         inset-inline-end: auto;
-        top: calc(100% - #{spacing(0.5)});
-        inset-inline-start: calc(100% - #{spacing(0.5)});
-    }
-
-    &.bit-bdg-orp {
-        .bit-bdg-ctn {
-            top: calc(100% - #{spacing(1.5)});
-            inset-inline-start: calc(100% - #{spacing(1.5)});
-        }
+        top: calc(100% - var(--bit-bdg-ins));
+        inset-inline-start: calc(100% - var(--bit-bdg-ins));
     }
 }
 
@@ -467,7 +450,7 @@
 .bit-bdg-inl {
     display: inline-flex;
     align-items: center;
-    gap: var(--bit-bdg-gap, #{spacing(0.75)});
+    gap: var(--bit-Badge-inline-gap, #{spacing(0.75)});
 
     // Only the side of the position is left to read. The Start family follows the direction of writing on
     // its own, and the physical Left and Right ones are pinned to a side by restating them in right-to-left.
@@ -496,25 +479,30 @@
 }
 
 // The insets every position block sets on the badge have nothing left to anchor to once the wrapper is
-// no longer stretched over a child, so they are undone here. The leading .bit-bdg carries this rule to
-// the weight of the heaviest of them - the .bit-bdg-<pos>.bit-bdg-orp pair - which it then wins on order.
-.bit-bdg .bit-bdg-stl .bit-bdg-ctn {
+// no longer stretched over a child, so they are undone here. This rule weighs as much as every position
+// block and follows all of them, so it wins over each.
+.bit-bdg > .bit-bdg-stl > .bit-bdg-ctn {
     inset: auto;
     position: relative;
     pointer-events: auto;
 }
 
 
+// The variants resolve the public colors on the root, where they arrive by inheritance: a Fill badge draws
+// its border in whatever its background is and an Outline one in whatever its text is, so one public color
+// re-tints either of them without leaving a border of the role color around it. A clickable badge given a
+// background of its own keeps it while it is hovered and pressed, rather than switching back to the role
+// colors there, until a hover or an active background of its own is given too.
 .bit-bdg-fil {
     --bit-bdg-clr-bg-dis: var(--bit-bdg-clr-dis);
     --bit-bdg-clr-brd-dis: var(--bit-bdg-clr-dis);
     --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr);
-    --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr);
+    --bit-bdg-cnt-clr-brd: var(--bit-Badge-background, var(--bit-bdg-clr));
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt);
-    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-hover);
-    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover);
-    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-active);
-    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active);
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-Badge-background, var(--bit-bdg-clr-hover));
+    --bit-bdg-cnt-clr-brd-hover: var(--bit-Badge-hover-background, var(--bit-Badge-background, var(--bit-bdg-clr-hover)));
+    --bit-bdg-cnt-clr-bg-active: var(--bit-Badge-hover-background, var(--bit-Badge-background, var(--bit-bdg-clr-active)));
+    --bit-bdg-cnt-clr-brd-active: var(--bit-Badge-active-background, var(--bit-Badge-hover-background, var(--bit-Badge-background, var(--bit-bdg-clr-active))));
 }
 
 .bit-bdg-otl {
@@ -522,11 +510,11 @@
     --bit-bdg-clr-bg-dis: transparent;
     --bit-bdg-clr-brd-dis: var(--bit-bdg-clr-dis);
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
-    --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr);
-    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light);
-    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover);
-    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover);
-    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active);
+    --bit-bdg-cnt-clr-brd: var(--bit-Badge-color, var(--bit-bdg-clr));
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-Badge-background, var(--bit-bdg-clr-light));
+    --bit-bdg-cnt-clr-brd-hover: var(--bit-Badge-color, var(--bit-bdg-clr-hover));
+    --bit-bdg-cnt-clr-bg-active: var(--bit-Badge-hover-background, var(--bit-Badge-background, var(--bit-bdg-clr-light-hover)));
+    --bit-bdg-cnt-clr-brd-active: var(--bit-Badge-color, var(--bit-bdg-clr-active));
 }
 
 .bit-bdg-txt {
@@ -535,9 +523,9 @@
     --bit-bdg-clr-bg-dis: transparent;
     --bit-bdg-clr-brd-dis: transparent;
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
-    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light);
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-Badge-background, var(--bit-bdg-clr-light));
     --bit-bdg-cnt-clr-brd-hover: transparent;
-    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover);
+    --bit-bdg-cnt-clr-bg-active: var(--bit-Badge-hover-background, var(--bit-Badge-background, var(--bit-bdg-clr-light-hover)));
     --bit-bdg-cnt-clr-brd-active: transparent;
 }
 
@@ -558,25 +546,27 @@
 }
 
 
+// The height and the dot are the design system's (a Material badge is smaller than a Fluent one), the
+// padding is rhythm.
 .bit-bdg-sm {
-    --bit-bdg-height: #{spacing(2)};
+    --bit-bdg-height: #{$siz-badge-sm};
     --bit-bdg-padding: 0 #{spacing(0.5)};
     --bit-bdg-fontsize: #{$tg-fs-xs};
-    --bit-bdg-dotsize: #{spacing(1)};
+    --bit-bdg-dotsize: #{$siz-badge-dot-sm};
 }
 
 .bit-bdg-md {
-    --bit-bdg-height: #{spacing(2.5)};
+    --bit-bdg-height: #{$siz-badge-md};
     --bit-bdg-fontsize: #{$tg-fs-sm};
     --bit-bdg-padding: 0 #{spacing(0.75)};
-    --bit-bdg-dotsize: #{spacing(1.125)};
+    --bit-bdg-dotsize: #{$siz-badge-dot-md};
 }
 
 .bit-bdg-lg {
-    --bit-bdg-height: #{spacing(3)};
+    --bit-bdg-height: #{$siz-badge-lg};
     --bit-bdg-padding: 0 #{spacing(1)};
     --bit-bdg-fontsize: #{$tg-fs-md};
-    --bit-bdg-dotsize: #{spacing(1.5)};
+    --bit-bdg-dotsize: #{$siz-badge-dot-lg};
 }
 
 
@@ -596,10 +586,32 @@
 }
 
 
-// A dot carries no content, so it is a square of its own size at every shape and every variant.
+// A dot carries no content, so it is a circle of its own size at every shape and every variant, whatever the
+// public height, padding and radius say. It is set on the root and read first by .bit-bdg-ctn, so a class
+// passed through Classes.Badge still re-sizes a dot the way it re-sizes any other badge.
 .bit-bdg-dot {
-    --bit-bdg-padding: 0;
-    --bit-bdg-radius: #{$shp-radius-full};
-    --bit-bdg-width: var(--bit-bdg-dotsize);
-    --bit-bdg-height: var(--bit-bdg-dotsize);
+    --bit-bdg-dot-padding: 0;
+    --bit-bdg-dot-radius: #{$shp-radius-full};
+    --bit-bdg-dot-size: var(--bit-Badge-dot-size, var(--bit-bdg-dotsize));
+}
+
+
+// Windows High Contrast / forced-colors: every background an author paints is stripped, which would leave a
+// dot an empty outline and a disabled badge looking like an enabled one. A dot is nothing but its fill, so it
+// keeps one in the system text color; a disabled badge takes the system disabled color.
+@media (forced-colors: active) {
+    .bit-bdg-dot > .bit-bdg-wrp > .bit-bdg-ctn {
+        forced-color-adjust: none;
+        border-color: CanvasText;
+        background-color: CanvasText;
+    }
+
+    .bit-bdg.bit-dis > .bit-bdg-wrp > .bit-bdg-ctn {
+        color: GrayText;
+        border-color: GrayText;
+    }
+
+    .bit-bdg.bit-dis.bit-bdg-dot > .bit-bdg-wrp > .bit-bdg-ctn {
+        background-color: GrayText;
+    }
 }
