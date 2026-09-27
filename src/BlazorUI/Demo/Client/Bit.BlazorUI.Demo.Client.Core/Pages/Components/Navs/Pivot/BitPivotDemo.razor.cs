@@ -462,8 +462,8 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-indicator-radius",
-            DefaultValue = "--bit-shp-radius-tab-indicator",
-            Description = "Corner radius of the indicator.",
+            DefaultValue = "--bit-shp-radius-tab-indicator / --bit-shp-radius-tab-indicator-base",
+            Description = "Corner radius of the indicator, one length for every corner (by default the corners facing the label and the ones on the edge it stands on follow a token each).",
         },
         new()
         {
@@ -1267,8 +1267,7 @@ public partial class BitPivotDemo
         new()
         {
             HeaderType = BitPivotHeaderType.Tab,
-            Color = BitColor.Success,
-            Size = BitSize.Small,
+            FullWidth = true,
         }
     ];
 

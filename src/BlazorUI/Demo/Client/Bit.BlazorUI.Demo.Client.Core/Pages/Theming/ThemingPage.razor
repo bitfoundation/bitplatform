@@ -461,8 +461,10 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 --bit-shp-radius-chip      /* &rarr; var(--bit-shp-radius-control)  tags and the chips inside fields */
 --bit-shp-radius-selection /* &rarr; var(--bit-shp-radius-control)  the checkbox box */
 
-/* the selection indicator of a tab strip - a primitive of its own, 0 under Fluent */
+/* the selection indicator of a tab strip - a primitive of its own, 0 under Fluent: the corners
+   facing the label, and those on the edge it stands on (&rarr; the first unless set; 0 under Material) */
 --bit-shp-radius-tab-indicator
+--bit-shp-radius-tab-indicator-base
 
 /* elevation per surface family */
 --bit-shd-card             /* &rarr; var(--bit-shd-cal) */

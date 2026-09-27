@@ -134,19 +134,23 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.Start"" OverflowBehavior=""BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
-    @foreach (var tab in overflowTabs)
-    {
-        <BitPivotItem HeaderText=""@tab"">Content of the @tab tab.</BitPivotItem>
-    }
-</BitPivot>
+<div style=""display:flex;height:200px"">
+    <BitPivot Position=""BitPivotPosition.Start"" OverflowBehavior=""BitPivotOverflowBehavior.Menu"">
+        @foreach (var tab in overflowTabs)
+        {
+            <BitPivotItem HeaderText=""@tab"">Content of the @tab tab.</BitPivotItem>
+        }
+    </BitPivot>
+</div>
 
-<BitPivot Position=""BitPivotPosition.Start"" OverflowBehavior=""BitPivotOverflowBehavior.Slide"" Style=""height:200px"">
-    @foreach (var tab in overflowTabs)
-    {
-        <BitPivotItem HeaderText=""@tab"">Content of the @tab tab.</BitPivotItem>
-    }
-</BitPivot>";
+<div style=""display:flex;height:200px"">
+    <BitPivot Position=""BitPivotPosition.Start"" OverflowBehavior=""BitPivotOverflowBehavior.Slide"">
+        @foreach (var tab in overflowTabs)
+        {
+            <BitPivotItem HeaderText=""@tab"">Content of the @tab tab.</BitPivotItem>
+        }
+    </BitPivot>
+</div>";
     private readonly string example6CsharpCode = @"
 private readonly List<string> overflowTabs = [""File"", ""Shared with me"", ""Recent"", ""Favorites"", ""Documents"", ""Pictures"", ""Downloads""];";
 
@@ -396,7 +400,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
         <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
     </BitPivot>
 
-    <BitPivot Color=""BitColor.Tertiary"">
+    <BitPivot HeaderType=""BitPivotHeaderType.Link"">
         <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
         <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
         <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
@@ -408,8 +412,7 @@ private readonly BitPivotParams[] pivotParams =
     new()
     {
         HeaderType = BitPivotHeaderType.Tab,
-        Color = BitColor.Success,
-        Size = BitSize.Small,
+        FullWidth = true,
     }
 ];";
 

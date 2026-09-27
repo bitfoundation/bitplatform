@@ -21,8 +21,9 @@ public partial class BitPivot : BitComponentBase
     private bool _keyCheckNeeded;
     private bool _orderCheckNeeded;
     private bool _focusMenuAfterRender;
-    private bool _lastIsEnabled = true;
+    private bool _itemPositionsStale = true;
     private int _menuFocusIndex = -1;
+    private int _visibleItemCount;
     private string? _preventedKeys;
     private ElementReference _moreRef;
     private ElementReference _menuRef;
@@ -36,7 +37,9 @@ public partial class BitPivot : BitComponentBase
     private List<BitPivotItem> _overflowItems = [];
     private HashSet<BitPivotItem> _mountedItems = [];
     private HashSet<BitPivotItem> _overflowItemSet = [];
+    private Dictionary<BitPivotItem, int> _itemPositions = [];
     private BitPivotOverflowBehavior? _setupBehavior;
+    private (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, string?, string?, string?, string?) _lastItemsState;
     private DotNetObjectReference<BitPivot>? _dotnetObj;
 
     // The default behavior (scrolling the page) of the keys the overflow menu and the button that
@@ -116,7 +119,9 @@ public partial class BitPivot : BitComponentBase
     [Parameter] public bool AutoHideSlideButtons { get; set; }
 
     /// <summary>
-    /// The content of pivot.
+    /// The content of pivot: its <see cref="BitPivotItem"/>s, each rendered straight into the header rather than
+    /// wrapped in an element of its own - the header lays its tabs out and styles them as its direct children, so a
+    /// tab wrapped in a div still works but is no longer drawn like one.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -516,11 +521,17 @@ public partial class BitPivot : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        // The tabs say whether they can be activated, and a tab whose own parameters did not change is not
-        // rendered again by the render of the pivot, so they are asked to when the whole pivot turns on or off.
-        if (_lastIsEnabled != IsEnabled)
+        // Part of what a tab renders comes from the pivot rather than from its own parameters - whether it can
+        // be activated, dragged or dismissed, the keys it announces for that, its tabindex, the panel it points
+        // at, its dismiss button - and a tab whose own parameters did not change is not rendered again by the
+        // render of the pivot, so the tabs are asked to whenever any of that changes.
+        var itemsState = (IsEnabled, _isVertical, Dismissible, Reorderable, OnItemDismiss.HasDelegate, OnItemReorder.HasDelegate,
+                          Navigable, HeaderOnly, MountAll, KeepMounted,
+                          DismissIcon?.GetCssClasses(), DismissIconName, DismissTitle, DismissAriaLabelFormat);
+
+        if (_lastItemsState != itemsState)
         {
-            _lastIsEnabled = IsEnabled;
+            _lastItemsState = itemsState;
 
             RefreshAllItems();
         }
@@ -864,28 +875,24 @@ public partial class BitPivot : BitComponentBase
     // screen reader would otherwise work out from the header itself would leave it out. They are stated
     // outright instead, counting every tab that is actually part of the pivot - folded or not - and none of
     // the ones the pivot hides.
+    // Every item asks for both on each of its renders, and a change to the list re-renders all of them, so the
+    // positions are worked out once per change of the list rather than once per item.
     internal int? GetItemPosInSet(BitPivotItem item)
     {
         if (item.Visibility != BitVisibility.Visible) return null;
 
-        var position = 0;
-        foreach (var i in _allItems)
-        {
-            if (i.Visibility != BitVisibility.Visible) continue;
+        EnsureItemPositions();
 
-            position++;
-
-            if (i == item) return position;
-        }
-
-        return null;
+        return _itemPositions.TryGetValue(item, out var position) ? position : null;
     }
 
     internal int? GetItemSetSize(BitPivotItem item)
     {
         if (item.Visibility != BitVisibility.Visible) return null;
 
-        return _allItems.Count(i => i.Visibility == BitVisibility.Visible);
+        EnsureItemPositions();
+
+        return _visibleItemCount;
     }
 
     // The dismiss button of a tab is out of the tab order and inside an element whose content is presentational
@@ -960,6 +967,7 @@ public partial class BitPivot : BitComponentBase
     internal void RegisterItem(BitPivotItem item)
     {
         _allItems.Add(item);
+        _itemPositionsStale = true;
 
         // An item that shows up after the first render is created last whatever its place in the markup,
         // so the list has to be put back into the order the header is actually laid out in. The tabs already
@@ -1014,6 +1022,7 @@ public partial class BitPivot : BitComponentBase
 
         _allItems.Remove(item);
         _mountedItems.Remove(item);
+        _itemPositionsStale = true;
 
         // The tabs left behind announce a position in a set that has just shrunk.
         RefreshAllItems();
@@ -1093,6 +1102,8 @@ public partial class BitPivot : BitComponentBase
     internal void RefreshWithItems()
     {
         if (IsDisposed) return;
+
+        _itemPositionsStale = true;
 
         RefreshAllItems();
 
@@ -1410,6 +1421,7 @@ public partial class BitPivot : BitComponentBase
         if (changed is false) return;
 
         _allItems = [.. _allItems.OrderBy(i => order.TryGetValue(i._Id, out var index) ? index : int.MaxValue)];
+        _itemPositionsStale = true;
 
         RefreshAllItems();
 
@@ -1459,6 +1471,23 @@ public partial class BitPivot : BitComponentBase
         {
             item.Refresh();
         }
+    }
+
+    private void EnsureItemPositions()
+    {
+        if (_itemPositionsStale is false) return;
+
+        _itemPositionsStale = false;
+        _itemPositions.Clear();
+
+        foreach (var item in _allItems)
+        {
+            if (item.Visibility != BitVisibility.Visible) continue;
+
+            _itemPositions[item] = _itemPositions.Count + 1;
+        }
+
+        _visibleItemCount = _itemPositions.Count;
     }
 
     // Called from the render of the panels: the selected tab is the one that has been shown, and

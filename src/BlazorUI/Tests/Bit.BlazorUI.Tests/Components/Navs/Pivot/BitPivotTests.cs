@@ -2036,6 +2036,67 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("Control+ArrowUp Control+ArrowDown", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
     }
 
+    [TestMethod]
+    public void BitPivotItemsShouldFollowThePivotParametersTheyRenderFrom()
+    {
+        // Items with nothing but simple parameters are not rendered again by the render of the pivot, so the
+        // pivot has to ask them to when a parameter of its own that they render from changes.
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs _) => { });
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+        });
+
+        Assert.AreEqual("Control+ArrowLeft Control+ArrowRight", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+
+        component.Render(p => p.Add(x => x.Position, BitPivotPosition.Start));
+
+        Assert.AreEqual("Control+ArrowUp Control+ArrowDown", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+
+        component.Render(p => p
+            .Add(x => x.Dismissible, true)
+            .Add(x => x.OnItemDismiss, (BitPivotItem _) => { }));
+
+        Assert.AreEqual("Delete Control+ArrowUp Control+ArrowDown", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+
+        component.Render(p => p.Add(x => x.Reorderable, false));
+
+        var tab = component.Find("[role=tab]");
+        Assert.AreEqual("Delete", tab.GetAttribute("aria-keyshortcuts"));
+        Assert.IsNull(tab.GetAttribute("draggable"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldAnnounceTheirPlaceAfterTheListChanges()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C"));
+        });
+
+        var first = component.FindComponents<BitPivotItem>()[0];
+        first.Render(p => p.Add(i => i.Visibility, BitVisibility.Collapsed));
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.IsNull(tabs[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("1", tabs[1].GetAttribute("aria-posinset"));
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-posinset"));
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-setsize"));
+
+        first.Render(p => p.Add(i => i.Visibility, BitVisibility.Visible));
+
+        tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual("1", tabs[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("3", tabs[2].GetAttribute("aria-posinset"));
+        Assert.AreEqual("3", tabs[2].GetAttribute("aria-setsize"));
+    }
+
     [TestMethod,
          DataRow(BitPivotPosition.Top, true),
          DataRow(BitPivotPosition.Start, false)
@@ -2049,10 +2110,21 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
         });
 
+        // The arrows are mirrored with exactly what BitIcon's FlipRtl adds to an icon, which is what its
+        // stylesheet mirrors a glyph by.
+        var plain = RenderComponent<BitIcon>(p => p.Add(i => i.IconName, "ChevronRight")).Find("i").ClassList;
+        var flipped = RenderComponent<BitIcon>(p => p.Add(i => i.IconName, "ChevronRight").Add(i => i.FlipRtl, true)).Find("i").ClassList;
+        var mirrorClasses = flipped.Except(plain).ToList();
+
+        Assert.IsTrue(mirrorClasses.Count > 0);
+
         // A horizontal header runs the other way in RTL, a vertical one does not.
         foreach (var icon in component.FindAll(".bit-pvt-sbt i"))
         {
-            Assert.AreEqual(mirrored, icon.ClassList.Contains("bit-ico-frt"));
+            foreach (var mirrorClass in mirrorClasses)
+            {
+                Assert.AreEqual(mirrored, icon.ClassList.Contains(mirrorClass));
+            }
         }
     }
 

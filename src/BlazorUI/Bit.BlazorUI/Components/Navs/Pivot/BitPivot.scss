@@ -13,7 +13,9 @@
 //   --bit-Pivot-indicator-color              selection indicator                             (default: --bit-Pivot-color)
 //   --bit-Pivot-indicator-thickness          stroke of the selection indicator               (default: $siz-tab-indicator)
 //   --bit-Pivot-indicator-inset              inset of the indicator from the item's edges    (default: spacing(1))
-//   --bit-Pivot-indicator-radius             corner radius of the indicator                  (default: $shp-radius-tab-indicator)
+//   --bit-Pivot-indicator-radius             corner radius of the indicator, one length for
+//                                            every corner                                    (default: $shp-radius-tab-indicator facing the
+//                                                                                             label, $shp-radius-tab-indicator-base elsewhere)
 //   --bit-Pivot-item-color                   text of an item at rest                         (default: $clr-fg-pri)
 //   --bit-Pivot-item-hover-color             text of a hovered item                          (default: $clr-fg-pri-hover, the role's on-color for Tab)
 //   --bit-Pivot-item-hover-background        background of a hovered item                    (default: $clr-bg-pri-hover, the role's hover color for Tab)
@@ -42,6 +44,10 @@
 // only. A pivot nested in the panel of another one - a vertical settings pivot holding a horizontal one - would
 // otherwise take on the position, the header type, the overflow behavior and the state of the one around it.
 // The rules that are the same for every pivot are written against the part alone.
+// The tabs are therefore styled as direct children of the tablist, which is how the header lays them out anyway
+// (the gutter, FullWidth's shares): an item wrapped in an element of the app's own is still found by the JS half
+// (the fold, the order, the keys), but is not drawn like a tab. CSS has no "nearest pivot" to stop at, so
+// reaching through wrappers would reach into a pivot nested in a header template as well.
 // The wrappers on the way are matched inside :where(), so a rule weighs what the plain descendant selector it
 // stands for would (the modifier and the part), and a class given through Classes still overrides it.
 @function in-header($part) {
@@ -281,6 +287,11 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
         width: var(--bit-Pivot-indicator-thickness, #{$siz-tab-indicator});
         height: calc(100% - 2 * var(--bit-Pivot-indicator-inset, #{spacing(1)}));
         transition: top $mot-duration-long $mot-easing 0s, height $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
+        // Stood on the inline-start edge of the tab, so the edge facing the label is the inline-end one.
+        border-start-start-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator-base});
+        border-end-start-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator-base});
+        border-start-end-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator});
+        border-end-end-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator});
     }
 
     #{$sel} {
@@ -387,6 +398,24 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
         &::-webkit-scrollbar-thumb {
             border-radius: $shp-radius-full;
             background-color: $clr-fg-sec;
+        }
+    }
+
+    // A Top header keeps its scrollbar between the tabs and the foot of the header, where the divider runs, so
+    // the indicator would float above the divider rather than lie on it. The divider is drawn under the tabs
+    // instead: the bottom of the content box of the tablist, scrolling along with them.
+    &.bit-pvt-top {
+        #{$hwr}::before {
+            content: none;
+        }
+
+        #{$hct} {
+            background-repeat: no-repeat;
+            background-position: bottom;
+            background-origin: content-box;
+            background-attachment: local;
+            background-size: 100% var(--bit-Pivot-divider-thickness, #{$siz-tab-divider});
+            background-image: linear-gradient(var(--bit-Pivot-divider-color, #{$clr-brd-sec}), var(--bit-Pivot-divider-color, #{$clr-brd-sec}));
         }
     }
 }
@@ -503,7 +532,8 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
         transform: scaleX(0);
         background-color: transparent;
         height: var(--bit-Pivot-indicator-thickness, #{$siz-tab-indicator});
-        border-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator});
+        // The top edge faces the label (a Bottom header mirrors the whole indicator, corners included).
+        border-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator} #{$shp-radius-tab-indicator} #{$shp-radius-tab-indicator-base} #{$shp-radius-tab-indicator-base});
         inset-inline-end: var(--bit-Pivot-indicator-inset, #{spacing(1)});
         inset-inline-start: var(--bit-Pivot-indicator-inset, #{spacing(1)});
         transition: inset-inline-start $mot-duration-long $mot-easing 0s, inset-inline-end $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
@@ -903,5 +933,11 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     .bit-pvti-dro::after,
     .bit-pvt-hwr::before {
         background-color: CanvasText;
+    }
+
+    // The forced colors drop the gradient the Scroll behavior draws its divider with, so it goes back to the
+    // foot of the header there.
+    .bit-pvt-scr.bit-pvt-top #{$hwr}::before {
+        content: "";
     }
 }
