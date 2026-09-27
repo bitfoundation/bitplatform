@@ -339,7 +339,10 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.ClassBuilder.Reset();
         }
 
-        if (CoinColor.HasValue && bitPersona.HasNotBeenSet(nameof(CoinColor)))
+        // A persona that turns AutoCoinColor on itself is asking for the hashed color, which a CoinColor handed
+        // down from here would otherwise win over.
+        if (CoinColor.HasValue && bitPersona.HasNotBeenSet(nameof(CoinColor))
+            && (bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) || bitPersona.AutoCoinColor is false))
         {
             bitPersona.CoinColor = CoinColor.Value;
 
@@ -356,7 +359,9 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.CoinIconName = CoinIconName;
         }
 
-        if (CoinSize.HasValue && bitPersona.HasNotBeenSet(nameof(CoinSize)))
+        // A size class set on the persona itself is the size it asked for, and a CoinSize handed down from here
+        // would otherwise override it.
+        if (CoinSize.HasValue && bitPersona.HasNotBeenSet(nameof(CoinSize)) && bitPersona.HasNotBeenSet(nameof(Size)))
         {
             bitPersona.CoinSize = CoinSize.Value;
         }
@@ -393,12 +398,16 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.ImageOverlayText = ImageOverlayText!;
         }
 
-        if (PresenceIcons is not null && bitPersona.HasNotBeenSet(nameof(PresenceIcons)))
+        // The persona's own single-status glyph answers only where the maps have nothing to say, so a map handed
+        // down from here would otherwise hide the glyph the persona set for itself.
+        var hasOwnPresenceIcon = bitPersona.PresenceIcon is not null || bitPersona.PresenceIconName.HasValue();
+
+        if (PresenceIcons is not null && bitPersona.HasNotBeenSet(nameof(PresenceIcons)) && hasOwnPresenceIcon is false)
         {
             bitPersona.PresenceIcons = PresenceIcons;
         }
 
-        if (PresenceIconNames is not null && bitPersona.HasNotBeenSet(nameof(PresenceIconNames)))
+        if (PresenceIconNames is not null && bitPersona.HasNotBeenSet(nameof(PresenceIconNames)) && hasOwnPresenceIcon is false)
         {
             bitPersona.PresenceIconNames = PresenceIconNames;
         }
@@ -422,7 +431,10 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.ClassBuilder.Reset();
         }
 
-        if (Shape.HasValue && bitPersona.HasNotBeenSet(nameof(Shape)))
+        // Shape wins over Squared, so a Shape handed down from here would otherwise override a persona that
+        // squares itself.
+        if (Shape.HasValue && bitPersona.HasNotBeenSet(nameof(Shape))
+            && (bitPersona.HasNotBeenSet(nameof(Squared)) || bitPersona.Squared is false))
         {
             bitPersona.Shape = Shape.Value;
 

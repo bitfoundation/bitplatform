@@ -112,6 +112,79 @@ public class BitPersonaParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPersonaOwnSquaredShouldNotBeOverriddenByACascadedShape()
+    {
+        var @params = new BitPersonaParams { Shape = BitPersonaShape.Square };
+
+        var component = RenderWithParams(@params,
+            RenderPersona(builder => builder.AddAttribute(10, nameof(BitPersona.Squared), true)),
+            RenderPersona());
+
+        var personas = component.FindAll(".bit-prs");
+
+        Assert.IsTrue(personas[0].ClassList.Contains("bit-prs-sqr"));
+        Assert.IsFalse(personas[0].ClassList.Contains("bit-prs-sqs"));
+        Assert.IsTrue(personas[1].ClassList.Contains("bit-prs-sqs"));
+    }
+
+    [TestMethod]
+    public void BitPersonaOwnAutoCoinColorShouldNotBeOverriddenByACascadedCoinColor()
+    {
+        var @params = new BitPersonaParams { CoinColor = BitColor.Primary };
+
+        var component = RenderWithParams(@params,
+            RenderPersona(builder =>
+            {
+                builder.AddAttribute(10, nameof(BitPersona.AutoCoinColor), true);
+                builder.AddAttribute(11, nameof(BitPersona.AutoCoinColors), new[] { BitColor.Success });
+            }),
+            RenderPersona(builder => builder.AddAttribute(10, nameof(BitPersona.AutoCoinColor), false)));
+
+        var personas = component.FindAll(".bit-prs");
+
+        Assert.IsTrue(personas[0].ClassList.Contains("bit-prs-suc"));
+        Assert.IsFalse(personas[0].ClassList.Contains("bit-prs-pri"));
+        Assert.IsTrue(personas[1].ClassList.Contains("bit-prs-pri"));
+    }
+
+    [TestMethod]
+    public void BitPersonaOwnSizeShouldNotBeOverriddenByACascadedCoinSize()
+    {
+        var @params = new BitPersonaParams { CoinSize = 64 };
+
+        var component = RenderWithParams(@params,
+            RenderPersona(builder => builder.AddAttribute(10, nameof(BitPersona.Size), BitPersonaSize.Size32)),
+            RenderPersona());
+
+        var coins = component.FindAll(".bit-prs-imc");
+
+        Assert.IsFalse(coins[0].GetAttribute("style")?.Contains("width:64px") ?? false);
+        StringAssert.Contains(coins[1].GetAttribute("style"), "width:64px");
+    }
+
+    [TestMethod]
+    public void BitPersonaOwnPresenceIconNameShouldNotBeHiddenByACascadedMap()
+    {
+        var @params = new BitPersonaParams
+        {
+            PresenceIconNames = new() { [BitPersonaPresence.OutOfOffice] = "Airplane" },
+        };
+
+        var component = RenderWithParams(@params,
+            RenderPersona(builder =>
+            {
+                builder.AddAttribute(10, nameof(BitPersona.Presence), BitPersonaPresence.OutOfOffice);
+                builder.AddAttribute(11, nameof(BitPersona.PresenceIconName), "Vacation");
+            }),
+            RenderPersona(builder => builder.AddAttribute(10, nameof(BitPersona.Presence), BitPersonaPresence.OutOfOffice)));
+
+        var glyphs = component.FindAll(".bit-prs-pre i");
+
+        Assert.IsTrue(glyphs[0].ClassList.Contains("bit-icon--Vacation"));
+        Assert.IsTrue(glyphs[1].ClassList.Contains("bit-icon--Airplane"));
+    }
+
+    [TestMethod]
     public void BitPersonaCascadedPresenceTitlesShouldNameThePresenceOfEveryPersona()
     {
         var @params = new BitPersonaParams

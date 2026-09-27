@@ -498,8 +498,9 @@ public partial class BitPersona : BitComponentBase
     /// Online, Away and Busy are otherwise three discs that differ only in color, which is no difference at all to
     /// a reader who cannot tell red from green. A glyph given by <see cref="PresenceIcons"/>,
     /// <see cref="PresenceIconNames"/>, <see cref="PresenceIcon"/> or <see cref="PresenceIconName"/> takes
-    /// precedence, and like those the glyphs are only drawn on coins of 40px and up. They are named from the
-    /// Bit.BlazorUI.Icons set.
+    /// precedence, and like those the glyphs are only drawn on coins of 40px and up. The glyphs of Online, Away
+    /// and Offline ship with the core package; those of Blocked, OutOfOffice and Unknown are named from the
+    /// Bit.BlazorUI.Icons set, which an app has to reference for them to be drawn.
     /// </remarks>
     [Parameter] public bool ShowDefaultPresenceIcons { get; set; }
 
@@ -741,12 +742,14 @@ public partial class BitPersona : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Dnd has none because it already draws a bar of its own at every size, and Busy is left the plain disc: the one
-    /// filled status with nothing on it, which is what sets it apart from the rest.
+    /// filled status with nothing on it, which is what sets it apart from the rest. The three glyphs the core icon
+    /// subset carries are taken from it, so the statuses that most need a shape cue keep one in an app without
+    /// Bit.BlazorUI.Icons.
     /// </remarks>
     private static string? GetDefaultPresenceIconName(BitPersonaPresence presence) => presence switch
     {
-        BitPersonaPresence.Online => "SkypeCheck",
-        BitPersonaPresence.Away => "SkypeClock",
+        BitPersonaPresence.Online => "Accept",
+        BitPersonaPresence.Away => "Clock",
         BitPersonaPresence.Offline => "Cancel",
         BitPersonaPresence.Blocked => "Blocked2",
         BitPersonaPresence.OutOfOffice => "Airplane",
@@ -1309,7 +1312,7 @@ public partial class BitPersona : BitComponentBase
         await OnImageLoad.InvokeAsync(e);
     }
 
-    internal void OnSetImageSource()
+    private void OnSetImageSource()
     {
         _hasError = false;
         _isLoaded = false;

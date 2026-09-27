@@ -29,6 +29,7 @@ public class BitPersonaStylesheetTests
         "--bit-Persona-focus-color",
         "--bit-Persona-action-background",
         "--bit-Persona-action-color",
+        "--bit-Persona-action-hover-background",
         "--bit-Persona-presence-border-color",
         "--bit-Persona-presence-icon-color",
         "--bit-Persona-presence-online-color",
@@ -145,6 +146,19 @@ public class BitPersonaStylesheetTests
 
         StringAssert.Contains(rule, "background-color: var(--bit-Persona-action-background, #{$clr-bg-pri});");
         Assert.IsFalse(rule.Contains("transparent"), "The action button is hidden by painting it transparent, which leaves no surface under it once shown.");
+
+        // A custom surface is kept on hover rather than snapped back to the light default under a glyph paired with it.
+        StringAssert.Contains(rule, "background-color: var(--bit-Persona-action-hover-background, var(--bit-Persona-action-background, #{$clr-bg-pri-hover}));");
+    }
+
+    [TestMethod]
+    public void BitPersonaPresenceDotShouldStackAboveTheActionButton()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        static int ZIndex(string rule) => int.Parse(Regex.Match(rule, @"\n    z-index: (\d+);").Groups[1].Value);
+
+        Assert.IsTrue(ZIndex(GetRule(rules, "pre")) > ZIndex(GetRule(rules, "abt")), "The opaque action button would hide the presence dot where the two overlap.");
     }
 
     /// <summary>

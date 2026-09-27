@@ -573,6 +573,12 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "--bit-Persona-action-hover-background",
+            DefaultValue = "--bit-Persona-action-background, else --bit-clr-bg-pri-hover",
+            Description = "Surface of the action button while hovered; a custom action background keeps itself on hover unless this is set too.",
+        },
+        new()
+        {
             Name = "--bit-Persona-presence-border-color",
             DefaultValue = "--bit-clr-brd-sec",
             Description = "Ring the presence dot is cut out of; match it to the surface the persona sits on.",
@@ -580,8 +586,8 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "--bit-Persona-presence-icon-color",
-            DefaultValue = "The inherited text color",
-            Description = "Glyph a PresenceIcon puts inside the presence dot.",
+            DefaultValue = "The status's paired text color (the stroke color on the hollow Offline and Blocked dots)",
+            Description = "Glyph a presence icon puts inside the presence dot, and the bar across the Dnd dot.",
         },
         new()
         {
@@ -605,7 +611,7 @@ public partial class BitPersonaDemo
         {
             Name = "--bit-Persona-presence-dnd-color",
             DefaultValue = "--bit-clr-err",
-            Description = "Fill of the Dnd dot (the white bar across it stays).",
+            Description = "Fill of the Dnd dot; the bar across it takes --bit-Persona-presence-icon-color.",
         },
         new()
         {

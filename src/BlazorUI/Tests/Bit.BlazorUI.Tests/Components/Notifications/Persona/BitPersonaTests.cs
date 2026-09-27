@@ -555,8 +555,8 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitPersonaPresence.Online, "SkypeCheck"),
-        DataRow(BitPersonaPresence.Away, "SkypeClock"),
+        DataRow(BitPersonaPresence.Online, "Accept"),
+        DataRow(BitPersonaPresence.Away, "Clock"),
         DataRow(BitPersonaPresence.Offline, "Cancel"),
         DataRow(BitPersonaPresence.Blocked, "Blocked2"),
         DataRow(BitPersonaPresence.OutOfOffice, "Airplane"),
