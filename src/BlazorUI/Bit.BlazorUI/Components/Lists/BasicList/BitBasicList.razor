@@ -4,10 +4,9 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     role="@Role"
-     tabindex="@TabIndex"
-     aria-label="@AriaLabel"
-     aria-busy="@(_isLoadingMore || Loading ? "true" : null)"
+     role="@(_LabelOnRoot ? "group" : null)"
+     aria-label="@(_LabelOnRoot ? AriaLabel : null)"
+     tabindex="@(TabIndex ?? (_focusHandedToRoot ? "-1" : null))"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
@@ -19,53 +18,80 @@
         </div>
     }
 
-    @if (_ShowLoading)
+    @* Always present, since a live region only announces what is added to it after it was rendered: a status
+       inserted along with its text is skipped by several screen readers. The loading content is put inside it
+       rather than beside it, so what is announced is what is on screen, a LoadingTemplate's own text included,
+       and nothing is read out twice. A page loaded while the items stay on screen has nothing visible to
+       announce beyond the busy LoadMore element, so the LoadingLabel is announced for it instead. *@
+    <div role="status" class="bit-bsl-sts">
+        @if (_ShowLoading)
+        {
+            <div @key="_loadingKey"
+                 style="@Styles?.LoadingContent"
+                 class="bit-bsl-ldc @Classes?.LoadingContent">
+                @if (LoadingTemplate is not null)
+                {
+                    @LoadingTemplate
+                }
+                else
+                {
+                    <span class="bit-bsl-spn" aria-hidden="true"></span>
+                    <span class="bit-bsl-ldt">@LoadingLabel</span>
+                }
+            </div>
+        }
+        else if (_isLoadingMore)
+        {
+            <span class="bit-bsl-stt">@LoadingLabel</span>
+        }
+    </div>
+
+    @if (_ShowLoading is false)
     {
-        <div style="@Styles?.LoadingContent"
-             class="bit-bsl-ldc @Classes?.LoadingContent">
-            @if (LoadingTemplate is not null)
+        @* The rows live in an element of their own rather than straight under the root: a list may only own
+           list items, and the root also holds the header, the footer, the LoadMore button and the live
+           region, none of which is one. The root stays the scrolling region around all of them. *@
+        <div @ref="_itemsElement"
+             role="@_EffectiveRole"
+             aria-label="@(_LabelOnItems ? AriaLabel : null)"
+             aria-busy="@(_isLoadingMore ? "true" : null)"
+             style="@Styles?.Items"
+             class="bit-bsl-itm @Classes?.Items">
+            @if (Virtualize)
             {
-                @LoadingTemplate
+                if (ItemsProvider is null || LoadMore)
+                {
+                    <_BitBasicListVirtualize Items="_viewItems"
+                                             ItemSize="@ItemSize"
+                                             EmptyContent="EmptyContent"
+                                             OverscanCount="@OverscanCount">
+                        @_EffectiveRowTemplate(context)
+                    </_BitBasicListVirtualize>
+                }
+                else
+                {
+                    <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
+                                             ItemSize="@ItemSize"
+                                             EmptyContent="EmptyContent"
+                                             OverscanCount="@OverscanCount"
+                                             Placeholder="VirtualizePlaceholder"
+                                             ItemsProvider="ProvideVirtualizedItems">
+                        @_EffectiveRowTemplate(context)
+                    </_BitBasicListVirtualize>
+                }
+            }
+            else if (_viewItems.Count > 0)
+            {
+                foreach (var item in _viewItems)
+                {
+                    @_EffectiveRowTemplate(item)
+                }
             }
             else
             {
-                <span>...</span>
+                @EmptyContent
             }
         </div>
-    }
-    else if (Virtualize)
-    {
-        if (ItemsProvider is null || LoadMore)
-        {
-            <_BitBasicListVirtualize Items="_viewItems"
-                                     ItemSize="@ItemSize"
-                                     EmptyContent="EmptyContent"
-                                     OverscanCount="@OverscanCount">
-                @_EffectiveRowTemplate(context)
-            </_BitBasicListVirtualize>
-        }
-        else
-        {
-            <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
-                                     ItemSize="@ItemSize"
-                                     EmptyContent="EmptyContent"
-                                     OverscanCount="@OverscanCount"
-                                     Placeholder="VirtualizePlaceholder"
-                                     ItemsProvider="ProvideVirtualizedItems">
-                @_EffectiveRowTemplate(context)
-            </_BitBasicListVirtualize>
-        }
-    }
-    else if (_viewItems.Count > 0)
-    {
-        foreach (var item in _viewItems)
-        {
-            @_EffectiveRowTemplate(item)
-        }
-    }
-    else
-    {
-        @EmptyContent
     }
 
     @if (_ShowSentinel)
@@ -80,12 +106,13 @@
             @* A template is free to render a button (or any other control) of its own, and a button
                cannot be nested inside another one, so the clickable wrapper of a template is a plain
                element carrying the button role rather than a real button element. *@
-            <div role="button"
-                 tabindex="0"
-                 aria-disabled="@(_isLoadingMore || IsEnabled is false ? "true" : null)"
+            <div @ref="_loadMoreElement"
+                 id="@_LoadMoreId"
+                 role="button"
+                 tabindex="@(IsEnabled ? "0" : "-1")"
+                 aria-disabled="@(IsEnabled is false ? "true" : null)"
                  aria-busy="@(_isLoadingMore ? "true" : null)"
                  @onclick="() => LoadMoreItems(false)"
-                 @onkeydown="HandleLoadMoreKeyDown"
                  style="@Styles?.LoadMoreButton"
                  class="bit-bsl-lmb @Classes?.LoadMoreButton">
                 @LoadMoreTemplate(_isLoadingMore)
@@ -93,9 +120,15 @@
         }
         else
         {
-            <button type="button"
+            @* Loading a page only marks the button busy rather than disabling it: a disabled button drops the
+               keyboard focus it holds, which would send a keyboard user back to the start of the page.
+               The button keeps its own name while busy: the status region already says the page is loading,
+               and a button named after that as well would have it read out twice. *@
+            <button id="@_LoadMoreId"
+                    type="button"
+                    aria-label="@(_isLoadingMore ? LoadMoreText : null)"
                     aria-busy="@(_isLoadingMore ? "true" : null)"
-                    disabled="@(_isLoadingMore || IsEnabled is false)"
+                    disabled="@(IsEnabled is false)"
                     @onclick="() => LoadMoreItems(false)"
                     style="@Styles?.LoadMoreButton"
                     class="bit-bsl-lmb @Classes?.LoadMoreButton">
@@ -103,7 +136,8 @@
                      class="bit-bsl-lmt @Classes?.LoadMoreText">
                     @if (_isLoadingMore)
                     {
-                        <span>...</span>
+                        <span class="bit-bsl-spn" aria-hidden="true"></span>
+                        <span>@LoadingLabel</span>
                     }
                     else
                     {
