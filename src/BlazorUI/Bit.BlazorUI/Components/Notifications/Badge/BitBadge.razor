@@ -72,7 +72,7 @@
            the wrapper drops out of the overlay layer and the badge is laid out in the flow instead. *@
         <span style="@Styles?.BadgeWrapper"
               class="bit-bdg-wrp @(ChildContent is null || Inline ? "bit-bdg-stl" : null) @Classes?.BadgeWrapper"
-              aria-hidden="@(_isBadgeMuted ? "true" : null)">
+              aria-hidden="@(_isBadgeMuted || _isBadgeDecorative ? "true" : null)">
             @if (Href.HasValue())
             {
                 @* A badge that leads somewhere is a real link: it comes with the context menu, the middle click,

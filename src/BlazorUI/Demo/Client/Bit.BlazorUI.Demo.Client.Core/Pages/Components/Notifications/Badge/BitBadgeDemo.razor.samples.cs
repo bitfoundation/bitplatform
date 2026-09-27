@@ -92,14 +92,14 @@ private bool hidden;
 private int count = 3;";
 
     private readonly string example5RazorCode = @"
-<BitBadge Dot Size=""BitSize.Small"" Description=""New mail"">
+<BitBadge Dot Description=""New mail"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Dot Size=""BitSize.Medium"" Description=""New mail"">
-    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+<BitBadge Dot Description=""New alerts"">
+    <BitIcon IconName=""@BitIconName.Ringer"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Dot Size=""BitSize.Large"" Description=""New mail"">
-    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+<BitBadge Dot Description=""Updates available"">
+    <BitButton Variant=""BitVariant.Outline"">Updates</BitButton>
 </BitBadge>";
 
     private readonly string example6RazorCode = @"
@@ -180,13 +180,16 @@ private int counter;";
 <BitBadge Dot Href=""#example11"" AriaLabel=""Alerts"" Description=""3 unread"">
     <BitIcon IconName=""@BitIconName.Ringer"" Color=""BitColor.Tertiary"" />
 </BitBadge>
+<BitBadge Content=""unread"" Decorative>
+    <BitButton IconOnly IconName=""@BitIconName.Mail"" Variant=""BitVariant.Text"" AriaLabel=""@($""Inbox, {unread} unread"")"" />
+</BitBadge>
 
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => unread++"">Receive a message</BitButton>";
     private readonly string example11CsharpCode = @"
 private int unread = 3;";
 
     private readonly string example12RazorCode = @"
-<BitBadge Content=""@(""Tint"")"" Style=""--bit-Badge-background: color-mix(in srgb, var(--bit-clr-pri) 16%, transparent); --bit-Badge-color: var(--bit-clr-pri);"" />
+<BitBadge Content=""@(""Tint"")"" Style=""--bit-Badge-background: var(--bit-clr-pri-light); --bit-Badge-color: var(--bit-clr-pri);"" />
 <BitBadge Content=""@(""Custom"")"" Style=""--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;"" />
 <BitBadge Content=""@(""Tall"")"" Style=""--bit-Badge-height: 2rem; --bit-Badge-padding: 0 1rem; --bit-Badge-radius: 0.5rem; --bit-Badge-font-weight: 400;"" />
 <BitBadge Dot Pulse Description=""Recording"" Style=""--bit-Badge-dot-size: 0.75rem; --bit-Badge-background: crimson; --bit-Badge-pulse-color: crimson;"" />
@@ -311,6 +314,17 @@ private readonly BitColor[] semanticColors =
 </BitBadge>";
 
     private readonly string example16RazorCode = @"
+<BitBadge Dot Size=""BitSize.Small"" Description=""New mail"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Dot Size=""BitSize.Medium"" Description=""New mail"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Dot Size=""BitSize.Large"" Description=""New mail"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+
 <BitBadge Content=""84"" Size=""BitSize.Small"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
@@ -364,7 +378,7 @@ private readonly BitColor[] semanticColors =
 </style>
 
 
-<BitBadge Content=""84"" Style=""color: dodgerblue;"">
+<BitBadge Content=""84"" Style=""outline: 1px dashed dodgerblue; outline-offset: 0.25rem;"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 <BitBadge Content=""84"" Class=""custom-class"" Variant=""BitVariant.Outline"">
@@ -373,7 +387,7 @@ private readonly BitColor[] semanticColors =
 
 
 <BitBadge Content=""84"" IconName=""@BitIconName.Info""
-          Styles=""@(new() { Root = ""color: tomato;"",
+          Styles=""@(new() { Root = ""outline: 1px dashed tomato; outline-offset: 0.25rem;"",
                             Badge = ""border-radius: unset;"",
                             Icon = ""color: tomato;"" })"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />

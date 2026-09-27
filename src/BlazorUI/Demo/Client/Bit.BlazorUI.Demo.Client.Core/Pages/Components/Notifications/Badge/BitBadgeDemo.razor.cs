@@ -16,7 +16,7 @@ public partial class BitBadgeDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Child content of component, the content that the badge will apply to. When it is not set the badge renders standalone, in the normal flow of the page."
+            Description = "The content the badge applies to. Without it the badge renders standalone, in the flow of the page."
         },
         new()
         {
@@ -41,21 +41,28 @@ public partial class BitBadgeDemo
             Name = "Content",
             Type = "object?",
             DefaultValue = "null",
-            Description = "Content you want inside the badge. A number is capped by Max and hidden by ShowZero when it is zero, a string is rendered as it is, and any other value is rendered through its ToString(). A badge given no content, no icon and no template at all is not rendered."
+            Description = "Content you want inside the badge. A number is capped by Max and hidden at zero by ShowZero; any other value renders through its ToString(). A badge with nothing to show is not rendered."
         },
         new()
         {
             Name = "ContentTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render inside the badge, in place of Content. A template is content of its own, so neither Max nor ShowZero reads it, and it is markup rather than words, so a Live badge showing one needs a Description before its live region has anything to announce."
+            Description = "Custom markup rendered in place of Content. Max and ShowZero do not read it, and a Live badge showing one needs a Description to announce."
+        },
+        new()
+        {
+            Name = "Decorative",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the badge (never its child) from assistive technologies, for a badge whose focusable child already names the count. A Live region keeps announcing, and a button or link badge is never hidden."
         },
         new()
         {
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text alternative of the badge for assistive technologies, for example \"5 unread messages\", read in place of the visible content. On a button or link badge that also has an AriaLabel, it describes the control (aria-describedby); on a plain badge the AriaLabel is used in its place when it is not set."
+            Description = "Text alternative for assistive technologies (e.g. \"5 unread messages\"), read in place of the visible content. On a button or link badge named by an AriaLabel it describes the control instead; on a plain badge the AriaLabel stands in for it."
         },
         new()
         {
@@ -76,7 +83,7 @@ public partial class BitBadgeDemo
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The URL the badge navigates to, which also turns the badge into a link: an anchor that is focusable, offers the context menu and the middle click, and is announced as a link. While IsEnabled is false the href is dropped and the badge leaves the tab order."
+            Description = "Turns the badge into a real link to the URL. While IsEnabled is false the href is dropped and the badge leaves the tab order."
         },
         new()
         {
@@ -101,21 +108,21 @@ public partial class BitBadgeDemo
             Name = "Inline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the badge out next to its child content in the normal flow of the page instead of over it. Overlap stops applying and only the side of Position is read: the Start and Left families put the badge before the child content, every other one after it."
+            Description = "Lays the badge beside its child content instead of over it. Overlap no longer applies and only the side of Position is read: Start/Left before the child, the rest after."
         },
         new()
         {
             Name = "Live",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Announces the badge to assistive technologies whenever its content changes, by turning it into a polite live region. The region is kept on the page whether or not the badge itself is, so a counter that appears, changes and disappears is announced every time. It reads out the Description when there is one and the counter itself otherwise."
+            Description = "Announces every change of the badge through a polite live region, including it appearing and disappearing. Reads the Description, or the counter itself."
         },
         new()
         {
             Name = "Max",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Max value to display when content is a number. A content above it renders as the max followed by a plus sign, for example 99+, and the badge carries the figure it shortened as its tooltip unless a Title of its own says something better."
+            Description = "Caps a numeric Content: above it the badge shows the max followed by a plus (99+) and the real figure as its tooltip."
         },
         new()
         {
@@ -136,7 +143,7 @@ public partial class BitBadgeDemo
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
-            Description = "The click event of the badge, which also turns the badge into a keyboard-operable button."
+            Description = "Turns the badge into a real, keyboard-operable button. The click does not reach the element underneath."
         },
         new()
         {
@@ -191,7 +198,7 @@ public partial class BitBadgeDemo
             Name = "ShowZero",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Renders the badge when its content is the number zero. Turn it off for a counter that should disappear once it is emptied. Only a numeric Content counts as zero, and a string is rendered as it is. An icon or a ContentTemplate is content of its own, so it keeps the badge on the page and only the emptied number is taken off it."
+            Description = "Renders the badge when its numeric Content is zero. Turn it off to hide an emptied counter; an icon or a ContentTemplate keeps the badge on the page."
         },
         new()
         {
@@ -223,7 +230,7 @@ public partial class BitBadgeDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The tooltip to show when the mouse is placed on the badge. It is rendered on the badge itself rather than on the child content underneath it. A badge whose Max has capped its count already spells that count out on hover, so this is only needed when there is something better to say than the figure itself. A title is not a text alternative, so what a screen reader should hear belongs in Description."
+            Description = "The tooltip of the badge itself (not of its child). Replaces the real figure a capped count shows on its own. Not a text alternative: use Description for screen readers."
         },
         new()
         {
@@ -784,7 +791,7 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "--bit-Badge-height",
-            DefaultValue = "Per Size",
+            DefaultValue = "--bit-siz-badge-{sm,md,lg}, per Size",
             Description = "Height, and the smallest width, which keeps a single digit a circle.",
         },
         new()
@@ -814,7 +821,7 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "--bit-Badge-dot-size",
-            DefaultValue = "Per Size",
+            DefaultValue = "--bit-siz-badge-dot-{sm,md,lg}, per Size",
             Description = "Diameter of a Dot badge.",
         },
         new()

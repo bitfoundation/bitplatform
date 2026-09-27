@@ -79,6 +79,10 @@ public partial class BitBadge : BitComponentBase
     // speak for, so a badge showing one keeps its own voice instead of being silenced for nothing.
     private bool _isBadgeMuted => _hasOwnLiveRegion && (_textAlternative.HasValue() || _hasTemplateContent is false);
 
+    // A decorative badge repeats what its child already says, so it is kept away from assistive technologies -
+    // unless it is a button or a link, which is focusable and so cannot be hidden from them.
+    private bool _isBadgeDecorative => Decorative && _isClickable is false;
+
     // What the badge is showing in words right now, which is what a change of it is worth a bump for: a
     // badge that is off the page, showing a template or showing an emptied counter is showing no text at all.
     private string? _shownContent => _isBadgeVisible && _hasTemplateContent is false && Dot is false && _isZeroSuppressed is false
@@ -161,6 +165,22 @@ public partial class BitBadge : BitComponentBase
     /// announce.
     /// </remarks>
     [Parameter] public RenderFragment? ContentTemplate { get; set; }
+
+    /// <summary>
+    /// Hides the badge from assistive technologies, for a badge whose child content already says what it shows.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A badge over a focusable child - an icon button, a link, a tab - is not what the keyboard reaches: the
+    /// child is, so the count belongs in the name of the child (an <c>AriaLabel</c> of "Inbox, 3 unread"). The
+    /// badge then only repeats it, and a decorative one keeps its looks while a screen reader skips it. Only
+    /// the badge is hidden: the child content stays exactly as announced as it was.
+    /// <br />
+    /// A <see cref="Live"/> region keeps announcing the changes, and a badge that is a button or a link
+    /// (<see cref="OnClick"/> or <see cref="Href"/>) is never hidden, since a focusable element cannot be.
+    /// </remarks>
+    [Parameter] public bool Decorative { get; set; }
 
     /// <summary>
     /// The text alternative of the badge for assistive technologies, for example "5 unread messages".

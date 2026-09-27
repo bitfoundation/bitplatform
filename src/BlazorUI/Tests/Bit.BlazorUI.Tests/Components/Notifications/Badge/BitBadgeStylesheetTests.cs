@@ -68,6 +68,24 @@ public partial class BitBadgeStylesheetTests
         Assert.IsFalse(block.Contains("--bit-Badge-"));
     }
 
+    [TestMethod,
+        DataRow("sm"),
+        DataRow("md"),
+        DataRow("lg")]
+    public void BitBadgeShouldReadItsHeightAndDotFromTheTheme(string size)
+    {
+        var stylesheet = ReadStylesheet();
+
+        var start = stylesheet.IndexOf($"\n.bit-bdg-{size} {{", System.StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0, $"The {size} size has no rule of its own.");
+
+        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+
+        // The height and the dot are design-system decisions, so a preset re-sizes every badge through the theme.
+        StringAssert.Contains(block, $"--bit-bdg-height: #{{$siz-badge-{size}}};");
+        StringAssert.Contains(block, $"--bit-bdg-dotsize: #{{$siz-badge-dot-{size}}};");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();

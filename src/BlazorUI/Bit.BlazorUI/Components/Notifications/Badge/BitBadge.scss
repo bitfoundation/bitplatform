@@ -11,12 +11,12 @@
 //   --bit-Badge-focus-color          focus ring color of a clickable badge          (default: the role's focus color)
 //   --bit-Badge-border-width         border width                                   (default: $shp-border-width)
 //   --bit-Badge-radius               corner radius                                  (default: per Shape)
-//   --bit-Badge-height               height, and the smallest width                 (default: per size)
+//   --bit-Badge-height               height, and the smallest width                 (default: $siz-badge-sm/md/lg)
 //   --bit-Badge-padding              padding                                        (default: per size)
 //   --bit-Badge-font-size            text size                                      (default: per size, from the type ramp)
 //   --bit-Badge-font-weight          text weight                                    (default: $tg-fw-semibold)
 //   --bit-Badge-gap                  room between the icon and the content          (default: spacing(0.5))
-//   --bit-Badge-dot-size             diameter of a Dot badge                        (default: per size)
+//   --bit-Badge-dot-size             diameter of a Dot badge                        (default: $siz-badge-dot-sm/md/lg)
 //   --bit-Badge-inset                how far an overlaid badge reaches back in over
 //                                    the edge of its child                          (default: spacing(0.5))
 //   --bit-Badge-overlap-inset        the same with Overlap                          (default: spacing(1.5))
@@ -520,25 +520,27 @@
 }
 
 
+// The height and the dot are the design system's (a Material badge is smaller than a Fluent one), the
+// padding is rhythm.
 .bit-bdg-sm {
-    --bit-bdg-height: #{spacing(2)};
+    --bit-bdg-height: #{$siz-badge-sm};
     --bit-bdg-padding: 0 #{spacing(0.5)};
     --bit-bdg-fontsize: #{$tg-fs-xs};
-    --bit-bdg-dotsize: #{spacing(1)};
+    --bit-bdg-dotsize: #{$siz-badge-dot-sm};
 }
 
 .bit-bdg-md {
-    --bit-bdg-height: #{spacing(2.5)};
+    --bit-bdg-height: #{$siz-badge-md};
     --bit-bdg-fontsize: #{$tg-fs-sm};
     --bit-bdg-padding: 0 #{spacing(0.75)};
-    --bit-bdg-dotsize: #{spacing(1.125)};
+    --bit-bdg-dotsize: #{$siz-badge-dot-md};
 }
 
 .bit-bdg-lg {
-    --bit-bdg-height: #{spacing(3)};
+    --bit-bdg-height: #{$siz-badge-lg};
     --bit-bdg-padding: 0 #{spacing(1)};
     --bit-bdg-fontsize: #{$tg-fs-md};
-    --bit-bdg-dotsize: #{spacing(1.5)};
+    --bit-bdg-dotsize: #{$siz-badge-dot-lg};
 }
 
 

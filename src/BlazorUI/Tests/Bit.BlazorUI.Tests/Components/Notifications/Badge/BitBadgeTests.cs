@@ -939,6 +939,62 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitBadgeShouldRespectDecorative(bool decorative)
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 3);
+            parameters.Add(p => p.Decorative, decorative);
+            parameters.Add(p => p.ChildContent, "<button aria-label=\"Inbox, 3 unread\">Inbox</button>");
+        });
+
+        // Only the badge is taken away from assistive technologies: the child that already names the count is not.
+        Assert.AreEqual(decorative ? "true" : null, component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-hidden"));
+        Assert.IsNull(component.Find("button").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitBadgeDecorativeShouldKeepItsLiveRegionAnnouncing()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 3);
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Decorative, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+        Assert.AreEqual("3", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitBadgeDecorativeShouldNeverHideAFocusableBadge(bool isLink)
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 3);
+            parameters.Add(p => p.Decorative, true);
+
+            if (isLink)
+            {
+                parameters.Add(p => p.Href, "/inbox");
+            }
+            else
+            {
+                parameters.Add(p => p.OnClick, () => { });
+            }
+        });
+
+        // ARIA forbids hiding a focusable element, which a keyboard user would then land on in silence.
+        Assert.IsNull(component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
     public void BitBadgeLiveRegionShouldPreferTheDescription()
     {
         var component = RenderComponent<BitBadge>(parameters =>
@@ -2255,6 +2311,7 @@ public class BitBadgeTests : BunitTestContext
             Bordered = true,
             Classes = classes,
             Color = BitColor.Warning,
+            Decorative = true,
             Content = 7,
             ContentTemplate = template,
             Description = "Seven",
@@ -2289,6 +2346,7 @@ public class BitBadgeTests : BunitTestContext
         Assert.IsTrue(badge.Bordered);
         Assert.AreSame(classes, badge.Classes);
         Assert.AreEqual(BitColor.Warning, badge.Color);
+        Assert.IsTrue(badge.Decorative);
         Assert.AreEqual(7, badge.Content);
         Assert.AreSame(template, badge.ContentTemplate);
         Assert.AreEqual("Seven", badge.Description);

@@ -140,14 +140,14 @@
         </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Dot Size="BitSize.Small" Description="New mail">
+            <BitBadge Dot Description="New mail">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
-            <BitBadge Dot Size="BitSize.Medium" Description="New mail">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            <BitBadge Dot Description="New alerts">
+                <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Tertiary" />
             </BitBadge>
-            <BitBadge Dot Size="BitSize.Large" Description="New mail">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            <BitBadge Dot Description="Updates available">
+                <BitButton Variant="BitVariant.Outline">Updates</BitButton>
             </BitBadge>
         </div>
     </DemoExample>
@@ -255,6 +255,7 @@
             <b>Description</b> is the badge's text alternative: read by screen readers in place of the visible number, glyph or dot.
             <b>Live</b> announces changes politely, even as the badge appears and disappears; keep it off for counts that only mirror the screen.
             <b>AriaLabel</b> names a button or link badge (a Description then describes it); on a plain badge it serves as the text alternative.
+            Over a focusable child, fold the count into the child's name and mark the badge <b>Decorative</b> so it is not read twice.
         </div>
         <br /><br />
         <div class="example-content">
@@ -266,6 +267,9 @@
             </BitBadge>
             <BitBadge Dot Href="#example11" AriaLabel="Alerts" Description="3 unread">
                 <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Content="unread" Decorative>
+                <BitButton IconOnly IconName="@BitIconName.Mail" Variant="BitVariant.Text" AriaLabel="@($"Inbox, {unread} unread")" />
             </BitBadge>
         </div>
         <br /><br />
@@ -279,7 +283,7 @@
         </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Content="@("Tint")" Style="--bit-Badge-background: color-mix(in srgb, var(--bit-clr-pri) 16%, transparent); --bit-Badge-color: var(--bit-clr-pri);" />
+            <BitBadge Content="@("Tint")" Style="--bit-Badge-background: var(--bit-clr-pri-light); --bit-Badge-color: var(--bit-clr-pri);" />
             <BitBadge Content="@("Custom")" Style="--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;" />
             <BitBadge Content="@("Tall")" Style="--bit-Badge-height: 2rem; --bit-Badge-padding: 0 1rem; --bit-Badge-radius: 0.5rem; --bit-Badge-font-weight: 400;" />
             <BitBadge Dot Pulse Description="Recording" Style="--bit-Badge-dot-size: 0.75rem; --bit-Badge-background: crimson; --bit-Badge-pulse-color: crimson;" />
@@ -415,6 +419,19 @@
     <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Size</b> sets the height, type size and padding, and the diameter of a dot. A single digit stays a circle at every size.
+            The heights and dots are theme tokens (<code>--bit-siz-badge-*</code>), so each design-system preset sizes badges its own way.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitBadge Dot Size="BitSize.Small" Description="New mail">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Dot Size="BitSize.Medium" Description="New mail">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Dot Size="BitSize.Large" Description="New mail">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
         </div>
         <br /><br />
         <div class="example-content">
@@ -444,7 +461,7 @@
         <br /><br />
         <div>Component's Style & Class:</div><br />
         <div class="example-content">
-            <BitBadge Content="84" Style="color: dodgerblue;">
+            <BitBadge Content="84" Style="outline: 1px dashed dodgerblue; outline-offset: 0.25rem;">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
             <BitBadge Content="84" Class="custom-class" Variant="BitVariant.Outline">
@@ -455,7 +472,7 @@
         <div><b>Styles</b> & <b>Classes</b>:</div><br />
         <div class="example-content">
             <BitBadge Content="84" IconName="@BitIconName.Info"
-                      Styles="@(new() { Root = "color: tomato;",
+                      Styles="@(new() { Root = "outline: 1px dashed tomato; outline-offset: 0.25rem;",
                                         Badge = "border-radius: unset;",
                                         Icon = "color: tomato;" })">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />

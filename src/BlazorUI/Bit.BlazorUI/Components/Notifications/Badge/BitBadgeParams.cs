@@ -47,6 +47,11 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
     public RenderFragment? ContentTemplate { get; set; }
 
     /// <summary>
+    /// Hides the badge from assistive technologies, for a badge whose child content already says what it shows.
+    /// </summary>
+    public bool? Decorative { get; set; }
+
+    /// <summary>
     /// The text alternative of the badge for assistive technologies, for example "5 unread messages".
     /// </summary>
     public string? Description { get; set; }
@@ -223,6 +228,11 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
         if (ContentTemplate is not null && bitBadge.HasNotBeenSet(nameof(ContentTemplate)))
         {
             bitBadge.ContentTemplate = ContentTemplate;
+        }
+
+        if (Decorative.HasValue && bitBadge.HasNotBeenSet(nameof(Decorative)))
+        {
+            bitBadge.Decorative = Decorative.Value;
         }
 
         if (Description.HasValue() && bitBadge.HasNotBeenSet(nameof(Description)))
