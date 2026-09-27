@@ -52,7 +52,8 @@ namespace BitBlazorUI {
             if (!header) return [];
 
             try {
-                return Array.from(header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)')).map(el => el.id);
+                // only the tabs of this tablist: a pivot nested in a header template has tabs of its own.
+                return Array.from(header.querySelectorAll<HTMLElement>(':scope > .bit-pvti')).map(el => el.id);
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.getItemsOrder:', e);
                 return [];
@@ -117,11 +118,10 @@ namespace BitBlazorUI {
                 if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
 
                 // only the tab itself: a header template can hold something interactive of its own, and
-                // the space typed into an input there belongs to the input rather than to the tablist.
-                // the More button keeps its own space as well, which is what raises the click that opens
-                // its menu.
+                // the space typed into an input there belongs to the input rather than to the tablist - as
+                // do the tabs of a pivot nested in one, whose keys are handled by that pivot.
                 const target = e.target as HTMLElement | null;
-                if (!target || !target.matches || !target.matches('.bit-pvti:not(.bit-pvt-mor)')) return;
+                if (!target || target.parentElement !== header || !target.classList.contains('bit-pvti')) return;
 
                 e.preventDefault();
             };
@@ -289,7 +289,7 @@ namespace BitBlazorUI {
         }
 
         private getItems(): HTMLElement[] {
-            return Array.from(this.header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)'));
+            return Array.from(this.header.querySelectorAll<HTMLElement>(':scope > .bit-pvti'));
         }
 
         private outerSize(el: HTMLElement): number {

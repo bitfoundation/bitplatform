@@ -1947,6 +1947,129 @@ public class BitPivotTests : BunitTestContext
         builder.CloseComponent();
     }
 
+    [TestMethod]
+    public void BitPivotItemsShouldAnnounceTheirPositionInTheSetOfShownTabs()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Visibility, BitVisibility.Collapsed));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C"));
+        });
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual("1", tabs[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("2", tabs[0].GetAttribute("aria-setsize"));
+
+        // A tab the pivot hides is not part of the set, and the ones after it close the gap.
+        Assert.IsNull(tabs[1].GetAttribute("aria-posinset"));
+        Assert.IsNull(tabs[1].GetAttribute("aria-setsize"));
+
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-posinset"));
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-setsize"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldKeepCountingTheTabsFoldedIntoTheOverflowMenu()
+    {
+        var component = RenderOverflowPivot();
+
+        var tabs = component.FindAll("[role=tab]");
+
+        // The folded tabs are out of the accessibility tree, so the count a screen reader works out from the
+        // header alone would be two; the pivot states the four it actually has.
+        Assert.AreEqual("4", tabs[0].GetAttribute("aria-setsize"));
+        Assert.AreEqual("1", tabs[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("4", tabs[3].GetAttribute("aria-posinset"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldRecountWhenATabIsHidden()
+    {
+        var component = RenderPivot(3);
+
+        var second = component.FindComponents<BitPivotItem>()[1];
+        second.Render(p => p.Add(i => i.Visibility, BitVisibility.Collapsed));
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual("2", tabs[0].GetAttribute("aria-setsize"));
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-posinset"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldAnnounceTheKeysThatDismissAndMoveThem()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.OnItemDismiss, (BitPivotItem _) => { });
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs _) => { });
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Dismissible, false).Add(i => i.Reorderable, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C").Add(i => i.IsEnabled, false));
+        });
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual("Delete Control+ArrowLeft Control+ArrowRight", tabs[0].GetAttribute("aria-keyshortcuts"));
+
+        // Neither dismissible nor movable, and a disabled tab can do neither.
+        Assert.IsNull(tabs[1].GetAttribute("aria-keyshortcuts"));
+        Assert.IsNull(tabs[2].GetAttribute("aria-keyshortcuts"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldAnnounceTheVerticalArrowsOfAVerticalHeader()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Position, BitPivotPosition.Start);
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs _) => { });
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+        });
+
+        Assert.AreEqual("Control+ArrowUp Control+ArrowDown", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+    }
+
+    [TestMethod,
+         DataRow(BitPivotPosition.Top, true),
+         DataRow(BitPivotPosition.Start, false)
+    ]
+    public void BitPivotSlideButtonsShouldMirrorTheirArrowsInARightToLeftLayout(BitPivotPosition position, bool mirrored)
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Slide);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        // A horizontal header runs the other way in RTL, a vertical one does not.
+        foreach (var icon in component.FindAll(".bit-pvt-sbt i"))
+        {
+            Assert.AreEqual(mirrored, icon.ClassList.Contains("bit-ico-frt"));
+        }
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldNotAnnounceAMoveNothingHandles()
+    {
+        // Without an OnItemReorder / OnItemDismiss the keys do nothing, so they are not something to announce.
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        Assert.IsNull(component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+    }
+
     // A Menu pivot whose last two items the (unavailable) JS half of the overflow behavior reports as
     // the folded ones, which is the state every assertion about the overflow menu starts from.
     private IRenderedComponent<BitPivot> RenderOverflowPivot()

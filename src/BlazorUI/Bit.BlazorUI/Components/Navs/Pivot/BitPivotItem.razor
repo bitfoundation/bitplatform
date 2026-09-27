@@ -25,6 +25,9 @@
      class="@ClassBuilder.Value @Parent?.GetItemDragClass(this) @Parent?.GetItemOverflowClass(this)"
      tabindex="@Parent?.GetItemTabIndex(this)"
      aria-controls="@Parent?.GetItemPanelId(this)"
+     aria-posinset="@Parent?.GetItemPosInSet(this)"
+     aria-setsize="@Parent?.GetItemSetSize(this)"
+     aria-keyshortcuts="@Parent?.GetItemKeyShortcuts(this)"
      aria-disabled="@(_IsDisabled ? "true" : null)"
      aria-selected="@(IsSelected ? "true": "false")">
     <span style="@Parent?.Styles?.HeaderItemContent" class="bit-pvti-cnt @Parent?.Classes?.HeaderItemContent">

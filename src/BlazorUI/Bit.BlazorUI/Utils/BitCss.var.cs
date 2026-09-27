@@ -629,6 +629,7 @@ public static partial class BitCss
 
             public const string Tab = "--bit-siz-tab";
             public const string TabIndicator = "--bit-siz-tab-indicator";
+            public const string TabDivider = "--bit-siz-tab-divider";
             public const string Divider = "--bit-siz-divider";
 
             public static class Track

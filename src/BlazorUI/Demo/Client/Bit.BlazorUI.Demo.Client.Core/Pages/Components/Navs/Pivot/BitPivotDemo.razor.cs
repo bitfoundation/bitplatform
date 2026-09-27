@@ -504,8 +504,8 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-item-height",
-            DefaultValue = "--bit-siz-tab",
-            Description = "Height of an item and of the slide and add buttons.",
+            DefaultValue = "--bit-siz-tab (x0.75 Small, x1.25 Large)",
+            Description = "Height of an item and of the slide and add buttons, for every Size.",
         },
         new()
         {
@@ -518,6 +518,18 @@ public partial class BitPivotDemo
             Name = "--bit-Pivot-item-radius",
             DefaultValue = "0 (Tab: --bit-shp-radius-control)",
             Description = "Corner radius of an item and its focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-min-width",
+            DefaultValue = "auto",
+            Description = "Narrowest an item gets, e.g. to line up icon-only tabs.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-max-width",
+            DefaultValue = "none",
+            Description = "Widest an item gets; a longer header text ends in an ellipsis (give the item a Title).",
         },
         new()
         {
@@ -542,6 +554,18 @@ public partial class BitPivotDemo
             Name = "--bit-Pivot-dismiss-size",
             DefaultValue = "spacing(3)",
             Description = "Box of the dismiss button: its pointer target, 24px by default for WCAG 2.2 SC 2.5.8.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-divider-thickness",
+            DefaultValue = "--bit-siz-tab-divider",
+            Description = "The rule between the header and the panel, under the indicator: none under Fluent, 1px under Material.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-divider-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of that rule.",
         },
         new()
         {

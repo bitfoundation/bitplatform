@@ -28,7 +28,7 @@
                         aria-label="@(PreviousAriaLabel ?? "Previous")"
                         @onclick="() => Slide(false)"
                         class="bit-pvt-sbt bit-pvt-spv @Classes?.SlideButton">
-                    <i aria-hidden="true" class="@prevIcon?.GetCssClasses()" />
+                    <i aria-hidden="true" class="@prevIcon?.GetCssClasses() @_SlideIconMirrorClass" />
                 </button>
             }
 
@@ -82,7 +82,7 @@
                         aria-label="@(NextAriaLabel ?? "Next")"
                         @onclick="() => Slide(true)"
                         class="bit-pvt-sbt bit-pvt-snx @Classes?.SlideButton">
-                    <i aria-hidden="true" class="@nextIcon?.GetCssClasses()" />
+                    <i aria-hidden="true" class="@nextIcon?.GetCssClasses() @_SlideIconMirrorClass" />
                 </button>
             }
 

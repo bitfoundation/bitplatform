@@ -121,7 +121,8 @@
     <DemoExample Title="Position" RazorCode="@example5RazorCode" Id="example5">
         <div>
             <b>Position</b> puts the header on any side: <b>Top</b> (default), <b>Bottom</b>, <b>Start</b> or <b>End</b>.
-            Start and End stack the headers in a column, which the up and down arrows navigate.
+            Start and End stack the headers in a column, which the up and down arrows navigate. A pivot nested in a panel
+            keeps its own position and header type.
         </div>
         <br />
         <div>Bottom:</div>
@@ -151,6 +152,20 @@
                 <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
                 <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
                 <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+        <div>Nested:</div>
+        <br />
+        <div class="box">
+            <BitPivot Position="BitPivotPosition.Start" HeaderType="BitPivotHeaderType.Tab">
+                <BitPivotItem HeaderText="Account">
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Profile"><div>Account / Profile</div></BitPivotItem>
+                        <BitPivotItem HeaderText="Security"><div>Account / Security</div></BitPivotItem>
+                    </BitPivot>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Billing"><div>Pivot #2: Billing</div></BitPivotItem>
             </BitPivot>
         </div>
     </DemoExample>
@@ -353,8 +368,35 @@
         <div>Last refused: <b>@refusedPivotItem?.HeaderText</b></div>
     </DemoExample>
 
-    <DemoExample Title="Detached" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div><b>HeaderOnly</b> renders the header without its panel, so the selected key can drive content anywhere on the page.</div>
+    <DemoExample Title="Panels" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            Only the selected panel is rendered by default. <b>KeepMounted</b> keeps every panel that has been shown, so its
+            state survives a tab switch; <b>MountAll</b> renders every panel up front. Type into a box, switch tabs, come back.
+            <b>HeaderOnly</b> renders no panel at all, so the selected key can drive content anywhere on the page.
+        </div>
+        <br />
+        <div>Default:</div>
+        <br />
+        <BitPivot>
+            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>KeepMounted:</div>
+        <br />
+        <BitPivot KeepMounted>
+            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>MountAll:</div>
+        <br />
+        <BitPivot MountAll>
+            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>HeaderOnly:</div>
         <br />
         <BitPivot HeaderOnly @bind-SelectedKey="detachedSelectedKey">
             <BitPivotItem HeaderText="Foo" Key="Foo" />
@@ -378,35 +420,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Mounting" RazorCode="@example12RazorCode" Id="example12">
-        <div>
-            Only the selected panel is rendered by default. <b>KeepMounted</b> keeps every panel that has been shown, so its
-            state survives a tab switch; <b>MountAll</b> renders every panel up front. Type into a box, switch tabs, come back.
-        </div>
-        <br />
-        <div>Default:</div>
-        <br />
-        <BitPivot>
-            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
-            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
-        </BitPivot>
-        <br /><br />
-        <div>KeepMounted:</div>
-        <br />
-        <BitPivot KeepMounted>
-            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
-            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
-        </BitPivot>
-        <br /><br />
-        <div>MountAll:</div>
-        <br />
-        <BitPivot MountAll>
-            <BitPivotItem HeaderText="First"><input aria-label="First" placeholder="Type here..." /></BitPivotItem>
-            <BitPivotItem HeaderText="Second"><input aria-label="Second" placeholder="Type here..." /></BitPivotItem>
-        </BitPivot>
-    </DemoExample>
-
-    <DemoExample Title="Dismiss & add" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Dismiss & add" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>Dismissible</b> adds a dismiss button to every header (an item overrides it with its own <b>Dismissible</b>);
             the Delete key does the same. <b>Addable</b> adds a button that raises <b>OnAdd</b>. The items belong to your
@@ -432,7 +446,7 @@
         <div>Selected key: <b>@editableSelectedKey</b></div>
     </DemoExample>
 
-    <DemoExample Title="Reorderable" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Reorderable" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>Reorderable</b> lets headers be dragged, or moved with <b>Ctrl</b>+arrow keys. <b>OnItemReorder</b> reports
             the item with its old and new index, and your handler moves it. An item's own <b>Reorderable</b>="false" pins it.
@@ -451,11 +465,12 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Keyboard & accessibility" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Keyboard & accessibility" RazorCode="@example14RazorCode" Id="example14">
         <div>
             The header is one tab stop: arrows move between tabs (mirrored in RTL, up/down when vertical), Home/End jump to
-            the ends, Enter/Space select, and disabled or hidden tabs are skipped. Name the tablist with <b>AriaLabel</b>
-            or <b>AriaLabelledBy</b>. <b>SelectOnFocus</b> selects as the focus moves, <b>Loop</b>="false" stops at the
+            the ends, Enter/Space select, and disabled or hidden tabs are skipped. Each tab announces its position (tabs
+            folded into the overflow menu still count) and its Delete / Ctrl+arrow shortcuts. Name the tablist with
+            <b>AriaLabel</b> or <b>AriaLabelledBy</b>. <b>SelectOnFocus</b> selects as the focus moves, <b>Loop</b>="false" stops at the
             ends, and <b>Navigable</b>="false" gives every tab its own tab stop.
         </div>
         <br />
@@ -484,7 +499,7 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Disabled" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Disabled" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>IsEnabled</b>="false" disables the whole pivot, or one item when set on it. Disabled tabs are announced as
             such, skipped by the arrow keys and refused as a selected key.
@@ -515,7 +530,7 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="Cascading parameters" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             <b>BitParams</b> carries a <b>BitPivotParams</b> to every pivot under it. It fills in only what a pivot leaves
             unset, so the second pivot keeps its own <b>Color</b>. Selection, templates and callbacks stay per pivot.
@@ -536,7 +551,7 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
         <div>
             <b>Color</b> (a <BitLink Href="#color-enum">BitColor</BitLink>) paints the indicator of a Link pivot and the
             fill of a Tab pivot, as well as the focus ring.
@@ -763,7 +778,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Icon</b> takes icons from external libraries such as FontAwesome and Bootstrap Icons. See
             <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> for usage.
@@ -788,8 +803,8 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
-        <div><b>Size</b> moves the headers along the type ramp: <b>Small</b>, <b>Medium</b> (default) and <b>Large</b>.</div>
+    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19" PreventRenderForMcpClient>
+        <div><b>Size</b> scales the headers' text and height: <b>Small</b>, <b>Medium</b> (default) and <b>Large</b>.</div>
         <br />
         <div>Small:</div>
         <br />
@@ -816,11 +831,11 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CodeFiles="@example21CodeFiles" Id="example21">
+    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CodeFiles="@example20CodeFiles" Id="example20">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part by name (see
             <BitLink Href="#pivot-class-styles">BitPivotClassStyles</BitLink>). The public <b>--bit-Pivot-*</b> CSS variables
-            re-skin the indicator, items, gap, dismiss button, panel and overflow menu, set on <code>:root</code>, an ancestor
+            re-skin the indicator, divider, items, gap, dismiss button, panel and overflow menu, set on <code>:root</code>, an ancestor
             or one pivot's <b>Style</b>.
         </div>
         <br />
@@ -868,21 +883,23 @@
             <BitPivotItem HeaderText="Month"><div>Pivot #3: Month</div></BitPivotItem>
         </BitPivot>
         <br /><br />
-        <div>CSS variables - full-width rounded indicator:</div>
+        <div>CSS variables - edge-to-edge indicator on a divider, with long headers truncated:</div>
         <br />
         <BitPivot Style="--bit-Pivot-color: tomato;
                          --bit-Pivot-item-selected-color: tomato;
                          --bit-Pivot-indicator-thickness: 4px;
                          --bit-Pivot-indicator-inset: 0;
                          --bit-Pivot-indicator-radius: 4px 4px 0 0;
-                         --bit-Pivot-item-hover-background: transparent;">
+                         --bit-Pivot-item-hover-background: transparent;
+                         --bit-Pivot-item-max-width: 8rem;
+                         --bit-Pivot-divider-thickness: 1px;">
             <BitPivotItem HeaderText="Overview"><div>Pivot #1: Overview</div></BitPivotItem>
-            <BitPivotItem HeaderText="Activity"><div>Pivot #2: Activity</div></BitPivotItem>
+            <BitPivotItem HeaderText="Activity across every workspace" Title="Activity across every workspace"><div>Pivot #2: Activity</div></BitPivotItem>
             <BitPivotItem HeaderText="Settings"><div>Pivot #3: Settings</div></BitPivotItem>
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
         <div>
             <b>Dir</b>="Rtl" mirrors the pivot: the headers, indicator and slide buttons, the Start and End positions, and
             the left and right arrow keys.

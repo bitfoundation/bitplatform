@@ -53,6 +53,9 @@
     //underline are independent decisions.
     --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
     --bit-siz-tab-indicator: 0.125rem; //2px
+    //the rule a tab strip draws under its whole header, which the indicator of the selected tab sits
+    //on. Fluent draws none; Material draws the divider hairline.
+    --bit-siz-tab-divider: 0;
 
     //the thickness of a divider rule (BitSeparator, menu separators). Defaults to the hairline
     //border width; a preset can thin it (Cupertino's 0.5px hairline) without touching control borders.

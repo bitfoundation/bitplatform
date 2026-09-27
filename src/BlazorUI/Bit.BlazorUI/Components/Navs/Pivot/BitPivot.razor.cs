@@ -400,6 +400,10 @@ public partial class BitPivot : BitComponentBase
     private bool _ShowSlideButtons => OverflowBehavior is BitPivotOverflowBehavior.Slide
                                    && (AutoHideSlideButtons is false || _slideHasOverflow);
 
+    // A horizontal header runs the other way in a right-to-left layout, so the arrows of its slide buttons are
+    // mirrored along with it (the direction is read off the rendered document, see BitIcon's FlipRtl).
+    private string? _SlideIconMirrorClass => _isVertical ? null : "bit-ico-trn bit-ico-frt";
+
     // The selected tab can be one of the tabs the Menu behavior folded away, and a header showing no
     // selection at all reads as if nothing were selected, so the button that holds it says so.
     private bool _IsSelectedOverflowed => _selectedItem is not null && _overflowItemSet.Contains(_selectedItem);
@@ -856,6 +860,54 @@ public partial class BitPivot : BitComponentBase
                 : (DismissTitle ?? "Remove");
     }
 
+    // A tab folded into the overflow menu is out of the accessibility tree, so the position and the count a
+    // screen reader would otherwise work out from the header itself would leave it out. They are stated
+    // outright instead, counting every tab that is actually part of the pivot - folded or not - and none of
+    // the ones the pivot hides.
+    internal int? GetItemPosInSet(BitPivotItem item)
+    {
+        if (item.Visibility != BitVisibility.Visible) return null;
+
+        var position = 0;
+        foreach (var i in _allItems)
+        {
+            if (i.Visibility != BitVisibility.Visible) continue;
+
+            position++;
+
+            if (i == item) return position;
+        }
+
+        return null;
+    }
+
+    internal int? GetItemSetSize(BitPivotItem item)
+    {
+        if (item.Visibility != BitVisibility.Visible) return null;
+
+        return _allItems.Count(i => i.Visibility == BitVisibility.Visible);
+    }
+
+    // The dismiss button of a tab is out of the tab order and inside an element whose content is presentational
+    // to assistive technologies, and a drag is not something a keyboard can do, so the keys that do both are
+    // announced on the tab itself - as long as something handles them.
+    internal string? GetItemKeyShortcuts(BitPivotItem item)
+    {
+        List<string> keys = [];
+
+        if (IsEnabled && item.IsEnabled && GetItemDismissible(item) && (OnItemDismiss.HasDelegate || item.OnDismiss.HasDelegate))
+        {
+            keys.Add("Delete");
+        }
+
+        if (GetItemReorderable(item) && OnItemReorder.HasDelegate)
+        {
+            keys.Add(_isVertical ? "Control+ArrowUp Control+ArrowDown" : "Control+ArrowLeft Control+ArrowRight");
+        }
+
+        return keys.Count == 0 ? null : string.Join(' ', keys);
+    }
+
     internal string GetMenuItemId(int index)
     {
         return $"{_MenuId}-{index}";
@@ -910,10 +962,13 @@ public partial class BitPivot : BitComponentBase
         _allItems.Add(item);
 
         // An item that shows up after the first render is created last whatever its place in the markup,
-        // so the list has to be put back into the order the header is actually laid out in.
+        // so the list has to be put back into the order the header is actually laid out in. The tabs already
+        // there announce a position in a set that has just grown, too.
         if (_rendered)
         {
             _orderCheckNeeded = true;
+
+            RefreshAllItems();
         }
 
         // An item that declares itself selected wins over the key, so a pivot driven by the IsSelected
@@ -959,6 +1014,9 @@ public partial class BitPivot : BitComponentBase
 
         _allItems.Remove(item);
         _mountedItems.Remove(item);
+
+        // The tabs left behind announce a position in a set that has just shrunk.
+        RefreshAllItems();
 
         if (_overflowItemSet.Remove(item))
         {
@@ -1028,6 +1086,16 @@ public partial class BitPivot : BitComponentBase
 
     internal void Refresh()
     {
+        StateHasChanged();
+    }
+
+    // A tab shown or hidden changes the position every other tab announces, and what the header can navigate.
+    internal void RefreshWithItems()
+    {
+        if (IsDisposed) return;
+
+        RefreshAllItems();
+
         StateHasChanged();
     }
 

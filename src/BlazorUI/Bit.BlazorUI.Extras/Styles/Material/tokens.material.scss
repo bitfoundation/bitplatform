@@ -83,6 +83,7 @@
     --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7); //56px - one-line list item
     --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6); //48px
     --bit-siz-tab-indicator: 0.1875rem; //3px
+    --bit-siz-tab-divider: var(--bit-siz-divider); //1px - M3 tabs divider
     --bit-siz-track-sm: 0.25rem; //4px - M3 linear progress
     --bit-siz-track-md: 0.25rem; //4px
     --bit-siz-track-lg: 0.5rem; //8px

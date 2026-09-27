@@ -616,6 +616,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.Item.Lg, bitTheme.Size.Item.Lg);
         addCssVar(BitCss.Var.Size.Tab, bitTheme.Size.Tab);
         addCssVar(BitCss.Var.Size.TabIndicator, bitTheme.Size.TabIndicator);
+        addCssVar(BitCss.Var.Size.TabDivider, bitTheme.Size.TabDivider);
         addCssVar(BitCss.Var.Size.Divider, bitTheme.Size.Divider);
         addCssVar(BitCss.Var.Size.Track.Sm, bitTheme.Size.Track.Sm);
         addCssVar(BitCss.Var.Size.Track.Md, bitTheme.Size.Track.Md);
@@ -836,6 +837,7 @@ internal static class BitThemeMapper
             Item = src.Item ?? new(),
             Tab = src.Tab,
             TabIndicator = src.TabIndicator,
+            TabDivider = src.TabDivider,
             Divider = src.Divider,
             Track = src.Track ?? new(),
             Switch = NormalizeSwitchSize(src.Switch),
@@ -1386,6 +1388,7 @@ internal static class BitThemeMapper
         result.Size.Item.Lg = bitTheme.Size.Item.Lg ?? other.Size.Item.Lg;
         result.Size.Tab = bitTheme.Size.Tab ?? other.Size.Tab;
         result.Size.TabIndicator = bitTheme.Size.TabIndicator ?? other.Size.TabIndicator;
+        result.Size.TabDivider = bitTheme.Size.TabDivider ?? other.Size.TabDivider;
         result.Size.Divider = bitTheme.Size.Divider ?? other.Size.Divider;
         result.Size.Track.Sm = bitTheme.Size.Track.Sm ?? other.Size.Track.Sm;
         result.Size.Track.Md = bitTheme.Size.Track.Md ?? other.Size.Track.Md;

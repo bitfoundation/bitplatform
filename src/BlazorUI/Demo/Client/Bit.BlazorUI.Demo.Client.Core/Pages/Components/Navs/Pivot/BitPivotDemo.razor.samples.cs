@@ -87,6 +87,16 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Position=""BitPivotPosition.Start"" HeaderType=""BitPivotHeaderType.Tab"">
+    <BitPivotItem HeaderText=""Account"">
+        <BitPivot>
+            <BitPivotItem HeaderText=""Profile""><div>Account / Profile</div></BitPivotItem>
+            <BitPivotItem HeaderText=""Security""><div>Account / Security</div></BitPivotItem>
+        </BitPivot>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Billing""><div>Pivot #2: Billing</div></BitPivotItem>
 </BitPivot>";
 
     private readonly string example6RazorCode = @"
@@ -244,6 +254,21 @@ private void HandleChanging(BitPivotChangeArgs args)
 }";
 
     private readonly string example11RazorCode = @"
+<BitPivot>
+    <BitPivotItem HeaderText=""First""><input aria-label=""First"" placeholder=""Type here..."" /></BitPivotItem>
+    <BitPivotItem HeaderText=""Second""><input aria-label=""Second"" placeholder=""Type here..."" /></BitPivotItem>
+</BitPivot>
+
+<BitPivot KeepMounted>
+    <BitPivotItem HeaderText=""First""><input aria-label=""First"" placeholder=""Type here..."" /></BitPivotItem>
+    <BitPivotItem HeaderText=""Second""><input aria-label=""Second"" placeholder=""Type here..."" /></BitPivotItem>
+</BitPivot>
+
+<BitPivot MountAll>
+    <BitPivotItem HeaderText=""First""><input aria-label=""First"" placeholder=""Type here..."" /></BitPivotItem>
+    <BitPivotItem HeaderText=""Second""><input aria-label=""Second"" placeholder=""Type here..."" /></BitPivotItem>
+</BitPivot>
+
 <BitPivot HeaderOnly @bind-SelectedKey=""detachedSelectedKey"">
     <BitPivotItem HeaderText=""Foo"" Key=""Foo"" />
     <BitPivotItem HeaderText=""Bar"" Key=""Bar"" />
@@ -268,22 +293,6 @@ private void HandleChanging(BitPivotChangeArgs args)
 private string? detachedSelectedKey = ""Foo"";";
 
     private readonly string example12RazorCode = @"
-<BitPivot>
-    <BitPivotItem HeaderText=""First""><input aria-label=""First"" placeholder=""Type here..."" /></BitPivotItem>
-    <BitPivotItem HeaderText=""Second""><input aria-label=""Second"" placeholder=""Type here..."" /></BitPivotItem>
-</BitPivot>
-
-<BitPivot KeepMounted>
-    <BitPivotItem HeaderText=""First""><input aria-label=""First"" placeholder=""Type here..."" /></BitPivotItem>
-    <BitPivotItem HeaderText=""Second""><input aria-label=""Second"" placeholder=""Type here..."" /></BitPivotItem>
-</BitPivot>
-
-<BitPivot MountAll>
-    <BitPivotItem HeaderText=""First""><input aria-label=""First"" placeholder=""Type here..."" /></BitPivotItem>
-    <BitPivotItem HeaderText=""Second""><input aria-label=""Second"" placeholder=""Type here..."" /></BitPivotItem>
-</BitPivot>";
-
-    private readonly string example13RazorCode = @"
 <BitPivot Addable Dismissible
           @bind-SelectedKey=""editableSelectedKey""
           OnAdd=""AddTab""
@@ -300,7 +309,7 @@ private string? detachedSelectedKey = ""Foo"";";
 </BitPivot>
 
 <div>Selected key: <b>@editableSelectedKey</b></div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private int editableTabCount = 2;
 private string? editableSelectedKey = ""Home"";
 private readonly List<string> editableTabs = [""Tab 1"", ""Tab 2""];
@@ -313,7 +322,7 @@ private void AddTab()
     editableSelectedKey = key;
 }";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitPivot Reorderable OnItemReorder=""HandleReorder"">
     @foreach (var tab in reorderableTabs)
     {
@@ -325,7 +334,7 @@ private void AddTab()
         <div>This tab stays where it is.</div>
     </BitPivotItem>
 </BitPivot>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly List<string> reorderableTabs = [""File"", ""Shared"", ""Recent"", ""Favorites""];
 
 private void HandleReorder(BitPivotReorderEventArgs args)
@@ -339,7 +348,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
     reorderableTabs.Insert(newIndex, args.Item.Key!);
 }";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <div id=""pivot-settings-label""><b>Account settings</b></div>
 
 <BitPivot AriaLabelledBy=""pivot-settings-label"" SelectOnFocus>
@@ -360,7 +369,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitPivot IsEnabled=""false"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
@@ -379,7 +388,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitParams Parameters=""@pivotParams"">
     <BitPivot>
         <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
@@ -393,7 +402,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
         <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
     </BitPivot>
 </BitParams>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private readonly BitPivotParams[] pivotParams =
 [
     new()
@@ -404,7 +413,7 @@ private readonly BitPivotParams[] pivotParams =
     }
 ];";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitPivot Color=""BitColor.Primary"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
@@ -441,7 +450,7 @@ private readonly BitPivotParams[] pivotParams =
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Success"">...</BitPivot>
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Error"">...</BitPivot>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPivot>
@@ -459,7 +468,7 @@ private readonly BitPivotParams[] pivotParams =
     <BitPivotItem HeaderText=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")""><div>Pivot #3: Gear</div></BitPivotItem>
 </BitPivot>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitPivot Size=""BitSize.Small"">
     <BitPivotItem HeaderText=""File"" IconName=""@BitIconName.FabricFolder""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared"" ItemCount=""32""><div>Pivot #2: Shared</div></BitPivotItem>
@@ -478,7 +487,7 @@ private readonly BitPivotParams[] pivotParams =
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example20RazorCode = @"
 <div class=""pivot-custom"">
     <BitPivot Style=""border: 1px solid tomato;"">
         <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
@@ -524,12 +533,14 @@ private readonly BitPivotParams[] pivotParams =
                  --bit-Pivot-indicator-thickness: 4px;
                  --bit-Pivot-indicator-inset: 0;
                  --bit-Pivot-indicator-radius: 4px 4px 0 0;
-                 --bit-Pivot-item-hover-background: transparent;"">
+                 --bit-Pivot-item-hover-background: transparent;
+                 --bit-Pivot-item-max-width: 8rem;
+                 --bit-Pivot-divider-thickness: 1px;"">
     <BitPivotItem HeaderText=""Overview""><div>Pivot #1: Overview</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Activity""><div>Pivot #2: Activity</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Activity across every workspace"" Title=""Activity across every workspace""><div>Pivot #2: Activity</div></BitPivotItem>
     <BitPivotItem HeaderText=""Settings""><div>Pivot #3: Settings</div></BitPivotItem>
 </BitPivot>";
-    private const string example21ScssCode = @"
+    private const string example20ScssCode = @"
 .pivot-custom ::deep {
     .custom-class {
         margin: 1rem;
@@ -552,12 +563,12 @@ private readonly BitPivotParams[] pivotParams =
         background-color: deepskyblue;
     }
 }";
-    private readonly DemoCodeFile[] example21CodeFiles =
+    private readonly DemoCodeFile[] example20CodeFiles =
     [
-        new("BitPivotDemo.razor.scss", example21ScssCode),
+        new("BitPivotDemo.razor.scss", example20ScssCode),
     ];
 
-    private readonly string example22RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.FabricFolder"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
