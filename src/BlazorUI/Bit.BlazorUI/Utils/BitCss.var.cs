@@ -698,6 +698,20 @@ public static partial class BitCss
                 public const string Lg = "--bit-siz-slider-thumb-lg";
             }
 
+            public static class Badge
+            {
+                public const string Sm = "--bit-siz-badge-sm";
+                public const string Md = "--bit-siz-badge-md";
+                public const string Lg = "--bit-siz-badge-lg";
+            }
+
+            public static class BadgeDot
+            {
+                public const string Sm = "--bit-siz-badge-dot-sm";
+                public const string Md = "--bit-siz-badge-dot-md";
+                public const string Lg = "--bit-siz-badge-dot-lg";
+            }
+
             public const string SpinnerStroke = "--bit-siz-spinner-stroke";
             public const string PopupMaxHeight = "--bit-siz-popup-max-height";
             public const string DialogMaxWidth = "--bit-siz-dialog-max-width";

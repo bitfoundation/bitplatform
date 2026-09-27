@@ -345,6 +345,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitBreadcrumb", "BitBreadcrumbParams")]
     [DataRow("BitBasicList", "BitBasicListParams")]
     [DataRow("BitMessage", "BitMessageParams")]
+    [DataRow("BitBadge", "BitBadgeParams")]
     [DataRow("BitPivot", "BitPivotParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
