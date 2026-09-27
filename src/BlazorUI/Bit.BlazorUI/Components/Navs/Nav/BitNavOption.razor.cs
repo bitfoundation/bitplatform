@@ -22,7 +22,8 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
 
     /// <summary>
-    /// Aria label for nav option. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.
+    /// The accessible name of the nav option, in place of its text. It also names a group header, whose
+    /// CollapseAriaLabel/ExpandAriaLabel only apply when it is not set.
     /// </summary>
     [Parameter] public string? AriaLabel { get; set; }
 
@@ -171,6 +172,10 @@ public partial class BitNavOption : ComponentBase, IDisposable
             Parent.ChildItems.Add(this);
         }
 
+        // A nested option only re-renders its parent, not the nav, so the tree the nav has cached the
+        // ancestors of its selected item from is told it changed shape.
+        Nav?.InvalidateSelectedAncestors();
+
         if (Nav is not null)
         {
             Nav.SetItemExpanded(this, Nav.AllExpanded || (Nav.GetIsExpanded(this) ?? false));
@@ -208,6 +213,8 @@ public partial class BitNavOption : ComponentBase, IDisposable
         {
             Parent.ChildItems.Remove(this);
         }
+
+        Nav?.InvalidateSelectedAncestors();
 
         Nav?.SetSelectedItemByCurrentUrl();
 
