@@ -50,7 +50,7 @@ public partial class BitBadge : BitComponentBase
     // text alternative - so a badge given none of them is not rendered as an empty pill on top of its child.
     private bool _isBadgeVisible => Hidden is false
                                  && (_isZeroSuppressed is false || _hasOwnContent)
-                                 && (Dot || _hasOwnContent || _content.HasValue() || Description.HasValue());
+                                 && (Dot || _hasOwnContent || _content.HasValue() || _textAlternative.HasValue());
 
     // A badge that navigates or does something of its own is the control a screen reader lands on and the
     // element a keyboard user reaches, whichever of the two it is built from.

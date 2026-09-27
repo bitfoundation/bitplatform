@@ -486,9 +486,9 @@
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
     --bit-bdg-cnt-clr-brd: var(--bit-Badge-color, var(--bit-bdg-clr));
     --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light);
-    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover);
+    --bit-bdg-cnt-clr-brd-hover: var(--bit-Badge-color, var(--bit-bdg-clr-hover));
     --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover);
-    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active);
+    --bit-bdg-cnt-clr-brd-active: var(--bit-Badge-color, var(--bit-bdg-clr-active));
 }
 
 .bit-bdg-txt {
