@@ -1017,7 +1017,7 @@ public partial class BitMessageDemo
         new()
         {
             Variant = BitVariant.Outline,
-            Size = BitSize.Small,
+            Square = true,
             Truncate = true,
         }
     ];

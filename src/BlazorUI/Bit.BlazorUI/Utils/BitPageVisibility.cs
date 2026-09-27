@@ -5,9 +5,15 @@
 /// <br />
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API"/>
 /// </summary>
-public class BitPageVisibility(IJSRuntime js)
+public class BitPageVisibility(IJSRuntime js) : IDisposable, IAsyncDisposable
 {
+    // The page is shared by every .NET side that listens to it (a replaced circuit, the two runtimes of the Auto
+    // mode), so each instance registers itself under an id of its own and takes only itself back out.
+    private readonly string _id = Guid.NewGuid().ToString("N");
+
     private Task? _initTask;
+    private bool _isHiddenReported;
+    private bool _isWindowBlurredReported;
     private DotNetObjectReference<BitPageVisibility>? _dotnetObj;
 
 
@@ -54,18 +60,29 @@ public class BitPageVisibility(IJSRuntime js)
 
         _initTask = InitCore();
 
-        await _initTask;
+        try
+        {
+            await _initTask;
+        }
+        catch
+        {
+            // A failed call wired nothing up, so the next caller is let to try again.
+            _initTask = null;
+            throw;
+        }
     }
 
     private async Task InitCore()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
+        _dotnetObj ??= DotNetObjectReference.Create(this);
 
-        var state = await js.Invoke<BitPageVisibilityState?>("BitBlazorUI.PageVisibility.init", _dotnetObj);
+        var state = await js.Invoke<BitPageVisibilityState?>("BitBlazorUI.PageVisibility.init", _id, _dotnetObj);
         if (state is null) return;
 
-        IsHidden = state.Hidden;
-        IsWindowBlurred = state.Blurred;
+        // The listeners are live from the moment the script registered them, so a change can be reported before
+        // this continuation runs; the snapshot is older than such a report and does not overwrite it.
+        if (_isHiddenReported is false) IsHidden = state.Hidden;
+        if (_isWindowBlurredReported is false) IsWindowBlurred = state.Blurred;
     }
 
 
@@ -74,23 +91,62 @@ public class BitPageVisibility(IJSRuntime js)
     public async Task _VisibilityChanged(bool hidden)
     {
         IsHidden = hidden;
+        _isHiddenReported = true;
 
-        var onChange = OnChange;
-        if (onChange is not null)
-        {
-            await onChange(hidden);
-        }
+        await RaiseAsync(OnChange, hidden);
     }
 
     [JSInvokable("WindowFocusChanged")]
     public async Task _WindowFocusChanged(bool blurred)
     {
         IsWindowBlurred = blurred;
+        _isWindowBlurredReported = true;
 
-        var onWindowFocusChange = OnWindowFocusChange;
-        if (onWindowFocusChange is not null)
+        await RaiseAsync(OnWindowFocusChange, blurred);
+    }
+
+
+
+    public void Dispose()
+    {
+        _dotnetObj?.Dispose();
+        _dotnetObj = null;
+
+        GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_dotnetObj is not null)
         {
-            await onWindowFocusChange(blurred);
+            try
+            {
+                await js.InvokeVoid("BitBlazorUI.PageVisibility.dispose", _id);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone; the script drops the listener the next time it fails to answer
+            catch (JSException) { }
+            catch (OperationCanceledException) { }
+        }
+
+        Dispose();
+    }
+
+
+
+    // Every subscriber is handed the change on its own: a multicast delegate would stop at the first one that
+    // throws, and leave the exceptions of all but the last one unobserved. A failing subscriber is not the page's
+    // failure either, and letting it reach the script would have the page stop reporting to this instance.
+    private static async Task RaiseAsync(Func<bool, Task>? handlers, bool value)
+    {
+        if (handlers is null) return;
+
+        foreach (var handler in handlers.GetInvocationList().Cast<Func<bool, Task>>())
+        {
+            try
+            {
+                await handler(value);
+            }
+            catch { }
         }
     }
 

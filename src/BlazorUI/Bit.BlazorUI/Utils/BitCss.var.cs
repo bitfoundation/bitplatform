@@ -15,6 +15,7 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-pri-dis";
                 public const string DisabledText = "--bit-clr-pri-dis-text";
                 public const string Focus = "--bit-clr-pri-focus";
+                public const string Foreground = "--bit-clr-pri-fg";
 
                 public static class Hover
                 {
@@ -40,6 +41,7 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-sec-dis";
                 public const string DisabledText = "--bit-clr-sec-dis-text";
                 public const string Focus = "--bit-clr-sec-focus";
+                public const string Foreground = "--bit-clr-sec-fg";
 
                 public static class Hover
                 {
@@ -65,6 +67,7 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-ter-dis";
                 public const string DisabledText = "--bit-clr-ter-dis-text";
                 public const string Focus = "--bit-clr-ter-focus";
+                public const string Foreground = "--bit-clr-ter-fg";
 
                 public static class Hover
                 {
@@ -90,6 +93,7 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-inf-dis";
                 public const string DisabledText = "--bit-clr-inf-dis-text";
                 public const string Focus = "--bit-clr-inf-focus";
+                public const string Foreground = "--bit-clr-inf-fg";
 
                 public static class Hover
                 {
@@ -115,6 +119,7 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-suc-dis";
                 public const string DisabledText = "--bit-clr-suc-dis-text";
                 public const string Focus = "--bit-clr-suc-focus";
+                public const string Foreground = "--bit-clr-suc-fg";
 
                 public static class Hover
                 {
@@ -140,6 +145,7 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-wrn-dis";
                 public const string DisabledText = "--bit-clr-wrn-dis-text";
                 public const string Focus = "--bit-clr-wrn-focus";
+                public const string Foreground = "--bit-clr-wrn-fg";
 
                 public static class Hover
                 {
@@ -165,6 +171,7 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-swr-dis";
                 public const string DisabledText = "--bit-clr-swr-dis-text";
                 public const string Focus = "--bit-clr-swr-focus";
+                public const string Foreground = "--bit-clr-swr-fg";
 
                 public static class Hover
                 {
@@ -190,6 +197,7 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-err-dis";
                 public const string DisabledText = "--bit-clr-err-dis-text";
                 public const string Focus = "--bit-clr-err-focus";
+                public const string Foreground = "--bit-clr-err-fg";
 
                 public static class Hover
                 {

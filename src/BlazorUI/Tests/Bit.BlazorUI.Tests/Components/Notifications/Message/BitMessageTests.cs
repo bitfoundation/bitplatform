@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
@@ -1931,6 +1933,48 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMessageShouldStartHeldInAPageThatIsAlreadyHidden()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        Thread.Sleep(400);
+
+        // No visibilitychange is coming for a tab that was already in the background when the message was shown.
+        Assert.AreEqual(0, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldCountDownAsUsualWhenThePageVisibilityScriptFails()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
     public void BitMessageShouldCountDownAsUsualWithoutThePageVisibilityService()
     {
         var dismissCount = 0;
@@ -2926,5 +2970,87 @@ public class BitMessageTests : BunitTestContext
         // The message is a new element, measured from scratch: the expander is back until it is.
         Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
         Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowUnderItsOwnUniqueId()
+    {
+        var first = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "notice");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+        var second = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "notice");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        // Two messages sharing an Id would otherwise stop each other's observer.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.HasCount(2, invocations);
+        Assert.AreEqual(first.Instance.UniqueId, invocations[0].Arguments[0]);
+        Assert.AreEqual(second.Instance.UniqueId, invocations[1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepWatchingTheOverflowWhenItsIdChanges()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "first");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Id, "second"));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldSurviveAnOverflowObserverThatCannotBeStopped()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Message.dispose").SetException(new JSException("BitBlazorUI.Message is not defined"));
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Truncate, false));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+    }
+
+
+
+    // Answers the page visibility init call the way the browser would, or fails it the way a missing script does.
+    private sealed class PageStateJsRuntime : IJSRuntime
+    {
+        private readonly string? _json;
+        private readonly Exception? _exception;
+
+        public PageStateJsRuntime(string json) => _json = json;
+
+        public PageStateJsRuntime(Exception exception) => _exception = exception;
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        {
+            return InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            if (_exception is not null) return ValueTask.FromException<TValue>(_exception);
+
+            return new ValueTask<TValue>(JsonSerializer.Deserialize<TValue>(_json!, JsonSerializerOptions.Web)!);
+        }
     }
 }

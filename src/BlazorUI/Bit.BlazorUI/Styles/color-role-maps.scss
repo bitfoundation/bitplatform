@@ -17,8 +17,13 @@
  *     (fg-pri over backgrounds/borders, bg-pri over foregrounds).
  *
  * Slots: main, on, hover, active, dark, dark-hover, dark-active, light, light-hover,
- * light-active, dis, dis-text, focus. All slots are defined for every role, so component
+ * light-active, dis, dis-text, focus, fg. All slots are defined for every role, so component
  * loops never need per-role special cases beyond the "kind" discriminator.
+ *
+ * `fg` is the role's color when it is READ on the page's own surfaces rather than filled behind
+ * `on` - the text of an outlined or text-only variant. A semantic role reads its own
+ * --bit-clr-<role>-fg token (declared once in family-tokens.scss), since its main color is picked
+ * to be a fill; a surface role IS a page color already, so its fg is simply its main.
  */
 $bit-color-roles: (
     pri: (
@@ -36,6 +41,7 @@ $bit-color-roles: (
         dis: $clr-pri-dis,
         dis-text: $clr-pri-dis-text,
         focus: $clr-pri-focus,
+        fg: $clr-pri-fg,
     ),
     sec: (
         kind: semantic,
@@ -52,6 +58,7 @@ $bit-color-roles: (
         dis: $clr-sec-dis,
         dis-text: $clr-sec-dis-text,
         focus: $clr-sec-focus,
+        fg: $clr-sec-fg,
     ),
     ter: (
         kind: semantic,
@@ -68,6 +75,7 @@ $bit-color-roles: (
         dis: $clr-ter-dis,
         dis-text: $clr-ter-dis-text,
         focus: $clr-ter-focus,
+        fg: $clr-ter-fg,
     ),
     inf: (
         kind: semantic,
@@ -84,6 +92,7 @@ $bit-color-roles: (
         dis: $clr-inf-dis,
         dis-text: $clr-inf-dis-text,
         focus: $clr-inf-focus,
+        fg: $clr-inf-fg,
     ),
     suc: (
         kind: semantic,
@@ -100,6 +109,7 @@ $bit-color-roles: (
         dis: $clr-suc-dis,
         dis-text: $clr-suc-dis-text,
         focus: $clr-suc-focus,
+        fg: $clr-suc-fg,
     ),
     wrn: (
         kind: semantic,
@@ -116,6 +126,7 @@ $bit-color-roles: (
         dis: $clr-wrn-dis,
         dis-text: $clr-wrn-dis-text,
         focus: $clr-wrn-focus,
+        fg: $clr-wrn-fg,
     ),
     swr: (
         kind: semantic,
@@ -132,6 +143,7 @@ $bit-color-roles: (
         dis: $clr-swr-dis,
         dis-text: $clr-swr-dis-text,
         focus: $clr-swr-focus,
+        fg: $clr-swr-fg,
     ),
     err: (
         kind: semantic,
@@ -148,6 +160,7 @@ $bit-color-roles: (
         dis: $clr-err-dis,
         dis-text: $clr-err-dis-text,
         focus: $clr-err-focus,
+        fg: $clr-err-fg,
     ),
     pbg: (
         kind: surface,
@@ -164,6 +177,7 @@ $bit-color-roles: (
         dis: $clr-bg-pri-dis,
         dis-text: $clr-bg-pri-dis-text,
         focus: $clr-bg-pri-focus,
+        fg: $clr-bg-pri,
     ),
     sbg: (
         kind: surface,
@@ -180,6 +194,7 @@ $bit-color-roles: (
         dis: $clr-bg-sec-dis,
         dis-text: $clr-bg-sec-dis-text,
         focus: $clr-bg-sec-focus,
+        fg: $clr-bg-sec,
     ),
     tbg: (
         kind: surface,
@@ -196,6 +211,7 @@ $bit-color-roles: (
         dis: $clr-bg-ter-dis,
         dis-text: $clr-bg-ter-dis-text,
         focus: $clr-bg-ter-focus,
+        fg: $clr-bg-ter,
     ),
     pfg: (
         kind: surface,
@@ -212,6 +228,7 @@ $bit-color-roles: (
         dis: $clr-fg-pri-dis,
         dis-text: $clr-fg-pri-dis-text,
         focus: $clr-fg-pri-focus,
+        fg: $clr-fg-pri,
     ),
     sfg: (
         kind: surface,
@@ -228,6 +245,7 @@ $bit-color-roles: (
         dis: $clr-fg-sec-dis,
         dis-text: $clr-fg-sec-dis-text,
         focus: $clr-fg-sec-focus,
+        fg: $clr-fg-sec,
     ),
     tfg: (
         kind: surface,
@@ -244,6 +262,7 @@ $bit-color-roles: (
         dis: $clr-fg-ter-dis,
         dis-text: $clr-fg-ter-dis-text,
         focus: $clr-fg-ter-focus,
+        fg: $clr-fg-ter,
     ),
     pbr: (
         kind: surface,
@@ -260,6 +279,7 @@ $bit-color-roles: (
         dis: $clr-brd-pri-dis,
         dis-text: $clr-brd-pri-dis-text,
         focus: $clr-brd-pri-focus,
+        fg: $clr-brd-pri,
     ),
     sbr: (
         kind: surface,
@@ -276,6 +296,7 @@ $bit-color-roles: (
         dis: $clr-brd-sec-dis,
         dis-text: $clr-brd-sec-dis-text,
         focus: $clr-brd-sec-focus,
+        fg: $clr-brd-sec,
     ),
     tbr: (
         kind: surface,
@@ -292,6 +313,7 @@ $bit-color-roles: (
         dis: $clr-brd-ter-dis,
         dis-text: $clr-brd-ter-dis-text,
         focus: $clr-brd-ter-focus,
+        fg: $clr-brd-ter,
     ),
 );
 

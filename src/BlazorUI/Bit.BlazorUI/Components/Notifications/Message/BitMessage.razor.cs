@@ -49,9 +49,10 @@ public partial class BitMessage : BitComponentBase
 
     // Whether the folded text is actually clipped, as the browser measured it: null until it has, which keeps the
     // expander where it always was for a message that has not been measured (a prerender, a test renderer).
-    // The id is the one the observer was started under, so it can be stopped under it even after Id changes.
+    // The observer is registered under UniqueId rather than the consumer's Id, which two messages may share and
+    // which may change under a running observer.
     private bool? _isClipped;
-    private string? _observedOverflowId;
+    private bool _isObservingOverflow;
     private DotNetObjectReference<BitMessage>? _dotnetObj;
 
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
@@ -721,9 +722,10 @@ public partial class BitMessage : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        // A message rendered into a page that is already hidden or blurred starts out held, so the state of the page
-        // is read before the first countdown is armed.
-        await SyncPageVisibility();
+        // A message rendered into a page that is already hidden or blurred starts out held, so what is already known
+        // of the page is taken before the first countdown is armed. The browser's own answer is waited for last,
+        // so nothing below is held up by the round trip it takes.
+        var pageVisibilityInit = SyncPageVisibility();
 
         if (firstRender && IsDisposed is false)
         {
@@ -735,6 +737,8 @@ public partial class BitMessage : BitComponentBase
         HandleDelayedAnnouncement();
 
         await SyncOverflowObserver();
+
+        await pageVisibilityInit;
     }
 
 
@@ -756,32 +760,31 @@ public partial class BitMessage : BitComponentBase
     // element, so it is watched afresh.
     private async Task SyncOverflowObserver()
     {
-        var id = (_CanFold && Dismissed is false && IsDisposed is false) ? _Id : null;
+        var observe = _CanFold && Dismissed is false && IsDisposed is false;
 
-        if (id == _observedOverflowId) return;
+        if (observe == _isObservingOverflow) return;
 
-        if (_observedOverflowId is not null)
+        _isObservingOverflow = observe;
+
+        if (observe is false)
         {
-            var previous = _observedOverflowId;
-
-            _observedOverflowId = null;
             _isClipped = null;
 
             try
             {
-                await _js.BitMessageDispose(previous);
+                await _js.BitMessageDispose(UniqueId);
             }
             catch (JSDisconnectedException) { } // the circuit is gone, and the observer with it
+            catch (JSException) { } // there was no observer to stop
+
+            return;
         }
 
-        if (id is null) return;
-
-        _observedOverflowId = id;
         _dotnetObj ??= DotNetObjectReference.Create(this);
 
         try
         {
-            await _js.BitMessageObserveOverflow(id, RootElement, _dotnetObj);
+            await _js.BitMessageObserveOverflow(UniqueId, RootElement, _dotnetObj);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
         catch (JSException) { } // without the observer the expander is rendered, as it always was
@@ -790,23 +793,40 @@ public partial class BitMessage : BitComponentBase
     // Subscribed the first time a countdown asks for it, and kept until the message is disposed: the hold is read
     // through the parameters that asked for it (see _IsPageHeld), so a subscription nobody asks for any more holds
     // nothing. The utility is a scoped service of the library, so an app that registered none simply goes without.
-    private async Task SyncPageVisibility()
+    // The subscription and what the utility already knows are taken synchronously; the returned task is the
+    // browser's answer, which is applied once it arrives.
+    private Task SyncPageVisibility()
     {
-        if (_pageVisibility is not null || IsDisposed) return;
-        if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _HasAutoDismiss is false) return;
+        if (_pageVisibility is not null || IsDisposed) return Task.CompletedTask;
+        if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _HasAutoDismiss is false) return Task.CompletedTask;
 
         _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
-        if (_pageVisibility is null) return;
+        if (_pageVisibility is null) return Task.CompletedTask;
 
         _pageVisibility.OnChange += HandlePageVisibilityChange;
         _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
 
+        ApplyPageVisibility();
+
+        return InitPageVisibility(_pageVisibility);
+    }
+
+    // Without the script the countdown simply is not held, which is no reason to fail the render.
+    private async Task InitPageVisibility(BitPageVisibility pageVisibility)
+    {
         try
         {
-            await _pageVisibility.Init();
+            await pageVisibility.Init();
         }
-        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (JSDisconnectedException) { return; } // the circuit is gone, and the page with it
+        catch (JSException) { return; }
+        catch (OperationCanceledException) { return; } // the interop call timed out
 
+        ApplyPageVisibility();
+    }
+
+    private void ApplyPageVisibility()
+    {
         if (IsDisposed || _pageVisibility is null) return;
 
         _isPageHidden = _pageVisibility.IsHidden;
@@ -1315,11 +1335,11 @@ public partial class BitMessage : BitComponentBase
             _pageVisibility = null;
         }
 
-        if (_observedOverflowId is not null)
+        if (_isObservingOverflow)
         {
             try
             {
-                await _js.BitMessageDispose(_observedOverflowId);
+                await _js.BitMessageDispose(UniqueId);
             }
             catch (JSDisconnectedException) { } // the circuit is gone, and the observer with it
             catch (JSException) { } // the .NET reference below is released regardless

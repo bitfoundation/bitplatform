@@ -41,6 +41,27 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             .ToArray();
     }
 
+    // The per-role foregrounds are the tier's one derived color: a color-mix() of the role and the
+    // primary foreground rather than a plain var() alias, so they are re-declared as that expression.
+    private static readonly Regex RoleForegroundDeclaration = new(
+        @"(--bit-clr-[a-z]+-fg)\s*:\s*(color-mix\([^;]+\))\s*;",
+        RegexOptions.Compiled);
+
+    private static readonly Regex ReDeclaredRoleForeground = new(
+        @"--bit-clr-[a-z]+-fg:color-mix\(",
+        RegexOptions.Compiled);
+
+    private static (string Alias, string Value)[] ScssRoleForegrounds()
+    {
+        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "family-tokens.scss");
+        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
+
+        return RoleForegroundDeclaration.Matches(File.ReadAllText(scssPath))
+            .Select(m => (Alias: m.Groups[1].Value, Value: m.Groups[2].Value))
+            .Distinct()
+            .ToArray();
+    }
+
     private string RenderProviderStyle(BitTheme theme)
     {
         var cut = RenderComponent<BitThemeProvider>(parameters =>
@@ -115,6 +136,58 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             $"The snackbar elevation is not an alias of the callout shadow. Actual: {style}");
         Assert.IsFalse(style.Contains("--bit-shd-appbar", StringComparison.Ordinal),
             $"The app-bar shadows are not aliases of the callout shadow. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void OverridingThePrimaryForegroundReShadesEveryRoleForeground()
+    {
+        // Every role foreground mixes towards the primary foreground, so re-valuing that one token must
+        // re-declare all of them - with exactly the expression family-tokens.scss declares (an alias the C#
+        // table forgot, or a default that drifted from the stylesheet, fails here) and none extra.
+        var theme = new BitTheme();
+        theme.Color.Foreground.Primary = "#101010";
+
+        var style = RenderProviderStyle(theme);
+        var scssForegrounds = ScssRoleForegrounds();
+
+        Assert.AreEqual(8, scssForegrounds.Length, "family-tokens.scss must declare one foreground per accent role.");
+
+        foreach (var (alias, value) in scssForegrounds)
+        {
+            StringAssert.Contains(style, $"{alias}:{value}",
+                $"Role foreground {alias} must be re-declared as {value} when the primary foreground is overridden.");
+        }
+
+        Assert.AreEqual(scssForegrounds.Length, ReDeclaredRoleForeground.Matches(style).Count,
+            "The provider re-declared a different number of role foregrounds than family-tokens.scss " +
+            "defines - the C# table and the scss have drifted apart.");
+    }
+
+    [TestMethod]
+    public void OverridingARoleReShadesOnlyThatRolesForeground()
+    {
+        var theme = new BitTheme();
+        theme.Color.Warning.Main = "#FFB900";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-wrn-fg:color-mix(in srgb, var(--bit-clr-wrn) 55%, var(--bit-clr-fg-pri))");
+        Assert.AreEqual(1, ReDeclaredRoleForeground.Matches(style).Count,
+            $"Untouched roles must not be re-declared by a sparse overlay. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void ExplicitRoleForegroundWinsOverReSubstitution()
+    {
+        var theme = new BitTheme();
+        theme.Color.Warning.Main = "#FFB900";
+        theme.Color.Warning.Foreground = "#8A5A00";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-wrn-fg:#8A5A00");
+        Assert.IsFalse(style.Contains("--bit-clr-wrn-fg:color-mix(", StringComparison.Ordinal),
+            $"An explicitly-set role foreground must not be replaced by the re-substitution. Actual: {style}");
     }
 
     [TestMethod]

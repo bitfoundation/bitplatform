@@ -248,6 +248,21 @@ $clr-swr-dis-text: var(--bit-clr-swr-dis-text);
 $clr-err-dis: var(--bit-clr-err-dis);
 $clr-err-dis-text: var(--bit-clr-err-dis-text);
 
+//foreground - each accent role's color when it is read as text or an icon on the page's own surfaces
+//(an outlined or text-only variant that drops the role's fill) instead of being filled behind its
+//on-color (-text). A role's main color is picked to fill a surface, so it is often too light (or, in a
+//dark scheme, too dark) to be read on the page directly. The palette-agnostic default lives once in
+//family-tokens.scss; a preset (in its own :root[bit-theme="..."] block) or BitTheme.Color.<Role>.Foreground
+//retunes it without selecting any component class.
+$clr-pri-fg: var(--bit-clr-pri-fg);
+$clr-sec-fg: var(--bit-clr-sec-fg);
+$clr-ter-fg: var(--bit-clr-ter-fg);
+$clr-inf-fg: var(--bit-clr-inf-fg);
+$clr-suc-fg: var(--bit-clr-suc-fg);
+$clr-wrn-fg: var(--bit-clr-wrn-fg);
+$clr-swr-fg: var(--bit-clr-swr-fg);
+$clr-err-fg: var(--bit-clr-err-fg);
+
 //focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
 $clr-pri-focus: var(--bit-clr-pri-focus);
 $clr-sec-focus: var(--bit-clr-sec-focus);

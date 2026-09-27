@@ -46,8 +46,12 @@
             this._resize.observe(this._root);
 
             // A change of the text, or of the classes that fold and unfold it, changes what is clipped
-            // without necessarily changing the size of the message.
-            this._mutation = new MutationObserver(schedule);
+            // without necessarily changing the size of the message. Attributes only count on the elements the
+            // fold is made of: the rest of the message (the paused progress bar, a component in the content
+            // restyling itself every frame) changes them all the time without changing what is clipped.
+            this._mutation = new MutationObserver(records => {
+                if (records.some(r => this.affectsFold(r))) this.schedule();
+            });
             this._mutation.observe(this._root, {
                 subtree: true,
                 childList: true,
@@ -70,6 +74,14 @@
             this._mutation?.disconnect();
 
             document.fonts?.removeEventListener('loadingdone', this._schedule);
+        }
+
+        private affectsFold(record: MutationRecord) {
+            if (record.type !== 'attributes') return true;
+
+            const target = record.target as Element;
+
+            return target === this._root || target.matches('.bit-msg-ttl, .bit-msg-cnt, .bit-msg-exb');
         }
 
         // Resizing fires in bursts, so the measurement is taken once per frame at most.

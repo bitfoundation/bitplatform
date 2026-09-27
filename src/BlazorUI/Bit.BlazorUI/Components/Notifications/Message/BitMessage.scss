@@ -370,7 +370,7 @@
 }
 
 // The two variants that drop the fill also drop the fill's on-color, so their text takes the role color
-// instead of the color meant to sit on top of it - in its text shade (see the role classes below).
+// instead of the color meant to sit on top of it - in its foreground shade (see the role classes below).
 .bit-msg-fil {
     --bit-msg-fg: var(--bit-msg-clr);
     --bit-msg-bg: var(--bit-msg-clr-bg);
@@ -398,19 +398,16 @@
         @if role($tokens, kind) == semantic {
             --bit-msg-clr-bg: #{role($tokens, main)};
             --bit-msg-clr: #{role($tokens, on)};
-            // A role's main color is picked to fill a surface rather than to be read as text on the page: a
-            // warning amber is under 2:1 on white. The unfilled variants shade it towards the foreground instead,
-            // which keeps the hue and clears 4.5:1 for every packaged preset in both schemes.
-            --bit-msg-clr-txt: color-mix(in srgb, #{role($tokens, main)} 55%, #{$clr-fg-pri});
         }
         @else {
             --bit-msg-clr: #{role($tokens, on)};
             --bit-msg-clr-bg: #{role($tokens, main)};
-            // The neutral roles are the foreground, background and border colors themselves, meant for a surface
-            // of the matching kind, so they are used as they are.
-            --bit-msg-clr-txt: #{role($tokens, main)};
         }
 
+        // The unfilled variants read the role's foreground token - the shade of the role meant to be read on
+        // the page rather than filled behind its on-color - which the theme decides (--bit-clr-<role>-fg); a
+        // neutral role is a page color already, so its foreground is the role itself.
+        --bit-msg-clr-txt: #{role($tokens, fg)};
         --bit-msg-clr-focus: #{role($tokens, focus)};
     }
 }

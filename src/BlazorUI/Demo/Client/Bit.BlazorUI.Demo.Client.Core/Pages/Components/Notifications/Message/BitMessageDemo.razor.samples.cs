@@ -249,7 +249,8 @@ private BitMessage? pausableMessage;";
 <BitMessage Truncate OnDismiss=""() => {}"">
     <Content>
         One of three notices, with icon-only actions to step through them. The expander and the dismiss
-        button stay beside the actions.
+        button stay beside the actions: fourteen of the 320 rows could not be imported because their Email
+        column was empty or held a value the address parser did not recognize.
     </Content>
     <Actions>
         <BitButton AriaLabel=""Previous notice"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Up"" />
@@ -330,7 +331,8 @@ private BitMessage? focusableMessage;";
             AutoDismissTime=""TimeSpan.FromSeconds(10)""
             @bind-Dismissed=""isDisabledSampleDismissed"">
     Your licence runs out in 14 days. Renew it before then to keep the shared workspaces open to
-    everyone who is using them today.
+    everyone who is using them today; after that they turn read-only, and nothing new can be uploaded
+    to them until the licence is renewed.
 </BitMessage>
 <BitToggle Label=""IsEnabled"" @bind-Value=""isMessageEnabled"" />
 @if (isDisabledSampleDismissed)
@@ -342,25 +344,26 @@ private bool isMessageEnabled = true;
 private bool isDisabledSampleDismissed;";
 
     private readonly string example13RazorCode = @"
-<BitMessage Color=""BitColor.Error""
-            Title=""Payment failed""
-            Style=""--bit-Message-background: color-mix(in srgb, var(--bit-clr-err) 12%, var(--bit-clr-bg-pri));
-                   --bit-Message-border-color: var(--bit-clr-err);
-                   --bit-Message-icon-color: var(--bit-clr-err);
-                   --bit-Message-title-color: var(--bit-clr-err);
-                   --bit-Message-color: var(--bit-clr-fg-pri);"">
-    A tinted surface: the card was declined. Try another payment method.
-</BitMessage>
+<div style=""--bit-Message-background: color-mix(in srgb, var(--bit-clr-err) 12%, var(--bit-clr-bg-pri));
+            --bit-Message-border-color: var(--bit-clr-err);
+            --bit-Message-icon-color: var(--bit-clr-err);
+            --bit-Message-title-color: var(--bit-clr-err);
+            --bit-Message-color: var(--bit-clr-fg-pri);"">
+    <BitMessage Color=""BitColor.Error"" Title=""Payment failed"">
+        A tinted surface: the card was declined. Try another payment method.
+    </BitMessage>
+</div>
 
-<BitMessage Color=""BitColor.Success""
-            Style=""--bit-Message-background: var(--bit-clr-bg-sec);
-                   --bit-Message-border-color: var(--bit-clr-suc);
-                   --bit-Message-border-width: 0 0 0 4px;
-                   --bit-Message-icon-color: var(--bit-clr-suc);
-                   --bit-Message-color: var(--bit-clr-fg-pri);
-                   --bit-Message-radius: 0;"">
-    An accent bar: the report is ready to download.
-</BitMessage>
+<div style=""--bit-Message-background: var(--bit-clr-bg-sec);
+            --bit-Message-border-color: var(--bit-clr-suc);
+            --bit-Message-border-width: 0 0 0 4px;
+            --bit-Message-icon-color: var(--bit-clr-suc);
+            --bit-Message-color: var(--bit-clr-fg-pri);
+            --bit-Message-radius: 0;"">
+    <BitMessage Color=""BitColor.Success"">
+        An accent bar: the report is ready to download.
+    </BitMessage>
+</div>
 
 
 <div style=""--bit-Message-radius: 1rem;
@@ -393,7 +396,8 @@ private bool isCssVarsDismissed;";
     <BitMessage Color=""BitColor.Success"">Your changes were saved.</BitMessage>
     <BitMessage Color=""BitColor.Warning"">
         Truncated by the cascade. Your workspace is using 19.4 GB of its 20 GB, and new uploads will
-        start to fail once the limit is reached.
+        start to fail once the limit is reached. Shared links to the files already in the workspace keep
+        working, and removing the files you no longer need frees the space back up.
     </BitMessage>
     <BitMessage Color=""BitColor.Error"" Variant=""BitVariant.Fill"">Keeps its own Fill variant.</BitMessage>
 </BitParams>";
@@ -403,7 +407,7 @@ private readonly BitMessageParams[] messageParams =
     new()
     {
         Variant = BitVariant.Outline,
-        Size = BitSize.Small,
+        Square = true,
         Truncate = true,
     }
 ];";
@@ -516,7 +520,9 @@ private readonly BitMessageParams[] messageParams =
                                Content = ""custom-content"",
                                ExpanderIcon = ""custom-expander-icon"",
                                DismissIcon = ""custom-dismiss-icon"" })"">
-    Classes for the icon, the content, the expander icon and the dismiss icon.
+    Classes for the icon, the content, the expander icon and the dismiss icon. Fourteen of the 320 rows
+    could not be imported because their Email column was empty or held a value the address parser did
+    not recognize.
 </BitMessage>";
 
     private readonly string example19RazorCode = @"

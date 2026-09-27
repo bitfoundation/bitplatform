@@ -13,6 +13,7 @@ $bit-color-primary-text: var(--bit-clr-pri-text);
 $bit-color-primary-disabled: var(--bit-clr-pri-dis);
 $bit-color-primary-disabled-text: var(--bit-clr-pri-dis-text);
 $bit-color-primary-focus: var(--bit-clr-pri-focus);
+$bit-color-primary-foreground: var(--bit-clr-pri-fg);
 
 //secondary
 $bit-color-secondary: var(--bit-clr-sec);
@@ -28,6 +29,7 @@ $bit-color-secondary-text: var(--bit-clr-sec-text);
 $bit-color-secondary-disabled: var(--bit-clr-sec-dis);
 $bit-color-secondary-disabled-text: var(--bit-clr-sec-dis-text);
 $bit-color-secondary-focus: var(--bit-clr-sec-focus);
+$bit-color-secondary-foreground: var(--bit-clr-sec-fg);
 
 //tertiary
 $bit-color-tertiary: var(--bit-clr-ter);
@@ -43,6 +45,7 @@ $bit-color-tertiary-text: var(--bit-clr-ter-text);
 $bit-color-tertiary-disabled: var(--bit-clr-ter-dis);
 $bit-color-tertiary-disabled-text: var(--bit-clr-ter-dis-text);
 $bit-color-tertiary-focus: var(--bit-clr-ter-focus);
+$bit-color-tertiary-foreground: var(--bit-clr-ter-fg);
 
 //info
 $bit-color-info: var(--bit-clr-inf);
@@ -58,6 +61,7 @@ $bit-color-info-text: var(--bit-clr-inf-text);
 $bit-color-info-disabled: var(--bit-clr-inf-dis);
 $bit-color-info-disabled-text: var(--bit-clr-inf-dis-text);
 $bit-color-info-focus: var(--bit-clr-inf-focus);
+$bit-color-info-foreground: var(--bit-clr-inf-fg);
 
 //success
 $bit-color-success: var(--bit-clr-suc);
@@ -73,6 +77,7 @@ $bit-color-success-text: var(--bit-clr-suc-text);
 $bit-color-success-disabled: var(--bit-clr-suc-dis);
 $bit-color-success-disabled-text: var(--bit-clr-suc-dis-text);
 $bit-color-success-focus: var(--bit-clr-suc-focus);
+$bit-color-success-foreground: var(--bit-clr-suc-fg);
 
 //warning
 $bit-color-warning: var(--bit-clr-wrn);
@@ -88,6 +93,7 @@ $bit-color-warning-text: var(--bit-clr-wrn-text);
 $bit-color-warning-disabled: var(--bit-clr-wrn-dis);
 $bit-color-warning-disabled-text: var(--bit-clr-wrn-dis-text);
 $bit-color-warning-focus: var(--bit-clr-wrn-focus);
+$bit-color-warning-foreground: var(--bit-clr-wrn-fg);
 
 //severe-warning
 $bit-color-severe-warning: var(--bit-clr-swr);
@@ -103,6 +109,7 @@ $bit-color-severe-warning-text: var(--bit-clr-swr-text);
 $bit-color-severe-warning-disabled: var(--bit-clr-swr-dis);
 $bit-color-severe-warning-disabled-text: var(--bit-clr-swr-dis-text);
 $bit-color-severe-warning-focus: var(--bit-clr-swr-focus);
+$bit-color-severe-warning-foreground: var(--bit-clr-swr-fg);
 
 //error
 $bit-color-error: var(--bit-clr-err);
@@ -118,6 +125,7 @@ $bit-color-error-text: var(--bit-clr-err-text);
 $bit-color-error-disabled: var(--bit-clr-err-dis);
 $bit-color-error-disabled-text: var(--bit-clr-err-dis-text);
 $bit-color-error-focus: var(--bit-clr-err-focus);
+$bit-color-error-foreground: var(--bit-clr-err-fg);
 
 //foreground
 $bit-color-foreground-primary: var(--bit-clr-fg-pri);
