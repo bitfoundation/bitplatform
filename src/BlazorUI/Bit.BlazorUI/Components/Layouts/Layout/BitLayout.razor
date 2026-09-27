@@ -4,16 +4,36 @@
 @* Each section renders the element that carries its landmark role, and the nav panel and the aside are
    siblings of the main content rather than children of it, so "skip to main content" really does skip
    the navigation instead of landing in front of it. *@
+@{
+    // A null written over a splatted attribute removes it, so the role and the label are resolved against what the page
+    // wrote by hand (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    // A generic div cannot be named, so a label given to a nested layout would be ignored by every screen reader; it
+    // makes the layout a region landmark instead, which is what a labelled workspace inside a page is. A top-level
+    // layout stays a plain div: a region around it would bury its main landmark in another one and take the banner
+    // and contentinfo roles from its header and footer.
+    var isNamed = ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue();
+    var role = GetSplattedAttribute("role") ?? (Nested && isNamed ? "region" : null);
+}
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     aria-label="@AriaLabel"
+     role="@role"
+     aria-label="@ariaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
     <CascadingValue Value="Dir">
+        @* A bare "#id" would be resolved against the base href of the app, which the router then reads as a
+           navigation to another page. The href names this very page instead, so the link still works where
+           nothing handles its click (static rendering), and the click handler moves the focus along with the
+           scroll, which a plain fragment navigation handled by the router does not. *@
         @if (SkipLink)
         {
-            <a href="@($"#{_MainId}")" style="@Styles?.SkipLink" class="bit-lyt-skp @Classes?.SkipLink">
+            <a href="@_SkipLinkHref"
+               @onclick="HandleSkipLinkClick"
+               @onclick:preventDefault
+               style="@Styles?.SkipLink"
+               class="bit-lyt-skp @Classes?.SkipLink">
                 @(SkipLinkText ?? "Skip to main content")
             </a>
         }

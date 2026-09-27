@@ -78,3 +78,24 @@
         outline-offset: -2px;
     }
 }
+
+// The public variables are never declared by the swiper, so they inherit: setting them on this wrapper
+// re-skins the swiper inside it.
+.themed-swiper {
+    --bit-Swiper-dot-current-width: #{rem2(24px)};
+    --bit-Swiper-dot-current-color: rebeccapurple;
+    --bit-Swiper-dot-current-hover-color: indigo;
+    --bit-Swiper-focus-color: rebeccapurple;
+    --bit-Swiper-button-width: #{rem2(40px)};
+    --bit-Swiper-button-opacity: 1;
+    --bit-Swiper-button-color: white;
+    --bit-Swiper-button-hover-color: white;
+    --bit-Swiper-button-background: rgba(0, 0, 0, 0.35);
+    --bit-Swiper-button-hover-background: rgba(0, 0, 0, 0.6);
+
+    ::deep .image {
+        display: block;
+        height: rem2(128px);
+        border-radius: rem2(8px);
+    }
+}

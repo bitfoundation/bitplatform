@@ -339,9 +339,10 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitStack", "BitStackParams")]
     [DataRow("BitChoiceGroup", "BitChoiceGroupParams")]
     [DataRow("BitCircularTimePicker", "BitCircularTimePickerParams")]
+    [DataRow("BitCarousel", "BitCarouselParams")]
     [DataRow("BitDropdown", "BitDropdownParams<TItem, TValue>")]
-    // A generic component whose params class is not: it carries nothing about the item type.
     [DataRow("BitBreadcrumb", "BitBreadcrumbParams")]
+    [DataRow("BitBasicList", "BitBasicListParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
