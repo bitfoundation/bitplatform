@@ -1604,6 +1604,13 @@ public class BitPaginationTests : BunitTestContext
 
         Assert.IsNull(FindLinkByAriaLabel(comp, "Next page")!.GetAttribute("aria-disabled"));
         Assert.IsNull(FindLinkByAriaLabel(comp, "Last page")!.GetAttribute("aria-disabled"));
+
+        // An anchor without an address is a generic element, which can neither be named nor disabled, so it
+        // states the link role itself; one with an address is a link already and needs no role of its own.
+        Assert.AreEqual("link", first.GetAttribute("role"));
+        Assert.AreEqual("link", previous.GetAttribute("role"));
+        Assert.IsNull(FindLinkByAriaLabel(comp, "Next page")!.GetAttribute("role"));
+        Assert.IsNull(FindLinkByAriaLabel(comp, "Last page")!.GetAttribute("role"));
     }
 
     [TestMethod]
@@ -1621,6 +1628,7 @@ public class BitPaginationTests : BunitTestContext
 
         Assert.IsTrue(links.All(l => l.HasAttribute("href") is false));
         Assert.IsTrue(links.All(l => l.GetAttribute("aria-disabled") == "true"));
+        Assert.IsTrue(links.All(l => l.GetAttribute("role") == "link"));
     }
 
     [TestMethod]
@@ -2003,6 +2011,50 @@ public class BitPaginationTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPaginationShouldHandTheItemRangeToGetItemsSummary()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 245);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.ShowSummary, true);
+            parameters.Add(p => p.DefaultSelectedPage, 24);
+            parameters.Add(p => p.GetItemsSummary, (int first, int last, int total) => $"{first} a {last} de {total}");
+        });
+
+        Assert.AreEqual("231 a 240 de 245", comp.Find(".bit-pgn-sum").TextContent.Trim());
+
+        FindByAriaLabel(comp, "Next page")!.Click();
+
+        // The last page stops at the last item, which the hook is handed rather than having to work out.
+        Assert.AreEqual("241 a 245 de 245", comp.Find(".bit-pgn-sum").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldLetGetItemsSummaryWinOverGetSummaryOnlyWithTheTotalItems()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 240);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.ShowSummary, true);
+            parameters.Add(p => p.GetSummary, (int page, int count) => $"{page}/{count}");
+            parameters.Add(p => p.GetItemsSummary, (int first, int last, int total) => $"{first}-{last}/{total}");
+        });
+
+        Assert.AreEqual("1-10/240", comp.Find(".bit-pgn-sum").TextContent.Trim());
+
+        // Without a number of items there is no item range to hand over, so the page hook is the one left.
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 0);
+            parameters.Add(p => p.Count, 12);
+        });
+
+        Assert.AreEqual("1/12", comp.Find(".bit-pgn-sum").TextContent.Trim());
+    }
+
+    [TestMethod]
     public void BitPaginationShouldKeepReportingThePagesInTheSummaryWithoutTheTotalItems()
     {
         var comp = RenderComponent<BitPagination>(parameters =>
@@ -2181,9 +2233,11 @@ public class BitPaginationTests : BunitTestContext
         Assert.IsTrue(ellipsis.All(e => e.TagName == "BUTTON"));
         Assert.IsTrue(ellipsis.All(e => e.GetAttribute("type") == "button"));
 
-        // The control is named itself, so the item around it is left unnamed instead of naming it twice.
-        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("aria-label") == "More pages"));
-        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("title") == "More pages"));
+        // The control is named itself, so the item around it is left unnamed instead of naming it twice, and the
+        // name says which page each gap jumps to, since the two of them would otherwise be named the same.
+        Assert.AreEqual("More pages (Page 12)", ellipsis[0].GetAttribute("aria-label"));
+        Assert.AreEqual("More pages (Page 38)", ellipsis[1].GetAttribute("aria-label"));
+        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("title") == e.GetAttribute("aria-label")));
         Assert.IsTrue(ellipsis.All(e => e.HasAttribute("aria-hidden") is false));
         Assert.IsTrue(comp.FindAll(".bit-pgn-itm").All(i => i.HasAttribute("aria-label") is false));
     }
@@ -2310,7 +2364,28 @@ public class BitPaginationTests : BunitTestContext
         var ellipsis = comp.FindAll(".bit-pgn-elp");
 
         Assert.IsTrue(ellipsis.All(e => e.TextContent.Trim() == "..."));
-        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("aria-label") == "Hidden pages"));
+        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("aria-label")!.StartsWith("Hidden pages (")));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldWordThePageAClickableEllipsisJumpsToLikeEveryOtherPage()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 50);
+            parameters.Add(p => p.BoundaryCount, 1);
+            parameters.Add(p => p.MiddleCount, 3);
+            parameters.Add(p => p.ClickableEllipsis, true);
+            parameters.Add(p => p.DefaultSelectedPage, 25);
+            parameters.Add(p => p.EllipsisAriaLabel, "Más páginas");
+            parameters.Add(p => p.GetPageAriaLabel, (int page, bool _) => $"Página {page}");
+            parameters.Add(p => p.GetPageHref, (int page) => $"/results?page={page}");
+        });
+
+        var ellipsis = comp.FindAll(".bit-pgn-elp");
+
+        Assert.AreEqual("Más páginas (Página 12)", ellipsis[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Más páginas (Página 38)", ellipsis[1].GetAttribute("title"));
     }
 
     [TestMethod]
@@ -3010,6 +3085,146 @@ public class BitPaginationTests : BunitTestContext
 
         // The jump lands between the page it followed and the last one, and never back at the first page.
         Assert.IsTrue(comp.Instance.SelectedPage > 1100000000);
+    }
+
+
+
+    [TestMethod]
+    public void BitPaginationShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitPaginationCascadingParamsTest>();
+
+        var paginations = component.FindComponents<BitPagination>();
+        var roots = component.FindAll(".bit-pgn");
+
+        // The hidden one of the second group renders nothing, so four of the five paginations are on the screen.
+        Assert.AreEqual(5, paginations.Count);
+        Assert.AreEqual(4, roots.Count);
+
+        // The first one takes everything from the cascading parameters.
+        var first = roots[0];
+
+        Assert.IsTrue(first.ClassList.Contains("cascaded"));
+        Assert.IsTrue(first.ClassList.Contains("bit-pgn-err"));
+        Assert.IsTrue(first.ClassList.Contains("bit-pgn-lg"));
+        Assert.IsTrue(first.ClassList.Contains("bit-pgn-rnd"));
+        Assert.IsTrue(first.ClassList.Contains("bit-pgn-aln"));
+        StringAssert.Contains(first.GetAttribute("style")!, "--bit-pgn-justify-content:center");
+        StringAssert.Contains(first.GetAttribute("style")!, "margin:1px");
+        Assert.AreEqual("10 de 20", first.QuerySelector(".bit-pgn-sum")!.TextContent.Trim());
+        Assert.AreEqual("Ir", first.QuerySelector(".bit-pgn-gtl")!.TextContent.Trim());
+        Assert.AreEqual("Ir a la página", paginations[0].Instance.GoToPageAriaLabel);
+        Assert.IsTrue(paginations[0].Instance.Loop);
+
+        // One page at each end and one around the selected page, every control a link from the cascaded address.
+        var pages = first.QuerySelectorAll("a.bit-pgn-btn:not(.bit-pgn-lbl)").Select(a => a.TextContent.Trim()).ToArray();
+
+        CollectionAssert.AreEqual(new[] { "1", "10", "20" }, pages);
+        Assert.AreEqual("?p=10", first.QuerySelector(".bit-pgn-sel")!.GetAttribute("href"));
+        Assert.AreEqual("Página 10", first.QuerySelector(".bit-pgn-sel")!.GetAttribute("aria-label"));
+
+        var buttons = first.QuerySelectorAll(".bit-pgn-btn");
+
+        Assert.IsTrue(buttons.All(b => b.ClassList.Contains("bit-pgn-otl") && b.ClassList.Contains("cascaded-button")));
+
+        // The clickable gaps are named by the cascaded labels and show the cascaded glyph.
+        var ellipses = first.QuerySelectorAll("a.bit-pgn-elb");
+
+        Assert.AreEqual(2, ellipses.Length);
+        Assert.IsTrue(ellipses.All(e => e.GetAttribute("aria-label")!.StartsWith("Más páginas (Página ") && e.TextContent.Trim() == "…"));
+
+        // The four navigation buttons carry the cascaded names, texts and icon.
+        var firstButton = first.QuerySelector("[aria-label='Primera']")!;
+
+        Assert.AreEqual("Inicio", firstButton.TextContent.Trim());
+        StringAssert.Contains(firstButton.QuerySelector("i")!.GetAttribute("class")!, "Home");
+        Assert.AreEqual("Ant", first.QuerySelector("[aria-label='Anterior']")!.TextContent.Trim());
+        Assert.AreEqual("Sig", first.QuerySelector("[aria-label='Siguiente']")!.TextContent.Trim());
+        Assert.AreEqual("Fin", first.QuerySelector("[aria-label='Última']")!.TextContent.Trim());
+
+        // The second one sets its own values, which the cascading parameters must not overwrite.
+        var second = roots[1];
+
+        Assert.IsTrue(second.ClassList.Contains("own"));
+        Assert.IsFalse(second.ClassList.Contains("cascaded"));
+        Assert.IsTrue(second.ClassList.Contains("bit-pgn-suc"));
+        Assert.IsTrue(second.ClassList.Contains("bit-pgn-sm"));
+        Assert.IsFalse(second.ClassList.Contains("bit-pgn-rnd"));
+        Assert.IsNull(second.QuerySelector(".bit-pgn-sum"));
+        Assert.IsNotNull(second.QuerySelector("[aria-label='Own next']"));
+        Assert.IsTrue(second.QuerySelectorAll(".bit-pgn-btn").All(b => b.ClassList.Contains("bit-pgn-txt")));
+
+        // The page sizes are cascaded before the default selection is settled: 100 items of 20 are five pages, so
+        // the ninth page asked for lands on the last of them.
+        var sized = roots[2];
+
+        Assert.IsTrue(sized.ClassList.Contains("sized"));
+        Assert.AreEqual(5, paginations[2].Instance.SelectedPage);
+        // One cascaded hook localizes the item range of every pagination, since it is handed the numbers.
+        Assert.AreEqual("81 a 100 de 100", sized.QuerySelector(".bit-pgn-sum")!.TextContent.Trim());
+        CollectionAssert.AreEqual(new[] { "20", "40" }, sized.QuerySelectorAll(".bit-pgn-pse option").Select(o => o.TextContent.Trim()).ToArray());
+
+        // The cascaded empty text drops the visible label, and the select is named by the cascaded aria-label.
+        Assert.IsNull(sized.QuerySelector(".bit-pgn-psl"));
+        Assert.AreEqual("Elementos por página", sized.QuerySelector(".bit-pgn-pse")!.GetAttribute("aria-label"));
+
+        // Only the summary and the selector are left of a pagination whose page and navigation buttons are cascaded off.
+        Assert.AreEqual(0, sized.QuerySelectorAll(".bit-pgn-btn").Length);
+
+        // A GetSummary the pagination was given itself is not overridden by the GetItemsSummary of the cascade.
+        Assert.AreEqual("1/5", roots[3].QuerySelector(".bit-pgn-sum")!.TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldKeepTheCascadedClassesAcrossParameterSets()
+    {
+        var cascade = new BitPaginationParams { Color = BitColor.Error, Size = BitSize.Large, Classes = new() { Root = "cascaded" } };
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 3);
+            parameters.AddCascadingValue(BitPaginationParams.ParamName, cascade);
+        });
+
+        var root = comp.Find(".bit-pgn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-pgn-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-pgn-lg"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
+
+        // A later parameter set hands the very same cascade, which no longer resets the builders, and the classes
+        // it rendered with stay.
+        comp.Render(parameters => parameters.Add(p => p.Count, 4));
+
+        root = comp.Find(".bit-pgn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-pgn-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-pgn-lg"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldUpdateTheRootWhenClassesAndStylesChange()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 3);
+            parameters.Add(p => p.Classes, new() { Root = "first-class" });
+            parameters.Add(p => p.Styles, new() { Root = "margin:1px" });
+        });
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Classes, new() { Root = "second-class" });
+            parameters.Add(p => p.Styles, new() { Root = "margin:2px" });
+        });
+
+        var root = comp.Find(".bit-pgn");
+
+        Assert.IsTrue(root.ClassList.Contains("second-class"));
+        Assert.IsFalse(root.ClassList.Contains("first-class"));
+        StringAssert.Contains(root.GetAttribute("style")!, "margin:2px");
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("margin:1px"));
     }
 
 

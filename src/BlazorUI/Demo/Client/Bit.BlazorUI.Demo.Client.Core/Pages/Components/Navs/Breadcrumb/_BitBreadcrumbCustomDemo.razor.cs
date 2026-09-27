@@ -2,10 +2,6 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public partial class _BitBreadcrumbCustomDemo
 {
-    private int ItemsCount = 4;
-    private uint OverflowIndex = 2;
-    private uint MaxDisplayedItems = 3;
-
     private readonly List<PageInfo> CustomBreadcrumbItems =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb" },
@@ -46,6 +42,14 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Custom 4", Address = "/components/breadcrumb", Icon = BitIconName.ClassNotebookLogo16, IsCurrent = true }
     ];
 
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithHomeIcon =
+    [
+        new() { Icon = BitIconName.Home, Label = "Home", Address = "/components/breadcrumb" },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb" },
+        new() { Name = "Custom 3", Address = "/components/breadcrumb" },
+        new() { Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true }
+    ];
+
     private readonly List<PageInfo> CustomBreadcrumbItemsWithClass =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb", HtmlClass = "custom-item-1" },
@@ -83,11 +87,11 @@ public partial class _BitBreadcrumbCustomDemo
     private readonly List<PageInfo> RtlCustomBreadcrumbItems =
     [
         new() { Name = "پوشه اول" },
-        new() { Name = "پوشه دوم", IsCurrent = true },
+        new() { Name = "پوشه دوم" },
         new() { Name = "پوشه سوم" },
         new() { Name = "پوشه چهارم" },
         new() { Name = "پوشه پنجم" },
-        new() { Name = "پوشه ششم" },
+        new() { Name = "پوشه ششم", IsCurrent = true },
     ];
 
     private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon1 =
@@ -122,11 +126,23 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Laptops", IconInfo = BitIconInfo.Bi("laptop-fill"), IsCurrent = true }
     ];
 
+    private readonly BitBreadcrumbParams[] breadcrumbParams =
+    [
+        new()
+        {
+            DividerText = "/",
+            MaxDisplayedItems = 3,
+            OverflowIndex = 1,
+            SelectedItemAsText = true,
+        }
+    ];
+
     private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     {
         Text = { Selector = c => c.Name },
         Href = { Selector = c => c.Address },
         Title = { Selector = c => c.Tooltip },
+        AriaLabel = { Selector = c => c.Label },
         Target = { Selector = c => c.OpenIn },
         IsSelected = { Selector = c => c.IsCurrent },
         Class = { Selector = c => c.HtmlClass },
@@ -137,40 +153,20 @@ public partial class _BitBreadcrumbCustomDemo
         Icon = { Selector = c => c.IconInfo },
     };
 
-    private void HandleOnCustomClick(PageInfo model)
-    {
-        CustomBreadcrumbItemsWithControlled.First(i => i.IsCurrent).IsCurrent = false;
-        model.IsCurrent = true;
-    }
-
+    // Going back up to an item drops the levels below it, which makes it the current page.
     private void HandleOnCustomizedCustomClick(PageInfo model)
     {
-        CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
+        var index = CustomBreadcrumbItemsWithCustomized.IndexOf(model);
+
+        CustomBreadcrumbItemsWithCustomized.RemoveRange(index + 1, CustomBreadcrumbItemsWithCustomized.Count - index - 1);
+
         model.IsCurrent = true;
     }
 
     private void AddCustomItem()
     {
-        ItemsCount++;
-        CustomBreadcrumbItemsWithCustomized.Add(new PageInfo()
-        {
-            Name = $"Custom {ItemsCount}"
-        });
-    }
+        CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = false;
 
-    private void RemoveCustomItem()
-    {
-        if (CustomBreadcrumbItemsWithCustomized.Count > 1)
-        {
-            ItemsCount--;
-
-            var item = CustomBreadcrumbItemsWithCustomized[^1];
-            CustomBreadcrumbItemsWithCustomized.Remove(item);
-
-            if (item.IsCurrent)
-            {
-                CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = true;
-            }
-        }
+        CustomBreadcrumbItemsWithCustomized.Add(new() { Name = $"Custom {CustomBreadcrumbItemsWithCustomized.Count + 1}", IsCurrent = true });
     }
 }

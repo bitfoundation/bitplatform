@@ -15,6 +15,7 @@
        tabindex="@TabIndex"
        aria-label="@AriaLabel"
        aria-current="@AriaCurrent"
+       aria-describedby="@AriaDescribedBy"
        aria-expanded="@AriaExpanded"
        aria-disabled="@(Disabled ? "true" : null)">
         @ChildContent
@@ -34,6 +35,7 @@ else
             tabindex="@TabIndex"
             aria-label="@AriaLabel"
             aria-current="@AriaCurrent"
+            aria-describedby="@AriaDescribedBy"
             aria-expanded="@AriaExpanded"
             aria-disabled="@(Disabled ? "true" : null)">
         @ChildContent

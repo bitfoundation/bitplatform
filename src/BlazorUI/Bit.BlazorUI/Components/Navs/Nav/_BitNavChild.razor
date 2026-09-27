@@ -8,7 +8,7 @@
         // A disabled nav disables everything it renders: greying the items out is not enough, since a link
         // that keeps its href and its tab stop can still be followed with the keyboard.
         var isEnabled = Nav.IsEnabled && Nav.GetIsEnabled(Item);
-        var isExpanded = Nav.GetItemExpanded(Item);
+        var isExpanded = Nav.IsItemOpen(Item);
         var isSeparator = Nav.GetIsSeparator(Item);
         var text = Nav.GetText(Item);
         var childItems = Nav.GetChildItems(Item);
@@ -26,18 +26,41 @@
         var href = isEnabled ? url : null;
         var isToggleable = childItems.Any() && Nav.NoCollapse is false;
         var hasChevron = isToggleable && Nav.IconOnly is false;
+        // The chevron is a control of its own wherever the item renders as an anchor: an item with a URL
+        // navigates, so its chevron is the one way to open it with the pointer, and an anchor without an href
+        // (ForceAnchor) is not activated by Enter, so its chevron is the one way to open it with the keyboard.
+        // An item rendered as a button toggles on a click anywhere on it, so its chevron is only the picture of
+        // that state - a second tab stop inside a button, which a button's content cannot even expose to
+        // assistive technologies.
+        var isChevronInteractive = hasChevron && renderLink;
+        var hasDescription = description.HasValue() && Nav.IconOnly is false;
+        var isGroupHeader = Nav.RenderType is BitNavRenderType.Grouped && Parent is null;
+        // A group header renders its description only in its default content, so a template that takes its
+        // place leaves nothing for aria-describedby to point at.
+        var rendersDescription = hasDescription && (isGroupHeader is false || (template is null && Nav.HeaderTemplate is null));
+        var descriptionId = rendersDescription ? _descriptionId : null;
         // A collapsed or expanded item reports its state through aria-expanded; an item that can never be
         // toggled must not report one at all, so it is not announced as an expandable node.
         var ariaExpanded = isToggleable ? (isExpanded ? "true" : "false") : null;
         var toggleAriaLabel = (isExpanded ? Nav.GetCollapseAriaLabel(Item) ?? Nav.CollapseAriaLabel
                                           : Nav.GetExpandAriaLabel(Item) ?? Nav.ExpandAriaLabel) ?? text;
-        // The chevron lives inside the item and carries a name of its own, which the item would otherwise
-        // fold into its own name and announce twice ("Fruits Fruits"), so an item that renders one is
-        // named explicitly after its text instead of after its content.
-        var ariaLabel = Nav.GetAriaLabel(Item) ?? (hasChevron ? text : null);
+        // The item is named after its text alone rather than after its content: an interactive chevron carries
+        // a name of its own that would otherwise be folded in and announced twice ("Fruits Fruits"), a
+        // description is announced as the description it is (aria-describedby) rather than as part of the
+        // name, and a rail item has no visible text left to be named after at all.
+        var ariaLabel = Nav.GetAriaLabel(Item) ?? ((isChevronInteractive || hasDescription || Nav.IconOnly) ? text : null);
+        // A collapsed branch that holds the selected item borrows its look, so the way to the current page
+        // stays visible while the branch leading to it is closed.
+        var isSelectedAncestor = isSelected is false && childItems.Any() && isExpanded is false && Nav.HasSelectedDescendant(Item);
+        // The list of a group is named after its header, so a screen reader that jumps from list to list tells
+        // the groups apart instead of announcing a run of unnamed ones.
+        var groupLabel = isGroupHeader ? (Nav.GetAriaLabel(Item) ?? text) : null;
+        // What this render leaves the keyboard to focus, read once it is in the DOM.
+        _rendersHeader = false;
+        _rendersContainer = false;
     }
 
-    @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
+    @if (isGroupHeader)
     {
         @if (isSeparator)
         {
@@ -60,18 +83,10 @@
         }
         else
         {
-            <button @ref="_headerElement"
-                    @onclick="ToggleItem"
-                    @onfocusin="HandleOnFocusIn"
-                    @onkeydown="HandleOnKeyDown"
-                    type="button"
-                    title="@(title is not null ? title : text)"
-                    disabled="@(isEnabled is false)"
-                    style="@Nav.Styles?.Header"
-                    class="bit-nav-gcb @Nav.Classes?.Header"
-                    aria-expanded="@ariaExpanded"
-                    aria-label="@(Nav.GetAriaLabel(Item) ?? toggleAriaLabel)">
-                @if (template is not null)
+            // The content is the same whether the header is the control that toggles its group or only its label.
+            void RenderHeaderContent()
+            {
+                if (template is not null)
                 {
                     @template(Item)
                 }
@@ -83,7 +98,7 @@
                 {
                     @* The description of a group has no room in the rail either, so a header that is down
                        to its icon renders through the same plain row an item without one does. *@
-                    if (description.HasValue() && Nav.IconOnly is false)
+                    if (hasDescription)
                     {
                         <div class="bit-nav-itg">
                             <div class="bit-nav-iit">
@@ -102,9 +117,10 @@
                                 }
                                 <span style="@Nav.Styles?.HeaderText" class="bit-nav-ghd @Nav.Classes?.HeaderText">@text</span>
                             </div>
-                            <div title="@description"
+                            <div id="@descriptionId"
+                                 title="@description"
                                  class="bit-nav-des @Nav.Classes?.Description"
-                                 style="@((Nav.ReversedChevron || Nav.NoCollapse) ? "padding-inline-start:0" : ""); @Nav.Styles?.Description">
+                                 style="@((Nav.ReversedChevron || hasChevron is false) ? "padding-inline-start:0" : ""); @Nav.Styles?.Description">
                                 @description
                             </div>
                         </div>
@@ -126,7 +142,44 @@
                         </div>
                     }
                 }
-            </button>
+            }
+
+            if (isToggleable)
+            {
+                _rendersHeader = true;
+
+                <button @ref="_headerElement"
+                        @onclick="ToggleItem"
+                        @onfocusin="HandleOnFocusIn"
+                        @onkeydown="HandleOnKeyDown"
+                        type="button"
+                        title="@(title is not null ? title : text)"
+                        disabled="@(isEnabled is false)"
+                        style="@Nav.Styles?.Header"
+                        class="bit-nav-gcb @(isSelectedAncestor ? "bit-nav-sca" : null) @Nav.Classes?.Header"
+                        aria-expanded="@ariaExpanded"
+                        aria-describedby="@descriptionId"
+                        aria-label="@(Nav.GetAriaLabel(Item) ?? toggleAriaLabel)">
+                    @{ RenderHeaderContent(); }
+                </button>
+            }
+            else
+            {
+                @* A group that cannot be toggled - one without children, or any group of a nav without
+                   expanders - has nothing to do on a click, so it is the label of its group rather than a
+                   button: a control that does nothing would still be a tab stop and still be announced as one.
+                   Its name comes from its text, which the rail hides, so a rail keeps it for assistive
+                   technologies in a visually hidden copy (a plain div cannot be named with aria-label). *@
+                <div title="@(title ?? text)"
+                     style="@Nav.Styles?.Header"
+                     class="bit-nav-gcb bit-nav-gst @(isEnabled ? null : "bit-nav-dis") @Nav.Classes?.Header">
+                    @{ RenderHeaderContent(); }
+                    @if (Nav.IconOnly)
+                    {
+                        <span class="bit-nav-vhd">@(Nav.GetAriaLabel(Item) ?? text)</span>
+                    }
+                </div>
+            }
         }
     }
     else
@@ -148,6 +201,11 @@
 
             var desPadding = Nav.ReversedChevron is false && (childItems.Any() && Nav.NoCollapse is false) ? Nav.IndentPadding : 0;
 
+            // The chevron takes exactly the room a childless item makes up for it with (IndentPadding), and so
+            // does the description under it, so the text of a parent lines up with the text of its siblings and
+            // with its own description whatever IndentPadding and the layout density are.
+            var chevronStyle = $"min-width:{Nav.IndentPadding}px;{Nav.Styles?.ToggleButton}";
+
 
             @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
             {
@@ -159,6 +217,8 @@
             }
             else
             {
+                _rendersContainer = true;
+
                 <_BitNavItemContainer @ref="_container"
                                       Href="@href"
                                       Target="@target"
@@ -169,23 +229,24 @@
                                       Disabled="@(isEnabled is false)"
                                       AriaExpanded="@ariaExpanded"
                                       AriaLabel="@ariaLabel"
+                                      AriaDescribedBy="@descriptionId"
                                       Title="@(title is not null ? title : text)"
-                                      Class="@($"bit-nav-ict {GetItemContainerClasses()}")"
+                                      Class="@($"bit-nav-ict {GetItemContainerClasses(isSelectedAncestor)}")"
                                       Style="@($"padding-inline-start:{padding}px;{GetItemContainerStyles()}")"
                                       AriaCurrent="@(isSelected ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                                       TabIndex="@(isEnabled is false ? "-1" : (renderLink && href.HasNoValue() ? "0" : null))"
                                       Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                        @if (hasChevron)
+                        @if (isChevronInteractive)
                         {
-                            @* The chevron cannot be a button, since it lives inside the item's own anchor or
-                               button, so it carries the button role and its keyboard activation explicitly. *@
+                            @* The chevron cannot be a button element, since it lives inside the item's own
+                               anchor, so it carries the button role and its keyboard activation explicitly. *@
                             <div @onclick="ToggleItem"
                                  @onclick:preventDefault="true"
                                  @onclick:stopPropagation="true"
                                  @onkeydown="HandleToggleKeyDown"
                                  role="button"
-                                 style="@Nav.Styles?.ToggleButton"
+                                 style="@chevronStyle"
                                  class="bit-nav-cbt @Nav.Classes?.ToggleButton"
                                  tabindex="@(isEnabled ? "0" : "-1")"
                                  aria-disabled="@(isEnabled ? null : "true")"
@@ -195,6 +256,17 @@
                                    class="@chevronIcon?.GetCssClasses() @chevronRotation @Nav.Classes?.ToggleIcon"
                                    aria-hidden="true" />
                             </div>
+                        }
+                        else if (hasChevron)
+                        {
+                            @* A click on it reaches the item, which is what toggles it. *@
+                            <span style="@chevronStyle"
+                                  class="bit-nav-cbt @Nav.Classes?.ToggleButton"
+                                  aria-hidden="true">
+                                <i style="@Nav.Styles?.ToggleIcon"
+                                   class="@chevronIcon?.GetCssClasses() @chevronRotation @Nav.Classes?.ToggleIcon"
+                                   aria-hidden="true" />
+                            </span>
                         }
                         <div style="@GetItemStyles()"
                              class="bit-nav-itm @GetItemClasses()">
@@ -217,9 +289,10 @@
                         </div>
                     </div>
 
-                    @if (description.HasValue() && Nav.IconOnly is false)
+                    @if (hasDescription)
                     {
-                        <div title="@description"
+                        <div id="@descriptionId"
+                             title="@description"
                              class="bit-nav-des @Nav.Classes?.Description"
                              style="padding-inline-start:@(desPadding)px;@Nav.Styles?.Description">
                             @description
@@ -234,7 +307,7 @@
     {
         @* The nav options render their children in place, so the children have to stay rendered (but
            hidden) while collapsed to keep their registrations (and expand/collapse chevron) alive. *@
-        <ul role="list" style="@(childItems.Any() && isExpanded ? null : "display:none")">
+        <ul role="list" class="bit-nav-lst" aria-label="@groupLabel" style="@(childItems.Any() && isExpanded ? null : "display:none")">
             <CascadingValue Value="this" IsFixed="true">
                 @ChildrenFragment
             </CascadingValue>
@@ -242,7 +315,7 @@
     }
     else if ((childItems.Any()) && (isExpanded))
     {
-        <ul role="list">
+        <ul role="list" class="bit-nav-lst" aria-label="@groupLabel">
             <CascadingValue Value="this" IsFixed="true">
                 @foreach (var (item, idx) in childItems.Select((item, idx) => (item, idx)))
                 {

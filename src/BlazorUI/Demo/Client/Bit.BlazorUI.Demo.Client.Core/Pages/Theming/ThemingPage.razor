@@ -284,6 +284,7 @@
                     <li><code>--bit-siz-sel-{sm,md,lg}</code> - checkbox box / radio ring: 14/20/26px</li>
                     <li><code>--bit-siz-item-{sm,md,lg}</code> - popup list row heights: 30/36/44px</li>
                     <li><code>--bit-siz-tab</code> / <code>--bit-siz-tab-indicator</code> - pivot header height and selection-indicator stroke: 44px / 2px</li>
+                    <li><code>--bit-siz-tab-divider</code> - the rule under a pivot's whole header: none under Fluent; Material draws the 1px divider</li>
                     <li><code>--bit-siz-divider</code> - separator thickness; follows <code>--bit-shp-brd-width</code> until a preset thins it - Cupertino's 0.5px hairline</li>
                     <li><code>--bit-siz-track-{sm,md,lg}</code> - linear progress track thickness: 2/4/8px</li>
                     <li><code>--bit-siz-switch-{w,h,thumb}-{sm,md,lg}</code> - BitToggle's track and knob: 40x20 with a 12px knob at md; Material 52x32/24, Cupertino 51x31/27</li>
@@ -459,6 +460,11 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 --bit-shp-radius-button    /* &rarr; var(--bit-shp-radius-control)  buttons and dialog actions */
 --bit-shp-radius-chip      /* &rarr; var(--bit-shp-radius-control)  tags and the chips inside fields */
 --bit-shp-radius-selection /* &rarr; var(--bit-shp-radius-control)  the checkbox box */
+
+/* the selection indicator of a tab strip - a primitive of its own, 0 under Fluent: the corners
+   facing the label, and those on the edge it stands on (&rarr; the first unless set; 0 under Material) */
+--bit-shp-radius-tab-indicator
+--bit-shp-radius-tab-indicator-base
 
 /* elevation per surface family */
 --bit-shd-card             /* &rarr; var(--bit-shd-cal) */
