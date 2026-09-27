@@ -5,14 +5,14 @@
 //   --bit-NavBar-background              fill of the bar                                   (default: transparent)
 //   --bit-NavBar-border-radius           corners of the bar (a floating tab bar)           (default: 0)
 //   --bit-NavBar-shadow                  shadow of the bar                                 (default: none)
-//   --bit-NavBar-padding-block           room above and below the items                    (default: 0, plus the safe area)
+//   --bit-NavBar-padding-block           room above and below the items                    (default: 0; SafeArea adds the inset below it)
 //   --bit-NavBar-padding-inline          room on the two sides of the items                (default: 0)
 //   --bit-NavBar-gap                     space between the items                           (default: 0)
 //   --bit-NavBar-item-color              content color of an item                          (default: $clr-fg-pri)
 //   --bit-NavBar-item-hover-color        content color of a hovered item                   (default: per Color and Filled)
 //   --bit-NavBar-item-hover-background   fill of a hovered item (its pill with Pill)       (default: per Color when Filled, transparent)
 //   --bit-NavBar-item-border-radius      corners of an item                                (default: $shp-radius-control)
-//   --bit-NavBar-item-padding            padding of an item                                (default: per Size)
+//   --bit-NavBar-item-padding            padding of an item, one length on every side      (default: per Size)
 //   --bit-NavBar-item-min-size           minimum width and height of an item               (default: per Size)
 //   --bit-NavBar-icon-size               size of the icon of an item                       (default: per Size)
 //   --bit-NavBar-text-size               font size of the text of an item                  (default: per Size)
@@ -84,10 +84,14 @@
 }
 
 // The home indicator of a phone sits over the bottom edge of the screen, so a bar pinned there reserves
-// the space the device asks for, on top of its own padding. The fallback keeps it a no-op everywhere the
-// inset is not reported.
-.bit-nbr-sfa {
-    padding-bottom: calc(var(--bit-NavBar-padding-block, 0px) + env(safe-area-inset-bottom, 0px));
+// the space the device asks for, on top of its own padding. The inset is kept off the padding, which the
+// public variable owns whatever it is written as (one value or two, which no calc() could add to): it is
+// the margin under the parts of the bar instead, all of them side by side in a bar and the last one in a
+// rail, and the fill of the bar runs on under it. The fallback keeps it a no-op everywhere the inset is
+// not reported.
+.bit-nbr-sfa:not(.bit-nbr-vrt) > *,
+.bit-nbr-sfa.bit-nbr-vrt > :last-child {
+    margin-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .bit-nbr-cnt {
@@ -122,7 +126,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--bit-nbr-gap);
-    padding: var(--bit-nbr-pad);
+    padding: var(--bit-nbr-sec-pad);
 }
 
 .bit-nbr-itm {
@@ -477,6 +481,17 @@
     }
 }
 
+// A disabled navbar leaves the pointer to its items (below) and to its list, which a wheel still scrolls,
+// but takes it from everything else it renders - the header, the footer and a template that replaces its
+// item - whose controls the navbar has no say over otherwise and would stay clickable in a disabled bar.
+.bit-nbr.bit-dis {
+    > .bit-nbr-hdr,
+    > .bit-nbr-ftr,
+    .bit-nbr-lit:not(:has(> .bit-nbr-itm)) {
+        pointer-events: none;
+    }
+}
+
 // A disabled item still takes the pointer, so the tooltip of an icon-only item can say what it is; the
 // click itself goes nowhere (the anchor has no href, the button is natively disabled). A selected one
 // keeps showing where the reader is, in the disabled color: its fill is dropped, and its indicator - the
@@ -502,12 +517,15 @@
 
 // The size classes swap the metrics every part reads, and each one yields to its public variable, so a
 // value set for the icon size (say) holds at every Size. The padding variable sets both the stacked
-// padding and the wider one of a single-line item, since an author setting it means the item's padding.
+// padding and the wider one of a single-line item, since an author setting it means the item's padding;
+// it is a single length because the room a label reserves is worked out from it. The header and the
+// footer keep a padding of their own, which that variable is not about.
 .bit-nbr-sm {
     --bit-nbr-ico-fs: var(--bit-NavBar-icon-size, #{$tg-fs-sm});
     --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-2xs});
     --bit-nbr-gap: #{spacing(0.25)};
     --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(0.75)});
+    --bit-nbr-sec-pad: #{spacing(0.75)};
     --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(1.5)});
     --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-sm});
 }
@@ -517,6 +535,7 @@
     --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-sm});
     --bit-nbr-gap: #{spacing(0.5)};
     --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(1)});
+    --bit-nbr-sec-pad: #{spacing(1)};
     --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(2)});
     --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-md});
 }
@@ -526,6 +545,7 @@
     --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-md});
     --bit-nbr-gap: #{spacing(0.75)};
     --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(1.5)});
+    --bit-nbr-sec-pad: #{spacing(1.5)};
     --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(2.5)});
     --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-lg});
 }

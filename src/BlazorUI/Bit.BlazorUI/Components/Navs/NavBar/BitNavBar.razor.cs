@@ -588,9 +588,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         _defaultSelectedKeyPending = false;
 
+        // A successful assignment refreshes the options itself (OnSetSelectedItem).
         if (await AssignSelectedItem(item) is false) return;
 
-        RefreshOptions();
         StateHasChanged();
     }
 
@@ -863,11 +863,17 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     {
         if (IsSelected(item) && Reselectable is false) return;
 
+        // A SelectedKey bound one way holds the selection the same way a one-way SelectedItem does: moving the
+        // item without being able to write the key back would leave the two naming different items.
+        if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+
         if (await AssignSelectedItem(item) is false) return;
 
-        await OnSelectItem.InvokeAsync(item);
-
+        // The key is written back before the callback runs, so a handler reading a bound key sees the new one,
+        // just as it sees the new item through SelectedItemChanged.
         await SyncSelectedKey();
+
+        await OnSelectItem.InvokeAsync(item);
 
         RefreshOptions();
         StateHasChanged();

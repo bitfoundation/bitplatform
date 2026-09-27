@@ -235,7 +235,7 @@ public partial class BitNavBarDemo
             Name = "SelectedKey",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The Key of the selected item, kept in step with SelectedItem. It is how the options API binds its selection; a key no item carries yet is applied once one with it is there. Automatic mode only reports it. Supports two-way binding."
+            Description = "The Key of the selected item, kept in step with SelectedItem. It is how the options API binds its selection; a key no item carries yet is applied once one with it is there. Bound one way, it holds the selection as a one-way SelectedItem does. Automatic mode only reports it. Supports two-way binding."
         },
         new()
         {
@@ -312,14 +312,14 @@ public partial class BitNavBarDemo
         new() { Name = "--bit-NavBar-background", DefaultValue = "transparent", Description = "Fill of the bar." },
         new() { Name = "--bit-NavBar-border-radius", DefaultValue = "0", Description = "Corners of the bar, for a floating tab bar." },
         new() { Name = "--bit-NavBar-shadow", DefaultValue = "none", Description = "Shadow of the bar." },
-        new() { Name = "--bit-NavBar-padding-block", DefaultValue = "0", Description = "Room above and below the items (SafeArea adds the device inset to it)." },
+        new() { Name = "--bit-NavBar-padding-block", DefaultValue = "0", Description = "Room above and below the items (SafeArea adds the device inset below it)." },
         new() { Name = "--bit-NavBar-padding-inline", DefaultValue = "0", Description = "Room on the two sides of the items." },
         new() { Name = "--bit-NavBar-gap", DefaultValue = "0", Description = "Space between the items." },
         new() { Name = "--bit-NavBar-item-color", DefaultValue = "--bit-clr-fg-pri", Description = "Content color of an item." },
         new() { Name = "--bit-NavBar-item-hover-color", DefaultValue = "The Color kind (its on-color when Filled)", Description = "Content color of a hovered item." },
         new() { Name = "--bit-NavBar-item-hover-background", DefaultValue = "The Color kind's hover when Filled, else transparent", Description = "Fill of a hovered item, or of its pill with the Pill indicator." },
         new() { Name = "--bit-NavBar-item-border-radius", DefaultValue = "--bit-shp-radius-control", Description = "Corners of an item." },
-        new() { Name = "--bit-NavBar-item-padding", DefaultValue = "Per Size", Description = "Padding of an item." },
+        new() { Name = "--bit-NavBar-item-padding", DefaultValue = "Per Size", Description = "Padding of an item, one length on every side (the room a hidden label reserves is worked out from it)." },
         new() { Name = "--bit-NavBar-item-min-size", DefaultValue = "Per Size (--bit-siz-ctrl-*)", Description = "Minimum width and height of an item, its touch target." },
         new() { Name = "--bit-NavBar-icon-size", DefaultValue = "Per Size", Description = "Size of the icon of an item." },
         new() { Name = "--bit-NavBar-text-size", DefaultValue = "Per Size", Description = "Font size of the text of an item." },

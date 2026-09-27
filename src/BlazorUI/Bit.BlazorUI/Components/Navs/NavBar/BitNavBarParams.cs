@@ -104,7 +104,8 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
     public BitNavMode? Mode { get; set; }
 
     /// <summary>
-    /// Enables recalling the select events when the same item is selected.
+    /// Lets the click and the select events of the already selected item through: on a click in the manual
+    /// mode, and on a navigation back to its URL in the automatic mode. By default they are swallowed.
     /// </summary>
     public bool? Reselectable { get; set; }
 

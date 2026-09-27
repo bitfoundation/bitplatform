@@ -213,7 +213,8 @@ public partial class BitNavBar<TItem>
     /// The <c>Key</c> of the selected item, kept in step with <see cref="SelectedItem"/> whichever of the two
     /// is written. It is how the options API binds its selection, since no option exists to be referenced by
     /// <see cref="SelectedItem"/> before the options render; a key no item carries yet is applied as soon as
-    /// one with it is there. In the automatic mode it only reports the item the current URL selected.
+    /// one with it is there. Bound one way, it holds the selection where it is, as a one-way
+    /// <see cref="SelectedItem"/> does. In the automatic mode it only reports the item the current URL selected.
     /// </summary>
     [Parameter, TwoWayBound]
     [CallOnSet(nameof(OnSetSelectedKey))]

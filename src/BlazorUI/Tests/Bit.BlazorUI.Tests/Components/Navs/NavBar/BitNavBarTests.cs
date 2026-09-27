@@ -1146,6 +1146,50 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavBarShouldHoldTheSelectionOfAOneWaySelectedKey()
+    {
+        // A key that cannot be written back holds the selection, as a one-way SelectedItem does: moving the
+        // item alone would leave the key naming another one.
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[1].Key = "products";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "home");
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.AreEqual("Home", SelectedText(component));
+        Assert.AreEqual("home", component.Instance.SelectedKey);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldWriteTheSelectedKeyBackBeforeOnSelectItem()
+    {
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[1].Key = "products";
+
+        string? key = "home";
+        string? keyInCallback = null;
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, key);
+            p.Add(c => c.SelectedKeyChanged, (string? k) => key = k);
+            p.Add(c => c.OnSelectItem, (BitNavBarItem? _) => keyInCallback = key);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.AreEqual("products", keyInCallback);
+    }
+
+    [TestMethod]
     public void BitNavBarShouldFollowAChangedSelectedKey()
     {
         var items = BasicItems();

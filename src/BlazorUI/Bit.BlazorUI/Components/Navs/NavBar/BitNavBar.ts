@@ -95,7 +95,10 @@ namespace BitBlazorUI {
                 // can still move it that way is its own, not the bar's.
                 if (NavBar.hasVerticalScroller(e.target as Element | null, container, e.deltaY)) return;
 
-                const rtl = getComputedStyle(container).direction === 'rtl';
+                // The direction is read off the dir attribute rather than the computed style: this handler
+                // runs for every wheel tick and holds the page scroll until it returns, and a style read there
+                // is a forced recalculation on each one.
+                const rtl = (container.closest('[dir]') as HTMLElement | null)?.dir.toLowerCase() === 'rtl';
                 const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * container.clientWidth : e.deltaY;
                 // In RTL scrollLeft runs from 0 down to -max, so the distance travelled is its magnitude.
                 const position = Math.abs(container.scrollLeft);
@@ -103,7 +106,11 @@ namespace BitBlazorUI {
                 if ((delta < 0 && position <= 0) || (delta > 0 && position >= max - 1)) return;
 
                 e.preventDefault();
-                container.scrollLeft += rtl ? -delta : delta;
+                // The list scrolls smoothly (scroll-behavior), and a relative scroll started while the previous
+                // one is still animating would add to where that one has got to rather than to where it is
+                // going, losing distance on every tick of a fast spin. The wheel's own ticks are the motion here,
+                // so each one lands at once.
+                container.scrollBy({ left: rtl ? -delta : delta, behavior: 'instant' as ScrollBehavior });
             }, { passive: false });
         }
 
@@ -112,10 +119,12 @@ namespace BitBlazorUI {
             for (let el = target; el && el !== container; el = el.parentElement) {
                 if (el.scrollHeight <= el.clientHeight) continue;
 
-                const overflowY = getComputedStyle(el).overflowY;
-                if (overflowY !== 'auto' && overflowY !== 'scroll' && overflowY !== 'overlay') continue;
+                // Whether the element could still move that way is checked first, since it is cheap: the style
+                // is only read for an element that could, to tell a scroller from one that merely overflows.
+                if (deltaY < 0 ? el.scrollTop <= 0 : el.scrollTop >= el.scrollHeight - el.clientHeight - 1) continue;
 
-                if (deltaY < 0 ? el.scrollTop > 0 : el.scrollTop < el.scrollHeight - el.clientHeight - 1) return true;
+                const overflowY = getComputedStyle(el).overflowY;
+                if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') return true;
             }
 
             return false;
