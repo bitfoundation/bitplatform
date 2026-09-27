@@ -1076,7 +1076,13 @@ public partial class BitPersona : BitComponentBase
         // draws itself. Everything about the element as a control - the pointer, the focus ring, the overlay
         // it reveals - is hung off the first, so a coin filled by a template is as reachable as any other;
         // everything about how the coin looks stays on the second, which a template has taken over.
-        string?[] classes = ["bit-prs-cne", CoinTemplate is null ? "bit-prs-imc" : null, GetCoinClass(), Classes?.ImageContainer];
+        // bit-prs-cph marks a coin that is showing a picture, which has no use for the edge a filled coin draws
+        // in its own color around the initials: around a photo it is a hairline of an unrelated color.
+        string?[] classes = ["bit-prs-cne",
+                             CoinTemplate is null ? "bit-prs-imc" : null,
+                             ShowsPicture ? "bit-prs-cph" : null,
+                             GetCoinClass(),
+                             Classes?.ImageContainer];
 
         return string.Join(' ', classes.Where(c => c.HasValue()));
     }
@@ -1116,6 +1122,12 @@ public partial class BitPersona : BitComponentBase
     /// <see cref="ImageUrl"/> is - the img element needs only one of the two to have something to fetch.
     /// </remarks>
     private bool HasImage => ImageUrl.HasValue() || ImageSrcSet.HasValue();
+
+    /// <summary>
+    /// Whether the coin is showing a picture right now: one was given, nothing has taken its place, and it has not
+    /// failed to load.
+    /// </summary>
+    private bool ShowsPicture => HasImage && Unknown is false && CoinTemplate is null && _hasError is false;
 
     /// <summary>
     /// Whether the persona has no visible text of its own, in which case the coin is the whole of it and has

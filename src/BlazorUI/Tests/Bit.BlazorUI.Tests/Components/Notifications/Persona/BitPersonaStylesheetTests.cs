@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -16,6 +16,7 @@ public class BitPersonaStylesheetTests
 {
     private static readonly string[] _publicVariables =
     [
+        "--bit-Persona-surface-color",
         "--bit-Persona-gap",
         "--bit-Persona-primary-color",
         "--bit-Persona-primary-font-weight",
@@ -103,9 +104,43 @@ public class BitPersonaStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(GetRule(rules, "off"), "background-color: $clr-bg-pri;");
-        StringAssert.Contains(GetRule(rules, "blk"), "background-color: $clr-bg-pri;");
+        StringAssert.Contains(GetRule(rules, "off"), "background-color: var(--bit-prs-surface);");
+        StringAssert.Contains(GetRule(rules, "blk"), "background-color: var(--bit-prs-surface);");
         Assert.IsFalse(rules.Contains("$clr-ntr-white"), "A presence dot is painted white, which glares on a dark scheme.");
+    }
+
+    [TestMethod]
+    public void BitPersonaSurfaceColorShouldFeedEveryCutoutOfThePersona()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        StringAssert.Contains(rules, "--bit-prs-surface: var(--bit-Persona-surface-color, #{$clr-bg-pri});");
+
+        // The active ring's gap is cut in the surface unless a gap color of its own is given.
+        Assert.AreEqual(2, Regex.Matches(rules, Regex.Escape("var(--bit-Persona-ring-gap-color, var(--bit-prs-surface))")).Count);
+        Assert.IsFalse(rules.Contains("var(--bit-Persona-ring-gap-color, #{$clr-bg-pri})"), "The ring gap ignores the surface color.");
+    }
+
+    [TestMethod]
+    public void BitPersonaFilledCoinShouldClearItsEdgeUnderAPicture()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        var rule = Regex.Match(rules, @"\n\.bit-prs-cph\.bit-prs-fil \{.*?\n\}", RegexOptions.Singleline).Value;
+
+        StringAssert.Contains(rule, "border-color: transparent;");
+        StringAssert.Contains(rule, "background-clip: padding-box;");
+    }
+
+    [TestMethod]
+    public void BitPersonaActionButtonShouldOfferAPointerTargetOfAtLeast24Px()
+    {
+        var rule = GetRule(GetRules(ReadStylesheet()), "abt");
+
+        // Spacing(2.5) is 20px on the Size24 coin, so the hit area is grown past the button to the WCAG 2.5.8 minimum.
+        StringAssert.Contains(rule, "&::before {");
+        StringAssert.Contains(rule, "width: max(100%, #{rem2(24px)});");
+        StringAssert.Contains(rule, "height: max(100%, #{rem2(24px)});");
     }
 
     [TestMethod,

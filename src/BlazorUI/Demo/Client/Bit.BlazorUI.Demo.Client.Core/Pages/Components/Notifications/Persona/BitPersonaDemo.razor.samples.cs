@@ -226,19 +226,7 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
 <BitPersona Inactive
             PrimaryText=""Saleh Khafan""
             SecondaryText=""Inactive""
-            Size=""BitPersonaSize.Size72"" />
-
-
-<div>On a tinted surface, with the gap cut in that surface:</div>
-
-<div style=""padding: 1rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-ter);"">
-    <BitPersona Active
-                PrimaryText=""Xafan Salina""
-                SecondaryText=""Retuned gap color""
-                Size=""BitPersonaSize.Size72""
-                Style=""--bit-Persona-ring-gap-color: var(--bit-clr-bg-ter);""
-                ImageUrl=""/images/persona/persona-female.png"" />
-</div>";
+            Size=""BitPersonaSize.Size72"" />";
 
     private readonly string example7RazorCode = @"
 <BitPersona PrimaryText=""Xafan Salina""
@@ -364,15 +352,13 @@ private int actionClickCount = 0;";
                 SecondaryText=""Faded in""
                 Size=""BitPersonaSize.Size72""
                 ImageUrl=""/images/persona/persona-female.png"" />
-}";
-    private readonly string example10CsharpCode = @"
-private int imageLoadCount = 0;
-private int imageErrorCount = 0;
-private bool isFadeInPersonaShown = true;";
+}
 
-    private readonly string example11RazorCode = @"
+
+<div>Responsive sources and a described picture:</div>
+
 <BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Software Engineer""
+            SecondaryText=""ImageAlt""
             Size=""BitPersonaSize.Size72""
             ImageAlt=""Xafan Salina smiling at the camera""
             ImageUrl=""/images/persona/persona-female.png""
@@ -384,8 +370,12 @@ private bool isFadeInPersonaShown = true;";
             Size=""BitPersonaSize.Size72""
             ImageSizes=""72px""
             ImageSrcSet=""/images/persona/persona-female-72.png 72w, /images/persona/persona-female.png 96w"" />";
+    private readonly string example10CsharpCode = @"
+private int imageLoadCount = 0;
+private int imageErrorCount = 0;
+private bool isFadeInPersonaShown = true;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-ico {
         font-size: 14px;
@@ -427,7 +417,7 @@ private bool isFadeInPersonaShown = true;";
     </CoinTemplate>
 </BitPersona>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitPersona AutoCoinColor PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Size=""BitPersonaSize.Size72"" />
 
 <BitPersona AutoCoinColor PrimaryText=""Saleh Khafan"" SecondaryText=""Developer"" Size=""BitPersonaSize.Size72"" />
@@ -449,10 +439,10 @@ private bool isFadeInPersonaShown = true;";
 <BitPersona AutoCoinColor AutoCoinColors=""_coinColors"" PrimaryText=""Elvia Atkins"" SecondaryText=""QA Engineer"" Size=""BitPersonaSize.Size72"" />
 
 <BitPersona AutoCoinColor CoinColor=""BitColor.Success"" PrimaryText=""Xafan Salina"" SecondaryText=""Always green"" Size=""BitPersonaSize.Size72"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitColor.Tertiary];";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitPersona Reversed
             PrimaryText=""Xafan Salina""
             SecondaryText=""Reversed""
@@ -492,7 +482,7 @@ private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitC
                 ImageUrl=""/images/persona/persona-female.png"" />
 </div>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitParams Parameters=""@personaParams"">
     <BitPersona PrimaryText=""Xafan Salina"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"" />
 
@@ -500,7 +490,7 @@ private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitC
 
     <BitPersona PrimaryText=""Ted Randall"" SecondaryText=""Its own Size"" Presence=""BitPersonaPresence.Busy"" Size=""BitPersonaSize.Size72"" />
 </BitParams>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private readonly BitPersonaParams[] personaParams =
 [
     new()
@@ -518,7 +508,7 @@ private readonly BitPersonaParams[] personaParams =
     }
 ];";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitPersona PrimaryText=""Primary"" CoinColor=""BitColor.Primary"" />
 
 <BitPersona PrimaryText=""Secondary"" CoinColor=""BitColor.Secondary"" />
@@ -555,7 +545,7 @@ private readonly BitPersonaParams[] personaParams =
 
 <BitPersona PrimaryText=""TertiaryBorder"" CoinColor=""BitColor.TertiaryBorder"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 <BitPersona PrimaryText=""Xafan Salina""
@@ -589,7 +579,7 @@ private readonly BitPersonaParams[] personaParams =
             Size=""BitPersonaSize.Size72""
             UnknownIcon=""@BitIconInfo.Fa(""solid user-secret"")""
             Unknown />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private int actionClickCount = 0;
 
 private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
@@ -602,7 +592,7 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
     { BitPersonaPresence.Busy, BitIconInfo.Bi(""exclamation-circle-fill"") },
 };";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitCheckbox @bind-Value=""isDetailsShown"" Label=""Show details"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
@@ -677,10 +667,10 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
             ShowSecondaryText
             HidePersonaDetails=""!isDetailsShown""
             ImageUrl=""/images/persona/persona-female.png"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private bool isDetailsShown = true;";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -741,9 +731,25 @@ private bool isDetailsShown = true;";
                 PresenceIconName=""@BitIconName.Airplane"" />
 
     <BitPersona Active PrimaryText=""Ted Randall"" SecondaryText=""Designer"" Size=""BitPersonaSize.Size56"" />
+</div>
+
+
+<div>On a tinted surface, <b>--bit-Persona-surface-color</b> cuts the ring's gap and the hollow dots in it:</div>
+
+<div style=""padding: 1rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-ter); --bit-Persona-surface-color: var(--bit-clr-bg-ter);"">
+    <BitPersona Active
+                PrimaryText=""Xafan Salina""
+                SecondaryText=""Active""
+                Size=""BitPersonaSize.Size56""
+                ImageUrl=""/images/persona/persona-female.png"" />
+
+    <BitPersona PrimaryText=""Saleh Khafan""
+                SecondaryText=""Offline""
+                Size=""BitPersonaSize.Size56""
+                Presence=""BitPersonaPresence.Offline"" />
 </div>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example19RazorCode = @"
 <div dir=""rtl"">
     <BitPersona Dir=""BitDir.Rtl""
                 PrimaryText=""صالح یوسف نژاد""

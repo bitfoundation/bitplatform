@@ -1264,6 +1264,43 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPersonaCoinShowingAPictureShouldBeMarkedSoItsEdgeIsCleared()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+        });
+
+        Assert.IsTrue(component.Find(".bit-prs-imc").ClassList.Contains("bit-prs-cph"));
+
+        // A picture that failed is replaced by the initials, which want the filled edge back.
+        component.Find(".bit-prs-img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-prs-imc").ClassList.Contains("bit-prs-cph"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinWithoutAPictureShouldNotBeMarkedAsShowingOne()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs-imc").ClassList.Contains("bit-prs-cph"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.Unknown, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs-imc").ClassList.Contains("bit-prs-cph"));
+    }
+
+    [TestMethod]
     public void BitPersonaImageSizesAttributeShouldBeSet()
     {
         var component = RenderComponent<BitPersona>(parameters =>
@@ -2710,6 +2747,20 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsNull(coin.GetAttribute("href"));
         Assert.AreEqual("-1", coin.GetAttribute("tabindex"));
         Assert.AreEqual("true", coin.GetAttribute("aria-disabled"));
+
+        // An anchor without an href has no role of its own, and aria-disabled on a generic element is ignored.
+        Assert.AreEqual("link", coin.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitPersonaEnabledLinkCoinShouldKeepItsImplicitRole()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+        });
+
+        Assert.IsNull(component.Find(".bit-prs-cne").GetAttribute("role"));
     }
 
     [TestMethod]

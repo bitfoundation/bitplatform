@@ -1,7 +1,8 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // persona and one set on the Style of an instance re-skins that one alone:
+//   --bit-Persona-surface-color            surface the persona sits on: the active ring's gap and the inside of the hollow presence dots (default: $clr-bg-pri)
 //   --bit-Persona-gap                      room between the coin and the details        (default: per size, spacing(1..2))
 //   --bit-Persona-primary-color            text of the primary row                      (default: $clr-fg-pri)
 //   --bit-Persona-primary-font-weight      weight of the primary row                    (default: $tg-fw-regular)
@@ -29,7 +30,7 @@
 //   --bit-Persona-ring-color               ring of an Active coin                       (default: the coin background)
 //   --bit-Persona-ring-width               width of that ring                           (default: per size, 1.5px..4px)
 //   --bit-Persona-ring-gap                 gap between the coin and that ring           (default: per size, 1.5px..4px)
-//   --bit-Persona-ring-gap-color           color the gap is cut in                      (default: $clr-bg-pri)
+//   --bit-Persona-ring-gap-color           color the gap is cut in                      (default: the surface color)
 //   --bit-Persona-active-shadow            shadow of an Active coin (Shadow, RingShadow) (default: $box-shadow-card)
 //   --bit-Persona-inactive-opacity         opacity of an Inactive coin                  (default: 0.8)
 //   --bit-Persona-inactive-scale           scale of an Inactive coin                    (default: 0.875)
@@ -70,6 +71,9 @@
     // --bit-Persona-ring-width override every size at once.
     --bit-prs-ring-gap: #{rem2(2px)};
     --bit-prs-ring-width: #{rem2(2px)};
+    // The color of whatever the persona sits on, which the active ring's gap and the hollow presence dots are cut
+    // in. One public knob for a persona placed on a tinted card or a dark header, rather than one per cutout.
+    --bit-prs-surface: var(--bit-Persona-surface-color, #{$clr-bg-pri});
     // The room between the coin and the details, retuned by the size classes.
     --bit-prs-gap: #{spacing(1.5)};
     // The corner of the coin, retuned by the shape classes.
@@ -400,6 +404,18 @@
     background-color: var(--bit-Persona-action-background, #{$clr-bg-pri});
     transition: opacity $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    // The button is drawn at the size the coin leaves room for, which on the smallest coins is under the 24px a
+    // pointer target needs (WCAG 2.5.8). The hit area is grown to that minimum around it, not the button itself.
+    &::before {
+        content: "";
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        width: max(100%, #{rem2(24px)});
+        height: max(100%, #{rem2(24px)});
+        transform: translate(-50%, -50%);
+    }
+
     @media (hover: hover) {
         &:hover {
             // A custom surface keeps itself on hover unless it is given a hover of its own, so a dark button is
@@ -412,6 +428,12 @@
     // be found by hovering is a control a touch device never shows at all.
     @media (hover: none) {
         opacity: 1;
+    }
+
+    // Forced colors strip the shadow that sets the button apart from the picture it sits on, and repaint its surface
+    // in the system button color - which leaves nothing to tell where it ends. A border in the system text color does.
+    @media (forced-colors: active) {
+        border: $shp-border-width $shp-border-style ButtonText;
     }
 
     // The button is hidden until it is reached, so reaching it with the keyboard has to reveal it too - a
@@ -467,7 +489,7 @@
 // the coin reads as lifted out of whatever it sits on rather than merely outlined.
 .bit-prs-arg {
     .bit-prs-imc {
-        box-shadow: 0 0 0 var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) var(--bit-Persona-ring-gap-color, #{$clr-bg-pri}),
+        box-shadow: 0 0 0 var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) var(--bit-Persona-ring-gap-color, var(--bit-prs-surface)),
                     0 0 0 calc(var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) + var(--bit-Persona-ring-width, var(--bit-prs-ring-width))) var(--bit-Persona-ring-color, var(--bit-prs-coin-bg));
     }
 }
@@ -480,7 +502,7 @@
 
 .bit-prs-ars {
     .bit-prs-imc {
-        box-shadow: 0 0 0 var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) var(--bit-Persona-ring-gap-color, #{$clr-bg-pri}),
+        box-shadow: 0 0 0 var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) var(--bit-Persona-ring-gap-color, var(--bit-prs-surface)),
                     0 0 0 calc(var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) + var(--bit-Persona-ring-width, var(--bit-prs-ring-width))) var(--bit-Persona-ring-color, var(--bit-prs-coin-bg)),
                     var(--bit-Persona-active-shadow, #{$box-shadow-card});
     }
@@ -505,7 +527,7 @@
 // on a dark scheme reads as a status of its own rather than as the absence of one.
 .bit-prs-off {
     --bit-prs-presence-clr: var(--bit-Persona-presence-offline-color, #{$clr-ntr-gray110});
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-prs-surface);
     color: var(--bit-Persona-presence-icon-color, var(--bit-prs-presence-clr));
     border: $shp-border-width-thick $shp-border-style var(--bit-prs-presence-clr);
 }
@@ -543,7 +565,7 @@
 
 .bit-prs-blk {
     --bit-prs-presence-clr: var(--bit-Persona-presence-blocked-color, #{$clr-err});
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-prs-surface);
     color: var(--bit-Persona-presence-icon-color, var(--bit-prs-presence-clr));
     border: $shp-border-width-thick $shp-border-style var(--bit-prs-presence-clr);
 }
@@ -911,6 +933,15 @@
     border-color: transparent;
     background-color: transparent;
     color: var(--bit-prs-coin-bg);
+}
+
+// A filled coin's edge is drawn in its fill so the initials sit on one seamless disc, but a picture only covers the
+// inside of that edge and leaves it as a hairline of the coin color around the photo. The edge is cleared under a
+// picture instead - the fill stays behind it for the initials a loading picture shows through. An Outline coin keeps
+// its ring, which around a photo is the point of it.
+.bit-prs-cph.bit-prs-fil {
+    border-color: transparent;
+    background-clip: padding-box;
 }
 
 .bit-prs-pri {

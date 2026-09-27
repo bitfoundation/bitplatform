@@ -495,6 +495,12 @@ public partial class BitPersonaDemo
     [
         new()
         {
+            Name = "--bit-Persona-surface-color",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Surface the persona sits on: the Active ring's gap and the inside of the hollow Offline and Blocked dots are cut in it. Set it once for a persona on a tinted card or a dark header.",
+        },
+        new()
+        {
             Name = "--bit-Persona-gap",
             DefaultValue = "Per size, spacing(1) to spacing(2)",
             Description = "Room between the coin and the details.",
@@ -658,8 +664,8 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "--bit-Persona-ring-gap-color",
-            DefaultValue = "--bit-clr-bg-pri",
-            Description = "Color the gap is cut in; match it to the surface the persona sits on.",
+            DefaultValue = "--bit-Persona-surface-color",
+            Description = "Color the gap is cut in, when it has to differ from the surface color.",
         },
         new()
         {

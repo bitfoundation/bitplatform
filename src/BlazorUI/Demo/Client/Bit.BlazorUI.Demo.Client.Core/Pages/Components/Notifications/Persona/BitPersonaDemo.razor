@@ -221,7 +221,7 @@
     <DemoExample Title="Active" RazorCode="@example6RazorCode" Id="example6">
         <div>
             <b>Active</b> points at the person a view is about - a <b>Ring</b> (default), a <b>Shadow</b> or both, by <b>ActiveAppearance</b>.
-            <b>Inactive</b> shrinks and fades everyone else back. On a surface of its own, retune the ring's gap with <b>--bit-Persona-ring-gap-color</b>.
+            <b>Inactive</b> shrinks and fades everyone else back.
         </div>
         <br />
         <BitPersona Active
@@ -248,17 +248,6 @@
                     PrimaryText="Saleh Khafan"
                     SecondaryText="Inactive"
                     Size="BitPersonaSize.Size72" />
-        <br /><br /><br />
-        <div>On a tinted surface, with the gap cut in that surface:</div>
-        <br />
-        <div style="padding: 1rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-ter);">
-            <BitPersona Active
-                        PrimaryText="Xafan Salina"
-                        SecondaryText="Retuned gap color"
-                        Size="BitPersonaSize.Size72"
-                        Style="--bit-Persona-ring-gap-color: var(--bit-clr-bg-ter);"
-                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        </div>
     </DemoExample>
 
     <DemoExample Title="Action" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
@@ -366,11 +355,12 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Image loading" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Image" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            <b>OnImageLoad</b> and <b>OnImageError</b> report the picture's fate; a failed one falls back to the initials by itself.
-            <b>ImageLoading</b> picks <b>Lazy</b> or <b>Eager</b>, <b>ImageAttributes</b> reaches any other img attribute, and
-            <b>ImageFadeIn</b> fades the picture in.
+            <b>OnImageLoad</b> and <b>OnImageError</b> report the picture's fate - a failed one falls back to the initials.
+            <b>ImageLoading</b>, <b>ImageFadeIn</b> and <b>ImageAttributes</b> (any other img attribute) tune how it arrives.
+            <b>ImageSrcSet</b> and <b>ImageSizes</b> let the browser pick the sharpest copy, with or without <b>ImageUrl</b>.
+            <b>ImageAlt</b> describes the picture; unset, it is decorative, since the name already says who this is.
         </div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
@@ -407,16 +397,11 @@
                         Size="BitPersonaSize.Size72"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         }
-    </DemoExample>
-
-    <DemoExample Title="Responsive image" RazorCode="@example11RazorCode" Id="example11">
-        <div>
-            <b>ImageSrcSet</b> and <b>ImageSizes</b> let the browser pick the sharpest copy the screen needs; candidates alone,
-            without <b>ImageUrl</b>, still make a picture. <b>ImageAlt</b> describes the picture - unset, it is decorative, since the name already says who this is.
-        </div>
+        <br /><br /><br />
+        <div>Responsive sources and a described picture:</div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
+                    SecondaryText="ImageAlt"
                     Size="BitPersonaSize.Size72"
                     ImageAlt="Xafan Salina smiling at the camera"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"
@@ -430,7 +415,7 @@
                     ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png 72w, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 96w" />
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Templates" RazorCode="@example11RazorCode" Id="example11">
         <div>
             Each text row has a template (<b>PrimaryTextTemplate</b>, <b>SecondaryTextTemplate</b>, <b>TertiaryTextTemplate</b>,
             <b>OptionalTextTemplate</b>); <b>ImageOverlayTemplate</b> replaces the overlay and <b>CoinTemplate</b> the coin's contents.
@@ -466,7 +451,7 @@
         </BitPersona>
     </DemoExample>
 
-    <DemoExample Title="AutoCoinColor" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="AutoCoinColor" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>AutoCoinColor</b> picks the coin color by a stable hash of <b>CoinColorSeed</b> (a user id keeps it from moving
             with the display name), else of the initials or name. <b>AutoCoinColors</b> narrows the palette; an explicit <b>CoinColor</b> wins.
@@ -493,7 +478,7 @@
         <BitPersona AutoCoinColor CoinColor="BitColor.Success" PrimaryText="Xafan Salina" SecondaryText="Always green" Size="BitPersonaSize.Size72" />
     </DemoExample>
 
-    <DemoExample Title="Layout" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Layout" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <b>Reversed</b> puts the coin after the texts. <b>Vertical</b> stacks the coin over them, centered, for cards and tiles.
             <b>FullWidth</b> stretches the persona across its container so long texts ellipsize; each row keeps a tooltip of its
@@ -540,7 +525,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
             <b>BitParams</b> carries a <b>BitPersonaParams</b> to every persona under it - size, shape, coin coloring, layout,
             presence glyphs and localized presence titles. It fills in only what a persona leaves unset, so the last one keeps its own <b>Size</b>.
@@ -555,7 +540,7 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>CoinColor</b> paints the coin from the general palette; the initials and icon take its paired text color.
         </div>
@@ -597,7 +582,7 @@
         <BitPersona PrimaryText="TertiaryBorder" CoinColor="BitColor.TertiaryBorder" />
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             Every icon - action, coin, presence and unknown - takes a <b>BitIconInfo</b> beside its name, for FontAwesome, Bootstrap Icons or any other font.
         </div>
@@ -637,7 +622,7 @@
                     Unknown />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div>
             <b>Size</b> runs from <b>Size8</b> (a dot and a name, no coin) to <b>Size120</b>, and decides which rows fit: secondary
             from 40, tertiary from 72, optional from 100 - <b>ShowSecondaryText</b> forces the second. <b>CoinSize</b> sets any pixel size,
@@ -720,7 +705,7 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part by name. The public
             <b>--bit-Persona-*</b> CSS variables re-skin the coin, texts, rings, presence colors and focus - on <code>:root</code>, an ancestor or one persona's <b>Style</b>.
@@ -766,9 +751,24 @@
             <br />
             <BitPersona Active PrimaryText="Ted Randall" SecondaryText="Designer" Size="BitPersonaSize.Size56" />
         </div>
+        <br /><br />
+        <div>On a tinted surface, <b>--bit-Persona-surface-color</b> cuts the ring's gap and the hollow dots in it:</div>
+        <br />
+        <div style="padding: 1rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-ter); --bit-Persona-surface-color: var(--bit-clr-bg-ter);">
+            <BitPersona Active
+                        PrimaryText="Xafan Salina"
+                        SecondaryText="Active"
+                        Size="BitPersonaSize.Size56"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <br />
+            <BitPersona PrimaryText="Saleh Khafan"
+                        SecondaryText="Offline"
+                        Size="BitPersonaSize.Size56"
+                        Presence="BitPersonaPresence.Offline" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Dir</b> <b>Rtl</b> lays the persona out right to left; Latin initials keep their reading order.
         </div>
