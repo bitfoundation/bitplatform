@@ -91,6 +91,10 @@ namespace BitBlazorUI {
             // The distance in pixels the arrow is kept away from the corners of the callout, so that it
             // never lands on a rounded one; zero takes the default the placement keeps on its own.
             arrowPadding: number = 0,
+            // The prefix of the public custom properties ('--bit-Breadcrumb-') the callout keeps resolving
+            // the way its component does once it has moved to the body, or '' for the callouts that carry
+            // none across.
+            inheritedVariablePrefix: string = '',
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -118,7 +122,7 @@ namespace BitBlazorUI {
                 return false;
             }
 
-            Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId);
+            Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId, component, inheritedVariablePrefix);
 
             Callouts.replaceCurrent({ dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss });
 
@@ -893,7 +897,8 @@ namespace BitBlazorUI {
                 : false;
         }
 
-        private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string, arrowId: string = '') {
+        private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string, arrowId: string = '',
+            component: HTMLElement | null = null, inheritedVariablePrefix: string = '') {
             if (Callouts._calloutOriginalParents.has(calloutId)) return;
             if (callout.parentElement === document.body) return;
 
@@ -914,6 +919,23 @@ namespace BitBlazorUI {
             wrapper.setAttribute('data-bit-callout-wrapper', calloutId);
             for (const scope of scopes) {
                 wrapper.setAttribute(scope, '');
+            }
+
+            // A public custom property set on an ancestor of the component, or by a class on its root,
+            // reaches the callout only through the ancestors it is leaving, so the values the component
+            // resolves are declared on the wrapper. The callout inherits them from there, below whatever
+            // its own style declares, and they are read afresh every time it opens.
+            if (component && inheritedVariablePrefix) {
+                const computed = getComputedStyle(component);
+                for (let i = 0; i < computed.length; i++) {
+                    const name = computed[i];
+                    if (name.startsWith(inheritedVariablePrefix) === false) continue;
+
+                    const value = computed.getPropertyValue(name);
+                    if (value) {
+                        wrapper.style.setProperty(name, value);
+                    }
+                }
             }
 
             // ForceAnimation works by re-pointing inherited custom properties on the subtree carrying
