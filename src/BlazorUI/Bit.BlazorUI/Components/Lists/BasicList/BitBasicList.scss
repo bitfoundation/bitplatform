@@ -1,14 +1,40 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// list and one set on the Style of an instance re-skins that one alone:
+//   --bit-BasicList-height                         height of a vertical list                       (default: spacing(62.5))
+//   --bit-BasicList-focus-color                    focus ring of the list and its LoadMore button  (default: $clr-pri-focus)
+//   --bit-BasicList-disabled-color                 text of the LoadMore button when disabled       (default: $clr-fg-dis)
+//   --bit-BasicList-loading-padding                padding of the loading content                  (default: spacing(2))
+//   --bit-BasicList-loading-color                  text of the default loading content             (default: $clr-fg-sec)
+//   --bit-BasicList-spinner-color                  moving arc of the default spinners              (default: $clr-pri)
+//   --bit-BasicList-spinner-size                   size of the default spinners                    (default: $siz-icon-md)
+//   --bit-BasicList-load-more-padding              padding of the default LoadMore button          (default: spacing(2))
+//   --bit-BasicList-load-more-color                text of the default LoadMore button             (default: $clr-pri)
+//   --bit-BasicList-load-more-hover-color          its text on hover                               (default: $clr-pri-hover)
+//   --bit-BasicList-load-more-background           its background at rest                          (default: transparent)
+//   --bit-BasicList-load-more-hover-background     its background on hover                         (default: $clr-bg-pri-hover)
+//   --bit-BasicList-load-more-active-background    its background while pressed                    (default: $clr-bg-pri-active)
+//   --bit-BasicList-load-more-font-size            its text size                                   (default: inherited)
+//   --bit-BasicList-load-more-font-weight          its text weight                                 (default: $tg-fw-semibold)
+
 .bit-bsl {
     overflow: auto;
-    height: spacing(62.5);
+    height: var(--bit-BasicList-height, #{spacing(62.5)});
+
+    // The list only takes the focus where it was given a TabIndex (a scrolling region with no focusable
+    // rows needs one to be scrolled from the keyboard), or where the LoadMore button that held the focus
+    // went away with the last page and the focus was handed to the list rather than dropped on the body.
+    &:focus-visible {
+        @include focus-ring(var(--bit-BasicList-focus-color, #{$clr-pri-focus}));
+    }
 }
 
 // Virtualization measures a vertical scroll region, so the horizontal layout is only ever applied to
 // a list that is not virtualized (the component itself keeps the two apart). The height of the base
 // class is dropped here because a row of items is as tall as its items are, not as tall as a column
-// of them would have been.
+// of them would have been. The root lays its parts out in a row and the element holding the rows lays
+// the rows out in one of its own, so the header and the footer sit at the two ends of the strip.
 .bit-bsl-hrz {
     height: unset;
     display: flex;
@@ -16,9 +42,16 @@
     flex-flow: row nowrap;
     align-items: stretch;
 
+    > .bit-bsl-itm {
+        display: flex;
+        flex-shrink: 0;
+        flex-flow: row nowrap;
+        align-items: stretch;
+    }
+
     // The parts that span the width of a column of items are as wide as their own content in a row of
     // them, where a full width would leave the items with nothing to be laid out in.
-    > .bit-bsl-hdr, > .bit-bsl-ftr, > .bit-bsl-ldc, > .bit-bsl-lmb {
+    > .bit-bsl-hdr, > .bit-bsl-ftr, > .bit-bsl-sts > .bit-bsl-ldc, > .bit-bsl-lmb {
         width: auto;
     }
 }
@@ -27,13 +60,54 @@
     flex-shrink: 0;
 }
 
+// The live region of the list, always present and holding the loading content while there is one. It has no
+// look of its own: empty, it takes no room at all. It is the containing block of the hidden label below, so
+// that label stays inside the scrolling region, which clips it, instead of being placed against an ancestor
+// out past the end of the whole scrolled content, where it would stretch the scrolling of the page.
+.bit-bsl-sts {
+    flex-shrink: 0;
+    position: relative;
+}
+
 .bit-bsl-ldc {
     width: 100%;
     display: flex;
     flex-shrink: 0;
-    padding: spacing(2);
+    gap: spacing(1);
     align-items: center;
+    box-sizing: border-box;
     justify-content: center;
+    padding: var(--bit-BasicList-loading-padding, #{spacing(2)});
+}
+
+// The label of the default loading content; a LoadingTemplate keeps the look it was written with.
+.bit-bsl-ldt {
+    font-size: $tg-fs-sm;
+    color: var(--bit-BasicList-loading-color, #{$clr-fg-sec});
+}
+
+// The spinner of the default loading content and of the default LoadMore button while it loads a page.
+.bit-bsl-spn {
+    flex-shrink: 0;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border-color: $clr-brd-sec;
+    border-style: $shp-border-style;
+    border-width: $siz-spinner-stroke;
+    border-top-color: var(--bit-BasicList-spinner-color, #{$clr-pri});
+    width: var(--bit-BasicList-spinner-size, #{$siz-icon-md});
+    height: var(--bit-BasicList-spinner-size, #{$siz-icon-md});
+    animation: bit-bsl-spin $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-bsl-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 // A zero sized marker sitting after the last loaded item. The AutoLoad mode watches it for entering
@@ -46,6 +120,9 @@
     pointer-events: none;
 }
 
+// The wrapper of the LoadMore element, whether that is the default button or the clickable element a
+// LoadMoreTemplate is rendered into. It carries no look of its own beyond the focus indicator, so a
+// template is drawn exactly the way it was written.
 .bit-bsl-lmb {
     width: 100%;
     border: none;
@@ -57,17 +134,55 @@
     font: inherit;
     background: none;
     text-align: inherit;
+    -webkit-tap-highlight-color: transparent;
 
     &:disabled, &[aria-disabled="true"] {
         cursor: default;
+    }
+
+    // Loading a page does not disable the button (a disabled button drops the keyboard focus it holds),
+    // it only marks it busy and ignores the clicks until the page is in.
+    &[aria-busy="true"] {
+        cursor: progress;
     }
 
     // A plain outline drawn inside the element rather than the shared focus ring: the ring is a
     // box-shadow sitting outside the box, and the scrolling region of the list clips everything that
     // falls outside of it, which would leave the focused button with no visible indicator at all.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri-focus;
+        outline: $shp-focus-ring-width solid var(--bit-BasicList-focus-color, #{$clr-pri-focus});
         outline-offset: calc(-1 * #{$shp-focus-ring-width} - #{$shp-focus-ring-offset});
+    }
+}
+
+// The look of the default LoadMore button alone: a full-width text command in the primary color.
+button.bit-bsl-lmb {
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    color: var(--bit-BasicList-load-more-color, #{$clr-pri});
+    background-color: var(--bit-BasicList-load-more-background, transparent);
+    font-weight: var(--bit-BasicList-load-more-font-weight, #{$tg-fw-semibold});
+    font-size: var(--bit-BasicList-load-more-font-size, inherit);
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-BasicList-load-more-hover-color, #{$clr-pri-hover});
+            background-color: var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-hover});
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-BasicList-load-more-active-background, var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-active}));
+    }
+
+    &[aria-busy="true"] {
+        background-color: var(--bit-BasicList-load-more-background, transparent);
+    }
+
+    &:disabled {
+        color: var(--bit-BasicList-disabled-color, #{$clr-fg-dis});
+        background-color: var(--bit-BasicList-load-more-background, transparent);
     }
 }
 
@@ -81,8 +196,41 @@
 .bit-bsl-lmt {
     width: 100%;
     display: flex;
-    cursor: pointer;
-    padding: spacing(2);
+    cursor: inherit;
+    gap: spacing(1);
     align-items: center;
+    box-sizing: border-box;
     justify-content: center;
+    padding: var(--bit-BasicList-load-more-padding, #{spacing(2)});
+}
+
+// The label the live region announces a page of the LoadMore mode with while the items stay on screen, for a
+// screen reader and for nobody else (the loading content, when there is one, is its own announcement). It is
+// taken out of the flow rather than hidden, since display:none is also hidden from the readers it is written for.
+.bit-bsl-stt {
+    top: 0;
+    inset-inline-start: 0;
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so the spinner's track
+// and arc would be painted the same color and stop reading as motion, and a disabled LoadMore button would
+// look enabled. Both are re-established in system colors.
+@media (forced-colors: active) {
+    .bit-bsl-spn {
+        border-color: GrayText;
+        border-top-color: CanvasText;
+    }
+
+    button.bit-bsl-lmb:disabled {
+        color: GrayText;
+    }
 }
