@@ -355,47 +355,6 @@ private bool isMessageEnabled = true;
 private bool isDisabledSampleDismissed;";
 
     private readonly string example13RazorCode = @"
-<div style=""--bit-Message-border-width: 0 0 0 4px; --bit-Message-radius: 0;"">
-    <BitMessage Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Tinted>
-        An accent bar: a tinted Outline message keeping only its start border.
-    </BitMessage>
-</div>
-
-<div style=""--bit-Message-color: var(--bit-clr-fg-pri);
-            --bit-Message-icon-color: var(--bit-clr-err-fg);
-            --bit-Message-title-color: var(--bit-clr-err-fg);"">
-    <BitMessage Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Tinted Title=""Payment failed"">
-        Plain text, with the color kept to the icon and the title: the card was declined.
-    </BitMessage>
-</div>
-
-
-<div style=""--bit-Message-radius: 1rem;
-            --bit-Message-shadow: var(--bit-shd-4);
-            --bit-Message-icon-size: 1.25rem;
-            --bit-Message-line-height: 1.5;
-            --bit-Message-title-font-weight: 700;
-            --bit-Message-progress-height: 6px;"">
-    <BitMessage Multiline Title=""Set on an ancestor"">
-        Both messages in this box take its variables: a larger radius, a shadow, a bigger icon, a bolder
-        title and a roomier line height for text that wraps.
-    </BitMessage>
-    <BitMessage Dismissible
-                ShowAutoDismissProgress
-                Color=""BitColor.Success""
-                AutoDismissTime=""TimeSpan.FromSeconds(20)""
-                @bind-Dismissed=""isCssVarsDismissed"">
-        Rounded, shadowed, with a thicker countdown.
-    </BitMessage>
-    @if (isCssVarsDismissed)
-    {
-        <BitButton OnClick=""() => isCssVarsDismissed = false"">Restart</BitButton>
-    }
-</div>";
-    private readonly string example13CsharpCode = @"
-private bool isCssVarsDismissed;";
-
-    private readonly string example14RazorCode = @"
 <BitParams Parameters=""@messageParams"">
     <BitMessage Color=""BitColor.Success"">Your changes were saved.</BitMessage>
     <BitMessage Color=""BitColor.Warning"">
@@ -405,7 +364,7 @@ private bool isCssVarsDismissed;";
     </BitMessage>
     <BitMessage Color=""BitColor.Error"" Variant=""BitVariant.Fill"">Keeps its own Fill variant.</BitMessage>
 </BitParams>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly BitMessageParams[] messageParams =
 [
     new()
@@ -416,7 +375,7 @@ private readonly BitMessageParams[] messageParams =
     }
 ];";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitChoiceGroup @bind-Value=""colorVariant"" Horizontal TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
     <BitChoiceGroupOption Text=""Fill"" Value=""BitVariant.Fill"" />
     <BitChoiceGroupOption Text=""Outline"" Value=""BitVariant.Outline"" />
@@ -445,11 +404,11 @@ private readonly BitMessageParams[] messageParams =
 <BitMessage Color=""BitColor.PrimaryBorder"" Variant=""colorVariant"" Tinted=""colorTinted"">PrimaryBorder.</BitMessage>
 <BitMessage Color=""BitColor.SecondaryBorder"" Variant=""colorVariant"" Tinted=""colorTinted"">SecondaryBorder.</BitMessage>
 <BitMessage Color=""BitColor.TertiaryBorder"" Variant=""colorVariant"" Tinted=""colorTinted"">TertiaryBorder.</BitMessage>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitVariant colorVariant = BitVariant.Fill;
 private bool colorTinted;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -474,12 +433,12 @@ private bool colorTinted;";
     Email column was empty or held a value the address parser did not recognize.
 </BitMessage>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitMessage Size=""BitSize.Small"" OnDismiss=""() => {}"">Small</BitMessage>
 <BitMessage Size=""BitSize.Medium"" OnDismiss=""() => {}"">Medium</BitMessage>
 <BitMessage Size=""BitSize.Large"" OnDismiss=""() => {}"">Large</BitMessage>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -539,7 +498,7 @@ private bool colorTinted;";
     not recognize.
 </BitMessage>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitMessage Dir=""BitDir.Rtl"" Color=""BitColor.Info"">
     پیام خبری (پیش فرض). <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
 </BitMessage>

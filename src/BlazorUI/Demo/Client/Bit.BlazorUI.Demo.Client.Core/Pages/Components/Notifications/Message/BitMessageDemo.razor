@@ -447,55 +447,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="CSS variables" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-            <div>
-                The public <b>--bit-Message-*</b> variables (listed in the CSS variables table below) restyle the message
-                without touching its classes. They inherit, so set them on :root, or on any element around the message:
-                one that wraps a single message restyles only that one, one that wraps several restyles them all.
-            </div>
-            <br />
-            <div class="box">
-                <div style="--bit-Message-border-width: 0 0 0 4px; --bit-Message-radius: 0;">
-                    <BitMessage Color="BitColor.Success" Variant="BitVariant.Outline" Tinted>
-                        An accent bar: a tinted Outline message keeping only its start border.
-                    </BitMessage>
-                </div>
-
-                <div style="--bit-Message-color: var(--bit-clr-fg-pri);
-                            --bit-Message-icon-color: var(--bit-clr-err-fg);
-                            --bit-Message-title-color: var(--bit-clr-err-fg);">
-                    <BitMessage Color="BitColor.Error" Variant="BitVariant.Outline" Tinted Title="Payment failed">
-                        Plain text, with the color kept to the icon and the title: the card was declined.
-                    </BitMessage>
-                </div>
-            </div>
-            <br />
-            <div class="box"
-                 style="--bit-Message-radius: 1rem;
-                        --bit-Message-shadow: var(--bit-shd-4);
-                        --bit-Message-icon-size: 1.25rem;
-                        --bit-Message-line-height: 1.5;
-                        --bit-Message-title-font-weight: 700;
-                        --bit-Message-progress-height: 6px;">
-                <BitMessage Multiline Title="Set on an ancestor">
-                    Both messages in this box take its variables: a larger radius, a shadow, a bigger icon, a bolder
-                    title and a roomier line height for text that wraps.
-                </BitMessage>
-                <BitMessage Dismissible
-                            ShowAutoDismissProgress
-                            Color="BitColor.Success"
-                            AutoDismissTime="TimeSpan.FromSeconds(20)"
-                            @bind-Dismissed="isCssVarsDismissed">
-                    Rounded, shadowed, with a thicker countdown.
-                </BitMessage>
-                @if (isCssVarsDismissed)
-                {
-                    <BitButton OnClick="() => isCssVarsDismissed = false">Restart</BitButton>
-                }
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>BitParams</b> with a <b>BitMessageParams</b> sets defaults for every message under it; a message's own
                 value always wins. The content, the state, the callbacks and what a message says about itself
@@ -515,7 +467,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>Color</b> sets the palette, the default icon and the urgency of the announcement. The semantic colors
                 report a severity; the background, foreground and border colors match a surface instead. Every color
@@ -556,7 +508,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+        <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
             <div>
                 <b>Icon</b>, <b>DismissIcon</b>, <b>ExpandIcon</b> and <b>CollapseIcon</b> take a <b>BitIconInfo</b> for
                 an external icon library: use the <b>Fa</b>, <b>Bi</b> and <b>Css</b> helpers, or a plain class string.
@@ -588,7 +540,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+        <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
             <div>
                 <b>Size</b> scales the type, the icon, the insets, the buttons and the countdown track together.
             </div>
@@ -600,7 +552,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+        <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part of the message.
             </div>
@@ -640,7 +592,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+        <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
             <div>
                 <b>Dir="BitDir.Rtl"</b> mirrors the message: the icon moves to the right, the buttons to the left.
             </div>

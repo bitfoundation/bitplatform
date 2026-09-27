@@ -1024,8 +1024,6 @@ public partial class BitMessageDemo
 
     private double elevation = 7;
 
-    private bool isCssVarsDismissed;
-
     private double autoMultilineWidth = 50;
 
     private BitVariant colorVariant = BitVariant.Fill;
