@@ -42,6 +42,11 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
     public TimeSpan? AutoDismissTime { get; set; }
 
     /// <summary>
+    /// Switches a single-line message to the Multiline layout for as long as its content does not fit on one line.
+    /// </summary>
+    public bool? AutoMultiline { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the message.
     /// </summary>
     public BitMessageClassStyles? Classes { get; set; }
@@ -185,6 +190,11 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
     public BitMessageClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Washes the surface of an Outline or a Text message with a faint tint of its color.
+    /// </summary>
+    public bool? Tinted { get; set; }
+
+    /// <summary>
     /// The HTML element the title of the message is rendered as, e.g. the heading level that fits the outline of
     /// the page the messages are on.
     /// </summary>
@@ -229,6 +239,11 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
         if (AutoDismissTime.HasValue && bitMessage.HasNotBeenSet(nameof(AutoDismissTime)))
         {
             bitMessage.AutoDismissTime = AutoDismissTime.Value;
+        }
+
+        if (AutoMultiline.HasValue && bitMessage.HasNotBeenSet(nameof(AutoMultiline)))
+        {
+            bitMessage.AutoMultiline = AutoMultiline.Value;
         }
 
         if (Classes is not null && bitMessage.HasNotBeenSet(nameof(Classes)))
@@ -375,6 +390,13 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.Styles = Styles;
 
             bitMessage.StyleBuilder.Reset();
+        }
+
+        if (Tinted.HasValue && bitMessage.HasNotBeenSet(nameof(Tinted)))
+        {
+            bitMessage.Tinted = Tinted.Value;
+
+            bitMessage.ClassBuilder.Reset();
         }
 
         if (TitleElement.HasValue() && bitMessage.HasNotBeenSet(nameof(TitleElement)))

@@ -70,6 +70,15 @@ public class BitThemeColorVariants
     /// whatever palette is active. Set it to pin a color that meets a design system's own contrast target.
     /// </summary>
     public string? Foreground { get; set; }
+
+    /// <summary>
+    /// The role laid over a surface as a faint wash rather than as a fill - the soft surface of a tinted
+    /// variant, read with <see cref="Foreground"/> on top of it. Emitted as <c>--bit-clr-&lt;role&gt;-tint</c>;
+    /// left unset, it defaults (in <c>Styles/family-tokens.scss</c>) to <see cref="Main"/> at 10% over
+    /// transparent, which tints whatever surface it sits on. Set it to pin an opaque "container" color of a
+    /// design system's own.
+    /// </summary>
+    public string? Tint { get; set; }
 }
 
 public class BitThemeGeneralColorVariants

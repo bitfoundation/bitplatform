@@ -47,12 +47,14 @@ public partial class BitMessage : BitComponentBase
     // starts over with the countdown it draws.
     private int _autoDismissGeneration;
 
-    // Whether the folded text is actually clipped, as the browser measured it: null until it has, which keeps the
-    // expander where it always was for a message that has not been measured (a prerender, a test renderer).
+    // Whether the single line is actually clipped, as the browser measured it: null until it has, which keeps the
+    // expander where it always was for a message that has not been measured (a prerender, a test renderer). For a
+    // message that reflows instead of folding, it stays true for as long as the message is too narrow for its line.
     // The observer is registered under UniqueId rather than the consumer's Id, which two messages may share and
-    // which may change under a running observer.
+    // which may change under a running observer; what it is watching for - a fold or a reflow - is kept beside it,
+    // null while nothing is watched.
     private bool? _isClipped;
-    private bool _isObservingOverflow;
+    private bool? _observedReflow;
     private DotNetObjectReference<BitMessage>? _dotnetObj;
 
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
@@ -124,6 +126,21 @@ public partial class BitMessage : BitComponentBase
     /// not being looked at too. Assigning a different value re-arms the countdown.
     /// </remarks>
     [Parameter] public TimeSpan? AutoDismissTime { get; set; }
+
+    /// <summary>
+    /// Switches a single-line message to the <see cref="Multiline"/> layout for as long as its content does not fit
+    /// on one line, instead of cutting it off with an ellipsis.
+    /// </summary>
+    /// <remarks>
+    /// A single line that is clipped hides the rest of its text from everyone who reads it with their eyes, which is
+    /// what a narrow viewport or a zoomed page does to any message longer than a few words (WCAG 1.4.10 Reflow).
+    /// With this set the message keeps its compact single line wherever it fits, and wraps - moving its actions to
+    /// their own row - wherever it does not, going back to one line once it is given the room again. The browser
+    /// measures the fit, so it takes effect once the message is interactive. <see cref="Truncate"/> is the other
+    /// answer to the same problem and wins where both are set; a <see cref="MaxLines"/> cap only holds on a message
+    /// that is <see cref="Multiline"/> of its own.
+    /// </remarks>
+    [Parameter] public bool AutoMultiline { get; set; }
 
     /// <summary>
     /// Moves the focus to the message as soon as it is rendered.
@@ -494,6 +511,18 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public BitMessageClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Washes the surface an Outline or a Text message leaves to the page with a faint tint of its color.
+    /// </summary>
+    /// <remarks>
+    /// It is the soft look most alerts take: Outline with a tint keeps the border around the wash, Text with a
+    /// tint drops it. The text stays on the role foreground, which keeps its 4.5:1 contrast on the tint. The
+    /// tint is the theme's <c>--bit-clr-&lt;role&gt;-tint</c> token, translucent by default so it tints
+    /// whatever surface the message sits on. A Fill message is filled already, so it ignores this.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Tinted { get; set; }
+
+    /// <summary>
     /// The title (heading) of the message, rendered above the content in multiline mode and ahead of it otherwise.
     /// </summary>
     /// <remarks>
@@ -539,7 +568,8 @@ public partial class BitMessage : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Fill paints the surface in the role color and the text in its on-color. Outline and Text leave the surface to
-    /// the page, so their text takes the role color shaded toward the foreground, which keeps it at a 4.5:1 contrast.
+    /// the page, so their text takes the role color shaded toward the foreground, which keeps it at a 4.5:1 contrast;
+    /// <see cref="Tinted"/> washes that surface with a faint tint of the role.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
@@ -608,8 +638,9 @@ public partial class BitMessage : BitComponentBase
     public ValueTask FocusAsync() => Dismissed ? ValueTask.CompletedTask : RootElement.FocusAsync();
 
     /// <summary>
-    /// Called by the overflow observer of a truncated message whenever its text goes from fitting to being
-    /// clipped or back, so the expander is only offered where there is something to unfold.
+    /// Called by the overflow observer of a truncated or auto-multiline message whenever its text goes from fitting
+    /// to being clipped or back, so the expander is only offered where there is something to unfold and the line
+    /// only wraps where it would otherwise be cut off.
     /// <br />
     /// <strong>This method is intended for internal use and should not be called directly.</strong>
     /// </summary>
@@ -696,6 +727,8 @@ public partial class BitMessage : BitComponentBase
         });
 
         ClassBuilder.Register(() => Square ? "bit-msg-sqr" : string.Empty);
+
+        ClassBuilder.Register(() => Tinted && Variant is BitVariant.Outline or BitVariant.Text ? "bit-msg-tnt" : string.Empty);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMessageParams))]
@@ -755,21 +788,21 @@ public partial class BitMessage : BitComponentBase
         await RootElement.FocusAsync();
     }
 
-    // Whether the folded text is clipped is something only the browser can tell, so a message that can fold asks
-    // it to watch, and stops asking once it cannot fold or is off the page. A message that comes back is a new
-    // element, so it is watched afresh.
+    // Whether the single line is clipped is something only the browser can tell, so a message that can fold or
+    // reflow asks it to watch, and stops asking once it can do neither or is off the page. A message that comes
+    // back is a new element, and one that went from folding to reflowing is watched for something else, so both
+    // are watched afresh.
     private async Task SyncOverflowObserver()
     {
-        var observe = _CanFold && Dismissed is false && IsDisposed is false;
+        bool? observe = (_CanFold || _CanReflow) && Dismissed is false && IsDisposed is false ? _CanReflow : null;
 
-        if (observe == _isObservingOverflow) return;
+        if (observe == _observedReflow) return;
 
-        _isObservingOverflow = observe;
+        _observedReflow = observe;
+        _isClipped = null;
 
-        if (observe is false)
+        if (observe is null)
         {
-            _isClipped = null;
-
             try
             {
                 await _js.BitMessageDispose(UniqueId);
@@ -784,7 +817,7 @@ public partial class BitMessage : BitComponentBase
 
         try
         {
-            await _js.BitMessageObserveOverflow(UniqueId, RootElement, _dotnetObj);
+            await _js.BitMessageObserveOverflow(UniqueId, RootElement, _dotnetObj, observe.Value);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
         catch (JSException) { } // without the observer the expander is rendered, as it always was
@@ -894,12 +927,22 @@ public partial class BitMessage : BitComponentBase
     // asked for the button, so a capped message without one stays capped.
     private bool _IsClamped => _HasMaxLines && _IsExpanded is false;
 
+    // A message reflows only where it would neither fold nor wrap already: Truncate is the other answer to a line
+    // that does not fit, and the one the consumer asked for by name.
+    private bool _CanReflow => AutoMultiline && Multiline is false && Truncate is false;
+
+    // The browser has measured the single line and found it too short for what is on it.
+    private bool _IsReflowed => _CanReflow && _isClipped is true;
+
+    // The layout a message is drawn in: the one it asked for, or the one it had to take on to fit its content.
+    private bool _IsMultiline => Multiline || _IsReflowed;
+
     // Two class names too many for the markup to piece together in an attribute of its own.
-    private string _ContentClass => $"bit-msg-cnt{(Multiline ? " bit-msg-mcn" : "")}{(_IsClamped ? " bit-msg-clp" : "")}";
+    private string _ContentClass => $"bit-msg-cnt{(_IsMultiline ? " bit-msg-mcn" : "")}{(_IsClamped ? " bit-msg-clp" : "")}";
 
     // A title sits on the same line as the content unless the message has room for a second line. The row
     // layout is only opted into when there is actually a title, so a message without one renders as before.
-    private bool _IsTitleInline => _HasTitle && Multiline is false && _IsExpanded is false;
+    private bool _IsTitleInline => _HasTitle && _IsMultiline is false && _IsExpanded is false;
 
     // A dismiss button is worth rendering as soon as pressing it would do something: either it is reported to
     // someone, or the message takes itself off the page.
@@ -1335,7 +1378,7 @@ public partial class BitMessage : BitComponentBase
             _pageVisibility = null;
         }
 
-        if (_isObservingOverflow)
+        if (_observedReflow is not null)
         {
             try
             {

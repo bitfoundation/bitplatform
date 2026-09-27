@@ -29,6 +29,13 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "AutoMultiline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Switches a single-line message to the Multiline layout (wrapped text, actions on their own row) for as long as its content does not fit on one line, instead of cutting it off. Truncate wins where both are set, and MaxLines only caps an explicitly Multiline message.",
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -248,7 +255,7 @@ public partial class BitMessageDemo
             Name = "Multiline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the message is multi-lined. If false, and the text overflows over buttons or to another line, it is clipped.",
+            Description = "Determines if the message is multi-lined. If false, and the text overflows over buttons or to another line, it is clipped - unless Truncate or AutoMultiline says otherwise.",
         },
         new()
         {
@@ -328,6 +335,13 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "Tinted",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Washes the surface an Outline or a Text message leaves to the page with a faint tint of its color (the theme's --bit-clr-<role>-tint token); a Fill message ignores it.",
+        },
+        new()
+        {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
@@ -359,7 +373,7 @@ public partial class BitMessageDemo
             Name = "Variant",
             Type = "BitVariant?",
             DefaultValue = "null",
-            Description = "The variant of the message. Outline and Text shade the role color toward the foreground for the text, so it keeps a 4.5:1 contrast on the page.",
+            Description = "The variant of the message. Outline and Text shade the role color toward the foreground for the text, so it keeps a 4.5:1 contrast on the page; Tinted washes their surface with the role.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
         },
@@ -700,7 +714,7 @@ public partial class BitMessageDemo
         new()
         {
             Name = "--bit-Message-background",
-            DefaultValue = "The role's main color (Fill), transparent (Outline, Text)",
+            DefaultValue = "The role's main color (Fill), its tint (Outline and Text with Tinted), transparent (Outline, Text)",
             Description = "Background of the surface.",
         },
         new()
@@ -1011,6 +1025,11 @@ public partial class BitMessageDemo
     private double elevation = 7;
 
     private bool isCssVarsDismissed;
+
+    private double autoMultilineWidth = 50;
+
+    private BitVariant colorVariant = BitVariant.Fill;
+    private bool colorTinted;
 
     private readonly BitMessageParams[] messageParams =
     [

@@ -8,7 +8,9 @@ public partial class BitMessageDemo
     private readonly string example2RazorCode = @"
 <BitMessage Variant=""BitVariant.Fill"">Fill</BitMessage>
 <BitMessage Variant=""BitVariant.Outline"">Outline</BitMessage>
-<BitMessage Variant=""BitVariant.Text"">Text</BitMessage>";
+<BitMessage Variant=""BitVariant.Text"">Text</BitMessage>
+<BitMessage Variant=""BitVariant.Outline"" Tinted>Outline, Tinted</BitMessage>
+<BitMessage Variant=""BitVariant.Text"" Tinted>Text, Tinted</BitMessage>";
 
     private readonly string example3RazorCode = @"
 <BitMessage Multiline>
@@ -22,7 +24,16 @@ public partial class BitMessageDemo
     Held to two lines by MaxLines. Your workspace is using 19.4 GB of its 20 GB. New uploads will start
     to fail once the limit is reached, and shared links to files already in the workspace will keep
     working. Remove the files you no longer need, or move them to an archive, to free the space back up.
-</BitMessage>";
+</BitMessage>
+
+
+<BitSlider Label=""Width (%)"" Min=""20"" Max=""100"" Step=""5"" @bind-Value=""autoMultilineWidth"" />
+<div style=""width: @(autoMultilineWidth)%;"">
+    <BitMessage>Clipped: the import finished, and 14 of its 320 rows need your attention.</BitMessage>
+    <BitMessage AutoMultiline>AutoMultiline: the import finished, and 14 of its 320 rows need your attention.</BitMessage>
+</div>";
+    private readonly string example3CsharpCode = @"
+private double autoMultilineWidth = 50;";
 
     private readonly string example4RazorCode = @"
 <BitMessage Truncate @bind-Expanded=""isTruncateExpanded"">
@@ -228,7 +239,7 @@ private bool isPausedDismissed;
 private BitMessage? pausableMessage;";
 
     private readonly string example9RazorCode = @"
-<BitMessage>
+<BitMessage AutoMultiline>
     <Content>A draft of this page was recovered from your last session.</Content>
     <Actions>
         <BitButton Size=""BitSize.Small"" Color=""BitColor.PrimaryBackground"">Restore</BitButton>
@@ -344,24 +355,17 @@ private bool isMessageEnabled = true;
 private bool isDisabledSampleDismissed;";
 
     private readonly string example13RazorCode = @"
-<div style=""--bit-Message-background: color-mix(in srgb, var(--bit-clr-err) 12%, var(--bit-clr-bg-pri));
-            --bit-Message-border-color: var(--bit-clr-err);
-            --bit-Message-icon-color: var(--bit-clr-err);
-            --bit-Message-title-color: var(--bit-clr-err);
-            --bit-Message-color: var(--bit-clr-fg-pri);"">
-    <BitMessage Color=""BitColor.Error"" Title=""Payment failed"">
-        A tinted surface: the card was declined. Try another payment method.
+<div style=""--bit-Message-border-width: 0 0 0 4px; --bit-Message-radius: 0;"">
+    <BitMessage Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Tinted>
+        An accent bar: a tinted Outline message keeping only its start border.
     </BitMessage>
 </div>
 
-<div style=""--bit-Message-background: var(--bit-clr-bg-sec);
-            --bit-Message-border-color: var(--bit-clr-suc);
-            --bit-Message-border-width: 0 0 0 4px;
-            --bit-Message-icon-color: var(--bit-clr-suc);
-            --bit-Message-color: var(--bit-clr-fg-pri);
-            --bit-Message-radius: 0;"">
-    <BitMessage Color=""BitColor.Success"">
-        An accent bar: the report is ready to download.
+<div style=""--bit-Message-color: var(--bit-clr-fg-pri);
+            --bit-Message-icon-color: var(--bit-clr-err-fg);
+            --bit-Message-title-color: var(--bit-clr-err-fg);"">
+    <BitMessage Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Tinted Title=""Payment failed"">
+        Plain text, with the color kept to the icon and the title: the card was declined.
     </BitMessage>
 </div>
 
@@ -413,27 +417,37 @@ private readonly BitMessageParams[] messageParams =
 ];";
 
     private readonly string example15RazorCode = @"
-<BitMessage Color=""BitColor.Primary"">Primary.</BitMessage>
-<BitMessage Color=""BitColor.Secondary"">Secondary.</BitMessage>
-<BitMessage Color=""BitColor.Tertiary"">Tertiary.</BitMessage>
-<BitMessage Color=""BitColor.Info"">Info (default).</BitMessage>
-<BitMessage Color=""BitColor.Success"">Success.</BitMessage>
-<BitMessage Color=""BitColor.Warning"">Warning.</BitMessage>
-<BitMessage Color=""BitColor.SevereWarning"">SevereWarning.</BitMessage>
-<BitMessage Color=""BitColor.Error"">Error.</BitMessage>
+<BitChoiceGroup @bind-Value=""colorVariant"" Horizontal TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
+    <BitChoiceGroupOption Text=""Fill"" Value=""BitVariant.Fill"" />
+    <BitChoiceGroupOption Text=""Outline"" Value=""BitVariant.Outline"" />
+    <BitChoiceGroupOption Text=""Text"" Value=""BitVariant.Text"" />
+</BitChoiceGroup>
+<BitToggle Label=""Tinted"" Inline @bind-Value=""colorTinted"" IsEnabled=""colorVariant is not BitVariant.Fill"" />
+
+<BitMessage Color=""BitColor.Primary"" Variant=""colorVariant"" Tinted=""colorTinted"">Primary.</BitMessage>
+<BitMessage Color=""BitColor.Secondary"" Variant=""colorVariant"" Tinted=""colorTinted"">Secondary.</BitMessage>
+<BitMessage Color=""BitColor.Tertiary"" Variant=""colorVariant"" Tinted=""colorTinted"">Tertiary.</BitMessage>
+<BitMessage Color=""BitColor.Info"" Variant=""colorVariant"" Tinted=""colorTinted"">Info (default).</BitMessage>
+<BitMessage Color=""BitColor.Success"" Variant=""colorVariant"" Tinted=""colorTinted"">Success.</BitMessage>
+<BitMessage Color=""BitColor.Warning"" Variant=""colorVariant"" Tinted=""colorTinted"">Warning.</BitMessage>
+<BitMessage Color=""BitColor.SevereWarning"" Variant=""colorVariant"" Tinted=""colorTinted"">SevereWarning.</BitMessage>
+<BitMessage Color=""BitColor.Error"" Variant=""colorVariant"" Tinted=""colorTinted"">Error.</BitMessage>
 
 <div style=""background:var(--bit-clr-fg-sec);padding:1rem;margin:1rem 0;"">
-    <BitMessage Color=""BitColor.PrimaryBackground"">PrimaryBackground.</BitMessage>
-    <BitMessage Color=""BitColor.SecondaryBackground"">SecondaryBackground.</BitMessage>
-    <BitMessage Color=""BitColor.TertiaryBackground"">TertiaryBackground.</BitMessage>
+    <BitMessage Color=""BitColor.PrimaryBackground"" Variant=""colorVariant"" Tinted=""colorTinted"">PrimaryBackground.</BitMessage>
+    <BitMessage Color=""BitColor.SecondaryBackground"" Variant=""colorVariant"" Tinted=""colorTinted"">SecondaryBackground.</BitMessage>
+    <BitMessage Color=""BitColor.TertiaryBackground"" Variant=""colorVariant"" Tinted=""colorTinted"">TertiaryBackground.</BitMessage>
 </div>
 
-<BitMessage Color=""BitColor.PrimaryForeground"">PrimaryForeground.</BitMessage>
-<BitMessage Color=""BitColor.SecondaryForeground"">SecondaryForeground.</BitMessage>
-<BitMessage Color=""BitColor.TertiaryForeground"">TertiaryForeground.</BitMessage>
-<BitMessage Color=""BitColor.PrimaryBorder"">PrimaryBorder.</BitMessage>
-<BitMessage Color=""BitColor.SecondaryBorder"">SecondaryBorder.</BitMessage>
-<BitMessage Color=""BitColor.TertiaryBorder"">TertiaryBorder.</BitMessage>";
+<BitMessage Color=""BitColor.PrimaryForeground"" Variant=""colorVariant"" Tinted=""colorTinted"">PrimaryForeground.</BitMessage>
+<BitMessage Color=""BitColor.SecondaryForeground"" Variant=""colorVariant"" Tinted=""colorTinted"">SecondaryForeground.</BitMessage>
+<BitMessage Color=""BitColor.TertiaryForeground"" Variant=""colorVariant"" Tinted=""colorTinted"">TertiaryForeground.</BitMessage>
+<BitMessage Color=""BitColor.PrimaryBorder"" Variant=""colorVariant"" Tinted=""colorTinted"">PrimaryBorder.</BitMessage>
+<BitMessage Color=""BitColor.SecondaryBorder"" Variant=""colorVariant"" Tinted=""colorTinted"">SecondaryBorder.</BitMessage>
+<BitMessage Color=""BitColor.TertiaryBorder"" Variant=""colorVariant"" Tinted=""colorTinted"">TertiaryBorder.</BitMessage>";
+    private readonly string example15CsharpCode = @"
+private BitVariant colorVariant = BitVariant.Fill;
+private bool colorTinted;";
 
     private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

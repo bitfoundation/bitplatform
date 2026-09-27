@@ -3,7 +3,7 @@
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // message and one set on the Style of an instance re-skins that one alone:
 //   --bit-Message-color                    text, glyph and button color                   (default: per variant - the role's on-color filled, its text shade otherwise)
-//   --bit-Message-background               background of the surface                     (default: the role's main color filled, transparent otherwise)
+//   --bit-Message-background               background of the surface                     (default: the role's main color filled, its tint when Tinted, transparent otherwise)
 //   --bit-Message-border-color             border color                                   (default: the role's main color filled and outlined, transparent otherwise)
 //   --bit-Message-border-width             thickness of the border                        (default: $shp-border-width)
 //   --bit-Message-radius                   corner radius of the surface and its countdown (default: $shp-radius-surface, none when Square)
@@ -389,6 +389,12 @@
     --bit-msg-brd: transparent;
 }
 
+// Tinted: the surface the two unfilled variants leave to the page is washed with the role instead, and the
+// text stays on the foreground shade, which is picked to be read on that wash. Only rendered on those two.
+.bit-msg-tnt {
+    --bit-msg-bg: var(--bit-msg-clr-tint);
+}
+
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // The @if keeps each kind's original declaration order. Note: the hand-written sbr/tbr blocks this
 // replaces set --bit-msg-clr to $clr-bg-pri (near-white text on the light brd-sec/brd-ter fills,
@@ -409,6 +415,7 @@
         // neutral role is a page color already, so its foreground is the role itself.
         --bit-msg-clr-txt: #{role($tokens, fg)};
         --bit-msg-clr-focus: #{role($tokens, focus)};
+        --bit-msg-clr-tint: #{role($tokens, tint)};
     }
 }
 

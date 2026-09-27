@@ -263,6 +263,19 @@ $clr-wrn-fg: var(--bit-clr-wrn-fg);
 $clr-swr-fg: var(--bit-clr-swr-fg);
 $clr-err-fg: var(--bit-clr-err-fg);
 
+//tint - each accent role laid over a surface as a faint, translucent wash instead of a fill: the surface of
+//a tinted (soft) variant, whose text reads the role foreground above. The palette-agnostic default lives
+//once in family-tokens.scss; a preset (in its own :root[bit-theme="..."] block) or
+//BitTheme.Color.<Role>.Tint retunes it without selecting any component class.
+$clr-pri-tint: var(--bit-clr-pri-tint);
+$clr-sec-tint: var(--bit-clr-sec-tint);
+$clr-ter-tint: var(--bit-clr-ter-tint);
+$clr-inf-tint: var(--bit-clr-inf-tint);
+$clr-suc-tint: var(--bit-clr-suc-tint);
+$clr-wrn-tint: var(--bit-clr-wrn-tint);
+$clr-swr-tint: var(--bit-clr-swr-tint);
+$clr-err-tint: var(--bit-clr-err-tint);
+
 //focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
 $clr-pri-focus: var(--bit-clr-pri-focus);
 $clr-sec-focus: var(--bit-clr-sec-focus);

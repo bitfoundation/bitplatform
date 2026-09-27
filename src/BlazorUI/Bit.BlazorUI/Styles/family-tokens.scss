@@ -2,12 +2,14 @@
  * Family tokens - the per-family shape, elevation and role-foreground alias tier
  * --------------------------------------------------
  * Purpose-named aliases that give every component FAMILY its own radius and its own elevation, and
- * every accent role its own foreground:
+ * every accent role its own foreground and tint:
  *   radius     - control (buttons, inputs, tags, ...), surface (cards, ...), popup (callouts, menus,
  *                tooltips, ...), dialog (dialogs, modals)
  *   elevation  - card, popup, dialog, sheet, tooltip, snackbar, appbar-top, appbar-bottom
  *   foreground - pri/sec/ter/inf/suc/wrn/swr/err: the role's color when it is READ on the page's own
  *                surfaces (an outlined or text-only variant) instead of filled behind its on-color
+ *   tint       - pri/sec/ter/inf/suc/wrn/swr/err: the role laid over a surface as a faint wash (the
+ *                soft surface of a tinted variant) instead of a fill
  *
  * Components consume THESE (via $shp-radius-control, $box-shadow-popup, $clr-wrn-fg, ... in
  * theme-variables.scss) instead of the single --bit-shp-brd-radius / --bit-shd-cal primitives or a
@@ -24,7 +26,7 @@
  * after this file and wins on source order.
  *
  * Themable from C# via BitTheme.Shape.Radius.*, BitTheme.BoxShadow.* and
- * BitTheme.Color.<Role>.Foreground (the mapper emits the same names). The mapper contract tests pin
+ * BitTheme.Color.<Role>.Foreground / .Tint (the mapper emits the same names). The mapper contract tests pin
  * this file, theme-variables.scss and the model to each other.
  */
 // The `:root [bit-theme]` twin re-declares the aliases on scoped-preset elements (any descendant
@@ -80,4 +82,19 @@
     --bit-clr-wrn-fg: color-mix(in srgb, var(--bit-clr-wrn) 55%, var(--bit-clr-fg-pri));
     --bit-clr-swr-fg: color-mix(in srgb, var(--bit-clr-swr) 55%, var(--bit-clr-fg-pri));
     --bit-clr-err-fg: color-mix(in srgb, var(--bit-clr-err) 55%, var(--bit-clr-fg-pri));
+
+    // tint per accent role - the role laid over whatever surface is below as a faint wash rather than
+    // a fill (the soft surface of a tinted message, ...), with the role foreground above read on top
+    // of it. It is translucent, so it tints a card or a sidebar as readily as the page, and the amount
+    // is kept low enough for every role foreground to keep 4.5:1 on it under the packaged palettes. A
+    // design system with opaque "container" colors of its own sets them in its preset block, or from
+    // C# via BitTheme.Color.<Role>.Tint.
+    --bit-clr-pri-tint: color-mix(in srgb, var(--bit-clr-pri) 10%, transparent);
+    --bit-clr-sec-tint: color-mix(in srgb, var(--bit-clr-sec) 10%, transparent);
+    --bit-clr-ter-tint: color-mix(in srgb, var(--bit-clr-ter) 10%, transparent);
+    --bit-clr-inf-tint: color-mix(in srgb, var(--bit-clr-inf) 10%, transparent);
+    --bit-clr-suc-tint: color-mix(in srgb, var(--bit-clr-suc) 10%, transparent);
+    --bit-clr-wrn-tint: color-mix(in srgb, var(--bit-clr-wrn) 10%, transparent);
+    --bit-clr-swr-tint: color-mix(in srgb, var(--bit-clr-swr) 10%, transparent);
+    --bit-clr-err-tint: color-mix(in srgb, var(--bit-clr-err) 10%, transparent);
 }

@@ -241,10 +241,10 @@ public class BitThemeProvider : ComponentBase
         // the document palette's value). See BitThemeMapper.AugmentWithSemanticAliasReSubstitution.
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVars);
 
-        // Same reason one tier lower: the per-family radii and elevations and the per-role foregrounds
+        // Same reason one tier lower: the per-family radii and elevations and the per-role foregrounds and tints
         // are declared on :root by family-tokens.scss, so re-declare the ones whose target this theme
         // re-values - otherwise components inside the provider keep the document's corners, shadows
-        // and role text colors.
+        // and role text and tint colors.
         BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVars);
 
         return string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}"));

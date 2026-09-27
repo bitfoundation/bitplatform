@@ -57,6 +57,7 @@ public class BitMessageParamsTests : BunitTestContext
             Variant = BitVariant.Outline,
             Size = BitSize.Large,
             Square = true,
+            Tinted = true,
             Classes = new() { Root = "cascaded-root", Content = "cascaded-content" },
         });
 
@@ -66,6 +67,7 @@ public class BitMessageParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-msg-otl"));
         Assert.IsTrue(root.ClassList.Contains("bit-msg-lg"));
         Assert.IsTrue(root.ClassList.Contains("bit-msg-sqr"));
+        Assert.IsTrue(root.ClassList.Contains("bit-msg-tnt"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("cascaded-content"));
 
@@ -123,6 +125,17 @@ public class BitMessageParamsTests : BunitTestContext
         dismiss.Click();
 
         Assert.IsEmpty(component.FindAll(".bit-msg"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldReflowThroughTheCascade()
+    {
+        RenderWithParams(new BitMessageParams { AutoMultiline = true });
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.HasCount(1, invocation);
+        Assert.AreEqual(true, invocation[0].Arguments[3]);
     }
 
     [TestMethod]

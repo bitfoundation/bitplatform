@@ -130,6 +130,44 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(BitVariant.Outline, true, true),
+        DataRow(BitVariant.Text, true, true),
+        DataRow(BitVariant.Fill, true, false),
+        DataRow(null, true, false),
+        DataRow(BitVariant.Outline, false, false),
+        DataRow(BitVariant.Text, false, false)
+    ]
+    public void BitMessageShouldOnlyTintTheUnfilledVariants(BitVariant? variant, bool tinted, bool expectedTint)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+            parameters.Add(p => p.Tinted, tinted);
+        });
+
+        Assert.AreEqual(expectedTint, component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldFollowTinted()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Variant, BitVariant.Outline);
+        });
+
+        Assert.IsFalse(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+
+        component.Render(parameters => parameters.Add(p => p.Tinted, true));
+
+        Assert.IsTrue(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+
+        component.Render(parameters => parameters.Add(p => p.Variant, BitVariant.Fill));
+
+        Assert.IsFalse(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+    }
+
+    [TestMethod,
         DataRow(null, "bit-msg-md"),
         DataRow(BitSize.Small, "bit-msg-sm"),
         DataRow(BitSize.Medium, "bit-msg-md"),
@@ -3027,6 +3065,107 @@ public class BitMessageTests : BunitTestContext
 
         Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
         Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchAnAutoMultilineMessageForItsReflow()
+    {
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"].Single();
+
+        Assert.AreEqual(true, invocation.Arguments[3]);
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitMessageShouldNotReflowWhatAlreadyWrapsOrFolds(bool multiline, bool truncate)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Truncate, truncate);
+            parameters.AddChildContent(LongText);
+        });
+
+        // Truncate is the other answer to a line that does not fit, and wins; a multiline message wraps already.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.IsTrue(invocations.All(i => (bool)i.Arguments[3]! is false));
+        Assert.HasCount(truncate ? 1 : 0, invocations);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldTakeOnTheMultilineLayoutWhileItsLineDoesNotFit()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Title, "Heads up");
+            parameters.Add(p => p.Actions, "<button>Retry</button>");
+            parameters.AddChildContent(LongText);
+        });
+
+        // Until the browser has measured, the message keeps its single line.
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsTrue(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-mac"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsFalse(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-mac"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+
+        // Given the room again, it goes back to one line.
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-mac"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-act"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotCapAReflowedMessage()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.MaxLines, 1);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        // A reflowed message wraps so that nothing is cut off, which a cap without an expander would undo.
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchAgainWhenItGoesFromFoldingToReflowing()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Truncate, false));
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.HasCount(2, invocations);
+        Assert.AreEqual(false, invocations[0].Arguments[3]);
+        Assert.AreEqual(true, invocations[1].Arguments[3]);
     }
 
 

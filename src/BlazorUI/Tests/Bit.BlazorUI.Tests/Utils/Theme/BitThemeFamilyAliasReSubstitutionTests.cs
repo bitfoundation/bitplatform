@@ -62,6 +62,26 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             .ToArray();
     }
 
+    // The per-role tints are a translucent color-mix() of the role alone.
+    private static readonly Regex RoleTintDeclaration = new(
+        @"(--bit-clr-[a-z]+-tint)\s*:\s*(color-mix\([^;]+\))\s*;",
+        RegexOptions.Compiled);
+
+    private static readonly Regex ReDeclaredRoleTint = new(
+        @"--bit-clr-[a-z]+-tint:color-mix\(",
+        RegexOptions.Compiled);
+
+    private static (string Alias, string Value)[] ScssRoleTints()
+    {
+        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "family-tokens.scss");
+        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
+
+        return RoleTintDeclaration.Matches(File.ReadAllText(scssPath))
+            .Select(m => (Alias: m.Groups[1].Value, Value: m.Groups[2].Value))
+            .Distinct()
+            .ToArray();
+    }
+
     private string RenderProviderStyle(BitTheme theme)
     {
         var cut = RenderComponent<BitThemeProvider>(parameters =>
@@ -188,6 +208,65 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         StringAssert.Contains(style, "--bit-clr-wrn-fg:#8A5A00");
         Assert.IsFalse(style.Contains("--bit-clr-wrn-fg:color-mix(", StringComparison.Ordinal),
             $"An explicitly-set role foreground must not be replaced by the re-substitution. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void OverridingEveryRoleReTintsEveryRoleTint()
+    {
+        // Every role tint is a wash of its own role, so re-valuing all eight roles must re-declare all
+        // eight tints - with exactly the expression family-tokens.scss declares - and none extra.
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = "#0F6CBD";
+        theme.Color.Secondary.Main = "#FD7F36";
+        theme.Color.Tertiary.Main = "#424242";
+        theme.Color.Info.Main = "#6B737C";
+        theme.Color.Success.Main = "#228422";
+        theme.Color.Warning.Main = "#EDAE12";
+        theme.Color.SevereWarning.Main = "#CE4207";
+        theme.Color.Error.Main = "#D2393B";
+
+        var style = RenderProviderStyle(theme);
+        var scssTints = ScssRoleTints();
+
+        Assert.AreEqual(8, scssTints.Length, "family-tokens.scss must declare one tint per accent role.");
+
+        foreach (var (alias, value) in scssTints)
+        {
+            StringAssert.Contains(style, $"{alias}:{value}",
+                $"Role tint {alias} must be re-declared as {value} when its role is overridden.");
+        }
+
+        Assert.AreEqual(scssTints.Length, ReDeclaredRoleTint.Matches(style).Count,
+            "The provider re-declared a different number of role tints than family-tokens.scss " +
+            "defines - the C# table and the scss have drifted apart.");
+    }
+
+    [TestMethod]
+    public void OverridingThePrimaryForegroundLeavesTheRoleTintsAlone()
+    {
+        // A tint washes its role over whatever surface is below, so the page's text color is not one of
+        // its inputs and re-valuing it must not re-declare any tint.
+        var theme = new BitTheme();
+        theme.Color.Foreground.Primary = "#101010";
+
+        var style = RenderProviderStyle(theme);
+
+        Assert.AreEqual(0, ReDeclaredRoleTint.Matches(style).Count,
+            $"The role tints do not depend on the primary foreground. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void ExplicitRoleTintWinsOverReSubstitution()
+    {
+        var theme = new BitTheme();
+        theme.Color.Error.Main = "#D2393B";
+        theme.Color.Error.Tint = "#FDE7E9";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-err-tint:#FDE7E9");
+        Assert.AreEqual(0, ReDeclaredRoleTint.Matches(style).Count,
+            $"An explicitly-set role tint must not be replaced by the re-substitution. Actual: {style}");
     }
 
     [TestMethod]
