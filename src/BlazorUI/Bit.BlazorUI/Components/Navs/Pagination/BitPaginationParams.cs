@@ -175,7 +175,7 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
     public string? PageSizeAriaLabel { get; set; }
 
     /// <summary>
-    /// The page sizes the page size selector offers. The first one is the page size a pagination that is given none pages by.
+    /// The page sizes the page size selector offers. The first one is the page size a pagination falls back to when its <see cref="BitPagination.PageSize"/> is not positive.
     /// </summary>
     public IEnumerable<int>? PageSizeOptions { get; set; }
 
