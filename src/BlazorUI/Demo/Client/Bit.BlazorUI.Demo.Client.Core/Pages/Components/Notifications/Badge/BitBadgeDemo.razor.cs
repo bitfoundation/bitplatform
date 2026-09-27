@@ -62,7 +62,7 @@ public partial class BitBadgeDemo
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Text alternative for assistive technologies (e.g. \"5 unread messages\"), read in place of the visible content. On a button or link badge named by an AriaLabel it describes the control instead; on a plain badge the AriaLabel stands in for it."
+            Description = "Text alternative for assistive technologies (e.g. \"5 unread messages\"), read in place of the visible content. On a button or link badge named by an AriaLabel it describes the control instead; on a plain dot or icon-only badge the AriaLabel stands in for it, while a badge showing a count keeps saying the count."
         },
         new()
         {
@@ -122,7 +122,7 @@ public partial class BitBadgeDemo
             Name = "Max",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Caps a numeric Content: above it the badge shows the max followed by a plus (99+) and the real figure as its tooltip."
+            Description = "Caps a numeric Content: above it the badge shows the max followed by a plus (99+) and the real figure as its tooltip, shown wherever the badge takes the pointer (an overlaid one leaves it to its child)."
         },
         new()
         {
@@ -230,7 +230,7 @@ public partial class BitBadgeDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The tooltip of the badge itself (not of its child). Replaces the real figure a capped count shows on its own. Not a text alternative: use Description for screen readers."
+            Description = "The tooltip of the badge itself (not of its child). Replaces the real figure a capped count shows on its own. Not a text alternative: use Description for screen readers. An overlaid badge lets the pointer through to its child, so its tooltip shows once it is standalone, inline or clickable."
         },
         new()
         {
@@ -902,8 +902,8 @@ public partial class BitBadgeDemo
             Max = 99,
             Overlap = true,
             Bordered = true,
-            Size = BitSize.Small,
-            Color = BitColor.Success,
+            Shape = BitBadgeShape.Rounded,
+            Variant = BitVariant.Outline,
         }
     ];
 }

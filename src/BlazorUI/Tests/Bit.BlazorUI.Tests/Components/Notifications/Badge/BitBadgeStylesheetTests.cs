@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -56,16 +56,36 @@ public partial class BitBadgeStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf("\n.bit-bdg.bit-dis .bit-bdg-ctn {", System.StringComparison.Ordinal);
+        var start = stylesheet.IndexOf("\n    &.bit-dis {", System.StringComparison.Ordinal);
         Assert.IsTrue(start >= 0, "The disabled badge has no rule of its own.");
 
-        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        var block = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
 
-        // The disabled colors are read directly, never through the public color variables, so a re-tinted badge that
-        // is disabled still reads as disabled.
-        StringAssert.Contains(block, "color: var(--bit-bdg-cnt-clr-txt);");
-        StringAssert.Contains(block, "background-color: var(--bit-bdg-cnt-clr-bg);");
+        // The disabled colors are handed over from the disabled tokens alone, never through the public color variables...
+        StringAssert.Contains(block, "--bit-bdg-dis-txt: var(--bit-bdg-clr-dis-text);");
+        StringAssert.Contains(block, "--bit-bdg-dis-bg: var(--bit-bdg-clr-bg-dis);");
+        StringAssert.Contains(block, "--bit-bdg-dis-brd: var(--bit-bdg-clr-brd-dis);");
         Assert.IsFalse(block.Contains("--bit-Badge-"));
+
+        // ...and the badge reads them ahead of those variables, so a re-tinted badge that is disabled still reads as
+        // disabled, while the rule painting it keeps the weight of a single class a Classes.Badge class can compete with.
+        StringAssert.Contains(stylesheet, "color: var(--bit-bdg-dis-txt, var(--bit-Badge-color, ");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-bdg-dis-bg, var(--bit-Badge-background, ");
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-bdg-dis-brd, var(--bit-Badge-border-color, ");
+        Assert.IsFalse(stylesheet.Contains("\n.bit-bdg.bit-dis .bit-bdg-ctn {"), "The disabled colors are set by a heavier rule of their own.");
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldHandTheDotToTheBadgeWithoutOutweighingAClassOfItsOwn()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A dot is a circle of its own size whatever the public height, padding and radius say, read first by the one
+        // rule painting the badge rather than set by a heavier rule, so a Classes.Badge class can still re-size it.
+        StringAssert.Contains(stylesheet, "height: var(--bit-bdg-dot-size, var(--bit-Badge-height, ");
+        StringAssert.Contains(stylesheet, "padding: var(--bit-bdg-dot-padding, var(--bit-Badge-padding, ");
+        StringAssert.Contains(stylesheet, "border-radius: var(--bit-bdg-dot-radius, var(--bit-Badge-radius, ");
+        Assert.IsFalse(stylesheet.Contains("\n.bit-bdg-dot .bit-bdg-ctn {"), "The dot is set by a heavier rule of its own.");
     }
 
     [TestMethod,

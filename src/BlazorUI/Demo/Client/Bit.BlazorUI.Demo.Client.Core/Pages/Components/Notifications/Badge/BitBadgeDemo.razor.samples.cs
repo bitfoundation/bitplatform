@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.Badge;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.Badge;
 
 public partial class BitBadgeDemo
 {
@@ -189,10 +189,18 @@ private int counter;";
 private int unread = 3;";
 
     private readonly string example12RazorCode = @"
-<BitBadge Content=""@(""Tint"")"" Style=""--bit-Badge-background: var(--bit-clr-pri-light); --bit-Badge-color: var(--bit-clr-pri);"" />
-<BitBadge Content=""@(""Custom"")"" Style=""--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;"" />
-<BitBadge Content=""@(""Tall"")"" Style=""--bit-Badge-height: 2rem; --bit-Badge-padding: 0 1rem; --bit-Badge-radius: 0.5rem; --bit-Badge-font-weight: 400;"" />
-<BitBadge Dot Pulse Description=""Recording"" Style=""--bit-Badge-dot-size: 0.75rem; --bit-Badge-background: crimson; --bit-Badge-pulse-color: crimson;"" />
+<span style=""--bit-Badge-background: var(--bit-clr-pri-light); --bit-Badge-color: var(--bit-clr-pri);"">
+    <BitBadge Content=""@(""Tint"")"" />
+</span>
+<span style=""--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;"">
+    <BitBadge Content=""@(""Custom"")"" />
+</span>
+<span style=""--bit-Badge-height: 2rem; --bit-Badge-padding: 0 1rem; --bit-Badge-radius: 0.5rem; --bit-Badge-font-weight: 400;"">
+    <BitBadge Content=""@(""Tall"")"" />
+</span>
+<span style=""--bit-Badge-dot-size: 0.75rem; --bit-Badge-background: crimson; --bit-Badge-pulse-color: crimson;"">
+    <BitBadge Dot Pulse Description=""Recording"" />
+</span>
 
 
 <div style=""--bit-Badge-inset: 0px; --bit-Badge-height: 1rem; --bit-Badge-font-size: 0.625rem; --bit-Badge-padding: 0 0.25rem;"">
@@ -215,7 +223,7 @@ private int unread = 3;";
     <BitBadge Content=""120"">
         <BitIcon IconName=""@BitIconName.Ringer"" Color=""BitColor.Tertiary"" />
     </BitBadge>
-    <BitBadge Content=""7"" Color=""BitColor.Error"">
+    <BitBadge Content=""7"" Variant=""BitVariant.Fill"">
         <BitIcon IconName=""@BitIconName.ShoppingCart"" Color=""BitColor.Tertiary"" />
     </BitBadge>
 </BitParams>";
@@ -227,8 +235,8 @@ private readonly BitBadgeParams[] badgeParams =
         Max = 99,
         Overlap = true,
         Bordered = true,
-        Size = BitSize.Small,
-        Color = BitColor.Success,
+        Shape = BitBadgeShape.Rounded,
+        Variant = BitVariant.Outline,
     }
 ];";
 

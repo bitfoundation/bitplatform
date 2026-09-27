@@ -98,7 +98,7 @@
 
     <DemoExample Title="Max, ShowZero & Hidden" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            <b>Max</b> caps a number of any numeric type (<code>99+</code>) and spells the real figure out as the tooltip; <b>Title</b> replaces that tooltip.
+            <b>Max</b> caps a number of any numeric type (<code>99+</code>) and spells the real figure out as its tooltip; <b>Title</b> replaces that tooltip. An overlaid badge lets the pointer through to its child, so the tooltip shows on a badge that takes the pointer itself.
             <b>ShowZero</b>=false takes an emptied counter off the page, and <b>Hidden</b> removes the badge while its child keeps rendering.
         </div>
         <br /><br />
@@ -254,7 +254,7 @@
         <div>
             <b>Description</b> is the badge's text alternative: read by screen readers in place of the visible number, glyph or dot.
             <b>Live</b> announces changes politely, even as the badge appears and disappears; keep it off for counts that only mirror the screen.
-            <b>AriaLabel</b> names a button or link badge (a Description then describes it); on a plain badge it serves as the text alternative.
+            <b>AriaLabel</b> names a button or link badge (a Description then describes it); on a plain dot or icon-only badge it serves as the text alternative, while one showing a count keeps saying the count.
             Over a focusable child, fold the count into the child's name and mark the badge <b>Decorative</b> so it is not read twice.
         </div>
         <br /><br />
@@ -279,14 +279,23 @@
     <DemoExample Title="CSS variables" RazorCode="@example12RazorCode" Id="example12">
         <div>
             The public <b>--bit-Badge-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink> table) restyle what no parameter covers.
-            They inherit, so set them on <code>:root</code>, an ancestor, or one badge's <b>Style</b>. A disabled badge keeps the theme's disabled colors.
+            They inherit, so set them on <code>:root</code> or on any ancestor - a plain element around the badges, as here - or on one badge's <b>Style</b> (see Style & Class).
+            A disabled badge keeps the theme's disabled colors.
         </div>
         <br /><br />
         <div class="example-content">
-            <BitBadge Content="@("Tint")" Style="--bit-Badge-background: var(--bit-clr-pri-light); --bit-Badge-color: var(--bit-clr-pri);" />
-            <BitBadge Content="@("Custom")" Style="--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;" />
-            <BitBadge Content="@("Tall")" Style="--bit-Badge-height: 2rem; --bit-Badge-padding: 0 1rem; --bit-Badge-radius: 0.5rem; --bit-Badge-font-weight: 400;" />
-            <BitBadge Dot Pulse Description="Recording" Style="--bit-Badge-dot-size: 0.75rem; --bit-Badge-background: crimson; --bit-Badge-pulse-color: crimson;" />
+            <span style="--bit-Badge-background: var(--bit-clr-pri-light); --bit-Badge-color: var(--bit-clr-pri);">
+                <BitBadge Content="@("Tint")" />
+            </span>
+            <span style="--bit-Badge-background: rebeccapurple; --bit-Badge-color: white;">
+                <BitBadge Content="@("Custom")" />
+            </span>
+            <span style="--bit-Badge-height: 2rem; --bit-Badge-padding: 0 1rem; --bit-Badge-radius: 0.5rem; --bit-Badge-font-weight: 400;">
+                <BitBadge Content="@("Tall")" />
+            </span>
+            <span style="--bit-Badge-dot-size: 0.75rem; --bit-Badge-background: crimson; --bit-Badge-pulse-color: crimson;">
+                <BitBadge Dot Pulse Description="Recording" />
+            </span>
         </div>
         <br /><br />
         <div class="example-content" style="--bit-Badge-inset: 0px; --bit-Badge-height: 1rem; --bit-Badge-font-size: 0.625rem; --bit-Badge-padding: 0 0.25rem;">
@@ -305,7 +314,7 @@
     <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>BitParams</b> carries a <b>BitBadgeParams</b> to every badge under it, so a toolbar sets the shared look once. It is a default, not an override:
-            a badge keeps whatever it sets itself (the last one keeps its own Color).
+            a badge keeps whatever it sets itself (the last one keeps its own Variant).
         </div>
         <br /><br />
         <div class="example-content">
@@ -316,7 +325,7 @@
                 <BitBadge Content="120">
                     <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Tertiary" />
                 </BitBadge>
-                <BitBadge Content="7" Color="BitColor.Error">
+                <BitBadge Content="7" Variant="BitVariant.Fill">
                     <BitIcon IconName="@BitIconName.ShoppingCart" Color="BitColor.Tertiary" />
                 </BitBadge>
             </BitParams>

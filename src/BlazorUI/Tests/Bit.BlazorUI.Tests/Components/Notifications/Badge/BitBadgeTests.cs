@@ -777,15 +777,53 @@ public class BitBadgeTests : BunitTestContext
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
-            parameters.Add(p => p.Content, 5);
-            parameters.Add(p => p.AriaLabel, "5 unread messages");
+            parameters.Add(p => p.Dot, true);
+            parameters.Add(p => p.AriaLabel, "New mail");
         });
 
-        // ARIA prohibits naming a generic span, so the label is read out of the badge as its text alternative
-        // instead of being written where every screen reader drops it.
+        // ARIA prohibits naming a generic span, so the label of a badge with no words of its own is read out of
+        // the badge as its text alternative instead of being written where every screen reader drops it.
         Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
-        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-vhd").TextContent);
-        Assert.AreEqual("true", component.Find(".bit-bdg-con").GetAttribute("aria-hidden"));
+        Assert.AreEqual("New mail", component.Find(".bit-bdg-vhd").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldKeepSayingItsCountOverTheAriaLabelOfAPlainBadge()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.AriaLabel, "Inbox");
+        });
+
+        // A static label read in place of the count would keep the figure from ever reaching a screen reader.
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
+        Assert.IsNull(component.Find(".bit-bdg-con").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotBeKeptOnThePageByItsAriaLabelAlone()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, null);
+            parameters.Add(p => p.AriaLabel, "Notifications");
+            parameters.AddChildContent("<span>child</span>");
+        });
+
+        // The label names what the badge shows; with nothing to show there is no badge, rather than an empty pill.
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+
+        var withRole = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBadge>(0);
+            builder.AddAttribute(1, nameof(BitBadge.AriaLabel), "Notifications");
+            builder.AddAttribute(2, "role", "group");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual(0, withRole.FindAll(".bit-bdg-ctn").Count);
     }
 
     [TestMethod]
@@ -824,11 +862,28 @@ public class BitBadgeTests : BunitTestContext
         var component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.Live, true);
-            parameters.Add(p => p.Content, 5);
-            parameters.Add(p => p.AriaLabel, "5 unread messages");
+            parameters.Add(p => p.Dot, true);
+            parameters.Add(p => p.AriaLabel, "New mail");
         });
 
-        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-lvr").TextContent);
+        Assert.AreEqual("New mail", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldKeepAnnouncingTheCountOfALabelledBadge()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.AriaLabel, "Inbox");
+        });
+
+        Assert.AreEqual("5", component.Find(".bit-bdg-lvr").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 6));
+
+        Assert.AreEqual("6", component.Find(".bit-bdg-lvr").TextContent);
     }
 
     [TestMethod]
@@ -2165,29 +2220,22 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBadgeShouldTakeThePointerBackOnlyWhenItHasATooltip()
+    public void BitBadgeShouldNotTakeThePointerFromItsChildForATooltip()
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.Max, 9);
-            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Content, 42);
             parameters.AddChildContent("<span>child</span>");
         });
 
-        // An overlaid badge lets every pointer through to its child, unless it has a tooltip to show on hover.
-        Assert.IsFalse(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-ttl"));
+        // An overlaid badge lets every pointer through to its child, tooltip or not: a capped count carries one on
+        // its own, and a badge sitting on the corner of a button must not swallow the clicks meant for the button.
+        var badge = component.Find(".bit-bdg-ctn");
 
-        component.Render(parameters => parameters.Add(p => p.Content, 42));
-
-        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-ttl"));
-
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.Content, 5);
-            parameters.Add(p => p.Title, "Five");
-        });
-
-        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-ttl"));
+        Assert.AreEqual("42", badge.GetAttribute("title"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-clk"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-ttl"));
     }
 
     [TestMethod]
