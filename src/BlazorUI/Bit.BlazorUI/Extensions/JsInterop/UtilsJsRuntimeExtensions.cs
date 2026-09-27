@@ -67,6 +67,12 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask<bool> BitUtilsPrefersReducedMotion(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.prefersReducedMotion", element);
+    }
+
+
     internal static ValueTask<bool> BitUtilsIsHoverDevice(this IJSRuntime jsRuntime)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isHoverDevice");
@@ -237,9 +243,9 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsRegisterPreventPointerDown(this IJSRuntime jsRuntime, ElementReference element, bool active)
+    internal static ValueTask BitUtilsRegisterPreventPointerDown(this IJSRuntime jsRuntime, ElementReference element, bool active, int clickThreshold = 0, string? clickAxis = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventPointerDown", element, active);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventPointerDown", element, active, clickThreshold, clickAxis);
     }
 
 
@@ -252,6 +258,12 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsRegisterPreventKeys(this IJSRuntime jsRuntime, ElementReference element, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventKeys", element, keys);
+    }
+
+
+    internal static ValueTask BitUtilsRegisterNavigationKeys<T>(this IJSRuntime jsRuntime, ElementReference element, string[] keys, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerNavigationKeys", element, keys, dotnetObj);
     }
 
 
