@@ -992,6 +992,10 @@ public class BitDropMenuTests : BunitTestContext
         var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.setupEscape");
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
 
+        // The root is the trigger, so an Escape pressed anywhere outside the drop menu dismisses it too - which a
+        // callout opened by hovering, shown while the focus is elsewhere, needs to be (WCAG 1.4.13).
+        Assert.AreEqual(component.Find(".bit-drm").Id, setup.Arguments[2]);
+
         component.Find(".bit-drm-btn").Click();
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
 
@@ -2188,6 +2192,7 @@ public class BitDropMenuTests : BunitTestContext
             Color = BitColor.Warning,
             DropDirection = BitDropDirection.All,
             FullWidth = true,
+            Gap = 6,
             HoverCloseDelay = 300,
             HoverOpenDelay = 200,
             Icon = icon,
@@ -2203,6 +2208,7 @@ public class BitDropMenuTests : BunitTestContext
             OpenOnHover = true,
             PanelPosition = BitPanelPosition.Bottom,
             Responsive = true,
+            Side = BitCalloutSide.Top,
             Size = BitSize.Small,
             Styles = styles,
             Title = "Title",
@@ -2238,6 +2244,8 @@ public class BitDropMenuTests : BunitTestContext
         Assert.AreSame(classes, instance.Classes);
         Assert.AreEqual(BitColor.Warning, instance.Color);
         Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
+        Assert.AreEqual(6, instance.Gap);
+        Assert.AreEqual(BitCalloutSide.Top, instance.Side);
         Assert.IsTrue(instance.FullWidth);
         Assert.AreEqual(300, instance.HoverCloseDelay);
         Assert.AreEqual(200, instance.HoverOpenDelay);
@@ -2424,6 +2432,30 @@ public class BitDropMenuTests : BunitTestContext
 
         // Argument 22 of Callouts.toggle is the alignment.
         Assert.AreEqual(expected, toggle.Arguments[22]);
+    }
+
+    [TestMethod]
+    [DataRow(null, "")]
+    [DataRow(BitCalloutSide.Top, "top")]
+    [DataRow(BitCalloutSide.Bottom, "bottom")]
+    [DataRow(BitCalloutSide.Start, "start")]
+    [DataRow(BitCalloutSide.End, "end")]
+    public void BitDropMenuShouldHandTheSideAndTheGapToThePositioningCode(BitCalloutSide? side, string expected)
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Side, side);
+            parameters.Add(p => p.Gap, 8);
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // Arguments 19 and 21 of Callouts.toggle are the gap and the preferred side.
+        Assert.AreEqual(8, toggle.Arguments[19]);
+        Assert.AreEqual(expected, toggle.Arguments[21]);
     }
 
 

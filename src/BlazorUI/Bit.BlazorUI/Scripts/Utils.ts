@@ -347,7 +347,12 @@
         // listener is on the element, so it runs before Blazor's document-level delegation lets the nested
         // component close anything, which is what makes the stack of open callouts a reliable answer here.
         // It is registered once for the life of the component and ignores the key while the callout is closed.
-        public static setupEscape(elementId: string, dotnetObj: DotNetObject) {
+        // `triggerId` names the element that opens the callout: an Escape pressed anywhere in the page OUTSIDE
+        // both of them then dismisses the callout too, as long as it is the innermost open one. A callout opened
+        // by hovering is shown while the focus is wherever the user left it, and content that appears on hover
+        // has to be dismissible without moving the pointer or the focus (WCAG 1.4.13); the trigger itself is
+        // left out, since it answers the key on its own.
+        public static setupEscape(elementId: string, dotnetObj: DotNetObject, triggerId?: string | null) {
             Utils.disposeEscape(elementId);
 
             const element = document.getElementById(elementId);
@@ -362,6 +367,22 @@
 
                 dotnetObj.invokeMethodAsync('OnEscape');
             }, { signal: controller.signal });
+
+            if (triggerId) {
+                // In the capture phase, for the same reason the listener above is on the element: the stack of
+                // open callouts is read before Blazor's document-level delegation lets a popup the key belongs to
+                // (a dropdown list relocated to the body, holding the focus in its search box) close itself.
+                document.addEventListener('keydown', e => {
+                    if (e.key !== 'Escape') return;
+
+                    if (Callouts.current.calloutId !== elementId) return;
+
+                    const target = e.target as Node | null;
+                    if (target && (element.contains(target) || document.getElementById(triggerId)?.contains(target))) return;
+
+                    dotnetObj.invokeMethodAsync('OnEscape');
+                }, { signal: controller.signal, capture: true });
+            }
 
             Utils._escapes.set(elementId, controller);
         }

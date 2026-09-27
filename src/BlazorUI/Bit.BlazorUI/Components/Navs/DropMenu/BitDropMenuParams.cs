@@ -93,6 +93,11 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
     public bool? FullWidth { get; set; }
 
     /// <summary>
+    /// The distance in pixels between the button and the callout.
+    /// </summary>
+    public int? Gap { get; set; }
+
+    /// <summary>
     /// The delay in milliseconds before the callout closes once the pointer leaves the drop menu in the OpenOnHover mode.
     /// </summary>
     public int? HoverCloseDelay { get; set; }
@@ -167,6 +172,11 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
     /// Renders the drop menu in responsive mode on small screens.
     /// </summary>
     public bool? Responsive { get; set; }
+
+    /// <summary>
+    /// The side of the button the callout opens on when there is room for it there.
+    /// </summary>
+    public BitCalloutSide? Side { get; set; }
 
     /// <summary>
     /// The size of the button of the drop menu.
@@ -293,6 +303,11 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.ClassBuilder.Reset();
         }
 
+        if (Gap.HasValue && bitDropMenu.HasNotBeenSet(nameof(Gap)))
+        {
+            bitDropMenu.Gap = Gap.Value;
+        }
+
         if (HoverCloseDelay.HasValue && bitDropMenu.HasNotBeenSet(nameof(HoverCloseDelay)))
         {
             bitDropMenu.HoverCloseDelay = HoverCloseDelay.Value;
@@ -368,6 +383,11 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
         if (Responsive.HasValue && bitDropMenu.HasNotBeenSet(nameof(Responsive)))
         {
             bitDropMenu.Responsive = Responsive.Value;
+        }
+
+        if (Side.HasValue && bitDropMenu.HasNotBeenSet(nameof(Side)))
+        {
+            bitDropMenu.Side = Side.Value;
         }
 
         if (Size.HasValue && bitDropMenu.HasNotBeenSet(nameof(Size)))

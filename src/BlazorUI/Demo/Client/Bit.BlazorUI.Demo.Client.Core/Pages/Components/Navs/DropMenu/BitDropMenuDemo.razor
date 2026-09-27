@@ -287,6 +287,28 @@
                 <BitButton Variant="BitVariant.Text" IconName="@BitIconName.SignOut">Sign out</BitButton>
             </BitStack>
         </BitDropMenu>
+        <br /><br />
+        <div>
+            <b>Side</b> asks for a side of the button - <b>Top</b> for a menu in a bottom bar, <b>End</b> for one in a
+            side bar - and falls back to the opposite side when the callout does not fit there. <b>Gap</b> spaces the
+            callout off the button, in pixels.
+        </div>
+        <br />
+        <BitChoiceGroup @bind-Value="side" Horizontal
+                        Label="Side"
+                        TItem="BitChoiceGroupOption<BitCalloutSide>" TValue="BitCalloutSide">
+            <BitChoiceGroupOption Text="Top" Value="BitCalloutSide.Top" />
+            <BitChoiceGroupOption Text="Bottom" Value="BitCalloutSide.Bottom" />
+            <BitChoiceGroupOption Text="Start" Value="BitCalloutSide.Start" />
+            <BitChoiceGroupOption Text="End" Value="BitCalloutSide.End" />
+        </BitChoiceGroup>
+        <br />
+        <BitDropMenu Text="Share" IconName="@BitIconName.Share" Side="side" Gap="8">
+            <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Mail">Send by email</BitButton>
+                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Link">Copy link</BitButton>
+            </BitStack>
+        </BitDropMenu>
     </DemoExample>
 
     <DemoExample Title="Responsive" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
@@ -323,8 +345,8 @@
         <div>
             <b>OpenOnHover</b> opens the callout when the pointer arrives and closes it once the pointer leaves both
             the button and the callout. <b>HoverOpenDelay</b> ignores a pointer only passing by, and
-            <b>HoverCloseDelay</b> (150ms) bridges the gap between the two. Touch screens and the keyboard keep the
-            click behavior.
+            <b>HoverCloseDelay</b> (150ms) bridges the gap between the two. <b>Escape</b> closes it wherever the
+            focus is. Touch screens and the keyboard keep the click behavior.
         </div>
         <br />
         <BitStack Horizontal Wrap Gap="1rem" FitHeight>

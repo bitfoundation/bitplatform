@@ -158,6 +158,12 @@ public partial class BitDropMenu : BitComponentBase
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// The distance in pixels between the button and the callout, on whichever side the callout ends up on.
+    /// It defaults to zero, which tucks the callout against the button.
+    /// </summary>
+    [Parameter] public int Gap { get; set; }
+
+    /// <summary>
     /// The delay in milliseconds before the callout closes once the pointer leaves the drop menu in the
     /// <see cref="OpenOnHover"/> mode. It bridges the gap between the button and the callout, so moving the
     /// pointer from one to the other does not close what the pointer is on its way to. Defaults to 150.
@@ -292,6 +298,13 @@ public partial class BitDropMenu : BitComponentBase
     /// The id of the element which needs to be scrollable in the content of the callout of the drop menu.
     /// </summary>
     [Parameter] public string? ScrollContainerId { get; set; }
+
+    /// <summary>
+    /// The side of the button the callout opens on when there is room for it there - Top for a drop menu in
+    /// a bottom bar, End for one in a side bar. It is a preference: a callout that does not fit there is placed
+    /// on the opposite side, and leaving it unset leaves the choice to <see cref="DropDirection"/> alone.
+    /// </summary>
+    [Parameter] public BitCalloutSide? Side { get; set; }
 
     /// <summary>
     /// The size of the button of the drop menu.
@@ -622,7 +635,9 @@ public partial class BitDropMenu : BitComponentBase
 
         try
         {
-            await _js.BitUtilsSetupEscape(_calloutId, _dotnetObj);
+            // The root is named as the trigger, so an Escape pressed anywhere else in the page dismisses the callout
+            // too: one opened by hovering is shown wherever the focus happens to be (WCAG 1.4.13).
+            await _js.BitUtilsSetupEscape(_calloutId, _dotnetObj, _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
@@ -902,6 +917,15 @@ public partial class BitDropMenu : BitComponentBase
                 setCalloutWidth: MatchWidth,
                 fixedCalloutWidth: false,
                 maxWindowWidth: 0,
+                gap: Gap,
+                preferredSide: Side switch
+                {
+                    BitCalloutSide.Top => "top",
+                    BitCalloutSide.Bottom => "bottom",
+                    BitCalloutSide.Start => "start",
+                    BitCalloutSide.End => "end",
+                    _ => ""
+                },
                 alignment: Alignment switch
                 {
                     BitCalloutAlignment.Center => "center",

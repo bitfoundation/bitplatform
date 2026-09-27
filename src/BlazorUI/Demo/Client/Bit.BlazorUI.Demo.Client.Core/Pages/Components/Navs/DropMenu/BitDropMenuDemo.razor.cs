@@ -134,6 +134,13 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Gap",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The distance in pixels between the button and the callout, on whichever side the callout ends up on."
+        },
+        new()
+        {
             Name = "HoverCloseDelay",
             Type = "int",
             DefaultValue = "150",
@@ -280,6 +287,15 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Side",
+            Type = "BitCalloutSide?",
+            DefaultValue = "null",
+            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Unset leaves the choice to DropDirection.",
+            LinkType = LinkType.Link,
+            Href = "#callout-side-enum"
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -389,7 +405,19 @@ public partial class BitDropMenuDemo
         {
             Name = "--bit-DropMenu-border-color",
             DefaultValue = "Per Variant",
-            Description = "Border color of the button (at rest, on hover and while open).",
+            Description = "Border color of the button, in every state.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-hover-border-color",
+            DefaultValue = "--bit-DropMenu-border-color, or per Variant",
+            Description = "Border color of the button on hover.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-active-border-color",
+            DefaultValue = "--bit-DropMenu-border-color, or per Variant",
+            Description = "Border color of the button while pressed or open.",
         },
         new()
         {
@@ -477,9 +505,27 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "--bit-DropMenu-font-weight",
+            DefaultValue = "--bit-tpg-font-weight",
+            Description = "Text weight of the button.",
+        },
+        new()
+        {
             Name = "--bit-DropMenu-icon-size",
             DefaultValue = "Per Size, --bit-siz-icon-*",
             Description = "Size of the icon, the chevron and the spinner.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-spinner-color",
+            DefaultValue = "The button's own text color",
+            Description = "The moving arc of the loading spinner.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-spinner-track-color",
+            DefaultValue = "The text color at 25%",
+            Description = "The ring the spinner's arc travels on.",
         },
         new()
         {
@@ -768,6 +814,19 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Id = "callout-side-enum",
+            Name = "BitCalloutSide",
+            Description = "The side of the button the callout is placed on when there is room for it there.",
+            Items =
+            [
+                new() { Name = "Top", Description = "Above the button.", Value = "0" },
+                new() { Name = "Bottom", Description = "Below the button.", Value = "1" },
+                new() { Name = "Start", Description = "Beside the button, on its start side (left in LTR).", Value = "2" },
+                new() { Name = "End", Description = "Beside the button, on its end side (right in LTR).", Value = "3" },
+            ]
+        },
+        new()
+        {
             Id = "size-enum",
             Name = "BitSize",
             Description = "Defines the sizes available in the bit BlazorUI.",
@@ -807,6 +866,7 @@ public partial class BitDropMenuDemo
     private BitColorKind borderColorKind = BitColorKind.Primary;
     private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;
     private BitCalloutAlignment alignment = BitCalloutAlignment.Start;
+    private BitCalloutSide side = BitCalloutSide.End;
     private BitPanelPosition panelPosition = BitPanelPosition.End;
 
     private readonly BitDropMenuParams[] toolbarDropMenuParams =

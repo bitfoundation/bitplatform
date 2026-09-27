@@ -7,7 +7,9 @@
 // Styles.Root (and Styles.Opened while open) onto them; Styles.Callout is applied after that copy.
 //   --bit-DropMenu-color                     text and icon color of the button at rest   (default: per variant, from the role)
 //   --bit-DropMenu-background                background of the button at rest           (default: per variant, from the role)
-//   --bit-DropMenu-border-color              border color of the button                  (default: per variant)
+//   --bit-DropMenu-border-color              border color of the button, in every state  (default: per variant)
+//   --bit-DropMenu-hover-border-color        border color on hover                       (default: the border color, or per variant)
+//   --bit-DropMenu-active-border-color       border color while pressed or open          (default: the border color, or per variant)
 //   --bit-DropMenu-border-width              border thickness of the button              (default: $shp-border-width)
 //   --bit-DropMenu-radius                    corner radius of the button and its ring    (default: $shp-radius-button)
 //   --bit-DropMenu-hover-color               text and icon color on hover                (default: per variant, from the role)
@@ -23,7 +25,10 @@
 //   --bit-DropMenu-padding                   padding of the button                       (default: per size)
 //   --bit-DropMenu-gap                       room between the icon, text and chevron     (default: spacing(1))
 //   --bit-DropMenu-font-size                 text size of the button                     (default: per size, from the type ramp)
+//   --bit-DropMenu-font-weight               text weight of the button                   (default: $tg-font-weight)
 //   --bit-DropMenu-icon-size                 glyph, chevron and spinner size             (default: per size, $siz-icon-*)
+//   --bit-DropMenu-spinner-color             the moving arc of the loading spinner       (default: the button's own text color)
+//   --bit-DropMenu-spinner-track-color       the ring the arc travels on                 (default: the text color at 25%)
 //   --bit-DropMenu-callout-background        background of the callout                   (default: $clr-bg-pri, or the Background kind)
 //   --bit-DropMenu-callout-color             text color of the callout                   (default: $clr-fg-pri)
 //   --bit-DropMenu-callout-border-color      border color of the callout                 (default: none, or the Border kind)
@@ -44,7 +49,7 @@
     position: relative;
     box-sizing: border-box;
     font-family: $tg-font-family;
-    font-weight: $tg-font-weight;
+    font-weight: var(--bit-DropMenu-font-weight, #{$tg-font-weight});
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
     // The border is on the root rather than on the button so that it wraps the whole drop menu, and it is
@@ -104,7 +109,7 @@
         &:hover {
             --bit-drm-cur-txt: var(--bit-DropMenu-hover-color, var(--bit-drm-hov-txt));
             --bit-drm-cur-bg: var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg));
-            --bit-drm-cur-brd: var(--bit-DropMenu-border-color, var(--bit-drm-hov-brd));
+            --bit-drm-cur-brd: var(--bit-DropMenu-hover-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-hov-brd)));
         }
     }
 
@@ -113,7 +118,7 @@
     &.bit-drm-omn {
         --bit-drm-cur-txt: var(--bit-DropMenu-active-color, var(--bit-drm-act-txt));
         --bit-drm-cur-bg: var(--bit-DropMenu-active-background, var(--bit-drm-act-bg));
-        --bit-drm-cur-brd: var(--bit-DropMenu-border-color, var(--bit-drm-act-brd));
+        --bit-drm-cur-brd: var(--bit-DropMenu-active-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-act-brd)));
     }
 
     &:has(.bit-drm-btn:focus-visible) {
@@ -219,8 +224,9 @@
     flex-shrink: 0;
     border-radius: 50%;
     box-sizing: border-box;
-    border-color: $clr-brd-sec;
-    border-top-color: currentcolor;
+    // Both halves are drawn from the text color, so the ring reads on every surface a Color and a Variant paint.
+    border-color: var(--bit-DropMenu-spinner-track-color, #{translucent(currentcolor, 25%)});
+    border-top-color: var(--bit-DropMenu-spinner-color, currentcolor);
     border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     width: var(--bit-DropMenu-icon-size, var(--bit-drm-icon-size));

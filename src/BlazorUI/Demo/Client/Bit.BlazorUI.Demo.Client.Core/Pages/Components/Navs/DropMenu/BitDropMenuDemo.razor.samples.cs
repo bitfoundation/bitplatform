@@ -224,10 +224,27 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
         <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Settings"">Settings</BitButton>
         <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.SignOut"">Sign out</BitButton>
     </BitStack>
+</BitDropMenu>
+
+<BitChoiceGroup @bind-Value=""side"" Horizontal
+                Label=""Side""
+                TItem=""BitChoiceGroupOption<BitCalloutSide>"" TValue=""BitCalloutSide"">
+    <BitChoiceGroupOption Text=""Top"" Value=""BitCalloutSide.Top"" />
+    <BitChoiceGroupOption Text=""Bottom"" Value=""BitCalloutSide.Bottom"" />
+    <BitChoiceGroupOption Text=""Start"" Value=""BitCalloutSide.Start"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitCalloutSide.End"" />
+</BitChoiceGroup>
+
+<BitDropMenu Text=""Share"" IconName=""@BitIconName.Share"" Side=""side"" Gap=""8"">
+    <BitStack Gap=""0.25rem"" Style=""padding:0.5rem"">
+        <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Mail"">Send by email</BitButton>
+        <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Link"">Copy link</BitButton>
+    </BitStack>
 </BitDropMenu>";
     private readonly string example8CsharpCode = @"
 private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;
-private BitCalloutAlignment alignment = BitCalloutAlignment.Start;";
+private BitCalloutAlignment alignment = BitCalloutAlignment.Start;
+private BitCalloutSide side = BitCalloutSide.End;";
 
     private readonly string example9RazorCode = @"
 <BitChoiceGroup @bind-Value=""panelPosition"" Horizontal
