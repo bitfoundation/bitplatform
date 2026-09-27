@@ -193,6 +193,49 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
     }
 
+    [TestMethod]
+    public async Task BitBreadcrumbShouldTruncateTheLastItemOnceNothingIsLeftToCollapse()
+    {
+        var handler = Context.JSInterop.Setup<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", _ => true);
+        handler.SetResult(new BitOverflowMetrics { Available = 800, Content = 460, Widths = Widths });
+
+        List<BitBreadcrumbItem> items =
+        [
+            new() { Text = "Folder 1", Href = "/folder-1" },
+            new() { Text = "Folder 2", Href = "/folder-2" },
+            new() { Text = "Folder 3", Href = "/folder-3" },
+            new() { Text = "A very long name of the current folder", Href = "/folder-4", IsSelected = true }
+        ];
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.AutoCollapse, true);
+        });
+
+        // While there is something left to collapse nothing truncates: the collapsing measures natural widths.
+        component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
+        Assert.IsFalse(component.Find(".bit-brc").ClassList.Contains("bit-brc-trc"));
+        Assert.IsNull(component.FindAll(".bit-brc-itm")[^1].GetAttribute("title"));
+
+        handler.SetResult(new BitOverflowMetrics { Available = 150, Content = 460, Widths = Widths });
+
+        await component.InvokeAsync(() => component.Instance._OnResize(new ContentRect()));
+
+        // Down to the one item it may not drop, the last step gives up width instead and its text becomes the
+        // tooltip, while the rows of the overflow menu, which are not cut off, carry none.
+        component.WaitForAssertion(() => Assert.AreEqual(1, GetRenderedItemCount(component)));
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("bit-brc-trc"));
+        Assert.AreEqual("A very long name of the current folder", component.Find(".bit-brc-icn .bit-brc-itm").GetAttribute("title"));
+        Assert.IsTrue(component.FindAll(".bit-brc-cal .bit-brc-ofi").All(i => i.HasAttribute("title") is false));
+
+        // A trail that wraps has no single line to keep, so nothing in it truncates.
+        component.Render(parameters => parameters.Add(p => p.Wrap, true));
+
+        component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
+        Assert.IsFalse(component.Find(".bit-brc").ClassList.Contains("bit-brc-trc"));
+    }
+
     private static int GetRenderedItemCount(IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> component)
     {
         return component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii").Count;

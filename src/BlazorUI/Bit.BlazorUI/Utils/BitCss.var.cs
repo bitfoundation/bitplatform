@@ -570,6 +570,8 @@ public static partial class BitCss
                 public const string Button = "--bit-shp-radius-button";
                 public const string Chip = "--bit-shp-radius-chip";
                 public const string Selection = "--bit-shp-radius-selection";
+                public const string TabIndicator = "--bit-shp-radius-tab-indicator";
+                public const string TabIndicatorBase = "--bit-shp-radius-tab-indicator-base";
             }
         }
 
@@ -644,6 +646,7 @@ public static partial class BitCss
 
             public const string Tab = "--bit-siz-tab";
             public const string TabIndicator = "--bit-siz-tab-indicator";
+            public const string TabDivider = "--bit-siz-tab-divider";
             public const string Divider = "--bit-siz-divider";
 
             public static class Track

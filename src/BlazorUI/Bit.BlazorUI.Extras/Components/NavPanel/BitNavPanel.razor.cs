@@ -219,7 +219,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? IconUrl { get; set; }
 
     /// <summary>
-    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// The width in px of the chevron, which the items without children keep as padding in its place so every text lines up.
     /// </summary>
     [Parameter] public int IndentPadding { get; set; } = 27;
 
@@ -292,7 +292,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool NoAutoClose { get; set; }
 
     /// <summary>
-    /// Disables and hides all collapse/expand buttons of the nav component.
+    /// Keeps every item of the nav expanded and hides its collapse/expand buttons.
     /// </summary>
     [Parameter] public bool NoCollapse { get; set; }
 
