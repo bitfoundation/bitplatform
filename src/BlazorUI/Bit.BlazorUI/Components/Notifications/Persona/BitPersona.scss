@@ -13,7 +13,18 @@
 //   --bit-Persona-overlay-background       fill of the overlay a clickable coin reveals (default: the coin background)
 //   --bit-Persona-overlay-color            text of that overlay                         (default: the coin color)
 //   --bit-Persona-focus-color              focus ring of the coin and the action button (default: $clr-pri-focus)
+//   --bit-Persona-action-background        surface of the action button                 (default: $clr-bg-pri)
+//   --bit-Persona-action-color             glyph of the action button                   (default: $clr-fg-pri)
 //   --bit-Persona-presence-border-color    ring the presence dot is cut out of          (default: $clr-brd-sec)
+//   --bit-Persona-presence-icon-color      glyph (and Dnd bar) inside the presence dot  (default: the status's paired text color)
+//   --bit-Persona-presence-online-color    fill of the Online dot                       (default: $clr-suc)
+//   --bit-Persona-presence-away-color      fill of the Away dot                         (default: $clr-wrn)
+//   --bit-Persona-presence-busy-color      fill of the Busy dot                         (default: $clr-err)
+//   --bit-Persona-presence-dnd-color       fill of the Dnd dot                          (default: $clr-err)
+//   --bit-Persona-presence-out-of-office-color fill of the OutOfOffice dot              (default: $clr-swr)
+//   --bit-Persona-presence-unknown-color   fill of the Unknown dot                      (default: $clr-fg-ter)
+//   --bit-Persona-presence-offline-color   stroke of the hollow Offline dot             (default: $clr-ntr-gray110)
+//   --bit-Persona-presence-blocked-color   stroke of the hollow Blocked dot             (default: $clr-err)
 //   --bit-Persona-ring-color               ring of an Active coin                       (default: the coin background)
 //   --bit-Persona-ring-width               width of that ring                           (default: per size, 1.5px..4px)
 //   --bit-Persona-ring-gap                 gap between the coin and that ring           (default: per size, 1.5px..4px)
@@ -362,13 +373,13 @@
 .bit-prs-abt {
     left: 50%;
     bottom: 0;
-    z-index: 1;
+    // Above the overlay a clickable coin reveals on the same hover, which would otherwise veil it.
+    z-index: 3;
     border: none;
     display: flex;
     cursor: pointer;
     font-weight: $tg-fw-regular;
-    background: unset;
-    color: transparent;
+    opacity: 0;
     position: absolute;
     width: var(--bit-prs-action-size);
     height: var(--bit-prs-action-size);
@@ -380,27 +391,40 @@
     font-size: $tg-fs-sm;
     transform: translateX(-50%);
     font-family: $tg-font-family;
-    background-color: transparent;
-    transition: color $mot-duration-short $mot-easing;
+    // The button sits on the picture, whose tones nobody can know in advance, so it carries a surface of its
+    // own: a bare glyph in the text color vanishes on a photo of the same tone.
+    border-radius: $shp-radius-full;
+    box-shadow: $box-shadow-card;
+    color: var(--bit-Persona-action-color, #{$clr-fg-pri});
+    background-color: var(--bit-Persona-action-background, #{$clr-bg-pri});
+    transition: opacity $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     // Where there is no pointer there is no hover to reveal the button with, and a control that can only
     // be found by hovering is a control a touch device never shows at all.
     @media (hover: none) {
-        color: $clr-fg-pri;
+        opacity: 1;
     }
 
-    // The button is invisible until it is reached, so reaching it with the keyboard has to reveal it too -
-    // a focused control nobody can see is a focus indicator that is not there.
+    // The button is hidden until it is reached, so reaching it with the keyboard has to reveal it too - a
+    // focused control nobody can see is a focus indicator that is not there.
     &:focus-visible {
-        color: $clr-fg-pri-hover;
+        opacity: 1;
 
         @include focus-ring(var(--bit-Persona-focus-color, #{$clr-pri-focus}));
+    }
+}
+
+// Revealed by hovering the coin rather than the button itself: a control that only appears once the pointer
+// has already found the exact spot it hides in is one nobody finds.
+@media (hover: hover) {
+    .bit-prs-cin:hover > .bit-prs-abt {
+        opacity: 1;
     }
 }
 
@@ -469,21 +493,33 @@
     }
 }
 
+// Each status color is a product decision as much as a design-system one - the purple a chat product paints
+// out-of-office with, the amber another paints away with - so each is published as a knob of its own, read
+// with the semantic color it defaults to. A glyph in a filled dot (and the bar of Dnd) takes the text color
+// paired with that fill, which is the one the theme keeps legible on it; in a hollow dot it takes the stroke.
+//
+// The hollow dots (offline, blocked) are a ring around the page color rather than around white: a white disc
+// on a dark scheme reads as a status of its own rather than as the absence of one.
 .bit-prs-off {
-    background-color: $clr-ntr-white;
-    border: $shp-border-width-thick $shp-border-style $clr-ntr-gray110;
+    --bit-prs-presence-clr: var(--bit-Persona-presence-offline-color, #{$clr-ntr-gray110});
+    background-color: $clr-bg-pri;
+    color: var(--bit-Persona-presence-icon-color, var(--bit-prs-presence-clr));
+    border: $shp-border-width-thick $shp-border-style var(--bit-prs-presence-clr);
 }
 
 .bit-prs-onl {
-    background-color: $clr-suc;
+    background-color: var(--bit-Persona-presence-online-color, #{$clr-suc});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-suc-text});
 }
 
 .bit-prs-awy {
-    background-color: $clr-wrn;
+    background-color: var(--bit-Persona-presence-away-color, #{$clr-wrn});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-wrn-text});
 }
 
 .bit-prs-dnd {
-    background-color: $clr-err;
+    background-color: var(--bit-Persona-presence-dnd-color, #{$clr-err});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-err-text});
 
     // Busy and do-not-disturb are the same red, which leaves the two of them indistinguishable to anyone
     // who has not been told which is which. The bar is what the rest of the industry marks the stricter of
@@ -493,7 +529,7 @@
         width: 60%;
         height: $shp-border-width-thick;
         border-radius: $shp-radius-full;
-        background-color: $clr-ntr-white;
+        background-color: currentColor;
     }
 
     // A presence icon says the same thing better, so the bar steps aside for one.
@@ -503,20 +539,25 @@
 }
 
 .bit-prs-blk {
-    background-color: $clr-ntr-white;
-    border: $shp-border-width-thick $shp-border-style $clr-err;
+    --bit-prs-presence-clr: var(--bit-Persona-presence-blocked-color, #{$clr-err});
+    background-color: $clr-bg-pri;
+    color: var(--bit-Persona-presence-icon-color, var(--bit-prs-presence-clr));
+    border: $shp-border-width-thick $shp-border-style var(--bit-prs-presence-clr);
 }
 
 .bit-prs-bsy {
-    background-color: $clr-err;
+    background-color: var(--bit-Persona-presence-busy-color, #{$clr-err});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-err-text});
 }
 
 .bit-prs-oof {
-    background-color: $clr-swr;
+    background-color: var(--bit-Persona-presence-out-of-office-color, #{$clr-swr});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-swr-text});
 }
 
 .bit-prs-unk {
-    background-color: $clr-fg-ter;
+    background-color: var(--bit-Persona-presence-unknown-color, #{$clr-fg-ter});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-bg-pri});
 }
 
 .bit-prs-s8 {

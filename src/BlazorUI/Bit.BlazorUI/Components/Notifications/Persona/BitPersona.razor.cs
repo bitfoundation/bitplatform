@@ -491,6 +491,19 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public bool ShowOverflowTooltip { get; set; } = true;
 
     /// <summary>
+    /// Puts the built-in glyph of each status in the presence dot - a check for Online, a clock for Away, a cross for
+    /// Offline - so the statuses are told apart by shape as well as by color.
+    /// </summary>
+    /// <remarks>
+    /// Online, Away and Busy are otherwise three discs that differ only in color, which is no difference at all to
+    /// a reader who cannot tell red from green. A glyph given by <see cref="PresenceIcons"/>,
+    /// <see cref="PresenceIconNames"/>, <see cref="PresenceIcon"/> or <see cref="PresenceIconName"/> takes
+    /// precedence, and like those the glyphs are only drawn on coins of 40px and up. They are named from the
+    /// Bit.BlazorUI.Icons set.
+    /// </remarks>
+    [Parameter] public bool ShowDefaultPresenceIcons { get; set; }
+
+    /// <summary>
     /// Shows the secondary text at every size, including the small ones that normally leave no room for it.
     /// </summary>
     /// <remarks>
@@ -715,8 +728,31 @@ public partial class BitPersona : BitComponentBase
 
         // The single-status pair is what a persona that only ever shows one status reaches for instead of
         // declaring a map of all eight, so it answers only where the map had nothing to say.
-        return BitIconInfo.From(PresenceIcon, PresenceIconName);
+        var single = BitIconInfo.From(PresenceIcon, PresenceIconName);
+        if (single is not null || ShowDefaultPresenceIcons is false) return single;
+
+        var defaultName = GetDefaultPresenceIconName(Presence);
+
+        return defaultName is null ? null : BitIconInfo.Bit(defaultName);
     }
+
+    /// <summary>
+    /// The glyph <see cref="ShowDefaultPresenceIcons"/> puts in the dot of each status.
+    /// </summary>
+    /// <remarks>
+    /// Dnd has none because it already draws a bar of its own at every size, and Busy is left the plain disc: the one
+    /// filled status with nothing on it, which is what sets it apart from the rest.
+    /// </remarks>
+    private static string? GetDefaultPresenceIconName(BitPersonaPresence presence) => presence switch
+    {
+        BitPersonaPresence.Online => "SkypeCheck",
+        BitPersonaPresence.Away => "SkypeClock",
+        BitPersonaPresence.Offline => "Cancel",
+        BitPersonaPresence.Blocked => "Blocked2",
+        BitPersonaPresence.OutOfOffice => "Airplane",
+        BitPersonaPresence.Unknown => "Help",
+        _ => null
+    };
 
     /// <summary>
     /// What the presence dot is called - its tooltip when one was given, and its accessible name either way.

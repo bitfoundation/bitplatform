@@ -194,6 +194,13 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
     public BitPersonaShape? Shape { get; set; }
 
     /// <summary>
+    /// Puts the built-in glyph of each status in the presence dot, so the statuses differ by shape as well as color.
+    /// <br />
+    /// <see cref="BitPersona.ShowDefaultPresenceIcons"/>.
+    /// </summary>
+    public bool? ShowDefaultPresenceIcons { get; set; }
+
+    /// <summary>
     /// Renders the initials while the picture is loading.
     /// <br />
     /// <see cref="BitPersona.ShowInitialsUntilImageLoads"/>.
@@ -420,6 +427,11 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.Shape = Shape.Value;
 
             bitPersona.ClassBuilder.Reset();
+        }
+
+        if (ShowDefaultPresenceIcons.HasValue && bitPersona.HasNotBeenSet(nameof(ShowDefaultPresenceIcons)))
+        {
+            bitPersona.ShowDefaultPresenceIcons = ShowDefaultPresenceIcons.Value;
         }
 
         if (ShowInitialsUntilImageLoads.HasValue && bitPersona.HasNotBeenSet(nameof(ShowInitialsUntilImageLoads)))

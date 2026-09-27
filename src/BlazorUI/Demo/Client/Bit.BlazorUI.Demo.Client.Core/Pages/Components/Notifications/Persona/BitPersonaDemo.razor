@@ -36,57 +36,63 @@
     <DemoExample Title="Presence" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
             <b>Presence</b> puts a status dot on the coin, named after its status for screen readers.
-            <b>PresenceTitles</b> (or <b>PresenceTitle</b>) replaces that name and adds a tooltip; <b>PresenceIconNames</b>
-            (or <b>PresenceIconName</b>) puts a glyph in the dot, shown on coins of 40px and up.
+            <b>ShowDefaultPresenceIcons</b> adds a glyph per status, so they differ by more than color;
+            <b>PresenceIconNames</b> (or <b>PresenceIconName</b>) picks your own. Glyphs show on coins of 40px and up.
+            <b>PresenceTitles</b> (or <b>PresenceTitle</b>) renames the dot and adds a tooltip.
         </div>
         <br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Online"
-                    Presence="BitPersonaPresence.Online"
-                    Size="BitPersonaSize.Size56"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Away"
-                    Presence="BitPersonaPresence.Away"
-                    Size="BitPersonaSize.Size56"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Busy"
-                    Presence="BitPersonaPresence.Busy"
-                    Size="BitPersonaSize.Size56"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Dnd (do not disturb)"
-                    Presence="BitPersonaPresence.Dnd"
-                    Size="BitPersonaSize.Size56"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Offline"
-                    Presence="BitPersonaPresence.Offline"
-                    Size="BitPersonaSize.Size56"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Blocked"
-                    Presence="BitPersonaPresence.Blocked"
-                    Size="BitPersonaSize.Size56"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="OutOfOffice"
-                    Presence="BitPersonaPresence.OutOfOffice"
-                    Size="BitPersonaSize.Size56"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Unknown"
-                    Presence="BitPersonaPresence.Unknown"
-                    Size="BitPersonaSize.Size56"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <BitCheckbox @bind-Value="showDefaultPresenceIcons" Label="ShowDefaultPresenceIcons" />
+        <br />
+        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem 2rem;">
+            <BitPersona PrimaryText="Xafan Salina"
+                        SecondaryText="Online"
+                        Presence="BitPersonaPresence.Online"
+                        Size="BitPersonaSize.Size56"
+                        ShowDefaultPresenceIcons="showDefaultPresenceIcons"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <BitPersona PrimaryText="Xafan Salina"
+                        SecondaryText="Away"
+                        Presence="BitPersonaPresence.Away"
+                        Size="BitPersonaSize.Size56"
+                        ShowDefaultPresenceIcons="showDefaultPresenceIcons"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <BitPersona PrimaryText="Xafan Salina"
+                        SecondaryText="Busy"
+                        Presence="BitPersonaPresence.Busy"
+                        Size="BitPersonaSize.Size56"
+                        ShowDefaultPresenceIcons="showDefaultPresenceIcons"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <BitPersona PrimaryText="Xafan Salina"
+                        SecondaryText="Dnd (do not disturb)"
+                        Presence="BitPersonaPresence.Dnd"
+                        Size="BitPersonaSize.Size56"
+                        ShowDefaultPresenceIcons="showDefaultPresenceIcons"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <BitPersona PrimaryText="Xafan Salina"
+                        SecondaryText="Offline"
+                        Presence="BitPersonaPresence.Offline"
+                        Size="BitPersonaSize.Size56"
+                        ShowDefaultPresenceIcons="showDefaultPresenceIcons"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <BitPersona PrimaryText="Xafan Salina"
+                        SecondaryText="Blocked"
+                        Presence="BitPersonaPresence.Blocked"
+                        Size="BitPersonaSize.Size56"
+                        ShowDefaultPresenceIcons="showDefaultPresenceIcons"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <BitPersona PrimaryText="Xafan Salina"
+                        SecondaryText="OutOfOffice"
+                        Presence="BitPersonaPresence.OutOfOffice"
+                        Size="BitPersonaSize.Size56"
+                        ShowDefaultPresenceIcons="showDefaultPresenceIcons"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <BitPersona PrimaryText="Xafan Salina"
+                        SecondaryText="Unknown"
+                        Presence="BitPersonaPresence.Unknown"
+                        Size="BitPersonaSize.Size56"
+                        ShowDefaultPresenceIcons="showDefaultPresenceIcons"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
         <br /><br /><br />
         <div>A glyph in the dot (<b>PresenceIconNames</b>), and a single status's glyph (<b>PresenceIconName</b>):</div>
         <br />
@@ -257,7 +263,7 @@
 
     <DemoExample Title="Action" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
-            <b>OnActionClick</b> adds a small button at the foot of the coin, revealed on hover or focus; <b>ActionIconName</b> and
+            <b>OnActionClick</b> adds a small button at the foot of the coin, revealed when the coin is hovered or the button focused (always shown on touch); <b>ActionIconName</b> and
             <b>ActionButtonTitle</b> dress it and <b>ActionTemplate</b> replaces it. <b>OnImageClick</b> makes the coin itself a button
             that reveals <b>ImageOverlayText</b> - an empty text leaves it unveiled.
         </div>
@@ -537,7 +543,7 @@
     <DemoExample Title="Cascading parameters" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             <b>BitParams</b> carries a <b>BitPersonaParams</b> to every persona under it - size, shape, coin coloring, layout,
-            localized presence titles. It fills in only what a persona leaves unset, so the last one keeps its own <b>Size</b>.
+            presence glyphs and localized presence titles. It fills in only what a persona leaves unset, so the last one keeps its own <b>Size</b>.
         </div>
         <br />
         <BitParams Parameters="@personaParams">
@@ -717,7 +723,7 @@
     <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part by name. The public
-            <b>--bit-Persona-*</b> CSS variables re-skin the coin, texts, rings and focus - on <code>:root</code>, an ancestor or one persona's <b>Style</b>.
+            <b>--bit-Persona-*</b> CSS variables re-skin the coin, texts, rings, presence colors and focus - on <code>:root</code>, an ancestor or one persona's <b>Style</b>.
         </div>
         <br />
         <BitPersona PrimaryText="Saleh Khafan"
@@ -749,8 +755,14 @@
                     --bit-Persona-coin-radius: 0.75rem;
                     --bit-Persona-gap: 1.5rem;
                     --bit-Persona-primary-font-weight: 600;
-                    --bit-Persona-secondary-color: #7a2e8e;">
-            <BitPersona PrimaryText="Saleh Khafan" SecondaryText="Developer" Size="BitPersonaSize.Size56" />
+                    --bit-Persona-secondary-color: #7a2e8e;
+                    --bit-Persona-presence-out-of-office-color: #b4009e;
+                    --bit-Persona-presence-icon-color: #fff;">
+            <BitPersona PrimaryText="Saleh Khafan"
+                        SecondaryText="Out of office"
+                        Size="BitPersonaSize.Size56"
+                        Presence="BitPersonaPresence.OutOfOffice"
+                        PresenceIconName="@BitIconName.Airplane" />
             <br />
             <BitPersona Active PrimaryText="Ted Randall" SecondaryText="Designer" Size="BitPersonaSize.Size56" />
         </div>

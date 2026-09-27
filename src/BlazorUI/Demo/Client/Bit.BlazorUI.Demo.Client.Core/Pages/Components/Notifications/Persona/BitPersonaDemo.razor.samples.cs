@@ -17,53 +17,58 @@ public partial class BitPersonaDemo
             Size=""BitPersonaSize.Size72"" />";
 
     private readonly string example2RazorCode = @"
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Online""
-            Presence=""BitPersonaPresence.Online""
-            Size=""BitPersonaSize.Size56""
-            ImageUrl=""/images/persona/persona-female.png"" />
+<BitCheckbox @bind-Value=""showDefaultPresenceIcons"" Label=""ShowDefaultPresenceIcons"" />
 
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Away""
-            Presence=""BitPersonaPresence.Away""
-            Size=""BitPersonaSize.Size56""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Busy""
-            Presence=""BitPersonaPresence.Busy""
-            Size=""BitPersonaSize.Size56""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Dnd (do not disturb)""
-            Presence=""BitPersonaPresence.Dnd""
-            Size=""BitPersonaSize.Size56""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Offline""
-            Presence=""BitPersonaPresence.Offline""
-            Size=""BitPersonaSize.Size56""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Blocked""
-            Presence=""BitPersonaPresence.Blocked""
-            Size=""BitPersonaSize.Size56""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""OutOfOffice""
-            Presence=""BitPersonaPresence.OutOfOffice""
-            Size=""BitPersonaSize.Size56""
-            ImageUrl=""/images/persona/persona-female.png"" />
-
-<BitPersona PrimaryText=""Xafan Salina""
-            SecondaryText=""Unknown""
-            Presence=""BitPersonaPresence.Unknown""
-            Size=""BitPersonaSize.Size56""
-            ImageUrl=""/images/persona/persona-female.png"" />
+<div style=""display: flex; flex-wrap: wrap; gap: 1.5rem 2rem;"">
+    <BitPersona PrimaryText=""Xafan Salina""
+                SecondaryText=""Online""
+                Presence=""BitPersonaPresence.Online""
+                Size=""BitPersonaSize.Size56""
+                ShowDefaultPresenceIcons=""showDefaultPresenceIcons""
+                ImageUrl=""/images/persona/persona-female.png"" />
+    <BitPersona PrimaryText=""Xafan Salina""
+                SecondaryText=""Away""
+                Presence=""BitPersonaPresence.Away""
+                Size=""BitPersonaSize.Size56""
+                ShowDefaultPresenceIcons=""showDefaultPresenceIcons""
+                ImageUrl=""/images/persona/persona-female.png"" />
+    <BitPersona PrimaryText=""Xafan Salina""
+                SecondaryText=""Busy""
+                Presence=""BitPersonaPresence.Busy""
+                Size=""BitPersonaSize.Size56""
+                ShowDefaultPresenceIcons=""showDefaultPresenceIcons""
+                ImageUrl=""/images/persona/persona-female.png"" />
+    <BitPersona PrimaryText=""Xafan Salina""
+                SecondaryText=""Dnd (do not disturb)""
+                Presence=""BitPersonaPresence.Dnd""
+                Size=""BitPersonaSize.Size56""
+                ShowDefaultPresenceIcons=""showDefaultPresenceIcons""
+                ImageUrl=""/images/persona/persona-female.png"" />
+    <BitPersona PrimaryText=""Xafan Salina""
+                SecondaryText=""Offline""
+                Presence=""BitPersonaPresence.Offline""
+                Size=""BitPersonaSize.Size56""
+                ShowDefaultPresenceIcons=""showDefaultPresenceIcons""
+                ImageUrl=""/images/persona/persona-female.png"" />
+    <BitPersona PrimaryText=""Xafan Salina""
+                SecondaryText=""Blocked""
+                Presence=""BitPersonaPresence.Blocked""
+                Size=""BitPersonaSize.Size56""
+                ShowDefaultPresenceIcons=""showDefaultPresenceIcons""
+                ImageUrl=""/images/persona/persona-female.png"" />
+    <BitPersona PrimaryText=""Xafan Salina""
+                SecondaryText=""OutOfOffice""
+                Presence=""BitPersonaPresence.OutOfOffice""
+                Size=""BitPersonaSize.Size56""
+                ShowDefaultPresenceIcons=""showDefaultPresenceIcons""
+                ImageUrl=""/images/persona/persona-female.png"" />
+    <BitPersona PrimaryText=""Xafan Salina""
+                SecondaryText=""Unknown""
+                Presence=""BitPersonaPresence.Unknown""
+                Size=""BitPersonaSize.Size56""
+                ShowDefaultPresenceIcons=""showDefaultPresenceIcons""
+                ImageUrl=""/images/persona/persona-female.png"" />
+</div>
 
 
 <div>A glyph in the dot (<b>PresenceIconNames</b>), and a single status's glyph (<b>PresenceIconName</b>):</div>
@@ -92,6 +97,8 @@ public partial class BitPersonaDemo
             Size=""BitPersonaSize.Size100""
             ImageUrl=""/images/persona/persona-female.png"" />";
     private readonly string example2CsharpCode = @"
+private bool showDefaultPresenceIcons = true;
+
 private readonly Dictionary<BitPersonaPresence, string> _iconNames = new()
 {
     { BitPersonaPresence.Offline, BitIconName.UnavailableOffline },
@@ -501,6 +508,7 @@ private readonly BitPersonaParams[] personaParams =
         Size = BitPersonaSize.Size40,
         AutoCoinColor = true,
         Shape = BitPersonaShape.Rounded,
+        ShowDefaultPresenceIcons = true,
         PresenceTitles = new()
         {
             { BitPersonaPresence.Online, ""Available"" },
@@ -723,8 +731,14 @@ private bool isDetailsShown = true;";
             --bit-Persona-coin-radius: 0.75rem;
             --bit-Persona-gap: 1.5rem;
             --bit-Persona-primary-font-weight: 600;
-            --bit-Persona-secondary-color: #7a2e8e;"">
-    <BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""Developer"" Size=""BitPersonaSize.Size56"" />
+            --bit-Persona-secondary-color: #7a2e8e;
+            --bit-Persona-presence-out-of-office-color: #b4009e;
+            --bit-Persona-presence-icon-color: #fff;"">
+    <BitPersona PrimaryText=""Saleh Khafan""
+                SecondaryText=""Out of office""
+                Size=""BitPersonaSize.Size56""
+                Presence=""BitPersonaPresence.OutOfOffice""
+                PresenceIconName=""@BitIconName.Airplane"" />
 
     <BitPersona Active PrimaryText=""Ted Randall"" SecondaryText=""Designer"" Size=""BitPersonaSize.Size56"" />
 </div>";

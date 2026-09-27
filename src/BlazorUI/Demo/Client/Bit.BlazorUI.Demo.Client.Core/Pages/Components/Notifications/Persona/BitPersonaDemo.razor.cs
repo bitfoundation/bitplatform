@@ -387,6 +387,13 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "ShowDefaultPresenceIcons",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Puts the built-in glyph of each status in the presence dot (a check for Online, a clock for Away, ...), so the statuses differ by shape as well as color. Busy stays a plain disc and Dnd keeps its bar; a glyph of your own takes precedence, and none is drawn under 40px.",
+        },
+        new()
+        {
             Name = "ShowInitialsUntilImageLoads",
             Type = "bool",
             DefaultValue = "false",
@@ -554,9 +561,75 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "--bit-Persona-action-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Surface of the action button OnActionClick adds.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-action-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Glyph of that action button.",
+        },
+        new()
+        {
             Name = "--bit-Persona-presence-border-color",
             DefaultValue = "--bit-clr-brd-sec",
             Description = "Ring the presence dot is cut out of; match it to the surface the persona sits on.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-icon-color",
+            DefaultValue = "The inherited text color",
+            Description = "Glyph a PresenceIcon puts inside the presence dot.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-online-color",
+            DefaultValue = "--bit-clr-suc",
+            Description = "Fill of the Online dot.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-away-color",
+            DefaultValue = "--bit-clr-wrn",
+            Description = "Fill of the Away dot.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-busy-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Fill of the Busy dot.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-dnd-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Fill of the Dnd dot (the white bar across it stays).",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-out-of-office-color",
+            DefaultValue = "--bit-clr-swr",
+            Description = "Fill of the OutOfOffice dot.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-unknown-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Fill of the Unknown dot.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-offline-color",
+            DefaultValue = "--bit-clr-ntr-gray110",
+            Description = "Stroke of the hollow Offline dot.",
+        },
+        new()
+        {
+            Name = "--bit-Persona-presence-blocked-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Stroke of the hollow Blocked dot.",
         },
         new()
         {
@@ -1129,6 +1202,7 @@ public partial class BitPersonaDemo
     private int imageErrorCount = 0;
     private bool isDetailsShown = true;
     private bool isFadeInPersonaShown = true;
+    private bool showDefaultPresenceIcons = true;
 
     private readonly BitPersonaParams[] personaParams =
     [
@@ -1137,6 +1211,7 @@ public partial class BitPersonaDemo
             Size = BitPersonaSize.Size40,
             AutoCoinColor = true,
             Shape = BitPersonaShape.Rounded,
+            ShowDefaultPresenceIcons = true,
             PresenceTitles = new()
             {
                 { BitPersonaPresence.Online, "Available" },

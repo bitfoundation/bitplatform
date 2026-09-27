@@ -554,6 +554,83 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsTrue(iconEl.ClassList.Contains("bit-icon--Airplane"));
     }
 
+    [TestMethod,
+        DataRow(BitPersonaPresence.Online, "SkypeCheck"),
+        DataRow(BitPersonaPresence.Away, "SkypeClock"),
+        DataRow(BitPersonaPresence.Offline, "Cancel"),
+        DataRow(BitPersonaPresence.Blocked, "Blocked2"),
+        DataRow(BitPersonaPresence.OutOfOffice, "Airplane"),
+        DataRow(BitPersonaPresence.Unknown, "Help")
+    ]
+    public void BitPersonaShowDefaultPresenceIconsShouldDrawTheGlyphOfEachStatus(BitPersonaPresence presence, string iconName)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, presence);
+            parameters.Add(p => p.ShowDefaultPresenceIcons, true);
+        });
+
+        var iconEl = component.Find(".bit-prs-pre i");
+
+        Assert.IsTrue(iconEl.ClassList.Contains($"bit-icon--{iconName}"));
+        Assert.AreEqual("true", iconEl.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod,
+        DataRow(BitPersonaPresence.Busy),
+        DataRow(BitPersonaPresence.Dnd)
+    ]
+    public void BitPersonaShowDefaultPresenceIconsShouldLeaveBusyPlainAndDndToItsBar(BitPersonaPresence presence)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, presence);
+            parameters.Add(p => p.ShowDefaultPresenceIcons, true);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-pre i"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldDrawNoDefaultPresenceIconUnlessAskedTo()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-pre i"));
+    }
+
+    [TestMethod]
+    public void BitPersonaGivenPresenceIconShouldTakePrecedenceOverTheDefaultOne()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, BitPersonaPresence.OutOfOffice);
+            parameters.Add(p => p.PresenceIconName, "Vacation");
+            parameters.Add(p => p.ShowDefaultPresenceIcons, true);
+        });
+
+        var iconEl = component.Find(".bit-prs-pre i");
+
+        Assert.IsTrue(iconEl.ClassList.Contains("bit-icon--Vacation"));
+        Assert.IsFalse(iconEl.ClassList.Contains("bit-icon--Airplane"));
+    }
+
+    [TestMethod]
+    public void BitPersonaDefaultPresenceIconShouldNotBeRenderedOnTheSmallestSizes()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+            parameters.Add(p => p.ShowDefaultPresenceIcons, true);
+            parameters.Add(p => p.Size, BitPersonaSize.Size32);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-pre i"));
+    }
+
     [TestMethod]
     public void BitPersonaSingularPresenceIconShouldNotBeRenderedOnTheSmallestSizes()
     {

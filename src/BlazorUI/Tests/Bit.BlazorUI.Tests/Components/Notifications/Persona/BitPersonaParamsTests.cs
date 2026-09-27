@@ -233,6 +233,7 @@ public class BitPersonaParamsTests : BunitTestContext
             Rel = BitLinkRels.NoFollow,
             Reversed = true,
             Shape = BitPersonaShape.Rounded,
+            ShowDefaultPresenceIcons = true,
             ShowInitialsUntilImageLoads = true,
             ShowOverflowTooltip = false,
             ShowSecondaryText = true,
@@ -273,6 +274,7 @@ public class BitPersonaParamsTests : BunitTestContext
         Assert.AreEqual(BitLinkRels.NoFollow, persona.Rel);
         Assert.IsTrue(persona.Reversed);
         Assert.AreEqual(BitPersonaShape.Rounded, persona.Shape);
+        Assert.IsTrue(persona.ShowDefaultPresenceIcons);
         Assert.IsTrue(persona.ShowInitialsUntilImageLoads);
         Assert.IsFalse(persona.ShowOverflowTooltip);
         Assert.IsTrue(persona.ShowSecondaryText);
