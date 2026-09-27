@@ -48,24 +48,6 @@ public partial class _BitNavBarOptionDemo
     private BitNavBarOption? eventsClickedOption;
     private BitNavBarOption? eventsSelectedOption;
 
-    private BitNavBarOption? twoWaySelectedOption;
-    private BitNavBarOption optionHome = default!;
-    private BitNavBarOption optionProducts = default!;
-    private BitNavBarOption optionAcademy = default!;
-    private BitNavBarOption optionProfile = default!;
-
-    private BitNavBarOption? scrollableSelectedOption;
-    private BitNavBarOption scrollableOptionProfile = default!;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        // The choice group of the Binding example takes the captured options as its values, and a reference
-        // is only assigned once the option has rendered, so the page renders once more to hand them over.
-        if (firstRender)
-        {
-            StateHasChanged();
-        }
-
-        base.OnAfterRender(firstRender);
-    }
+    private string? twoWaySelectedKey;
+    private string? scrollableSelectedKey;
 }

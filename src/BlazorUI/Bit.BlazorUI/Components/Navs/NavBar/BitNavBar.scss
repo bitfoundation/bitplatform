@@ -25,6 +25,27 @@
 //   --bit-NavBar-badge-background        fill of a badge and a dot                         (default: $clr-err)
 //   --bit-NavBar-disabled-color          content color of a disabled item                  (default: per Color)
 
+// The look of an item under the pointer, which a press also takes: a touch screen has no hover, and the
+// press is then the only feedback a tap gets before the selection lands (the browser's grey tap flash is
+// turned off on the item, since it ignores the shape and the colors of the bar).
+@mixin nbr-item-hover {
+    color: var(--bit-NavBar-item-hover-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
+    background-color: var(--bit-NavBar-item-hover-background, var(--bit-nbr-clr-acc-hover, transparent));
+}
+
+// The pill mode puts that look on the pill alone, and leaves the label beside it on the Color role. An
+// item with nothing to draw the pill on keeps the look on itself, the way its selection keeps the fill.
+@mixin nbr-pill-hover {
+    &:has(.bit-nbr-icc) {
+        color: var(--bit-nbr-clr);
+        background-color: transparent;
+    }
+
+    .bit-nbr-icc {
+        @include nbr-item-hover;
+    }
+}
+
 .bit-nbr {
     // The bar itself is a flex line, so the header and the footer sit beside (or above and below) the
     // items instead of on their own row, and the list of items takes whatever room is left over.
@@ -52,15 +73,6 @@
     --bit-nbr-txt-lh: 1.5;
     --bit-nbr-lbl-min: calc(var(--bit-nbr-pad) * 2 + var(--bit-nbr-ico-fs) + var(--bit-nbr-gap) + var(--bit-nbr-txt-fs) * var(--bit-nbr-txt-lh));
 
-    &.bit-dis {
-        cursor: default;
-        pointer-events: none;
-
-        .bit-nbr-itm {
-            color: var(--bit-NavBar-disabled-color, var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor)));
-            background-color: transparent;
-        }
-    }
 }
 
 .bit-nbr-ftw {
@@ -135,15 +147,19 @@
     padding: var(--bit-nbr-pad);
     border-radius: var(--bit-NavBar-item-border-radius, #{$shp-radius-control});
     letter-spacing: $tg-ctrl-letter-spacing;
+    -webkit-tap-highlight-color: transparent;
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     // The selected item keeps its own look under the pointer: a hover fill over it would wipe out the
     // selected fill (or the transparent hover of an unfilled bar, the selected-background of an author).
     @media (hover: hover) {
-        &:not(.bit-nbr-sel):hover {
-            color: var(--bit-NavBar-item-hover-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
-            background-color: var(--bit-NavBar-item-hover-background, var(--bit-nbr-clr-acc-hover, transparent));
+        &:not(.bit-nbr-sel):not(.bit-nbr-dis):hover {
+            @include nbr-item-hover;
         }
+    }
+
+    &:not(.bit-nbr-sel):not(.bit-nbr-dis):active {
+        @include nbr-item-hover;
     }
 
     &:focus-visible {
@@ -173,11 +189,29 @@
     // A label of a known line box is what lets the HideUnselectedText mode reserve the room it takes
     // before it is shown, instead of inheriting whatever line height the page happens to carry.
     line-height: var(--bit-nbr-txt-lh);
+
+    // The label of the selected item turns bolder, which is wider than the same words in the regular
+    // weight and would shove every item after it sideways on each selection change. An invisible bold
+    // copy of the label shares the text's grid cell and reserves that room up front, so an item is the
+    // same width selected or not. It sits beside the text rather than inside it, which keeps the text a
+    // plain line its own ellipsis applies to.
+    &::after {
+        grid-area: 1 / 1;
+        height: 0;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        visibility: hidden;
+        pointer-events: none;
+        content: attr(data-content);
+        font-weight: var(--bit-NavBar-selected-font-weight, #{$tg-fw-semibold});
+    }
 }
 
 // The text clips itself rather than being clipped by the element around it: a track only shrinks past the
 // content of the item in it when that item is what hides its own overflow.
 .bit-nbr-txc {
+    grid-area: 1 / 1;
     min-width: 0;
     overflow: hidden;
     white-space: nowrap;
@@ -420,21 +454,16 @@
         transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
     }
 
+    // The pill is the only filled part in this mode, so the on-color of the fill belongs inside it alone:
+    // the label beside it sits on the untouched background and stays on the Color role.
     @media (hover: hover) {
-        .bit-nbr-itm:not(.bit-nbr-sel):hover {
-            background-color: transparent;
-
-            .bit-nbr-icc {
-                color: var(--bit-NavBar-item-hover-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
-                background-color: var(--bit-NavBar-item-hover-background, var(--bit-nbr-clr-acc-hover, transparent));
-            }
+        .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):hover {
+            @include nbr-pill-hover;
         }
+    }
 
-        // The pill is the only filled part in this mode, so the on-color of the fill belongs inside it
-        // alone: the label beside it sits on the untouched background and stays on the Color role.
-        .bit-nbr-itm:not(.bit-nbr-sel):has(.bit-nbr-icc):hover {
-            color: var(--bit-nbr-clr);
-        }
+    .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):active {
+        @include nbr-pill-hover;
     }
 
     .bit-nbr-sel:has(.bit-nbr-icc) {
@@ -448,10 +477,27 @@
     }
 }
 
+// A disabled item still takes the pointer, so the tooltip of an icon-only item can say what it is; the
+// click itself goes nowhere (the anchor has no href, the button is natively disabled). A selected one
+// keeps showing where the reader is, in the disabled color: its fill is dropped, and its indicator - the
+// line and the pill - dims along with its content instead of staying in the full Color.
 .bit-nbr-dis {
+    cursor: default;
     color: var(--bit-NavBar-disabled-color, var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor)));
-    pointer-events: none;
     background-color: transparent;
+
+    .bit-nbr-lin &.bit-nbr-sel::after {
+        background-color: currentColor;
+    }
+
+    .bit-nbr-pil &.bit-nbr-sel {
+        color: var(--bit-NavBar-disabled-color, var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor)));
+
+        .bit-nbr-icc {
+            color: inherit;
+            background-color: $clr-bg-dis;
+        }
+    }
 }
 
 // The size classes swap the metrics every part reads, and each one yields to its public variable, so a
@@ -496,6 +542,31 @@
         background-color: Highlight;
     }
 
+    // Without an indicator of its own the selection was a color and a fill: the fill is flattened here, and
+    // Highlight is close to LinkText in several system palettes, so the selected item takes the line the
+    // Line indicator draws. A Pill bar keeps its pill, except on an item with no icon to draw it on.
+    .bit-nbr:not(.bit-nbr-lin):not(.bit-nbr-pil) .bit-nbr-sel,
+    .bit-nbr-pil .bit-nbr-sel:not(:has(.bit-nbr-icc)) {
+        position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            inset-block-end: 0;
+            block-size: $shp-border-width-thick;
+            background-color: Highlight;
+        }
+    }
+
+    .bit-nbr-vrt:not(.bit-nbr-lin):not(.bit-nbr-pil) .bit-nbr-sel::after,
+    .bit-nbr-vrt.bit-nbr-pil .bit-nbr-sel:not(:has(.bit-nbr-icc))::after {
+        inset-block: 0;
+        inset-inline: 0 auto;
+        inline-size: $shp-border-width-thick;
+        block-size: auto;
+    }
+
     .bit-nbr-pil .bit-nbr-sel .bit-nbr-icc {
         color: HighlightText;
         background-color: Highlight;
@@ -503,6 +574,16 @@
 
     .bit-nbr-dis {
         color: GrayText;
+    }
+
+    // Carries the weight of the selection line rules above, so a disabled selected item's line dims too.
+    .bit-nbr .bit-nbr-itm.bit-nbr-dis.bit-nbr-sel::after {
+        background-color: GrayText;
+    }
+
+    .bit-nbr-pil .bit-nbr-dis.bit-nbr-sel .bit-nbr-icc {
+        color: Canvas;
+        background-color: GrayText;
     }
 
     .bit-nbr-bdg {

@@ -3,7 +3,7 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 public partial class _BitNavBarOptionDemo
 {
     private readonly string example1RazorCode = @"
-<BitNavBar TItem=""BitNavBarOption"">
+<BitNavBar TItem=""BitNavBarOption"" AriaLabel=""Main"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
@@ -31,7 +31,25 @@ public partial class _BitNavBarOptionDemo
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
-</BitNavBar>";
+</BitNavBar>
+
+<BitNavBar TItem=""BitNavBarOption"" Mode=""BitNavMode.Manual"" @bind-SelectedKey=""twoWaySelectedKey"">
+    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
+    <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" Key=""products"" />
+    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" Key=""academy"" />
+    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" Key=""profile"" />
+</BitNavBar>
+
+Selected key: @twoWaySelectedKey
+
+<BitChoiceGroup Horizontal TItem=""BitChoiceGroupOption<string>"" TValue=""string"" @bind-Value=""@twoWaySelectedKey"">
+    <BitChoiceGroupOption Text=""Home"" Id=""Home"" Value=""@(""home"")"" />
+    <BitChoiceGroupOption Text=""Products"" Id=""Products"" Value=""@(""products"")"" />
+    <BitChoiceGroupOption Text=""Academy"" Id=""Academy"" Value=""@(""academy"")"" />
+    <BitChoiceGroupOption Text=""Profile"" Id=""Profile"" Value=""@(""profile"")"" />
+</BitChoiceGroup>";
+    private readonly string example3CsharpCode = @"
+private string? twoWaySelectedKey;";
 
     private readonly string example4RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"">
@@ -154,9 +172,9 @@ public partial class _BitNavBarOptionDemo
 </BitNavBar>";
 
     private readonly string example8RazorCode = @"
-<BitButton OnClick=""@(() => scrollableSelectedOption = scrollableOptionProfile)"">Select the last item</BitButton>
+<BitButton OnClick=""@(() => scrollableSelectedKey = ""profile"")"">Select the last item</BitButton>
 
-<BitNavBar TItem=""BitNavBarOption"" Scrollable Mode=""BitNavMode.Manual"" @bind-SelectedItem=""scrollableSelectedOption"">
+<BitNavBar TItem=""BitNavBarOption"" Scrollable Mode=""BitNavMode.Manual"" @bind-SelectedKey=""scrollableSelectedKey"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
@@ -166,13 +184,12 @@ public partial class _BitNavBarOptionDemo
     <BitNavBarOption Text=""Reports"" IconName=""@BitIconName.ReportDocument"" />
     <BitNavBarOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
     <BitNavBarOption Text=""Support"" IconName=""@BitIconName.Help"" />
-    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" @ref=""scrollableOptionProfile"" />
+    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" Key=""profile"" />
 </BitNavBar>
 
-Selected item: @scrollableSelectedOption?.Text";
+Selected key: @scrollableSelectedKey";
     private readonly string example8CsharpCode = @"
-private BitNavBarOption? scrollableSelectedOption;
-private BitNavBarOption scrollableOptionProfile = default!;";
+private string? scrollableSelectedKey;";
 
     private readonly string example9RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"">
@@ -307,42 +324,8 @@ private int selectCount;
 private BitNavBarOption? eventsClickedOption;
 private BitNavBarOption? eventsSelectedOption;";
 
+
     private readonly string example14RazorCode = @"
-<BitNavBar TItem=""BitNavBarOption"" Mode=""BitNavMode.Manual"" @bind-SelectedItem=""twoWaySelectedOption"">
-    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" @ref=""optionHome"" />
-    <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" @ref=""optionProducts"" />
-    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" @ref=""optionAcademy"" />
-    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" @ref=""optionProfile"" />
-</BitNavBar>
-
-Selected item: @twoWaySelectedOption?.Text
-
-<BitChoiceGroup Horizontal TItem=""BitChoiceGroupOption<BitNavBarOption>"" TValue=""BitNavBarOption"" @bind-Value=""@twoWaySelectedOption"">
-    <BitChoiceGroupOption Text=""Home"" Id=""Home"" Value=""optionHome"" />
-    <BitChoiceGroupOption Text=""Products"" Id=""Products"" Value=""optionProducts"" />
-    <BitChoiceGroupOption Text=""Academy"" Id=""Academy"" Value=""optionAcademy"" />
-    <BitChoiceGroupOption Text=""Profile"" Id=""Profile"" Value=""optionProfile"" />
-</BitChoiceGroup>";
-    private readonly string example14CsharpCode = @"
-private BitNavBarOption? twoWaySelectedOption;
-private BitNavBarOption optionHome = default!;
-private BitNavBarOption optionProducts = default!;
-private BitNavBarOption optionAcademy = default!;
-private BitNavBarOption optionProfile = default!;
-
-protected override void OnAfterRender(bool firstRender)
-{
-    if (firstRender)
-    {
-        // A reference is only assigned once its option has rendered, so render once more to hand the
-        // captured options to the choice group as its values.
-        StateHasChanged();
-    }
-
-    base.OnAfterRender(firstRender);
-}";
-
-    private readonly string example15RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" SingleTabStop Mode=""BitNavMode.Manual"" DefaultSelectedKey=""products"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" Key=""products"" />
@@ -364,7 +347,7 @@ protected override void OnAfterRender(bool firstRender)
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitStack Horizontal>
     <BitButton OnClick=""AddDynamicOption"">Add item</BitButton>
     <BitButton OnClick=""RemoveDynamicOption"">Remove item</BitButton>
@@ -384,7 +367,7 @@ protected override void OnAfterRender(bool firstRender)
 </BitNavBar>
 
 Selected item: @dynamicSelectedOption?.Text";
-    private readonly string example16CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private bool dynamicAutoReorder = true;
 private int dynamicOptionsCount = 3;
 private BitNavBarOption? dynamicSelectedOption;
@@ -412,7 +395,7 @@ private void ReverseDynamicOptions() => dynamicOptions.Reverse();
 
 private record DynamicOption(string Text, string IconName);";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitParams Parameters=""navBarParams"">
     <BitNavBar TItem=""BitNavBarOption"" DefaultSelectedKey=""home"">
         <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
@@ -435,7 +418,7 @@ private record DynamicOption(string Text, string IconName);";
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private static readonly BitNavBarParams[] navBarParams =
 [
     new()
@@ -447,7 +430,7 @@ private static readonly BitNavBarParams[] navBarParams =
     }
 ];";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" Color=""BitColor.Primary"" Mode=""BitNavMode.Manual"" DefaultSelectedKey=""home"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
@@ -554,7 +537,7 @@ private static readonly BitNavBarParams[] navBarParams =
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitNavBar TItem=""BitNavBarOption"">
@@ -564,7 +547,7 @@ private static readonly BitNavBarParams[] navBarParams =
     <BitNavBarOption Text=""Profile"" Icon=""@BitIconInfo.Fa(""solid user"")"" />
 </BitNavBar>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" Size=""BitSize.Small"" Mode=""BitNavMode.Manual"" DefaultSelectedKey=""home"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
@@ -584,7 +567,7 @@ private static readonly BitNavBarParams[] navBarParams =
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -663,7 +646,7 @@ private static readonly BitNavBarParams[] navBarParams =
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" Dir=""BitDir.Rtl"">
     <BitNavBarOption Text=""خانه"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""محصولات"" IconName=""@BitIconName.ProductVariant"" />

@@ -41,7 +41,8 @@ public partial class BitNavBar<TItem>
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The initially selected item in manual mode. Ignored while <see cref="SelectedItem"/> is bound.
+    /// The initially selected item in manual mode. Ignored while <see cref="SelectedItem"/> or
+    /// <see cref="SelectedKey"/> is bound.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
@@ -49,7 +50,8 @@ public partial class BitNavBar<TItem>
     /// The <c>Key</c> of the initially selected item in manual mode, applied as soon as an item with that key is
     /// there. It is how the options API sets a default selection, since no option exists to be referenced by
     /// <see cref="DefaultSelectedItem"/> before the options render. <see cref="DefaultSelectedItem"/> wins
-    /// when both are set, and both are ignored while <see cref="SelectedItem"/> is bound.
+    /// when both are set, and both are ignored while <see cref="SelectedItem"/> or <see cref="SelectedKey"/>
+    /// is bound.
     /// </summary>
     [Parameter] public string? DefaultSelectedKey { get; set; }
 
@@ -206,6 +208,16 @@ public partial class BitNavBar<TItem>
     [Parameter, TwoWayBound]
     [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
+
+    /// <summary>
+    /// The <c>Key</c> of the selected item, kept in step with <see cref="SelectedItem"/> whichever of the two
+    /// is written. It is how the options API binds its selection, since no option exists to be referenced by
+    /// <see cref="SelectedItem"/> before the options render; a key no item carries yet is applied as soon as
+    /// one with it is there. In the automatic mode it only reports the item the current URL selected.
+    /// </summary>
+    [Parameter, TwoWayBound]
+    [CallOnSet(nameof(OnSetSelectedKey))]
+    public string? SelectedKey { get; set; }
 
     /// <summary>
     /// Selects an item as soon as the focus reaches it, so walking the navbar with the arrow keys switches

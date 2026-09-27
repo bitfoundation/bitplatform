@@ -50,14 +50,14 @@ public partial class BitNavBarDemo
             Name = "DefaultSelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
-            Description = "The initially selected item in manual mode. Ignored while SelectedItem is bound."
+            Description = "The initially selected item in manual mode. Ignored while SelectedItem or SelectedKey is bound."
         },
         new()
         {
             Name = "DefaultSelectedKey",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The Key of the initially selected item in manual mode, applied as soon as an item with that key is there. It is how the options API sets a default selection. DefaultSelectedItem wins when both are set.",
+            Description = "The Key of the initially selected item in manual mode, applied as soon as an item with that key is there. It is how the options API sets a default selection. DefaultSelectedItem wins when both are set, and both are ignored while SelectedItem or SelectedKey is bound.",
         },
         new()
         {
@@ -229,6 +229,13 @@ public partial class BitNavBarDemo
             Type = "TItem?",
             DefaultValue = "null",
             Description = "Selected item to show in the navbar. Supports two-way binding."
+        },
+        new()
+        {
+            Name = "SelectedKey",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The Key of the selected item, kept in step with SelectedItem. It is how the options API binds its selection; a key no item carries yet is applied once one with it is there. Automatic mode only reports it. Supports two-way binding."
         },
         new()
         {

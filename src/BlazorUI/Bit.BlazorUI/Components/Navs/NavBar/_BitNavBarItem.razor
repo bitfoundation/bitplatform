@@ -109,8 +109,10 @@
                 {
                     @* The text is clipped by a child of its own rather than by the element that carries it, so
                        the HideUnselectedText mode can collapse that element to nothing and animate its way
-                       there: a track only shrinks past the content of an item when the item itself clips it. *@
-                    <span style="@NavBar.Styles?.ItemText" class="bit-nbr-txt @NavBar.Classes?.ItemText"><span class="bit-nbr-txc">@text</span></span>
+                       there: a track only shrinks past the content of an item when the item itself clips it.
+                       The data-content is what the stylesheet lays an invisible bold copy of the text out of, so
+                       the item keeps its width as the selection turns its text bolder. *@
+                    <span style="@NavBar.Styles?.ItemText" class="bit-nbr-txt @NavBar.Classes?.ItemText" data-content="@text"><span class="bit-nbr-txc">@text</span></span>
                 }
             }
         </_BitNavBarChild>

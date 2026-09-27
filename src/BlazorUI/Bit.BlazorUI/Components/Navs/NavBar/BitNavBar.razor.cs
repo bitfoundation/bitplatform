@@ -16,6 +16,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     private bool _scrollToSelectedItem;
     private bool _wheelIsSetUp;
     private bool _defaultSelectedKeyPending;
+    private bool _selectedKeyPending;
+    private bool _selectedKeyStale;
     private TItem? _focusedItem;
     private IList<TItem>? _oldItems;
     private bool _optionsOrderDirty;
@@ -298,11 +300,11 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         }
         else
         {
-            if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
+            if (DefaultSelectedItem is not null && IsSelectionBound() is false)
             {
                 await AssignSelectedItem(DefaultSelectedItem);
             }
-            else if (DefaultSelectedKey.HasValue() && SelectedItemHasBeenSet is false)
+            else if (DefaultSelectedKey.HasValue() && IsSelectionBound() is false)
             {
                 // The options register themselves only as they render, after this point, so the key is kept
                 // pending and applied as soon as an item carrying it is there.
@@ -339,6 +341,16 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         base.OnParametersSet();
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        // Run once every parameter of the set is in, since the Items and the NameSelectors a key is looked up
+        // through may be assigned after the SelectedKey itself.
+        await ApplySelectedKey();
+        await SyncSelectedKey();
+
+        await base.OnParametersSetAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The order is recovered before the match runs, so the item that wins a tie between two options
@@ -346,6 +358,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         await ReorderOptionsByDomOrder();
 
         await ApplyDefaultSelectedKey();
+
+        // Options register as they render, so a SelectedKey naming one of them is only found from here on.
+        await ApplySelectedKey();
 
         // Each option flags a selection recompute as it registers instead of matching immediately, so
         // registering n options collapses into a single match pass here rather than one O(n) pass each.
@@ -366,6 +381,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         {
             _scrollToSelectedItem = true;
         }
+
+        await SyncSelectedKey();
 
         await ScrollSelectedItemIntoView();
 
@@ -681,7 +698,67 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         // The selection moved, so a scrolling navbar brings the item it landed on into view after the render.
         _scrollToSelectedItem = true;
 
+        // The key follows the item once the parameters are all in: a SelectedItem assigned by the parent is
+        // assigned before the NameSelectors its key is read through, when both arrive in the same set.
+        _selectedKeyStale = true;
+
         RefreshOptions();
+    }
+
+    // A key that the selection already carries is the navbar writing its own key back; any other one was
+    // written from outside and is applied to the selection once the items (and the options) are there.
+    private void OnSetSelectedKey()
+    {
+        _selectedKeyPending = SelectedKey != GetSelectedItemKey();
+    }
+
+    private string? GetSelectedItemKey() => SelectedItem is null ? null : GetKey(SelectedItem);
+
+    private bool IsSelectionBound() => SelectedItemHasBeenSet || SelectedKeyHasBeenSet;
+
+    // Selects the item the SelectedKey names. A key no item carries yet stays pending, since the options
+    // register only as they render; a selection made in the meantime (a click) writes its own key over it.
+    // The automatic mode owns its selection, so a key written there is answered with the one it selected.
+    private async Task ApplySelectedKey()
+    {
+        if (_selectedKeyPending is false) return;
+
+        if (Mode is not BitNavMode.Manual)
+        {
+            _selectedKeyPending = false;
+            _selectedKeyStale = true;
+            return;
+        }
+
+        TItem? item = null;
+
+        if (SelectedKey is not null)
+        {
+            item = _items.FirstOrDefault(i => GetKey(i) == SelectedKey);
+            if (item is null) return;
+        }
+
+        _selectedKeyPending = false;
+
+        if (IsSelected(item)) return;
+
+        if (await AssignSelectedItem(item) is false) return;
+
+        StateHasChanged();
+    }
+
+    // Writes the key of the selected item back to SelectedKey, after the selection moved by any means.
+    private async Task SyncSelectedKey()
+    {
+        if (_selectedKeyStale is false) return;
+
+        _selectedKeyStale = false;
+
+        var key = GetSelectedItemKey();
+
+        if (key == SelectedKey) return;
+
+        await AssignSelectedKey(key);
     }
 
     private void RefreshOptions()
@@ -789,6 +866,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         if (await AssignSelectedItem(item) is false) return;
 
         await OnSelectItem.InvokeAsync(item);
+
+        await SyncSelectedKey();
 
         RefreshOptions();
         StateHasChanged();

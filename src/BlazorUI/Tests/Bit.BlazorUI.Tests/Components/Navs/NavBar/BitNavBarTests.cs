@@ -1109,6 +1109,144 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavBarShouldSelectTheItemOfTheSelectedKey()
+    {
+        var items = BasicItems();
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "profile");
+        });
+
+        Assert.AreEqual("Profile", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReportTheKeyOfAClickedItem()
+    {
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[1].Key = "products";
+
+        string? reported = "unset";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "home");
+            p.Add(c => c.SelectedKeyChanged, (string? key) => reported = key);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.AreEqual("products", reported);
+        Assert.AreEqual("Products", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldFollowAChangedSelectedKey()
+    {
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "home");
+        });
+
+        component.Render(p => p.Add(c => c.SelectedKey, "profile"));
+
+        Assert.AreEqual("Profile", SelectedText(component));
+
+        // A null key clears the selection, the way a null SelectedItem does.
+        component.Render(p => p.Add(c => c.SelectedKey, (string?)null));
+
+        Assert.IsNull(SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldApplyASelectedKeyOnceAnItemCarriesIt()
+    {
+        var items = BasicItems();
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "later");
+        });
+
+        Assert.IsNull(SelectedText(component));
+
+        List<BitNavBarItem> updated = [.. items, new() { Text = "Later", Key = "later" }];
+
+        component.Render(p => p.Add(c => c.Items, updated));
+
+        Assert.AreEqual("Later", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldBindTheSelectedKeyOfTheOptions()
+    {
+        // No option exists to be referenced by SelectedItem before the options render, so the key is what the
+        // options API binds its selection with.
+        var component = RenderComponent<BitNavBarSelectedKeyTest>(p => p.Add(c => c.Key, "settings"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("Settings", SelectedText(component)));
+
+        component.FindAll(".bit-nbr-itm")[0].Click();
+
+        Assert.AreEqual("home", component.Instance.Key);
+        Assert.AreEqual("Home", SelectedText(component));
+
+        component.Render(p => p.Add(c => c.Key, "products"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("Products", SelectedText(component)));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldIgnoreTheDefaultsWhileTheSelectedKeyIsBound()
+    {
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "home");
+            p.Add(c => c.DefaultSelectedKey, "profile");
+            p.Add(c => c.DefaultSelectedItem, items[1]);
+        });
+
+        Assert.AreEqual("Home", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReportTheKeyTheUrlSelectsInTheAutomaticMode()
+    {
+        Navigate("/products");
+
+        var items = UrlItems();
+        items[1].Key = "products";
+
+        string? reported = null;
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.SelectedKey, "home");
+            p.Add(c => c.SelectedKeyChanged, (string? key) => reported = key);
+        });
+
+        // The URL owns the selection here, so the key written from outside is answered with the matched one.
+        component.WaitForAssertion(() => Assert.AreEqual("products", reported));
+        Assert.AreEqual("Products", SelectedText(component));
+    }
+
+    [TestMethod]
     public void BitNavBarShouldReportTheFirstUrlMatchOnceWhenReselectable()
     {
         // The first render matches the URL twice (while initializing and once the items are in); only a
@@ -2110,7 +2248,7 @@ public class BitNavBarTests : BunitTestContext
             <span class=""bit-nbr-icc "">
                 <i aria-hidden=""true"" class=""bit-nbr-ico bit-icon bit-icon--Home ""></i>
             </span>
-            <span class=""bit-nbr-txt ""><span class=""bit-nbr-txc"">Home</span></span>
+            <span class=""bit-nbr-txt "" data-content=""Home""><span class=""bit-nbr-txc"">Home</span></span>
         </button>
     </li>
     <li class=""bit-nbr-lit "">
@@ -2118,13 +2256,26 @@ public class BitNavBarTests : BunitTestContext
             <span class=""bit-nbr-icc "">
                 <i aria-hidden=""true"" class=""bit-nbr-ico bit-icon bit-icon--ProductVariant ""></i>
             </span>
-            <span class=""bit-nbr-txt ""><span class=""bit-nbr-txc"">Products</span></span>
+            <span class=""bit-nbr-txt "" data-content=""Products""><span class=""bit-nbr-txc"">Products</span></span>
         </button>
     </li>
 </ul>");
     }
 
 
+
+    [TestMethod]
+    public void BitNavBarShouldHandTheTextOverForItsReservedBoldCopy()
+    {
+        // The stylesheet lays an invisible bold copy of the text out of data-content, which is what keeps an
+        // item the same width as the selection turns its text bolder.
+        var component = RenderNavBar(BasicItems());
+
+        var texts = component.FindAll(".bit-nbr-txt");
+
+        Assert.AreEqual("Home", texts[0].GetAttribute("data-content"));
+        Assert.AreEqual("Home", texts[0].TextContent);
+    }
 
     [TestMethod]
     public void BitNavBarShouldRenderItsItemsAsAList()

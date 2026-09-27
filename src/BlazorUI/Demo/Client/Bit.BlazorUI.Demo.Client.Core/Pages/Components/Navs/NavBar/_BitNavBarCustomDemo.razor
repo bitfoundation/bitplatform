@@ -4,10 +4,12 @@
         <b>NameSelectors</b>, which maps each field of the navbar onto a property of that type. In the default
         <b>Automatic</b> mode the item whose URL matches the current page is selected and marked
         <code>aria-current="page"</code>.
+        The bar is a <code>nav</code> landmark: name it with <b>AriaLabel</b>, since a page rarely holds only one.
     </div>
     <br />
     <div class="container">
         <BitNavBar Items="basicNavBarCustoms"
+                   AriaLabel="Main"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
@@ -38,16 +40,32 @@
 <DemoExample Title="Manual Mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <div>
         In the <b>Manual</b> mode clicks select the items instead of the URL, for a navbar that switches panels of one
-        page. <b>DefaultSelectedItem</b> sets the starting item.
+        page. <b>DefaultSelectedItem</b> sets the starting item; <b>SelectedItem</b> (or the item's <b>Key</b> as
+        <b>SelectedKey</b>) binds both ways, so the selection can be read and written from outside the navbar.
     </div>
     <br />
-    <div class="container">
+    <div>DefaultSelectedItem:</div><br />
+    <div class="container short">
         <BitNavBar Mode="BitNavMode.Manual"
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
+    <br /><br />
+    <div>Two-way bound SelectedItem:</div><br />
+    <div class="container short">
+        <BitNavBar TItem="MenuItem"
+                   Mode="BitNavMode.Manual"
+                   Items="basicNavBarCustoms"
+                   @bind-SelectedItem="twoWaySelectedItem"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br />
+    Selected item: @twoWaySelectedItem?.Title
+    <br /><br />
+    <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
 </DemoExample>
 
 <DemoExample Title="URL Matching" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
@@ -412,24 +430,7 @@
     <div>Selected item: @eventsSelectedItem?.Title (@selectCount selections)</div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-    <div><b>SelectedItem</b> binds both ways, so the selection can be read and written from outside the navbar.</div>
-    <br />
-    <div class="container short">
-        <BitNavBar TItem="MenuItem"
-                   @bind-SelectedItem="twoWaySelectedItem"
-                   Items="basicNavBarCustoms"
-                   Mode="BitNavMode.Manual"
-                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.ImageName } })" />
-    </div>
-    <br />
-    Selected item: @twoWaySelectedItem?.Title
-    <br /><br />
-    <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
-</DemoExample>
-
-<DemoExample Title="Keyboard" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Keyboard" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
     <div>
         The arrow keys, <b>Home</b> and <b>End</b> move the focus (flipped in RTL, skipping disabled items). By default
         every item is a tab stop; <b>SingleTabStop</b> makes the bar one stop like a toolbar. <b>WrapNavigation</b>
@@ -469,7 +470,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Dynamic Items" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="Dynamic Items" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>
         <b>Items</b> is re-read on every render, so changes to the same list show up at once; the selection survives
         while its item is still there.
@@ -493,7 +494,7 @@
     Selected item: @dynamicSelectedCustom?.Title
 </DemoExample>
 
-<DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="Cascading parameters" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
     <div>
         <b>BitParams</b> hands a <b>BitNavBarParams</b> to every navbar under it as defaults: a navbar keeps what it
         sets itself and takes only what it left unset. The object is not generic, so it serves all three item APIs -
@@ -524,7 +525,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
     <div><b>Color</b> paints the selected item, its indicator and its fill.</div>
     <br />
     <div>Primary:</div><br />
@@ -649,7 +650,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+<DemoExample Title="External Icons" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> selector.</div>
     <br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -660,7 +661,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
     <div><b>Size</b> scales the icon, the text, the padding and the touch target of every item.</div>
     <br />
     <div>Small:</div><br />
@@ -685,7 +686,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+<DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
     <div>
         <b>Style</b>/<b>Class</b> for the root, <b>Styles</b>/<b>Classes</b> for its parts, an item's own
         <b>Style</b>/<b>Class</b> through their selectors, and the public <b>--bit-NavBar-*</b> CSS variables, which
@@ -746,7 +747,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br />
     <div dir="rtl">
