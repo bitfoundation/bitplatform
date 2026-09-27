@@ -540,7 +540,7 @@
     --bit-drm-min-height: #{$siz-ctrl-sm};
     --bit-drm-icon-size: #{$siz-icon-sm};
     --bit-drm-pad-y: #{$siz-ctrl-pad-y-sm};
-    --bit-drm-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
+    --bit-drm-padding: #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm};
 }
 
 .bit-drm-md {
@@ -548,7 +548,7 @@
     --bit-drm-min-height: #{$siz-ctrl-md};
     --bit-drm-icon-size: #{$siz-icon-md};
     --bit-drm-pad-y: #{$siz-ctrl-pad-y-md};
-    --bit-drm-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm};
+    --bit-drm-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md};
 }
 
 .bit-drm-lg {
@@ -556,5 +556,5 @@
     --bit-drm-min-height: #{$siz-ctrl-lg};
     --bit-drm-icon-size: #{$siz-icon-lg};
     --bit-drm-pad-y: #{$siz-ctrl-pad-y-lg};
-    --bit-drm-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};
+    --bit-drm-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
 }

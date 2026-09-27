@@ -121,16 +121,15 @@ private BitVariant variant = BitVariant.Fill;";
             <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Download"">Sync now</BitButton>
         </BitStack>
     </BitDropMenu>
-    <BitDropMenu Text=""LazyRender"" LazyRender OnOpen=""@(() => lazyOpenedAt ??= DateTime.Now.ToString(""T""))"">
+    <BitDropMenu Text=""LazyRender"" LazyRender>
         <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
-            <BitText Typography=""BitTypography.Body2"">Rendered on the first opening, at @lazyOpenedAt</BitText>
+            <BitText Typography=""BitTypography.Body2"">Rendered on the first opening</BitText>
             <BitCheckbox Label=""Keeps its state after a close"" />
         </BitStack>
     </BitDropMenu>
 </BitStack>";
     private readonly string example5CsharpCode = @"
-private bool isLoading;
-private string? lazyOpenedAt;";
+private bool isLoading;";
 
     private readonly string example6RazorCode = @"
 <BitChoiceGroup @bind-Value=""backgroundColorKind"" Horizontal
@@ -420,7 +419,7 @@ private readonly BitDropMenuParams[] toolbarDropMenuParams =
 [
     new()
     {
-        Size = BitSize.Small,
+        Gap = 4,
         Color = BitColor.Primary,
         Variant = BitVariant.Outline,
         AutoClose = true

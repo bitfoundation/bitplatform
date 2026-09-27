@@ -853,7 +853,6 @@ public partial class BitDropMenuDemo
 
     private bool isOpen;
     private bool isLoading;
-    private string? lazyOpenedAt;
     private int clickCounter;
     private int openCounter;
     private int dismissCounter;
@@ -873,7 +872,7 @@ public partial class BitDropMenuDemo
     [
         new()
         {
-            Size = BitSize.Small,
+            Gap = 4,
             Color = BitColor.Primary,
             Variant = BitVariant.Outline,
             AutoClose = true

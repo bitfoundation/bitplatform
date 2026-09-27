@@ -163,9 +163,9 @@
                     <BitButton Size="BitSize.Small" IconName="@BitIconName.Download">Sync now</BitButton>
                 </BitStack>
             </BitDropMenu>
-            <BitDropMenu Text="LazyRender" LazyRender OnOpen="@(() => lazyOpenedAt ??= DateTime.Now.ToString("T"))">
+            <BitDropMenu Text="LazyRender" LazyRender>
                 <BitStack Gap="0.5rem" Style="padding:0.5rem">
-                    <BitText Typography="BitTypography.Body2">Rendered on the first opening, at @lazyOpenedAt</BitText>
+                    <BitText Typography="BitTypography.Body2">Rendered on the first opening</BitText>
                     <BitCheckbox Label="Keeps its state after a close" />
                 </BitStack>
             </BitDropMenu>
@@ -345,8 +345,8 @@
         <div>
             <b>OpenOnHover</b> opens the callout when the pointer arrives and closes it once the pointer leaves both
             the button and the callout. <b>HoverOpenDelay</b> ignores a pointer only passing by, and
-            <b>HoverCloseDelay</b> (150ms) bridges the gap between the two. <b>Escape</b> closes it wherever the
-            focus is. Touch screens and the keyboard keep the click behavior.
+            <b>HoverCloseDelay</b> (150ms) bridges the gap between the two. <b>Escape</b> closes a callout opened by
+            hovering wherever the focus is. Touch screens and the keyboard keep the click behavior.
         </div>
         <br />
         <BitStack Horizontal Wrap Gap="1rem" FitHeight>
@@ -453,7 +453,8 @@
             The button announces the dialog it opens and the callout is a dialog named by the button. <b>Enter</b>,
             <b>Space</b> and the arrow keys open it and move the focus in; <b>Escape</b> closes the innermost popup
             first - the dropdown below closes its list, not the form - and returns the focus. <b>Tab</b> past the last
-            element closes the callout and carries on after the button; <b>Shift+Tab</b> from the first goes back to it.
+            element closes the callout and carries on after the button; <b>Shift+Tab</b> from the first goes back to it,
+            and <b>Tab</b> from the button goes back in.
         </div>
         <br />
         <div>

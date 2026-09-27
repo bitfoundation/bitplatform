@@ -378,10 +378,11 @@
         // Hands the keyboard back to the page around the trigger of a popup that does not trap it. The popup is
         // relocated to the end of the body while it is open, so the browser's own tab order runs from its last
         // element off the end of the page, and from its first one backwards into whatever ends the page - neither
-        // anywhere near the trigger the user opened it from, and the popup is left open behind the keyboard. Tab
-        // from the last element moves on to what follows the trigger in the page, as if the content sat right
-        // after it, and reports it through the OnTabOut callback so the popup closes; Shift+Tab from the first
-        // element goes back to the trigger, leaving the popup open for the Tab that brings the user back in.
+        // anywhere near the trigger the user opened it from, and the popup is left open behind the keyboard. The
+        // content is made to read as if it sat right after the trigger instead: Tab on the trigger goes into it,
+        // Tab from its last element moves on to what follows the trigger in the page and reports it through the
+        // OnTabOut callback so the popup closes, and Shift+Tab from its first element goes back to the trigger,
+        // leaving the popup open for the Tab that brings the user back in.
         public static setupTabOut(elementId: string, triggerId: string, dotnetObj: DotNetObject) {
             Utils.disposeTabOut(elementId);
 
@@ -390,8 +391,12 @@
 
             const controller = new AbortController();
 
+            const isPlainTab = (e: KeyboardEvent) => e.key === 'Tab' && !e.defaultPrevented && !e.altKey && !e.ctrlKey && !e.metaKey;
+
+            const getFocusables = () => Array.from(element.querySelectorAll<HTMLElement>(Utils._focusables)).filter(Utils.isFocusable);
+
             element.addEventListener('keydown', e => {
-                if (e.key !== 'Tab' || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+                if (!isPlainTab(e)) return;
 
                 // A trap registered on something nested inside the popup owns the key.
                 if (Utils.hasNearerFocusTrap(element, e.target as Element | null)) return;
@@ -399,8 +404,7 @@
                 const trigger = document.getElementById(triggerId);
                 if (!trigger) return;
 
-                const focusables = Array.from(element.querySelectorAll<HTMLElement>(Utils._focusables))
-                    .filter(Utils.isFocusable);
+                const focusables = getFocusables();
                 const active = document.activeElement;
 
                 if (e.shiftKey) {
@@ -425,6 +429,17 @@
                 (Utils.findFocusableAfter(trigger, element) ?? trigger).focus();
 
                 dotnetObj.invokeMethodAsync('OnTabOut');
+            }, { signal: controller.signal });
+
+            // The trigger's half of the same order: a Tab on it goes into the content rather than past it. The
+            // trigger is looked up once, since it stays where it is for as long as the popup is open, and the
+            // registration goes with the popup's.
+            document.getElementById(triggerId)?.addEventListener('keydown', e => {
+                if (!isPlainTab(e) || e.shiftKey) return;
+
+                e.preventDefault();
+
+                (getFocusables()[0] ?? element).focus();
             }, { signal: controller.signal });
 
             Utils._tabOuts.set(elementId, controller);
@@ -495,14 +510,44 @@
             Utils._tabOuts.delete(elementId);
         }
 
-        // The first element of the page's tab order that follows the given one in the document, leaving out
-        // the element itself, what it contains, and the popup being tabbed out of.
+        // The first element of the tab order that follows the given one in the document, leaving out the element
+        // itself, what it contains, and the popup being tabbed out of. The tab order is the one the anchor is in:
+        // an anchor inside a dialog that keeps the keyboard in itself (a modal, a registered focus trap) looks no
+        // further than that dialog, and wraps around to its first element past its last one, as the dialog's own
+        // trap would - the page behind it is out of reach of the keyboard, however it is arranged in the document.
         private static findFocusableAfter(anchor: HTMLElement, exclude: HTMLElement) {
-            return Array.from(document.querySelectorAll<HTMLElement>(Utils._focusables)).find(el =>
-                (anchor.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
-                && !anchor.contains(el)
+            const scope = Utils.findTabScope(anchor);
+
+            const candidates = Array.from((scope ?? document).querySelectorAll<HTMLElement>(Utils._focusables)).filter(el =>
+                !anchor.contains(el)
                 && !exclude.contains(el)
-                && Utils.isFocusable(el)) ?? null;
+                && Utils.isFocusable(el));
+
+            const next = candidates.find(el => (anchor.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
+
+            return next ?? (scope ? candidates[0] ?? null : null);
+        }
+
+        // The nearest ancestor of the element that keeps the keyboard inside itself, or null when it is in the
+        // page's own tab order.
+        private static findTabScope(element: HTMLElement): HTMLElement | null {
+            for (let node = element.parentElement; node && node !== document.body; node = node.parentElement) {
+                if (node.id && Utils._focusTraps.has(node.id)) return node;
+
+                if (node.getAttribute('aria-modal') === 'true') return node;
+
+                if (node.tagName === 'DIALOG' && Utils.isModalDialog(node)) return node;
+            }
+
+            return null;
+        }
+
+        private static isModalDialog(dialog: HTMLElement) {
+            try {
+                return dialog.matches(':modal');
+            } catch {
+                return false;
+            }
         }
 
         private static _focusOrigins = new Map<string, HTMLElement>();

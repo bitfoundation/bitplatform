@@ -26,13 +26,20 @@ public partial class BitDropMenu : BitComponentBase
     private bool _focusCalloutOnClick;
     private bool _focusTrapped;
     private bool _tabOutSetUp;
+    private bool _escapeSetUp;
     private bool _hoverInside;
+    private bool _iconOnly;
+    private bool _openedByHover;
     private bool? _isHoverDevice;
     private string? _swipesKey;
     private CancellationTokenSource? _hoverCts;
     private ElementReference _buttonRef;
     private DotNetObjectReference<BitDropMenu>? _dotnetObj;
     private DotNetObjectReference<BitDropMenu>? _swipesDotnetObj;
+    private string? _publicCssVariables;
+    private string? _lastRootStyle;
+    private string? _lastStylesRoot;
+    private string? _lastStylesOpened;
 
 
 
@@ -448,11 +455,13 @@ public partial class BitDropMenu : BitComponentBase
     [JSInvokable("OnEscape")]
     public async Task _OnEscape()
     {
-        // Escape pressed inside the callout, which the JS side only reports while no callout opened from inside
-        // this one is open: a dropdown in the content closes its own list on that key, not the whole panel.
+        // Escape pressed inside the callout - or anywhere outside it, for a callout opened by hovering - which the
+        // JS side only reports while no callout opened from inside this one is open: a dropdown in the content
+        // closes its own list on that key, not the whole panel (see Utils.setupEscape).
         if (IsEnabled is false || IsOpen is false) return;
 
-        // The focus is inside the callout, so closing it hands the focus back to the trigger on its own.
+        // A focus inside the callout is handed back to the trigger by the closing itself, and one elsewhere in
+        // the page is left where it is.
         await CloseCallout();
 
         await InvokeAsync(StateHasChanged);
@@ -524,8 +533,9 @@ public partial class BitDropMenu : BitComponentBase
         ClassBuilder.Register(() => Transparent ? "bit-drm-trn" : string.Empty);
 
         // A button with nothing but a glyph in it is squared off to the control height, so it still clears the
-        // minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis.
-        ClassBuilder.Register(() => Template is null && Text.HasNoValue() ? "bit-drm-ion" : string.Empty);
+        // minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis. It is read off _iconOnly, which
+        // OnParametersSetAsync keeps in step with the Template and the Text, since neither resets the builder.
+        ClassBuilder.Register(() => _iconOnly ? "bit-drm-ion" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -558,6 +568,16 @@ public partial class BitDropMenu : BitComponentBase
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // A label that arrives after the first render (or goes away) changes whether the button holds only a
+        // glyph. A Template is a new delegate on nearly every render of the parent, so rather than resetting
+        // the class builder on each of them, only the outcome it decides is compared.
+        var iconOnly = Template is null && Text.HasNoValue();
+        if (iconOnly != _iconOnly)
+        {
+            _iconOnly = iconOnly;
+            ClassBuilder.Reset();
+        }
 
         await base.OnParametersSetAsync();
 
@@ -633,14 +653,6 @@ public partial class BitDropMenu : BitComponentBase
 
         await SetupSwipes();
 
-        try
-        {
-            // The root is named as the trigger, so an Escape pressed anywhere else in the page dismisses the callout
-            // too: one opened by hovering is shown wherever the focus happens to be (WCAG 1.4.13).
-            await _js.BitUtilsSetupEscape(_calloutId, _dotnetObj, _Id);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-
         // The keydown handler of the button opens the callout on the arrow keys, whose default
         // behavior (scrolling the page) Blazor cannot suppress per key from the handler itself.
         try
@@ -696,11 +708,15 @@ public partial class BitDropMenu : BitComponentBase
         // Escape dismisses the callout, and so does tabbing off the trigger: the callout is relocated to the
         // end of the body while it is open, so the tab sequence runs from the trigger on into the page
         // behind it rather than into the content, and a callout left open there would float over a page the
-        // keyboard has already moved on from, with an overlay under it swallowing every click. Closing on
-        // Tab is also what a menu button is expected to do; the focus itself is left to the browser to move.
+        // keyboard has already moved on from, with an overlay under it swallowing every click. The focus
+        // itself is left to the browser to move. The exception is a Tab forwards while Utils.setupTabOut is
+        // registered: that one has already taken the focus into the content, as if it sat right after the
+        // trigger, which is what brings back in the keyboard that Shift+Tab took out of it to the trigger.
         if (e.Key is "Escape" or "Tab")
         {
             if (IsOpen is false) return;
+
+            if (e.Key is "Tab" && e.ShiftKey is false && _tabOutSetUp) return;
 
             await CloseCallout();
             StateHasChanged();
@@ -756,7 +772,7 @@ public partial class BitDropMenu : BitComponentBase
 
         if (await DelayHover(HoverOpenDelay) is false) return;
 
-        await OpenCallout();
+        await OpenCallout(byHover: true);
 
         StateHasChanged();
     }
@@ -781,7 +797,7 @@ public partial class BitDropMenu : BitComponentBase
         StateHasChanged();
     }
 
-    private async Task OpenCallout(bool focusCallout = false)
+    private async Task OpenCallout(bool focusCallout = false, bool byHover = false)
     {
         // A drop menu the user cannot reach must not be opened by the Open and Toggle methods either,
         // since the callout would then hang over the page with a disabled trigger under it. An IsOpen
@@ -800,6 +816,8 @@ public partial class BitDropMenu : BitComponentBase
         {
             _selfDrivenIsOpen = false;
         }
+
+        _openedByHover = byHover;
 
         // A lazy callout opened for the first time has no content yet, and its placement is measured against
         // its content, so the opening is finished by the render that puts the content in it.
@@ -960,6 +978,8 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsOpen)
         {
+            _openedByHover = false;
+
             await ToggleCallout();
 
             await SetupFocusTrap();
@@ -1084,17 +1104,21 @@ public partial class BitDropMenu : BitComponentBase
         return IsDisposed is false;
     }
 
-    // Registers what the Tab key does inside the open callout: TrapFocus keeps it cycling there, and without it
-    // the keyboard is handed back to the page around the button at either end of the content. The callout is
-    // relocated to the end of the body while it is open, so the browser's own tab order would otherwise run
-    // from its last element off the page, and back from its first one into whatever ends the page, leaving the
-    // callout open behind a keyboard that has moved on (WCAG 2.4.3). Calling it again switches between the two.
+    // Registers the keyboard handling of the open callout. Escape closes it (see SetupEscape). And the Tab key:
+    // TrapFocus keeps it cycling there, and without it the keyboard is handed back to the page around the button
+    // at either end of the content. The callout is relocated to the end of the body while it is open, so the
+    // browser's own tab order would otherwise run from its last element off the page, and back from its first
+    // one into whatever ends the page, leaving the callout open behind a keyboard that has moved on (WCAG 2.4.3).
+    // Calling it again switches between the two. It is all registered on opening and released on closing, so a
+    // drop menu that is never opened - most of those repeated down a list - costs the JS side nothing.
     private async Task SetupFocusTrap()
     {
         if (IsDisposed || _dotnetObj is null) return;
 
         try
         {
+            await SetupEscape();
+
             if (TrapFocus)
             {
                 if (_tabOutSetUp)
@@ -1125,10 +1149,29 @@ public partial class BitDropMenu : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    // Escape pressed inside the callout closes it. One opened by hovering is shown wherever the focus happens to
+    // be, and content that appears on hover has to be dismissible without moving the pointer or the focus
+    // (WCAG 1.4.13), so for that one the root is named as the trigger and an Escape pressed anywhere else counts
+    // too. A callout opened by a click is left alone by a key pressed outside it: that key belongs to whatever
+    // the focus is on - a dialog opened from the content, for one.
+    private async Task SetupEscape()
+    {
+        if (_escapeSetUp) return;
+
+        _escapeSetUp = true;
+        await _js.BitUtilsSetupEscape(_calloutId, _dotnetObj!, _openedByHover ? _Id : null);
+    }
+
     private async Task DisposeFocusTrap()
     {
         try
         {
+            if (_escapeSetUp)
+            {
+                _escapeSetUp = false;
+                await _js.BitUtilsDisposeEscape(_calloutId);
+            }
+
             if (_focusTrapped)
             {
                 _focusTrapped = false;
@@ -1205,29 +1248,95 @@ public partial class BitDropMenu : BitComponentBase
     // ONE Style on the component restyles the button and the callout it opens together.
     private string? GetPublicCssVariables()
     {
+        var style = Style;
+        var stylesRoot = Styles?.Root;
+        var stylesOpened = IsOpen ? Styles?.Opened : null;
+
+        // Rebuilt only when one of the strings it is made of has actually changed: the callout and the overlay
+        // both ask for it on every render, of every drop menu repeated down a list, and the result almost never
+        // changes.
+        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
+            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal) &&
+            string.Equals(stylesOpened, _lastStylesOpened, StringComparison.Ordinal))
+        {
+            return _publicCssVariables;
+        }
+
+        _lastRootStyle = style;
+        _lastStylesRoot = stylesRoot;
+        _lastStylesOpened = stylesOpened;
+
         StringBuilder? builder = null;
 
-        AppendPublicCssVariables(ref builder, Style);
-        AppendPublicCssVariables(ref builder, Styles?.Root);
+        AppendPublicCssVariables(ref builder, style);
+        AppendPublicCssVariables(ref builder, stylesRoot);
+        AppendPublicCssVariables(ref builder, stylesOpened);
 
-        if (IsOpen)
-        {
-            AppendPublicCssVariables(ref builder, Styles?.Opened);
-        }
-
-        return builder?.ToString();
+        return _publicCssVariables = builder?.ToString();
     }
 
+    // A semicolon only ends a declaration outside of quotes and brackets, since a value can carry one of its own -
+    // the url(data:image/png;base64,...) of an image - and cutting it there would copy a declaration whose unclosed
+    // bracket swallows everything written after it, the sizing parameters and Styles.Callout included.
     private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
     {
-        if (style.HasNoValue()) return;
+        if (style.HasNoValue() || style!.Contains(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) return;
 
-        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        var start = 0;
+        var depth = 0;
+        var quote = '\0';
+
+        for (var i = 0; i < style.Length; i++)
         {
-            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
+            var c = style[i];
 
-            (builder ??= new StringBuilder()).Append(declaration).Append(';');
+            if (c == '\\')
+            {
+                i++;
+                continue;
+            }
+
+            if (quote != '\0')
+            {
+                if (c == quote)
+                {
+                    quote = '\0';
+                }
+
+                continue;
+            }
+
+            switch (c)
+            {
+                case '"' or '\'':
+                    quote = c;
+                    break;
+                case '(' or '[' or '{':
+                    depth++;
+                    break;
+                case ')' or ']' or '}':
+                    if (depth > 0) depth--;
+                    break;
+                case ';' when depth == 0:
+                    AppendPublicCssVariable(ref builder, style.AsSpan(start, i - start));
+                    start = i + 1;
+                    break;
+            }
         }
+
+        if (start < style.Length)
+        {
+            AppendPublicCssVariable(ref builder, style.AsSpan(start));
+        }
+    }
+
+    private static void AppendPublicCssVariable(ref StringBuilder? builder, ReadOnlySpan<char> declaration)
+    {
+        declaration = declaration.Trim();
+
+        if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) return;
+
+        (builder ??= new StringBuilder()).Append(declaration).Append(';');
     }
 
     private string? GetCalloutStyles()
@@ -1353,11 +1462,13 @@ public partial class BitDropMenu : BitComponentBase
         {
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitUtilsDisposePreventDefaultKeys(_buttonId);
-            await _js.BitUtilsDisposeFocusTrap(_calloutId);
-            await _js.BitUtilsDisposeTabOut(_calloutId);
-            await _js.BitUtilsDisposeEscape(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        // Only what is registered is released: the keyboard handling of the callout exists while it is
+        // open, so a drop menu disposed closed - most of those repeated down a list - owes the JS side
+        // nothing for it.
+        await DisposeFocusTrap();
 
         await DisposeSwipes();
 
