@@ -43,6 +43,12 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot HeaderType=""BitPivotHeaderType.Outline"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
     private readonly string example4RazorCode = @"
@@ -542,6 +548,16 @@ private readonly BitPivotParams[] pivotParams =
     <BitPivotItem HeaderText=""Overview""><div>Pivot #1: Overview</div></BitPivotItem>
     <BitPivotItem HeaderText=""Activity across every workspace"" Title=""Activity across every workspace""><div>Pivot #2: Activity</div></BitPivotItem>
     <BitPivotItem HeaderText=""Settings""><div>Pivot #3: Settings</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot HeaderType=""BitPivotHeaderType.Outline""
+          Style=""--bit-Pivot-body-gap: 0;
+                 --bit-Pivot-body-padding: 1rem;
+                 --bit-Pivot-divider-color: var(--bit-clr-brd-pri);""
+          Styles=""@(new() { Body = ""border: 1px solid var(--bit-clr-brd-pri); border-top: none;"" })"">
+    <BitPivotItem HeaderText=""Preview""><div>Pivot #1: Preview</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Code""><div>Pivot #2: Code</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Console""><div>Pivot #3: Console</div></BitPivotItem>
 </BitPivot>";
     private const string example20ScssCode = @"
 .pivot-custom ::deep {

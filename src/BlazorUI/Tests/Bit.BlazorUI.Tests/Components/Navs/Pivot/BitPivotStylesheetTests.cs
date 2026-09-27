@@ -88,6 +88,50 @@ public class BitPivotStylesheetTests
     }
 
     [TestMethod]
+    public void BitPivotOverflowMenuShouldFollowThePopupTokens()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The rows of a popup list are one of the size families of the design system, per size like the items.
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-sm {"), "--bit-pvt-mh: #{$siz-item-sm};");
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-md {"), "--bit-pvt-mh: #{$siz-item-md};");
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-lg {"), "--bit-pvt-mh: #{$siz-item-lg};");
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-mni {"), "min-height: var(--bit-pvt-mh, #{$siz-item-md});");
+
+        // A popup enters on the decelerating curve, like every other callout of the library.
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-mnc {"), "animation-timing-function: $mot-easing-decelerate;");
+
+        // The menu scrolls, so a ring drawn around the outside of a row would be clipped to one edge of it.
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-mni {"), "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);");
+    }
+
+    [TestMethod]
+    public void BitPivotOutlineShouldAlwaysDrawTheRuleItsSelectedTabOpensOnto()
+    {
+        var block = GetBlock(ReadStylesheet(), "\n.bit-pvt-oln {");
+
+        // Fluent's tab divider is none, and an outlined tab opening onto nothing is a floating box.
+        StringAssert.Contains(block, "height: var(--bit-Pivot-divider-thickness, #{$shp-border-width});");
+        StringAssert.Contains(block, "width: var(--bit-Pivot-divider-thickness, #{$shp-border-width});");
+
+        // Every position opens the selected tab on the edge facing the panel.
+        StringAssert.Contains(block, "@include outline-edges(block-start, block-end,");
+        StringAssert.Contains(block, "@include outline-edges(block-end, block-start,");
+        StringAssert.Contains(block, "@include outline-edges(inline-start, inline-end,");
+        StringAssert.Contains(block, "@include outline-edges(inline-end, inline-start,");
+    }
+
+    [TestMethod]
+    public void BitPivotSlideHeaderShouldStayScrollableForTouch()
+    {
+        var block = GetBlock(ReadStylesheet(), "\n.bit-pvt-sld {");
+
+        // Clipped (overflow: hidden) the header would move with the buttons only, never with a swipe.
+        StringAssert.Contains(block, "overflow-x: auto;");
+        StringAssert.Contains(block, "scrollbar-width: none;");
+    }
+
+    [TestMethod]
     public void BitPivotDismissButtonShouldMeetTheMinimumTargetSize()
     {
         var block = GetBlock(ReadStylesheet(), "\n.bit-pvti-dbt {");

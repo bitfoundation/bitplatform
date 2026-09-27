@@ -202,8 +202,10 @@
         }
         else
         {
-            <div role="tabpanel"
-                 tabindex="0"
+            @* With nothing selected (every tab disabled or hidden) there is no tab to label the panel, and an
+               unnamed, empty tab stop is worse than none, so the element stays only for the layout. *@
+            <div role="@(_selectedItem is null ? null : "tabpanel")"
+                 tabindex="@(_selectedItem is null ? null : "0")"
                  id="@(_selectedItem is null ? null : GetItemPanelId(_selectedItem))"
                  aria-labelledby="@(_selectedItem?._Id)"
                  style="@GetItemStyle(_selectedItem)"

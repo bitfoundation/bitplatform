@@ -51,7 +51,8 @@
 
     <DemoExample Title="HeaderType" RazorCode="@example3RazorCode" Id="example3" PreventRenderForMcpClient>
         <div>
-            <b>Link</b> (default) marks the selected header with an animated indicator; <b>Tab</b> fills it with the pivot's color.
+            <b>Link</b> (default) marks the selected header with an animated indicator, <b>Tab</b> fills it with the pivot's
+            color, and <b>Outline</b> draws it as a bordered tab opening onto the panel, its outer edge in the pivot's color.
         </div>
         <br />
         <div>Link:</div>
@@ -65,6 +66,14 @@
         <div>Tab:</div>
         <br />
         <BitPivot HeaderType="BitPivotHeaderType.Tab">
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>Outline:</div>
+        <br />
+        <BitPivot HeaderType="BitPivotHeaderType.Outline">
             <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
             <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
             <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
@@ -175,7 +184,8 @@
             <b>OverflowBehavior</b> decides what happens to headers that do not fit: <b>Menu</b> folds them behind a More
             button, <b>Slide</b> adds previous/next buttons, <b>Scroll</b> shows a scroll bar, <b>Wrap</b> runs them onto
             more lines and <b>None</b> (default) lets them overflow. A tab selected from the keyboard or by key is scrolled
-            into view. <b>AutoHideSlideButtons</b> hides the slide buttons while everything fits.
+            into view; the More menu takes the arrow, Home/End and first-letter keys. <b>AutoHideSlideButtons</b> hides the
+            slide buttons while everything fits.
         </div>
         <br />
         <div>Menu:</div>
@@ -553,8 +563,8 @@
 
     <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
         <div>
-            <b>Color</b> (a <BitLink Href="#color-enum">BitColor</BitLink>) paints the indicator of a Link pivot and the
-            fill of a Tab pivot, as well as the focus ring.
+            <b>Color</b> (a <BitLink Href="#color-enum">BitColor</BitLink>) paints the indicator of a Link pivot, the
+            fill of a Tab pivot and the outer edge of an Outline one, as well as the focus ring.
         </div>
         <br />
 
@@ -896,6 +906,18 @@
             <BitPivotItem HeaderText="Overview"><div>Pivot #1: Overview</div></BitPivotItem>
             <BitPivotItem HeaderText="Activity across every workspace" Title="Activity across every workspace"><div>Pivot #2: Activity</div></BitPivotItem>
             <BitPivotItem HeaderText="Settings"><div>Pivot #3: Settings</div></BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>CSS variables - an Outline pivot whose panel joins its header as one card:</div>
+        <br />
+        <BitPivot HeaderType="BitPivotHeaderType.Outline"
+                  Style="--bit-Pivot-body-gap: 0;
+                         --bit-Pivot-body-padding: 1rem;
+                         --bit-Pivot-divider-color: var(--bit-clr-brd-pri);"
+                  Styles="@(new() { Body = "border: 1px solid var(--bit-clr-brd-pri); border-top: none;" })">
+            <BitPivotItem HeaderText="Preview"><div>Pivot #1: Preview</div></BitPivotItem>
+            <BitPivotItem HeaderText="Code"><div>Pivot #2: Code</div></BitPivotItem>
+            <BitPivotItem HeaderText="Console"><div>Pivot #3: Console</div></BitPivotItem>
         </BitPivot>
     </DemoExample>
 

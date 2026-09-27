@@ -421,7 +421,7 @@ public partial class BitPivotDemo
         {
             Name = "--bit-Pivot-color",
             DefaultValue = "the Color's main color",
-            Description = "Accent: the Link indicator, the fill of the selected Tab, the drop marker and the More button that holds the selection.",
+            Description = "Accent: the Link indicator, the fill of the selected Tab, the outer edge of the selected Outline tab, the drop marker and the More button that holds the selection.",
         },
         new()
         {
@@ -445,7 +445,7 @@ public partial class BitPivotDemo
         {
             Name = "--bit-Pivot-indicator-color",
             DefaultValue = "--bit-Pivot-color",
-            Description = "Selection indicator of a Link pivot (transparent hides it).",
+            Description = "Selection indicator of a Link pivot and the outer edge of the selected Outline tab (transparent hides it).",
         },
         new()
         {
@@ -492,8 +492,14 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-item-selected-background",
-            DefaultValue = "transparent (Tab: --bit-Pivot-color)",
+            DefaultValue = "transparent (Tab: --bit-Pivot-color; Outline: --bit-clr-bg-pri)",
             Description = "Background of the selected item.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-item-font-weight",
+            DefaultValue = "--bit-tpg-fw-regular",
+            Description = "Weight of an item's text at rest (and of the overflow menu's rows).",
         },
         new()
         {
@@ -516,8 +522,8 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-item-radius",
-            DefaultValue = "0 (Tab: --bit-shp-radius-control)",
-            Description = "Corner radius of an item and its focus ring.",
+            DefaultValue = "0 (Tab and the outer corners of Outline: --bit-shp-radius-control)",
+            Description = "Corner radius of an item, its focus ring and the header's slide and add buttons.",
         },
         new()
         {
@@ -558,20 +564,26 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-divider-thickness",
-            DefaultValue = "--bit-siz-tab-divider",
-            Description = "The rule between the header and the panel, under the indicator: none under Fluent, 1px under Material.",
+            DefaultValue = "--bit-siz-tab-divider (Outline: --bit-shp-brd-width)",
+            Description = "The rule between the header and the panel, under the indicator: none under Fluent, 1px under Material, always drawn for Outline.",
         },
         new()
         {
             Name = "--bit-Pivot-divider-color",
             DefaultValue = "--bit-clr-brd-sec",
-            Description = "Color of that rule.",
+            Description = "Color of that rule, and of the border of the selected Outline tab.",
         },
         new()
         {
             Name = "--bit-Pivot-body-padding",
             DefaultValue = "0",
             Description = "Padding of the tab panel.",
+        },
+        new()
+        {
+            Name = "--bit-Pivot-body-gap",
+            DefaultValue = "spacing(2)",
+            Description = "Room between the header and the tab panel (0 attaches the panel to the header).",
         },
         new()
         {
@@ -1027,6 +1039,12 @@ public partial class BitPivotDemo
                     Name= "Link",
                     Description="Renders pivot header items as link.",
                     Value="1",
+                },
+                new()
+                {
+                    Name= "Outline",
+                    Description="Renders pivot header items as outlined (enclosed) tabs: the selected one is drawn as a bordered tab that opens onto the panel, with its outer edge in the pivot's color.",
+                    Value="2",
                 },
             ]
         },

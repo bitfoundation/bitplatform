@@ -22,7 +22,8 @@ public class BitPivotTests : BunitTestContext
          DataRow(BitPivotHeaderType.Link, BitSize.Large, BitPivotOverflowBehavior.None),
          DataRow(BitPivotHeaderType.Tab, BitSize.Medium, BitPivotOverflowBehavior.Scroll),
          DataRow(BitPivotHeaderType.Tab, BitSize.Small, BitPivotOverflowBehavior.Menu),
-         DataRow(BitPivotHeaderType.Link, BitSize.Small, BitPivotOverflowBehavior.Slide)
+         DataRow(BitPivotHeaderType.Link, BitSize.Small, BitPivotOverflowBehavior.Slide),
+         DataRow(BitPivotHeaderType.Outline, BitSize.Large, BitPivotOverflowBehavior.Wrap)
      ]
     public void BitPivotShouldRespectParameterRelatedCssClasses(BitPivotHeaderType headerType, BitSize size, BitPivotOverflowBehavior overflowBehavior)
     {
@@ -34,8 +35,8 @@ public class BitPivotTests : BunitTestContext
         });
 
         var sizeClass = $"bit-pvt-{size switch { BitSize.Small => "sm", BitSize.Medium => "md", BitSize.Large => "lg", _ => "md" }}";
-        var headerTypeClass = $"bit-pvt-{headerType switch { BitPivotHeaderType.Link => "lnk", BitPivotHeaderType.Tab => "tab", _ => "lnk" }}";
-        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior switch { BitPivotOverflowBehavior.Menu => "mnu", BitPivotOverflowBehavior.Scroll => "scr", BitPivotOverflowBehavior.Slide => "sld", BitPivotOverflowBehavior.None => "non", _ => "non" }}";
+        var headerTypeClass = $"bit-pvt-{headerType switch { BitPivotHeaderType.Link => "lnk", BitPivotHeaderType.Tab => "tab", BitPivotHeaderType.Outline => "oln", _ => "lnk" }}";
+        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior switch { BitPivotOverflowBehavior.Menu => "mnu", BitPivotOverflowBehavior.Scroll => "scr", BitPivotOverflowBehavior.Slide => "sld", BitPivotOverflowBehavior.Wrap => "wrp", BitPivotOverflowBehavior.None => "non", _ => "non" }}";
 
         var bitPivot = component.Find(".bit-pvt");
 
@@ -234,6 +235,22 @@ public class BitPivotTests : BunitTestContext
 
         Assert.AreEqual("true", component.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
         Assert.IsTrue(component.FindAll("[role=tab]")[0].ClassList.Contains("bit-pvti-sel"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldNotRenderAnUnnamedTabStopWhenNothingCanBeSelected()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.IsEnabled, false).Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.IsEnabled, false).Add(i => i.HeaderText, "B"));
+        });
+
+        var panel = component.Find(".bit-pvt-cct");
+
+        Assert.IsNull(panel.GetAttribute("role"));
+        Assert.IsNull(panel.GetAttribute("tabindex"));
+        Assert.IsNull(component.Instance.SelectedItem);
     }
 
     [TestMethod]
@@ -1108,6 +1125,27 @@ public class BitPivotTests : BunitTestContext
         // The down arrow opens the menu from the button.
         component.Find(".bit-pvt-mor").KeyDown("ArrowDown");
         Assert.AreEqual("true", component.Find(".bit-pvt-mor").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldMoveToTheItemATypedCharacterStarts()
+    {
+        var component = RenderOverflowPivot();
+
+        component.Find(".bit-pvt-mor").Click();
+
+        var menuId = component.Find(".bit-pvt-mnc").GetAttribute("id");
+
+        // The type-ahead of the menu pattern, case-insensitive like every other one.
+        component.Find(".bit-pvt-mnc").KeyDown("d");
+        Assert.AreEqual($"{menuId}-1", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+
+        component.Find(".bit-pvt-mnc").KeyDown("C");
+        Assert.AreEqual($"{menuId}-0", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+
+        // A character no item starts with leaves the menu where it is.
+        component.Find(".bit-pvt-mnc").KeyDown("x");
+        Assert.AreEqual($"{menuId}-0", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
     }
 
     [TestMethod]

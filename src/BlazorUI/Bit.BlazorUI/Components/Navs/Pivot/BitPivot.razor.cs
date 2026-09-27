@@ -455,6 +455,7 @@ public partial class BitPivot : BitComponentBase
         {
             BitPivotHeaderType.Link => "bit-pvt-lnk",
             BitPivotHeaderType.Tab => "bit-pvt-tab",
+            BitPivotHeaderType.Outline => "bit-pvt-oln",
             _ => "bit-pvt-lnk"
         });
 
@@ -1690,10 +1691,37 @@ public partial class BitPivot : BitComponentBase
                 break;
 
             default:
-                return;
+                if (MoveMenuFocusToCharacter(e) is false) return;
+                break;
         }
 
         StateHasChanged();
+    }
+
+    // The type-ahead of the WAI-ARIA menu pattern: a printable character moves to the next item whose label
+    // starts with it, wrapping around, which is the quick way through a menu holding a long fold.
+    private bool MoveMenuFocusToCharacter(KeyboardEventArgs e)
+    {
+        if (e.Key is not { Length: 1 } || e.CtrlKey || e.AltKey || e.MetaKey) return false;
+
+        var count = _overflowItems.Count;
+
+        for (var i = 1; i <= count; i++)
+        {
+            var index = (_menuFocusIndex + i) % count;
+            var item = _overflowItems[index];
+
+            if (item.IsEnabled is false) continue;
+
+            var label = item.HeaderText.HasValue() ? item.HeaderText : item.Title;
+
+            if (label is null || label.StartsWith(e.Key, StringComparison.CurrentCultureIgnoreCase) is false) continue;
+
+            _menuFocusIndex = index;
+            return true;
+        }
+
+        return false;
     }
 
     // The button that opens the menu answers to the keys of a menu button: the arrows open it and step
