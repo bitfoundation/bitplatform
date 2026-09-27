@@ -16,6 +16,8 @@ public class PageInfo
 
     public string? Tooltip { get; set; }
 
+    public string? Label { get; set; }
+
     public string? OpenIn { get; set; }
 
     public bool IsCurrent { get; set; }
