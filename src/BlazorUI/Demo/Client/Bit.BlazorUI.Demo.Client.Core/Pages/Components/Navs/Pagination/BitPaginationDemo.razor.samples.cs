@@ -10,14 +10,28 @@ public partial class BitPaginationDemo
 <BitPagination Count=""5"" DefaultSelectedPage=""3"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
-<BitPagination Count=""5"" SelectedPage=""oneWaySelectedPage"" />
-<BitNumberField @bind-Value=""oneWaySelectedPage"" Min=""1"" Max=""5"" />
+<style>
+    .binding-box {
+        gap: 0.5rem;
+        display: flex;
+        max-width: 16rem;
+        flex-direction: column;
+    }
+</style>
 
-<BitPagination Count=""5"" @bind-SelectedPage=""twoWaySelectedPage"" />
-<BitNumberField @bind-Value=""twoWaySelectedPage"" Min=""1"" Max=""5"" />
+<div class=""binding-box"">
+    <div>One-way:</div>
+    <BitPagination Count=""5"" SelectedPage=""oneWaySelectedPage"" />
+    <BitNumberField @bind-Value=""oneWaySelectedPage"" Min=""1"" Max=""5"" />
 
-<BitPagination Count=""5"" OnChange=""p => onChangeSelectedPage = p"" />
-<div>Changed page: <b>@onChangeSelectedPage</b></div>";
+    <div>Two-way:</div>
+    <BitPagination Count=""5"" @bind-SelectedPage=""twoWaySelectedPage"" />
+    <BitNumberField @bind-Value=""twoWaySelectedPage"" Min=""1"" Max=""5"" />
+
+    <div>OnChange:</div>
+    <BitPagination Count=""5"" OnChange=""p => onChangeSelectedPage = p"" />
+    <div>Changed page: <b>@onChangeSelectedPage</b></div>
+</div>";
     private readonly string example2CsharpCode = @"
 private int oneWaySelectedPage = 1;
 private int twoWaySelectedPage = 2;
@@ -182,9 +196,9 @@ private string GetResultsRangeLabel(int page, bool isSelected)
 
     private readonly string example15RazorCode = @"
 <BitParams Parameters=""@paginationParams"">
-    <BitPagination Count=""12"" DefaultSelectedPage=""4"" />
-    <BitPagination TotalItems=""240"" DefaultSelectedPage=""4"" />
-    <BitPagination Count=""12"" DefaultSelectedPage=""4"" Variant=""BitVariant.Fill"" ShowSummary=""false"" />
+    <BitPagination Count=""12"" DefaultSelectedPage=""4"" AriaLabel=""Páginas de resultados"" />
+    <BitPagination TotalItems=""240"" DefaultSelectedPage=""4"" AriaLabel=""Páginas de pedidos"" />
+    <BitPagination Count=""12"" DefaultSelectedPage=""4"" AriaLabel=""Páginas de mensajes"" Variant=""BitVariant.Fill"" ShowSummary=""false"" />
 </BitParams>
 
 <BitPagination Count=""12"" DefaultSelectedPage=""4"" />";
@@ -198,7 +212,6 @@ private readonly BitPaginationParams[] paginationParams =
         ShowFirstButton = true,
         ShowLastButton = true,
         Variant = BitVariant.Outline,
-        AriaLabel = ""Paginación"",
         FirstButtonAriaLabel = ""Primera página"",
         PreviousButtonAriaLabel = ""Página anterior"",
         NextButtonAriaLabel = ""Página siguiente"",
@@ -211,41 +224,67 @@ private readonly BitPaginationParams[] paginationParams =
 ];";
 
     private readonly string example16RazorCode = @"
-<BitPagination Count=""5"" Color=""BitColor.Primary"" />
-<BitPagination Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Text"" />
+<style>
+    .color-row {
+        gap: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+    }
+</style>
 
-<BitPagination Count=""5"" Color=""BitColor.Secondary"" />
-<BitPagination Count=""5"" Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" />
+<div class=""color-row"">
+    <BitPagination Count=""5"" Color=""BitColor.Primary"" />
+    <BitPagination Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" />
+    <BitPagination Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Text"" />
+</div>
 
-<BitPagination Count=""5"" Color=""BitColor.Tertiary"" />
-<BitPagination Count=""5"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" />
+<div class=""color-row"">
+    <BitPagination Count=""5"" Color=""BitColor.Secondary"" />
+    <BitPagination Count=""5"" Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" />
+    <BitPagination Count=""5"" Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" />
+</div>
 
-<BitPagination Count=""5"" Color=""BitColor.Info"" />
-<BitPagination Count=""5"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.Info"" Variant=""BitVariant.Text"" />
+<div class=""color-row"">
+    <BitPagination Count=""5"" Color=""BitColor.Tertiary"" />
+    <BitPagination Count=""5"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" />
+    <BitPagination Count=""5"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" />
+</div>
 
-<BitPagination Count=""5"" Color=""BitColor.Success"" />
-<BitPagination Count=""5"" Color=""BitColor.Success"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.Success"" Variant=""BitVariant.Text"" />
+<div class=""color-row"">
+    <BitPagination Count=""5"" Color=""BitColor.Info"" />
+    <BitPagination Count=""5"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />
+    <BitPagination Count=""5"" Color=""BitColor.Info"" Variant=""BitVariant.Text"" />
+</div>
 
-<BitPagination Count=""5"" Color=""BitColor.Warning"" />
-<BitPagination Count=""5"" Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.Warning"" Variant=""BitVariant.Text"" />
+<div class=""color-row"">
+    <BitPagination Count=""5"" Color=""BitColor.Success"" />
+    <BitPagination Count=""5"" Color=""BitColor.Success"" Variant=""BitVariant.Outline"" />
+    <BitPagination Count=""5"" Color=""BitColor.Success"" Variant=""BitVariant.Text"" />
+</div>
 
-<BitPagination Count=""5"" Color=""BitColor.SevereWarning"" />
-<BitPagination Count=""5"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" />
+<div class=""color-row"">
+    <BitPagination Count=""5"" Color=""BitColor.Warning"" />
+    <BitPagination Count=""5"" Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" />
+    <BitPagination Count=""5"" Color=""BitColor.Warning"" Variant=""BitVariant.Text"" />
+</div>
 
-<BitPagination Count=""5"" Color=""BitColor.Error"" />
-<BitPagination Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />
+<div class=""color-row"">
+    <BitPagination Count=""5"" Color=""BitColor.SevereWarning"" />
+    <BitPagination Count=""5"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" />
+    <BitPagination Count=""5"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" />
+</div>
 
-<BitPagination IsEnabled=""false"" Count=""5"" />
-<BitPagination IsEnabled=""false"" Count=""5"" Variant=""BitVariant.Outline"" />
-<BitPagination IsEnabled=""false"" Count=""5"" Variant=""BitVariant.Text"" />";
+<div class=""color-row"">
+    <BitPagination Count=""5"" Color=""BitColor.Error"" />
+    <BitPagination Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" />
+    <BitPagination Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />
+</div>
+
+<div class=""color-row"">
+    <BitPagination IsEnabled=""false"" Count=""5"" />
+    <BitPagination IsEnabled=""false"" Count=""5"" Variant=""BitVariant.Outline"" />
+    <BitPagination IsEnabled=""false"" Count=""5"" Variant=""BitVariant.Text"" />
+</div>";
 
     private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

@@ -118,6 +118,10 @@ public partial class BitPagination : BitComponentBase
     // is only ever handed to the page the pagination just settled on, which is always one of the rendered ones.
     private readonly Dictionary<int, ElementReference> _pageRefs = [];
 
+    // The cascade is applied while initializing, ahead of the first OnParametersSetAsync of the same parameter set,
+    // which is what this tells apart from every later parameter set.
+    private bool _cascadeAppliedOnInit;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -265,8 +269,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="FirstButtonAriaLabel"/>, so a short visible
-    /// text can sit next to a fuller spoken one. Keep the text inside that name ("Next" beside
-    /// "Next page"), which is what lets speech input reach the button by what it reads.
+    /// text can sit next to a fuller spoken one. Keep the text inside that name ("First" beside
+    /// "First page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? FirstButtonText { get; set; }
 
@@ -314,7 +318,9 @@ public partial class BitPagination : BitComponentBase
     /// single one set through a <see cref="BitPaginationParams"/> serves every pagination of an app whatever
     /// each of them pages through.
     /// <br />
-    /// It wins over <see cref="GetSummary"/> while <see cref="TotalItems"/> is set, and is not called otherwise.
+    /// It wins over <see cref="GetSummary"/> while <see cref="TotalItems"/> is set, and is not called otherwise -
+    /// unless it only comes from a <see cref="BitPaginationParams"/> and the pagination was given a
+    /// <see cref="GetSummary"/> of its own, since a parameter set on the instance outranks a cascaded one.
     /// It is only called while <see cref="ShowSummary"/> is on.
     /// </remarks>
     [Parameter] public Func<int, int, int, string>? GetItemsSummary { get; set; }
@@ -328,7 +334,8 @@ public partial class BitPagination : BitComponentBase
     /// <br />
     /// The default text already counts the items ("1 - 10 of 240") whenever <see cref="TotalItems"/> is set, and
     /// <see cref="GetItemsSummary"/> is the hook that words that text differently: it is handed the item range,
-    /// and wins over this one there.
+    /// and wins over this one there - except over one set on the pagination itself while it only comes from a
+    /// <see cref="BitPaginationParams"/>.
     /// <br />
     /// It is only called while <see cref="ShowSummary"/> is on.
     /// </remarks>
@@ -402,8 +409,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="LastButtonAriaLabel"/>, so a short visible
-    /// text can sit next to a fuller spoken one. Keep the text inside that name ("Next" beside
-    /// "Next page"), which is what lets speech input reach the button by what it reads.
+    /// text can sit next to a fuller spoken one. Keep the text inside that name ("Last" beside
+    /// "Last page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? LastButtonText { get; set; }
 
@@ -575,8 +582,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="PreviousButtonAriaLabel"/>, so a short
-    /// visible text can sit next to a fuller spoken one. Keep the text inside that name ("Next" beside
-    /// "Next page"), which is what lets speech input reach the button by what it reads.
+    /// visible text can sit next to a fuller spoken one. Keep the text inside that name ("Previous" beside
+    /// "Previous page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? PreviousButtonText { get; set; }
 
@@ -669,9 +676,9 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public bool ShowPreviousButton { get; set; } = true;
 
     /// <summary>
-    /// Shows the position in the range, which reads "Page {number} of {count}" (or "1 - 10 of 240" while
-    /// <see cref="TotalItems"/> is set) unless <see cref="GetSummary"/> replaces it, ahead of the buttons of
-    /// the pagination.
+    /// Shows the position in the range, ahead of the buttons of the pagination: "Page {number} of {count}",
+    /// which <see cref="GetSummary"/> rewords, or "1 - 10 of 240" while <see cref="TotalItems"/> is set, which
+    /// <see cref="GetItemsSummary"/> rewords.
     /// <br />
     /// The default value is <strong>false</strong>.
     /// </summary>
@@ -821,8 +828,10 @@ public partial class BitPagination : BitComponentBase
     {
         // The cascade is applied here as well as in OnParametersSetAsync, because the default selection is settled
         // while initializing, which is before OnParametersSetAsync has run for the first time, and the range it is
-        // clamped into already follows the page sizes a cascade may be offering.
+        // clamped into already follows the page sizes a cascade may be offering. The first OnParametersSetAsync
+        // runs in the same parameter set, so it is told not to apply the very same cascade a second time.
         CascadingParameters?.UpdateParameters(this);
+        _cascadeAppliedOnInit = true;
 
         // The offered page sizes are needed before the first parameter set is over, since the page size is what
         // the number of pages the default selection is clamped into follows from.
@@ -843,7 +852,14 @@ public partial class BitPagination : BitComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-        CascadingParameters?.UpdateParameters(this);
+        if (_cascadeAppliedOnInit)
+        {
+            _cascadeAppliedOnInit = false;
+        }
+        else
+        {
+            CascadingParameters?.UpdateParameters(this);
+        }
 
         UpdatePageSizeOptions();
 
@@ -1072,14 +1088,21 @@ public partial class BitPagination : BitComponentBase
         // the result set the page sits, which the page number on its own does not. The range is only worked out
         // here, where it is handed to the one hook that is given it, so that a hook shared across paginations
         // does not have to know what each of them pages through.
-        if (TotalItems > 0 && (GetItemsSummary is not null || GetSummary is null))
+        // A hook the pagination was given itself outranks one a BitParams handed down, the way every other
+        // parameter does, so a GetSummary set on the instance is not overridden by a GetItemsSummary that only
+        // came from the cascade.
+        var getItemsSummary = GetItemsSummary is not null && HasNotBeenSet(nameof(GetItemsSummary)) && GetSummary is not null && HasNotBeenSet(nameof(GetSummary)) is false
+            ? null
+            : GetItemsSummary;
+
+        if (TotalItems > 0 && (getItemsSummary is not null || GetSummary is null))
         {
             // The math runs in long, since the page before the last one times a big page size can run past an
             // int, and the first item of a page never lies past the total, which is what makes the cast safe.
             var first = (int)Math.Min((long)(_SelectedPage - 1) * _PageSize + 1, TotalItems);
             var last = (int)Math.Min((long)first + _PageSize - 1, TotalItems);
 
-            return GetItemsSummary?.Invoke(first, last, TotalItems) ?? $"{first} - {last} of {TotalItems}";
+            return getItemsSummary?.Invoke(first, last, TotalItems) ?? $"{first} - {last} of {TotalItems}";
         }
 
         if (GetSummary is not null) return GetSummary(_SelectedPage, _Count);

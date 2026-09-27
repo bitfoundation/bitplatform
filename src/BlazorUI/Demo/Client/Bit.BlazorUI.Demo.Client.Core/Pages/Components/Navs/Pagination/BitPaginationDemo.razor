@@ -246,15 +246,16 @@
     <DemoExample Title="Cascading parameters" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             <b>BitParams</b> with a <b>BitPaginationParams</b> sets defaults for every pagination inside it - the one place to localize
-            them all. A pagination's own parameters win; only unset ones are filled in.
+            them all. A pagination's own parameters win; only unset ones are filled in. <b>AriaLabel</b> stays on each one, since
+            every landmark needs a name of its own.
         </div>
         <br />
         <BitParams Parameters="@paginationParams">
-            <BitPagination Count="12" DefaultSelectedPage="4" />
+            <BitPagination Count="12" DefaultSelectedPage="4" AriaLabel="Páginas de resultados" />
             <br /><br />
-            <BitPagination TotalItems="240" DefaultSelectedPage="4" />
+            <BitPagination TotalItems="240" DefaultSelectedPage="4" AriaLabel="Páginas de pedidos" />
             <br /><br />
-            <BitPagination Count="12" DefaultSelectedPage="4" Variant="BitVariant.Fill" ShowSummary="false" />
+            <BitPagination Count="12" DefaultSelectedPage="4" AriaLabel="Páginas de mensajes" Variant="BitVariant.Fill" ShowSummary="false" />
         </BitParams>
         <br /><br />
         <div>Outside the cascade:</div>

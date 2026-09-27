@@ -288,10 +288,13 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
 
         if (Alignment.HasValue && bitPagination.HasNotBeenSet(nameof(Alignment)))
         {
-            bitPagination.Alignment = Alignment.Value;
+            if (bitPagination.Alignment != Alignment.Value)
+            {
+                bitPagination.Alignment = Alignment.Value;
 
-            bitPagination.ClassBuilder.Reset();
-            bitPagination.StyleBuilder.Reset();
+                bitPagination.ClassBuilder.Reset();
+                bitPagination.StyleBuilder.Reset();
+            }
         }
 
         if (BoundaryCount.HasValue && bitPagination.HasNotBeenSet(nameof(BoundaryCount)))
@@ -301,9 +304,12 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
 
         if (Classes is not null && bitPagination.HasNotBeenSet(nameof(Classes)))
         {
-            bitPagination.Classes = Classes;
+            if (bitPagination.Classes != Classes)
+            {
+                bitPagination.Classes = Classes;
 
-            bitPagination.ClassBuilder.Reset();
+                bitPagination.ClassBuilder.Reset();
+            }
         }
 
         if (ClickableEllipsis.HasValue && bitPagination.HasNotBeenSet(nameof(ClickableEllipsis)))
@@ -313,9 +319,12 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
 
         if (Color.HasValue && bitPagination.HasNotBeenSet(nameof(Color)))
         {
-            bitPagination.Color = Color.Value;
+            if (bitPagination.Color != Color.Value)
+            {
+                bitPagination.Color = Color.Value;
 
-            bitPagination.ClassBuilder.Reset();
+                bitPagination.ClassBuilder.Reset();
+            }
         }
 
         if (EllipsisAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(EllipsisAriaLabel)))
@@ -470,9 +479,12 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
 
         if (Rounded.HasValue && bitPagination.HasNotBeenSet(nameof(Rounded)))
         {
-            bitPagination.Rounded = Rounded.Value;
+            if (bitPagination.Rounded != Rounded.Value)
+            {
+                bitPagination.Rounded = Rounded.Value;
 
-            bitPagination.ClassBuilder.Reset();
+                bitPagination.ClassBuilder.Reset();
+            }
         }
 
         if (ShowFirstButton.HasValue && bitPagination.HasNotBeenSet(nameof(ShowFirstButton)))
@@ -517,23 +529,32 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
 
         if (Size.HasValue && bitPagination.HasNotBeenSet(nameof(Size)))
         {
-            bitPagination.Size = Size.Value;
+            if (bitPagination.Size != Size.Value)
+            {
+                bitPagination.Size = Size.Value;
 
-            bitPagination.ClassBuilder.Reset();
+                bitPagination.ClassBuilder.Reset();
+            }
         }
 
         if (Styles is not null && bitPagination.HasNotBeenSet(nameof(Styles)))
         {
-            bitPagination.Styles = Styles;
+            if (bitPagination.Styles != Styles)
+            {
+                bitPagination.Styles = Styles;
 
-            bitPagination.StyleBuilder.Reset();
+                bitPagination.StyleBuilder.Reset();
+            }
         }
 
         if (Variant.HasValue && bitPagination.HasNotBeenSet(nameof(Variant)))
         {
-            bitPagination.Variant = Variant.Value;
+            if (bitPagination.Variant != Variant.Value)
+            {
+                bitPagination.Variant = Variant.Value;
 
-            bitPagination.ClassBuilder.Reset();
+                bitPagination.ClassBuilder.Reset();
+            }
         }
     }
 }

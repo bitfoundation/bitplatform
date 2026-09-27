@@ -847,6 +847,18 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "--bit-Pagination-button-active-color",
+            DefaultValue = "--bit-Pagination-button-hover-color, then the Color role's on color",
+            Description = "Label color of a pressed button.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-active-background",
+            DefaultValue = "--bit-Pagination-button-hover-background, then the Color role's active color",
+            Description = "Fill and border color of a pressed button.",
+        },
+        new()
+        {
             Name = "--bit-Pagination-selected-color",
             DefaultValue = "The Color role's on color",
             Description = "Label color of the current page, held under the pointer too.",
@@ -944,7 +956,6 @@ public partial class BitPaginationDemo
             ShowFirstButton = true,
             ShowLastButton = true,
             Variant = BitVariant.Outline,
-            AriaLabel = "Paginación",
             FirstButtonAriaLabel = "Primera página",
             PreviousButtonAriaLabel = "Página anterior",
             NextButtonAriaLabel = "Página siguiente",

@@ -27,6 +27,8 @@ public class BitPaginationStylesheetTests
         "--bit-Pagination-button-border-color",
         "--bit-Pagination-button-hover-color",
         "--bit-Pagination-button-hover-background",
+        "--bit-Pagination-button-active-color",
+        "--bit-Pagination-button-active-background",
         "--bit-Pagination-selected-color",
         "--bit-Pagination-selected-background",
         "--bit-Pagination-selected-font-weight",

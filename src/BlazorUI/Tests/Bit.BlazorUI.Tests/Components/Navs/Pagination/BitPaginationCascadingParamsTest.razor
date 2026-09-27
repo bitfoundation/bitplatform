@@ -72,4 +72,6 @@
                          })">
     <BitPagination TotalItems="100" DefaultSelectedPage="9" ShowSummary />
     <BitPagination TotalItems="5" />
+    @* A GetSummary set on the instance outranks the cascaded GetItemsSummary, like every other parameter it sets. *@
+    <BitPagination TotalItems="100" ShowSummary GetSummary="@((page, count) => $"{page}/{count}")" />
 </BitParams>

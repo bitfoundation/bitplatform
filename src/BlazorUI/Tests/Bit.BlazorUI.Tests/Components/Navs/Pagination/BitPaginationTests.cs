@@ -3074,9 +3074,9 @@ public class BitPaginationTests : BunitTestContext
         var paginations = component.FindComponents<BitPagination>();
         var roots = component.FindAll(".bit-pgn");
 
-        // The hidden one of the second group renders nothing, so three of the four paginations are on the screen.
-        Assert.AreEqual(4, paginations.Count);
-        Assert.AreEqual(3, roots.Count);
+        // The hidden one of the second group renders nothing, so four of the five paginations are on the screen.
+        Assert.AreEqual(5, paginations.Count);
+        Assert.AreEqual(4, roots.Count);
 
         // The first one takes everything from the cascading parameters.
         var first = roots[0];
@@ -3147,6 +3147,37 @@ public class BitPaginationTests : BunitTestContext
 
         // Only the summary and the selector are left of a pagination whose page and navigation buttons are cascaded off.
         Assert.AreEqual(0, sized.QuerySelectorAll(".bit-pgn-btn").Length);
+
+        // A GetSummary the pagination was given itself is not overridden by the GetItemsSummary of the cascade.
+        Assert.AreEqual("1/5", roots[3].QuerySelector(".bit-pgn-sum")!.TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldKeepTheCascadedClassesAcrossParameterSets()
+    {
+        var cascade = new BitPaginationParams { Color = BitColor.Error, Size = BitSize.Large, Classes = new() { Root = "cascaded" } };
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 3);
+            parameters.AddCascadingValue(BitPaginationParams.ParamName, cascade);
+        });
+
+        var root = comp.Find(".bit-pgn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-pgn-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-pgn-lg"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
+
+        // A later parameter set hands the very same cascade, which no longer resets the builders, and the classes
+        // it rendered with stay.
+        comp.Render(parameters => parameters.Add(p => p.Count, 4));
+
+        root = comp.Find(".bit-pgn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-pgn-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-pgn-lg"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
     }
 
     [TestMethod]

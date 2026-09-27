@@ -13,6 +13,8 @@
 //   --bit-Pagination-button-border-color      border color of a button at rest                   (default: per Color and Variant)
 //   --bit-Pagination-button-hover-color       label color of a hovered button                    (default: the Color role's on color)
 //   --bit-Pagination-button-hover-background  fill and border of a hovered button                (default: the Color role's hover color)
+//   --bit-Pagination-button-active-color      label color of a pressed button                    (default: the hover color, then the role's on color)
+//   --bit-Pagination-button-active-background fill and border of a pressed button                (default: the hover fill, then the role's active color)
 //   --bit-Pagination-selected-color           label color of the current page                    (default: the Color role's on color)
 //   --bit-Pagination-selected-background      fill and border of the current page                (default: the Color role's dark color)
 //   --bit-Pagination-selected-font-weight     weight of the number of the current page           (default: $tg-font-weight)
@@ -126,10 +128,12 @@
         }
     }
 
+    // The press falls back to the hover paint before the role color, so a pagination re-skinned through its
+    // hover variables alone does not flash the stock palette while a button is held down.
     &:active {
-        color: var(--bit-pgn-clr-btn-txt-active);
-        border-color: var(--bit-pgn-clr-btn-bg-active);
-        background-color: var(--bit-pgn-clr-btn-bg-active);
+        color: var(--bit-Pagination-button-active-color, var(--bit-Pagination-button-hover-color, var(--bit-pgn-clr-btn-txt-active)));
+        border-color: var(--bit-Pagination-button-active-background, var(--bit-Pagination-button-hover-background, var(--bit-pgn-clr-btn-bg-active)));
+        background-color: var(--bit-Pagination-button-active-background, var(--bit-Pagination-button-hover-background, var(--bit-pgn-clr-btn-bg-active)));
     }
 
     &:focus-visible {
@@ -271,10 +275,12 @@
         }
     }
 
+    // The press falls back to the hover paint before the role color, so a pagination re-skinned through its
+    // hover variables alone does not flash the stock palette while a button is held down.
     &:active {
-        color: var(--bit-pgn-clr-btn-txt-active);
-        border-color: var(--bit-pgn-clr-btn-bg-active);
-        background-color: var(--bit-pgn-clr-btn-bg-active);
+        color: var(--bit-Pagination-button-active-color, var(--bit-Pagination-button-hover-color, var(--bit-pgn-clr-btn-txt-active)));
+        border-color: var(--bit-Pagination-button-active-background, var(--bit-Pagination-button-hover-background, var(--bit-pgn-clr-btn-bg-active)));
+        background-color: var(--bit-Pagination-button-active-background, var(--bit-Pagination-button-hover-background, var(--bit-pgn-clr-btn-bg-active)));
     }
 
     &:focus-visible {
