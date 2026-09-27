@@ -634,6 +634,12 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.SliderThumb.Sm, bitTheme.Size.SliderThumb.Sm);
         addCssVar(BitCss.Var.Size.SliderThumb.Md, bitTheme.Size.SliderThumb.Md);
         addCssVar(BitCss.Var.Size.SliderThumb.Lg, bitTheme.Size.SliderThumb.Lg);
+        addCssVar(BitCss.Var.Size.Badge.Sm, bitTheme.Size.Badge.Sm);
+        addCssVar(BitCss.Var.Size.Badge.Md, bitTheme.Size.Badge.Md);
+        addCssVar(BitCss.Var.Size.Badge.Lg, bitTheme.Size.Badge.Lg);
+        addCssVar(BitCss.Var.Size.BadgeDot.Sm, bitTheme.Size.BadgeDot.Sm);
+        addCssVar(BitCss.Var.Size.BadgeDot.Md, bitTheme.Size.BadgeDot.Md);
+        addCssVar(BitCss.Var.Size.BadgeDot.Lg, bitTheme.Size.BadgeDot.Lg);
         addCssVar(BitCss.Var.Size.SpinnerStroke, bitTheme.Size.SpinnerStroke);
         addCssVar(BitCss.Var.Size.PopupMaxHeight, bitTheme.Size.PopupMaxHeight);
         addCssVar(BitCss.Var.Size.DialogMaxWidth, bitTheme.Size.DialogMaxWidth);
@@ -843,6 +849,8 @@ internal static class BitThemeMapper
             Track = src.Track ?? new(),
             Switch = NormalizeSwitchSize(src.Switch),
             SliderThumb = src.SliderThumb ?? new(),
+            Badge = src.Badge ?? new(),
+            BadgeDot = src.BadgeDot ?? new(),
             SpinnerStroke = src.SpinnerStroke,
             PopupMaxHeight = src.PopupMaxHeight,
             DialogMaxWidth = src.DialogMaxWidth,
@@ -1407,6 +1415,12 @@ internal static class BitThemeMapper
         result.Size.SliderThumb.Sm = bitTheme.Size.SliderThumb.Sm ?? other.Size.SliderThumb.Sm;
         result.Size.SliderThumb.Md = bitTheme.Size.SliderThumb.Md ?? other.Size.SliderThumb.Md;
         result.Size.SliderThumb.Lg = bitTheme.Size.SliderThumb.Lg ?? other.Size.SliderThumb.Lg;
+        result.Size.Badge.Sm = bitTheme.Size.Badge.Sm ?? other.Size.Badge.Sm;
+        result.Size.Badge.Md = bitTheme.Size.Badge.Md ?? other.Size.Badge.Md;
+        result.Size.Badge.Lg = bitTheme.Size.Badge.Lg ?? other.Size.Badge.Lg;
+        result.Size.BadgeDot.Sm = bitTheme.Size.BadgeDot.Sm ?? other.Size.BadgeDot.Sm;
+        result.Size.BadgeDot.Md = bitTheme.Size.BadgeDot.Md ?? other.Size.BadgeDot.Md;
+        result.Size.BadgeDot.Lg = bitTheme.Size.BadgeDot.Lg ?? other.Size.BadgeDot.Lg;
         result.Size.SpinnerStroke = bitTheme.Size.SpinnerStroke ?? other.Size.SpinnerStroke;
         result.Size.PopupMaxHeight = bitTheme.Size.PopupMaxHeight ?? other.Size.PopupMaxHeight;
         result.Size.DialogMaxWidth = bitTheme.Size.DialogMaxWidth ?? other.Size.DialogMaxWidth;
