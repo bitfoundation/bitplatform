@@ -721,7 +721,11 @@ public partial class BitMessage : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender)
+        // A message rendered into a page that is already hidden or blurred starts out held, so the state of the page
+        // is read before the first countdown is armed.
+        await SyncPageVisibility();
+
+        if (firstRender && IsDisposed is false)
         {
             ArmAutoDismiss();
         }
@@ -731,8 +735,6 @@ public partial class BitMessage : BitComponentBase
         HandleDelayedAnnouncement();
 
         await SyncOverflowObserver();
-
-        await SyncPageVisibility();
     }
 
 
@@ -804,6 +806,13 @@ public partial class BitMessage : BitComponentBase
             await _pageVisibility.Init();
         }
         catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+
+        if (IsDisposed || _pageVisibility is null) return;
+
+        _isPageHidden = _pageVisibility.IsHidden;
+        _isWindowBlurred = _pageVisibility.IsWindowBlurred;
+
+        RefreshAutoDismissHold();
     }
 
     // A live region announces what changes inside it, so the text is handed to it one render after the region
@@ -1313,6 +1322,7 @@ public partial class BitMessage : BitComponentBase
                 await _js.BitMessageDispose(_observedOverflowId);
             }
             catch (JSDisconnectedException) { } // the circuit is gone, and the observer with it
+            catch (JSException) { } // the .NET reference below is released regardless
         }
 
         _dotnetObj?.Dispose();

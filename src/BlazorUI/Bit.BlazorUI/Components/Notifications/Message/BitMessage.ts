@@ -35,11 +35,12 @@
         private _last: boolean | undefined;
         private _resize: ResizeObserver | undefined;
         private _mutation: MutationObserver | undefined;
+        private _schedule = () => this.schedule();
 
         constructor(private _root: HTMLElement, private _dotnetObj: DotNetObject) { }
 
         public start() {
-            const schedule = () => this.schedule();
+            const schedule = this._schedule;
 
             this._resize = new ResizeObserver(schedule);
             this._resize.observe(this._root);
@@ -55,6 +56,9 @@
                 attributeFilter: ['class', 'style', 'aria-expanded']
             });
 
+            // A web font that finishes loading changes how wide the text is, and neither of the above sees it.
+            document.fonts?.addEventListener('loadingdone', schedule);
+
             this.schedule();
         }
 
@@ -64,6 +68,8 @@
 
             this._resize?.disconnect();
             this._mutation?.disconnect();
+
+            document.fonts?.removeEventListener('loadingdone', this._schedule);
         }
 
         // Resizing fires in bursts, so the measurement is taken once per frame at most.

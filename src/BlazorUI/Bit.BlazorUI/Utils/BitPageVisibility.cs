@@ -7,10 +7,20 @@
 /// </summary>
 public class BitPageVisibility(IJSRuntime js)
 {
-    private bool _isInitialized;
+    private Task? _initTask;
     private DotNetObjectReference<BitPageVisibility>? _dotnetObj;
 
 
+
+    /// <summary>
+    /// Whether the content of the document is hidden, as last reported by the browser.
+    /// </summary>
+    public bool IsHidden { get; private set; }
+
+    /// <summary>
+    /// Whether the window has lost the focus, as last reported by the browser.
+    /// </summary>
+    public bool IsWindowBlurred { get; private set; }
 
     /// <summary>
     /// Fires when the content of the document has become visible or hidden.
@@ -30,17 +40,32 @@ public class BitPageVisibility(IJSRuntime js)
 
 
     /// <summary>
-    /// Initializes the js api of the page visibility utility.
+    /// Initializes the js api of the page visibility utility, and reads the state the page is already in into
+    /// <see cref="IsHidden"/> and <see cref="IsWindowBlurred"/>, since no event is coming for it.
     /// </summary>
     public async Task Init()
     {
-        if (_isInitialized) return;
+        if (_initTask is not null)
+        {
+            // A later caller only waits for the state the first one asked for; a failure is the first caller's.
+            try { await _initTask; } catch { }
+            return;
+        }
 
-        _isInitialized = true;
+        _initTask = InitCore();
 
+        await _initTask;
+    }
+
+    private async Task InitCore()
+    {
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        await js.InvokeVoid("BitBlazorUI.PageVisibility.init", _dotnetObj);
+        var state = await js.Invoke<BitPageVisibilityState?>("BitBlazorUI.PageVisibility.init", _dotnetObj);
+        if (state is null) return;
+
+        IsHidden = state.Hidden;
+        IsWindowBlurred = state.Blurred;
     }
 
 
@@ -48,6 +73,8 @@ public class BitPageVisibility(IJSRuntime js)
     [JSInvokable("VisibilityChanged")]
     public async Task _VisibilityChanged(bool hidden)
     {
+        IsHidden = hidden;
+
         var onChange = OnChange;
         if (onChange is not null)
         {
@@ -58,6 +85,8 @@ public class BitPageVisibility(IJSRuntime js)
     [JSInvokable("WindowFocusChanged")]
     public async Task _WindowFocusChanged(bool blurred)
     {
+        IsWindowBlurred = blurred;
+
         var onWindowFocusChange = OnWindowFocusChange;
         if (onWindowFocusChange is not null)
         {
@@ -65,4 +94,11 @@ public class BitPageVisibility(IJSRuntime js)
         }
     }
 
+
+
+    private sealed class BitPageVisibilityState
+    {
+        public bool Hidden { get; set; }
+        public bool Blurred { get; set; }
+    }
 }
