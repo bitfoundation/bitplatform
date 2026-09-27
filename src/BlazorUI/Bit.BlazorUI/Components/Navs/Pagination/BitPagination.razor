@@ -175,7 +175,9 @@
                     {
                         @* A plain gap keeps its glyph hidden and lets the item carry the label, so it is reported
                            as one named item instead of being read out as a run of punctuation. A clickable one is
-                           a control of its own, so it is named directly and the item is left unnamed beside it. *@
+                           a control of its own, so it is named directly and the item is left unnamed beside it -
+                           by the page it jumps to as well, since two gaps both called "More pages" say nothing
+                           about which way either of them goes. *@
                         var ellipsisClass = $"bit-pgn-elp {(ClickableEllipsis ? "bit-pgn-elb" : null)} {Classes?.Ellipsis}";
                         <li @key="@($"ellipsis-{i}")" role="listitem" aria-label="@(ClickableEllipsis ? null : EllipsisAriaLabel)" class="bit-pgn-itm">
                             @if (ClickableEllipsis is false)
@@ -185,6 +187,7 @@
                             else
                             {
                                 var ellipsisPage = GetEllipsisPage(pages, i);
+                                var ellipsisLabel = GetEllipsisLabel(ellipsisPage);
 
                                 if (_UseLinks)
                                 {
@@ -192,8 +195,8 @@
                                     <a @onclick="@(e => ChangePageFromLink(e, FocusTarget.Ellipsis, ellipsisPage))"
                                        href="@ellipsisHref"
                                        role="@(ellipsisHref is null ? "link" : null)"
-                                       title="@EllipsisAriaLabel"
-                                       aria-label="@EllipsisAriaLabel"
+                                       title="@ellipsisLabel"
+                                       aria-label="@ellipsisLabel"
                                        aria-disabled="@(ellipsisHref is null ? "true" : null)"
                                        style="@Styles?.Ellipsis"
                                        class="@ellipsisClass">
@@ -204,8 +207,8 @@
                                 {
                                     <button @onclick="@(() => ChangePageFrom(FocusTarget.Ellipsis, ellipsisPage))"
                                             type="button"
-                                            title="@EllipsisAriaLabel"
-                                            aria-label="@EllipsisAriaLabel"
+                                            title="@ellipsisLabel"
+                                            aria-label="@ellipsisLabel"
                                             disabled="@(IsEnabled is false)"
                                             style="@Styles?.Ellipsis"
                                             class="@ellipsisClass">

@@ -34,7 +34,7 @@ public partial class BitPaginationDemo
             Name = "ClickableEllipsis",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns every ellipsis into a button (or link) that jumps into the middle of the pages it hides, named by EllipsisAriaLabel."
+            Description = "Turns every ellipsis into a button (or link) that jumps into the middle of the pages it hides, named by EllipsisAriaLabel plus the page it lands on (\"More pages (Page 38)\")."
         },
         new()
         {
@@ -64,7 +64,7 @@ public partial class BitPaginationDemo
             Name = "EllipsisAriaLabel",
             Type = "string",
             DefaultValue = "\"More pages\"",
-            Description = "The accessible name of an ellipsis, announced in place of its glyph."
+            Description = "The accessible name of an ellipsis, announced in place of its glyph. A clickable one appends the label of the page it jumps to."
         },
         new()
         {
@@ -872,8 +872,8 @@ public partial class BitPaginationDemo
         new()
         {
             Name = "--bit-Pagination-selected-font-weight",
-            DefaultValue = "--bit-tpg-font-weight",
-            Description = "Weight of the number of the current page.",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the number of the current page, heavier than the rest so it is not told apart by color alone.",
         },
         new()
         {

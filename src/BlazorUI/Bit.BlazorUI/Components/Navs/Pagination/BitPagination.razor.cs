@@ -184,9 +184,10 @@ public partial class BitPagination : BitComponentBase
     /// makes the middle of a few hundred pages reachable in a couple of clicks.
     /// <br />
     /// The ellipsis follows the rest of the pagination: it is a button, or a link as soon as
-    /// <see cref="GetPageHref"/> hands it an address, and it takes its accessible name from
-    /// <see cref="EllipsisAriaLabel"/>. While it is off, the ellipsis stays the plain text it is by default and
-    /// is hidden from assistive technologies.
+    /// <see cref="GetPageHref"/> hands it an address, and it is named (and given a tooltip) by
+    /// <see cref="EllipsisAriaLabel"/> followed by the label of the page it jumps to ("More pages (Page 38)"),
+    /// worded by <see cref="GetPageAriaLabel"/> like every other page. While it is off, the ellipsis stays the
+    /// plain text it is by default and is hidden from assistive technologies.
     /// <br />
     /// The jump can spell the pages it landed among out in place of the gap that was clicked, so the keyboard
     /// focus is handed over to the page it settled on rather than being dropped on the document.
@@ -226,8 +227,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A plain gap keeps its glyph hidden from assistive technologies and lets the item around it carry this
     /// label, so it is reported as one item instead of being read as a run of punctuation. A
-    /// <see cref="ClickableEllipsis"/> is a control of its own, so it is named by this label directly and the
-    /// item around it is left unnamed beside it.
+    /// <see cref="ClickableEllipsis"/> is a control of its own, so it is named by this label directly, followed
+    /// by the label of the page it jumps to, and the item around it is left unnamed beside it.
     /// </remarks>
     [Parameter] public string EllipsisAriaLabel { get; set; } = "More pages";
 
@@ -1080,6 +1081,14 @@ public partial class BitPagination : BitComponentBase
     private string GetPageLabel(int page, bool isSelected)
     {
         return GetPageAriaLabel?.Invoke(page, isSelected) ?? $"Page {page}";
+    }
+
+    // A gap that jumps somewhere is named by where it jumps to as well, since the two gaps of a range are otherwise
+    // announced (and shown as a tooltip) with the very same name. The page is worded by the hook that words every
+    // other page, so localizing the pages and the gap localizes this as well.
+    private string GetEllipsisLabel(int page)
+    {
+        return $"{EllipsisAriaLabel} ({GetPageLabel(page, false)})";
     }
 
     private string GetSummaryText()

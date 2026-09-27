@@ -99,6 +99,17 @@ public class BitPaginationStylesheetTests
         }
     }
 
+    [TestMethod]
+    public void BitPaginationShouldNotTellTheCurrentPageApartByColorAlone()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // Under the Fill variant every page is filled and the current one only a shade darker, so its weight is the
+        // cue that does not rest on color, and forced colors repaint it with the system selection colors.
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pgn-sel {"), "font-weight: var(--bit-Pagination-selected-font-weight, #{$tg-fw-semibold});");
+        StringAssert.Contains(stylesheet, ".bit-pgn-btn.bit-pgn-sel {\n        color: HighlightText;");
+    }
+
     private static string StripComments(string stylesheet)
     {
         return Regex.Replace(stylesheet, @"//[^\n]*", string.Empty);

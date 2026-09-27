@@ -2233,9 +2233,11 @@ public class BitPaginationTests : BunitTestContext
         Assert.IsTrue(ellipsis.All(e => e.TagName == "BUTTON"));
         Assert.IsTrue(ellipsis.All(e => e.GetAttribute("type") == "button"));
 
-        // The control is named itself, so the item around it is left unnamed instead of naming it twice.
-        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("aria-label") == "More pages"));
-        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("title") == "More pages"));
+        // The control is named itself, so the item around it is left unnamed instead of naming it twice, and the
+        // name says which page each gap jumps to, since the two of them would otherwise be named the same.
+        Assert.AreEqual("More pages (Page 12)", ellipsis[0].GetAttribute("aria-label"));
+        Assert.AreEqual("More pages (Page 38)", ellipsis[1].GetAttribute("aria-label"));
+        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("title") == e.GetAttribute("aria-label")));
         Assert.IsTrue(ellipsis.All(e => e.HasAttribute("aria-hidden") is false));
         Assert.IsTrue(comp.FindAll(".bit-pgn-itm").All(i => i.HasAttribute("aria-label") is false));
     }
@@ -2362,7 +2364,28 @@ public class BitPaginationTests : BunitTestContext
         var ellipsis = comp.FindAll(".bit-pgn-elp");
 
         Assert.IsTrue(ellipsis.All(e => e.TextContent.Trim() == "..."));
-        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("aria-label") == "Hidden pages"));
+        Assert.IsTrue(ellipsis.All(e => e.GetAttribute("aria-label")!.StartsWith("Hidden pages (")));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldWordThePageAClickableEllipsisJumpsToLikeEveryOtherPage()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 50);
+            parameters.Add(p => p.BoundaryCount, 1);
+            parameters.Add(p => p.MiddleCount, 3);
+            parameters.Add(p => p.ClickableEllipsis, true);
+            parameters.Add(p => p.DefaultSelectedPage, 25);
+            parameters.Add(p => p.EllipsisAriaLabel, "Más páginas");
+            parameters.Add(p => p.GetPageAriaLabel, (int page, bool _) => $"Página {page}");
+            parameters.Add(p => p.GetPageHref, (int page) => $"/results?page={page}");
+        });
+
+        var ellipsis = comp.FindAll(".bit-pgn-elp");
+
+        Assert.AreEqual("Más páginas (Página 12)", ellipsis[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Más páginas (Página 38)", ellipsis[1].GetAttribute("title"));
     }
 
     [TestMethod]
@@ -3104,11 +3127,11 @@ public class BitPaginationTests : BunitTestContext
 
         Assert.IsTrue(buttons.All(b => b.ClassList.Contains("bit-pgn-otl") && b.ClassList.Contains("cascaded-button")));
 
-        // The clickable gaps are named by the cascaded label and show the cascaded glyph.
+        // The clickable gaps are named by the cascaded labels and show the cascaded glyph.
         var ellipses = first.QuerySelectorAll("a.bit-pgn-elb");
 
         Assert.AreEqual(2, ellipses.Length);
-        Assert.IsTrue(ellipses.All(e => e.GetAttribute("aria-label") == "Más páginas" && e.TextContent.Trim() == "…"));
+        Assert.IsTrue(ellipses.All(e => e.GetAttribute("aria-label")!.StartsWith("Más páginas (Página ") && e.TextContent.Trim() == "…"));
 
         // The four navigation buttons carry the cascaded names, texts and icon.
         var firstButton = first.QuerySelector("[aria-label='Primera']")!;
