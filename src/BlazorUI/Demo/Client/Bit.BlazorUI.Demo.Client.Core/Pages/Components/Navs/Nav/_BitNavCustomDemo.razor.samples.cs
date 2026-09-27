@@ -562,6 +562,13 @@ private static readonly List<Section> customAdditionalUrlsNavItems =
     private readonly string example12RazorCode = @"
 <BitNav Items=""customA11yNavItems"" NameSelectors=""a11ySelectors"" AriaLabel=""Components"" FitWidth />";
     private readonly string example12CsharpCode = @"
+public class Section
+{
+    // ... the members above
+    public string? OpenLabel { get; set; }
+    public string? CloseLabel { get; set; }
+}
+
 private static readonly BitNavNameSelectors<Section> a11ySelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },

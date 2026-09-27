@@ -2381,7 +2381,7 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavShouldTurnTheLabelOfAGroupIntoAButtonOnceItHasChildren()
+    public async Task BitNavShouldTurnTheLabelOfAGroupIntoAButtonOnceItHasChildren()
     {
         var items = new List<BitNavItem> { new() { Text = "Fruits" } };
 
@@ -2394,7 +2394,7 @@ public class BitNavTests : BunitTestContext
 
         var header = component.Find("button.bit-nav-gcb");
         header.FocusIn();
-        component.Instance.FocusItem(items[0]);
+        await component.InvokeAsync(async () => await component.Instance.FocusItem(items[0]));
 
         // The header that has become a button is what the nav focuses from then on.
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
@@ -2892,7 +2892,7 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavShouldMarkEveryCollapsedAncestorOfADeepSelection()
+    public async Task BitNavShouldMarkEveryCollapsedAncestorOfADeepSelection()
     {
         var deep = new BitNavItem { Text = "Deep" };
         var items = new List<BitNavItem>
@@ -2906,7 +2906,7 @@ public class BitNavTests : BunitTestContext
             p.Add(c => c.SelectedItem, deep);
         });
 
-        component.InvokeAsync(() => component.Instance.CollapseAll());
+        await component.InvokeAsync(() => component.Instance.CollapseAll());
 
         Assert.IsTrue(component.Find(".bit-nav-ict").ClassList.Contains("bit-nav-sca"));
     }
@@ -2942,7 +2942,7 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavShouldFollowTheSelectionWhenMarkingACollapsedBranch()
+    public async Task BitNavShouldFollowTheSelectionWhenMarkingACollapsedBranch()
     {
         var items = TreeItems();
 
@@ -2952,11 +2952,11 @@ public class BitNavTests : BunitTestContext
             p.Add(c => c.SelectedItem, items[0].ChildItems[0]);
         });
 
-        component.InvokeAsync(() => component.Instance.CollapseAll());
+        await component.InvokeAsync(() => component.Instance.CollapseAll());
         Assert.IsTrue(component.FindAll(".bit-nav-ict")[0].ClassList.Contains("bit-nav-sca"));
 
         component.Render(p => p.Add(c => c.SelectedItem, (BitNavItem?)null));
-        component.InvokeAsync(() => component.Instance.CollapseAll());
+        await component.InvokeAsync(() => component.Instance.CollapseAll());
 
         // The ancestors of the selection are looked up again once the selection has moved.
         Assert.AreEqual(0, component.FindAll(".bit-nav-sca").Count);
