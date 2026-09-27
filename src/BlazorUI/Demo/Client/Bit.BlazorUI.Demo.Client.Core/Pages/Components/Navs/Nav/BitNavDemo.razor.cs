@@ -199,7 +199,7 @@ public partial class BitNavDemo
             Name = "NoCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Hides all collapse/expand buttons and remove their spaces at the start of each node."
+            Description = "Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item."
         },
         new()
         {
@@ -464,7 +464,7 @@ public partial class BitNavDemo
         {
             Name = "IsItemExpanded",
             Type = "Func<TItem, bool>",
-            Description = "Whether an item is currently expanded.",
+            Description = "Whether the children of an item are currently shown, which is always the case while NoCollapse is set.",
         },
         new()
         {

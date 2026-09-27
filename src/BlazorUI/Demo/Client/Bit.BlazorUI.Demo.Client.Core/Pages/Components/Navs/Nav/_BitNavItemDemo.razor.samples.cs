@@ -254,7 +254,7 @@ private static readonly List<BitNavItem> iconOnlyNavItems =
     private readonly string example6RazorCode = @"
 <BitNav Items=""singleExpandNavItems"" SingleExpand FitWidth />
 
-<BitNav Items=""noCollapseNavItems"" AllExpanded NoCollapse />";
+<BitNav Items=""noCollapseNavItems"" NoCollapse />";
     private readonly string example6CsharpCode = @"
 private static readonly List<BitNavItem> singleExpandNavItems =
 [
@@ -327,12 +327,15 @@ private static readonly List<BitNavItem> chevronNavItems =
     </HeaderTemplate>
 </BitNav>
 
-<BitNav Items=""foodNavItems"" Mode=""BitNavMode.Manual"">
+<BitNav Items=""mailNavItems"" Mode=""BitNavMode.Manual"" FitWidth>
     <ItemTemplate Context=""item"">
         <div class=""nav-custom-item"">
-            <BitCheckbox />
             <BitIcon IconName=""@item.IconName"" />
             <span>@item.Text</span>
+            @if (item.Data is not null)
+            {
+                <BitBadge Content=""item.Data"" Inline Size=""BitSize.Small"" />
+            }
         </div>
     </ItemTemplate>
 </BitNav>
@@ -347,6 +350,15 @@ private static readonly List<BitNavItem> chevronNavItems =
     </ItemTemplate>
 </BitNav>";
     private readonly string example8CsharpCode = @"
+// The Data of an item is whatever the app needs; the template above reads a count off it.
+private static readonly List<BitNavItem> mailNavItems =
+[
+    new() { Text = ""Inbox"", IconName = BitIconName.Inbox, Data = 12 },
+    new() { Text = ""Drafts"", IconName = BitIconName.EditMail, Data = 2 },
+    new() { Text = ""Sent"", IconName = BitIconName.Send },
+    new() { Text = ""Archive"", IconName = BitIconName.Archive },
+];
+
 private static readonly List<BitNavItem> colorNavItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home },

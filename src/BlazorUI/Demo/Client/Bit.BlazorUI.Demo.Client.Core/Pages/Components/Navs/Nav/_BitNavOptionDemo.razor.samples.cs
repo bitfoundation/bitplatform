@@ -199,7 +199,7 @@ private bool iconOnly;";
     </BitNavOption>
 </BitNav>
 
-<BitNav TItem=""BitNavOption"" AllExpanded NoCollapse>
+<BitNav TItem=""BitNavOption"" NoCollapse>
     <BitNavOption Text=""bit platform"" Description=""the bit platform description"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
@@ -285,38 +285,22 @@ private bool iconOnly;";
     </ChildContent>
 </BitNav>
 
-<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
+<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"" FitWidth>
     <ItemTemplate Context=""option"">
         <div class=""nav-custom-item"">
-            <BitCheckbox />
             <BitIcon IconName=""@option.IconName"" />
             <span>@option.Text</span>
+            @if (option.Data is not null)
+            {
+                <BitBadge Content=""option.Data"" Inline Size=""BitSize.Small"" />
+            }
         </div>
     </ItemTemplate>
     <ChildContent>
-        <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
-                      IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
-            <BitNavOption Text=""Burgers"" Description=""List of burgers"">
-                <BitNavOption Text=""Beef Burger"" />
-                <BitNavOption Text=""Veggie Burger"" />
-                <BitNavOption Text=""Bison Burger"" />
-                <BitNavOption Text=""Wild Salmon Burger"" />
-            </BitNavOption>
-            <BitNavOption Text=""Pizza"">
-                <BitNavOption Text=""Cheese Pizza"" />
-                <BitNavOption Text=""Veggie Pizza"" />
-                <BitNavOption Text=""Pepperoni Pizza"" />
-                <BitNavOption Text=""Meat Pizza"" />
-            </BitNavOption>
-            <BitNavOption Text=""French Fries"" />
-        </BitNavOption>
-        <BitNavOption Text=""Fruits"" IconName=""@BitIconName.Health"">
-            <BitNavOption Text=""Apple"" />
-            <BitNavOption Text=""Orange"" />
-            <BitNavOption Text=""Banana"" />
-        </BitNavOption>
-        <BitNavOption Text=""Ice Cream"" />
-        <BitNavOption Text=""Cookie"" />
+        <BitNavOption Text=""Inbox"" IconName=""@BitIconName.Inbox"" Data=""12"" />
+        <BitNavOption Text=""Drafts"" IconName=""@BitIconName.EditMail"" Data=""2"" />
+        <BitNavOption Text=""Sent"" IconName=""@BitIconName.Send"" />
+        <BitNavOption Text=""Archive"" IconName=""@BitIconName.Archive"" />
     </ChildContent>
 </BitNav>
 

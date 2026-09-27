@@ -151,7 +151,7 @@
     // The header is a neutral surface rather than an item, so it takes the neutral hover of the page rather
     // than the Accent, which a semantic role would turn into a vivid fill under text that does not follow it.
     @media (hover: hover) {
-        &:hover:not(:disabled) {
+        &:hover:not(:disabled, .bit-nav-gst) {
             background-color: var(--bit-Nav-header-hover-background, #{$clr-bg-pri-hover});
         }
     }
@@ -160,7 +160,8 @@
         @include focus-ring;
     }
 
-    &:disabled {
+    &:disabled,
+    &.bit-nav-dis {
         cursor: default;
         color: var(--bit-Nav-disabled-color, #{$clr-fg-dis});
 
@@ -170,6 +171,13 @@
             color: var(--bit-Nav-disabled-color, #{$clr-fg-dis});
         }
     }
+}
+
+// The header of a group that cannot be toggled is its label, not a control, so it keeps none of the cues
+// of one: no pointer cursor and no hover.
+.bit-nav-gst {
+    cursor: default;
+    user-select: text;
 }
 
 .bit-nav-ghd {

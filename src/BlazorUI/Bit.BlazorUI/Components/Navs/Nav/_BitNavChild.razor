@@ -8,7 +8,7 @@
         // A disabled nav disables everything it renders: greying the items out is not enough, since a link
         // that keeps its href and its tab stop can still be followed with the keyboard.
         var isEnabled = Nav.IsEnabled && Nav.GetIsEnabled(Item);
-        var isExpanded = Nav.GetItemExpanded(Item);
+        var isExpanded = Nav.IsItemOpen(Item);
         var isSeparator = Nav.GetIsSeparator(Item);
         var text = Nav.GetText(Item);
         var childItems = Nav.GetChildItems(Item);
@@ -46,9 +46,16 @@
         // A collapsed branch that holds the selected item borrows its look, so the way to the current page
         // stays visible while the branch leading to it is closed.
         var isSelectedAncestor = isSelected is false && childItems.Any() && isExpanded is false && Nav.HasSelectedDescendant(Item);
+        var isGroupHeader = Nav.RenderType is BitNavRenderType.Grouped && Parent is null;
+        // The list of a group is named after its header, so a screen reader that jumps from list to list tells
+        // the groups apart instead of announcing a run of unnamed ones.
+        var groupLabel = isGroupHeader ? text : null;
+        // What this render leaves the keyboard to focus, read once it is in the DOM.
+        _rendersHeader = false;
+        _rendersContainer = false;
     }
 
-    @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
+    @if (isGroupHeader)
     {
         @if (isSeparator)
         {
@@ -71,19 +78,10 @@
         }
         else
         {
-            <button @ref="_headerElement"
-                    @onclick="ToggleItem"
-                    @onfocusin="HandleOnFocusIn"
-                    @onkeydown="HandleOnKeyDown"
-                    type="button"
-                    title="@(title is not null ? title : text)"
-                    disabled="@(isEnabled is false)"
-                    style="@Nav.Styles?.Header"
-                    class="bit-nav-gcb @Nav.Classes?.Header"
-                    aria-expanded="@ariaExpanded"
-                    aria-describedby="@descriptionId"
-                    aria-label="@(Nav.GetAriaLabel(Item) ?? toggleAriaLabel)">
-                @if (template is not null)
+            // The content is the same whether the header is the control that toggles its group or only its label.
+            void RenderHeaderContent()
+            {
+                if (template is not null)
                 {
                     @template(Item)
                 }
@@ -117,7 +115,7 @@
                             <div id="@descriptionId"
                                  title="@description"
                                  class="bit-nav-des @Nav.Classes?.Description"
-                                 style="@((Nav.ReversedChevron || Nav.NoCollapse) ? "padding-inline-start:0" : ""); @Nav.Styles?.Description">
+                                 style="@((Nav.ReversedChevron || hasChevron is false) ? "padding-inline-start:0" : ""); @Nav.Styles?.Description">
                                 @description
                             </div>
                         </div>
@@ -139,7 +137,38 @@
                         </div>
                     }
                 }
-            </button>
+            }
+
+            if (isToggleable)
+            {
+                _rendersHeader = true;
+
+                <button @ref="_headerElement"
+                        @onclick="ToggleItem"
+                        @onfocusin="HandleOnFocusIn"
+                        @onkeydown="HandleOnKeyDown"
+                        type="button"
+                        title="@(title is not null ? title : text)"
+                        disabled="@(isEnabled is false)"
+                        style="@Nav.Styles?.Header"
+                        class="bit-nav-gcb @Nav.Classes?.Header"
+                        aria-expanded="@ariaExpanded"
+                        aria-describedby="@descriptionId"
+                        aria-label="@(Nav.GetAriaLabel(Item) ?? toggleAriaLabel)">
+                    @{ RenderHeaderContent(); }
+                </button>
+            }
+            else
+            {
+                @* A group that cannot be toggled - one without children, or any group of a nav without
+                   expanders - has nothing to do on a click, so it is the label of its group rather than a
+                   button: a control that does nothing would still be a tab stop and still be announced as one. *@
+                <div title="@title"
+                     style="@Nav.Styles?.Header"
+                     class="bit-nav-gcb bit-nav-gst @(isEnabled ? null : "bit-nav-dis") @Nav.Classes?.Header">
+                    @{ RenderHeaderContent(); }
+                </div>
+            }
         }
     }
     else
@@ -172,6 +201,8 @@
             }
             else
             {
+                _rendersContainer = true;
+
                 <_BitNavItemContainer @ref="_container"
                                       Href="@href"
                                       Target="@target"
@@ -260,7 +291,7 @@
     {
         @* The nav options render their children in place, so the children have to stay rendered (but
            hidden) while collapsed to keep their registrations (and expand/collapse chevron) alive. *@
-        <ul role="list" style="@(childItems.Any() && isExpanded ? null : "display:none")">
+        <ul role="list" aria-label="@groupLabel" style="@(childItems.Any() && isExpanded ? null : "display:none")">
             <CascadingValue Value="this" IsFixed="true">
                 @ChildrenFragment
             </CascadingValue>
@@ -268,7 +299,7 @@
     }
     else if ((childItems.Any()) && (isExpanded))
     {
-        <ul role="list">
+        <ul role="list" aria-label="@groupLabel">
             <CascadingValue Value="this" IsFixed="true">
                 @foreach (var (item, idx) in childItems.Select((item, idx) => (item, idx)))
                 {

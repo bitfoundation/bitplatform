@@ -351,6 +351,14 @@ public partial class _BitNavItemDemo
         new() { Mode = BitNavMode.Manual, Size = BitSize.Small, Color = BitColor.Success, Accent = BitColor.Success }
     ];
 
+    private static readonly List<BitNavItem> mailNavItems =
+    [
+        new() { Text = "Inbox", IconName = BitIconName.Inbox, Data = 12 },
+        new() { Text = "Drafts", IconName = BitIconName.EditMail, Data = 2 },
+        new() { Text = "Sent", IconName = BitIconName.Send },
+        new() { Text = "Archive", IconName = BitIconName.Archive },
+    ];
+
     private static readonly List<BitNavItem> colorNavItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home },

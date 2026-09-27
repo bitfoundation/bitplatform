@@ -121,9 +121,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     public Task CollapseItem(TItem item) => GetItemExpanded(item) ? ToggleItem(item) : Task.CompletedTask;
 
     /// <summary>
-    /// Whether an item is currently expanded.
+    /// Whether the children of an item are currently shown, which is always the case while <see cref="NoCollapse"/> is set.
     /// </summary>
-    public bool IsItemExpanded(TItem item) => GetItemExpanded(item);
+    public bool IsItemExpanded(TItem item) => IsItemOpen(item);
 
     /// <summary>
     /// Selects an item programmatically, exactly like a click on that item would in the manual mode.
@@ -141,6 +141,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         // collapsed item rendered (hidden) to keep their registrations alive, so an element exists long
         // before the item is reachable and focusing it would move the focus onto a display:none element.
         if (IsItemOnScreen(item) && _itemElements.ContainsKey(item)) return FocusItemElement(item);
+
+        // A static group header is a label rather than a control, so it has no element that could ever take
+        // the focus, and a request for it would be left pending forever.
+        if (IsStaticGroupHeader(item)) return ValueTask.CompletedTask;
 
         // The item is inside a collapsed branch, so there is no element to focus yet: the path down to it
         // is opened and the focus is moved once the render that brings it on screen has registered its
@@ -391,6 +395,23 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         }
 
         _itemExpandStates[item] = value;
+    }
+
+    // Whether the children of an item are shown: a nav without expanders has no way to open a branch, so
+    // every branch of it is open no matter what its expansion state says - otherwise a branch that happened
+    // to be collapsed would hide its children for good.
+    internal bool IsItemOpen(TItem item) => NoCollapse || GetItemExpanded(item);
+
+    // A root item of the Grouped render type that cannot be toggled - a group without children, or any group
+    // of a nav without expanders - is the label of its group rather than a control, so it renders as plain
+    // text that the keyboard does not stop on.
+    internal bool IsStaticGroupHeader(TItem item)
+    {
+        if (RenderType is not BitNavRenderType.Grouped || GetIsSeparator(item)) return false;
+
+        if (_items.Any(root => AreEqual(root, item)) is false) return false;
+
+        return NoCollapse || GetChildItems(item).Count == 0;
     }
 
     internal bool GetItemExpanded(TItem item)
@@ -736,9 +757,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         var childItems = GetChildItems(item);
         if (childItems.Count == 0) return;
 
-        if (GetItemExpanded(item) is false)
+        if (IsItemOpen(item) is false)
         {
-            if (NoCollapse || GetIsEnabled(item) is false) return;
+            if (GetIsEnabled(item) is false) return;
 
             await ToggleItem(item);
             return;
@@ -837,7 +858,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
             {
                 if (GetIsSeparator(item)) continue;
 
-                if (GetIsEnabled(item))
+                // A static group header is a label that takes no focus, but its group is walked all the same.
+                if (GetIsEnabled(item) && IsStaticGroupHeader(item) is false)
                 {
                     result.Add(item);
                 }
@@ -845,7 +867,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 // A disabled item is still walked through: it cannot be toggled itself, but an enabled
                 // child of a branch that is already open is reachable on its own.
                 var childItems = GetChildItems(item);
-                if (childItems.Count > 0 && GetItemExpanded(item))
+                if (childItems.Count > 0 && IsItemOpen(item))
                 {
                     Collect(childItems);
                 }
@@ -865,7 +887,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
             if (GetIsEnabled(item)) return item;
 
             var childItems = GetChildItems(item);
-            if (childItems.Count > 0 && GetItemExpanded(item))
+            if (childItems.Count > 0 && IsItemOpen(item))
             {
                 var found = FindFirstReachableItem(childItems);
                 if (found is not null) return found;
@@ -883,7 +905,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         while (parent is not null)
         {
-            if (GetItemExpanded(parent) is false) return false;
+            if (IsItemOpen(parent) is false) return false;
 
             parent = FindParentOf(_items, parent);
         }

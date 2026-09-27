@@ -11,6 +11,7 @@ public class Section
     public bool IsDivider { get; set; }
     public List<Section> Links { get; set; } = [];
     public string? Comment { get; set; }
+    public int? Count { get; set; }
     public string? OpenLabel { get; set; }
     public string? CloseLabel { get; set; }
     public BitNavMatch? UrlMatch { get; set; }

@@ -300,7 +300,7 @@ private static readonly List<Section> customIconOnlyNavItems =
     private readonly string example6RazorCode = @"
 <BitNav Items=""customSingleExpandNavItems"" SingleExpand FitWidth NameSelectors=""sectionSelectors"" />
 
-<BitNav Items=""customNoCollapseNavItems"" AllExpanded NoCollapse NameSelectors=""sectionSelectors"" />";
+<BitNav Items=""customNoCollapseNavItems"" NoCollapse NameSelectors=""sectionSelectors"" />";
     private readonly string example6CsharpCode = @"
 private static readonly List<Section> customSingleExpandNavItems =
 [
@@ -373,12 +373,15 @@ private static readonly List<Section> customChevronNavItems =
     </HeaderTemplate>
 </BitNav>
 
-<BitNav Items=""customFoodNavItems"" Mode=""BitNavMode.Manual"" NameSelectors=""foodSelectors"">
+<BitNav Items=""customMailNavItems"" Mode=""BitNavMode.Manual"" FitWidth NameSelectors=""sectionSelectors"">
     <ItemTemplate Context=""item"">
         <div class=""nav-custom-item"">
-            <BitCheckbox />
-            <BitIcon IconName=""@item.Image"" />
-            <span>@item.Name</span>
+            <BitIcon IconName=""@item.ImageName"" />
+            <span>@item.Text</span>
+            @if (item.Count is not null)
+            {
+                <BitBadge Content=""item.Count"" Inline Size=""BitSize.Small"" />
+            }
         </div>
     </ItemTemplate>
 </BitNav>
@@ -393,6 +396,21 @@ private static readonly List<Section> customChevronNavItems =
     </ItemTemplate>
 </BitNav>";
     private readonly string example8CsharpCode = @"
+public class Section
+{
+    // ... the members above
+    public int? Count { get; set; }
+}
+
+// The template above reads the count straight off the item, so it needs no selector.
+private static readonly List<Section> customMailNavItems =
+[
+    new() { Text = ""Inbox"", ImageName = BitIconName.Inbox, Count = 12 },
+    new() { Text = ""Drafts"", ImageName = BitIconName.EditMail, Count = 2 },
+    new() { Text = ""Sent"", ImageName = BitIconName.Send },
+    new() { Text = ""Archive"", ImageName = BitIconName.Archive },
+];
+
 private static readonly List<Section> customColorNavItems =
 [
     new() { Text = ""Home"", ImageName = BitIconName.Home },

@@ -5,6 +5,8 @@ namespace Bit.BlazorUI;
 public partial class _BitNavChild<TItem> : IDisposable where TItem : class
 {
     private bool _disposed;
+    private bool _rendersHeader;
+    private bool _rendersContainer;
     private TItem? _registeredItem;
     private ElementReference _headerElement;
     private ElementReference _registeredElement;
@@ -33,13 +35,20 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     {
         // The nav moves the focus between its items from the keyboard, so every item hands over the
         // element it rendered: the item's own anchor/button, or the group header button in Grouped mode.
-        if (_container is not null)
+        // What was rendered this time is what counts, since a reference is kept after its element is gone: a
+        // group whose last child is removed turns its header button into a plain label, for instance.
+        if (_rendersContainer && _container is not null)
         {
             RegisterItemElement(_container.Element);
         }
-        else if (_headerElement.Id is not null)
+        else if (_rendersHeader && _headerElement.Id is not null)
         {
             RegisterItemElement(_headerElement);
+        }
+        else if (_registeredItem is not null)
+        {
+            Nav?.UnregisterItemElement(_registeredItem, _registeredElement);
+            _registeredItem = null;
         }
 
         base.OnAfterRender(firstRender);

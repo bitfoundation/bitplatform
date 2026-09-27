@@ -148,7 +148,7 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// Hides all collapse/expand buttons and remove their spaces at the start of each node.
+    /// Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item.
     /// </summary>
     [Parameter] public bool NoCollapse { get; set; }
 

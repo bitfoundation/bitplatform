@@ -983,6 +983,35 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavShouldKeepEveryBranchOpenWithNoCollapse()
+    {
+        var items = TreeItems();
+        items[0].ChildItems[0].ChildItems = [new() { Text = "Green apple" }];
+
+        var component = RenderNav(items, p => p.Add(c => c.NoCollapse, true));
+
+        // A nav without expanders has no way to open a branch, so a collapsed one would hide its children for
+        // good: every branch is shown, at every depth, whatever its own expansion state says.
+        Assert.AreEqual(7, component.FindAll(".bit-nav-ict").Count);
+        Assert.AreEqual(0, component.FindAll("[aria-expanded]").Count);
+        Assert.IsTrue(component.Instance.IsItemExpanded(items[0]));
+    }
+
+    [TestMethod]
+    public void BitNavShouldStepIntoTheFirstChildWithTheForwardArrowWithNoCollapse()
+    {
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.NoCollapse, true));
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "ArrowRight");
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nav-ict")[1]);
+    }
+
+    [TestMethod]
     public void BitNavShouldRespectNoCollapse()
     {
         var component = RenderNav(TreeItems(), p =>
@@ -2055,15 +2084,20 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavShouldNotExpandTheSiblingsWithTheAsteriskWhileTheExpandersAreHidden()
+    public void BitNavShouldNotToggleTheSiblingsWithTheAsteriskWhileTheExpandersAreHidden()
     {
-        var component = RenderNav(TreeItems(), p => p.Add(c => c.NoCollapse, true));
+        var items = TreeItems();
+
+        var component = RenderNav(items, p => p.Add(c => c.NoCollapse, true));
 
         component.FindAll(".bit-nav-ict")[0].FocusIn();
         PressKey(component, "*");
 
-        // A nav without expanders offers no way to close what the asterisk would open, so the key is inert.
-        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
+        // A nav without expanders has every branch open already, so the key is inert: the stored state of
+        // the items is left alone and every item stays on screen.
+        Assert.IsFalse(items[0].IsExpanded);
+        Assert.IsFalse(items[1].IsExpanded);
+        Assert.AreEqual(6, component.FindAll(".bit-nav-ict").Count);
     }
 
     [TestMethod]
@@ -2280,6 +2314,93 @@ public class BitNavTests : BunitTestContext
         var component = RenderNav(items, p => p.Add(c => c.RenderType, BitNavRenderType.Grouped));
 
         Assert.AreEqual(expectedLabel, component.FindAll(".bit-nav-gcb")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldRenderAGroupHeaderThatCannotBeToggledAsALabel()
+    {
+        var component = RenderNav(TreeItems(), p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.NoCollapse, true);
+        });
+
+        // A header that does nothing on a click is the label of its group rather than a button, so it is no
+        // tab stop and is not announced as a control; the groups themselves are all open.
+        var headers = component.FindAll(".bit-nav-gcb");
+
+        Assert.AreEqual(2, headers.Count);
+        Assert.IsTrue(headers.All(h => h.TagName == "DIV" && h.ClassList.Contains("bit-nav-gst")));
+        Assert.AreEqual(0, component.FindAll("button.bit-nav-gcb").Count);
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldSkipTheGroupHeadersThatAreLabelsWithTheArrowKeys()
+    {
+        var component = RenderNav(TreeItems(), p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.NoCollapse, true);
+        });
+
+        component.FindAll(".bit-nav-ict")[1].FocusIn();
+        PressKey(component, "ArrowDown");
+        PressKey(component, "Home");
+
+        // The label of the second group takes no focus, so the walk goes from the last item of the first group
+        // straight to the first item of the second one, and Home lands on the first item rather than a label.
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+        var elements = component.FindAll(".bit-nav-ict");
+
+        Assert.AreEqual(2, focused.Count);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(elements[2]);
+        focused[1].Arguments[0].ShouldBeElementReferenceTo(elements[0]);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNameTheListOfAGroupAfterItsHeader()
+    {
+        var component = RenderNav(TreeItems(), p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.AllExpanded, true);
+        });
+
+        var lists = component.FindAll(".bit-nav > ul > li > ul");
+
+        CollectionAssert.AreEqual(new[] { "Fruits", "Drinks" }, lists.Select(l => l.GetAttribute("aria-label")).ToArray());
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotNameTheNestedListsOutsideTheGroupedRenderType()
+    {
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.AllExpanded, true));
+
+        Assert.IsTrue(component.FindAll("li > ul").All(l => l.HasAttribute("aria-label") is false));
+    }
+
+    [TestMethod]
+    public void BitNavShouldTurnTheLabelOfAGroupIntoAButtonOnceItHasChildren()
+    {
+        var items = new List<BitNavItem> { new() { Text = "Fruits" } };
+
+        var component = RenderNav(items, p => p.Add(c => c.RenderType, BitNavRenderType.Grouped));
+
+        Assert.AreEqual(0, component.FindAll("button.bit-nav-gcb").Count);
+
+        items[0].ChildItems.Add(new() { Text = "Apple" });
+        component.Render(p => p.Add(c => c.Items, items));
+
+        var header = component.Find("button.bit-nav-gcb");
+        header.FocusIn();
+        component.Instance.FocusItem(items[0]);
+
+        // The header that has become a button is what the nav focuses from then on.
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(header);
     }
 
     [TestMethod]

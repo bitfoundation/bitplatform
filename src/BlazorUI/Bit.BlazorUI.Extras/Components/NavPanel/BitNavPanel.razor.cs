@@ -292,7 +292,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool NoAutoClose { get; set; }
 
     /// <summary>
-    /// Disables and hides all collapse/expand buttons of the nav component.
+    /// Keeps every item of the nav expanded and hides its collapse/expand buttons.
     /// </summary>
     [Parameter] public bool NoCollapse { get; set; }
 

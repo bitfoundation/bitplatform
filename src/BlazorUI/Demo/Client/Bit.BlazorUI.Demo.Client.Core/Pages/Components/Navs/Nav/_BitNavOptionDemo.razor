@@ -235,8 +235,8 @@
 <DemoExample Title="Expand & Collapse" RazorCode="@example6RazorCode" Id="example6">
     <div>
         <b>SingleExpand</b> keeps a single branch open at a time, like an accordion (<b>ExpandAll</b> does nothing in
-        this mode). <b>AllExpanded</b> opens every branch on the first render, and <b>NoCollapse</b> also removes the
-        chevrons together with the space they reserve.
+        this mode). <b>AllExpanded</b> opens every branch on the first render. <b>NoCollapse</b> keeps every branch open
+        and removes the chevrons with the space they reserve; a Grouped header then becomes a plain label.
     </div>
     <br /><br /><br />
     <div>SingleExpand</div><br />
@@ -263,8 +263,8 @@
         </BitNavOption>
     </BitNav>
     <br /><br /><br />
-    <div>AllExpanded &amp; NoCollapse</div><br />
-    <BitNav TItem="BitNavOption" AllExpanded NoCollapse>
+    <div>NoCollapse</div><br />
+    <BitNav TItem="BitNavOption" NoCollapse>
         <BitNavOption Text="bit platform" Description="the bit platform description">
             <BitNavOption Text="Home" IconName="@BitIconName.Home" Url="https://bitplatform.dev/" Target="_blank" />
             <BitNavOption Text="Products & Services">
@@ -339,6 +339,7 @@
         <b>ItemTemplate</b> and <b>HeaderTemplate</b> (Grouped) render the content of every option and group header. Their
         <b>ItemTemplateRenderMode</b> / <b>HeaderTemplateRenderMode</b> render the template inside the option's own link
         (<b>Normal</b>) or in its place (<b>Replace</b>), and the <b>Template</b> of a single option overrides both.
+        A <b>Normal</b> template sits inside a link or a button, so keep controls (a checkbox, a button) out of it.
     </div>
     <br /><br /><br />
     <div>Header Template (Grouped)</div><br />
@@ -384,38 +385,22 @@
     </BitNav>
     <br /><br /><br />
     <div>Item Template</div><br />
-    <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
+    <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual" FitWidth>
         <ItemTemplate Context="option">
             <div class="nav-custom-item">
-                <BitCheckbox />
                 <BitIcon IconName="@option.IconName" />
                 <span>@option.Text</span>
+                @if (option.Data is not null)
+                {
+                    <BitBadge Content="option.Data" Inline Size="BitSize.Small" />
+                }
             </div>
         </ItemTemplate>
         <ChildContent>
-            <BitNavOption Text="Fast foods" Description="List of fast foods"
-                          IconName="@BitIconName.HeartBroken" IsExpanded="true">
-                <BitNavOption Text="Burgers" Description="List of burgers">
-                    <BitNavOption Text="Beef Burger" />
-                    <BitNavOption Text="Veggie Burger" />
-                    <BitNavOption Text="Bison Burger" />
-                    <BitNavOption Text="Wild Salmon Burger" />
-                </BitNavOption>
-                <BitNavOption Text="Pizza">
-                    <BitNavOption Text="Cheese Pizza" />
-                    <BitNavOption Text="Veggie Pizza" />
-                    <BitNavOption Text="Pepperoni Pizza" />
-                    <BitNavOption Text="Meat Pizza" />
-                </BitNavOption>
-                <BitNavOption Text="French Fries" />
-            </BitNavOption>
-            <BitNavOption Text="Fruits" IconName="@BitIconName.Health">
-                <BitNavOption Text="Apple" />
-                <BitNavOption Text="Orange" />
-                <BitNavOption Text="Banana" />
-            </BitNavOption>
-            <BitNavOption Text="Ice Cream" />
-            <BitNavOption Text="Cookie" />
+            <BitNavOption Text="Inbox" IconName="@BitIconName.Inbox" Data="12" />
+            <BitNavOption Text="Drafts" IconName="@BitIconName.EditMail" Data="2" />
+            <BitNavOption Text="Sent" IconName="@BitIconName.Send" />
+            <BitNavOption Text="Archive" IconName="@BitIconName.Archive" />
         </ChildContent>
     </BitNav>
     <br /><br /><br />
