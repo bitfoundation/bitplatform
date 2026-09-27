@@ -28,6 +28,8 @@
 //   --bit-Breadcrumb-callout-background     background of the menu                     (default: $clr-bg-pri)
 //   --bit-Breadcrumb-callout-radius         corner radius of the menu                  (default: $shp-radius-popup)
 //   --bit-Breadcrumb-callout-shadow         elevation of the menu                      (default: $box-shadow-popup)
+//   --bit-Breadcrumb-callout-max-width      widest the menu gets before its rows are
+//                                           ellipsized                                 (default: the width of the viewport)
 //   --bit-Breadcrumb-overflow-item-height   height of a menu row                       (default: per size, $siz-item-*)
 //   --bit-Breadcrumb-overflow-font-size     text size of a menu row                    (default: per size, from the type ramp)
 
@@ -112,6 +114,30 @@
         overflow: auto hidden;
         scrollbar-width: thin;
         padding: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
+    }
+}
+
+// The automatic collapsing is down to the one item it may not drop (see IsTruncatingLastItem): the trail
+// becomes a row in which the last step, and only it, gives up width and ends in an ellipsis, rather than
+// overflowing its container. Nothing shrinks before that, since the collapsing measures the natural widths.
+.bit-brc-trc {
+    .bit-brc-icn {
+        display: flex;
+        align-items: center;
+
+        > li {
+            flex-shrink: 0;
+        }
+
+        > li:last-child {
+            min-width: 0;
+            flex-shrink: 1;
+        }
+    }
+
+    .bit-brc-itm,
+    .bit-brc-nii {
+        min-width: 0;
     }
 }
 
@@ -284,6 +310,11 @@
     overflow: hidden auto;
     box-sizing: border-box;
     z-index: $zindex-callout;
+    // As wide as its widest row, up to the room the screen leaves: without the cap one long step would push
+    // the menu off the side, with it that step is ellipsized instead.
+    width: max-content;
+    max-width: var(--bit-Breadcrumb-callout-max-width, calc(100vw - #{spacing(2)}));
+    max-width: var(--bit-Breadcrumb-callout-max-width, calc(100dvw - #{spacing(2)}));
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     font-size: var(--bit-brc-ofi-fs);

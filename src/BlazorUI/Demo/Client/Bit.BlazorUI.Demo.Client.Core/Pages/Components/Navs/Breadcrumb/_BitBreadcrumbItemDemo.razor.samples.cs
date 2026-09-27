@@ -403,28 +403,28 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
     }
 
     .custom-item {
-        color: #ffcece;
+        color: #e03131;
 
         &:hover {
-            color: #ff6868;
+            color: #c92a2a;
             background: transparent;
         }
     }
 
     .custom-item-1 {
-        color: #b6ff00;
+        color: #2f9e44;
 
         &:hover {
-            color: #2aff00;
+            color: #2b8a3e;
             background: transparent;
         }
     }
 
     .custom-item-2 {
-        color: #ffd800;
+        color: #e67700;
 
         &:hover {
-            color: #ff6a00;
+            color: #d9480f;
             background: transparent;
         }
     }

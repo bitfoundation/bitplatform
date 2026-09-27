@@ -80,11 +80,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // The same goes for the sideways scrolling, which a trail that may flow onto another line never needs.
     private bool IsScrolling => Scrollable && Wrap is false;
 
+    // The collapsing alone cannot keep that single line once it is down to the one item it may not drop and
+    // that item is still wider than the room it has, so the last step gives up width and truncates instead.
+    private bool IsTruncatingLastItem => IsAutoCollapsing && _internalMaxDisplayedItems <= 1;
+
 
 
     /// <summary>
     /// Collapses the items that do not fit the width of the breadcrumb into the overflow menu, and brings
-    /// them back as the room for them returns, so the trail always stays on a single line.
+    /// them back as the room for them returns, so the trail always stays on a single line. Once only the last
+    /// item is left and it still does not fit, its text is truncated with an ellipsis and becomes its tooltip.
     /// <br />
     /// It measures the rendered items through JS interop and follows the size of the component with a
     /// resize observer, and it is off by default. MaxDisplayedItems, when it is set, still caps how many
@@ -386,6 +391,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(() => Wrap ? "bit-brc-wrp" : null);
 
         ClassBuilder.Register(() => IsScrolling ? "bit-brc-scr" : null);
+
+        ClassBuilder.Register(() => IsTruncatingLastItem ? "bit-brc-trc" : null);
     }
 
     protected override void RegisterCssStyles()
@@ -723,6 +730,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
         _internalMaxDisplayedItems = max;
         _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
+
+        // The measurements change the number of items the trail shows between renders, and whether its last
+        // step may truncate goes with that number.
+        ClassBuilder.Reset();
 
         SetItemsToShow();
     }
@@ -1108,15 +1119,18 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-    // An item whose text a max width may be cutting off is unreadable unless the full text is somewhere,
-    // so the text becomes the tooltip of an item that carries none of its own.
-    private string? GetItemTitle(TItem item)
+    // An item whose text a max width, or the room of a trail that collapsed all it could, may be cutting off
+    // is unreadable unless the full text is somewhere, so the text becomes the tooltip of an item that carries
+    // none of its own. The rows of the overflow menu are only cut off by the max width.
+    private string? GetItemTitle(TItem item, bool isOverflowItem = false)
     {
         var title = GetRawItemTitle(item);
 
-        if (title.HasValue() || MaxItemWidth.HasValue() is false) return title;
+        if (title.HasValue()) return title;
 
-        return GetItemText(item);
+        if (MaxItemWidth.HasValue() || (isOverflowItem is false && IsTruncatingLastItem)) return GetItemText(item);
+
+        return title;
     }
 
     private string? GetRawItemTitle(TItem item)
