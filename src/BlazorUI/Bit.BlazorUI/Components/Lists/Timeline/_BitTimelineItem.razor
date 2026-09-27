@@ -82,7 +82,6 @@
     {
         <div @onclick="() => Timeline.HandleOnItemClick(Item)"
              @onkeydown="HandleOnItemKeyDown"
-             @onkeypress:preventDefault
              role="button"
              tabindex="@(isEnabled ? "0" : null)"
              aria-disabled="@(isEnabled ? null : "true")"

@@ -17,6 +17,7 @@
 //   --bit-Timeline-item-spacing           room each item keeps around its contents along the line (default: half the dot size)
 //   --bit-Timeline-item-radius            corner radius of a clickable item            (default: $shp-radius-control)
 //   --bit-Timeline-item-hover-background  hover plate of a clickable item              (default: $clr-bg-pri-hover)
+//   --bit-Timeline-item-active-background pressed plate of a clickable item            (default: $clr-bg-pri-active)
 // The dot colors never override a disabled item, which keeps its disabled palette.
 
 /*
@@ -195,7 +196,7 @@
     }
 
     &:active {
-        background-color: $clr-bg-pri-active;
+        background-color: var(--bit-Timeline-item-active-background, #{$clr-bg-pri-active});
     }
 
     &:focus-visible {

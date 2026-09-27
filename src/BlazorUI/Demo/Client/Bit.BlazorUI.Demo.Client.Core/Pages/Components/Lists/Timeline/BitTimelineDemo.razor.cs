@@ -261,6 +261,12 @@ public partial class BitTimelineDemo
             DefaultValue = "--bit-clr-bg-pri-hover",
             Description = "Hover plate of a clickable item.",
         },
+        new()
+        {
+            Name = "--bit-Timeline-item-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Pressed plate of a clickable item.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

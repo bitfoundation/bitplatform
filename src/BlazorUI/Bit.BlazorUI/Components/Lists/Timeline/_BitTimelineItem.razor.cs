@@ -8,9 +8,8 @@ public partial class _BitTimelineItem<TItem> where TItem : class
 
     // Enter and Space activate the item, as the WAI-ARIA button pattern describes.
     // Blazor evaluates @onkeydown:preventDefault at render time, so it cannot tell Space from Tab and would
-    // swallow the Tab as well. The page scroll of Space is the default action of its keypress instead, which
-    // the button suppresses unconditionally (@onkeypress:preventDefault): keypress fires for the character
-    // keys only, so Tab and the arrow keys keep their default behavior.
+    // swallow the Tab as well. The page scroll of Space is suppressed from JavaScript instead (Timelines.ts),
+    // for a Space pressed on the item itself only, so a control of a custom template still receives its keys.
     private async Task HandleOnItemKeyDown(KeyboardEventArgs e)
     {
         // Only an item that acts as a button answers to the keyboard, so a presentational item never
