@@ -241,6 +241,15 @@ private static readonly List<MenuItem> unevenNavBarCustoms =
                                     IconName = { Selector = item => item.ImageName },
                                     SelectedIconName = { Selector = item => item.SelectedImageName } })"" />
 
+<BitNavBar Indicator=""BitNavBarIndicator.Line""
+           FlipIndicator
+           Mode=""BitNavMode.Manual""
+           Items=""selectedIconCustoms""
+           DefaultSelectedItem=""selectedIconCustoms[0]""
+           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                    IconName = { Selector = item => item.ImageName },
+                                    SelectedIconName = { Selector = item => item.SelectedImageName } })"" />
+
 <BitNavBar Indicator=""BitNavBarIndicator.Pill""
            Mode=""BitNavMode.Manual""
            Items=""selectedIconCustoms""
@@ -709,6 +718,12 @@ private static readonly List<MenuItem> basicNavBarCustoms =
         --bit-NavBar-selected-color: var(--bit-clr-pri-text);
         --bit-NavBar-selected-background: var(--bit-clr-pri);
     }
+
+    .short-line-navbar {
+        --bit-NavBar-indicator-inset: 1.25rem;
+        --bit-NavBar-indicator-thickness: 4px;
+        --bit-NavBar-indicator-color: var(--bit-clr-sec);
+    }
 </style>
 
 <BitNavBar Items=""basicNavBarCustoms""
@@ -739,6 +754,15 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 
 <BitNavBar Items=""basicNavBarCustoms""
            Class=""floating-navbar""
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedItem=""basicNavBarCustoms[0]""
+           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                    IconName = { Selector = item => item.ImageName } })"" />
+
+<BitNavBar Items=""basicNavBarCustoms""
+           Class=""short-line-navbar""
+           Indicator=""BitNavBarIndicator.Line""
+           FlipIndicator
            Mode=""BitNavMode.Manual""
            DefaultSelectedItem=""basicNavBarCustoms[0]""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },

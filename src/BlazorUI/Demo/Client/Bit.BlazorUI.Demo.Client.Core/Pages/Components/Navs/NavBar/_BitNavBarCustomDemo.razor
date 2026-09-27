@@ -199,7 +199,8 @@
     <div>
         The <b>SelectedIconName</b> selector (or <b>SelectedIcon</b>) swaps the selected item to a filled glyph.
         <b>Filled</b> fills the hovered and selected item with the <b>Color</b>, and <b>Indicator</b> adds a <b>Line</b>
-        along its edge or a <b>Pill</b> behind its icon - cues beyond color alone.
+        along its edge or a <b>Pill</b> behind its icon - cues beyond color alone. <b>FlipIndicator</b> moves the line
+        to the top edge, the one a bottom bar turns toward the content.
     </div>
     <br />
     <div>SelectedIconName:</div><br />
@@ -226,6 +227,18 @@
     <div>Line indicator:</div><br />
     <div class="container short">
         <BitNavBar Indicator="BitNavBarIndicator.Line"
+                   Mode="BitNavMode.Manual"
+                   Items="selectedIconCustoms"
+                   DefaultSelectedItem="selectedIconCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName },
+                                            SelectedIconName = { Selector = item => item.SelectedImageName } })" />
+    </div>
+    <br /><br />
+    <div>Line indicator, FlipIndicator:</div><br />
+    <div class="container short">
+        <BitNavBar Indicator="BitNavBarIndicator.Line"
+                   FlipIndicator
                    Mode="BitNavMode.Manual"
                    Items="selectedIconCustoms"
                    DefaultSelectedItem="selectedIconCustoms[0]"
@@ -740,6 +753,18 @@
     <div class="container short">
         <BitNavBar Items="basicNavBarCustoms"
                    Class="floating-navbar"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br />
+    <div>CSS variables (a short line indicator):</div><br />
+    <div class="container short">
+        <BitNavBar Items="basicNavBarCustoms"
+                   Class="short-line-navbar"
+                   Indicator="BitNavBarIndicator.Line"
+                   FlipIndicator
                    Mode="BitNavMode.Manual"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },

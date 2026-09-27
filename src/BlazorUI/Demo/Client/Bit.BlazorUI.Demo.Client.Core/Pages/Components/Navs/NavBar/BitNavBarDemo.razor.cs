@@ -75,6 +75,13 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "FlipIndicator",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws the Line indicator on the opposite edge: the top edge of a bar (the one a bottom bar turns toward the content) and the trailing edge of a Vertical rail."
+        },
+        new()
+        {
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -214,7 +221,7 @@ public partial class BitNavBarDemo
             Name = "SafeArea",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Adds the bottom safe-area inset of the device (a phone's home indicator) to the padding of the navbar."
+            Description = "Reserves the bottom safe-area inset of the device (a phone's home indicator) under the items, so a bar pinned to the bottom of the screen is not overlapped by it."
         },
         new()
         {
@@ -328,9 +335,11 @@ public partial class BitNavBarDemo
         new() { Name = "--bit-NavBar-selected-font-weight", DefaultValue = "--bit-tpg-fw-semibold", Description = "Font weight of the selected item." },
         new() { Name = "--bit-NavBar-indicator-color", DefaultValue = "The Color kind (its on-color when Filled)", Description = "Color of the Line indicator." },
         new() { Name = "--bit-NavBar-indicator-thickness", DefaultValue = "--bit-siz-tab-indicator", Description = "Thickness of the Line indicator." },
+        new() { Name = "--bit-NavBar-indicator-inset", DefaultValue = "0", Description = "Inset of the Line indicator from both ends of the item, for a line shorter than the item." },
         new() { Name = "--bit-NavBar-badge-color", DefaultValue = "--bit-clr-err-text", Description = "Text color of a badge." },
         new() { Name = "--bit-NavBar-badge-background", DefaultValue = "--bit-clr-err", Description = "Fill of a badge and a dot." },
         new() { Name = "--bit-NavBar-disabled-color", DefaultValue = "The Color kind's disabled text", Description = "Content color of a disabled item." },
+        new() { Name = "--bit-NavBar-focus-color", DefaultValue = "The Color kind's focus", Description = "Color of the focus ring of an item." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -1050,7 +1059,7 @@ public partial class BitNavBarDemo
             Items =
             [
                 new() { Name = "None", Description = "No indicator of its own: the selection is conveyed by the color of the item and, while Filled is enabled, by the fill of the item.", Value = "0" },
-                new() { Name = "Line", Description = "A line drawn along the edge of the selected item: its bottom edge in a horizontal navbar and its leading edge in a vertical rail, the way a tab strip marks its current tab.", Value = "1" },
+                new() { Name = "Line", Description = "A line drawn along the edge of the selected item: its bottom edge in a horizontal navbar and its leading edge in a vertical rail (the opposite ones with FlipIndicator), the way a tab strip marks its current tab.", Value = "1" },
                 new() { Name = "Pill", Description = "A pill drawn behind the icon of the selected item, which is how a Material navigation bar marks its current destination. It takes the fill off the item itself, so the pill is the only filled part.", Value = "2" }
             ]
         },

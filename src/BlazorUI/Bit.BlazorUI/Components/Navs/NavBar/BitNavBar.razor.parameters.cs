@@ -69,6 +69,16 @@ public partial class BitNavBar<TItem>
     public bool FitWidth { get; set; }
 
     /// <summary>
+    /// Draws the <see cref="BitNavBarIndicator.Line"/> indicator along the opposite edge of the selected item:
+    /// its top edge across a horizontal navbar, which is the edge a bar pinned to the bottom of the screen
+    /// turns toward the content above it, and its trailing edge down a <see cref="Vertical"/> rail, which is
+    /// the one a rail placed at the end of the screen turns toward the content beside it. The line a forced-colors
+    /// (High Contrast) theme draws in place of the other indicators takes the same edge.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FlipIndicator { get; set; }
+
+    /// <summary>
     /// The content rendered after the items of the navbar, outside of the list they form: the trailing
     /// actions of a bar, or the account button at the bottom of a navigation rail.
     /// </summary>

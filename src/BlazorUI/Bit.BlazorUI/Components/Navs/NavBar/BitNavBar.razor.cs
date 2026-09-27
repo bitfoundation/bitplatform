@@ -227,6 +227,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
+        ClassBuilder.Register(() => FlipIndicator ? "bit-nbr-fli" : string.Empty);
+
         // Baseline and Stretch describe how an item sits across the bar rather than how the items are
         // distributed along it, so neither one carries a distribution of its own here.
         ClassBuilder.Register(() => Alignment switch

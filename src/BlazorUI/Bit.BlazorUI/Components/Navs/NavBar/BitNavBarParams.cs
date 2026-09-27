@@ -59,6 +59,11 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
     public bool? FitWidth { get; set; }
 
     /// <summary>
+    /// Draws the Line indicator along the opposite edge of the selected item.
+    /// </summary>
+    public bool? FlipIndicator { get; set; }
+
+    /// <summary>
     /// Renders the navbar in full width of its container element.
     /// </summary>
     public bool? FullWidth { get; set; }
@@ -209,6 +214,13 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
         if (FitWidth.HasValue && bitNavBar.HasNotBeenSet(nameof(FitWidth)))
         {
             bitNavBar.FitWidth = FitWidth.Value;
+
+            bitNavBar.ClassBuilder.Reset();
+        }
+
+        if (FlipIndicator.HasValue && bitNavBar.HasNotBeenSet(nameof(FlipIndicator)))
+        {
+            bitNavBar.FlipIndicator = FlipIndicator.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }

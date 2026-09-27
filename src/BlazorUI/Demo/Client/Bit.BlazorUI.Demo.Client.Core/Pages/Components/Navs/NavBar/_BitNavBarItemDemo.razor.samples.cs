@@ -164,6 +164,12 @@ private static readonly List<BitNavBarItem> unevenNavBarItems =
            Items=""selectedIconItems""
            DefaultSelectedItem=""selectedIconItems[0]"" />
 
+<BitNavBar Indicator=""BitNavBarIndicator.Line""
+           FlipIndicator
+           Mode=""BitNavMode.Manual""
+           Items=""selectedIconItems""
+           DefaultSelectedItem=""selectedIconItems[0]"" />
+
 <BitNavBar Indicator=""BitNavBarIndicator.Pill""
            Mode=""BitNavMode.Manual""
            Items=""selectedIconItems""
@@ -542,6 +548,12 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
         --bit-NavBar-selected-color: var(--bit-clr-pri-text);
         --bit-NavBar-selected-background: var(--bit-clr-pri);
     }
+
+    .short-line-navbar {
+        --bit-NavBar-indicator-inset: 1.25rem;
+        --bit-NavBar-indicator-thickness: 4px;
+        --bit-NavBar-indicator-color: var(--bit-clr-sec);
+    }
 </style>
 
 <BitNavBar Items=""basicNavBarItems"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"" />
@@ -554,6 +566,13 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 
 <BitNavBar Items=""basicNavBarItems""
            Class=""floating-navbar""
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedItem=""basicNavBarItems[0]"" />
+
+<BitNavBar Items=""basicNavBarItems""
+           Class=""short-line-navbar""
+           Indicator=""BitNavBarIndicator.Line""
+           FlipIndicator
            Mode=""BitNavMode.Manual""
            DefaultSelectedItem=""basicNavBarItems[0]"" />";
     private readonly string example20CsharpCode = @"

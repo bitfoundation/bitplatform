@@ -141,6 +141,13 @@
         --bit-NavBar-selected-background: var(--bit-clr-pri);
     }
 
+    // The Style & Class section's second CSS-variables sample: a short, thick line in another color.
+    .short-line-navbar {
+        --bit-NavBar-indicator-inset: #{rem2(20px)};
+        --bit-NavBar-indicator-thickness: #{rem2(4px)};
+        --bit-NavBar-indicator-color: var(--bit-clr-sec);
+    }
+
     .custom-item {
         color: #ff7800;
         font-weight: 600;

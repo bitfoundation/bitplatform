@@ -149,7 +149,8 @@
     <div>
         <b>SelectedIconName</b> (or <b>SelectedIcon</b>) swaps the selected item to a filled glyph. <b>Filled</b> fills
         the hovered and selected item with the <b>Color</b>, and <b>Indicator</b> adds a <b>Line</b> along its edge or
-        a <b>Pill</b> behind its icon - cues beyond color alone.
+        a <b>Pill</b> behind its icon - cues beyond color alone. <b>FlipIndicator</b> moves the line to the top edge,
+        the one a bottom bar turns toward the content.
     </div>
     <br />
     <div>SelectedIconName:</div><br />
@@ -170,6 +171,15 @@
     <div>Line indicator:</div><br />
     <div class="container short">
         <BitNavBar Indicator="BitNavBarIndicator.Line"
+                   Mode="BitNavMode.Manual"
+                   Items="selectedIconItems"
+                   DefaultSelectedItem="selectedIconItems[0]" />
+    </div>
+    <br /><br />
+    <div>Line indicator, FlipIndicator:</div><br />
+    <div class="container short">
+        <BitNavBar Indicator="BitNavBarIndicator.Line"
+                   FlipIndicator
                    Mode="BitNavMode.Manual"
                    Items="selectedIconItems"
                    DefaultSelectedItem="selectedIconItems[0]" />
@@ -572,6 +582,16 @@
     <div class="container short">
         <BitNavBar Items="basicNavBarItems"
                    Class="floating-navbar"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="basicNavBarItems[0]" />
+    </div>
+    <br /><br />
+    <div>CSS variables (a short line indicator):</div><br />
+    <div class="container short">
+        <BitNavBar Items="basicNavBarItems"
+                   Class="short-line-navbar"
+                   Indicator="BitNavBarIndicator.Line"
+                   FlipIndicator
                    Mode="BitNavMode.Manual"
                    DefaultSelectedItem="basicNavBarItems[0]" />
     </div>

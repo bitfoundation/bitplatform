@@ -2057,6 +2057,7 @@ public class BitNavBarTests : BunitTestContext
             Color = BitColor.Success,
             Filled = true,
             FitWidth = true,
+            FlipIndicator = true,
             IconOnly = true,
             Indicator = BitNavBarIndicator.Line,
             Justified = true,
@@ -2073,7 +2074,7 @@ public class BitNavBarTests : BunitTestContext
 
         var root = component.Find(".bit-nbr");
 
-        foreach (var cssClass in new[] { "bit-nbr-ctr", "bit-nbr-suc", "bit-nbr-fil", "bit-nbr-ftw", "bit-nbr-ion", "bit-nbr-lin",
+        foreach (var cssClass in new[] { "bit-nbr-ctr", "bit-nbr-suc", "bit-nbr-fil", "bit-nbr-ftw", "bit-nbr-fli", "bit-nbr-ion", "bit-nbr-lin",
                                          "bit-nbr-jst", "bit-nbr-sfa", "bit-nbr-scr", "bit-nbr-lg", "bit-nbr-vrt", "cascaded-root" })
         {
             Assert.IsTrue(root.ClassList.Contains(cssClass), cssClass);
@@ -2574,6 +2575,20 @@ public class BitNavBarTests : BunitTestContext
         var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Indicator, indicator));
 
         Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    [DataRow(true, "bit-nbr-fli")]
+    [DataRow(false, "")]
+    public void BitNavBarShouldRespectFlipIndicator(bool flipIndicator, string expectedClass)
+    {
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            p.Add(c => c.Indicator, BitNavBarIndicator.Line);
+            p.Add(c => c.FlipIndicator, flipIndicator);
+        });
+
+        AssertRootClass(component, expectedClass, "bit-nbr-fli");
     }
 
     [TestMethod]

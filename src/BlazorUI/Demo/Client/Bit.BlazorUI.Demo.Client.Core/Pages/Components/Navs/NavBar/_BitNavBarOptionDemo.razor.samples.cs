@@ -157,6 +157,13 @@ private string? twoWaySelectedKey;";
     <BitNavBarOption Text=""Favorites"" IconName=""@BitIconName.Heart"" SelectedIconName=""@BitIconName.HeartFill"" />
 </BitNavBar>
 
+<BitNavBar TItem=""BitNavBarOption"" Indicator=""BitNavBarIndicator.Line"" FlipIndicator Mode=""BitNavMode.Manual"" DefaultSelectedKey=""home"">
+    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" SelectedIconName=""@BitIconName.HomeSolid"" Key=""home"" />
+    <BitNavBarOption Text=""Inbox"" IconName=""@BitIconName.Mail"" SelectedIconName=""@BitIconName.MailSolid"" />
+    <BitNavBarOption Text=""Alerts"" IconName=""@BitIconName.Ringer"" SelectedIconName=""@BitIconName.RingerSolid"" />
+    <BitNavBarOption Text=""Favorites"" IconName=""@BitIconName.Heart"" SelectedIconName=""@BitIconName.HeartFill"" />
+</BitNavBar>
+
 <BitNavBar TItem=""BitNavBarOption"" Indicator=""BitNavBarIndicator.Pill"" Mode=""BitNavMode.Manual"" DefaultSelectedKey=""home"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" SelectedIconName=""@BitIconName.HomeSolid"" Key=""home"" />
     <BitNavBarOption Text=""Inbox"" IconName=""@BitIconName.Mail"" SelectedIconName=""@BitIconName.MailSolid"" />
@@ -602,6 +609,12 @@ private static readonly BitNavBarParams[] navBarParams =
         --bit-NavBar-selected-color: var(--bit-clr-pri-text);
         --bit-NavBar-selected-background: var(--bit-clr-pri);
     }
+
+    .short-line-navbar {
+        --bit-NavBar-indicator-inset: 1.25rem;
+        --bit-NavBar-indicator-thickness: 4px;
+        --bit-NavBar-indicator-color: var(--bit-clr-sec);
+    }
 </style>
 
 <BitNavBar TItem=""BitNavBarOption"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"">
@@ -640,6 +653,13 @@ private static readonly BitNavBarParams[] navBarParams =
 </BitNavBar>
 
 <BitNavBar TItem=""BitNavBarOption"" Class=""floating-navbar"" Mode=""BitNavMode.Manual"" DefaultSelectedKey=""home"">
+    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
+    <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
+    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
+    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
+</BitNavBar>
+
+<BitNavBar TItem=""BitNavBarOption"" Class=""short-line-navbar"" Indicator=""BitNavBarIndicator.Line"" FlipIndicator Mode=""BitNavMode.Manual"" DefaultSelectedKey=""home"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
