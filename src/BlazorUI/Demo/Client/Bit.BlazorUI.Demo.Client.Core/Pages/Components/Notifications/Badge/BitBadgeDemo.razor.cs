@@ -900,7 +900,6 @@ public partial class BitBadgeDemo
         new()
         {
             Max = 99,
-            Overlap = true,
             Bordered = true,
             Shape = BitBadgeShape.Rounded,
             Variant = BitVariant.Outline,
