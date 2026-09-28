@@ -26,6 +26,25 @@
         --bit-clr-suc: CanvasText;
         --bit-clr-wrn: CanvasText;
 
+        // The role foregrounds follow the mains remapped above. Their default is a color-mix() of the
+        // role and the foreground (family-tokens.scss), and a mix of two system colors is no longer a
+        // system color - LinkText shaded towards CanvasText would be neither - so each is named here.
+        --bit-clr-pri-fg: LinkText;
+        --bit-clr-err-fg: CanvasText;
+        --bit-clr-suc-fg: CanvasText;
+        --bit-clr-wrn-fg: CanvasText;
+
+        // The role tints are a translucent wash of a role, which is no system color, and a forced palette
+        // has no tints at all: a tinted surface of any role is the plain canvas.
+        --bit-clr-pri-tint: Canvas;
+        --bit-clr-sec-tint: Canvas;
+        --bit-clr-ter-tint: Canvas;
+        --bit-clr-inf-tint: Canvas;
+        --bit-clr-suc-tint: Canvas;
+        --bit-clr-wrn-tint: Canvas;
+        --bit-clr-swr-tint: Canvas;
+        --bit-clr-err-tint: Canvas;
+
         // Elevation is meaningless against a two-color system palette, so every shadow token is
         // flattened. The per-family ones have to be named individually rather than left to follow
         // --bit-shd-cal: they are aliases only in the fallback tier (family-tokens.scss) - every

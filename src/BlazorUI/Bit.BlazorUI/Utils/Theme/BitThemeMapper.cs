@@ -99,7 +99,78 @@ internal static class BitThemeMapper
 
             cssVariables[alias] = $"var({target})";
         }
+
+        // The role foregrounds are the one part of the tier that is not a plain var() alias: each one
+        // mixes its role's main color with the primary foreground, so it is re-declared (as that same
+        // expression) when EITHER of the two is re-valued - a theme that only changes the page's text
+        // color still has to re-shade every role's foreground towards it.
+        var foregroundTouched = cssVariables.ContainsKey(BitCss.Var.Color.Foreground.Primary.Main);
+
+        foreach (var (alias, role) in RoleForegroundAliasTargets)
+        {
+            if (cssVariables.ContainsKey(alias)) continue; // explicit foreground wins
+            if (foregroundTouched is false && cssVariables.ContainsKey(role) is false) continue; // both inputs untouched
+
+            cssVariables[alias] = RoleForegroundDefault(role);
+        }
+
+        // The role tints are a wash of their role alone, so only re-valuing the role itself re-tints one.
+        foreach (var (alias, role) in RoleTintAliasTargets)
+        {
+            if (cssVariables.ContainsKey(alias)) continue; // explicit tint wins
+            if (cssVariables.ContainsKey(role) is false) continue; // role untouched
+
+            cssVariables[alias] = RoleTintDefault(role);
+        }
     }
+
+    /// <summary>
+    /// Each accent role's foreground alias (<c>--bit-clr-&lt;role&gt;-fg</c>) paired with the role's main
+    /// color it is derived from, mirroring <c>Styles/family-tokens.scss</c> (pinned to it by a contract
+    /// test). The default value itself is <see cref="RoleForegroundDefault"/>.
+    /// </summary>
+    internal static readonly IReadOnlyList<KeyValuePair<string, string>> RoleForegroundAliasTargets =
+    [
+        new(BitCss.Var.Color.Primary.Foreground, BitCss.Var.Color.Primary.Main),
+        new(BitCss.Var.Color.Secondary.Foreground, BitCss.Var.Color.Secondary.Main),
+        new(BitCss.Var.Color.Tertiary.Foreground, BitCss.Var.Color.Tertiary.Main),
+        new(BitCss.Var.Color.Info.Foreground, BitCss.Var.Color.Info.Main),
+        new(BitCss.Var.Color.Success.Foreground, BitCss.Var.Color.Success.Main),
+        new(BitCss.Var.Color.Warning.Foreground, BitCss.Var.Color.Warning.Main),
+        new(BitCss.Var.Color.SevereWarning.Foreground, BitCss.Var.Color.SevereWarning.Main),
+        new(BitCss.Var.Color.Error.Foreground, BitCss.Var.Color.Error.Main),
+    ];
+
+    /// <summary>
+    /// The default of a role's foreground alias as <c>Styles/family-tokens.scss</c> declares it: the
+    /// role's main color shaded towards the primary foreground.
+    /// </summary>
+    internal static string RoleForegroundDefault(string roleMain)
+        => $"color-mix(in srgb, var({roleMain}) 55%, var({BitCss.Var.Color.Foreground.Primary.Main}))";
+
+    /// <summary>
+    /// Each accent role's tint alias (<c>--bit-clr-&lt;role&gt;-tint</c>) paired with the role's main color
+    /// it washes, mirroring <c>Styles/family-tokens.scss</c> (pinned to it by a contract test). The default
+    /// value itself is <see cref="RoleTintDefault"/>.
+    /// </summary>
+    internal static readonly IReadOnlyList<KeyValuePair<string, string>> RoleTintAliasTargets =
+    [
+        new(BitCss.Var.Color.Primary.Tint, BitCss.Var.Color.Primary.Main),
+        new(BitCss.Var.Color.Secondary.Tint, BitCss.Var.Color.Secondary.Main),
+        new(BitCss.Var.Color.Tertiary.Tint, BitCss.Var.Color.Tertiary.Main),
+        new(BitCss.Var.Color.Info.Tint, BitCss.Var.Color.Info.Main),
+        new(BitCss.Var.Color.Success.Tint, BitCss.Var.Color.Success.Main),
+        new(BitCss.Var.Color.Warning.Tint, BitCss.Var.Color.Warning.Main),
+        new(BitCss.Var.Color.SevereWarning.Tint, BitCss.Var.Color.SevereWarning.Main),
+        new(BitCss.Var.Color.Error.Tint, BitCss.Var.Color.Error.Main),
+    ];
+
+    /// <summary>
+    /// The default of a role's tint alias as <c>Styles/family-tokens.scss</c> declares it: the role's main
+    /// color as a translucent wash over whatever surface is below.
+    /// </summary>
+    internal static string RoleTintDefault(string roleMain)
+        => $"color-mix(in srgb, var({roleMain}) 10%, transparent)";
 
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
     {
@@ -126,6 +197,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Primary.Disabled, bitTheme.Color.Primary.Disabled);
         addCssVar(BitCss.Var.Color.Primary.DisabledText, bitTheme.Color.Primary.DisabledText);
         addCssVar(BitCss.Var.Color.Primary.Focus, bitTheme.Color.Primary.Focus);
+        addCssVar(BitCss.Var.Color.Primary.Foreground, bitTheme.Color.Primary.Foreground);
+        addCssVar(BitCss.Var.Color.Primary.Tint, bitTheme.Color.Primary.Tint);
 
         addCssVar(BitCss.Var.Color.Secondary.Main, bitTheme.Color.Secondary.Main);
         addCssVar(BitCss.Var.Color.Secondary.Hover.Main, bitTheme.Color.Secondary.MainHover);
@@ -140,6 +213,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Secondary.Disabled, bitTheme.Color.Secondary.Disabled);
         addCssVar(BitCss.Var.Color.Secondary.DisabledText, bitTheme.Color.Secondary.DisabledText);
         addCssVar(BitCss.Var.Color.Secondary.Focus, bitTheme.Color.Secondary.Focus);
+        addCssVar(BitCss.Var.Color.Secondary.Foreground, bitTheme.Color.Secondary.Foreground);
+        addCssVar(BitCss.Var.Color.Secondary.Tint, bitTheme.Color.Secondary.Tint);
 
         addCssVar(BitCss.Var.Color.Tertiary.Main, bitTheme.Color.Tertiary.Main);
         addCssVar(BitCss.Var.Color.Tertiary.Hover.Main, bitTheme.Color.Tertiary.MainHover);
@@ -154,6 +229,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Tertiary.Disabled, bitTheme.Color.Tertiary.Disabled);
         addCssVar(BitCss.Var.Color.Tertiary.DisabledText, bitTheme.Color.Tertiary.DisabledText);
         addCssVar(BitCss.Var.Color.Tertiary.Focus, bitTheme.Color.Tertiary.Focus);
+        addCssVar(BitCss.Var.Color.Tertiary.Foreground, bitTheme.Color.Tertiary.Foreground);
+        addCssVar(BitCss.Var.Color.Tertiary.Tint, bitTheme.Color.Tertiary.Tint);
 
         addCssVar(BitCss.Var.Color.Info.Main, bitTheme.Color.Info.Main);
         addCssVar(BitCss.Var.Color.Info.Hover.Main, bitTheme.Color.Info.MainHover);
@@ -168,6 +245,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Info.Disabled, bitTheme.Color.Info.Disabled);
         addCssVar(BitCss.Var.Color.Info.DisabledText, bitTheme.Color.Info.DisabledText);
         addCssVar(BitCss.Var.Color.Info.Focus, bitTheme.Color.Info.Focus);
+        addCssVar(BitCss.Var.Color.Info.Foreground, bitTheme.Color.Info.Foreground);
+        addCssVar(BitCss.Var.Color.Info.Tint, bitTheme.Color.Info.Tint);
 
         addCssVar(BitCss.Var.Color.Success.Main, bitTheme.Color.Success.Main);
         addCssVar(BitCss.Var.Color.Success.Hover.Main, bitTheme.Color.Success.MainHover);
@@ -182,6 +261,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Success.Disabled, bitTheme.Color.Success.Disabled);
         addCssVar(BitCss.Var.Color.Success.DisabledText, bitTheme.Color.Success.DisabledText);
         addCssVar(BitCss.Var.Color.Success.Focus, bitTheme.Color.Success.Focus);
+        addCssVar(BitCss.Var.Color.Success.Foreground, bitTheme.Color.Success.Foreground);
+        addCssVar(BitCss.Var.Color.Success.Tint, bitTheme.Color.Success.Tint);
 
         addCssVar(BitCss.Var.Color.Warning.Main, bitTheme.Color.Warning.Main);
         addCssVar(BitCss.Var.Color.Warning.Hover.Main, bitTheme.Color.Warning.MainHover);
@@ -196,6 +277,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Warning.Disabled, bitTheme.Color.Warning.Disabled);
         addCssVar(BitCss.Var.Color.Warning.DisabledText, bitTheme.Color.Warning.DisabledText);
         addCssVar(BitCss.Var.Color.Warning.Focus, bitTheme.Color.Warning.Focus);
+        addCssVar(BitCss.Var.Color.Warning.Foreground, bitTheme.Color.Warning.Foreground);
+        addCssVar(BitCss.Var.Color.Warning.Tint, bitTheme.Color.Warning.Tint);
 
         addCssVar(BitCss.Var.Color.SevereWarning.Main, bitTheme.Color.SevereWarning.Main);
         addCssVar(BitCss.Var.Color.SevereWarning.Hover.Main, bitTheme.Color.SevereWarning.MainHover);
@@ -210,6 +293,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.SevereWarning.Disabled, bitTheme.Color.SevereWarning.Disabled);
         addCssVar(BitCss.Var.Color.SevereWarning.DisabledText, bitTheme.Color.SevereWarning.DisabledText);
         addCssVar(BitCss.Var.Color.SevereWarning.Focus, bitTheme.Color.SevereWarning.Focus);
+        addCssVar(BitCss.Var.Color.SevereWarning.Foreground, bitTheme.Color.SevereWarning.Foreground);
+        addCssVar(BitCss.Var.Color.SevereWarning.Tint, bitTheme.Color.SevereWarning.Tint);
 
         addCssVar(BitCss.Var.Color.Error.Main, bitTheme.Color.Error.Main);
         addCssVar(BitCss.Var.Color.Error.Hover.Main, bitTheme.Color.Error.MainHover);
@@ -224,6 +309,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Error.Disabled, bitTheme.Color.Error.Disabled);
         addCssVar(BitCss.Var.Color.Error.DisabledText, bitTheme.Color.Error.DisabledText);
         addCssVar(BitCss.Var.Color.Error.Focus, bitTheme.Color.Error.Focus);
+        addCssVar(BitCss.Var.Color.Error.Foreground, bitTheme.Color.Error.Foreground);
+        addCssVar(BitCss.Var.Color.Error.Tint, bitTheme.Color.Error.Tint);
 
         addCssVar(BitCss.Var.Color.Foreground.Primary.Main, bitTheme.Color.Foreground.Primary);
         addCssVar(BitCss.Var.Color.Foreground.Primary.Hover.Main, bitTheme.Color.Foreground.PrimaryHover);
@@ -924,6 +1011,8 @@ internal static class BitThemeMapper
         result.Color.Primary.Disabled = bitTheme.Color.Primary.Disabled ?? other.Color.Primary.Disabled;
         result.Color.Primary.DisabledText = bitTheme.Color.Primary.DisabledText ?? other.Color.Primary.DisabledText;
         result.Color.Primary.Focus = bitTheme.Color.Primary.Focus ?? other.Color.Primary.Focus;
+        result.Color.Primary.Foreground = bitTheme.Color.Primary.Foreground ?? other.Color.Primary.Foreground;
+        result.Color.Primary.Tint = bitTheme.Color.Primary.Tint ?? other.Color.Primary.Tint;
 
         result.Color.Secondary.Main = bitTheme.Color.Secondary.Main ?? other.Color.Secondary.Main;
         result.Color.Secondary.MainHover = bitTheme.Color.Secondary.MainHover ?? other.Color.Secondary.MainHover;
@@ -938,6 +1027,8 @@ internal static class BitThemeMapper
         result.Color.Secondary.Disabled = bitTheme.Color.Secondary.Disabled ?? other.Color.Secondary.Disabled;
         result.Color.Secondary.DisabledText = bitTheme.Color.Secondary.DisabledText ?? other.Color.Secondary.DisabledText;
         result.Color.Secondary.Focus = bitTheme.Color.Secondary.Focus ?? other.Color.Secondary.Focus;
+        result.Color.Secondary.Foreground = bitTheme.Color.Secondary.Foreground ?? other.Color.Secondary.Foreground;
+        result.Color.Secondary.Tint = bitTheme.Color.Secondary.Tint ?? other.Color.Secondary.Tint;
 
         result.Color.Tertiary.Main = bitTheme.Color.Tertiary.Main ?? other.Color.Tertiary.Main;
         result.Color.Tertiary.MainHover = bitTheme.Color.Tertiary.MainHover ?? other.Color.Tertiary.MainHover;
@@ -952,6 +1043,8 @@ internal static class BitThemeMapper
         result.Color.Tertiary.Disabled = bitTheme.Color.Tertiary.Disabled ?? other.Color.Tertiary.Disabled;
         result.Color.Tertiary.DisabledText = bitTheme.Color.Tertiary.DisabledText ?? other.Color.Tertiary.DisabledText;
         result.Color.Tertiary.Focus = bitTheme.Color.Tertiary.Focus ?? other.Color.Tertiary.Focus;
+        result.Color.Tertiary.Foreground = bitTheme.Color.Tertiary.Foreground ?? other.Color.Tertiary.Foreground;
+        result.Color.Tertiary.Tint = bitTheme.Color.Tertiary.Tint ?? other.Color.Tertiary.Tint;
 
         result.Color.Info.Main = bitTheme.Color.Info.Main ?? other.Color.Info.Main;
         result.Color.Info.MainHover = bitTheme.Color.Info.MainHover ?? other.Color.Info.MainHover;
@@ -966,6 +1059,8 @@ internal static class BitThemeMapper
         result.Color.Info.Disabled = bitTheme.Color.Info.Disabled ?? other.Color.Info.Disabled;
         result.Color.Info.DisabledText = bitTheme.Color.Info.DisabledText ?? other.Color.Info.DisabledText;
         result.Color.Info.Focus = bitTheme.Color.Info.Focus ?? other.Color.Info.Focus;
+        result.Color.Info.Foreground = bitTheme.Color.Info.Foreground ?? other.Color.Info.Foreground;
+        result.Color.Info.Tint = bitTheme.Color.Info.Tint ?? other.Color.Info.Tint;
 
         result.Color.Success.Main = bitTheme.Color.Success.Main ?? other.Color.Success.Main;
         result.Color.Success.MainHover = bitTheme.Color.Success.MainHover ?? other.Color.Success.MainHover;
@@ -980,6 +1075,8 @@ internal static class BitThemeMapper
         result.Color.Success.Disabled = bitTheme.Color.Success.Disabled ?? other.Color.Success.Disabled;
         result.Color.Success.DisabledText = bitTheme.Color.Success.DisabledText ?? other.Color.Success.DisabledText;
         result.Color.Success.Focus = bitTheme.Color.Success.Focus ?? other.Color.Success.Focus;
+        result.Color.Success.Foreground = bitTheme.Color.Success.Foreground ?? other.Color.Success.Foreground;
+        result.Color.Success.Tint = bitTheme.Color.Success.Tint ?? other.Color.Success.Tint;
 
         result.Color.Warning.Main = bitTheme.Color.Warning.Main ?? other.Color.Warning.Main;
         result.Color.Warning.MainHover = bitTheme.Color.Warning.MainHover ?? other.Color.Warning.MainHover;
@@ -994,6 +1091,8 @@ internal static class BitThemeMapper
         result.Color.Warning.Disabled = bitTheme.Color.Warning.Disabled ?? other.Color.Warning.Disabled;
         result.Color.Warning.DisabledText = bitTheme.Color.Warning.DisabledText ?? other.Color.Warning.DisabledText;
         result.Color.Warning.Focus = bitTheme.Color.Warning.Focus ?? other.Color.Warning.Focus;
+        result.Color.Warning.Foreground = bitTheme.Color.Warning.Foreground ?? other.Color.Warning.Foreground;
+        result.Color.Warning.Tint = bitTheme.Color.Warning.Tint ?? other.Color.Warning.Tint;
 
         result.Color.SevereWarning.Main = bitTheme.Color.SevereWarning.Main ?? other.Color.SevereWarning.Main;
         result.Color.SevereWarning.MainHover = bitTheme.Color.SevereWarning.MainHover ?? other.Color.SevereWarning.MainHover;
@@ -1008,6 +1107,8 @@ internal static class BitThemeMapper
         result.Color.SevereWarning.Disabled = bitTheme.Color.SevereWarning.Disabled ?? other.Color.SevereWarning.Disabled;
         result.Color.SevereWarning.DisabledText = bitTheme.Color.SevereWarning.DisabledText ?? other.Color.SevereWarning.DisabledText;
         result.Color.SevereWarning.Focus = bitTheme.Color.SevereWarning.Focus ?? other.Color.SevereWarning.Focus;
+        result.Color.SevereWarning.Foreground = bitTheme.Color.SevereWarning.Foreground ?? other.Color.SevereWarning.Foreground;
+        result.Color.SevereWarning.Tint = bitTheme.Color.SevereWarning.Tint ?? other.Color.SevereWarning.Tint;
 
         result.Color.Error.Main = bitTheme.Color.Error.Main ?? other.Color.Error.Main;
         result.Color.Error.MainHover = bitTheme.Color.Error.MainHover ?? other.Color.Error.MainHover;
@@ -1022,6 +1123,8 @@ internal static class BitThemeMapper
         result.Color.Error.Disabled = bitTheme.Color.Error.Disabled ?? other.Color.Error.Disabled;
         result.Color.Error.DisabledText = bitTheme.Color.Error.DisabledText ?? other.Color.Error.DisabledText;
         result.Color.Error.Focus = bitTheme.Color.Error.Focus ?? other.Color.Error.Focus;
+        result.Color.Error.Foreground = bitTheme.Color.Error.Foreground ?? other.Color.Error.Foreground;
+        result.Color.Error.Tint = bitTheme.Color.Error.Tint ?? other.Color.Error.Tint;
 
         result.Color.Foreground.Primary = bitTheme.Color.Foreground.Primary ?? other.Color.Foreground.Primary;
         result.Color.Foreground.PrimaryHover = bitTheme.Color.Foreground.PrimaryHover ?? other.Color.Foreground.PrimaryHover;
