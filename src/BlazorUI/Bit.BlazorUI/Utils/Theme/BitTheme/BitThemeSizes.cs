@@ -61,6 +61,9 @@ public class BitThemeSizes
     /// <summary>The diameter of a dot <c>BitBadge</c> per size class (<c>--bit-siz-badge-dot-{sm,md,lg}</c>).</summary>
     public BitThemeSizeScale BadgeDot { get; set; } = new();
 
+    /// <summary>The height of a chip (<c>BitTag</c>) per size class, measured inside its rule (<c>--bit-siz-chip-{sm,md,lg}</c>).</summary>
+    public BitThemeSizeScale Chip { get; set; } = new();
+
     /// <summary>The stroke of every inline circular spinner (<c>--bit-siz-spinner-stroke</c>).</summary>
     public string? SpinnerStroke { get; set; }
 
