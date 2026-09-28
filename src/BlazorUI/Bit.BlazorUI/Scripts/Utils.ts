@@ -413,7 +413,7 @@
                     if (active !== element && active !== focusables[0]) return;
 
                     e.preventDefault();
-                    trigger.focus();
+                    Utils.focusTrigger(trigger);
                     return;
                 }
 
@@ -426,7 +426,13 @@
 
                 e.preventDefault();
 
-                (Utils.findFocusableAfter(trigger, element) ?? trigger).focus();
+                const next = Utils.findFocusableAfter(trigger, element);
+
+                if (next) {
+                    next.focus();
+                } else {
+                    Utils.focusTrigger(trigger);
+                }
 
                 dotnetObj.invokeMethodAsync('OnTabOut');
             }, { signal: controller.signal });
@@ -500,6 +506,17 @@
 
             controller.abort();
             Utils._escapes.delete(elementId);
+        }
+
+        // The trigger may be a plain container around the control the user actually lands on - the anchor a callout
+        // renders around the consumer's own button - which takes no focus of its own, so the first focusable element
+        // inside it is where the focus goes back to.
+        private static focusTrigger(trigger: HTMLElement) {
+            const target = trigger.matches(Utils._focusables) && Utils.isFocusable(trigger)
+                ? trigger
+                : Array.from(trigger.querySelectorAll<HTMLElement>(Utils._focusables)).find(Utils.isFocusable);
+
+            (target ?? trigger).focus();
         }
 
         public static disposeTabOut(elementId: string) {

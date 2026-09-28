@@ -123,6 +123,15 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
+<BitCallout NoDismissOnScroll>
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">NoDismissOnScroll</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">Scroll the page: this one follows its anchor.</div>
+    </Content>
+</BitCallout>
+
 <BitCallout NoDismissOnEscape NoDismissOnOutsideClick @ref=""callout3"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">No auto dismiss</BitButton>
@@ -536,14 +545,15 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
     </Content>
 </BitCallout>
 
-<BitCallout Modal AriaLabel=""Confirm"" @ref=""modalCallout"">
+<BitCallout Modal AriaLabelledBy=""modal-title"" AriaDescribedBy=""modal-text"" @ref=""modalCallout"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Modal</BitButton>
     </Anchor>
     <Content>
         <div class=""callout-content"">
             <BitStack Gap=""1rem"">
-                <div>The page behind is dimmed and holds still.</div>
+                <b id=""modal-title"">Heads up</b>
+                <div id=""modal-text"">The page behind is dimmed and holds still.</div>
                 <BitButton OnClick=""() => modalCallout.Close()"">OK</BitButton>
             </BitStack>
         </div>

@@ -163,6 +163,49 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalloutShouldTakeItsNameAndDescriptionFromElementsOfTheConsumer()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Modal, true);
+            parameters.Add(p => p.AriaLabel, "Ignored in favor of the heading");
+            parameters.Add(p => p.AriaLabelledBy, "confirm-title");
+            parameters.Add(p => p.AriaDescribedBy, "confirm-text");
+            parameters.Add(p => p.Header, Markup("<span>Header</span>"));
+        });
+
+        var callout = component.Find(".bit-clo-cal");
+
+        Assert.AreEqual("dialog", callout.GetAttribute("role"));
+        Assert.AreEqual("confirm-title", callout.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("confirm-text", callout.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldReportItselfAsAGroupWhenItIsNamedByAnElement()
+    {
+        // A name on a generic container is one no screen reader announces.
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabelledBy, "tip-title");
+        });
+
+        Assert.AreEqual("group", component.Find(".bit-clo-cal").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldRenderNoNameOrDescriptionByDefault()
+    {
+        var component = RenderComponent<BitCallout>();
+
+        var callout = component.Find(".bit-clo-cal");
+
+        Assert.IsFalse(callout.HasAttribute("role"));
+        Assert.IsFalse(callout.HasAttribute("aria-labelledby"));
+        Assert.IsFalse(callout.HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
     public void BitCalloutShouldNameItselfByTheHeaderItRenders()
     {
         var component = RenderComponent<BitCallout>(parameters =>
@@ -429,6 +472,99 @@ public class BitCalloutTests : BunitTestContext
         component.Find(".bit-clo-acn").Click();
 
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscape"].Count);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldPutItsContentInTheTabOrderRightAfterItsAnchor()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        // The callout is relocated to the end of the body while it is open, so without this a Tab on the trigger
+        // would run straight past it, and one from its last element off the end of the page.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTabOut"][^1].Arguments;
+
+        Assert.AreEqual(component.Find(".bit-clo-cal").Id, setup[0]);
+        Assert.AreEqual(component.Find(".bit-clo-acn").Id, setup[1]);
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldPutItsContentInTheTabOrderRightAfterAnExternalAnchor()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.AnchorId, "external-anchor");
+        });
+
+        await component.InvokeAsync(() => component.Instance.Open());
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTabOut"][^1].Arguments;
+
+        Assert.AreEqual("external-anchor", setup[1]);
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldCloseWhenTheKeyboardTabsOutOfIt()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        await component.InvokeAsync(() => component.Instance._OnTabOut());
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeTabOut"].Count);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldLeaveTheTabOrderToTheFocusTrapWhenItKeepsTheFocus()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.TrapFocus, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTabOut"].Count);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldHandTheTabOrderOverWhenTrapFocusIsTurnedOnWhileItIsOpen()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        component.Render(parameters => parameters.Add(p => p.TrapFocus, true));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeTabOut"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldNotTakePartInTheTabOrderWhenItIsOpenedAtAPoint()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        // There is no trigger for the content to sit after.
+        await component.InvokeAsync(() => component.Instance.OpenAt(10, 20));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTabOut"].Count);
     }
 
     [TestMethod]
@@ -1826,6 +1962,24 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalloutShouldPassTheScrollDismissalOptOutToThePositioningOnItsOwn()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.NoDismissOnScroll, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1].Arguments;
+
+        // The page moving under it re-anchors the callout, while an outside click still dismisses it.
+        Assert.AreEqual(false, arguments[20]);
+        Assert.AreEqual(true, arguments[^1]);
+    }
+
+    [TestMethod]
     public void BitCalloutShouldPassTheAlignmentOffsetAndTheArrowPaddingToThePositioning()
     {
         var component = RenderComponent<BitCallout>(parameters =>
@@ -2156,6 +2310,75 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCalloutShouldListenForEscapeOnThePageWhenItOpensOnHover()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice").SetResult(true);
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.OpenOnHover, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo").MouseEnter();
+
+        // A hover card is shown while the focus is wherever the user left it, and has to be dismissible from
+        // there (WCAG 1.4.13), so the key is listened for on the whole page, leaving the root to its own handler.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscape"][^1].Arguments;
+
+        Assert.AreEqual(component.Find(".bit-clo-cal").Id, setup[0]);
+        Assert.AreEqual(component.Find(".bit-clo").Id, setup[2]);
+
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeEscape"].Count);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldStillCloseOnEscapeFromTheAnchorWhenItOpensOnHover()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice").SetResult(true);
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.OpenOnHover, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo").MouseEnter();
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        // The page-level listener leaves the anchor out, so the key pressed on it is the root's to answer.
+        component.Find(".bit-clo").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldLeaveTheEscapeInsideItToThePageListenerWhenItOpensOnHover()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice").SetResult(true);
+
+        var dismissed = 0;
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.OpenOnHover, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+            parameters.Add(p => p.OnDismiss, () => dismissed++);
+        });
+
+        component.Find(".bit-clo").MouseEnter();
+
+        // The JS listener reports this very key as well, so answering it here too would close the callout twice.
+        component.Find(".bit-clo-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(0, dismissed);
+    }
+
+    [TestMethod]
     public void BitCalloutShouldNotOpenOnHoverOnADeviceThatCannotHover()
     {
         // A tap on a touch screen reports a mouseover of its own, which would fight the click that is also
@@ -2329,6 +2552,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.AreEqual(480, instance.MaxWindowWidth);
         Assert.IsTrue(instance.NoDismissOnEscape);
         Assert.IsTrue(instance.NoDismissOnOutsideClick);
+        Assert.IsTrue(instance.NoDismissOnScroll);
         Assert.IsTrue(instance.NoFlip);
         Assert.IsTrue(instance.NoOverlay);
         Assert.IsTrue(instance.OpenOnHover);

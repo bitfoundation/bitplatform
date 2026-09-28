@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Callouts {
         // Matches the attributes that Blazor's CSS isolation generates (e.g. `b-abc1234567`).
         private static readonly CSS_SCOPE_REGEX = /^b-[a-z0-9]+$/i;
@@ -91,6 +91,9 @@ namespace BitBlazorUI {
             // The distance in pixels the arrow is kept away from the corners of the callout, so that it
             // never lands on a rounded one; zero takes the default the placement keeps on its own.
             arrowPadding: number = 0,
+            // Keeps a scroll or a resize of the page from dismissing the callout without taking away what
+            // noDismiss does as well: a click outside of it still closes it. It follows its component instead.
+            noScrollDismiss: boolean = false,
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -120,7 +123,10 @@ namespace BitBlazorUI {
 
             Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId);
 
-            Callouts.replaceCurrent({ dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss });
+            Callouts.replaceCurrent({
+                dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss,
+                noScrollDismiss: noDismiss || noScrollDismiss
+            });
 
             // Remember the inputs used to position this callout so it can be repositioned later
             // when the visual viewport changes (e.g. the iOS keyboard shows/hides).
@@ -1014,7 +1020,7 @@ namespace BitBlazorUI {
             if (!callout) {
                 // Innermost first, and only down to a callout that asked not to be dismissed by the page
                 // moving under it: that one, and everything it is nested in, follows its component instead.
-                while (Callouts._stack.length > 0 && !Callouts.current.noDismiss) {
+                while (Callouts._stack.length > 0 && !Callouts.current.noScrollDismiss) {
                     Callouts.closeTop();
                 }
 
@@ -1127,6 +1133,9 @@ namespace BitBlazorUI {
         overlayId?: string;
         arrowId?: string;
         noDismiss?: boolean;
+        // Whether a scroll or a resize of the page leaves the callout open, following its component. A
+        // callout that is not dismissed from outside at all is not dismissed by these either.
+        noScrollDismiss?: boolean;
         dotnetObj?: DotNetObject;
         scrollContainerId?: string;
         responsiveMode?: BitResponsiveMode;

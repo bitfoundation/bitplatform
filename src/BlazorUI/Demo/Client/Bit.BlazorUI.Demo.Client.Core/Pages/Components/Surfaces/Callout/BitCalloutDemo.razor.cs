@@ -43,6 +43,20 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "AriaDescribedBy",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of an element that describes the callout, read by screen readers after its name."
+        },
+        new()
+        {
+            Name = "AriaLabelledBy",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of an element that names the callout, such as a heading in its content. It takes the place of the Header and of the AriaLabel as the name."
+        },
+        new()
+        {
             Name = "ArrowPadding",
             Type = "int?",
             DefaultValue = "null",
@@ -251,6 +265,13 @@ public partial class BitCalloutDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the callout open when a click lands outside of it, and when the page is scrolled or resized under it."
+        },
+        new()
+        {
+            Name = "NoDismissOnScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the callout open when the page is scrolled or resized under it: it follows its anchor instead, while an outside click still closes it."
         },
         new()
         {

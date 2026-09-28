@@ -9,7 +9,7 @@
    The callout itself needs none of this - it is relocated to the body while it is open, which is already
    outside of whatever it was opened from. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     @onkeydown="HandleOnCalloutKeyDown" @onkeydown:stopPropagation
+     @onkeydown="HandleOnRootKeyDown" @onkeydown:stopPropagation
      @onmouseenter="HandleOnMouseEnter"
      @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
@@ -83,6 +83,7 @@
      role="@GetRole()"
      aria-label="@AriaLabel"
      aria-labelledby="@GetAriaLabelledBy()"
+     aria-describedby="@AriaDescribedBy"
      aria-modal="@(KeepsFocus ? "true" : null)"
      style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()"

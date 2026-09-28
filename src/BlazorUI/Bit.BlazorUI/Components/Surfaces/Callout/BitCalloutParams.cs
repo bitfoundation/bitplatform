@@ -5,8 +5,9 @@
 /// </summary>
 /// <remarks>
 /// The open state (IsOpen and DefaultIsOpen), the anchor (Anchor, AnchorEl and AnchorId), the content and its parts
-/// (ChildContent, Content, Header, Footer and the ids that wire them up by hand), the ARIA role and the event
-/// callbacks are left out on purpose: they belong to a single callout rather than to a group of them.
+/// (ChildContent, Content, Header, Footer and the ids that wire them up by hand), the ARIA role and the ids it is
+/// named and described by, and the event callbacks are left out on purpose: they belong to a single callout rather
+/// than to a group of them.
 /// </remarks>
 public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -142,6 +143,11 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
     /// Keeps the callout open when a click lands outside of it, and when the page is scrolled or resized under it.
     /// </summary>
     public bool? NoDismissOnOutsideClick { get; set; }
+
+    /// <summary>
+    /// Keeps the callout open when the page is scrolled or resized under it.
+    /// </summary>
+    public bool? NoDismissOnScroll { get; set; }
 
     /// <summary>
     /// Keeps the callout on the Side it was asked for even when there is not enough room for it there.
@@ -343,6 +349,11 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
         if (NoDismissOnOutsideClick.HasValue && bitCallout.HasNotBeenSet(nameof(NoDismissOnOutsideClick)))
         {
             bitCallout.NoDismissOnOutsideClick = NoDismissOnOutsideClick.Value;
+        }
+
+        if (NoDismissOnScroll.HasValue && bitCallout.HasNotBeenSet(nameof(NoDismissOnScroll)))
+        {
+            bitCallout.NoDismissOnScroll = NoDismissOnScroll.Value;
         }
 
         if (NoFlip.HasValue && bitCallout.HasNotBeenSet(nameof(NoFlip)))

@@ -54,7 +54,10 @@ internal static class CalloutsJsRuntimeExtensions
         int alignmentOffset = 0,
         // The distance in pixels the arrow is kept away from the corners of the callout, so that it never
         // lands on a rounded one; zero takes the default the placement keeps on its own.
-        int arrowPadding = 0) where T : class
+        int arrowPadding = 0,
+        // Keeps a scroll or a resize of the page from dismissing the callout, without what noDismiss also
+        // takes away: a click outside of it still closes it. It is re-anchored to its anchor instead.
+        bool noScrollDismiss = false) where T : class
     {
         return jsRuntime.Invoke<bool>(
             "BitBlazorUI.Callouts.toggle",
@@ -84,7 +87,8 @@ internal static class CalloutsJsRuntimeExtensions
             noFlip,
             collisionPadding,
             alignmentOffset,
-            arrowPadding);
+            arrowPadding,
+            noScrollDismiss);
     }
 
     // Re-applies the space the scrollable content of the open callout cannot use, for the parts above

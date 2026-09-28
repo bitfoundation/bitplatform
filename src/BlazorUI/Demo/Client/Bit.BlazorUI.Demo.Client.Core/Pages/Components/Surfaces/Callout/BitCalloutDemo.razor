@@ -117,7 +117,8 @@
         <div>
             <b>OpenOnHover</b> opens on pointer enter and closes once the pointer has left both the anchor and the callout.
             <b>HoverOpenDelay</b> ignores a pointer passing by; <b>HoverCloseDelay</b> (150ms) bridges the way into the
-            callout. A click still toggles it, so keyboard and touch users get in too.
+            callout. A click still toggles it, so keyboard and touch users get in too, and Escape closes it wherever the
+            focus is.
         </div>
         <br />
         <div class="example-box">
@@ -144,8 +145,8 @@
     <DemoExample Title="Dismissal" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
             An outside click, Escape, or the page scrolling away closes a callout. <b>AutoClose</b> adds a click inside it
-            (for action lists); <b>NoDismissOnEscape</b> and <b>NoDismissOnOutsideClick</b> take ways out away, leaving the
-            content to close it.
+            (for action lists); <b>NoDismissOnScroll</b> keeps it open, following its anchor, while the page scrolls;
+            <b>NoDismissOnEscape</b> and <b>NoDismissOnOutsideClick</b> take ways out away, leaving the content to close it.
         </div>
         <br />
         <div class="example-box">
@@ -161,6 +162,15 @@
                             <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Deleted")">Delete</BitButton>
                         </BitStack>
                     </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout NoDismissOnScroll>
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">NoDismissOnScroll</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">Scroll the page: this one follows its anchor.</div>
                 </Content>
             </BitCallout>
 
@@ -214,7 +224,7 @@
         </div>
         <br />
         <div>
-            It follows the page scrolling and resizing and the anchor changing size; <b>Reposition</b> covers its own
+            It follows its anchor changing size (and moving, with NoDismissOnScroll); <b>Reposition</b> covers its own
             content changing. <b>MaxWindowWidth</b> lets it hang off a narrow screen instead of sliding back onto it.
         </div>
         <br />
@@ -549,11 +559,13 @@
         <div>
             <b>AutoFocus</b> moves the focus in on opening, to a <b>data-autofocus</b> element if there is one.
             <b>TrapFocus</b> keeps Tab inside and makes the callout a modal dialog for screen readers. <b>Modal</b> dims
-            the page, stops it scrolling and traps the focus too. <b>Role</b> and <b>AriaLabel</b> say what the callout is.
+            the page, stops it scrolling and traps the focus too. <b>Role</b>, <b>AriaLabel</b>, <b>AriaLabelledBy</b> and
+            <b>AriaDescribedBy</b> say what the callout is.
         </div>
         <br />
         <div>
-            Escape closes it from the trigger or from inside, and the focus goes back to the trigger. The trigger reports
+            Without a trap, Tab on the trigger goes into the callout, and Tab past its end moves on in the page and closes
+            it. Escape closes it from the trigger or from inside, and the focus goes back to the trigger. The trigger reports
             the callout through aria-controls and aria-expanded, and through aria-haspopup when it is a dialog, a menu, a
             listbox, a tree or a grid.
         </div>
@@ -591,14 +603,15 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Modal AriaLabel="Confirm" @ref="modalCallout">
+            <BitCallout Modal AriaLabelledBy="modal-title" AriaDescribedBy="modal-text" @ref="modalCallout">
                 <Anchor>
                     <BitButton Variant="BitVariant.Outline">Modal</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
                         <BitStack Gap="1rem">
-                            <div>The page behind is dimmed and holds still.</div>
+                            <b id="modal-title">Heads up</b>
+                            <div id="modal-text">The page behind is dimmed and holds still.</div>
                             <BitButton OnClick="() => modalCallout.Close()">OK</BitButton>
                         </BitStack>
                     </div>

@@ -32,6 +32,7 @@ public partial class BitCallout : BitComponentBase
     private bool _focusTrapped;
     private bool _focusOriginCaptured;
     private bool _escapeRegistered;
+    private bool _tabOutRegistered;
     private string? _publicCssVariables;
     private string? _lastRootStyle;
     private string? _lastStylesRoot;
@@ -106,6 +107,22 @@ public partial class BitCallout : BitComponentBase
     /// The id of the external anchor element.
     /// </summary>
     [Parameter] public string? AnchorId { get; set; }
+
+    /// <summary>
+    /// The id of an element that describes the callout, which the screen readers read after its name - the text
+    /// of a callout that teaches something, or the question a confirmation asks.
+    /// </summary>
+    [Parameter] public string? AriaDescribedBy { get; set; }
+
+    /// <summary>
+    /// The id of an element that names the callout, such as a heading inside its content. It takes the place of
+    /// the <see cref="Header"/>, which otherwise names the callout, and of the AriaLabel.
+    /// </summary>
+    /// <remarks>
+    /// A callout that reports itself as a dialog - one that traps the focus or is modal - needs a name, and a
+    /// heading already on the screen is a better one than a label only the screen readers hear.
+    /// </remarks>
+    [Parameter] public string? AriaLabelledBy { get; set; }
 
     /// <summary>
     /// The distance in pixels the arrow drawn by <see cref="ShowArrow"/> is kept away from the corners of
@@ -326,6 +343,15 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public bool NoDismissOnOutsideClick { get; set; }
 
     /// <summary>
+    /// Keeps the callout open when the page is scrolled or resized under it: the callout follows its anchor
+    /// instead of being dismissed, while a click outside of it still closes it.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="NoDismissOnOutsideClick"/> already implies it.
+    /// </remarks>
+    [Parameter] public bool NoDismissOnScroll { get; set; }
+
+    /// <summary>
     /// Keeps the callout on the <see cref="Side"/> it was asked for even when there is not enough room for
     /// it there, instead of flipping it to the opposite side. It has nothing to hold in place for a callout
     /// that was not given a side, whose placement is the automatic one to begin with.
@@ -531,9 +557,10 @@ public partial class BitCallout : BitComponentBase
     /// replayed. It does nothing to a callout that is closed.
     /// </summary>
     /// <remarks>
-    /// The callout already follows the page scrolling and resizing under it, and an anchor that changes
-    /// size while it is open, so this is for what it cannot see: a content of its own that has grown or
-    /// shrunk, or an anchor moved by something other than a resize of it.
+    /// The callout already follows an anchor that changes size while it is open, and the page scrolling and
+    /// resizing under it where <see cref="NoDismissOnScroll"/> keeps it open through that, so this is for what
+    /// it cannot see: a content of its own that has grown or shrunk, or an anchor moved by something other than
+    /// a resize of it.
     /// </remarks>
     public Task Reposition() => IsOpen ? RepositionCallout() : Task.CompletedTask;
 
@@ -566,6 +593,8 @@ public partial class BitCallout : BitComponentBase
         // The focus is deliberately left where it is: whatever took over from this callout is about to
         // take it.
         await DisposeFocusTrap();
+
+        await DisposeTabOut();
 
         await DisposeScrollLock();
 
@@ -603,6 +632,16 @@ public partial class BitCallout : BitComponentBase
         // the focus is usually on the trigger that opened it, outside of anything the component renders.
         if (IsEnabled is false || IsOpen is false || NoDismissOnEscape) return;
 
+        await CloseCallout();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable("OnTabOut")]
+    public async Task _OnTabOut()
+    {
+        // The JS side has already moved the focus on to the page past the trigger, so closing the callout finds no
+        // focus of its own to hand back and leaves it where the Tab key took it.
         await CloseCallout();
 
         await InvokeAsync(StateHasChanged);
@@ -690,11 +729,13 @@ public partial class BitCallout : BitComponentBase
         {
             if (KeepsFocus)
             {
+                await DisposeTabOut();
                 await SetupFocusTrap();
             }
             else
             {
                 await DisposeFocusTrap();
+                await SetupTabOut();
             }
 
             if (Modal)
@@ -802,22 +843,36 @@ public partial class BitCallout : BitComponentBase
         StateHasChanged();
     }
 
+    // The key pressed on the anchor, where the focus usually still is while the callout is open. The page-level
+    // listener leaves the anchor out, so this is the one place the key is answered for it.
+    private async Task HandleOnRootKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false || IsOpen is false) return;
+
+        if (e.Key is not "Escape" || NoDismissOnEscape) return;
+
+        // The focus is on the anchor already, which is where closing leaves it.
+        await CloseCallout();
+
+        // The close runs on an event of the root, which does not re-render the callout, so refresh the open-state
+        // classes and aria-expanded here.
+        StateHasChanged();
+    }
+
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
 
-        // A callout without an anchor of its own hears the key from the JS side instead, wherever it is pressed.
+        // A callout that listens on the page hears the keys pressed inside it from the JS side as well, which only
+        // reports them while it is the innermost open one; answering them here too would close it twice.
         if (_escapeRegistered) return;
 
-        // The key can come from the callout or from the anchor, since the focus stays on the trigger unless
-        // the callout was asked to take it. Closing hands the focus back to the anchor when it was in the
-        // callout, and leaves it where it is when it was already on the anchor.
         await CloseCallout();
 
-        // The close runs on an event of the callout or of the root, neither of which re-renders the other,
-        // so refresh the open-state classes and aria-expanded here.
+        // The close runs on the callout's own event, which does not re-render the anchor, so refresh the
+        // open-state classes and aria-expanded here.
         StateHasChanged();
     }
 
@@ -911,6 +966,8 @@ public partial class BitCallout : BitComponentBase
 
         await SetupFocusTrap();
 
+        await SetupTabOut();
+
         await SetupScrollLock();
 
         await FocusCalloutIfNeeded();
@@ -943,6 +1000,8 @@ public partial class BitCallout : BitComponentBase
         if (wasOpen && IsOpen) return;
 
         await DisposeFocusTrap();
+
+        await DisposeTabOut();
 
         await DisposeScrollLock();
 
@@ -1060,7 +1119,8 @@ public partial class BitCallout : BitComponentBase
                 noFlip: NoFlip,
                 collisionPadding: CollisionPadding,
                 alignmentOffset: AlignmentOffset,
-                arrowPadding: ArrowPadding ?? 0);
+                arrowPadding: ArrowPadding ?? 0,
+                noScrollDismiss: NoDismissOnScroll);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1136,6 +1196,8 @@ public partial class BitCallout : BitComponentBase
 
             await DisposeFocusTrap();
 
+            await DisposeTabOut();
+
             await DisposeScrollLock();
 
             await DisposeEscape();
@@ -1210,11 +1272,13 @@ public partial class BitCallout : BitComponentBase
 
     // A callout with an anchor of its own hears Escape through the root around that anchor and through the
     // callout itself. One without has no element of its own where the focus usually is, so the key is listened
-    // for on the whole page while it is open. The root is named as the trigger only to leave the callout alone:
-    // for an external anchor it holds nothing, so every Escape outside the callout is reported.
+    // for on the whole page while it is open, and so is it for a callout opened by hovering, which is shown
+    // while the focus is wherever the user left it: content that appears on hover has to be dismissible without
+    // moving the pointer or the focus (WCAG 1.4.13). The root is named as the trigger to leave the anchor to its
+    // own handler; for an external anchor it holds nothing, so every Escape outside the callout is reported.
     private async Task SetupEscape()
     {
-        if (Anchor is not null || _escapeRegistered || IsDisposed || _dotnetObj is null) return;
+        if ((Anchor is not null && HoverDriven is false) || _escapeRegistered || IsDisposed || _dotnetObj is null) return;
 
         _escapeRegistered = true;
 
@@ -1420,6 +1484,41 @@ public partial class BitCallout : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    // A callout that does not keep the keyboard in itself is relocated to the end of the body while it is open, so
+    // the browser's own tab order would run from the trigger straight past it and from its last element off the
+    // end of the page, leaving it open behind the keyboard. The content is made to read as if it sat right after
+    // the trigger instead (see Utils.setupTabOut). It needs a trigger to sit after: the anchor it renders, or the
+    // external one it was given by id; a callout opened at a point has none.
+    private async Task SetupTabOut()
+    {
+        if (KeepsFocus || _tabOutRegistered || IsDisposed || _dotnetObj is null) return;
+
+        var triggerId = HasPoint ? null : Anchor is not null ? _anchorId : AnchorId;
+
+        if (triggerId.HasNoValue()) return;
+
+        _tabOutRegistered = true;
+
+        try
+        {
+            await _js.BitUtilsSetupTabOut(_contentId, triggerId!, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task DisposeTabOut()
+    {
+        if (_tabOutRegistered is false) return;
+
+        _tabOutRegistered = false;
+
+        try
+        {
+            await _js.BitUtilsDisposeTabOut(_contentId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     // A modal callout holds the page still underneath it: the wheel and the touch are the callout's while
     // it is open, and scrolling the page is also what dismisses a callout, so a modal one would otherwise
     // be scrolled away by the very gesture it is meant to be the only thing in play for.
@@ -1519,9 +1618,9 @@ public partial class BitCallout : BitComponentBase
         if (KeepsFocus) return "dialog";
 
         // A name on a generic container is a name no screen reader announces, so a callout that was given
-        // one is reported as the group of content it is, which is the role that carries a name without
-        // claiming anything more about what the callout holds.
-        return AriaLabel.HasValue() ? "group" : null;
+        // one - a label, or an element to take it from - is reported as the group of content it is, which is
+        // the role that carries a name without claiming anything more about what the callout holds.
+        return (AriaLabel.HasValue() || GetAriaLabelledBy() is not null) ? "group" : null;
     }
 
     // What the anchor tells the screen readers is behind it. The token has to name what the popup actually
@@ -1538,10 +1637,13 @@ public partial class BitCallout : BitComponentBase
     }
 
     // A callout that reports itself as a dialog needs an accessible name (WAI-ARIA APG), and one that
-    // renders a header of its own is already showing the name it should be given. AriaLabel wins where it
-    // is set, so naming the callout by hand still takes precedence over the header it happens to have.
+    // renders a header of its own is already showing the name it should be given. AriaLabelledBy and
+    // AriaLabel win where they are set, so naming the callout by hand still takes precedence over the header
+    // it happens to have.
     private string? GetAriaLabelledBy()
     {
+        if (AriaLabelledBy.HasValue()) return AriaLabelledBy;
+
         return (AriaLabel.HasValue() is false && Header is not null) ? _headerId : null;
     }
 
@@ -1801,6 +1903,11 @@ public partial class BitCallout : BitComponentBase
                 if (_escapeRegistered)
                 {
                     await _js.BitUtilsDisposeEscape(_contentId);
+                }
+
+                if (_tabOutRegistered)
+                {
+                    await _js.BitUtilsDisposeTabOut(_contentId);
                 }
 
                 // The remembered origin would otherwise keep its element alive for as long as the page lives.
