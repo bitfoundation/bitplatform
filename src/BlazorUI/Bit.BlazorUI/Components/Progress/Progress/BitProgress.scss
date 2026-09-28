@@ -9,7 +9,7 @@
 //   --bit-Progress-buffer-color         the buffered second value                    (default: the bar color at 38%)
 //   --bit-Progress-stripe-color         the stripes of a Striped bar                 (default: $clr-bg-pri at 25%)
 //   --bit-Progress-stripe-size          pitch of the stripes                         (default: spacing(2))
-//   --bit-Progress-thickness            bar height, vertical bar width, ring stroke  (default: per Size, $siz-track-* for a bar, 2/4/8px for a ring)
+//   --bit-Progress-thickness            bar height, vertical bar width, ring stroke  (default: per Size, $siz-track-* for a bar, 1/2/4 x $siz-spinner-stroke for a ring)
 //   --bit-Progress-radius               corner radius of a linear bar not Rounded    (default: 0)
 //   --bit-Progress-diameter             smallest diameter of the ring                (default: per Size)
 //   --bit-Progress-length               length of a Vertical bar                     (default: spacing(20))
@@ -44,8 +44,10 @@
     // How much of the full circle the stroke is allowed to use, which is the whole of it until a gap
     // is cut out of the ring.
     --bit-prb-arc: 1;
-    // Matches the sizeless default thickness (2px) the C# side uses for the circular variant.
     --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-sm});
+    // The stroke of the ring, which a design system sizes apart from its bar track: the spinner token, doubled
+    // and quadrupled up the size classes. It is only the fallback of --bit-Progress-thickness.
+    --bit-prb-ring-stroke: #{$siz-spinner-stroke};
     // The floor the circular variant is drawn at. The C# side still sizes the svg from
     // Thickness * Radius, so a ring asked to be bigger than this stays bigger; what the token adds is
     // a sensible diameter per size class, which the raw multiplication never gave.
@@ -491,6 +493,7 @@
 .bit-prb-md {
     --bit-prb-fs: #{$tg-fs-sm};
     --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-md});
+    --bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 2);
     --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(6.25)});
 }
 
@@ -498,6 +501,7 @@
     --bit-prb-fs: #{$tg-fs-md};
     --bit-prb-des-fs: #{$tg-fs-xs};
     --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-lg});
+    --bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 4);
     --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(9)});
 }
 

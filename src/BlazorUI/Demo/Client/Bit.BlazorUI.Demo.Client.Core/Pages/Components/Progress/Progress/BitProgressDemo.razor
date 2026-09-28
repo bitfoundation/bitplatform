@@ -47,10 +47,9 @@
 
         <DemoExample Title="Indeterminate" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                For an operation whose end is unknown: the bar sweeps and the ring spins - the ring is what other
-                libraries call a spinner. No value is reported to assistive technology, which is how a screen reader
-                knows it is indeterminate. <b>Delay</b> keeps it hidden for that many milliseconds after it first
-                renders, so an operation that ends sooner never flashes one.
+                For an operation with no known end: the bar sweeps and the ring spins (a spinner). No value reaches
+                assistive technology, which is what marks it indeterminate. <b>Delay</b> hides it for that many
+                milliseconds after it first renders, so a quick operation never flashes one.
             </div>
             <br />
             <BitProgress Indeterminate Label="Preparing your export" />
@@ -85,11 +84,11 @@
 
         <DemoExample Title="Percent number" RazorCode="@example4RazorCode" Id="example4">
             <div>
-                <b>ShowPercentNumber</b> writes the percentage; <b>PercentNumberFormat</b> (a composite format, "{0:F0} %"
-                by default) and <b>PercentNumberTemplate</b> decide how it reads. <b>PercentNumberPosition</b> puts it
-                under the bar (<b>End</b>, <b>Start</b>, <b>Center</b>), on the label's row (<b>Top</b>) or on the bar
-                itself (<b>Inside</b>, which needs a <b>Thickness</b> the text fits in). A ring always shows it in its
-                middle, scaled to its diameter.
+                <b>ShowPercentNumber</b> writes the percentage; <b>PercentNumberFormat</b> ("{0:F0} %" by default) or
+                <b>PercentNumberTemplate</b> changes how it reads. <b>PercentNumberPosition</b> puts a bar's readout
+                under it (<b>End</b>, <b>Start</b>, <b>Center</b>), on the label's row (<b>Top</b>) or on the bar
+                (<b>Inside</b>, given a <b>Thickness</b> the text fits in). A ring shows it in its middle, scaled to
+                its diameter.
             </div>
             <br />
             <BitProgress Label="End" Percent="85.69" ShowPercentNumber />
@@ -175,23 +174,8 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Reversed" RazorCode="@example8RazorCode" Id="example8">
-            <div>
-                <b>Reversed</b> fills from the end and turns the ring counter-clockwise; an indeterminate bar sweeps
-                back (the "query" indicator). The direction is logical, so it follows <b>Dir</b>.
-            </div>
-            <br />
-            <BitProgress Reversed AriaLabel="Reversed bar" Percent="42" Thickness="10" ShowPercentNumber />
-            <br />
-            <BitProgress Reversed Indeterminate AriaLabel="Reversed indeterminate bar" Thickness="10" />
-            <br />
-            <div class="circular-box">
-                <BitProgress Circular Reversed AriaLabel="Reversed ring" Percent="42" Thickness="6" Diameter="48" />
-                <BitProgress Circular Reversed Indeterminate AriaLabel="Reversed spinner" Thickness="6" Diameter="48" />
-            </div>
-        </DemoExample>
 
-        <DemoExample Title="Segments" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Segments" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>Segments</b> cuts the linear bar into equal steps and <b>SegmentGap</b> spaces them, in pixels. The
                 value still fills continuously, so a step can be part-filled.
@@ -206,10 +190,20 @@
             <BitProgress AriaLabel="Four rounded segments" Segments="4" SegmentGap="8" Rounded Percent="segmentedPercent" Thickness="14" Buffer="100" />
         </DemoExample>
 
-        <DemoExample Title="Vertical" RazorCode="@example10RazorCode" Id="example10">
+        <DemoExample Title="Reversed & vertical" RazorCode="@example9RazorCode" Id="example9">
             <div>
-                <b>Vertical</b> stands the bar on its end, filling from the bottom (from the top when <b>Reversed</b>).
-                <b>Length</b> sets its height (10rem by default); everything else works along the other axis.
+                <b>Reversed</b> fills from the end, turns the ring counter-clockwise and sweeps an indeterminate bar
+                back; it is logical, so it follows <b>Dir</b>. <b>Vertical</b> stands the bar on its end, filling from
+                the bottom (the top when <b>Reversed</b>), <b>Length</b> tall (10rem by default).
+            </div>
+            <br />
+            <BitProgress Reversed AriaLabel="Reversed bar" Percent="42" Thickness="10" ShowPercentNumber />
+            <br />
+            <BitProgress Reversed Indeterminate AriaLabel="Reversed indeterminate bar" Thickness="10" />
+            <br />
+            <div class="circular-box">
+                <BitProgress Circular Reversed AriaLabel="Reversed ring" Percent="42" Thickness="6" Diameter="48" />
+                <BitProgress Circular Reversed Indeterminate AriaLabel="Reversed spinner" Thickness="6" Diameter="48" />
             </div>
             <br />
             <div class="circular-box">
@@ -223,7 +217,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Gauge" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Gauge" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>GapDegree</b> cuts a gap (0 to 295 degrees) out of the ring, turning it into a gauge;
                 <b>GapPosition</b> moves the opening from the <b>Bottom</b> to the <b>Top</b>, <b>Start</b> or
@@ -249,7 +243,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Meter" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Meter" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 Progress moves forward and ends; a reading within a range - disk usage, a temperature, a score - does
                 neither. <b>Meter</b> exposes such a reading with the
@@ -280,7 +274,7 @@
             </BitProgress>
         </DemoExample>
 
-        <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 A screen reader is not told a bar moved unless something says so. <b>AnnounceProgress</b> adds a polite
                 live region that speaks once per <b>AnnounceStep</b> crossed (25 points by default) and always at
@@ -295,7 +289,7 @@
             <BitProgress AnnounceProgress AnnounceStep="10" Label="Uploading" Percent="announcedPercent" />
         </DemoExample>
 
-        <DemoExample Title="Custom colors" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="Custom colors" RazorCode="@example13RazorCode" Id="example13">
             <div>
                 <b>BarColor</b> and <b>TrackColor</b> take any CSS color for the one indicator that needs its own. The
                 ring, the buffer and the stripes follow the bar color; the track color also paints the ends of the
@@ -316,7 +310,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>BitParams</b> hands a <b>BitProgressParams</b> to every progress under it, so a dashboard sets the
                 shared look once. The values are defaults, not overrides: a progress that sets a parameter itself keeps
@@ -334,7 +328,7 @@
             <BitProgress Label="Outside the cascade" Percent="50" />
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
+        <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
             <div>
                 <b>Color</b> picks the bar's palette from the theme, so it re-skins with the design system. It is the
                 way to show a status - pair it with words and, through <b>PercentNumberTemplate</b>, a glyph, since
@@ -392,7 +386,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+        <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
             <div>
                 <b>Size</b> scales the thickness, the ring's diameter and the type from the theme.
             </div>
@@ -413,7 +407,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+        <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part -
                 <b>Root</b>, <b>Label</b>, <b>BarContainer</b>, <b>Track</b>, <b>Buffer</b>, <b>Bar</b>,
@@ -479,7 +473,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+        <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
             <div>
                 <b>Dir</b> set to <b>BitDir.Rtl</b> fills the bar from the right and mirrors the label, readout and
                 description, while the number keeps its own direction ("85 %", never "% 85").

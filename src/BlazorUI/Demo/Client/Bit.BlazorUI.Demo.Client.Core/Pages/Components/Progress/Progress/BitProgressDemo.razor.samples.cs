@@ -101,16 +101,6 @@ private double bufferPercent = 40;";
 </div>";
 
     private readonly string example8RazorCode = @"
-<BitProgress Reversed AriaLabel=""Reversed bar"" Percent=""42"" Thickness=""10"" ShowPercentNumber />
-
-<BitProgress Reversed Indeterminate AriaLabel=""Reversed indeterminate bar"" Thickness=""10"" />
-
-<div style=""display: flex; gap: 1rem; align-items: center;"">
-    <BitProgress Circular Reversed AriaLabel=""Reversed ring"" Percent=""42"" Thickness=""6"" Diameter=""48"" />
-    <BitProgress Circular Reversed Indeterminate AriaLabel=""Reversed spinner"" Thickness=""6"" Diameter=""48"" />
-</div>";
-
-    private readonly string example9RazorCode = @"
 <BitSlider Label=""Progress"" @bind-Value=""segmentedPercent"" Max=""100"" />
 
 <BitProgress AriaLabel=""Five segments"" Segments=""5"" Percent=""segmentedPercent"" Thickness=""12"" ShowPercentNumber />
@@ -118,10 +108,19 @@ private double bufferPercent = 40;";
 <BitProgress AriaLabel=""Ten segments"" Segments=""10"" SegmentGap=""2"" Percent=""segmentedPercent"" Thickness=""8"" />
 
 <BitProgress AriaLabel=""Four rounded segments"" Segments=""4"" SegmentGap=""8"" Rounded Percent=""segmentedPercent"" Thickness=""14"" Buffer=""100"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private double segmentedPercent = 45;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
+<BitProgress Reversed AriaLabel=""Reversed bar"" Percent=""42"" Thickness=""10"" ShowPercentNumber />
+
+<BitProgress Reversed Indeterminate AriaLabel=""Reversed indeterminate bar"" Thickness=""10"" />
+
+<div style=""display: flex; gap: 1rem; align-items: center;"">
+    <BitProgress Circular Reversed AriaLabel=""Reversed ring"" Percent=""42"" Thickness=""6"" Diameter=""48"" />
+    <BitProgress Circular Reversed Indeterminate AriaLabel=""Reversed spinner"" Thickness=""6"" Diameter=""48"" />
+</div>
+
 <div style=""display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;"">
     <BitProgress Vertical AriaLabel=""Vertical bar"" Percent=""42"" Thickness=""12"" Rounded />
     <BitProgress Vertical AriaLabel=""Short vertical bar"" Percent=""42"" Thickness=""12"" Length=""6rem"" />
@@ -132,7 +131,7 @@ private double segmentedPercent = 45;";
     <BitProgress Vertical Indeterminate AriaLabel=""Vertical indeterminate bar"" Thickness=""12"" />
 </div>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitSlider Label=""Value"" @bind-Value=""gaugeValue"" Max=""100"" />
 
 <div style=""display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;"">
@@ -150,10 +149,10 @@ private double segmentedPercent = 45;";
     <BitProgress Circular Rounded AriaLabel=""Gap at the end"" GapDegree=""120"" Diameter=""80"" Thickness=""8"" Percent=""gaugeValue""
                  GapPosition=""BitProgressGapPosition.End"" />
 </div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private double gaugeValue = 65;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitSlider Label=""Used"" @bind-Value=""meterValue"" Max=""100"" />
 
 <BitProgress Meter
@@ -176,19 +175,19 @@ private double gaugeValue = 65;";
              Thickness=""12"">
     <PercentNumberTemplate>@($""{20 + meterValue / 5:F0} °C"")</PercentNumberTemplate>
 </BitProgress>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private double meterValue = 62;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitSlider Label=""Progress"" @bind-Value=""announcedPercent"" Max=""100"" />
 
 <BitProgress AnnounceProgress Label=""Importing rows"" Percent=""announcedPercent"" ShowPercentNumber />
 
 <BitProgress AnnounceProgress AnnounceStep=""10"" Label=""Uploading"" Percent=""announcedPercent"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private double announcedPercent = 20;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitProgress Label=""Brand"" BarColor=""#8b5cf6"" TrackColor=""#e9d5ff"" Percent=""62"" Thickness=""10"" Rounded ShowPercentNumber />
 
 <BitProgress Label=""Buffered"" BarColor=""darkcyan"" TrackColor=""#e0f2f1"" Percent=""45"" Buffer=""78"" Thickness=""10"" Rounded />
@@ -202,7 +201,7 @@ private double announcedPercent = 20;";
     <BitProgress Circular Rounded AriaLabel=""Sweeping ring"" BarColor=""tomato"" TrackColor=""#ffe0d6"" Indeterminate Diameter=""80"" Thickness=""8"" />
 </div>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitParams Parameters=""@progressParams"">
     <BitProgress Label=""CPU"" Percent=""34"" />
     <BitProgress Label=""Memory"" Percent=""71"" />
@@ -210,7 +209,7 @@ private double announcedPercent = 20;";
 </BitParams>
 
 <BitProgress Label=""Outside the cascade"" Percent=""50"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private readonly BitProgressParams[] progressParams =
 [
     new()
@@ -222,7 +221,7 @@ private readonly BitProgressParams[] progressParams =
     }
 ];";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitProgress AriaLabel=""Primary"" Color=""BitColor.Primary"" Percent=""69"" Thickness=""4"" />
 <BitProgress AriaLabel=""Secondary"" Color=""BitColor.Secondary"" Percent=""69"" Thickness=""4"" />
 <BitProgress AriaLabel=""Tertiary"" Color=""BitColor.Tertiary"" Percent=""69"" Thickness=""4"" />
@@ -267,7 +266,7 @@ private readonly BitProgressParams[] progressParams =
     </PercentNumberTemplate>
 </BitProgress>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitProgress Size=""BitSize.Small"" Label=""Small"" Percent=""69"" ShowPercentNumber />
 
 <BitProgress Size=""BitSize.Medium"" Label=""Medium"" Percent=""69"" ShowPercentNumber />
@@ -281,7 +280,7 @@ private readonly BitProgressParams[] progressParams =
 <BitProgress Size=""BitSize.Medium"" AriaLabel=""Medium spinner"" Circular Indeterminate />
 <BitProgress Size=""BitSize.Large"" AriaLabel=""Large spinner"" Circular Indeterminate />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .custom-class {
         padding: 0.2rem;
@@ -357,7 +356,7 @@ private readonly BitProgressParams[] progressParams =
     <BitProgress Label=""Videos"" Description=""8.8 GB"" Percent=""88"" />
 </div>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitProgress Dir=""BitDir.Rtl"" AriaLabel=""در حال بارگذاری"" Thickness=""10"" Indeterminate />
 
 <BitProgress Dir=""BitDir.Rtl"" Label=""در حال بارگذاری"" Description=""۴.۲ مگابایت از ۱۰ مگابایت"" Percent=""69"" Thickness=""10"" ShowPercentNumber />

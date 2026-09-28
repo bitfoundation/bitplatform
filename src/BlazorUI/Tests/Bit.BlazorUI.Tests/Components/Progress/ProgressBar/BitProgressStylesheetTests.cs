@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -70,6 +70,18 @@ public class BitProgressStylesheetTests
         {
             StringAssert.Contains(GetBlock(stylesheet, $"\n.bit-prb-{size} {{"), $"--bit-prb-thickness: var(--bit-Progress-thickness, #{{$siz-track-{size}}});");
         }
+    }
+
+    [TestMethod]
+    public void BitProgressRingShouldTakeItsStrokeFromTheSpinnerToken()
+    {
+        // A design system sizes its spinner stroke apart from its bar track (Material draws a 4px ring over a 4px
+        // track, Fluent 2 a 2px ring over a 1px one), so the ring reads the spinner token rather than the track's.
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb {"), "--bit-prb-ring-stroke: #{$siz-spinner-stroke};");
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb-md {"), "--bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 2);");
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb-lg {"), "--bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 4);");
     }
 
     [TestMethod]

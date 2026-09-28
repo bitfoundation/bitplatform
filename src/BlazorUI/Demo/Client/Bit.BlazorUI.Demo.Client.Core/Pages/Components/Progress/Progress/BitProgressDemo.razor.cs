@@ -332,7 +332,7 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-thickness",
-            DefaultValue = "Per Size: --bit-siz-track-sm / -md / -lg (bar), 2px / 4px / 8px (ring)",
+            DefaultValue = "Per Size: --bit-siz-track-sm / -md / -lg (bar), 1x / 2x / 4x --bit-siz-spinner-stroke (ring)",
             Description = "Height of the bar, width of a vertical one and stroke of the ring. Thickness wins over it.",
         },
         new()

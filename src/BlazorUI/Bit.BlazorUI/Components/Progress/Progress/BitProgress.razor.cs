@@ -192,8 +192,9 @@ public partial class BitProgress : BitComponentBase
     /// <summary>
     /// The composite format string the percentage readout is written with, applied to the percentage itself -
     /// "{0:F0} %" by default. It is formatted on the current culture, since it is text the reader sees.
+    /// A malformed format string falls back to the default rather than failing the render.
     /// </summary>
-    [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
+    [Parameter] public string PercentNumberFormat { get; set; } = DefaultPercentNumberFormat;
 
     /// <summary>
     /// Where the percentage readout of a linear progress is placed: under the bar aligned to its end
@@ -533,8 +534,20 @@ public partial class BitProgress : BitComponentBase
     private static string Css(double value) => value.ToString(CultureInfo.InvariantCulture);
 
     // The readout is consumer-facing text, so it stays on the current culture - only the format string
-    // is defended, since a null one would take the whole render down with it.
-    private string FormatPercent(double percent) => string.Format(PercentNumberFormat ?? "{0:F0} %", percent);
+    // is defended, since a null or malformed one ("{0:F0 %", "{1}") would take the whole render down with it.
+    private string FormatPercent(double percent)
+    {
+        try
+        {
+            return string.Format(PercentNumberFormat ?? DefaultPercentNumberFormat, percent);
+        }
+        catch (FormatException)
+        {
+            return string.Format(DefaultPercentNumberFormat, percent);
+        }
+    }
+
+    private const string DefaultPercentNumberFormat = "{0:F0} %";
 
     // The live region says something once per step crossed, and once more at completion. Announcing
     // every change instead would make a screen reader unusable for as long as the operation runs; the
@@ -617,13 +630,13 @@ public partial class BitProgress : BitComponentBase
     // What "thick" means depends on which way the bar runs: the height of a horizontal one, the stroke
     // of a ring, and - for a vertical one - the width, which the container already carries for all
     // three of its children. A ring is not drawn from the track tokens: a design system sizes its spinner
-    // stroke apart from its bar track (Fluent 2 has 1px tracks and 3px spinners), so an unset Thickness
-    // keeps the per-size stroke as the fallback of the public variable.
+    // stroke apart from its bar track (Material has 4px tracks and 4px spinners, Fluent 2 1px tracks), so an
+    // unset Thickness falls back to the per-size multiple of the spinner stroke token the stylesheet declares.
     // The circle is drawn at 40% of the diameter, so a stroke wider than 20% of it would spill past the edge of the
     // svg and be cut off; a percentage stroke is read against the size the ring is actually drawn at, which is what
     // keeps a thick stroke on a small ring (or a ring floored by the diameter token) whole.
     private string _ThicknessDeclaration => Circular
-        ? (Thickness is null ? $"stroke-width: min(var(--bit-Progress-thickness, {GetThickness()}px), 20%);" : $"stroke-width: min({GetThickness()}px, 20%);")
+        ? (Thickness is null ? "stroke-width: min(var(--bit-Progress-thickness, var(--bit-prb-ring-stroke)), 20%);" : $"stroke-width: min({GetThickness()}px, 20%);")
         : _IsVertical ? string.Empty : $"height: {GetThicknessStyleValue()};";
 
     // ... and so does the axis the value is drawn along.
