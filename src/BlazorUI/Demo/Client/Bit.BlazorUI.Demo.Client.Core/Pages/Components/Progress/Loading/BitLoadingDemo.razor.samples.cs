@@ -140,7 +140,7 @@ private async Task StartWork()
 
 <div class=""orders"" aria-busy=""@(isRefreshing ? ""true"" : ""false"")"">
     <BitOverlay IsOpen=""isRefreshing"" AbsolutePosition ModeFull Style=""align-items:center;justify-content:center;color:white"">
-        <BitRingLoading Label=""Refreshing orders..."" CustomSize=""40"" CustomColor=""currentColor"" />
+        <BitRingLoading Label=""Refreshing orders..."" LabelPosition=""BitLabelPosition.End"" CustomColor=""currentColor"" />
     </BitOverlay>
     <div>Order #1024 - Shipped</div>
     <div>Order #1025 - Processing</div>
@@ -185,7 +185,6 @@ private readonly BitLoadingParams[] loadingParams =
 [
     new()
     {
-        CustomSize = 48,
         Thickness = 3,
         Speed = 1.5,
         LabelPosition = BitLabelPosition.End

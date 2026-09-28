@@ -5,7 +5,7 @@
             Description="Eighteen pure-CSS loading animations sharing one API: theme colors, sizes, stroke thickness, a label on any side, speed, pause, delay, an announced live region, BitParams defaults and public CSS variables." />
 
 <DemoPage Name="Loading"
-          Description="Eighteen pure-CSS loading animations - spinners, dots, bars and shapes - that share one API: a theme or custom color, three sizes or any size in pixels, a stroke thickness, a label on any side, a speed, a pause, a delay that keeps quick work from flashing a loader, and a live region that announces the wait. Every visual is also a public CSS variable, and a BitParams sets the defaults of a whole area."
+          Description="Eighteen pure-CSS loading animations - spinners, dots, bars and shapes - sharing one API: color, size, stroke thickness, a label on any side, speed, pause, a delay that keeps quick work from flashing a loader, and a live region that announces the wait."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -262,7 +262,7 @@
             <br /><br />
             <div class="orders" aria-busy="@(isRefreshing ? "true" : "false")">
                 <BitOverlay IsOpen="isRefreshing" AbsolutePosition ModeFull Style="align-items:center;justify-content:center;color:white">
-                    <BitRingLoading Label="Refreshing orders..." CustomSize="40" CustomColor="currentColor" />
+                    <BitRingLoading Label="Refreshing orders..." LabelPosition="BitLabelPosition.End" CustomColor="currentColor" />
                 </BitOverlay>
                 <div>Order #1024 - Shipped</div>
                 <div>Order #1025 - Processing</div>

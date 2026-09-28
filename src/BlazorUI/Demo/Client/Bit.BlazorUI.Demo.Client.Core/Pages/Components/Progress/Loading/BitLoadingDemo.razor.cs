@@ -24,7 +24,6 @@ public partial class BitLoadingDemo
     [
         new()
         {
-            CustomSize = 48,
             Thickness = 3,
             Speed = 1.5,
             LabelPosition = BitLabelPosition.End

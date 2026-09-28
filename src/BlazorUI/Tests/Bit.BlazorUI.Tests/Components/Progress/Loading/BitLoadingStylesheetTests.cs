@@ -105,6 +105,20 @@ public class BitLoadingStylesheetTests
         Assert.IsLessThan(@base.IndexOf("\n.bit-ldn-sm {", StringComparison.Ordinal), inline);
     }
 
+    [TestMethod]
+    public void BitLoadingShouldBeMovingFromTheFrameItAppears()
+    {
+        // A positive delay holds a part still until its turn, so a loader that appears reads as stuck - for
+        // longer still under reduced motion, which stretches every delay with the durations. The stagger
+        // between the parts is written as a negative delay instead, which keeps the same phase offsets.
+        var positiveDelay = new Regex(@"animation-delay:\s*calc\(0?\.?[1-9][\d.]*s|animation:[^;]*?\ds\s*\*[^;]*?\)\)\s+calc\(\d");
+
+        foreach (var (name, stylesheet) in ReadStylesheets())
+        {
+            Assert.IsFalse(positiveDelay.IsMatch(stylesheet), $"{name}: {positiveDelay.Match(stylesheet).Value}");
+        }
+    }
+
     [TestMethod,
         DataRow("BitEllipsisLoading.scss", "elp"),
         DataRow("BitRollingSquareLoading.scss", "rsq")]
