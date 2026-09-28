@@ -520,6 +520,12 @@ private bool isOpenDragHandle;";
            Message=""Everyone in the workspace will see this version as soon as it goes out.""
            OkText=""Publish"">
     <div class=""dialog-body"">
+        <BitDropdown Combo
+                     Label=""Notify""
+                     Items=""audienceItems""
+                     DefaultValue=""@string.Empty""
+                     Placeholder=""Type to filter"" />
+        <br />
         <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => isOpenInner = true)"">What changed?</BitButton>
 
         <BitDialog @bind-IsOpen=""isOpenInner""
@@ -532,7 +538,15 @@ private bool isOpenDragHandle;";
 </BitDialog>";
     private readonly string example13CsharpCode = @"
 private bool isOpenOuter;
-private bool isOpenInner;";
+private bool isOpenInner;
+
+private readonly List<BitDropdownItem<string>> audienceItems =
+[
+    new() { Text = ""Everyone"", Value = ""all"" },
+    new() { Text = ""Editors"", Value = ""editors"" },
+    new() { Text = ""Reviewers"", Value = ""reviewers"" },
+    new() { Text = ""Nobody"", Value = ""none"" }
+];";
 
     private readonly string example14RazorCode = @"
 <style>
@@ -820,6 +834,7 @@ private bool isOpenFullSize;";
     .custom-dialog-variables {
         --bit-Dialog-radius: 1.5rem;
         --bit-Dialog-padding: 2rem;
+        --bit-Dialog-margin: 1rem;
         --bit-Dialog-max-width: 26rem;
         --bit-Dialog-text-align: center;
         --bit-Dialog-border-width: 2px;

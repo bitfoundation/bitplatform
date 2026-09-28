@@ -101,7 +101,7 @@ public partial class BitDialogDemo
             Name = "CloseOnEscape",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Dismisses the Dialog when the Escape key is pressed while the focus is inside it. A blocking Dialog ignores the Escape key whatever this is set to."
+            Description = "Dismisses the Dialog when the Escape key is pressed while the focus is inside it. A blocking Dialog ignores the Escape key whatever this is set to, and an Escape a field inside answers first (closing its own open list, or an IME composition) is left to it."
         },
         new()
         {
@@ -861,6 +861,12 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "--bit-Dialog-margin",
+            DefaultValue = "0",
+            Description = "Space kept between the surface and the edges of its area, for every Position and every size - a gutter on phones, where the surface otherwise reaches the edges.",
+        },
+        new()
+        {
             Name = "--bit-Dialog-overlay-background",
             DefaultValue = "--bit-clr-bg-overlay",
             Description = "Color of the overlay behind the surface.",
@@ -1043,6 +1049,14 @@ public partial class BitDialogDemo
 
     private bool isOpenOuter;
     private bool isOpenInner;
+
+    private readonly List<BitDropdownItem<string>> audienceItems =
+    [
+        new() { Text = "Everyone", Value = "all" },
+        new() { Text = "Editors", Value = "editors" },
+        new() { Text = "Reviewers", Value = "reviewers" },
+        new() { Text = "Nobody", Value = "none" }
+    ];
 
     private bool isOpenKeptMounted;
     private bool isOpenUnmounted;

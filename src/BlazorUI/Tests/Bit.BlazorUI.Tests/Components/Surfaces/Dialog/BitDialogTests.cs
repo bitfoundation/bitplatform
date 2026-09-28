@@ -820,6 +820,59 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogEscapeClaimedByTheContentShouldNeitherDismissNorBeRefused()
+    {
+        // The browser side reports the key as taken by something inside the Dialog - a combo box closing the
+        // popup it has open, an IME composition - which is neither a dismissal nor one to refuse.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isEscapeClaimed", _ => true).SetResult(true);
+
+        var isOpen = true;
+        var prevented = 0;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnDismissPrevented, () => prevented++);
+        });
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, prevented);
+        Assert.IsEmpty(component.FindAll(".bit-dlg-prv"));
+    }
+
+    [TestMethod]
+    public void BitDialogShouldGuardTheEscapeKeyOfItsRootWhenItOpens()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        var rootId = component.Find(".bit-dlg").Id;
+
+        Assert.IsTrue(Context.JSInterop.Invocations
+                             .Any(i => i.Identifier == "BitBlazorUI.Utils.guardEscape" && Equals(i.Arguments[0], rootId)));
+    }
+
+    [TestMethod]
+    public void BitDialogOverlayShouldSitBesideTheDocumentLayer()
+    {
+        // The document layer is what --bit-Dialog-margin insets, and the overlay has to go on covering the whole
+        // area around it - so it cannot be inside it.
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        var overlay = component.Find(".bit-dlg-ovl");
+
+        Assert.IsTrue(overlay.ParentElement!.ClassList.Contains("bit-dlg"));
+        Assert.IsTrue(overlay.NextElementSibling!.ClassList.Contains("bit-dlg-doc"));
+    }
+
+    [TestMethod]
     public void BitDialogOtherKeysShouldNotDismiss()
     {
         var isOpen = true;

@@ -401,7 +401,8 @@
 
         <DemoExample Title="Nested dialogs" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
-                A Dialog opened inside another stacks on top of it, and Escape closes only the one that has the focus.
+                A Dialog opened inside another stacks on top of it. Escape closes only the innermost layer: the nested Dialog, or the
+                open list of a field inside the Dialog (a combo box, a search box, a date picker) - never both at once.
             </div>
             <br />
             <BitButton OnClick="@(() => isOpenOuter = true)">Open Dialog</BitButton>
@@ -411,6 +412,12 @@
                        Message="Everyone in the workspace will see this version as soon as it goes out."
                        OkText="Publish">
                 <div class="dialog-body">
+                    <BitDropdown Combo
+                                 Label="Notify"
+                                 Items="audienceItems"
+                                 DefaultValue="@string.Empty"
+                                 Placeholder="Type to filter" />
+                    <br />
                     <BitButton Variant="BitVariant.Text" OnClick="@(() => isOpenInner = true)">What changed?</BitButton>
 
                     <BitDialog @bind-IsOpen="isOpenInner"
@@ -563,7 +570,8 @@
                 A Dialog fits its content, never outgrows its area, and stops widening at the theme's
                 <b>--bit-siz-dialog-max-width</b> (or <b>--bit-Dialog-max-width</b>). <b>Width</b>, <b>MinWidth</b>, <b>MaxWidth</b>,
                 <b>Height</b>, <b>MinHeight</b> and <b>MaxHeight</b> take any CSS length - <b>min(100%, 28rem)</b> is a wider Dialog
-                that still fits a phone. <b>FullWidth</b>, <b>FullHeight</b> and <b>FullSize</b> stretch it across its area.
+                that still fits a phone. <b>FullWidth</b>, <b>FullHeight</b> and <b>FullSize</b> stretch it across its area;
+                <b>--bit-Dialog-margin</b> keeps a gutter between it and the edges.
             </div>
             <br />
             <div class="btn-container">

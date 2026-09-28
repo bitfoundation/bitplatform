@@ -215,6 +215,10 @@ public partial class BitDialog : BitComponentBase
     /// focus is inside the Dialog, which it is by default and stays for as long as
     /// <see cref="TrapFocus"/> holds it there. A Dialog that has turned <see cref="AutoFocus"/> off and
     /// placed the focus somewhere else on the page is a Dialog the key no longer reaches.
+    /// <br />
+    /// An Escape that something inside the Dialog answers first is left to it: a combo box, a search box or a
+    /// date picker closing the list it has open, and an IME composition being cancelled, close that and
+    /// nothing else - neither dismissing the Dialog nor counting as a refused dismissal.
     /// </remarks>
     [Parameter] public bool CloseOnEscape { get; set; } = true;
 
@@ -863,6 +867,10 @@ public partial class BitDialog : BitComponentBase
         await SyncDragHandlers();
         if (Overtaken()) return;
 
+        // Registered once per root, so a kept-mounted Dialog that is opened again is not handed a second one.
+        await InvokeJs(_js.BitUtilsGuardEscape(_Id));
+        if (Overtaken()) return;
+
         // Reset before ToggleScroll: when AutoToggleScroll is false it returns early without
         // recalculating, which would otherwise leave a stale top-offset from a previous open.
         _offsetTop = 0;
@@ -1218,6 +1226,13 @@ public partial class BitDialog : BitComponentBase
 
         if (IsEnabled is false || IsOpen is false || _isLoading || _isDismissing) return;
 
+        // The key may belong to something inside the Dialog rather than to the Dialog itself: a combo box or a
+        // search box closing the popup it has open, a date picker closing its calendar, an IME composition being
+        // cancelled. Their keydown bubbles up to here all the same, and closing the Dialog on it would throw
+        // away the very field the user was still working in - so the key is only the Dialog's when the browser
+        // side saw no one else take it.
+        if (await IsEscapeClaimed()) return;
+
         // A blocking Dialog can only be answered with its buttons, which is as true of the keyboard as
         // it is of a click on the overlay.
         if (CloseOnEscape is false || IsBlocking)
@@ -1227,6 +1242,18 @@ public partial class BitDialog : BitComponentBase
         }
 
         await DismissDialog(new MouseEventArgs(), BitDialogDismissReason.Escape);
+    }
+
+    private async Task<bool> IsEscapeClaimed()
+    {
+        try
+        {
+            return await _js.BitUtilsIsEscapeClaimed(_Id);
+        }
+        catch (JSDisconnectedException)
+        {
+            return false;
+        }
     }
 
     private async Task HandleOnCloseClick(MouseEventArgs e)

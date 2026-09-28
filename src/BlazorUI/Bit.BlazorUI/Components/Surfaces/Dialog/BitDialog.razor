@@ -28,17 +28,19 @@
          inert="@(IsOpen is false)"
          aria-hidden="@(IsOpen ? null : "true")">
 
-        <div style="@Styles?.Document" class="bit-dlg-doc @GetPositionClass() @Classes?.Document">
-            @if (IsModeless is false)
-            {
-                @* The press on the overlay is left its default action: it is what blurs the input the user
-                   was typing into, and an input only commits what was typed once it loses the focus - before
-                   the click the press turns into runs any dismissal handler. Where that focus lands is the
-                   tabindex of the root above. *@
-                <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true"
-                     @onclick="HandleOnOverlayClick" />
-            }
+        @if (IsModeless is false)
+        {
+            @* The press on the overlay is left its default action: it is what blurs the input the user
+               was typing into, and an input only commits what was typed once it loses the focus - before
+               the click the press turns into runs any dismissal handler. Where that focus lands is the
+               tabindex of the root above.
+               It sits beside the document layer rather than inside it, so it still covers the whole of the
+               area when the document is inset from its edges (--bit-Dialog-margin). *@
+            <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true"
+                 @onclick="HandleOnOverlayClick" />
+        }
 
+        <div style="@Styles?.Document" class="bit-dlg-doc @GetPositionClass() @Classes?.Document">
             @* The surface is what carries the role and the accessible name, since that is the element the
                content lives in - a wrapper above the overlay would put the overlay inside the dialog for a
                screen reader. It is made programmatically focusable so that a Dialog holding nothing focusable

@@ -373,6 +373,42 @@
             Utils._focusTraps.delete(elementId);
         }
 
+        // Records, for every Escape pressed inside the given surface, whether the key belongs to something
+        // other than the surface itself, so the .NET handler that closes the surface can ask afterwards
+        // (isEscapeClaimed). Three things own the key before a surface does: an IME composition, which
+        // Escape cancels; a control that has already taken it (defaultPrevented); and a component inside the
+        // surface whose own popup is open - a combo box, a search box's suggestions, a date picker - which
+        // closes that popup on the key and has its keydown bubble on up through the surface. The answer has to
+        // be written down here, as the key is pressed: Blazor dispatches the component's handler and the
+        // surface's one as two separate calls, and by the time the surface's arrives the popup may already
+        // have been closed by the first. A native listener on the element runs before Blazor's delegation
+        // does, so the stack of open callouts is still the one the key was pressed against - and it listens
+        // in the bubbling phase, after the listeners of the controls inside have had the chance to take the
+        // key. It is registered once per element and is garbage-collected with it.
+        public static guardEscape(elementId: string) {
+            const element = document.getElementById(elementId) as any;
+            if (!element || element.__bitEscapeGuarded) return;
+
+            element.__bitEscapeGuarded = true;
+
+            element.addEventListener('keydown', (e: KeyboardEvent) => {
+                if (e.key !== 'Escape') return;
+
+                element.__bitEscapeClaimed = e.isComposing
+                    || e.keyCode === 229
+                    || e.defaultPrevented
+                    || Callouts.componentContains(e.target as Node | null, element);
+            });
+        }
+
+        // Whether the last Escape pressed inside the given surface belonged to something inside it (see
+        // guardEscape), and so is not the surface's to act on.
+        public static isEscapeClaimed(elementId: string) {
+            const element = document.getElementById(elementId) as any;
+
+            return element?.__bitEscapeClaimed === true;
+        }
+
         private static _tabOuts = new Map<string, AbortController>();
 
         // Hands the keyboard back to the page around the trigger of a popup that does not trap it. The popup is

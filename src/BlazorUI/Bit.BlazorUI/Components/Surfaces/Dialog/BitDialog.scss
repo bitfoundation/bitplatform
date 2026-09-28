@@ -4,6 +4,7 @@
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
 // dialog, one set on an ancestor the dialogs inside it, and one set on the Style of an instance that one alone:
 //   --bit-Dialog-z-index                   stacking order of the dialog                   (default: $zindex-modal, auto when AbsolutePosition)
+//   --bit-Dialog-margin                    space kept between the surface and its area    (default: 0, e.g. 16px for a gutter on phones)
 //   --bit-Dialog-overlay-background        color of the overlay behind the surface        (default: $clr-bg-overlay)
 //   --bit-Dialog-overlay-backdrop-filter   filter over the page behind the overlay        (default: none, e.g. blur(4px))
 //   --bit-Dialog-background                background of the surface                      (default: $clr-bg-pri)
@@ -135,11 +136,14 @@
 
 .bit-dlg-doc {
     opacity: 1;
-    width: 100%;
-    height: 100%;
     display: flex;
     position: absolute;
     background-color: transparent;
+
+    // The area the surface is laid out, sized, capped and dragged in. Insetting it is what keeps a gutter
+    // between the surface and the edges of the screen - which a Dialog capped at 100% of its area otherwise
+    // runs right up against on a phone - for every position and every size at once, the full ones included.
+    inset: var(--bit-Dialog-margin, 0);
 }
 
 .bit-dlg-ovl {

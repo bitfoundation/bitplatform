@@ -93,6 +93,20 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Writes down, for every Escape pressed inside a surface, whether it belongs to something inside it (an IME
+    // composition, a control that took it, a component whose own popup is open); see Utils.guardEscape.
+    internal static ValueTask BitUtilsGuardEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.guardEscape", elementId);
+    }
+
+
+    internal static ValueTask<bool> BitUtilsIsEscapeClaimed(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isEscapeClaimed", elementId);
+    }
+
+
     // Hands the keyboard back to the page around the trigger when Tab leaves either end of a popup that is
     // relocated to the body, and reports it through the OnTabOut callback; see Utils.setupTabOut.
     internal static ValueTask BitUtilsSetupTabOut<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(

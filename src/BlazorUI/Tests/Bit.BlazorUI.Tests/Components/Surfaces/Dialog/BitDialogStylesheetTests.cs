@@ -19,6 +19,7 @@ public class BitDialogStylesheetTests
     private static readonly string[] _publicVariables =
     [
         "--bit-Dialog-z-index",
+        "--bit-Dialog-margin",
         "--bit-Dialog-overlay-background",
         "--bit-Dialog-overlay-backdrop-filter",
         "--bit-Dialog-background",
