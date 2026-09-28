@@ -122,6 +122,78 @@ public class BitSnackBarServiceTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSnackBarServiceClosesFromAnotherThreadTest()
+    {
+        var service = new BitSnackBarService();
+        Services.AddSingleton(service);
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.ServiceHost, true);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        var item = await service.Info("title");
+
+        // A timer or a hub callback is off the renderer's context; the owner is found from the item itself rather
+        // than by reading the host's lists from there.
+        await Task.Run(() => service.Close(item));
+
+        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.AreEqual(BitSnackBarDismissReason.Programmatic, item.DismissReason);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarServiceLeavesAnItemThatHasLeftAloneTest()
+    {
+        var service = new BitSnackBarService();
+        Services.AddSingleton(service);
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.ServiceHost, true);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        var item = await service.Info("title");
+
+        await com.Instance.Close(item);
+
+        var dismissed = 0;
+        item.OnDismiss = _ => { dismissed++; return Task.CompletedTask; };
+
+        await service.Close(item);
+        await service.Update(item);
+
+        Assert.AreEqual(0, dismissed);
+        Assert.AreEqual(0, com.Instance.Items.Count);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarServiceClosesAQueuedItemThroughItsHostTest()
+    {
+        var service = new BitSnackBarService();
+        Services.AddSingleton(service);
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.ServiceHost, true);
+            parameters.Add(p => p.MaxItems, 1);
+            parameters.Add(p => p.OverflowBehavior, BitSnackBarOverflowBehavior.Queue);
+        });
+
+        await service.Info("first");
+        var queued = await service.Info("second");
+
+        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+
+        await service.Close(queued);
+
+        Assert.AreEqual(0, com.Instance.PendingItems.Count);
+        Assert.AreEqual(BitSnackBarDismissReason.Programmatic, queued.DismissReason);
+    }
+
+    [TestMethod]
     public async Task BitSnackBarServiceClearsTheCurrentHostTest()
     {
         var service = new BitSnackBarService();

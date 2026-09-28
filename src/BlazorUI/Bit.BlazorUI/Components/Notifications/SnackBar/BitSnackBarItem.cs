@@ -230,4 +230,34 @@ public class BitSnackBarItem
     /// the element, which is what starts its animation again.
     /// </remarks>
     internal int _generation;
+
+    /// <summary>
+    /// Whether the last input inside the item came from a pointer rather than from the keyboard.
+    /// </summary>
+    /// <remarks>
+    /// Only a keyboard user is stranded by an item that leaves with the focus inside it; a pointer user carries on
+    /// from wherever they click next, and a focus moved onto the next item for them would only hold that item's
+    /// countdown back with nothing to let it go.
+    /// </remarks>
+    internal bool _pointerInput;
+
+    /// <summary>
+    /// Marks the loading item of a <c>Track</c> call, which belongs to that call alone until its outcome is in.
+    /// </summary>
+    /// <remarks>
+    /// <c>PreventDuplicates</c> neither folds it into an identical item that is already showing nor folds another
+    /// item into it: two calls sharing one item would each settle it with their own outcome, and closing it for
+    /// one would take it away from the other.
+    /// </remarks>
+    internal bool _tracked;
+
+    /// <summary>
+    /// The host that is showing the item or holding it in its queue.
+    /// </summary>
+    /// <remarks>
+    /// Written only on the renderer's synchronization context of that host, and read by
+    /// <see cref="BitSnackBarService"/> from any thread: a reference read is atomic, where searching the host's own
+    /// lists from outside that context would race with the changes made to them.
+    /// </remarks>
+    internal BitSnackBar? _owner;
 }

@@ -230,15 +230,16 @@ public class BitSnackBarService
     {
         if (item is null) return null;
 
+        // The item names its own host rather than each host being asked whether it holds the item: the lists of a
+        // host are only safe to read on its renderer's synchronization context, which a caller on a timer or a hub
+        // callback is not on.
+        var owner = Volatile.Read(ref item._owner);
+        if (owner is null) return null;
+
         lock (_hostsLock)
         {
-            for (var i = _hosts.Count - 1; i >= 0; i--)
-            {
-                if (_hosts[i].Owns(item)) return _hosts[i];
-            }
+            return _hosts.Contains(owner) ? owner : null;
         }
-
-        return null;
     }
 
     private void ReportMissingHost()

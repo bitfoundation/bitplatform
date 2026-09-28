@@ -575,7 +575,7 @@ public partial class BitSnackBar : BitComponentBase
         {
             if (_items.Contains(item) || _queue.Contains(item)) return;
 
-            if (PreventDuplicates)
+            if (PreventDuplicates && item._tracked is false)
             {
                 var duplicate = _items.Find(i => IsDuplicate(i, item)) ?? _queue.Find(i => IsDuplicate(i, item));
                 if (duplicate is not null)
@@ -608,6 +608,7 @@ public partial class BitSnackBar : BitComponentBase
                         // not gone: what took it away last time is no longer what it is.
                         item.DismissReason = null;
                         item.DuplicateCount = 0;
+                        item._owner = this;
                         _queue.Add(item);
                         return;
 
@@ -640,6 +641,12 @@ public partial class BitSnackBar : BitComponentBase
     /// The returned task completes with the result of the tracked one, and a task that fails or is canceled
     /// rethrows its exception after the snackbar has reported it, so the caller still decides what the failure
     /// means for the rest of its code.
+    /// <br />
+    /// The loading item belongs to this call alone: <see cref="PreventDuplicates"/> never folds it into an
+    /// identical item, so two calls tracking work under the same title each report their own outcome. A title
+    /// callback that throws does not keep the item spinning or take the outcome away: the item is settled with a
+    /// fallback title - the loading title on success, the exception's message on failure - and the task's own
+    /// result or exception still comes back.
     /// </remarks>
     /// <param name="task">The work to report on.</param>
     /// <param name="loadingTitle">The title while the task is running.</param>
@@ -657,7 +664,9 @@ public partial class BitSnackBar : BitComponentBase
         ArgumentNullException.ThrowIfNull(successTitle);
         ArgumentNullException.ThrowIfNull(errorTitle);
 
-        var item = await Show(new BitSnackBarItem { Title = loadingTitle, Body = body, Color = BitColor.Info, IsLoading = true });
+        var item = new BitSnackBarItem { Title = loadingTitle, Body = body, Color = BitColor.Info, IsLoading = true, _tracked = true };
+
+        await Show(item);
 
         T result;
 
@@ -672,13 +681,27 @@ public partial class BitSnackBar : BitComponentBase
         }
         catch (Exception ex)
         {
-            await SettleAsync(item, errorTitle(ex), BitColor.Error);
+            await SettleAsync(item, BuildTitle(() => errorTitle(ex), ex.Message), BitColor.Error);
             throw;
         }
 
-        await SettleAsync(item, successTitle(result), BitColor.Success);
+        await SettleAsync(item, BuildTitle(() => successTitle(result), loadingTitle), BitColor.Success);
 
         return result;
+
+        // The callbacks are the caller's code, run in the middle of reporting an outcome that has already happened:
+        // one that throws must neither leave the item spinning for good nor replace that outcome with its own.
+        static string BuildTitle(Func<string> build, string fallback)
+        {
+            try
+            {
+                return build();
+            }
+            catch (Exception)
+            {
+                return fallback;
+            }
+        }
     }
 
     /// <summary>
@@ -724,6 +747,7 @@ public partial class BitSnackBar : BitComponentBase
     {
         if (item is not null && _queue.Remove(item))
         {
+            Release(item);
             item.DismissReason = BitSnackBarDismissReason.Programmatic;
 
             StateHasChanged();
@@ -752,7 +776,7 @@ public partial class BitSnackBar : BitComponentBase
 
         // Every item is leaving, so handing the focus from one to the next would only land it on the next one to
         // go: it is handed back once, after all of them have left.
-        var hadFocus = _items.Exists(i => i._focusWithin);
+        var hadFocus = _items.Exists(HoldsKeyboardFocus);
         _items.ForEach(i => i._focusWithin = false);
 
         foreach (var item in _items.ToArray())
@@ -760,10 +784,11 @@ public partial class BitSnackBar : BitComponentBase
             await DismissAsync(item, animate: false, reason: BitSnackBarDismissReason.Clear);
         }
 
-        if (hadFocus && restoreFocus) await RestoreFocusAsync();
+        if (hadFocus && restoreFocus) await HandFocusOnAsync(null);
 
         foreach (var item in queued)
         {
+            Release(item);
             item.DismissReason = BitSnackBarDismissReason.Clear;
 
             await ReportDismissed(item);
@@ -808,6 +833,10 @@ public partial class BitSnackBar : BitComponentBase
     /// </remarks>
     public async ValueTask FocusAsync()
     {
+        // There is nothing to focus before the first interactive render, and a prerender pass cannot reach the
+        // script at all: both are the no-op they always were rather than an exception.
+        if (RootElement.Context is null) return;
+
         // Through the script rather than the element reference, so the element the focus came from is remembered
         // and handed the focus back once the user is done with the notifications - the same detour the Hotkey
         // takes.
@@ -817,8 +846,21 @@ public partial class BitSnackBar : BitComponentBase
         {
             await _js.InvokeVoid("BitBlazorUI.SnackBars.focus", _Id);
         }
+        catch (JSException)
+        {
+            // The bit BlazorUI script is not on the page: the region still takes the focus, only without the
+            // detour back.
+            try
+            {
+                await RootElement.FocusAsync();
+            }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
+        }
         catch (JSDisconnectedException) { }
-        catch (ObjectDisposedException) { }
+        // ObjectDisposedException derives from this one too, and it is what an interop call made during a
+        // prerender pass throws.
+        catch (InvalidOperationException) { }
     }
 
     /// <summary>
@@ -924,7 +966,12 @@ public partial class BitSnackBar : BitComponentBase
         }
     }
 
-    internal bool Owns(BitSnackBarItem item) => _items.Contains(item) || _queue.Contains(item);
+    // An item that leaves the host - dismissed, or dropped from the queue - no longer names it, so the service does
+    // not route a later Close or Update of it here. Another host may have taken it over since.
+    private void Release(BitSnackBarItem item)
+    {
+        if (item._owner == this) item._owner = null;
+    }
 
     // The loading item of Track becomes its outcome: updated in place while it is still showing, and left to arrive
     // with the outcome already in it while it is still queued. One the user has already dismissed (or is leaving)
@@ -933,6 +980,8 @@ public partial class BitSnackBar : BitComponentBase
     {
         if (_queue.Contains(item) || (_items.Contains(item) && item._dismissing is false))
         {
+            // With its outcome in, the item is an ordinary notification, which a repeat of it may now fold into.
+            item._tracked = false;
             item.Title = title;
             item.Color = color;
             item.IsLoading = false;
@@ -965,6 +1014,9 @@ public partial class BitSnackBar : BitComponentBase
 
         foreach (var item in waiting)
         {
+            // Show names this host again if it keeps the item, and leaves it unowned if it drops it.
+            Release(item);
+
             await Show(item);
         }
     }
@@ -1148,10 +1200,12 @@ public partial class BitSnackBar : BitComponentBase
     }
 
     // An item whose exit animation is playing is on its way out, so a new notification identical to it is news
-    // rather than a repeat - matching it would drop the new one and leave nothing on screen.
+    // rather than a repeat - matching it would drop the new one and leave nothing on screen. The loading item of a
+    // Track call still belongs to that call, so a new notification is not handed it either.
     private static bool IsDuplicate(BitSnackBarItem left, BitSnackBarItem right)
     {
         return left._dismissing is false
+            && left._tracked is false
             && left.Title == right.Title
             && left.Body == right.Body
             && left.Color == right.Color;
@@ -1366,6 +1420,7 @@ public partial class BitSnackBar : BitComponentBase
     {
         item.DismissReason = null;
         item.DuplicateCount = 0;
+        item._owner = this;
 
         if (NewestOnTop)
         {
@@ -1448,8 +1503,10 @@ public partial class BitSnackBar : BitComponentBase
 
         // An item that leaves while the keyboard focus is inside it - an action button that closes it, a countdown
         // that was not held back, a Close from code - would take the focus with it, so the focus is handed on
-        // exactly as the dismiss button hands it on.
-        focusNext |= item._focusWithin;
+        // exactly as the dismiss button hands it on. Only a keyboard user is stranded that way, though: after a
+        // click or a tap the next click goes wherever the user points it, and a focus moved onto the next item for
+        // them would only hold that item's countdown back with nothing to let it go.
+        focusNext = (focusNext || item._focusWithin) && item._pointerInput is false;
 
         // An element taken out from under the pointer does not always report the pointer leaving it, so the hover
         // and focus states are cleared here rather than left to say the item is being read after it is gone - which
@@ -1459,10 +1516,13 @@ public partial class BitSnackBar : BitComponentBase
         item._focused = false;
         item._held = false;
         item._activationPending = false;
+        item._pointerInput = false;
 
         var index = _items.IndexOf(item);
 
         if (_items.Remove(item) is false) return;
+
+        Release(item);
 
         _dismissButtons.Remove(item.Id);
 
@@ -1492,24 +1552,16 @@ public partial class BitSnackBar : BitComponentBase
     // back to the top of the page. Handing the focus to the nearest item that still offers a dismiss button - the
     // one that took its place, or, failing that, the closest one before it - keeps a run of dismissals reachable
     // from the keyboard.
-    private async Task FocusNeighbourAsync(int index)
+    private Task FocusNeighbourAsync(int index)
     {
         for (var offset = 0; offset < _items.Count; offset++)
         {
-            if (TryPick(index + offset, out var forward))
-            {
-                await FocusAsync(forward);
-                return;
-            }
+            if (TryPick(index + offset, out var forward)) return HandFocusOnAsync(forward);
 
-            if (TryPick(index - offset - 1, out var backward))
-            {
-                await FocusAsync(backward);
-                return;
-            }
+            if (TryPick(index - offset - 1, out var backward)) return HandFocusOnAsync(backward);
         }
 
-        await RestoreFocusAsync();
+        return HandFocusOnAsync(null);
 
         bool TryPick(int at, out ElementReference reference)
         {
@@ -1523,34 +1575,42 @@ public partial class BitSnackBar : BitComponentBase
 
             if (_dismissButtons.TryGetValue(_items[at].Id, out reference) is false) return false;
 
-            return reference.Context is not null;
-        }
+            if (reference.Context is null) return false;
 
-        // The reference can still be stale - an item whose dismiss button was taken away by a parameter change
-        // keeps the one it was given - and reaching for an element the browser no longer has is not worth failing
-        // a dismissal over.
-        static async Task FocusAsync(ElementReference reference)
-        {
-            try
-            {
-                await reference.FocusAsync();
-            }
-            // JSException and ObjectDisposedException both derive from this one.
-            catch (InvalidOperationException) { }
+            // The focus arrives there from the keyboard, whatever that item last saw of the pointer.
+            _items[at]._pointerInput = false;
+
+            return true;
         }
     }
 
-    // Nothing is left to take the focus, so it goes back to where the user was before they jumped here (or,
-    // failing that, to the region), which ends the detour instead of stranding the focus on nothing.
-    private async Task RestoreFocusAsync()
+    // Hands the focus to the dismiss button of another item or, with none, back to where the user was before they
+    // jumped here (failing that, to the region), which ends the detour instead of stranding the focus on nothing.
+    // The script only moves a focus that is still the host's to move - on nothing, or inside the host - so a flag
+    // left standing by a browser that reported no focusout for a removed element cannot take the focus away from
+    // wherever the user has since put it.
+    private async Task HandFocusOnAsync(ElementReference? target)
     {
+        // Moving the focus is not worth failing a dismissal over: the callbacks and the queue come after this, and
+        // a script that is missing or a reference that has gone stale must not keep them from running.
         try
         {
-            await _js.InvokeVoid("BitBlazorUI.SnackBars.restoreFocus", _Id);
+            if (target is ElementReference element)
+            {
+                await _js.InvokeVoid("BitBlazorUI.SnackBars.passFocus", _Id, element);
+            }
+            else
+            {
+                await _js.InvokeVoid("BitBlazorUI.SnackBars.restoreFocus", _Id);
+            }
         }
+        catch (JSException) { }
         catch (JSDisconnectedException) { }
-        catch (ObjectDisposedException) { }
+        // ObjectDisposedException derives from this one too.
+        catch (InvalidOperationException) { }
     }
+
+    private static bool HoldsKeyboardFocus(BitSnackBarItem item) => item._focusWithin && item._pointerInput is false;
 
     private async Task HandleItemClick(BitSnackBarItem item)
     {
@@ -1568,9 +1628,10 @@ public partial class BitSnackBar : BitComponentBase
         }
     }
 
-    // The dismiss button and the Escape key hand the focus on to the next item, which the public Close does not:
-    // the code that closes a snack bar of its own accord has no reason to take the focus away from wherever the
-    // user has it.
+    // The dismiss button and the Escape key hand the focus on to the next item, which the public Close does not
+    // unless the focus is inside the item it closes: the code that closes a snack bar of its own accord has no
+    // reason to take the focus away from wherever the user has it. A dismiss button that was clicked rather than
+    // pressed from the keyboard leaves the focus where the browser puts it, as DismissAsync explains.
     private Task HandleDismissClick(BitSnackBarItem item)
     {
         // The dismiss button keeps its click to itself, so the Enter or Space that pressed it is answered here and
@@ -1588,6 +1649,8 @@ public partial class BitSnackBar : BitComponentBase
         // The key is only noted here, not answered: this handler also sees the keys pressed on whatever the item
         // holds, and a control of its own turns Enter or Space into a click that arrives before the key is
         // released. What is left unanswered by the time of the key-up was pressed on the item itself.
+        item._pointerInput = false;
+
         if ((e.Key is "Enter" or " " or "Spacebar") && IsClickable(item))
         {
             item._activationPending = true;
@@ -1603,6 +1666,10 @@ public partial class BitSnackBar : BitComponentBase
 
     private Task HandleItemKeyUp(KeyboardEventArgs e, BitSnackBarItem item)
     {
+        // A Tab that moved the focus in from outside was pressed somewhere else and is released here, so this is
+        // the first the item hears of the keyboard.
+        item._pointerInput = false;
+
         if (e.Key is not ("Enter" or " " or "Spacebar")) return Task.CompletedTask;
 
         if (item._activationPending is false) return Task.CompletedTask;
@@ -1611,6 +1678,8 @@ public partial class BitSnackBar : BitComponentBase
 
         return HandleItemClick(item);
     }
+
+    private static void HandlePointerDown(BitSnackBarItem item) => item._pointerInput = true;
 
     private void HandleHoverStart(BitSnackBarItem item)
     {
@@ -1895,7 +1964,10 @@ public partial class BitSnackBar : BitComponentBase
         foreach (var item in _items)
         {
             CancelCountdown(item);
+            Release(item);
         }
+
+        _queue.ForEach(Release);
 
         // The host is going away with its items, so nothing it was holding on their behalf is worth keeping: the
         // element references in particular would otherwise point at a DOM that is no longer there.

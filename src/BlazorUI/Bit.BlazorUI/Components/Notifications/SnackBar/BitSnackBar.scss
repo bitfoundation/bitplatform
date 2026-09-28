@@ -32,7 +32,7 @@
     flex-flow: column nowrap;
     gap: var(--bit-SnackBar-gap, #{spacing(1.25)});
     z-index: var(--bit-SnackBar-z-index, #{$zindex-snackbar});
-    max-width: calc(100% - 2 * var(--bit-snb-off-inline));
+    max-width: calc(100% - var(--bit-snb-off-left) - var(--bit-snb-off-right));
 
     // The duration of the enter/exit animation of the items. TransitionDuration arrives inline as the -full
     // token and the animations read this derived one, following the -full pattern of motion.fluent.scss, so
@@ -53,9 +53,13 @@
 
     // The offset is measured from the part of the screen that is safe to draw on, so a stack pinned to an edge
     // clears the notch or the home indicator of a phone on a page that draws under them (viewport-fit=cover).
-    // On any other page the insets are zero and the offset is the whole distance.
+    // On any other page the insets are zero and the offset is the whole distance. The sides are physical rather
+    // than logical because the insets are: a phone in landscape has its notch on one physical side whichever way
+    // the text runs.
     --bit-snb-off-top: calc(var(--bit-snb-off-block) + env(safe-area-inset-top, 0px));
     --bit-snb-off-bottom: calc(var(--bit-snb-off-block) + env(safe-area-inset-bottom, 0px));
+    --bit-snb-off-left: calc(var(--bit-snb-off-inline) + env(safe-area-inset-left, 0px));
+    --bit-snb-off-right: calc(var(--bit-snb-off-inline) + env(safe-area-inset-right, 0px));
 }
 
 // On a phone a notification sized to its text sits in a corner as a scrap of a box; every item takes the full
@@ -382,8 +386,15 @@
 
         // The unfilled variants put the role's color on the page surface as text, and a role's main color is
         // picked to be a fill (a Warning yellow on white is well under 4.5:1): the text reads the role's
-        // foreground token instead, the shade the theme picks to be read on the page (WCAG 1.4.3).
-        --bit-snb-clr-txt: #{role($tokens, fg)};
+        // foreground token instead, the shade the theme picks to be read on the page (WCAG 1.4.3). A background
+        // or border role has no such shade - its fg is the surface or border color itself, which as text on the
+        // page surface would be invisible - so it is read with its on color, the text that role is paired with.
+        @if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {
+            --bit-snb-clr-txt: #{role($tokens, on)};
+        }
+        @else {
+            --bit-snb-clr-txt: #{role($tokens, fg)};
+        }
     }
 }
 
@@ -473,41 +484,48 @@
 }
 
 
+// Every position spans the width the offsets and the safe area leave, and lines its items up inside it: a centered
+// stack is centered in what is left rather than pushed off center by 50% of the whole screen, which would leave it
+// under the notch on the side of a phone in landscape.
 .bit-snb-tst {
     top: var(--bit-snb-off-top);
-    inset-inline: var(--bit-snb-off-inline);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-tcn {
-    left: 50%;
     top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     align-items: center;
-    transform: translateX(-50%);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-ten {
     top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     align-items: flex-end;
-    inset-inline: var(--bit-snb-off-inline);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-bst {
     bottom: var(--bit-snb-off-bottom);
-    inset-inline: var(--bit-snb-off-inline);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
 }
 
 .bit-snb-bcn {
-    left: 50%;
     bottom: var(--bit-snb-off-bottom);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     align-items: center;
-    transform: translateX(-50%);
 }
 
 .bit-snb-ben {
     bottom: var(--bit-snb-off-bottom);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     align-items: flex-end;
-    inset-inline: var(--bit-snb-off-inline);
 }

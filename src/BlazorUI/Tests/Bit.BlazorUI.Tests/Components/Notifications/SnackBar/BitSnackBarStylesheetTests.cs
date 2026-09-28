@@ -81,6 +81,16 @@ public class BitSnackBarStylesheetTests
         StringAssert.Contains(GetRule(rules, variant), "--bit-snb-clr: var(--bit-snb-clr-txt);");
     }
 
+    [TestMethod]
+    public void BitSnackBarUnfilledVariantsShouldReadBackgroundAndBorderRolesWithTheirOnColor()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        // The fg of a background or border role is that surface or border color itself, invisible as text on the
+        // page surface the unfilled variants sit on; only the foreground roles are read as they are.
+        StringAssert.Contains(rules, "@if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {\n            --bit-snb-clr-txt: #{role($tokens, on)};");
+    }
+
     [TestMethod,
         DataRow("tst", "top: var(--bit-snb-off-top);"),
         DataRow("tcn", "top: var(--bit-snb-off-top);"),
@@ -92,10 +102,20 @@ public class BitSnackBarStylesheetTests
     public void BitSnackBarPositionsShouldClearTheSafeArea(string position, string declaration)
     {
         var rules = GetRules(ReadStylesheet());
+        var rule = GetRule(rules, position);
 
-        StringAssert.Contains(GetRule(rules, position), declaration);
+        StringAssert.Contains(rule, declaration);
         StringAssert.Contains(rules, "--bit-snb-off-top: calc(var(--bit-snb-off-block) + env(safe-area-inset-top, 0px));");
         StringAssert.Contains(rules, "--bit-snb-off-bottom: calc(var(--bit-snb-off-block) + env(safe-area-inset-bottom, 0px));");
+
+        // The sides clear the safe area too - the notch of a phone in landscape is on one of them - and a centered
+        // stack is centered in what they leave rather than on the whole screen.
+        StringAssert.Contains(rule, "left: var(--bit-snb-off-left);");
+        StringAssert.Contains(rule, "right: var(--bit-snb-off-right);");
+        Assert.IsFalse(rule.Contains("translateX"), $"{position} is centered on the whole screen.");
+        StringAssert.Contains(rules, "--bit-snb-off-left: calc(var(--bit-snb-off-inline) + env(safe-area-inset-left, 0px));");
+        StringAssert.Contains(rules, "--bit-snb-off-right: calc(var(--bit-snb-off-inline) + env(safe-area-inset-right, 0px));");
+        StringAssert.Contains(rules, "max-width: calc(100% - var(--bit-snb-off-left) - var(--bit-snb-off-right));");
     }
 
     [TestMethod]
