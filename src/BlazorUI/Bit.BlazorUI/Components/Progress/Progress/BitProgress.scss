@@ -20,6 +20,7 @@
 //   --bit-Progress-percent-color        color of the readout beside the bar or ring  (default: $clr-fg-pri, $clr-fg-sec in a ring)
 //   --bit-Progress-percent-font-size    text size of the readout in a ring           (default: a fifth of the diameter, at least $tg-fs-xs)
 //   --bit-Progress-description-color    color of the description                     (default: $clr-fg-sec)
+//   --bit-Progress-description-font-size text size of the description                (default: per Size, $tg-fs-2xs / $tg-fs-xs)
 
 .bit-prb {
     font-weight: $tg-fw-regular;
@@ -27,6 +28,8 @@
     font-size: var(--bit-Progress-font-size, var(--bit-prb-fs));
     font-family: $tg-font-family;
     --bit-prb-fs: #{$tg-fs-sm};
+    // The description is set a step or two below the label, and follows it up the ramp.
+    --bit-prb-des-fs: #{$tg-fs-2xs};
     --bit-prb-bar-color: var(--bit-Progress-bar-color, #{$clr-pri});
     --bit-prb-bar-on-color: var(--bit-Progress-bar-text-color, #{$clr-pri-text});
     // The unfilled part of every shape reads one token, so a custom track color reaches the linear track,
@@ -54,15 +57,17 @@
     --bit-prb-length: var(--bit-Progress-length, #{spacing(20)});
     --bit-prb-duration: var(--bit-Progress-transition-duration, #{$mot-duration});
 
+    // The sweep is moved by its logical inset alone: a translateX is physical, so in a right-to-left bar it
+    // would push the sweep further off the edge it enters from and leave the bar empty for half the cycle.
+    // Starting two thirds of the width before the start edge is where the old inset-plus-translate pair of a
+    // one-third-wide sweep began, so a left-to-right bar sweeps exactly as it did.
     @keyframes bit-prb-animation {
         0% {
-            inset-inline-start: -100%;
-            transform: translateX(100%);
+            inset-inline-start: -67%;
         }
 
         100% {
             inset-inline-start: 100%;
-            transform: translateX(0%);
         }
     }
 
@@ -88,6 +93,14 @@
         }
     }
 
+    // Only the start of the reveal is defined: held on it through the delay, the root is hidden, and once the
+    // zero-length animation has run it falls back to whatever visibility it had.
+    @keyframes bit-prb-reveal {
+        from {
+            visibility: hidden;
+        }
+    }
+
     @keyframes bit-prb-stripe-animation {
         0% {
             background-position-x: var(--bit-prb-stripe-size);
@@ -99,9 +112,16 @@
     }
 }
 
+// Delay: the whole indicator - and with it its role and its live region - is hidden until the delay has passed,
+// while the space it takes is kept so nothing moves when it appears. It is a one-off reveal rather than a motion,
+// so reduced motion has no say in it.
+.bit-prb-dly {
+    animation: bit-prb-reveal 0s var(--bit-prb-delay) backwards;
+}
+
 // The row the label and a readout placed on it share. It is there whenever either of them is, so a label on
 // its own is laid out in exactly the element it is laid out in beside a readout - one flex item, which is
-// what keeps its ellipsis working while the readout keeps its own width.
+// what lets it wrap in the room the readout leaves while the readout keeps its own width.
 .bit-prb-hdr {
     display: flex;
     align-items: baseline;
@@ -119,13 +139,14 @@
     }
 }
 
+// The label wraps rather than being cut off with an ellipsis: a truncated name - a long file name on a phone - is
+// lost to the reader for good, since nothing else on the page repeats it. A name with nowhere to break, such as
+// that file name, breaks anywhere.
 .bit-prb-lbl {
     display: block;
-    overflow: hidden;
+    overflow-wrap: anywhere;
     color: var(--bit-Progress-label-color, #{$clr-fg-pri});
     font-weight: var(--bit-Progress-label-font-weight, #{$tg-fw-regular});
-    white-space: nowrap;
-    text-overflow: ellipsis;
     line-height: spacing(2.5);
     padding-bottom: spacing(1);
 }
@@ -219,7 +240,7 @@
 
 .bit-prb-des {
     color: var(--bit-Progress-description-color, #{$clr-fg-sec});
-    font-size: $tg-fs-2xs;
+    font-size: var(--bit-Progress-description-font-size, var(--bit-prb-des-fs));
     line-height: spacing(2.25);
 }
 
@@ -475,6 +496,7 @@
 
 .bit-prb-lg {
     --bit-prb-fs: #{$tg-fs-md};
+    --bit-prb-des-fs: #{$tg-fs-xs};
     --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-lg});
     --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(9)});
 }

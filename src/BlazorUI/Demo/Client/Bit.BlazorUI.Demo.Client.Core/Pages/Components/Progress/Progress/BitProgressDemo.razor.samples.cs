@@ -10,7 +10,16 @@ public partial class BitProgressDemo
     private readonly string example2RazorCode = @"
 <BitProgress Indeterminate Label=""Preparing your export"" />
 
-<BitProgress Circular Indeterminate AriaLabel=""Loading"" />";
+<BitProgress Circular Indeterminate AriaLabel=""Loading"" />
+
+<BitButton OnClick=""() => isLoading = !isLoading"">@(isLoading ? ""Stop"" : ""Start"") loading</BitButton>
+
+@if (isLoading)
+{
+    <BitProgress Indeterminate Delay=""800"" Label=""Shown after 800 ms"" />
+}";
+    private readonly string example2CsharpCode = @"
+private bool isLoading;";
 
     private readonly string example3RazorCode = @"
 <BitSlider Label=""Thickness"" @bind-Value=""barThickness"" Min=""1"" Max=""30"" />

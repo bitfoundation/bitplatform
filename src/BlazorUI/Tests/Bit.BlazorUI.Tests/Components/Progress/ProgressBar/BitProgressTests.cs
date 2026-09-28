@@ -517,6 +517,35 @@ public class BitProgressTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitProgressANaNPercentShouldReadAsNothingDone()
+    {
+        // done / total while the total is still zero.
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, double.NaN);
+            parameters.Add(p => p.Buffer, double.NaN);
+        });
+
+        Assert.Contains("width: 0%", component.Find(".bit-prb-bar").GetAttribute("style")!);
+        Assert.Contains("width: 0%", component.Find(".bit-prb-buf").GetAttribute("style")!);
+        Assert.AreEqual("0", component.Find("[role=progressbar]").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void BitProgressANaNValueShouldReadAsTheBottomOfTheRange()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Value, double.NaN);
+            parameters.Add(p => p.Min, 10);
+            parameters.Add(p => p.Max, 20);
+        });
+
+        Assert.Contains("width: 0%", component.Find(".bit-prb-bar").GetAttribute("style")!);
+        Assert.AreEqual("10", component.Find("[role=progressbar]").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
     public void BitProgressAnInvertedRangeShouldNotProduceANegativeMax()
     {
         var component = RenderComponent<BitProgress>(parameters =>
@@ -754,9 +783,55 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.Buffer, 50);
         });
 
-        Assert.Contains("stroke-width: 7px", component.Find(".bit-prb-crt").GetAttribute("style")!);
-        Assert.Contains("stroke-width: 7px", component.Find(".bit-prb-cbf").GetAttribute("style")!);
-        Assert.Contains("stroke-width: 7px", component.Find(".bit-prb-cbr").GetAttribute("style")!);
+        Assert.Contains("stroke-width: min(7px, 20%)", component.Find(".bit-prb-crt").GetAttribute("style")!);
+        Assert.Contains("stroke-width: min(7px, 20%)", component.Find(".bit-prb-cbf").GetAttribute("style")!);
+        Assert.Contains("stroke-width: min(7px, 20%)", component.Find(".bit-prb-cbr").GetAttribute("style")!);
+    }
+
+
+    // ---------------------------------------------------------------- delay
+
+    [TestMethod]
+    public void BitProgressWithoutDelayShouldNotHoldItselfBack()
+    {
+        var component = RenderComponent<BitProgress>(parameters => parameters.Add(p => p.Percent, 40));
+
+        var root = component.Find(".bit-prb");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-prb-dly"));
+        Assert.DoesNotContain("--bit-prb-delay", root.GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitProgressDelayShouldHideTheWholeIndicatorForThatLong(bool circular)
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Circular, circular);
+            parameters.Add(p => p.Percent, 40);
+            parameters.Add(p => p.Delay, 400);
+        });
+
+        var root = component.Find(".bit-prb");
+
+        // Hidden on the root, so the role and the live region go with it, and nothing is taken out of the tree:
+        // the space is kept and the value is already there when the indicator appears.
+        Assert.IsTrue(root.ClassList.Contains("bit-prb-dly"));
+        Assert.Contains("--bit-prb-delay: 400ms;", root.GetAttribute("style")!);
+        Assert.AreEqual(1, component.FindAll("[role=progressbar]").Count);
+    }
+
+    [TestMethod]
+    public void BitProgressDelayShouldFollowAParameterChange()
+    {
+        var component = RenderComponent<BitProgress>(parameters => parameters.Add(p => p.Delay, 400));
+
+        component.Render(parameters => parameters.Add(p => p.Delay, 0));
+
+        Assert.IsFalse(component.Find(".bit-prb").ClassList.Contains("bit-prb-dly"));
     }
 
 
@@ -1844,8 +1919,8 @@ public class BitProgressTests : BunitTestContext
 
         // The per-size stroke is only the fallback of the public variable, so a --bit-Progress-thickness set on an
         // ancestor reaches the ring as it does the bar.
-        Assert.Contains($"stroke-width: var(--bit-Progress-thickness, {expected}px)", component.Find(".bit-prb-cbr").GetAttribute("style")!);
-        Assert.Contains($"stroke-width: var(--bit-Progress-thickness, {expected}px)", component.Find(".bit-prb-crt").GetAttribute("style")!);
+        Assert.Contains($"stroke-width: min(var(--bit-Progress-thickness, {expected}px), 20%)", component.Find(".bit-prb-cbr").GetAttribute("style")!);
+        Assert.Contains($"stroke-width: min(var(--bit-Progress-thickness, {expected}px), 20%)", component.Find(".bit-prb-crt").GetAttribute("style")!);
     }
 
 

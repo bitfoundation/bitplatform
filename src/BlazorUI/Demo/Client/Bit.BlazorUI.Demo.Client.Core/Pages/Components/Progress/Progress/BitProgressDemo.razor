@@ -10,7 +10,7 @@
 
 <DemoPage Name="Progress"
           SecondaryNames="@(["ProgressIndicator", "ProgressBar", "Spinner"])"
-          Description="A bar, a ring or a gauge that reports how far along an operation is, or - indeterminate - that it is still running. It takes a label, a description, a percentage readout, a buffered second value, segments, a vertical orientation and a gauge gap, reports its value to assistive technology in the operation's own unit, can be exposed as a meter, and can announce its own advance."
+          Description="A bar, a ring or a gauge that reports how far along an operation is - or, indeterminate, that it is still running - to the eye and to assistive technology alike."
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           Parameters="componentParameters"
@@ -45,16 +45,24 @@
             <BitProgress Circular Label="Uploading report.pdf" Description="4.2 MB of 10 MB" Percent="42" />
         </DemoExample>
 
-        <DemoExample Title="Indeterminate" RazorCode="@example2RazorCode" Id="example2">
+        <DemoExample Title="Indeterminate" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 For an operation whose end is unknown: the bar sweeps and the ring spins - the ring is what other
                 libraries call a spinner. No value is reported to assistive technology, which is how a screen reader
-                knows it is indeterminate.
+                knows it is indeterminate. <b>Delay</b> keeps it hidden for that many milliseconds after it first
+                renders, so an operation that ends sooner never flashes one.
             </div>
             <br />
             <BitProgress Indeterminate Label="Preparing your export" />
             <br />
             <BitProgress Circular Indeterminate AriaLabel="Loading" />
+            <br />
+            <BitButton OnClick="() => isLoading = !isLoading">@(isLoading ? "Stop" : "Start") loading</BitButton>
+            <br /><br />
+            @if (isLoading)
+            {
+                <BitProgress Indeterminate Delay="800" Label="Shown after 800 ms" />
+            }
         </DemoExample>
 
         <DemoExample Title="Thickness & diameter" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">

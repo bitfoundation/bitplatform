@@ -85,6 +85,7 @@ public class BitProgressParamsTests : BunitTestContext
             Rounded = true,
             Reversed = true,
             Segments = 4,
+            Delay = 300,
             Class = "cascaded-class",
             AriaLabel = "Cascaded progress",
         });
@@ -96,6 +97,8 @@ public class BitProgressParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-prb-rnd"));
         Assert.IsTrue(root.ClassList.Contains("bit-prb-rev"));
         Assert.IsTrue(root.ClassList.Contains("bit-prb-seg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-prb-dly"));
+        Assert.Contains("--bit-prb-delay: 300ms;", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("cascaded-class"));
         Assert.AreEqual("Cascaded progress", component.Find("[role=progressbar]").GetAttribute("aria-label"));
     }
@@ -118,7 +121,7 @@ public class BitProgressParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-prb-gap"));
         Assert.IsTrue(root.ClassList.Contains("bit-prb-gpt"));
         Assert.AreEqual("64px", svg.GetAttribute("width"));
-        Assert.Contains("stroke-width: 6px", component.Find(".bit-prb-cbr").GetAttribute("style")!);
+        Assert.Contains("stroke-width: min(6px, 20%)", component.Find(".bit-prb-cbr").GetAttribute("style")!);
     }
 
     [TestMethod]

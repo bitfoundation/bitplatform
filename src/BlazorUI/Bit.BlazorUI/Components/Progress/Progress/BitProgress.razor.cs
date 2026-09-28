@@ -89,6 +89,15 @@ public partial class BitProgress : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// How long, in milliseconds, the progress stays hidden after it is first rendered. An operation that finishes
+    /// within that window never shows an indicator at all, which is better than one that flashes up and vanishes.
+    /// The space it takes is kept, so nothing moves when it appears, and it is hidden from assistive technology
+    /// for as long as it is hidden from sight.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public int Delay { get; set; }
+
+    /// <summary>
     /// Text describing or supplementing the operation.
     /// </summary>
     [Parameter] public string? Description { get; set; }
@@ -336,6 +345,8 @@ public partial class BitProgress : BitComponentBase
         });
 
         ClassBuilder.Register(() => _IsVertical ? "bit-prb-ver" : string.Empty);
+
+        ClassBuilder.Register(() => Delay > 0 ? "bit-prb-dly" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -450,11 +461,13 @@ public partial class BitProgress : BitComponentBase
         }
     }
 
+    private string? _DelayStyle => Delay > 0 ? $"--bit-prb-delay: {Delay}ms;" : null;
+
     private string? _RootStyle
     {
         get
         {
-            var prefix = _SegmentStyle + _GapStyle + _DiameterStyle + _ColorStyle;
+            var prefix = _SegmentStyle + _GapStyle + _DiameterStyle + _ColorStyle + _DelayStyle;
 
             return prefix.HasNoValue() ? StyleBuilder.Value : prefix + StyleBuilder.Value;
         }
@@ -474,7 +487,7 @@ public partial class BitProgress : BitComponentBase
     /// What the screen reader is told the progress currently is. With a <see cref="Value"/> it is that
     /// value in its own unit, so the range it is read against is the Min/Max pair rather than 0..100.
     /// </summary>
-    private string? _AriaValueNow => Indeterminate ? null : Css(Value.HasValue ? Math.Clamp(Value.Value, Min, Math.Max(Min, Max)) : _Percent);
+    private string? _AriaValueNow => Indeterminate ? null : Css(Value.HasValue ? (double.IsNaN(Value.Value) ? Min : Math.Clamp(Value.Value, Min, Math.Max(Min, Max))) : _Percent);
 
     private string? _AriaValueMin => Indeterminate ? null : Css(Value.HasValue ? Min : 0);
 
@@ -564,14 +577,16 @@ public partial class BitProgress : BitComponentBase
         _announcementGeneration++;
     }
 
-    private static double Normalize(double? value) => Math.Clamp(value.GetValueOrDefault(), 0, 100);
+    // A percentage computed as done / total is NaN while the total is still zero, and a NaN clamps to itself: it
+    // is read as nothing done rather than written out as "width: NaN%" and aria-valuenow="NaN".
+    private static double Normalize(double? value) => double.IsNaN(value.GetValueOrDefault()) ? 0 : Math.Clamp(value.GetValueOrDefault(), 0, 100);
 
     private double ToPercent(double value)
     {
         var max = Math.Max(Min, Max);
         var range = max - Min;
 
-        return range <= 0 ? 0 : Math.Clamp((value - Min) / range * 100, 0, 100);
+        return range <= 0 || double.IsNaN(value) ? 0 : Math.Clamp((value - Min) / range * 100, 0, 100);
     }
 
     private int GetThickness() => Math.Max(0, Thickness ?? Size switch
@@ -604,8 +619,11 @@ public partial class BitProgress : BitComponentBase
     // three of its children. A ring is not drawn from the track tokens: a design system sizes its spinner
     // stroke apart from its bar track (Fluent 2 has 1px tracks and 3px spinners), so an unset Thickness
     // keeps the per-size stroke as the fallback of the public variable.
+    // The circle is drawn at 40% of the diameter, so a stroke wider than 20% of it would spill past the edge of the
+    // svg and be cut off; a percentage stroke is read against the size the ring is actually drawn at, which is what
+    // keeps a thick stroke on a small ring (or a ring floored by the diameter token) whole.
     private string _ThicknessDeclaration => Circular
-        ? (Thickness is null ? $"stroke-width: var(--bit-Progress-thickness, {GetThickness()}px);" : $"stroke-width: {GetThickness()}px;")
+        ? (Thickness is null ? $"stroke-width: min(var(--bit-Progress-thickness, {GetThickness()}px), 20%);" : $"stroke-width: min({GetThickness()}px, 20%);")
         : _IsVertical ? string.Empty : $"height: {GetThicknessStyleValue()};";
 
     // ... and so does the axis the value is drawn along.

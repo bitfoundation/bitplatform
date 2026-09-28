@@ -58,6 +58,11 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// How long, in milliseconds, the progress stays hidden after it is first rendered.
+    /// </summary>
+    public int? Delay { get; set; }
+
+    /// <summary>
     /// The diameter of the circular progress in pixels.
     /// </summary>
     public int? Diameter { get; set; }
@@ -223,6 +228,13 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
         if (Color.HasValue && bitProgress.HasNotBeenSet(nameof(Color)))
         {
             bitProgress.Color = Color.Value;
+
+            bitProgress.ClassBuilder.Reset();
+        }
+
+        if (Delay.HasValue && bitProgress.HasNotBeenSet(nameof(Delay)))
+        {
+            bitProgress.Delay = Delay.Value;
 
             bitProgress.ClassBuilder.Reset();
         }

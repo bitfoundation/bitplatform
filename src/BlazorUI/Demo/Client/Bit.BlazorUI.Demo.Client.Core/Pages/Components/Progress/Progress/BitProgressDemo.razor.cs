@@ -66,6 +66,13 @@ public partial class BitProgressDemo
         },
         new()
         {
+            Name = "Delay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "Milliseconds the progress stays hidden after it first renders, so a quick operation never flashes one. Its space is kept and it is hidden from assistive technology too.",
+        },
+        new()
+        {
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
@@ -388,6 +395,12 @@ public partial class BitProgressDemo
             DefaultValue = "--bit-clr-fg-sec",
             Description = "Color of the description.",
         },
+        new()
+        {
+            Name = "--bit-Progress-description-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-2xs (small, medium), --bit-tpg-fs-xs (large)",
+            Description = "Text size of the description.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -529,6 +542,7 @@ public partial class BitProgressDemo
 
 
 
+    private bool isLoading;
     private double barThickness = 10;
     private double bufferPercent = 40;
     private double segmentedPercent = 45;

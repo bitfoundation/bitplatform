@@ -72,12 +72,41 @@ public class BitProgressStylesheetTests
         }
     }
 
-    private static string GetBlock(string stylesheet, string selector)
+    [TestMethod]
+    public void BitProgressHorizontalSweepShouldMoveAlongTheLogicalAxisOnly()
+    {
+        var keyframes = GetBlock(ReadStylesheet(), "@keyframes bit-prb-animation {", "\n    }");
+
+        // A translateX is physical: in a right-to-left bar it would push the sweep off the edge it enters from.
+        StringAssert.Contains(keyframes, "inset-inline-start");
+        Assert.IsFalse(keyframes.Contains("translate"), "The horizontal sweep is moved by a physical transform.");
+    }
+
+    [TestMethod]
+    public void BitProgressDescriptionShouldFollowTheSize()
+    {
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb-des {"), "font-size: var(--bit-Progress-description-font-size, var(--bit-prb-des-fs));");
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb-lg {"), "--bit-prb-des-fs: #{$tg-fs-xs};");
+    }
+
+    [TestMethod]
+    public void BitProgressLabelShouldWrapRatherThanBeCutOff()
+    {
+        // A truncated name is lost to the reader: nothing else on the page repeats it.
+        var label = GetBlock(ReadStylesheet(), "\n.bit-prb-lbl {");
+
+        Assert.IsFalse(label.Contains("text-overflow"), "The label is truncated with an ellipsis.");
+        Assert.IsFalse(label.Contains("nowrap"), "The label is kept to one line.");
+    }
+
+    private static string GetBlock(string stylesheet, string selector, string terminator = "\n}")
     {
         var start = stylesheet.IndexOf(selector, StringComparison.Ordinal);
         Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
 
-        var end = stylesheet.IndexOf("\n}", start, StringComparison.Ordinal);
+        var end = stylesheet.IndexOf(terminator, start, StringComparison.Ordinal);
 
         return stylesheet[start..end];
     }
