@@ -124,10 +124,13 @@
         // are at least on the element the relationship was declared for.
         // An empty hasPopup takes the attribute away again - but only where this is the code that put it
         // there, so a trigger that names a popup of its own (a dropdown used as an anchor) keeps its own.
-        public static syncAriaPopup(anchorId: string, popupId: string, isOpen: boolean, hasPopup: string) {
+        // Reports whether the attributes landed on a trigger inside the container, which is what tells the
+        // component to stop declaring them on the container too: aria-expanded and aria-haspopup are not
+        // allowed on an element without a role, so a copy left there is invalid as well as redundant.
+        public static syncAriaPopup(anchorId: string, popupId: string, isOpen: boolean, hasPopup: string): boolean {
             try {
                 const anchor = document.getElementById(anchorId);
-                if (!anchor) return;
+                if (!anchor) return false;
 
                 const trigger = anchor.querySelector<HTMLElement>(Utils._focusables) ?? anchor;
 
@@ -141,7 +144,9 @@
                     trigger.removeAttribute('aria-haspopup');
                     trigger.removeAttribute('data-bit-haspopup');
                 }
-            } catch (e) { console.error("BitBlazorUI.Utils.syncAriaPopup:", e); }
+
+                return trigger !== anchor;
+            } catch (e) { console.error("BitBlazorUI.Utils.syncAriaPopup:", e); return false; }
         }
 
         // Mirrors the relationship a tooltip declares onto the element the reader actually lands on. The

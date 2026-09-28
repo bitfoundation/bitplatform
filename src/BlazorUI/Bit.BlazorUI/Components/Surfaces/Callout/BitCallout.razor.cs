@@ -40,6 +40,7 @@ public partial class BitCallout : BitComponentBase
     private bool _hoverInside;
     private bool? _isHoverDevice;
     private (bool IsOpen, string? HasPopup)? _syncedAria;
+    private bool _ariaOnTrigger;
     private string? _swipesKey;
     private CancellationTokenSource? _hoverCts;
     private DotNetObjectReference<BitCallout>? _dotnetObj;
@@ -1227,10 +1228,10 @@ public partial class BitCallout : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    // The anchor container carries the popup relationship, but the element the user actually lands on is
-    // the trigger the consumer put inside it, so the relationship is copied onto that one as well. Only
-    // when what it would report has actually changed: the attributes are written from JS, so a call per
-    // render would be a round trip per render for something that only changes when the callout is toggled
+    // The anchor container carries the popup relationship until the page is interactive, but the element the
+    // user actually lands on is the trigger the consumer put inside it, so the relationship is moved onto that
+    // one. Only when what it would report has actually changed: the attributes are written from JS, so a call
+    // per render would be a round trip per render for something that only changes when the callout is toggled
     // or the kind of popup it holds is.
     private async Task SyncAnchorAria()
     {
@@ -1242,11 +1243,22 @@ public partial class BitCallout : BitComponentBase
 
         _syncedAria = aria;
 
+        bool onTrigger;
         try
         {
-            await _js.BitUtilsSyncAriaPopup(_anchorId, _contentId, aria.Item1, aria.Item2);
+            onTrigger = await _js.BitUtilsSyncAriaPopup(_anchorId, _contentId, aria.Item1, aria.Item2);
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSDisconnectedException) { return; } // we can ignore this exception here
+
+        // Once the trigger carries the relationship the container stops declaring it: aria-expanded and
+        // aria-haspopup are not allowed on an element without a role, so the copy there would be invalid as
+        // well as redundant. A container that holds nothing focusable keeps it, as the only place it can go.
+        if (onTrigger != _ariaOnTrigger)
+        {
+            _ariaOnTrigger = onTrigger;
+
+            StateHasChanged();
+        }
     }
 
     // The element the focus was on is gone with the callout, which would leave the focus on the body and the

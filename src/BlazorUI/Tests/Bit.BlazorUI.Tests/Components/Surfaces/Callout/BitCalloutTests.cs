@@ -151,6 +151,49 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalloutShouldDropThePopupRelationshipFromTheContainerOnceTheTriggerCarriesIt()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.syncAriaPopup", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.TrapFocus, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        // aria-expanded and aria-haspopup are not allowed on an element without a role, so the container only
+        // declares them until they have been moved onto the button inside it.
+        var anchor = component.Find(".bit-clo-acn");
+        Assert.IsNull(anchor.GetAttribute("aria-expanded"));
+        Assert.IsNull(anchor.GetAttribute("aria-haspopup"));
+        Assert.IsNull(anchor.GetAttribute("aria-controls"));
+
+        // Toggling keeps them on the trigger: the container never takes them back.
+        anchor.Click();
+
+        Assert.IsNull(component.Find(".bit-clo-acn").GetAttribute("aria-expanded"));
+        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Utils.syncAriaPopup"][^1].Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldOnlyStopTheKeysOfItsAnchorWhileItIsOpen()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        // A closed callout has nothing to dismiss, so the keys pressed on its anchor carry on to whatever it sits
+        // in - a toolbar moving between its buttons with the arrow keys, or the callout it is nested in.
+        Assert.IsFalse(component.Markup.Contains("onkeydown:stoppropagation", StringComparison.OrdinalIgnoreCase));
+
+        component.Find(".bit-clo-acn").Click();
+
+        // An open one keeps its Escape from also dismissing the callout it is nested in.
+        Assert.IsTrue(component.Find(".bit-clo").OuterHtml.Contains("onkeydown:stoppropagation", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public void BitCalloutShouldNotMirrorThePopupRelationshipWithoutAnAnchorOfItsOwn()
     {
         RenderComponent<BitCallout>(parameters =>
