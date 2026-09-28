@@ -79,21 +79,16 @@
        is worse than no stop at all. *@
     var rootTabIndex = _IsLink || IsEnabled is false ? null : (_IsButton ? (tabIndex ?? "0") : tabIndex);
 
+    @* The keys a button answers - Enter as it goes down, Space as it comes back up, neither one scrolling the
+       page - are wired up in the browser (see OnAfterRenderAsync), where they turn into this same click. *@
     var onClick = OnClick.HasDelegate || _IsToggle
                 ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick)
                 : default;
-
-    @* Nothing listens for a key on a card that is not a control - an empty callback still costs a round trip
-       to the server on every keystroke of a Blazor Server app. *@
-    var onKeyDown = _IsButton
-                  ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown)
-                  : default;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onclick="onClick"
      @onclick:stopPropagation="StopPropagation"
-     @onkeydown="onKeyDown"
      id="@_Id"
      role="@role"
      tabindex="@rootTabIndex"
@@ -133,11 +128,11 @@
            picture card keeps in its corner is reachable on a card whose header is under the picture - or on a card
            that has no header at all.
 
-           Like the two slots inside the column of parts, it keeps the events of the controls in it away from the click
-           of a card that has one of its own: pressing the favourite toggle of such a card is pressing the toggle, and
-           not the card under it as well. *@
+           Like the two slots inside the column of parts, it keeps the clicks of the controls in it away from a card
+           that has one of its own: pressing the favourite toggle of such a card is pressing the toggle, and not the
+           card under it as well. A key pressed on one of them never reaches the card either, since the card only
+           answers a key pressed on itself. *@
         <div @onclick:stopPropagation="_IsClickable"
-             @onkeydown:stopPropagation="_IsClickable"
              style="@Styles?.FloatingActions"
              class="bit-crd-fac @Classes?.FloatingActions">@FloatingActions</div>
     }
@@ -212,10 +207,9 @@
                         {
                             @* Outside the title block and raised above the stretched link, so the controls it holds
                                are controls of their own rather than part of whatever the card leads to - and on a card
-                               that has a click of its own, the click and the key press stop here rather than reaching
+                               that has a click of its own, the click stops here rather than reaching
                                the root as well, so acting on the menu of a card is not also acting on the card. *@
                             <div @onclick:stopPropagation="_IsClickable"
-                                 @onkeydown:stopPropagation="_IsClickable"
                                  style="@Styles?.Actions"
                                  class="bit-crd-act @Classes?.Actions">@Actions</div>
                         }
@@ -249,10 +243,9 @@
                 @if (Footer is not null)
                 {
                     @* Raised above the stretched link for the same reason the header actions are: the buttons of a
-                       linked card have to stay reachable by the pointer and by the keyboard, and their events stop
+                       linked card have to stay reachable by the pointer and by the keyboard, and their clicks stop
                        here on a card that has a click of its own rather than firing it a second time. *@
                     <div @onclick:stopPropagation="_IsClickable"
-                         @onkeydown:stopPropagation="_IsClickable"
                          style="@Styles?.Footer"
                          class="bit-crd-ftr @Classes?.Footer">@Footer</div>
                 }

@@ -67,6 +67,7 @@ internal static class BitThemeMapper
         new(BitCss.Var.Shape.Radius.Chip, BitCss.Var.Shape.Radius.Control),
         new(BitCss.Var.Shape.Radius.Selection, BitCss.Var.Shape.Radius.Control),
         new(BitCss.Var.Shadow.Card, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Shadow.CardHover, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Popup, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Dialog, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Sheet, BitCss.Var.Shadow.Callout),
@@ -411,6 +412,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shadow.S24, bitTheme.BoxShadow.S24);
         addCssVar(BitCss.Var.Shadow.FocusRing, bitTheme.BoxShadow.FocusRing);
         addCssVar(BitCss.Var.Shadow.Card, bitTheme.BoxShadow.Card);
+        addCssVar(BitCss.Var.Shadow.CardHover, bitTheme.BoxShadow.CardHover);
         addCssVar(BitCss.Var.Shadow.Popup, bitTheme.BoxShadow.Popup);
         addCssVar(BitCss.Var.Shadow.Dialog, bitTheme.BoxShadow.Dialog);
         addCssVar(BitCss.Var.Shadow.Sheet, bitTheme.BoxShadow.Sheet);
@@ -421,6 +423,9 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Spacing.ScalingFactor, bitTheme.Spacing.ScalingFactor);
         addCssVar(BitCss.Var.Spacing.Dialog, bitTheme.Spacing.Dialog);
+        addCssVar(BitCss.Var.Spacing.Card.Sm, bitTheme.Spacing.Card.Sm);
+        addCssVar(BitCss.Var.Spacing.Card.Md, bitTheme.Spacing.Card.Md);
+        addCssVar(BitCss.Var.Spacing.Card.Lg, bitTheme.Spacing.Card.Lg);
 
         addCssVar(BitCss.Var.ZIndex.Snackbar, bitTheme.ZIndex.Snackbar);
         addCssVar(BitCss.Var.ZIndex.Modal, bitTheme.ZIndex.Modal);
@@ -747,7 +752,7 @@ internal static class BitThemeMapper
         {
             Color = NormalizeColors(src.Color),
             BoxShadow = src.BoxShadow ?? new(),
-            Spacing = src.Spacing ?? new(),
+            Spacing = NormalizeSpacing(src.Spacing),
             ZIndex = src.ZIndex ?? new(),
             Shape = NormalizeShape(src.Shape),
             Typography = NormalizeTypography(src.Typography),
@@ -826,6 +831,18 @@ internal static class BitThemeMapper
             FocusRingWidth = src.FocusRingWidth,
             FocusRingOffset = src.FocusRingOffset,
             Radius = src.Radius ?? new(),
+        };
+    }
+
+    private static BitThemeSpacings NormalizeSpacing(BitThemeSpacings? src)
+    {
+        src ??= new BitThemeSpacings();
+
+        return new BitThemeSpacings
+        {
+            ScalingFactor = src.ScalingFactor,
+            Dialog = src.Dialog,
+            Card = src.Card ?? new(),
         };
     }
 
@@ -1193,6 +1210,7 @@ internal static class BitThemeMapper
         result.BoxShadow.S24 = bitTheme.BoxShadow.S24 ?? other.BoxShadow.S24;
         result.BoxShadow.FocusRing = bitTheme.BoxShadow.FocusRing ?? other.BoxShadow.FocusRing;
         result.BoxShadow.Card = bitTheme.BoxShadow.Card ?? other.BoxShadow.Card;
+        result.BoxShadow.CardHover = bitTheme.BoxShadow.CardHover ?? other.BoxShadow.CardHover;
         result.BoxShadow.Popup = bitTheme.BoxShadow.Popup ?? other.BoxShadow.Popup;
         result.BoxShadow.Dialog = bitTheme.BoxShadow.Dialog ?? other.BoxShadow.Dialog;
         result.BoxShadow.Sheet = bitTheme.BoxShadow.Sheet ?? other.BoxShadow.Sheet;
@@ -1203,6 +1221,9 @@ internal static class BitThemeMapper
 
         result.Spacing.ScalingFactor = bitTheme.Spacing.ScalingFactor ?? other.Spacing.ScalingFactor;
         result.Spacing.Dialog = bitTheme.Spacing.Dialog ?? other.Spacing.Dialog;
+        result.Spacing.Card.Sm = bitTheme.Spacing.Card.Sm ?? other.Spacing.Card.Sm;
+        result.Spacing.Card.Md = bitTheme.Spacing.Card.Md ?? other.Spacing.Card.Md;
+        result.Spacing.Card.Lg = bitTheme.Spacing.Card.Lg ?? other.Spacing.Card.Lg;
 
         result.ZIndex.Snackbar = bitTheme.ZIndex.Snackbar ?? other.ZIndex.Snackbar;
         result.ZIndex.Modal = bitTheme.ZIndex.Modal ?? other.ZIndex.Modal;

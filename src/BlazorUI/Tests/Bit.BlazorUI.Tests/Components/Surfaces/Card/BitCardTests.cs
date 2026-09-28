@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -31,8 +31,9 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
 
-        // A plain card is the secondary surface at the medium size, and nothing else.
-        Assert.IsTrue(card.ClassList.Contains("bit-crd-bsg"));
+        // A plain card is the medium size and nothing else: its surface is left to --bit-Card-background, or to the
+        // secondary background of the theme, rather than pinned by a class that would win over the variable.
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-bsg"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-md"));
         Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
         Assert.IsFalse(card.ClassList.Contains("bit-crd-int"));
@@ -59,20 +60,29 @@ public class BitCardTests : BunitTestContext
     [DataRow(BitColorKind.Secondary, "bit-crd-bsg")]
     [DataRow(BitColorKind.Tertiary, "bit-crd-btg")]
     [DataRow(BitColorKind.Transparent, "bit-crd-brg")]
-    [DataRow(null, "bit-crd-bsg")]
-    public void BitCardBackgroundClassTest(BitColorKind? background, string expected)
+    public void BitCardBackgroundClassTest(BitColorKind background, string expected)
     {
         var component = RenderComponent<BitCard>(parameters =>
         {
-            if (background.HasValue)
-            {
-                parameters.Add(p => p.Background, background.Value);
-            }
+            parameters.Add(p => p.Background, background);
         });
 
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains(expected));
+    }
+
+    [TestMethod]
+    public void BitCardWithoutBackgroundShouldNotRenderABackgroundClass()
+    {
+        var component = RenderComponent<BitCard>();
+
+        var classes = component.Find(".bit-crd").ClassList;
+
+        foreach (var background in new[] { "bit-crd-bpg", "bit-crd-bsg", "bit-crd-btg", "bit-crd-brg" })
+        {
+            Assert.IsFalse(classes.Contains(background), $"An unset Background rendered {background}.");
+        }
     }
 
     [TestMethod]
@@ -1471,39 +1481,88 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow("Enter")]
-    [DataRow(" ")]
-    [DataRow("Spacebar")]
-    public void BitCardOnClickShouldFireOnActivationKeys(string key)
+    public void BitCardOnClickShouldRegisterTheButtonKeysOnTheRoot()
     {
-        var clicked = 0;
-
+        // Enter and Space are answered in the browser, where Space can wait for the key to come back up and
+        // neither key scrolls the page - which a Blazor keydown handler cannot do per key.
         var component = RenderComponent<BitCard>(parameters =>
         {
-            parameters.Add(p => p.OnClick, () => clicked++);
+            parameters.Add(p => p.OnClick, () => { });
         });
 
-        component.Find(".bit-crd").KeyDown(new KeyboardEventArgs { Key = key });
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys");
 
-        Assert.AreEqual(1, clicked);
+        Assert.AreEqual(component.Instance.RootElement.Id, ((ElementReference)invocation.Arguments[0]!).Id);
     }
 
     [TestMethod]
-    [DataRow("a")]
-    [DataRow("Tab")]
-    [DataRow("Escape")]
-    public void BitCardOnClickShouldNotFireOnOtherKeys(string key)
+    public void BitCardBoundSelectedShouldRegisterTheButtonKeys()
     {
-        var clicked = 0;
+        var selected = false;
 
-        var component = RenderComponent<BitCard>(parameters =>
+        RenderComponent<BitCard>(parameters =>
         {
-            parameters.Add(p => p.OnClick, () => clicked++);
+            parameters.Bind(p => p.Selected, selected, v => selected = v);
         });
 
-        component.Find(".bit-crd").KeyDown(new KeyboardEventArgs { Key = key });
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys");
+    }
 
-        Assert.AreEqual(0, clicked);
+    [TestMethod]
+    public void BitCardShouldRegisterTheButtonKeysOnlyOnce()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Title, "Title"));
+        component.Render(parameters => parameters.Add(p => p.Title, "Another"));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 1);
+    }
+
+    [TestMethod]
+    public void BitCardThatIsNotAButtonShouldNotRegisterTheButtonKeys()
+    {
+        RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+        });
+
+        // A linked card is reached through its anchor, which answers Enter on its own.
+        RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.registerButtonKeys");
+    }
+
+    [TestMethod]
+    public void BitCardShouldRegisterTheButtonKeysOnceAClickHandlerArrives()
+    {
+        var component = RenderComponent<BitCard>();
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.registerButtonKeys");
+
+        component.Render(parameters => parameters.Add(p => p.OnClick, () => { }));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys");
+    }
+
+    [TestMethod]
+    public void BitCardShouldNotAnswerAKeyInBlazor()
+    {
+        // The keys are the browser's job; a Blazor keydown handler on the root would fire the card a second time
+        // and cost a round trip on every keystroke of a Blazor Server app.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-crd").KeyDown(new KeyboardEventArgs { Key = "Enter" }));
     }
 
     [TestMethod]
@@ -1519,7 +1578,6 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
         card.Click();
-        card.KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
         Assert.AreEqual(0, clicked);
         Assert.IsTrue(card.ClassList.Contains("bit-dis"));
@@ -1619,28 +1677,33 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCardFooterKeyPressShouldNotToggleACardThatIsAButton()
+    public void BitCardFooterKeyPressShouldReachTheAncestorsOfACardThatIsAButton()
     {
-        // The keyboard reaches the buttons of a card the same way the pointer does, and the space that presses
-        // one of them must not press the card as well.
+        // The card answers only a key pressed on itself (see registerButtonKeys), so the keys of the controls it
+        // holds are left to bubble on: a card inside a keyboard-driven list keeps the list's arrow keys working.
         var selected = false;
-        var footerKeys = 0;
+        var outerKeys = 0;
 
-        var component = RenderComponent<BitCard>(parameters =>
+        var component = Context.Render(builder =>
         {
-            parameters.Bind(p => p.Selected, selected, v => selected = v);
-            parameters.Add(p => p.Footer, (RenderFragment)(builder =>
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => outerKeys++));
+            builder.OpenComponent<BitCard>(2);
+            builder.AddAttribute(3, nameof(BitCard.Selected), selected);
+            builder.AddAttribute(4, nameof(BitCard.SelectedChanged), EventCallback.Factory.Create<bool>(this, v => selected = v));
+            builder.AddAttribute(5, nameof(BitCard.Footer), (RenderFragment)(b =>
             {
-                builder.OpenElement(0, "button");
-                builder.AddAttribute(1, "class", "footer-button");
-                builder.AddAttribute(2, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => footerKeys++));
-                builder.CloseElement();
+                b.OpenElement(0, "button");
+                b.AddAttribute(1, "class", "footer-button");
+                b.CloseElement();
             }));
+            builder.CloseComponent();
+            builder.CloseElement();
         });
 
-        component.Find(".footer-button").KeyDown(new KeyboardEventArgs { Key = " " });
+        component.Find(".footer-button").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
-        Assert.AreEqual(1, footerKeys);
+        Assert.AreEqual(1, outerKeys);
         Assert.IsFalse(selected);
     }
 
@@ -2019,21 +2082,6 @@ public class BitCardTests : BunitTestContext
         Assert.IsTrue(selected);
         Assert.AreEqual("true", component.Find(".bit-crd").GetAttribute("aria-pressed"));
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-sel"));
-    }
-
-    [TestMethod]
-    public void BitCardBoundSelectedShouldToggleOnTheKeyboard()
-    {
-        var selected = false;
-
-        var component = RenderComponent<BitCard>(parameters =>
-        {
-            parameters.Bind(p => p.Selected, selected, v => selected = v);
-        });
-
-        component.Find(".bit-crd").KeyDown(new KeyboardEventArgs { Key = "Enter" });
-
-        Assert.IsTrue(selected);
     }
 
     [TestMethod]

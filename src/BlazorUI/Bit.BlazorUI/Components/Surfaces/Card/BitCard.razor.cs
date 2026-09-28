@@ -8,6 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitCard : BitComponentBase
 {
     private string? _rel;
+    private bool _buttonKeysRegistered;
     private ElementReference _linkRef;
 
     // Whether the card was sectioned and whether it was a control the last time its classes were built. Neither
@@ -67,6 +68,10 @@ public partial class BitCard : BitComponentBase
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
     /// <summary>
     /// The content rendered at the trailing edge of the header of the card.
     /// </summary>
@@ -80,6 +85,10 @@ public partial class BitCard : BitComponentBase
     /// <summary>
     /// The color kind of the background of the card.
     /// </summary>
+    /// <remarks>
+    /// Leaving it unset paints the card in the <c>--bit-Card-background</c> variable, or in the secondary background
+    /// of the theme where that is not set either; setting it wins over the variable.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
 
@@ -129,8 +138,8 @@ public partial class BitCard : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the hero card: a picture the size of the card with the header, the body and the footer written
-    /// over it. The picture carries no scrim of its own, so give the card a foreground it can be read against
-    /// through <see cref="Color"/>, <see cref="BitComponentBase.Style"/> or <see cref="Styles"/>, and give it a
+    /// over it. The picture carries no scrim unless it is given one through the <c>--bit-Card-scrim</c> variable, so
+    /// give the card one - and a foreground to go with it, through <c>--bit-Card-color</c> - and give it a
     /// <see cref="Height"/> or a <see cref="MinHeight"/> - an overlaid cover is taken out of the flow and no
     /// longer makes the card as tall as the picture. It wins over <see cref="Horizontal"/>, which lays the same
     /// cover beside the content rather than behind it.
@@ -566,6 +575,28 @@ public partial class BitCard : BitComponentBase
 
     protected override string RootElementClass => "bit-crd";
 
+    // The root of a clickable card is a button in everything but its tag name, so it answers the keys a button
+    // answers: Enter as the key goes down, Space as it comes back up, and neither one scrolling the page. That is
+    // wired up in the browser, where a key pressed on the card itself can be told apart from one pressed on a
+    // control it holds - which a Blazor keydown handler cannot see, nor prevent the default of per key. The root
+    // is the same element for the lifetime of the card, so it is registered once, the first time the card is a
+    // button; once registered it only ever turns a key into a click, which a card that stopped being a button
+    // has no handler for.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_buttonKeysRegistered || _IsButton is false) return;
+
+        _buttonKeysRegistered = true;
+
+        try
+        {
+            await _js.BitUtilsRegisterButtonKeys(RootElement);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, there is nothing left to answer a key
+    }
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
@@ -579,7 +610,7 @@ public partial class BitCard : BitComponentBase
             BitColorKind.Secondary => "bit-crd-bsg",
             BitColorKind.Tertiary => "bit-crd-btg",
             BitColorKind.Transparent => "bit-crd-brg",
-            _ => "bit-crd-bsg"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Border switch
@@ -725,18 +756,6 @@ public partial class BitCard : BitComponentBase
         }
 
         await OnClick.InvokeAsync(e);
-    }
-
-    private async Task HandleOnKeyDown(KeyboardEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        // Enter and Space are what a button answers, and the root of a clickable card is one in everything but
-        // its tag name. Neither key is prevented: the root is a div rather than a button, so preventing the
-        // default here would also prevent it for whatever the card holds.
-        if (e.Key is not ("Enter" or " " or "Spacebar")) return;
-
-        await HandleOnClick(new MouseEventArgs());
     }
 
     internal void OnSetHrefAndRel()

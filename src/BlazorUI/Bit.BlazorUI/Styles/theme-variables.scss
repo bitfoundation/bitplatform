@@ -302,6 +302,8 @@ $box-shadow-callout2: var(--bit-shd-cal2);
 //or wants hairlines instead of shadows (Cupertino) retunes one token per family. Components consume
 //these instead of the callout primitive.
 $box-shadow-card: var(--bit-shd-card);
+//the elevation a card that reacts to the pointer lifts to while it is hovered.
+$box-shadow-card-hover: var(--bit-shd-card-hover);
 $box-shadow-popup: var(--bit-shd-popup);
 $box-shadow-dialog: var(--bit-shd-dialog);
 $box-shadow-sheet: var(--bit-shd-sheet);
@@ -349,6 +351,10 @@ $box-shadow-24: var(--bit-shd-24);
 $spacing-scaling-factor: var(--bit-spa-scaling-factor);
 //the base inset of a dialog surface (header/body/footer padding).
 $spa-dialog: var(--bit-spa-dialog);
+//the inset of a card and of each of its parts, per size class (Fluent 2 8/12/16px, Material 16dp).
+$spa-card-sm: var(--bit-spa-card-sm);
+$spa-card-md: var(--bit-spa-card-md);
+$spa-card-lg: var(--bit-spa-card-lg);
 
 //layout
 //density is a unitless multiplier over the spacing unit; the fallback of 1 keeps the base rhythm

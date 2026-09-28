@@ -138,6 +138,10 @@
     // is what the core Fluent tokens already say; they are re-declared rather than inherited so a
     // scoped fluent2 region resolves the inset against this preset's spacing unit.
     --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    // Card: the small / medium / large padding of the Fluent 2 Card.
+    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;
