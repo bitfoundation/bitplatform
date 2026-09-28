@@ -6,8 +6,9 @@
     calling https://bitplatform.dev/mcp.
 
 .DESCRIPTION
-    versions  Compares everything the CD workflows deploy with APP_VERSION: the IIS sites, the Windows apps, the Android
-              apps, the version each Boilerplate web app shows in its nav panel, and the MCP endpoint's own version.
+    versions  Compares what the Boilerplate demos' and the platform website's CD workflows deploy with APP_VERSION: the
+              IIS sites, the Windows apps, the Android apps, the version each Boilerplate web app shows in its nav panel,
+              and the MCP endpoint's own version.
               Exits 1 when anything is behind.
     android   Installs the APKs an All CD run built onto the one connected device, booting the AVD when none is up.
     windows   Opens each Windows app that is behind and taps its version in the nav panel, which makes it update itself
@@ -15,7 +16,7 @@
     e2e       Runs Boilerplate.Tests.E2E stage by stage, as RunTests.bat does, keeping each stage's log and TRX.
     mcp       One call to https://bitplatform.dev/mcp: tools/list, or tools/call when -Tool is given.
 
-    What is deployed where is read from .github/workflows/*.cd.yml and from the E2E suite's DeployedApps.cs and
+    What is deployed where is read from those CD workflows and from the E2E suite's DeployedApps.cs and
     RunTests.bat rather than repeated here, so this script follows them.
 
 .EXAMPLE
@@ -73,7 +74,10 @@ $PSNativeCommandUseErrorActionPreference = $false
 
 $repository = 'bitfoundation/bitplatform'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
-$workflows = Get-ChildItem (Join-Path $repositoryRoot '.github\workflows') -Filter '*.cd.yml'
+# Only the Boilerplate demos (AdminPanel, SalesModule, Todo) and the platform website, which serves bitplatform.dev/mcp,
+# are checked. The library demos and the other websites are left out on purpose.
+$workflows = 'admin-sample.cd.yml', 'sales-module-demo.cd.yml', 'todo-sample.cd.yml', 'platform.website.cd.yml' |
+    ForEach-Object { Get-Item (Join-Path $repositoryRoot ".github\workflows\$_") }
 $e2eProject = Join-Path $repositoryRoot 'src\Templates\Boilerplate\Bit.Boilerplate\src\Internal\Boilerplate.Tests.E2E'
 $deployedAppsFile = Join-Path $e2eProject 'Infrastructure\DeployedApps.cs'
 
@@ -126,12 +130,6 @@ function Get-WebApps {
         [pscustomobject]@{ App = $match.Groups['app'].Value; Url = $addresses[$match.Groups['name'].Value] }
     }
 }
-
-# The Windows apps built from the Boilerplate, which are the ones with a version button in their nav panel.
-function Get-BoilerplateWindowsAppIds {
-    [regex]::Matches((Get-Content $deployedAppsFile -Raw), 'public const string \w+WindowsAppId = "(?<id>[^"]+)";') | ForEach-Object { $_.Groups['id'].Value }
-}
-
 #endregion
 
 #region Versions
@@ -306,7 +304,9 @@ function Install-AndroidApps {
         throw "Run $runId has no android-bundle artifact that has not expired."
     }
 
-    foreach ($apk in $apks | Group-Object Package | ForEach-Object { $_.Group | Sort-Object CreatedAt -Descending | Select-Object -First 1 }) {
+    $packages = @(Get-AndroidPackages)
+
+    foreach ($apk in $apks | Where-Object Package -In $packages | Group-Object Package | ForEach-Object { $_.Group | Sort-Object CreatedAt -Descending | Select-Object -First 1 }) {
         Write-Host "Installing $($apk.Package) $($apk.Version)..."
 
         $output = Invoke-Adb install -r -d $apk.Path
@@ -325,7 +325,7 @@ function Install-AndroidApps {
 
     $failed = $false
 
-    foreach ($package in Get-AndroidPackages) {
+    foreach ($package in $packages) {
         $installed = Get-AndroidVersion $package
         $failed = $failed -or -not (Test-Version $installed)
         Write-Host ("{0}: {1}" -f $package, $(if ($installed) { $installed } else { 'not installed' }))
@@ -471,7 +471,6 @@ function Stop-WindowsApps {
 }
 
 function Update-WindowsApps {
-    $boilerplateApps = Get-BoilerplateWindowsAppIds
     $failed = $false
 
     foreach ($app in Get-WindowsApps) {
@@ -493,29 +492,16 @@ function Update-WindowsApps {
         Stop-WindowsApps
         Start-Process $app.Exe -WindowStyle Minimized
 
-        if ($app.Id -in $boilerplateApps) {
-            # The version button runs ForceUpdate: Velopack downloads the release and restarts the app into it.
-            $page = Get-CdpPage 9222
-            $shown = Wait-AppVersion $page.webSocketDebuggerUrl
+        # The version button runs ForceUpdate: Velopack downloads the release and restarts the app into it.
+        $page = Get-CdpPage 9222
+        $shown = Wait-AppVersion $page.webSocketDebuggerUrl
 
-            if (-not $shown) {
-                throw "$($app.Id) never showed its version in the nav panel."
-            }
-
-            Write-Host "  its nav panel shows $shown, tapping it."
-            Invoke-Cdp $page.webSocketDebuggerUrl 'Runtime.evaluate' @{ expression = "document.querySelector('.app-version').click()" } | Out-Null
+        if (-not $shown) {
+            throw "$($app.Id) never showed its version in the nav panel."
         }
-        else {
-            # No version button: the app downloads a release at startup, and Velopack applies a downloaded one on the next start.
-            $deadline = (Get-Date).AddMinutes(10)
 
-            while (-not (Get-ChildItem (Join-Path $app.Root 'packages') -Filter "*-$script:expectedVersion-full.nupkg" -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) {
-                Start-Sleep -Seconds 5
-            }
-
-            Stop-WindowsApps
-            Start-Process $app.Exe -WindowStyle Minimized
-        }
+        Write-Host "  its nav panel shows $shown, tapping it."
+        Invoke-Cdp $page.webSocketDebuggerUrl 'Runtime.evaluate' @{ expression = "document.querySelector('.app-version').click()" } | Out-Null
 
         $deadline = (Get-Date).AddMinutes(10)
 

@@ -36,12 +36,14 @@ after the CD run started, expect a mismatch and ask which version is meant.
 ## The helper
 
 `.github/agents/test-platform/test-platform.ps1` (PowerShell 7) does the mechanical work. It reads what is deployed
-where from `.github/workflows/*.cd.yml` and from the E2E suite's `DeployedApps.cs` and `RunTests.bat`, so it follows
-them instead of repeating them. Every command prints what it checked and exits non-zero on a failure.
+where from the CD workflows of the Boilerplate demos (`admin-sample`, `sales-module-demo`, `todo-sample`) and of the
+platform website (`platform.website`, which serves bitplatform.dev/mcp), and from the E2E suite's `DeployedApps.cs` and
+`RunTests.bat`, so it follows them instead of repeating them. Nothing else the CD deploys - the library demos, the other
+websites - is checked. Every command prints what it checked and exits non-zero on a failure.
 
 | Command | What it does |
 | --- | --- |
-| `versions [-Sha <sha>]` | Every IIS site, Windows app, Android app and Boilerplate web app - the version its nav panel shows in a fresh headless Edge - and the MCP endpoint's own version, against `APP_VERSION`. |
+| `versions [-Sha <sha>]` | Every IIS site, Windows app and Android app of those workflows, each Boilerplate web app - the version its nav panel shows in a fresh headless Edge - and the MCP endpoint's own version, against `APP_VERSION`. |
 | `android -CdRun <id or url>` | Downloads the run's APKs, boots the emulator when no device is up, installs them and checks their versions. |
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. |
@@ -109,13 +111,9 @@ code change does. An APK signed with another key than the installed app, or olde
 after uninstalling the app, which drops its data.
 
 **Windows.** `windows`. The apps are Velopack installs in `%LocalAppData%\<AppId>`: the Boilerplate's
-`AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`, and
-`Bit.BlazorUI.Demo.Client.Windows`. A Boilerplate app's nav-panel version button runs `ForceUpdate`: Velopack
-downloads the release from the app's feed and restarts into it. The BlazorUI demo has no such button - it downloads
-at startup, and Velopack applies a downloaded release on the next start, so the helper opens it twice. Every app
-starts WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running.
-
-**iOS** goes to TestFlight and cannot be checked from here; say so.
+`AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`. The nav-panel version
+button runs `ForceUpdate`: Velopack downloads the release from the app's feed and restarts into it. Every app starts
+WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running.
 
 Then `versions -Sha <CD head sha>`. Anything still behind is a failed rollout: find the CD job that did not deliver -
 its log, the feed's `releases.win.json`, the Play upload - before testing anything.
@@ -157,7 +155,7 @@ Triage every failure:
    source `.NET Runtime`. How much gets there is each site's own `Logging` section in its server-owned
    `appsettings.json` under `C:\inetpub\<site>`: the Boilerplate backends log from Information up, the platform
    website only warnings and errors. The category names the app (`AdminPanel.*`, `TodoSample.*`, `SalesModule.*`,
-   `Bit.Websites.Platform.*`, `Bit.BlazorUI.Demo.*`), and a framework category (`Microsoft.*`) belongs to whichever
+   `Bit.Websites.Platform.*`), and a framework category (`Microsoft.*`) belongs to whichever
    app logs from the same `ProcessId`. The Windows apps log there too (`*.Client.Windows.*`), and so does the suite's
    own test process - its HttpClient warnings time every call it made to a deployment.
 
