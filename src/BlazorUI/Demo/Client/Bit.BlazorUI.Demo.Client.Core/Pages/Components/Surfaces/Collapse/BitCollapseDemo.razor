@@ -235,20 +235,19 @@
 
         <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
-                Closed content is out of the tab order and the accessibility tree. The trigger is yours: give it
-                <b>aria-expanded</b> and a label that stays the same, and point its <b>aria-controls</b> at <b>ContentId</b> (the
-                root's id + <b>-content</b>). <b>LabelledBy</b> or <b>AriaLabel</b> names the <b>region</b> (<b>Role</b> changes
-                it; an empty Role removes it and the name). The region is not a tab stop unless a <b>TabIndex</b> is set;
-                <b>FocusAsync</b> moves the focus into it, best from <b>OnExpanded</b>. Closing a section that holds the focus
-                would drop it to the page, so move it back to the trigger from <b>OnCollapsing</b>.
+                Closed content leaves the tab order and the accessibility tree. The trigger is yours: a button with a fixed
+                label, <b>aria-expanded</b> and <b>aria-controls</b> set to <b>ContentId</b> (the root's id + <b>-content</b>),
+                which <b>BitToggleButton</b> renders through <b>AriaMode="Expanded"</b> and <b>AriaControls</b>.
+                <b>LabelledBy</b> or <b>AriaLabel</b> names the <b>region</b>; an empty <b>Role</b> drops the role and the name.
+                <b>TabIndex</b> makes the region a tab stop and <b>FocusAsync</b> moves the focus into it, best from
+                <b>OnExpanded</b>. A section closed from inside hands the focus back to its trigger from <b>OnCollapsing</b>.
             </div>
             <br /><br />
-            <BitButton Id="a11y-trigger"
-                       aria-controls="a11y-collapse-content"
-                       aria-expanded="@(a11yExpanded ? "true" : "false")"
-                       OnClick="() => a11yExpanded = !a11yExpanded">
-                Shipping details
-            </BitButton>
+            <BitToggleButton Id="a11y-trigger"
+                             Text="Shipping details"
+                             AriaMode="BitToggleButtonAriaMode.Expanded"
+                             AriaControls="a11y-collapse-content"
+                             @bind-IsChecked="a11yExpanded" />
             <BitCollapse Id="a11y-collapse" Expanded="a11yExpanded" LabelledBy="a11y-trigger">
                 Orders placed before 2 pm ship the same day. <BitLink Href="/components/collapse">Read the full policy</BitLink>.
             </BitCollapse>

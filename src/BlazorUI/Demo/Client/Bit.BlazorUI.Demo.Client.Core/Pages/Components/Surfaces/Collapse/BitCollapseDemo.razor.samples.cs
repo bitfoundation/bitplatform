@@ -195,12 +195,11 @@ private int lazyOpenCount;";
 private bool findExpanded = true;";
 
     private readonly string example11RazorCode = @"
-<BitButton Id=""a11y-trigger""
-           aria-controls=""a11y-collapse-content""
-           aria-expanded=""@(a11yExpanded ? ""true"" : ""false"")""
-           OnClick=""() => a11yExpanded = !a11yExpanded"">
-    Shipping details
-</BitButton>
+<BitToggleButton Id=""a11y-trigger""
+                 Text=""Shipping details""
+                 AriaMode=""BitToggleButtonAriaMode.Expanded""
+                 AriaControls=""a11y-collapse-content""
+                 @bind-IsChecked=""a11yExpanded"" />
 <BitCollapse Id=""a11y-collapse"" Expanded=""a11yExpanded"" LabelledBy=""a11y-trigger"">
     Orders placed before 2 pm ship the same day. <BitLink Href=""/components/collapse"">Read the full policy</BitLink>.
 </BitCollapse>

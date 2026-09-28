@@ -108,6 +108,20 @@ public partial class BitCollapseStylesheetTests
     }
 
     [TestMethod]
+    public void BitCollapseShouldKeepTheDisabledAndFocusedStatesInForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var start = stylesheet.IndexOf("\n@media (forced-colors: active) {", System.StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0, "There is no forced-colors block.");
+
+        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+
+        StringAssert.Contains(block, ".bit-col.bit-dis {\n        color: GrayText;");
+        StringAssert.Contains(block, ".bit-col-con:focus-visible {\n        outline-color: Highlight;");
+    }
+
+    [TestMethod]
     public void BitCollapseShouldCollapseTheTransitionUnderReducedMotionUnlessAnimationIsForced()
     {
         var stylesheet = ReadStylesheet();
