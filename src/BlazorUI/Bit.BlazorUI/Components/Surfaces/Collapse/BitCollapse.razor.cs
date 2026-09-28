@@ -47,6 +47,10 @@ public partial class BitCollapse : BitComponentBase
     // for real, so the ordinary hiding - inert and the stylesheet - takes the content back out of reach.
     private bool _revealRefused;
 
+    // Whether ExpandOnPrint holds a value handed down by the cascading BitParams rather than one assigned on the
+    // component itself, so it can be taken back to its default when that cascade stops carrying it.
+    private bool _expandOnPrintFromCascade;
+
     private CancellationTokenSource? _transitionCts;
 
     // A transition that has started and whose end is still to be scheduled: the render that follows the change
@@ -619,7 +623,20 @@ public partial class BitCollapse : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCollapseParams))]
     protected override void OnParametersSet()
     {
+        var expandOnPrintAssigned = HasNotBeenSet(nameof(ExpandOnPrint)) is false;
+
+        // A value the cascade handed down is not one the component keeps once the cascade stops carrying it:
+        // it goes back to its default, and the print class with it. One assigned on the component is left alone.
+        if (_expandOnPrintFromCascade && expandOnPrintAssigned is false && CascadingParameters?.ExpandOnPrint.HasValue is not true)
+        {
+            ExpandOnPrint = false;
+
+            ClassBuilder.Reset();
+        }
+
         CascadingParameters?.UpdateParameters(this);
+
+        _expandOnPrintFromCascade = expandOnPrintAssigned is false && CascadingParameters?.ExpandOnPrint.HasValue is true;
 
         base.OnParametersSet();
     }

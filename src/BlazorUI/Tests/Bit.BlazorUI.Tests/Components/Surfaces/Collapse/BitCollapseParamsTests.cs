@@ -215,6 +215,44 @@ public class BitCollapseParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCollapseShouldDropACascadedExpandOnPrintOnceTheCascadeStopsCarryingIt()
+    {
+        var component = RenderWithParams(new BitCollapseParams { ExpandOnPrint = true });
+
+        Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-col-eop"));
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitCollapseParams() }));
+
+        Assert.IsFalse(component.FindComponent<BitCollapse>().Instance.ExpandOnPrint);
+        Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-eop"));
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitCollapseParams { ExpandOnPrint = true } }));
+
+        Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-col-eop"));
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams>()));
+
+        Assert.IsFalse(component.FindComponent<BitCollapse>().Instance.ExpandOnPrint);
+        Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-eop"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldKeepAnAssignedExpandOnPrintWhenTheCascadeStopsCarryingIt()
+    {
+        var component = RenderWithParams(new BitCollapseParams { ExpandOnPrint = false }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCollapse.ExpandOnPrint), true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-col-eop"));
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams>()));
+
+        Assert.IsTrue(component.FindComponent<BitCollapse>().Instance.ExpandOnPrint);
+        Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-col-eop"));
+    }
+
+    [TestMethod]
     public void BitCollapseShouldKeepItsDefaultsWithoutCascadingParameters()
     {
         var component = RenderComponent<BitCollapse>(parameters => parameters.AddChildContent("Hello"));
