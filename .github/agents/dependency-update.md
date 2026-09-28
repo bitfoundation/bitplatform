@@ -192,7 +192,10 @@ There are no `.config/dotnet-tools.json` manifests any more: every tool is run w
 <package>@<version>`, so the pins live in the workflow and doc lines that call them (`grep -rn "dnx
 .*@"`). `vpk` must equal the `Velopack` PackageReference version in the same project — Velopack
 requires the CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the
-EF Core package version.
+EF Core package version. Likewise the `npx playwright@<version>` command in the Boilerplate's two
+`.runsettings` (`src/Tests` and `src/Internal/Boilerplate.Tests.E2E`) must equal
+`Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
+every test that runs on it fails at connect.
 
 `src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template
 `global.json` files are `10.0.100` + `latestFeature` deliberately — they must accept any 10.0.x on a
