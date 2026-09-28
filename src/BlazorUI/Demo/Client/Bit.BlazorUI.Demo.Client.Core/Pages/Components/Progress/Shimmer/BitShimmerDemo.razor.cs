@@ -150,7 +150,7 @@ public partial class BitShimmerDemo
             Name = "Overlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws the placeholder over the content instead of in place of it, so the layout never moves. Lines and Template do not apply."
+            Description = "Draws the placeholder over the content instead of in place of it, so the layout never moves. Lines and Template do not apply. Covered content leaves the tab order, so keep the control that starts a refresh outside it."
         },
         new()
         {

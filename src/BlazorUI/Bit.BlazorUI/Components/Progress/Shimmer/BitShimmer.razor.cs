@@ -379,6 +379,10 @@ public partial class BitShimmer : BitComponentBase
     /// <br />
     /// The cover is one box over the whole content, so <see cref="Lines"/> and <see cref="Template"/> no longer
     /// apply and the size comes from the content rather than from <see cref="Height"/>.
+    /// <br />
+    /// Covered content leaves the tab order, so an element inside it that has focus loses it to the page. Keep
+    /// the control that starts a refresh outside the covered content, where the keyboard user who pressed it
+    /// can press it again.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Overlay { get; set; }
