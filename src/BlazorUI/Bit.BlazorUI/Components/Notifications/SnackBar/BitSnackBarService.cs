@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Bit.BlazorUI;
 
@@ -232,14 +232,9 @@ public class BitSnackBarService
 
         // The item names its own host rather than each host being asked whether it holds the item: the lists of a
         // host are only safe to read on its renderer's synchronization context, which a caller on a timer or a hub
-        // callback is not on.
-        var owner = Volatile.Read(ref item._owner);
-        if (owner is null) return null;
-
-        lock (_hostsLock)
-        {
-            return _hosts.Contains(owner) ? owner : null;
-        }
+        // callback is not on. The owner is not required to still be registered: a host whose ServiceHost was
+        // turned off keeps the items it already shows, and the host clears the reference itself once it lets go.
+        return Volatile.Read(ref item._owner);
     }
 
     private void ReportMissingHost()

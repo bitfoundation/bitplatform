@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -839,12 +839,12 @@ public partial class BitSnackBar : BitComponentBase
 
         // Through the script rather than the element reference, so the element the focus came from is remembered
         // and handed the focus back once the user is done with the notifications - the same detour the Hotkey
-        // takes.
-        _focusedRegionId = _Id;
-
+        // takes. The id is only kept once the script has taken it, so a missing script leaves nothing to let go of.
         try
         {
             await _js.InvokeVoid("BitBlazorUI.SnackBars.focus", _Id);
+
+            _focusedRegionId = _Id;
         }
         catch (JSException)
         {
