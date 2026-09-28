@@ -14,6 +14,7 @@ public partial class BitProgress : BitComponentBase
     private double? _lastAnnouncedStep;
     private string? _announcement;
     private int _announcementGeneration;
+    private readonly HashSet<string> _cascadedParameters = [];
 
 
 
@@ -366,11 +367,79 @@ public partial class BitProgress : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitProgressParams))]
     protected override void OnParametersSet()
     {
+        RestoreCascadedDefaults();
+
         CascadingParameters?.UpdateParameters(this);
 
         UpdateAnnouncement();
 
         base.OnParametersSet();
+    }
+
+    /// <summary>
+    /// Whether the cascade may supply the named parameter, which it may only when the markup has not set it.
+    /// A parameter it supplies is remembered, so the value can be taken back once the cascade stops giving it.
+    /// </summary>
+    internal bool TakeFromCascade(string name)
+    {
+        if (HasNotBeenSet(name) is false) return false;
+
+        _cascadedParameters.Add(name);
+
+        return true;
+    }
+
+    // A value written by the cascade is not a parameter the markup passes again on the next render, so Blazor
+    // never overwrites it: a cascade that stops supplying it - the setting cleared, or the cascade gone - would
+    // otherwise leave it in place for good. Everything it supplied last time goes back to the component's own
+    // default before the cascade is applied again; a parameter the markup now sets already holds its own value.
+    private void RestoreCascadedDefaults()
+    {
+        if (_cascadedParameters.Count == 0) return;
+
+        foreach (var name in _cascadedParameters)
+        {
+            if (HasNotBeenSet(name) is false) continue;
+
+            switch (name)
+            {
+                case nameof(AnnounceProgress): AnnounceProgress = false; break;
+                case nameof(AnnounceStep): AnnounceStep = 25; break;
+                case nameof(BarColor): BarColor = null; break;
+                case nameof(Circular): Circular = false; break;
+                case nameof(Classes): Classes = null; break;
+                case nameof(Color): Color = null; break;
+                case nameof(Delay): Delay = 0; break;
+                case nameof(Diameter): Diameter = null; break;
+                case nameof(GapDegree): GapDegree = 0; break;
+                case nameof(GapPosition): GapPosition = default; break;
+                case nameof(Indeterminate): Indeterminate = false; break;
+                case nameof(Length): Length = null; break;
+                case nameof(Max): Max = 100; break;
+                case nameof(Meter): Meter = false; break;
+                case nameof(Min): Min = 0; break;
+                case nameof(PercentNumberFormat): PercentNumberFormat = DefaultPercentNumberFormat; break;
+                case nameof(PercentNumberPosition): PercentNumberPosition = default; break;
+                case nameof(Radius): Radius = 6; break;
+                case nameof(Reversed): Reversed = false; break;
+                case nameof(Rounded): Rounded = false; break;
+                case nameof(SegmentGap): SegmentGap = 4; break;
+                case nameof(Segments): Segments = null; break;
+                case nameof(ShowPercentNumber): ShowPercentNumber = false; break;
+                case nameof(Size): Size = null; break;
+                case nameof(Striped): Striped = false; break;
+                case nameof(StripedAnimation): StripedAnimation = false; break;
+                case nameof(Styles): Styles = null; break;
+                case nameof(Thickness): Thickness = null; break;
+                case nameof(TrackColor): TrackColor = null; break;
+                case nameof(Vertical): Vertical = false; break;
+            }
+        }
+
+        _cascadedParameters.Clear();
+
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
     }
 
 

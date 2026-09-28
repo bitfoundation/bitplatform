@@ -185,7 +185,8 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     /// <remarks>
     /// Only properties that have a value set and have not already been set on the <paramref name="bitProgress"/> will be updated.
-    /// This method does not overwrite existing values on <paramref name="bitProgress"/>.
+    /// This method does not overwrite existing values on <paramref name="bitProgress"/>. What it supplies is recorded on
+    /// the component, which restores its own default once this object stops supplying the value.
     /// </remarks>
     /// <param name="bitProgress">
     /// The <see cref="BitProgress"/> instance whose properties will be updated. Cannot be null.
@@ -196,174 +197,174 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitProgress);
 
-        if (AnnounceProgress.HasValue && bitProgress.HasNotBeenSet(nameof(AnnounceProgress)))
+        if (AnnounceProgress.HasValue && bitProgress.TakeFromCascade(nameof(AnnounceProgress)))
         {
             bitProgress.AnnounceProgress = AnnounceProgress.Value;
         }
 
-        if (AnnounceStep.HasValue && bitProgress.HasNotBeenSet(nameof(AnnounceStep)))
+        if (AnnounceStep.HasValue && bitProgress.TakeFromCascade(nameof(AnnounceStep)))
         {
             bitProgress.AnnounceStep = AnnounceStep.Value;
         }
 
-        if (BarColor.HasValue() && bitProgress.HasNotBeenSet(nameof(BarColor)))
+        if (BarColor.HasValue() && bitProgress.TakeFromCascade(nameof(BarColor)))
         {
             bitProgress.BarColor = BarColor;
         }
 
-        if (Circular.HasValue && bitProgress.HasNotBeenSet(nameof(Circular)))
+        if (Circular.HasValue && bitProgress.TakeFromCascade(nameof(Circular)))
         {
             bitProgress.Circular = Circular.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitProgress.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitProgress.TakeFromCascade(nameof(Classes)))
         {
             bitProgress.Classes = Classes;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitProgress.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitProgress.TakeFromCascade(nameof(Color)))
         {
             bitProgress.Color = Color.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (Delay.HasValue && bitProgress.HasNotBeenSet(nameof(Delay)))
+        if (Delay.HasValue && bitProgress.TakeFromCascade(nameof(Delay)))
         {
             bitProgress.Delay = Delay.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (Diameter.HasValue && bitProgress.HasNotBeenSet(nameof(Diameter)))
+        if (Diameter.HasValue && bitProgress.TakeFromCascade(nameof(Diameter)))
         {
             bitProgress.Diameter = Diameter.Value;
         }
 
-        if (GapDegree.HasValue && bitProgress.HasNotBeenSet(nameof(GapDegree)))
+        if (GapDegree.HasValue && bitProgress.TakeFromCascade(nameof(GapDegree)))
         {
             bitProgress.GapDegree = GapDegree.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (GapPosition.HasValue && bitProgress.HasNotBeenSet(nameof(GapPosition)))
+        if (GapPosition.HasValue && bitProgress.TakeFromCascade(nameof(GapPosition)))
         {
             bitProgress.GapPosition = GapPosition.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (Indeterminate.HasValue && bitProgress.HasNotBeenSet(nameof(Indeterminate)))
+        if (Indeterminate.HasValue && bitProgress.TakeFromCascade(nameof(Indeterminate)))
         {
             bitProgress.Indeterminate = Indeterminate.Value;
         }
 
-        if (Length.HasValue() && bitProgress.HasNotBeenSet(nameof(Length)))
+        if (Length.HasValue() && bitProgress.TakeFromCascade(nameof(Length)))
         {
             bitProgress.Length = Length;
         }
 
-        if (Max.HasValue && bitProgress.HasNotBeenSet(nameof(Max)))
+        if (Max.HasValue && bitProgress.TakeFromCascade(nameof(Max)))
         {
             bitProgress.Max = Max.Value;
         }
 
-        if (Meter.HasValue && bitProgress.HasNotBeenSet(nameof(Meter)))
+        if (Meter.HasValue && bitProgress.TakeFromCascade(nameof(Meter)))
         {
             bitProgress.Meter = Meter.Value;
         }
 
-        if (Min.HasValue && bitProgress.HasNotBeenSet(nameof(Min)))
+        if (Min.HasValue && bitProgress.TakeFromCascade(nameof(Min)))
         {
             bitProgress.Min = Min.Value;
         }
 
-        if (PercentNumberFormat.HasValue() && bitProgress.HasNotBeenSet(nameof(PercentNumberFormat)))
+        if (PercentNumberFormat.HasValue() && bitProgress.TakeFromCascade(nameof(PercentNumberFormat)))
         {
             bitProgress.PercentNumberFormat = PercentNumberFormat!;
         }
 
-        if (PercentNumberPosition.HasValue && bitProgress.HasNotBeenSet(nameof(PercentNumberPosition)))
+        if (PercentNumberPosition.HasValue && bitProgress.TakeFromCascade(nameof(PercentNumberPosition)))
         {
             bitProgress.PercentNumberPosition = PercentNumberPosition.Value;
         }
 
-        if (Radius.HasValue && bitProgress.HasNotBeenSet(nameof(Radius)))
+        if (Radius.HasValue && bitProgress.TakeFromCascade(nameof(Radius)))
         {
             bitProgress.Radius = Radius.Value;
         }
 
-        if (Reversed.HasValue && bitProgress.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitProgress.TakeFromCascade(nameof(Reversed)))
         {
             bitProgress.Reversed = Reversed.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (Rounded.HasValue && bitProgress.HasNotBeenSet(nameof(Rounded)))
+        if (Rounded.HasValue && bitProgress.TakeFromCascade(nameof(Rounded)))
         {
             bitProgress.Rounded = Rounded.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (SegmentGap.HasValue && bitProgress.HasNotBeenSet(nameof(SegmentGap)))
+        if (SegmentGap.HasValue && bitProgress.TakeFromCascade(nameof(SegmentGap)))
         {
             bitProgress.SegmentGap = SegmentGap.Value;
         }
 
-        if (Segments.HasValue && bitProgress.HasNotBeenSet(nameof(Segments)))
+        if (Segments.HasValue && bitProgress.TakeFromCascade(nameof(Segments)))
         {
             bitProgress.Segments = Segments.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (ShowPercentNumber.HasValue && bitProgress.HasNotBeenSet(nameof(ShowPercentNumber)))
+        if (ShowPercentNumber.HasValue && bitProgress.TakeFromCascade(nameof(ShowPercentNumber)))
         {
             bitProgress.ShowPercentNumber = ShowPercentNumber.Value;
         }
 
-        if (Size.HasValue && bitProgress.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitProgress.TakeFromCascade(nameof(Size)))
         {
             bitProgress.Size = Size.Value;
 
             bitProgress.ClassBuilder.Reset();
         }
 
-        if (Striped.HasValue && bitProgress.HasNotBeenSet(nameof(Striped)))
+        if (Striped.HasValue && bitProgress.TakeFromCascade(nameof(Striped)))
         {
             bitProgress.Striped = Striped.Value;
         }
 
-        if (StripedAnimation.HasValue && bitProgress.HasNotBeenSet(nameof(StripedAnimation)))
+        if (StripedAnimation.HasValue && bitProgress.TakeFromCascade(nameof(StripedAnimation)))
         {
             bitProgress.StripedAnimation = StripedAnimation.Value;
         }
 
-        if (Styles is not null && bitProgress.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitProgress.TakeFromCascade(nameof(Styles)))
         {
             bitProgress.Styles = Styles;
 
             bitProgress.StyleBuilder.Reset();
         }
 
-        if (Thickness.HasValue && bitProgress.HasNotBeenSet(nameof(Thickness)))
+        if (Thickness.HasValue && bitProgress.TakeFromCascade(nameof(Thickness)))
         {
             bitProgress.Thickness = Thickness.Value;
         }
 
-        if (TrackColor.HasValue() && bitProgress.HasNotBeenSet(nameof(TrackColor)))
+        if (TrackColor.HasValue() && bitProgress.TakeFromCascade(nameof(TrackColor)))
         {
             bitProgress.TrackColor = TrackColor;
         }
 
-        if (Vertical.HasValue && bitProgress.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitProgress.TakeFromCascade(nameof(Vertical)))
         {
             bitProgress.Vertical = Vertical.Value;
 

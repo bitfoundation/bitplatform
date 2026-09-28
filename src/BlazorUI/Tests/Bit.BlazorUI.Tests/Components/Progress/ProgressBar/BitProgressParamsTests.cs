@@ -241,6 +241,49 @@ public class BitProgressParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitProgressShouldRestoreItsDefaultsWhenTheCascadeStopsSupplyingThem()
+    {
+        var component = RenderWithParams(new BitProgressParams
+        {
+            Rounded = true,
+            Min = 10,
+            Max = 20,
+            AnnounceProgress = true,
+            Size = BitSize.Large,
+        }, builder =>
+        {
+            builder.AddAttribute(2, nameof(BitProgress.Value), (double?)15);
+            builder.AddAttribute(3, nameof(BitProgress.Size), (BitSize?)BitSize.Small);
+        });
+
+        Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains("bit-prb-rnd"));
+        Assert.AreEqual("10", component.Find("[role=progressbar]").GetAttribute("aria-valuemin"));
+        Assert.AreEqual(1, component.FindAll(".bit-prb-lvr").Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitProgressParams { Size = BitSize.Large } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitProgress>(0);
+                builder.AddAttribute(1, nameof(BitProgress.Percent), 40d);
+                builder.AddAttribute(2, nameof(BitProgress.Value), (double?)16);
+                builder.AddAttribute(3, nameof(BitProgress.Size), (BitSize?)BitSize.Small);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-prb");
+        var bar = component.Find("[role=progressbar]");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-prb-rnd"));
+        Assert.AreEqual("0", bar.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("100", bar.GetAttribute("aria-valuemax"));
+        Assert.AreEqual(0, component.FindAll(".bit-prb-lvr").Count);
+        Assert.IsTrue(root.ClassList.Contains("bit-prb-sm"), "a parameter the markup sets is left alone");
+    }
+
+    [TestMethod]
     public void BitProgressParamsShouldNotApplyOutsideTheCascade()
     {
         var component = RenderComponent<BitProgress>(parameters => parameters.Add(p => p.Percent, 40));
