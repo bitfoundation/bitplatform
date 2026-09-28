@@ -343,6 +343,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitDropdown", "BitDropdownParams<TItem, TValue>")]
     [DataRow("BitPagination", "BitPaginationParams")]
     [DataRow("BitBreadcrumb", "BitBreadcrumbParams")]
+    [DataRow("BitTag", "BitTagParams")]
     [DataRow("BitBasicList", "BitBasicListParams")]
     [DataRow("BitPersona", "BitPersonaParams")]
     [DataRow("BitMessage", "BitMessageParams")]
