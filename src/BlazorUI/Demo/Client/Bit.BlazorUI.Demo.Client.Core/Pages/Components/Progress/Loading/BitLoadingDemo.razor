@@ -254,19 +254,22 @@
         <DemoExample Title="Overlay" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 To cover content while it reloads, put the loader in a <BitLink Href="/components/overlay">BitOverlay</BitLink>
-                with <b>AbsolutePosition</b> and <b>ModeFull</b> inside a positioned container, and mark that container
-                <code>aria-busy</code> for as long as it is stale.
+                with <b>AbsolutePosition</b> and <b>ModeFull</b> inside a positioned container, and mark the content it
+                covers <code>aria-busy</code> for as long as it is stale - the content alone, since a busy region holds
+                back its announcements and the loader's own has to get through.
             </div>
             <br />
             <BitButton OnClick="Refresh" IsEnabled="@(isRefreshing is false)">Refresh orders</BitButton>
             <br /><br />
-            <div class="orders" aria-busy="@(isRefreshing ? "true" : "false")">
+            <div class="orders">
                 <BitOverlay IsOpen="isRefreshing" AbsolutePosition ModeFull Style="align-items:center;justify-content:center;color:white">
                     <BitRingLoading Label="Refreshing orders..." LabelPosition="BitLabelPosition.End" />
                 </BitOverlay>
-                <div>Order #1024 - Shipped</div>
-                <div>Order #1025 - Processing</div>
-                <div>Order #1026 - Delivered</div>
+                <div class="order-list" aria-busy="@(isRefreshing ? "true" : "false")">
+                    <div>Order #1024 - Shipped</div>
+                    <div>Order #1025 - Processing</div>
+                    <div>Order #1026 - Delivered</div>
+                </div>
             </div>
         </DemoExample>
 

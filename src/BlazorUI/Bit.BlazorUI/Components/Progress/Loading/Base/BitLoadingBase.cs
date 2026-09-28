@@ -208,7 +208,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// "progressbar" makes it an indeterminate progress bar instead, which a screen reader lists as a control
     /// but does not announce when it appears. Everything inside a progressbar is presentational, so the root is
     /// named directly - with <see cref="BitComponentBase.AriaLabel"/>, then <see cref="Label"/>, then the
-    /// fallback text; give one drawn with a <see cref="LabelTemplate"/> an AriaLabel. Pass "none" for a purely
+    /// fallback text; give one drawn with a <see cref="LabelTemplate"/> an AriaLabel that says what its template
+    /// shows, or it is named by the fallback text alone. Pass "none" for a purely
     /// decorative loader whose surroundings already report the wait. A role passed straight through as a
     /// 'role' HTML attribute is honored while this parameter is left unset.
     /// </remarks>
@@ -481,10 +482,13 @@ public abstract class BitLoadingBase : BitComponentBase
     /// A progressbar is the exception. Its children are presentational, so neither the label nor the hidden
     /// text inside it is ever read, and the role requires a name of its own: the root is named with the
     /// AriaLabel, then the text of the Label, then the fallback text. A LabelTemplate has no text to hand
-    /// over, so a progressbar drawn with one takes its name from AriaLabel alone.
+    /// over, so a progressbar drawn with one skips straight to the fallback text - unless a passed-through
+    /// 'aria-labelledby' already names it, and a second name beside that one would only compete with it.
     /// </remarks>
     internal string? _AriaLabel => _IsProgressBar
-                                       ? AriaLabel ?? PassedThrough("aria-label") ?? (LabelTemplate is null ? Label ?? DefaultLoadingText : null)
+                                       ? AriaLabel ?? PassedThrough("aria-label") ?? (LabelTemplate is null
+                                                                                          ? Label ?? DefaultLoadingText
+                                                                                          : (PassedThrough("aria-labelledby") is null ? DefaultLoadingText : null))
                                        : (_HasVisibleLabel ? AriaLabel : null) ?? PassedThrough("aria-label");
 
     /// <summary>Whether the root is a progressbar, which is named on the root rather than by its content.</summary>

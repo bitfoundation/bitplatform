@@ -243,7 +243,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     }
 
     [TestMethod]
-    public void ShouldLeaveTheNameOfAProgressBarWithALabelTemplateToTheAriaLabel()
+    public void ShouldNameAProgressBarWithALabelTemplateByTheAriaLabelOrTheFallbackText()
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
@@ -252,7 +252,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.LabelTemplate, (RenderFragment)(b => b.AddMarkupContent(0, "<b>Exporting</b>")));
         });
 
-        Assert.IsNull(component.Find(".bit-ldn").GetAttribute("aria-label"));
+        // The template has no text to hand over, so the role's required name is the fallback text.
+        Assert.AreEqual("Loading", component.Find(".bit-ldn").GetAttribute("aria-label"));
 
         component.Render(parameters =>
         {
@@ -260,6 +261,26 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         });
 
         Assert.AreEqual("Exporting your report", component.Find(".bit-ldn").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void ShouldLeaveTheNameOfAProgressBarWithALabelTemplateToAPassedThroughAriaLabelledBy()
+    {
+        RenderFragment template = b => b.AddMarkupContent(0, "<b>Exporting</b>");
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<TLoading>(0);
+            builder.AddAttribute(1, nameof(BitLoadingBase.Role), "progressbar");
+            builder.AddAttribute(2, nameof(BitLoadingBase.LabelTemplate), template);
+            builder.AddAttribute(3, "aria-labelledby", "export-heading");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ldn");
+
+        Assert.AreEqual("export-heading", root.GetAttribute("aria-labelledby"));
+        Assert.IsNull(root.GetAttribute("aria-label"));
     }
 
     [TestMethod,

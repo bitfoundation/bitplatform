@@ -126,25 +126,31 @@ private async Task StartWork()
     private readonly string example7RazorCode = @"
 <style>
     .orders {
-        display: flex;
-        gap: 0.5rem;
         padding: 1rem;
         position: relative;
-        flex-direction: column;
         border: 1px solid gray;
+    }
+
+    .order-list {
+        gap: 0.5rem;
+        display: flex;
+        flex-direction: column;
     }
 </style>
 
 
 <BitButton OnClick=""Refresh"" IsEnabled=""@(isRefreshing is false)"">Refresh orders</BitButton>
 
-<div class=""orders"" aria-busy=""@(isRefreshing ? ""true"" : ""false"")"">
+<div class=""orders"">
     <BitOverlay IsOpen=""isRefreshing"" AbsolutePosition ModeFull Style=""align-items:center;justify-content:center;color:white"">
         <BitRingLoading Label=""Refreshing orders..."" LabelPosition=""BitLabelPosition.End"" />
     </BitOverlay>
-    <div>Order #1024 - Shipped</div>
-    <div>Order #1025 - Processing</div>
-    <div>Order #1026 - Delivered</div>
+    @* Only the stale content is busy: a busy region holds back its announcements, the loader's included. *@
+    <div class=""order-list"" aria-busy=""@(isRefreshing ? ""true"" : ""false"")"">
+        <div>Order #1024 - Shipped</div>
+        <div>Order #1025 - Processing</div>
+        <div>Order #1026 - Delivered</div>
+    </div>
 </div>";
     private readonly string example7CsharpCode = @"
 private bool isRefreshing;

@@ -19,12 +19,15 @@
 }
 
 .orders {
-    gap: 0.5rem;
     padding: 1rem;
-    display: flex;
     position: relative;
-    flex-direction: column;
     border: 1px solid gray;
+}
+
+.order-list {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
 }
 
 // The classes the Style & Class example hands to the components themselves. They are written as
