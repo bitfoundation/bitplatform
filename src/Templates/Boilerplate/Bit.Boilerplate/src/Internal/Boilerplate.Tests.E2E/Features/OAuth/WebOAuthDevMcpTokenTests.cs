@@ -1,4 +1,3 @@
-using OtpNet;
 using System.Text;
 using System.Security.Cryptography;
 using System.Net.Http.Headers;
@@ -160,7 +159,7 @@ public partial class WebOAuthDevMcpTokenTests : AppTestBase
         await passwordBox.PressAsync("Enter");
 
         // TfaPanel submits on its own once all six digits are in.
-        await BitOtpInputUtils.FillOtpInputs(page, new Totp(Base32Encoding.ToBytes(authenticatorKey)).ComputeTotp());
+        await BitOtpInputUtils.FillOtpInputs(page, GlobalAdmin.TwoFactorCode(authenticatorKey));
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
     }
