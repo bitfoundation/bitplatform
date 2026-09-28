@@ -181,7 +181,8 @@ plainly which failures stay until that CD.
 A fix in a bit library does not have to wait for its release: the demos take the libraries as packages, and
 `prerelease_packages` swaps nuget.org's for the fix's. Ask the user to run Prerelease nuget packages on the fix's
 branch and then All CD with that option. Both branches have to be on the same version in `src/Bit.Build.props`;
-otherwise the restore fails and names the version it found.
+otherwise the action stops
+before it changes anything and names both versions.
 
 ## 4. bitplatform.dev/mcp
 
