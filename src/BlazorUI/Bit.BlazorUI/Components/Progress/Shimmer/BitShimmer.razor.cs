@@ -40,6 +40,13 @@ public partial class BitShimmer : BitComponentBase
     // swap either way, so whichever of the two texts is missing simply empties it rather than removing it.
     private bool _hasLiveRegion => Label.HasValue() || LoadedLabel.HasValue();
 
+    // The region sits beside the root rather than in it, so nothing that hides the root hides the region along
+    // with it: whatever takes the root away - the Visibility parameter, or a hidden or aria-hidden="true" the page
+    // splatted onto it - has to be followed by hand, or a shimmer that is not there would still be talking.
+    private bool _liveRegionHidden => Visibility is not BitVisibility.Visible
+                                      || GetSplattedAttribute("hidden") is not null
+                                      || string.Equals(GetSplattedAttribute("aria-hidden")?.Trim(), "true", StringComparison.OrdinalIgnoreCase);
+
     private string _contentClass => _loaded ? _reveal ? "bit-smr-cnt bit-smr-rvl" : "bit-smr-cnt" : "bit-smr-cvd";
 
     private string _ariaLive => Politeness switch

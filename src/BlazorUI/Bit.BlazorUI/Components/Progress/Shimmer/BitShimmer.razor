@@ -103,11 +103,11 @@ else
        text of a shimmer going back to waiting; and a root named by AriaLabel is a progressbar, whose children are
        presentational, which would flatten the region into plain text that is never announced at all. A span is
        phrasing content, so the sibling is as much at home next to an inline shimmer as next to a block one.
-       Out of the root, it no longer goes wherever the Visibility of the root sends it, so it follows it by hand:
-       a shimmer that has been hidden says nothing, the way it did not while the region was inside it. *@
+       Out of the root, it no longer goes wherever the root is hidden to, so it follows it by hand: a shimmer that
+       has been hidden says nothing, the way it did not while the region was inside it. *@
     <span style="@Styles?.Label"
           class="bit-smr-vhd @Classes?.Label"
-          hidden="@(Visibility is not BitVisibility.Visible)"
+          hidden="@_liveRegionHidden"
           role="@_liveRole"
           aria-live="@_ariaLive"
           aria-atomic="true">@(_loaded ? LoadedLabel : Label)</span>

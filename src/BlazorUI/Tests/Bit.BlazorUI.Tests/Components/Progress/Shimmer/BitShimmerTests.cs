@@ -1637,6 +1637,26 @@ public class BitShimmerTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow("aria-hidden", "true", true)]
+    [DataRow("aria-hidden", "TRUE", true)]
+    [DataRow("aria-hidden", "false", false)]
+    [DataRow("hidden", "", true)]
+    public void BitShimmerShouldSilenceTheLiveRegionOfAShimmerHiddenByASplattedAttribute(string name, string value, bool expectedHidden)
+    {
+        // BitComponentBase takes its HTML attributes in SetParametersAsync rather than through a CaptureUnmatchedValues
+        // parameter, which the parameter builder insists on, so the shimmer is rendered from a fragment instead.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitShimmer>(0);
+            builder.AddAttribute(1, nameof(BitShimmer.Label), "Loading your profile");
+            builder.AddAttribute(2, name, value);
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual(expectedHidden, component.Find(".bit-smr-vhd").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
     public void BitShimmerShouldRenderTheLiveRegionForALoadedLabelAlone()
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.LoadedLabel, "Profile loaded"));
