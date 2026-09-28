@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @{
@@ -11,18 +11,6 @@
 
     RenderFragment body =
     @<text>
-        @if (_hasLiveRegion)
-        {
-            @* The one thing on the shimmer a screen reader reads. It is on the page from the first render rather
-               than being inserted with its text already in it - a live region only announces what changes inside
-               it - so the swap from the loading text to the loaded one is what gets announced. *@
-            <span style="@Styles?.Label"
-                  class="bit-smr-vhd @Classes?.Label"
-                  role="@_liveRole"
-                  aria-live="@_ariaLive"
-                  aria-atomic="true">@(_loaded ? LoadedLabel : Label)</span>
-        }
-
         @if (_loaded)
         {
             if (Inline)
@@ -106,4 +94,24 @@ else
          role="@_role"
          aria-label="@AriaLabel"
          aria-busy="@(_loaded ? null : "true")">@body</div>
+}
+
+@if (_hasLiveRegion)
+{
+    @* The one thing on the shimmer a screen reader reads. It is on the page from the first render rather than being
+       inserted with its text already in it - a live region only announces what changes inside it - so the swap
+       from the loading text to the loaded one is what gets announced.
+       It is the root's sibling rather than its child for two reasons: a change inside an aria-busy element is one
+       assistive technologies may hold back until the element is no longer busy, which would swallow the loading
+       text of a shimmer going back to waiting; and a root named by AriaLabel is a progressbar, whose children are
+       presentational, which would flatten the region into plain text that is never announced at all. A span is
+       phrasing content, so the sibling is as much at home next to an inline shimmer as next to a block one.
+       Out of the root, it no longer goes wherever the Visibility of the root sends it, so it follows it by hand:
+       a shimmer that has been hidden says nothing, the way it did not while the region was inside it. *@
+    <span style="@Styles?.Label"
+          class="bit-smr-vhd @Classes?.Label"
+          hidden="@(Visibility is not BitVisibility.Visible)"
+          role="@_liveRole"
+          aria-live="@_ariaLive"
+          aria-atomic="true">@(_loaded ? LoadedLabel : Label)</span>
 }

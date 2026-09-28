@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Defines per-part CSS class/style values for <see cref="BitShimmer"/>.
+/// </summary>
 public class BitShimmerClassStyles
 {
     /// <summary>
@@ -19,6 +22,10 @@ public class BitShimmerClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the live region of the BitShimmer that carries its Label and LoadedLabel.
     /// </summary>
+    /// <remarks>
+    /// The region is rendered right after the root rather than inside it, so a selector that reaches it through
+    /// the root does not apply.
+    /// </remarks>
     public string? Label { get; set; }
 
     /// <summary>

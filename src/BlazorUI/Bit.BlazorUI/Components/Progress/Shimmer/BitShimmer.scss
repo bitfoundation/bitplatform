@@ -1,5 +1,20 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a shimmer inherits down to whatever reads it - the shimmers a Template is built
+// out of included:
+//   --bit-Shimmer-background          resting color of the placeholder             (default: per Background, $clr-bg-sec)
+//   --bit-Shimmer-color               color of the animated part                   (default: per Color, $clr-bg-ter)
+//   --bit-Shimmer-height              height of a line                             (default: per Size)
+//   --bit-Shimmer-circle-size         diameter of a circle                         (default: per Size)
+//   --bit-Shimmer-radius              corner of a Rounded placeholder              (default: $shp-radius-surface)
+//   --bit-Shimmer-gap                 room between the lines of a stack            (default: spacing(1))
+//   --bit-Shimmer-last-line-width     width of the last line of a stack            (default: 60%)
+//   --bit-Shimmer-animation-duration  one loop of the wave, the pulse or the fade  (default: 1.6s x the loop factor)
+//   --bit-Shimmer-animation-delay     pause before the first loop                  (default: 0.5s x the loop factor)
+// A parameter written on the shimmer itself (Height, Gap, LastLineWidth, Radius, Duration, Delay) wins over its
+// variable, and so does a Square or a Pill Shape over the radius: the variable restyles the default, not a choice.
+
 .bit-smr {
     display: block;
     --bit-smr-bg-clr: #{$clr-bg-ter};
@@ -13,6 +28,7 @@
     --bit-smr-gap: initial;
     --bit-smr-llw: initial;
     --bit-smr-rad: initial;
+    --bit-smr-shp: initial;
     --bit-smr-dly: initial;
 
     @keyframes bit-smr-anim-wave {
@@ -87,14 +103,17 @@
 
 .bit-smr-lin {
     width: 100%;
-    height: var(--bit-smr-hgt, var(--bit-smr-lnh));
+    height: var(--bit-smr-hgt, var(--bit-Shimmer-height, var(--bit-smr-lnh)));
 }
 
 // A circle is as tall as it is wide, whichever of the two was given: a height sets both, and a width - which
 // lands as an inline style and so wins over the width below - leaves the height to the aspect ratio.
+// It keeps its diameter in a flex row as well: the avatar beside a stack of lines is the circle's most common
+// place, and a full-width line next to it would otherwise squeeze it into a smaller circle than it was given.
 .bit-smr-crl {
+    flex-shrink: 0;
     aspect-ratio: 1;
-    width: var(--bit-smr-hgt, var(--bit-smr-crs));
+    width: var(--bit-smr-hgt, var(--bit-Shimmer-circle-size, var(--bit-smr-crs)));
     height: var(--bit-smr-hgt, auto);
 
     .bit-smr-wrp {
@@ -102,12 +121,15 @@
     }
 }
 
+// The corner of a shape is a property of its own rather than the one Radius publishes, so the order the three
+// are read in is explicit: a Radius written on the shimmer, then the shape, then --bit-Shimmer-radius, which
+// restyles the default corner and so leaves a shimmer that asked for a square or a pill alone.
 .bit-smr-sqr {
-    --bit-smr-rad: #{$shp-radius-none};
+    --bit-smr-shp: #{$shp-radius-none};
 }
 
 .bit-smr-pil {
-    --bit-smr-rad: #{$shp-radius-full};
+    --bit-smr-shp: #{$shp-radius-full};
 }
 
 // A stack of lines is sized line by line rather than as a block, so the root gives its height back to the
@@ -117,17 +139,17 @@
     height: auto;
     display: flex;
     flex-direction: column;
-    gap: var(--bit-smr-gap, #{spacing(1)});
+    gap: var(--bit-smr-gap, var(--bit-Shimmer-gap, #{spacing(1)}));
 
     > .bit-smr-wrp {
         flex: none;
-        height: var(--bit-smr-hgt, var(--bit-smr-lnh));
+        height: var(--bit-smr-hgt, var(--bit-Shimmer-height, var(--bit-smr-lnh)));
     }
 
     // The last line of a paragraph rarely reaches the end of its measure, so the last one is shortened -
     // which is most of what makes a stack of bars read as text rather than as a table.
     > .bit-smr-wrp:last-child {
-        width: var(--bit-smr-llw, 60%);
+        width: var(--bit-smr-llw, var(--bit-Shimmer-last-line-width, 60%));
     }
 }
 
@@ -216,20 +238,26 @@
     // never followed by a flash of grey. The fill mode is what keeps the box invisible during the wait.
     animation-delay: var(--bit-smr-dly, 0ms);
     animation-duration: $mot-duration-long;
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-Shimmer-background, var(--bit-smr-wrp-bg, #{$clr-bg-sec}));
     animation-timing-function: $mot-easing;
     animation-name: bit-smr-anim-opacity;
     // A placeholder is drawn in the shape of the thing it is waiting for, and what it is usually waiting for
     // is a surface - a card, an image, a row of a list - so the default corner is the surface family's rather
     // than a step of the scale, which is what lets a design system that rounds its surfaces differently round
     // the placeholders for them the same way.
-    border-radius: var(--bit-smr-rad, #{$shp-radius-surface});
+    border-radius: var(--bit-smr-rad, var(--bit-smr-shp, var(--bit-Shimmer-radius, #{$shp-radius-surface})));
 }
 
 .bit-smr-anm {
+    // The pace of the three loops. The defaults are literal durations multiplied by the loop factor per the
+    // looping-animation contract, so a theme can still retune them even though reduced motion stops (not slows)
+    // the shimmer; a pace set through the public variables is taken as written rather than scaled again.
+    // Declared on the element that reads them, so a Duration or a Delay written inline still wins.
+    --bit-smr-ani-dur: var(--bit-Shimmer-animation-duration, calc(1.6s * #{$mot-loop-factor}));
+    --bit-smr-ani-dly: var(--bit-Shimmer-animation-delay, calc(0.5s * #{$mot-loop-factor}));
     inset: 0;
     position: absolute;
-    background: var(--bit-smr-bg-clr);
+    background: var(--bit-Shimmer-color, var(--bit-smr-bg-clr));
 }
 
 // A placeholder that does not animate has no animated part, and the animated part is what Color paints: left
@@ -249,10 +277,8 @@
 // rather than on these elements, so the opt-out is matched on an ancestor as well.
 .bit-smr-wav {
     transform: translateX(-100%);
-    // Literal durations multiplied by the loop factor per the looping-animation contract, so a
-    // theme can still retune the pace even though reduced motion stops (not slows) the shimmer.
-    animation: bit-smr-anim-wave calc(1.6s * $mot-loop-factor) linear calc(0.5s * $mot-loop-factor) infinite;
-    background: linear-gradient(90deg, transparent, var(--bit-smr-bg-clr), transparent);
+    animation: bit-smr-anim-wave var(--bit-smr-ani-dur) linear var(--bit-smr-ani-dly) infinite;
+    background: linear-gradient(90deg, transparent, var(--bit-Shimmer-color, var(--bit-smr-bg-clr)), transparent);
 
     @media (prefers-reduced-motion: reduce) {
         &:not(.bit-fam):not(.bit-fam *) {
@@ -262,7 +288,7 @@
 }
 
 .bit-smr-pul {
-    animation: bit-smr-anim-pulse calc(1.6s * $mot-loop-factor) ease-in-out calc(0.5s * $mot-loop-factor) infinite;
+    animation: bit-smr-anim-pulse var(--bit-smr-ani-dur) ease-in-out var(--bit-smr-ani-dly) infinite;
 
     @media (prefers-reduced-motion: reduce) {
         &:not(.bit-fam):not(.bit-fam *) {
@@ -272,7 +298,7 @@
 }
 
 .bit-smr-fad {
-    animation: bit-smr-anim-fade calc(1.6s * $mot-loop-factor) ease-in-out calc(0.5s * $mot-loop-factor) infinite;
+    animation: bit-smr-anim-fade var(--bit-smr-ani-dur) ease-in-out var(--bit-smr-ani-dly) infinite;
 
     @media (prefers-reduced-motion: reduce) {
         &:not(.bit-fam):not(.bit-fam *) {
@@ -330,6 +356,6 @@
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 @each $role, $tokens in $bit-color-roles {
     .bit-smr-b#{$role} {
-        background-color: role($tokens, main);
+        --bit-smr-wrp-bg: #{role($tokens, main)};
     }
 }

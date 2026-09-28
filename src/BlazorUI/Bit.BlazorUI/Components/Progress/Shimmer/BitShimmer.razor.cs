@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Shimmer is a temporary animation placeholder for when a service call takes time to return data and you don't want to block rendering the rest of the UI.
@@ -120,6 +122,19 @@ public partial class BitShimmer : BitComponentBase
         BitColor.TertiaryBorder => "bit-smr-btbr",
         _ => "bit-smr-bsbg"
     };
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the shimmer component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple shimmer components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitShimmerParams.ParamName)]
+    public BitShimmerParams? CascadingParameters { get; set; }
 
 
 
@@ -497,8 +512,11 @@ public partial class BitShimmer : BitComponentBase
 
     protected override string RootElementClass => "bit-smr";
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitShimmerParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         if (Loaded is false)
         {
             // A wait that is starting is one the placeholder is measured from; a wait already under way keeps

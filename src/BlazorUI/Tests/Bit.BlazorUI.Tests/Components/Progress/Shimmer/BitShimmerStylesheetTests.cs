@@ -1,0 +1,97 @@
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Bit.BlazorUI.Tests.Components.Progress.Shimmer;
+
+/// <summary>
+/// Pins the public CSS variables of the shimmer, which a bUnit render cannot see: each one is read with a fallback and
+/// never declared, is listed in the header of the stylesheet and in the table of the demo page, and ranks below the
+/// parameter written on the shimmer itself.
+/// </summary>
+[TestClass]
+public class BitShimmerStylesheetTests
+{
+    private static readonly string[] PublicVariables =
+    [
+        "--bit-Shimmer-background",
+        "--bit-Shimmer-color",
+        "--bit-Shimmer-height",
+        "--bit-Shimmer-circle-size",
+        "--bit-Shimmer-radius",
+        "--bit-Shimmer-gap",
+        "--bit-Shimmer-last-line-width",
+        "--bit-Shimmer-animation-duration",
+        "--bit-Shimmer-animation-delay",
+    ];
+
+    [TestMethod]
+    public void BitShimmerShouldReadEveryPublicVariableWithoutDeclaringIt()
+    {
+        var stylesheet = ReadFile("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+
+        var read = Regex.Matches(stylesheet, @"var\((--bit-Shimmer-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
+
+        CollectionAssert.AreEquivalent(PublicVariables, read);
+
+        foreach (var variable in PublicVariables)
+        {
+            Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared, so it no longer inherits.");
+            StringAssert.Contains(stylesheet, $"//   {variable} ", $"{variable} is missing from the header of the stylesheet.");
+        }
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldListEveryPublicVariableOnItsDemoPage()
+    {
+        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Progress", "Shimmer", "BitShimmerDemo.razor.cs");
+
+        var listed = Regex.Matches(demo, @"Name = ""(--bit-Shimmer-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
+
+        CollectionAssert.AreEquivalent(PublicVariables, listed);
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = ReadFile("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+
+        // The parameters publish the private properties inline, so they are read first and the variable only
+        // restyles what the shimmer did not set.
+        StringAssert.Contains(stylesheet, "var(--bit-smr-hgt, var(--bit-Shimmer-height, var(--bit-smr-lnh)))");
+        StringAssert.Contains(stylesheet, "var(--bit-smr-hgt, var(--bit-Shimmer-circle-size, var(--bit-smr-crs)))");
+        StringAssert.Contains(stylesheet, "var(--bit-smr-gap, var(--bit-Shimmer-gap, ");
+        StringAssert.Contains(stylesheet, "var(--bit-smr-llw, var(--bit-Shimmer-last-line-width, 60%))");
+
+        // A Square or a Pill is a choice rather than a default, so it outranks the variable as well.
+        StringAssert.Contains(stylesheet, "var(--bit-smr-rad, var(--bit-smr-shp, var(--bit-Shimmer-radius, ");
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldResetTheInheritedSizingOnEveryNestedShimmer()
+    {
+        var stylesheet = ReadFile("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+
+        var root = stylesheet[stylesheet.IndexOf("\n.bit-smr {", System.StringComparison.Ordinal)..];
+        root = root[..root.IndexOf("\n}", System.StringComparison.Ordinal)];
+
+        // A Template is built out of shimmers of its own, which must not inherit the corner of the outer shape.
+        foreach (var property in new[] { "--bit-smr-hgt", "--bit-smr-gap", "--bit-smr-llw", "--bit-smr-rad", "--bit-smr-shp", "--bit-smr-dly" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
+    }
+
+    private static string ReadFile(params string[] segments) => ReadFileFrom(segments);
+
+    private static string ReadFileFrom(string[] segments, [CallerFilePath] string thisFile = "")
+    {
+        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. segments]));
+
+        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
+
+        return File.ReadAllText(path).Replace("\r\n", "\n");
+    }
+}
