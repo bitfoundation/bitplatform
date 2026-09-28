@@ -20,6 +20,10 @@ on:
         description: Windows app
         type: boolean
         default: true
+      prerelease_packages:
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       server:
@@ -28,9 +32,14 @@ on:
       windows:
         type: boolean
         default: true
+      prerelease_packages:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  # The prerelease_packages option downloads the artifact of another run.
+  actions: read
 
 jobs:
 
@@ -54,6 +63,12 @@ jobs:
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
     - name: Create project from Boilerplate
       run: |
@@ -163,6 +178,12 @@ jobs:
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
     - name: Create project from Boilerplate
       run: |

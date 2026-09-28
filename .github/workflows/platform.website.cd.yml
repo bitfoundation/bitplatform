@@ -5,10 +5,21 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      prerelease_packages:
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      prerelease_packages:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  # The prerelease_packages option downloads the artifact of another run.
+  actions: read
 
 jobs:
 
@@ -28,6 +39,12 @@ jobs:
       with:
         global-json-file: src/global.json
         
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: .
+
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
       

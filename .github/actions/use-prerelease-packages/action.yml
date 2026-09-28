@@ -1,0 +1,29 @@
+name: Use prerelease packages
+description: Makes a project restore every Bit.* package from the nupkg-files artifact of the latest successful Prerelease nuget packages run (prerelease.nuget.org.yml) instead of nuget.org.
+
+# Run it before the project's first restore. For a project generated from the Boilerplate template that is before
+# the dotnet new that creates it, with project-folder pointing at the template: the template carries the nuget.config
+# into the project, and dotnet new restores right away.
+
+inputs:
+  project-folder:
+    description: Folder of the nuget.config the project restores with, e.g. src/Templates/Boilerplate/Bit.Boilerplate or . for the repository root. The file is created when it is not there.
+    required: true
+  github-token:
+    description: Token that can read the repository's Actions artifacts.
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Use prerelease packages
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: >
+        & "${{ github.action_path }}/use-prerelease-packages.ps1"
+        -ProjectFolder "${{ inputs.project-folder }}"
+        -Repository "${{ github.repository }}"
+        -PackagesFolder "${{ runner.temp }}/bit-prerelease-packages"

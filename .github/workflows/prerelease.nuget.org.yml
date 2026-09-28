@@ -166,7 +166,8 @@ jobs:
       run: dotnet pack src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj --output . --configuration Release
 
     - name: build SourceGenerators nupkg file
-      run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release
+      # Next to the packages dotnet pack writes, so that the nupkg-files artifact carries it too.
+      run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release -p:PackageOutputPath=${{ github.workspace }}/
 
     - name: dotnet pack Boilerplate
       run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output . --configuration Release
