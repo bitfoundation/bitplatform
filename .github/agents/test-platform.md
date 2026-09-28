@@ -43,7 +43,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 
 | Command | What it does |
 | --- | --- |
-| `versions [-Sha <sha>]` | Every IIS site, Windows app and Android app of those workflows, each Boilerplate web app - the version its nav panel shows in a fresh headless Edge - and the MCP endpoint's own version, against `APP_VERSION`. |
+| `versions [-Sha <sha>] [-CdRun <id or url>]` | Every IIS site, Windows app and Android app of those workflows, each Boilerplate web app - the version its nav panel shows in a fresh headless Edge - and the MCP endpoint's own version, against `APP_VERSION`. With `-CdRun`, also where that CD run took its Bit packages from. |
 | `android -CdRun <id or url>` | Downloads the run's APKs, boots the emulator when no device is up, installs them and checks their versions. |
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. |
@@ -115,8 +115,14 @@ after uninstalling the app, which drops its data.
 button runs `ForceUpdate`: Velopack downloads the release from the app's feed and restarts into it. Every app starts
 WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running.
 
-Then `versions -Sha <CD head sha>`. Anything still behind is a failed rollout: find the CD job that did not deliver -
+Then `versions -Sha <CD head sha> -CdRun <run>`. Anything still behind is a failed rollout: find the CD job that did not deliver -
 its log, the feed's `releases.win.json`, the Play upload - before testing anything.
+
+**Bit packages.** All CD has a `prerelease_packages` option. With it, the Boilerplate demos and the platform website
+are built with the Bit packages of the latest Prerelease nuget packages run (`prerelease.nuget.org.yml`) instead of
+nuget.org's, and each job that took them leaves a "Bit packages" notice naming that run's branch and commit. `versions`
+reads those notices when given the CD run. Say where the packages came from next to the versions table: a library
+change is on the demos only when it names the branch that has it.
 
 ## 3. The E2E suite
 
@@ -172,6 +178,11 @@ Triage every failure:
 reaches it only through another All CD run on the fixed commit. Verify what can be verified locally, commit, and say
 plainly which failures stay until that CD.
 
+A fix in a bit library does not have to wait for its release: the demos take the libraries as packages, and
+`prerelease_packages` swaps nuget.org's for the fix's. Ask the user to run Prerelease nuget packages on the fix's
+branch and then All CD with that option. Both branches have to be on the same version in `src/Bit.Build.props`;
+otherwise the restore fails and names the version it found.
+
 ## 4. bitplatform.dev/mcp
 
 The platform website serves one set of tools per release tag `v-X.Y.Z` at or above `Mcp:MinimumVersion`, each from
@@ -211,13 +222,14 @@ away only after the next CD.
 
 Lead with the verdict, then:
 
-1. **Deployment**: the `versions` table, and whatever had to be rolled out.
+1. **Deployment**: the `versions` table, where the Bit packages came from, and whatever had to be rolled out.
 2. **CI**: per failure, the test, its cause, the fix and its commit, and the local evidence - how many runs, before
    and after.
 3. **E2E**: per stage, the passed, failed and skipped counts; per failure, its kind, its evidence (the assertion, the
    event log lines) and what happens next.
 4. **MCP**: the served versions, their tool counts, the version check, and how good the answers were.
-5. **Waiting for a CD**: every fix that only the next CD can prove.
+5. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
+   through `prerelease_packages` before its release.
 
 Anything that looks like a defect in a bit platform library or in the `bit-bp` template itself: say so, and offer to
 report it - an issue on bitfoundation/bitplatform, or `SendBitPlatformFeedback`.

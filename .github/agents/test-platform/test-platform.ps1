@@ -8,8 +8,8 @@
 .DESCRIPTION
     versions  Compares what the Boilerplate demos' and the platform website's CD workflows deploy with APP_VERSION: the
               IIS sites, the Windows apps, the Android apps, the version each Boilerplate web app shows in its nav panel,
-              and the MCP endpoint's own version.
-              Exits 1 when anything is behind.
+              and the MCP endpoint's own version. With -CdRun it also says where that run took its Bit packages from:
+              nuget.org, or a Prerelease nuget packages run. Exits 1 when anything is behind.
     android   Installs the APKs an All CD run built onto the one connected device, booting the AVD when none is up.
     windows   Opens each Windows app that is behind and taps its version in the nav panel, which makes it update itself
               from its feed and restart.
@@ -40,7 +40,8 @@ param(
     # The CD run's head commit, full or abbreviated. When given, a ProductVersion's +<sha> must match it too.
     [string] $Sha,
 
-    # android: the All CD run whose android-bundle artifacts get installed, as its id or any url of it.
+    # android: the All CD run whose android-bundle artifacts get installed. versions: the All CD run whose Bit packages
+    # source gets reported. As its id or any url of it.
     [string] $CdRun,
 
     # windows: taps the version of an app that is already current too, which then only checks its feed.
@@ -257,16 +258,32 @@ function Get-AndroidVersion([string] $package) {
     }
 }
 
-function Install-AndroidApps {
+function Get-CdRunId {
     if ($CdRun -match 'runs/(\d+)') {
-        $runId = $Matches[1]
+        return $Matches[1]
     }
-    elseif ($CdRun -match '^\d+$') {
-        $runId = $CdRun
+
+    if ($CdRun -match '^\d+$') {
+        return $CdRun
     }
-    else {
-        throw 'Pass the All CD run with -CdRun, as its id or any url of it.'
+
+    throw 'Pass the All CD run with -CdRun, as its id or any url of it.'
+}
+
+# With its prerelease_packages option, every job of a CD run that took the Bit packages of a Prerelease nuget packages
+# run leaves a "Bit packages" notice naming that run (.github/actions/use-prerelease-packages). No notice: nuget.org.
+function Get-BitPackagesSource([string] $runId) {
+    $notices = foreach ($jobId in gh api "repos/$repository/actions/runs/$runId/jobs" --paginate --jq '.jobs[].id') {
+        gh api "repos/$repository/check-runs/$jobId/annotations" --jq '.[] | select(.title == "Bit packages") | .message'
     }
+
+    $notices = @($notices | Sort-Object -Unique)
+
+    if ($notices.Count -eq 0) { 'nuget.org' } else { $notices -join '; ' }
+}
+
+function Install-AndroidApps {
+    $runId = Get-CdRunId
 
     Initialize-Adb
     Initialize-AndroidDevice
@@ -756,6 +773,10 @@ switch ($Command) {
         $rows.Add((New-VersionRow 'MCP' "bitplatform.dev/mcp, $($mcp.Response.result.tools.Count) tools" $mcp.Server.version))
 
         $rows | Format-Table -AutoSize -Wrap | Out-String -Width 220 | Write-Host
+
+        if ($CdRun) {
+            Write-Host "Bit packages of the CD run: $(Get-BitPackagesSource (Get-CdRunId))"
+        }
 
         if ($rows | Where-Object OK -ne 'yes') {
             exit 1
