@@ -27,7 +27,7 @@ public partial class GlobalAdminTwoFactorCodeTests
         byte[] sharedKey;
         try
         {
-            sharedKey = Base32Encoding.ToBytes(authenticatorKey);
+            sharedKey = GlobalAdmin.SharedKey(authenticatorKey!);
         }
         catch (ArgumentException exp)
         {
