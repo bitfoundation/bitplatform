@@ -1264,17 +1264,18 @@ public partial class BitCallout : BitComponentBase
     // The element the focus was on is gone with the callout, which would leave the focus on the body and the
     // keyboard back at the top of the page, so it goes back to where it came from: the anchor the callout
     // renders itself, or else whatever held the focus when the callout opened - the external anchor that
-    // toggled it, or the element a context menu was opened over. A focus that was not in the callout is left
-    // alone, and the remembered origin is dropped either way, so a later opening captures anew.
+    // toggled it, or the element a context menu was opened over, even when the callout has an anchor of its
+    // own. A focus that was not in the callout is left alone, and the remembered origin is dropped either way,
+    // so a later opening captures anew.
     private async Task ReturnFocus(bool restore)
     {
-        if (restore && Anchor is not null)
+        if (restore && _focusOriginCaptured)
         {
-            await FocusAnchor();
+            await RestoreFocusOrigin();
         }
         else if (restore)
         {
-            await RestoreFocusOrigin();
+            await FocusAnchor();
         }
         else
         {
@@ -1283,14 +1284,15 @@ public partial class BitCallout : BitComponentBase
     }
 
     // A callout with an anchor of its own hears Escape through the root around that anchor and through the
-    // callout itself. One without has no element of its own where the focus usually is, so the key is listened
+    // callout itself. One without - or one opened at a point, where the focus is on whatever the point was
+    // picked over - has no element of its own where the focus usually is, so the key is listened
     // for on the whole page while it is open, and so is it for a callout opened by hovering, which is shown
     // while the focus is wherever the user left it: content that appears on hover has to be dismissible without
     // moving the pointer or the focus (WCAG 1.4.13). The root is named as the trigger to leave the anchor to its
     // own handler; for an external anchor it holds nothing, so every Escape outside the callout is reported.
     private async Task SetupEscape()
     {
-        if ((Anchor is not null && HoverDriven is false) || _escapeRegistered || IsDisposed || _dotnetObj is null) return;
+        if ((HasOwnAnchor && HoverDriven is false) || _escapeRegistered || IsDisposed || _dotnetObj is null) return;
 
         _escapeRegistered = true;
 
@@ -1317,7 +1319,7 @@ public partial class BitCallout : BitComponentBase
     // Only a callout without an anchor of its own needs the origin: the one it renders is where the focus goes.
     private async Task CaptureFocusOrigin()
     {
-        if (Anchor is not null || IsDisposed || _dotnetObj is null) return;
+        if (HasOwnAnchor || IsDisposed || _dotnetObj is null) return;
 
         _focusOriginCaptured = true;
 
@@ -1392,6 +1394,10 @@ public partial class BitCallout : BitComponentBase
 
     // Whether the callout was opened at a point on the screen rather than against an anchor.
     private bool HasPoint => _pointX.HasValue && _pointY.HasValue;
+
+    // Whether the anchor the callout renders is what it is attached to. One opened at a point is not, even
+    // with an anchor rendered: the focus and the keyboard are on whatever the point was picked over.
+    private bool HasOwnAnchor => Anchor is not null && HasPoint is false;
 
     private void ForgetPoint()
     {
