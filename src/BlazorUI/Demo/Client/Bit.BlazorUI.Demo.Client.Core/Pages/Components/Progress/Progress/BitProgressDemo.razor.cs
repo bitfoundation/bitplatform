@@ -69,7 +69,7 @@ public partial class BitProgressDemo
             Name = "Delay",
             Type = "int",
             DefaultValue = "0",
-            Description = "Milliseconds the progress stays hidden after it first renders, so a quick operation never flashes one. Its space is kept and it is hidden from assistive technology too.",
+            Description = "Milliseconds the progress stays hidden after it first renders, so a quick operation never flashes one. Its space is kept and it is hidden from assistive technology too. The window opens once, with the first render: giving a Delay to a progress already on screen does not hide it.",
         },
         new()
         {
@@ -338,7 +338,7 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-radius",
-            DefaultValue = "0",
+            DefaultValue = "--bit-shp-radius-none",
             Description = "Corner radius of the track and the bar. Rounded wins over it with a full radius.",
         },
         new()
@@ -386,7 +386,7 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-percent-font-size",
-            DefaultValue = "A fifth of the diameter, at least --bit-tpg-fs-xs",
+            DefaultValue = "A step of the type ramp per the size the ring is drawn at, --bit-tpg-fs-xs to --bit-tpg-fs-4xl",
             Description = "Text size of the readout in the middle of the ring.",
         },
         new()

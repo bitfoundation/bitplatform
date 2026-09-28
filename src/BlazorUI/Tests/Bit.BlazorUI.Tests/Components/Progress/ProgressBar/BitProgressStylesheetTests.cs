@@ -113,6 +113,41 @@ public class BitProgressStylesheetTests
         Assert.IsFalse(label.Contains("nowrap"), "The label is kept to one line.");
     }
 
+    [TestMethod]
+    public void BitProgressRadiusShouldFallBackToAShapeToken()
+    {
+        // A literal corner is a design-system decision no preset can reach; the scale token is one it can.
+        StringAssert.Contains(GetBlock(ReadStylesheet(), "\n.bit-prb {"), "--bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});");
+    }
+
+    [TestMethod]
+    public void BitProgressRingReadoutShouldTakeItsSizeFromTheTypeRamp()
+    {
+        var stylesheet = ReadStylesheet();
+        var readout = GetBlock(stylesheet, "\n.bit-prb-ctx {");
+
+        // Type comes from the ramp a preset re-skins, never from the spacing the diameter is measured in.
+        StringAssert.Contains(readout, "font-size: var(--bit-Progress-percent-font-size, var(--bit-prb-ctx-fs, #{$tg-fs-xs}));");
+        Assert.IsFalse(readout.Contains("--bit-prb-diameter"), "The ring readout derives its type from the diameter.");
+
+        // A readout cut off by the ring is cut off with a sign that something is missing.
+        StringAssert.Contains(readout, "text-overflow: ellipsis;");
+
+        foreach (var (step, token) in new[] { ("fxs", "xs"), ("fsm", "sm"), ("fmd", "md"), ("flg", "lg"), ("fxl", "xl"), ("f2x", "2xl"), ("f3x", "3xl"), ("f4x", "4xl") })
+        {
+            StringAssert.Contains(GetBlock(stylesheet, $"\n.bit-prb-{step} {{"), $"--bit-prb-ctx-fs: #{{$tg-fs-{token}}};");
+        }
+    }
+
+    [TestMethod]
+    public void BitProgressPrerenderHoldShouldHaveNoRevealOfItsOwn()
+    {
+        var hold = GetBlock(ReadStylesheet(), "\n.bit-prb-dlh {");
+
+        StringAssert.Contains(hold, "visibility: hidden;");
+        Assert.IsFalse(hold.Contains("animation"), "The prerender hold reveals itself, which the interactive render then replays.");
+    }
+
     private static string GetBlock(string stylesheet, string selector, string terminator = "\n}")
     {
         var start = stylesheet.IndexOf(selector, StringComparison.Ordinal);

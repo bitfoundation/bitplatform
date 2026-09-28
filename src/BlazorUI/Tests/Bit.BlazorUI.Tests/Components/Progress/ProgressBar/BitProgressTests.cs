@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
+using System.Linq;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -880,6 +883,82 @@ public class BitProgressTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-prb").ClassList.Contains("bit-prb-dly"));
     }
+
+    [TestMethod]
+    public void BitProgressDelayShouldNotHideAProgressAlreadyOnScreen()
+    {
+        var component = RenderComponent<BitProgress>(parameters => parameters.Add(p => p.Percent, 40));
+
+        // The window opens with the first render or never: a progress the reader is already watching stays.
+        component.Render(parameters => parameters.Add(p => p.Delay, 400));
+
+        var root = component.Find(".bit-prb");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-prb-dly"));
+        Assert.DoesNotContain("--bit-prb-delay", root.GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitProgressDelayShouldDropTheRevealOnceTheWindowIsOver()
+    {
+        var component = RenderComponent<BitProgress>(parameters => parameters.Add(p => p.Delay, 30));
+
+        Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains("bit-prb-dly"));
+
+        // The reveal replays on any element built anew, so it only stays for as long as the window lasts.
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-prb").ClassList.Contains("bit-prb-dly")), TimeSpan.FromSeconds(5));
+
+        Assert.DoesNotContain("--bit-prb-delay", component.Find(".bit-prb").GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitProgressDelayShouldKeepTheLengthItOpenedWith()
+    {
+        var component = RenderComponent<BitProgress>(parameters => parameters.Add(p => p.Delay, 400));
+
+        component.Render(parameters => parameters.Add(p => p.Delay, 800));
+
+        Assert.Contains("--bit-prb-delay: 400ms;", component.Find(".bit-prb").GetAttribute("style")!);
+    }
+
+#if NET9_0_OR_GREATER
+    [TestMethod]
+    public void BitProgressDelayShouldHoldAPrerenderedProgressForTheInteractiveRender()
+    {
+        Context.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Delay, 400);
+            parameters.SetAssignedRenderMode(Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer);
+        });
+
+        var root = component.Find(".bit-prb");
+
+        // No reveal of its own: the interactive render that replaces it runs the window, so the prerendered progress
+        // never shows up only to be hidden again.
+        Assert.IsTrue(root.ClassList.Contains("bit-prb-dlh"));
+        Assert.IsFalse(root.ClassList.Contains("bit-prb-dly"));
+        Assert.DoesNotContain("--bit-prb-delay", root.GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitProgressDelayShouldRevealAnInteractiveProgressItself()
+    {
+        Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Delay, 400);
+            parameters.SetAssignedRenderMode(Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer);
+        });
+
+        var root = component.Find(".bit-prb");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-prb-dly"));
+        Assert.IsFalse(root.ClassList.Contains("bit-prb-dlh"));
+    }
+#endif
 
 
     // ---------------------------------------------------------------- percentage readout
@@ -1968,6 +2047,95 @@ public class BitProgressTests : BunitTestContext
         // public variable, so a --bit-Progress-thickness set on an ancestor reaches the ring as it does the bar.
         Assert.Contains("stroke-width: min(var(--bit-Progress-thickness, var(--bit-prb-ring-stroke)), 20%)", component.Find(".bit-prb-cbr").GetAttribute("style")!);
         Assert.Contains("stroke-width: min(var(--bit-Progress-thickness, var(--bit-prb-ring-stroke)), 20%)", component.Find(".bit-prb-crt").GetAttribute("style")!);
+    }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-prb-sm"),
+        DataRow(BitSize.Medium, "bit-prb-md"),
+        DataRow(BitSize.Large, "bit-prb-lg")
+    ]
+    public void BitProgressSizeTest(BitSize size, string expectedClass)
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        var classList = component.Find(".bit-prb").ClassList;
+
+        // The per-size tokens - the track, the ring stroke, the diameter and the type - hang off exactly one class.
+        Assert.IsTrue(classList.Contains(expectedClass));
+        Assert.AreEqual(1, classList.Count(c => c is "bit-prb-sm" or "bit-prb-md" or "bit-prb-lg"));
+    }
+
+    [TestMethod]
+    public void BitProgressWithoutSizeShouldCarryNoSizeClass()
+    {
+        var component = RenderComponent<BitProgress>();
+
+        var classList = component.Find(".bit-prb").ClassList;
+        Assert.IsFalse(classList.Contains("bit-prb-sm"));
+        Assert.IsFalse(classList.Contains("bit-prb-md"));
+        Assert.IsFalse(classList.Contains("bit-prb-lg"));
+    }
+
+
+    // ---------------------------------------------------------------- ring readout
+
+    [TestMethod,
+        DataRow(null, "bit-prb-fxs"),
+        DataRow(BitSize.Small, "bit-prb-fxs"),
+        DataRow(BitSize.Medium, "bit-prb-fxs"),
+        DataRow(BitSize.Large, "bit-prb-fsm")
+    ]
+    public void BitProgressRingReadoutShouldFollowTheSize(BitSize? size, string expectedStep)
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Circular, true);
+            parameters.Add(p => p.ShowPercentNumber, true);
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-prb-ctx").ClassList.Contains(expectedStep));
+    }
+
+    [TestMethod,
+        DataRow(24, "bit-prb-fxs"),
+        DataRow(72, "bit-prb-fsm"),
+        DataRow(96, "bit-prb-flg"),
+        DataRow(128, "bit-prb-f2x"),
+        DataRow(200, "bit-prb-f4x")
+    ]
+    public void BitProgressRingReadoutShouldStepUpTheRampWithTheDiameter(int diameter, string expectedStep)
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Circular, true);
+            parameters.Add(p => p.ShowPercentNumber, true);
+            parameters.Add(p => p.Diameter, diameter);
+            // An explicit Diameter is the whole answer, even below the floor of a larger size.
+            parameters.Add(p => p.Size, BitSize.Large);
+        });
+
+        Assert.IsTrue(component.Find(".bit-prb-ctx").ClassList.Contains(expectedStep));
+    }
+
+    [TestMethod]
+    public void BitProgressRingReadoutShouldFollowTheSizeTheRingIsDrawnAt()
+    {
+        // No Diameter, but a thickness and a radius that draw the ring at 120px: the readout reads the drawn size,
+        // not the diameter token of the size class.
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Circular, true);
+            parameters.Add(p => p.ShowPercentNumber, true);
+            parameters.Add(p => p.Thickness, 20);
+            parameters.Add(p => p.Radius, 6);
+        });
+
+        Assert.AreEqual("120px", component.Find("svg.bit-prb-cir").GetAttribute("width"));
+        Assert.IsTrue(component.Find(".bit-prb-ctx").ClassList.Contains("bit-prb-f2x"));
     }
 
 

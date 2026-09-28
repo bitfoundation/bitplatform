@@ -10,7 +10,7 @@
 //   --bit-Progress-stripe-color         the stripes of a Striped bar                 (default: $clr-bg-pri at 25%)
 //   --bit-Progress-stripe-size          pitch of the stripes                         (default: spacing(2))
 //   --bit-Progress-thickness            bar height, vertical bar width, ring stroke  (default: per Size, $siz-track-* for a bar, 1/2/4 x $siz-spinner-stroke for a ring)
-//   --bit-Progress-radius               corner radius of a linear bar not Rounded    (default: 0)
+//   --bit-Progress-radius               corner radius of a linear bar not Rounded    (default: $shp-radius-none)
 //   --bit-Progress-diameter             smallest diameter of the ring                (default: per Size)
 //   --bit-Progress-length               length of a Vertical bar                     (default: spacing(20))
 //   --bit-Progress-transition-duration  how long the fill takes to follow the value  (default: $mot-duration)
@@ -18,7 +18,7 @@
 //   --bit-Progress-label-color          color of the label                           (default: $clr-fg-pri)
 //   --bit-Progress-label-font-weight    weight of the label                          (default: $tg-fw-regular)
 //   --bit-Progress-percent-color        color of the readout beside the bar or ring  (default: $clr-fg-pri, $clr-fg-sec in a ring)
-//   --bit-Progress-percent-font-size    text size of the readout in a ring           (default: a fifth of the diameter, at least $tg-fs-xs)
+//   --bit-Progress-percent-font-size    text size of the readout in a ring           (default: $tg-fs-xs up the ramp to $tg-fs-4xl, per the drawn size)
 //   --bit-Progress-description-color    color of the description                     (default: $clr-fg-sec)
 //   --bit-Progress-description-font-size text size of the description                (default: per Size, $tg-fs-2xs / $tg-fs-xs)
 
@@ -35,7 +35,7 @@
     // The unfilled part of every shape reads one token, so a custom track color reaches the linear track,
     // the ring behind the stroke and the two ends the indeterminate sweep fades into at once.
     --bit-prb-track-color: var(--bit-Progress-track-color, #{$clr-bg-sec});
-    --bit-prb-radius: var(--bit-Progress-radius, 0);
+    --bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});
     // Where the circular stroke starts, and which way round it goes. A <circle> path starts at three
     // o'clock and runs clockwise, so the default turn of a quarter puts the start at twelve; the mirror
     // is a plain factor rather than a conditional transform, which is what lets the two compose.
@@ -116,9 +116,16 @@
 
 // Delay: the whole indicator - and with it its role and its live region - is hidden until the delay has passed,
 // while the space it takes is kept so nothing moves when it appears. It is a one-off reveal rather than a motion,
-// so reduced motion has no say in it.
+// so reduced motion has no say in it. The class is only there for the length of the window: the reveal replays on
+// any element built anew, so the component takes it off once the window is over.
 .bit-prb-dly {
     animation: bit-prb-reveal 0s var(--bit-prb-delay) backwards;
+}
+
+// A prerendered progress an interactive render is about to replace is held hidden with no reveal of its own: the
+// interactive render runs the window, so the prerendered one never shows up only to be hidden again.
+.bit-prb-dlh {
+    visibility: hidden;
 }
 
 // The row the label and a readout placed on it share. It is there whenever either of them is, so a label on
@@ -283,15 +290,50 @@
     min-height: var(--bit-prb-diameter);
 }
 
-// The readout in the middle of the ring scales with it - a fifth of the diameter, never below the smallest
-// readable size - so a large gauge carries a number that can be read from across the room.
+// The readout in the middle of the ring steps up the type ramp with the size the ring is drawn at - the component
+// picks the step, since only it knows what Diameter, Thickness and Radius make of the ring - so a large gauge
+// carries a number that can be read from across the room. A readout wider than the ring still has room for is cut
+// off with an ellipsis, which at least says that something is missing.
 .bit-prb-ctx {
     max-width: 60%;
     overflow: hidden;
     position: absolute;
     white-space: nowrap;
+    text-overflow: ellipsis;
     color: var(--bit-Progress-percent-color, #{$clr-fg-sec});
-    font-size: var(--bit-Progress-percent-font-size, max(#{$tg-fs-xs}, calc(var(--bit-prb-diameter) * 0.2)));
+    font-size: var(--bit-Progress-percent-font-size, var(--bit-prb-ctx-fs, #{$tg-fs-xs}));
+}
+
+.bit-prb-fxs {
+    --bit-prb-ctx-fs: #{$tg-fs-xs};
+}
+
+.bit-prb-fsm {
+    --bit-prb-ctx-fs: #{$tg-fs-sm};
+}
+
+.bit-prb-fmd {
+    --bit-prb-ctx-fs: #{$tg-fs-md};
+}
+
+.bit-prb-flg {
+    --bit-prb-ctx-fs: #{$tg-fs-lg};
+}
+
+.bit-prb-fxl {
+    --bit-prb-ctx-fs: #{$tg-fs-xl};
+}
+
+.bit-prb-f2x {
+    --bit-prb-ctx-fs: #{$tg-fs-2xl};
+}
+
+.bit-prb-f3x {
+    --bit-prb-ctx-fs: #{$tg-fs-3xl};
+}
+
+.bit-prb-f4x {
+    --bit-prb-ctx-fs: #{$tg-fs-4xl};
 }
 
 .bit-prb-crt,

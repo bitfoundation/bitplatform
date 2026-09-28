@@ -30,6 +30,21 @@ public class BitProgressParamsTests : BunitTestContext
         });
     }
 
+    private static void RenderWith(IRenderedComponent<BitParams> component, BitProgressParams progressParams, double percent = 40, System.Action<RenderTreeBuilder>? attributes = null)
+    {
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { progressParams });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitProgress>(0);
+                builder.AddAttribute(1, nameof(BitProgress.Percent), percent);
+                attributes?.Invoke(builder);
+                builder.CloseComponent();
+            });
+        });
+    }
+
     [TestMethod]
     public void BitProgressParamsShouldHaveCorrectParamName()
     {
@@ -281,6 +296,85 @@ public class BitProgressParamsTests : BunitTestContext
         Assert.AreEqual("100", bar.GetAttribute("aria-valuemax"));
         Assert.AreEqual(0, component.FindAll(".bit-prb-lvr").Count);
         Assert.IsTrue(root.ClassList.Contains("bit-prb-sm"), "a parameter the markup sets is left alone");
+    }
+
+    [TestMethod]
+    public void BitProgressShouldTakeBackTheBaseParametersTheCascadeStopsSupplying()
+    {
+        var component = RenderWithParams(new BitProgressParams
+        {
+            AriaLabel = "Loading",
+            Class = "cascaded-class",
+            Style = "margin: 3px;",
+            Dir = BitDir.Rtl,
+            IsEnabled = false,
+            AnnounceProgress = true,
+        }, builder =>
+        {
+            builder.AddAttribute(2, nameof(BitProgress.Label), "Uploading");
+        });
+
+        var root = component.Find(".bit-prb");
+
+        Assert.AreEqual("Loading", component.Find("[role=progressbar]").GetAttribute("aria-label"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.Contains("margin: 3px", root.GetAttribute("style")!);
+
+        RenderWith(component, new BitProgressParams { AnnounceProgress = true }, 60, builder =>
+        {
+            builder.AddAttribute(2, nameof(BitProgress.Label), "Uploading");
+        });
+
+        root = component.Find(".bit-prb");
+
+        Assert.IsNull(component.Find("[role=progressbar]").GetAttribute("aria-label"));
+        Assert.IsFalse(root.ClassList.Contains("cascaded-class"));
+        Assert.IsFalse(root.ClassList.Contains("bit-rtl"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dis"));
+        Assert.DoesNotContain("margin: 3px", root.GetAttribute("style") ?? string.Empty);
+
+        // The announcement is named after the visible label again, now the cascaded AriaLabel is gone.
+        Assert.AreEqual("Uploading: 50 %", component.Find(".bit-prb-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitProgressShouldRestoreTheValueTheCascadeReplacedRatherThanALiteral()
+    {
+        // The svg of a ring is drawn at Thickness x Radius, so the radius it goes back to can be read off its width.
+        var component = RenderWithParams(new BitProgressParams { Circular = true, Radius = 10 }, builder =>
+        {
+            builder.AddAttribute(2, nameof(BitProgress.Thickness), (int?)2);
+        });
+
+        Assert.AreEqual("20px", component.Find("svg.bit-prb-cir").GetAttribute("width"));
+
+        // BitParams cascades its values as fixed, so the progress only reads the new ones when it renders for a reason
+        // of its own - here a new Percent.
+        RenderWith(component, new BitProgressParams { Circular = true }, 41, builder =>
+        {
+            builder.AddAttribute(2, nameof(BitProgress.Thickness), (int?)2);
+        });
+
+        Assert.AreEqual($"{2 * new BitProgress().Radius}px", component.Find("svg.bit-prb-cir").GetAttribute("width"));
+    }
+
+    [TestMethod]
+    public void BitProgressShouldNotRebuildItsClassesWhenTheCascadeGivesTheSameAgain()
+    {
+        var progressParams = new BitProgressParams { Color = BitColor.Success, Size = BitSize.Large, Rounded = true, Class = "c" };
+
+        var component = RenderWithParams(progressParams);
+
+        var progress = component.FindComponent<BitProgress>().Instance;
+        var classes = progress.ClassBuilder.Value;
+
+        // A progress fed a new value many times a second is re-rendered as often; a cascade that has nothing new to
+        // say must not cost it its class string each time.
+        RenderWith(component, progressParams, 41);
+
+        Assert.AreSame(classes, progress.ClassBuilder.Value);
     }
 
     [TestMethod]

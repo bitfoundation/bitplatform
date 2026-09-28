@@ -14,7 +14,14 @@ public partial class BitProgress : BitComponentBase
     private double? _lastAnnouncedStep;
     private string? _announcement;
     private int _announcementGeneration;
-    private readonly HashSet<string> _cascadedParameters = [];
+    private bool _cascadeChanged;
+    private readonly HashSet<string> _cascadeSupplied = [];
+    private readonly Dictionary<string, Action> _cascadeRestores = [];
+    private bool _delayDecided;
+    private bool _isDelaying;
+    private bool _holdsForInteractivity;
+    private int _delayInEffect;
+    private CancellationTokenSource? _delayCts;
 
 
 
@@ -95,8 +102,13 @@ public partial class BitProgress : BitComponentBase
     /// The space it takes is kept, so nothing moves when it appears, and it is hidden from assistive technology
     /// for as long as it is hidden from sight.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public int Delay { get; set; }
+    /// <remarks>
+    /// The window opens once, with the first render, and is never opened again: a Delay given to a progress that
+    /// is already on screen does not hide it, and one taken away while the window is open shows it at once. A
+    /// progress prerendered ahead of an interactive render stays hidden until that render has run its window,
+    /// rather than showing up in the prerendered page and vanishing again when the interactive one takes over.
+    /// </remarks>
+    [Parameter] public int Delay { get; set; }
 
     /// <summary>
     /// Text describing or supplementing the operation.
@@ -348,7 +360,7 @@ public partial class BitProgress : BitComponentBase
 
         ClassBuilder.Register(() => _IsVertical ? "bit-prb-ver" : string.Empty);
 
-        ClassBuilder.Register(() => Delay > 0 ? "bit-prb-dly" : string.Empty);
+        ClassBuilder.Register(() => _isDelaying ? (_holdsForInteractivity ? "bit-prb-dlh" : "bit-prb-dly") : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -367,79 +379,193 @@ public partial class BitProgress : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitProgressParams))]
     protected override void OnParametersSet()
     {
-        RestoreCascadedDefaults();
+        ApplyCascade();
 
-        CascadingParameters?.UpdateParameters(this);
+        UpdateDelay();
 
         UpdateAnnouncement();
 
         base.OnParametersSet();
     }
 
-    /// <summary>
-    /// Whether the cascade may supply the named parameter, which it may only when the markup has not set it.
-    /// A parameter it supplies is remembered, so the value can be taken back once the cascade stops giving it.
-    /// </summary>
-    internal bool TakeFromCascade(string name)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (HasNotBeenSet(name) is false) return false;
+        await base.OnAfterRenderAsync(firstRender);
 
-        _cascadedParameters.Add(name);
+        // The window is timed from the first render that has an after-render at all, which is an interactive one:
+        // a static page has no one to end it for, and reveals itself through the stylesheet instead.
+        if (firstRender is false || _isDelaying is false) return;
 
-        return true;
+        _delayCts = new CancellationTokenSource();
+
+        _ = WaitOutDelayAsync(_delayCts.Token);
     }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            _delayCts?.Cancel();
+            _delayCts?.Dispose();
+            _delayCts = null;
+        }
+
+        await base.DisposeAsync(disposing);
+    }
+
+    /// <summary>
+    /// Supplies a parameter from the cascade, unless the markup has set it. The value it held before the cascade
+    /// first supplied it is remembered, so it can be put back once the cascade stops giving one.
+    /// </summary>
+    internal void TakeFromCascade<T>(string name, T value, Func<BitProgress, T> get, Action<BitProgress, T> set)
+    {
+        TakeFromCascade(name, value, get, set, get(this));
+    }
+
+    /// <summary>
+    /// Supplies a parameter from the cascade, unless the markup has set it, and puts <paramref name="original"/>
+    /// back once the cascade stops giving one - for a parameter whose getter reads through to something other than
+    /// the value it was given, which would otherwise be pinned in place of it.
+    /// </summary>
+    internal void TakeFromCascade<T>(string name, T value, Func<BitProgress, T> get, Action<BitProgress, T> set, T original)
+    {
+        if (IsSetByMarkup(name)) return;
+
+        _cascadeSupplied.Add(name);
+
+        // Checked before the closure is built, rather than left to TryAdd, so a value the cascade keeps supplying
+        // allocates nothing on the renders after the first.
+        if (_cascadeRestores.ContainsKey(name) is false)
+        {
+            _cascadeRestores.Add(name, () => set(this, original));
+        }
+
+        // A value the cascade supplies again unchanged is no change: the class and style strings built from it the
+        // last time still hold, so they are only rebuilt when something the cascade gives actually moves.
+        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
+
+        set(this, value);
+
+        _cascadeChanged = true;
+    }
+
+    // The progress's own parameters are tracked by the generated SetParametersAsync, and the ones it inherits by
+    // the base class's; a name belongs to exactly one of the two, so either one having seen it means the markup
+    // set it.
+    private bool IsSetByMarkup(string name) => HasNotBeenSet(name) is false || base.HasNotBeenSet(name) is false;
 
     // A value written by the cascade is not a parameter the markup passes again on the next render, so Blazor
     // never overwrites it: a cascade that stops supplying it - the setting cleared, or the cascade gone - would
-    // otherwise leave it in place for good. Everything it supplied last time goes back to the component's own
-    // default before the cascade is applied again; a parameter the markup now sets already holds its own value.
-    private void RestoreCascadedDefaults()
+    // otherwise leave it in place for good. So the cascade is applied first, and whatever it supplied last time but
+    // not this time goes back to the value it replaced; a parameter the markup now sets already holds its own.
+    private void ApplyCascade()
     {
-        if (_cascadedParameters.Count == 0) return;
+        if (CascadingParameters is null && _cascadeRestores.Count == 0) return;
 
-        foreach (var name in _cascadedParameters)
+        _cascadeSupplied.Clear();
+        _cascadeChanged = false;
+
+        CascadingParameters?.UpdateParameters(this);
+
+        if (_cascadeRestores.Count > _cascadeSupplied.Count)
         {
-            if (HasNotBeenSet(name) is false) continue;
-
-            switch (name)
+            // Removing the current entry while enumerating a Dictionary is allowed, and leaves the enumeration intact.
+            foreach (var (name, restore) in _cascadeRestores)
             {
-                case nameof(AnnounceProgress): AnnounceProgress = false; break;
-                case nameof(AnnounceStep): AnnounceStep = 25; break;
-                case nameof(BarColor): BarColor = null; break;
-                case nameof(Circular): Circular = false; break;
-                case nameof(Classes): Classes = null; break;
-                case nameof(Color): Color = null; break;
-                case nameof(Delay): Delay = 0; break;
-                case nameof(Diameter): Diameter = null; break;
-                case nameof(GapDegree): GapDegree = 0; break;
-                case nameof(GapPosition): GapPosition = default; break;
-                case nameof(Indeterminate): Indeterminate = false; break;
-                case nameof(Length): Length = null; break;
-                case nameof(Max): Max = 100; break;
-                case nameof(Meter): Meter = false; break;
-                case nameof(Min): Min = 0; break;
-                case nameof(PercentNumberFormat): PercentNumberFormat = DefaultPercentNumberFormat; break;
-                case nameof(PercentNumberPosition): PercentNumberPosition = default; break;
-                case nameof(Radius): Radius = 6; break;
-                case nameof(Reversed): Reversed = false; break;
-                case nameof(Rounded): Rounded = false; break;
-                case nameof(SegmentGap): SegmentGap = 4; break;
-                case nameof(Segments): Segments = null; break;
-                case nameof(ShowPercentNumber): ShowPercentNumber = false; break;
-                case nameof(Size): Size = null; break;
-                case nameof(Striped): Striped = false; break;
-                case nameof(StripedAnimation): StripedAnimation = false; break;
-                case nameof(Styles): Styles = null; break;
-                case nameof(Thickness): Thickness = null; break;
-                case nameof(TrackColor): TrackColor = null; break;
-                case nameof(Vertical): Vertical = false; break;
+                if (_cascadeSupplied.Contains(name)) continue;
+
+                if (IsSetByMarkup(name) is false)
+                {
+                    restore();
+
+                    _cascadeChanged = true;
+                }
+
+                _cascadeRestores.Remove(name);
             }
         }
 
-        _cascadedParameters.Clear();
+        if (_cascadeChanged is false) return;
 
         ClassBuilder.Reset();
         StyleBuilder.Reset();
+    }
+
+    // The window is decided on the first pass, once the cascade has had its say, and only ever closed after that.
+    // Opening it again later would hide a progress the reader is already watching; and since the stylesheet's
+    // reveal replays on any new element, the class is dropped as soon as the window is over, so nothing that
+    // recreates the root afterwards can hide it again.
+    private void UpdateDelay()
+    {
+        if (_delayDecided is false)
+        {
+            _delayDecided = true;
+
+            if (Delay <= 0) return;
+
+            _isDelaying = true;
+            _delayInEffect = Delay;
+
+            // A prerender is followed by an interactive render that builds the root anew and so starts the reveal
+            // over, which would show the prerendered progress and then hide it again. The prerendered one is held
+            // hidden instead, and the interactive render runs the window. A statically rendered page has no render
+            // mode and nothing to follow it, so it reveals itself through the stylesheet.
+            _holdsForInteractivity = IsPrerendering();
+
+            ClassBuilder.Reset();
+
+            return;
+        }
+
+        if (_isDelaying && Delay <= 0)
+        {
+            EndDelay();
+        }
+    }
+
+    // Only from net9.0 on does the framework say how a component is rendered; before it, a prerender cannot be told
+    // from a static render, and both reveal themselves through the stylesheet.
+    private bool IsPrerendering()
+    {
+#if NET9_0_OR_GREATER
+        return AssignedRenderMode is not null && RendererInfo.IsInteractive is false;
+#else
+        return false;
+#endif
+    }
+
+    private void EndDelay()
+    {
+        _isDelaying = false;
+
+        _delayCts?.Cancel();
+        _delayCts?.Dispose();
+        _delayCts = null;
+
+        ClassBuilder.Reset();
+    }
+
+    private async Task WaitOutDelayAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(_delayInEffect, token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (IsDisposed || token.IsCancellationRequested) return;
+
+        await InvokeAsync(() =>
+        {
+            if (IsDisposed || _isDelaying is false) return;
+
+            EndDelay();
+
+            StateHasChanged();
+        });
     }
 
 
@@ -531,7 +657,8 @@ public partial class BitProgress : BitComponentBase
         }
     }
 
-    private string? _DelayStyle => Delay > 0 ? $"--bit-prb-delay: {Delay}ms;" : null;
+    // The length the window opened with, not the current Delay: a change of it mid-window would retime the reveal.
+    private string? _DelayStyle => _isDelaying && _holdsForInteractivity is false ? $"--bit-prb-delay: {_delayInEffect}ms;" : null;
 
     private string? _RootStyle
     {
@@ -691,10 +818,56 @@ public partial class BitProgress : BitComponentBase
     private int GetDiameter() => Diameter.HasValue ? Math.Max(0, Diameter.Value) : GetThickness() * Math.Max(0, Radius);
 
     // Pinning the token to the explicit diameter turns the stylesheet's floor into an exact size, so a
-    // Diameter smaller than the size default still shrinks the ring. It is declared on the root rather
-    // than on the svg, because the readout in the middle of the ring - a sibling of the svg - scales its
-    // type from the same token.
+    // Diameter smaller than the size default still shrinks the ring.
     private string? _DiameterStyle => Circular && Diameter.HasValue ? $"--bit-prb-diameter: {GetDiameter()}px;" : null;
+
+    // The readout in the middle of the ring is set on a step of the type ramp picked by the size the ring is drawn
+    // at, so a large gauge carries a number that can be read from across the room while every size stays on the
+    // ramp a preset re-skins. Only the step is chosen here; its size is the theme's.
+    private string _RingReadoutClass
+    {
+        get
+        {
+            var step = GetReadoutStep(GetDiameter());
+
+            // Without a Diameter the ring is never drawn below the diameter token of its size, and the large one's
+            // is already big enough for the step above the smallest.
+            if (Diameter.HasValue is false && Size == BitSize.Large)
+            {
+                step = Math.Max(step, 1);
+            }
+
+            return _RingReadoutSteps[step];
+        }
+    }
+
+    // The readout box is 60% of the ring wide and a default readout ("100 %", "85.7 %") is about three of its em
+    // wide, so a step fits once the ring is five times its font size across: 70px for the 14px step of the default
+    // ramp, 160px for the 32px one. A ramp a preset makes wider than that is cut off with an ellipsis rather than
+    // silently.
+    private static int GetReadoutStep(int diameter) => diameter switch
+    {
+        >= 160 => 7,
+        >= 140 => 6,
+        >= 120 => 5,
+        >= 100 => 4,
+        >= 90 => 3,
+        >= 80 => 2,
+        >= 70 => 1,
+        _ => 0
+    };
+
+    private static readonly string[] _RingReadoutSteps =
+    [
+        "bit-prb-ctx bit-prb-fxs",
+        "bit-prb-ctx bit-prb-fsm",
+        "bit-prb-ctx bit-prb-fmd",
+        "bit-prb-ctx bit-prb-flg",
+        "bit-prb-ctx bit-prb-fxl",
+        "bit-prb-ctx bit-prb-f2x",
+        "bit-prb-ctx bit-prb-f3x",
+        "bit-prb-ctx bit-prb-f4x"
+    ];
 
     // What "thick" means depends on which way the bar runs: the height of a horizontal one, the stroke
     // of a ring, and - for a vertical one - the width, which the container already carries for all

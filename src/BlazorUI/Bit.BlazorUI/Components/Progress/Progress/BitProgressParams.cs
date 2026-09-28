@@ -186,7 +186,7 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
     /// <remarks>
     /// Only properties that have a value set and have not already been set on the <paramref name="bitProgress"/> will be updated.
     /// This method does not overwrite existing values on <paramref name="bitProgress"/>. What it supplies is recorded on
-    /// the component, which restores its own default once this object stops supplying the value.
+    /// the component, which puts back the value it replaced once this object stops supplying one.
     /// </remarks>
     /// <param name="bitProgress">
     /// The <see cref="BitProgress"/> instance whose properties will be updated. Cannot be null.
@@ -195,180 +195,214 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitProgress is null) return;
 
-        UpdateBaseParameters(bitProgress);
-
-        if (AnnounceProgress.HasValue && bitProgress.TakeFromCascade(nameof(AnnounceProgress)))
+        // The inherited parameters go through the same bookkeeping as the progress's own rather than through
+        // UpdateBaseParameters, which cannot take a value back: an AriaLabel or a Class the cascade stops giving
+        // would otherwise stay on the progress for good.
+        if (AriaLabel.HasValue())
         {
-            bitProgress.AnnounceProgress = AnnounceProgress.Value;
+            bitProgress.TakeFromCascade(nameof(AriaLabel), AriaLabel, static p => p.AriaLabel, static (p, v) => p.AriaLabel = v);
         }
 
-        if (AnnounceStep.HasValue && bitProgress.TakeFromCascade(nameof(AnnounceStep)))
+        if (Class.HasValue())
         {
-            bitProgress.AnnounceStep = AnnounceStep.Value;
+            bitProgress.TakeFromCascade(nameof(Class), Class, static p => p.Class, static (p, v) => p.Class = v);
         }
 
-        if (BarColor.HasValue() && bitProgress.TakeFromCascade(nameof(BarColor)))
+        if (Dir.HasValue)
         {
-            bitProgress.BarColor = BarColor;
+            // Dir reads through to the cascading direction while it has no value of its own, so it goes back to no
+            // value rather than to the direction it happened to read, which would pin that direction in its place.
+            bitProgress.TakeFromCascade(nameof(Dir), Dir, static p => p.Dir, static (p, v) => p.Dir = v, original: null);
         }
 
-        if (Circular.HasValue && bitProgress.TakeFromCascade(nameof(Circular)))
+        if (ForceAnimation.HasValue)
         {
-            bitProgress.Circular = Circular.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(ForceAnimation), ForceAnimation.Value, static p => p.ForceAnimation, static (p, v) => p.ForceAnimation = v);
         }
 
-        if (Classes is not null && bitProgress.TakeFromCascade(nameof(Classes)))
+        // The attributes are gathered again from the markup on every render, so what the cascade adds to them is
+        // gone the moment it stops adding it; there is nothing to take back.
+        if (HtmlAttributes is not null)
         {
-            bitProgress.Classes = Classes;
-
-            bitProgress.ClassBuilder.Reset();
+            foreach (var attr in HtmlAttributes)
+            {
+                bitProgress.HtmlAttributes.TryAdd(attr.Key, attr.Value);
+            }
         }
 
-        if (Color.HasValue && bitProgress.TakeFromCascade(nameof(Color)))
+        if (Id.HasValue())
         {
-            bitProgress.Color = Color.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(Id), Id, static p => p.Id, static (p, v) => p.Id = v);
         }
 
-        if (Delay.HasValue && bitProgress.TakeFromCascade(nameof(Delay)))
+        if (IsEnabled.HasValue)
         {
-            bitProgress.Delay = Delay.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(IsEnabled), IsEnabled.Value, static p => p.IsEnabled, static (p, v) => p.IsEnabled = v);
         }
 
-        if (Diameter.HasValue && bitProgress.TakeFromCascade(nameof(Diameter)))
+        if (Style.HasValue())
         {
-            bitProgress.Diameter = Diameter.Value;
+            bitProgress.TakeFromCascade(nameof(Style), Style, static p => p.Style, static (p, v) => p.Style = v);
         }
 
-        if (GapDegree.HasValue && bitProgress.TakeFromCascade(nameof(GapDegree)))
+        if (TabIndex.HasValue())
         {
-            bitProgress.GapDegree = GapDegree.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(TabIndex), TabIndex, static p => p.TabIndex, static (p, v) => p.TabIndex = v);
         }
 
-        if (GapPosition.HasValue && bitProgress.TakeFromCascade(nameof(GapPosition)))
+        if (Visibility.HasValue)
         {
-            bitProgress.GapPosition = GapPosition.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(Visibility), Visibility.Value, static p => p.Visibility, static (p, v) => p.Visibility = v);
         }
 
-        if (Indeterminate.HasValue && bitProgress.TakeFromCascade(nameof(Indeterminate)))
+        if (AnnounceProgress.HasValue)
         {
-            bitProgress.Indeterminate = Indeterminate.Value;
+            bitProgress.TakeFromCascade(nameof(AnnounceProgress), AnnounceProgress.Value, static p => p.AnnounceProgress, static (p, v) => p.AnnounceProgress = v);
         }
 
-        if (Length.HasValue() && bitProgress.TakeFromCascade(nameof(Length)))
+        if (AnnounceStep.HasValue)
         {
-            bitProgress.Length = Length;
+            bitProgress.TakeFromCascade(nameof(AnnounceStep), AnnounceStep.Value, static p => p.AnnounceStep, static (p, v) => p.AnnounceStep = v);
         }
 
-        if (Max.HasValue && bitProgress.TakeFromCascade(nameof(Max)))
+        if (BarColor.HasValue())
         {
-            bitProgress.Max = Max.Value;
+            bitProgress.TakeFromCascade(nameof(BarColor), BarColor, static p => p.BarColor, static (p, v) => p.BarColor = v);
         }
 
-        if (Meter.HasValue && bitProgress.TakeFromCascade(nameof(Meter)))
+        if (Circular.HasValue)
         {
-            bitProgress.Meter = Meter.Value;
+            bitProgress.TakeFromCascade(nameof(Circular), Circular.Value, static p => p.Circular, static (p, v) => p.Circular = v);
         }
 
-        if (Min.HasValue && bitProgress.TakeFromCascade(nameof(Min)))
+        if (Classes is not null)
         {
-            bitProgress.Min = Min.Value;
+            bitProgress.TakeFromCascade(nameof(Classes), Classes, static p => p.Classes, static (p, v) => p.Classes = v);
         }
 
-        if (PercentNumberFormat.HasValue() && bitProgress.TakeFromCascade(nameof(PercentNumberFormat)))
+        if (Color.HasValue)
         {
-            bitProgress.PercentNumberFormat = PercentNumberFormat!;
+            bitProgress.TakeFromCascade(nameof(Color), Color, static p => p.Color, static (p, v) => p.Color = v);
         }
 
-        if (PercentNumberPosition.HasValue && bitProgress.TakeFromCascade(nameof(PercentNumberPosition)))
+        if (Delay.HasValue)
         {
-            bitProgress.PercentNumberPosition = PercentNumberPosition.Value;
+            bitProgress.TakeFromCascade(nameof(Delay), Delay.Value, static p => p.Delay, static (p, v) => p.Delay = v);
         }
 
-        if (Radius.HasValue && bitProgress.TakeFromCascade(nameof(Radius)))
+        if (Diameter.HasValue)
         {
-            bitProgress.Radius = Radius.Value;
+            bitProgress.TakeFromCascade(nameof(Diameter), Diameter, static p => p.Diameter, static (p, v) => p.Diameter = v);
         }
 
-        if (Reversed.HasValue && bitProgress.TakeFromCascade(nameof(Reversed)))
+        if (GapDegree.HasValue)
         {
-            bitProgress.Reversed = Reversed.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(GapDegree), GapDegree.Value, static p => p.GapDegree, static (p, v) => p.GapDegree = v);
         }
 
-        if (Rounded.HasValue && bitProgress.TakeFromCascade(nameof(Rounded)))
+        if (GapPosition.HasValue)
         {
-            bitProgress.Rounded = Rounded.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(GapPosition), GapPosition.Value, static p => p.GapPosition, static (p, v) => p.GapPosition = v);
         }
 
-        if (SegmentGap.HasValue && bitProgress.TakeFromCascade(nameof(SegmentGap)))
+        if (Indeterminate.HasValue)
         {
-            bitProgress.SegmentGap = SegmentGap.Value;
+            bitProgress.TakeFromCascade(nameof(Indeterminate), Indeterminate.Value, static p => p.Indeterminate, static (p, v) => p.Indeterminate = v);
         }
 
-        if (Segments.HasValue && bitProgress.TakeFromCascade(nameof(Segments)))
+        if (Length.HasValue())
         {
-            bitProgress.Segments = Segments.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(Length), Length, static p => p.Length, static (p, v) => p.Length = v);
         }
 
-        if (ShowPercentNumber.HasValue && bitProgress.TakeFromCascade(nameof(ShowPercentNumber)))
+        if (Max.HasValue)
         {
-            bitProgress.ShowPercentNumber = ShowPercentNumber.Value;
+            bitProgress.TakeFromCascade(nameof(Max), Max.Value, static p => p.Max, static (p, v) => p.Max = v);
         }
 
-        if (Size.HasValue && bitProgress.TakeFromCascade(nameof(Size)))
+        if (Meter.HasValue)
         {
-            bitProgress.Size = Size.Value;
-
-            bitProgress.ClassBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(Meter), Meter.Value, static p => p.Meter, static (p, v) => p.Meter = v);
         }
 
-        if (Striped.HasValue && bitProgress.TakeFromCascade(nameof(Striped)))
+        if (Min.HasValue)
         {
-            bitProgress.Striped = Striped.Value;
+            bitProgress.TakeFromCascade(nameof(Min), Min.Value, static p => p.Min, static (p, v) => p.Min = v);
         }
 
-        if (StripedAnimation.HasValue && bitProgress.TakeFromCascade(nameof(StripedAnimation)))
+        if (PercentNumberFormat.HasValue())
         {
-            bitProgress.StripedAnimation = StripedAnimation.Value;
+            bitProgress.TakeFromCascade(nameof(PercentNumberFormat), PercentNumberFormat!, static p => p.PercentNumberFormat, static (p, v) => p.PercentNumberFormat = v);
         }
 
-        if (Styles is not null && bitProgress.TakeFromCascade(nameof(Styles)))
+        if (PercentNumberPosition.HasValue)
         {
-            bitProgress.Styles = Styles;
-
-            bitProgress.StyleBuilder.Reset();
+            bitProgress.TakeFromCascade(nameof(PercentNumberPosition), PercentNumberPosition.Value, static p => p.PercentNumberPosition, static (p, v) => p.PercentNumberPosition = v);
         }
 
-        if (Thickness.HasValue && bitProgress.TakeFromCascade(nameof(Thickness)))
+        if (Radius.HasValue)
         {
-            bitProgress.Thickness = Thickness.Value;
+            bitProgress.TakeFromCascade(nameof(Radius), Radius.Value, static p => p.Radius, static (p, v) => p.Radius = v);
         }
 
-        if (TrackColor.HasValue() && bitProgress.TakeFromCascade(nameof(TrackColor)))
+        if (Reversed.HasValue)
         {
-            bitProgress.TrackColor = TrackColor;
+            bitProgress.TakeFromCascade(nameof(Reversed), Reversed.Value, static p => p.Reversed, static (p, v) => p.Reversed = v);
         }
 
-        if (Vertical.HasValue && bitProgress.TakeFromCascade(nameof(Vertical)))
+        if (Rounded.HasValue)
         {
-            bitProgress.Vertical = Vertical.Value;
+            bitProgress.TakeFromCascade(nameof(Rounded), Rounded.Value, static p => p.Rounded, static (p, v) => p.Rounded = v);
+        }
 
-            bitProgress.ClassBuilder.Reset();
+        if (SegmentGap.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(SegmentGap), SegmentGap.Value, static p => p.SegmentGap, static (p, v) => p.SegmentGap = v);
+        }
+
+        if (Segments.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(Segments), Segments, static p => p.Segments, static (p, v) => p.Segments = v);
+        }
+
+        if (ShowPercentNumber.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(ShowPercentNumber), ShowPercentNumber.Value, static p => p.ShowPercentNumber, static (p, v) => p.ShowPercentNumber = v);
+        }
+
+        if (Size.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(Size), Size, static p => p.Size, static (p, v) => p.Size = v);
+        }
+
+        if (Striped.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(Striped), Striped.Value, static p => p.Striped, static (p, v) => p.Striped = v);
+        }
+
+        if (StripedAnimation.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(StripedAnimation), StripedAnimation.Value, static p => p.StripedAnimation, static (p, v) => p.StripedAnimation = v);
+        }
+
+        if (Styles is not null)
+        {
+            bitProgress.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
+        }
+
+        if (Thickness.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(Thickness), Thickness, static p => p.Thickness, static (p, v) => p.Thickness = v);
+        }
+
+        if (TrackColor.HasValue())
+        {
+            bitProgress.TakeFromCascade(nameof(TrackColor), TrackColor, static p => p.TrackColor, static (p, v) => p.TrackColor = v);
+        }
+
+        if (Vertical.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(Vertical), Vertical.Value, static p => p.Vertical, static (p, v) => p.Vertical = v);
         }
     }
 }
