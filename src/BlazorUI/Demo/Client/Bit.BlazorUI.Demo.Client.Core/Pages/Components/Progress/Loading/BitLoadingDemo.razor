@@ -232,21 +232,22 @@
 
         <DemoExample Title="Inline" RazorCode="@example6RazorCode" Id="example6">
             <div>
-                <b>Inline</b> lays the loader out on the current line of text, a button or a table cell. Pair it with a
-                small <b>CustomSize</b> (in pixels) and <code>CustomColor="currentColor"</code> to take the color of the
-                text around it. Every element of a loader is a span, so it is valid markup inside a paragraph or a button.
+                <b>Inline</b> puts the loader on the current line of a paragraph, a heading, a button or a table cell,
+                drawn at the size of the text unless a size is given, with its label on the same line.
+                <code>CustomColor="currentColor"</code> takes the text color too. Every element of a loader is a span, so it is valid markup anywhere text is.
             </div>
             <br />
             <p>
                 Fetching the latest results
-                <BitRingLoading Inline CustomSize="16" CustomColor="currentColor" />
+                <BitRingLoading Inline />
                 please wait.
             </p>
+            <BitText Typography="BitTypography.H4">
+                Syncing <BitDotsRingLoading Inline />
+            </BitText>
+            <br />
             <BitButton IsEnabled="false">
-                <BitStack Horizontal FitWidth AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-                    <BitRingLoading Inline CustomSize="16" CustomColor="currentColor" />
-                    <span>Saving</span>
-                </BitStack>
+                <BitRingLoading Inline CustomColor="currentColor" Label="Saving" />
             </BitButton>
         </DemoExample>
 
@@ -275,8 +276,8 @@
                 and the drawing is <code>aria-hidden</code>. That text is the <b>Label</b>, or a visually hidden
                 "Loading" that <b>AriaLabel</b> rewords. <code>Role="none"</code> silences a decorative loader whose
                 surroundings already report the wait, <code>AriaLive="assertive"</code> interrupts the screen reader, and
-                <code>Role="progressbar"</code> suits a measured wait. Mark the content being replaced
-                <code>aria-busy</code>, as in <BitLink Href="#example7">Overlay</BitLink>.
+                <code>Role="progressbar"</code> turns it into an indeterminate progress bar named by its label. Mark
+                the content being replaced <code>aria-busy</code>, as in <BitLink Href="#example7">Overlay</BitLink>.
             </div>
             <br />
             <div class="container">
@@ -295,6 +296,10 @@
                 <div class="wrapper">
                     <div>AriaLive="assertive"</div>
                     <BitSpinnerLoading Label="Signing you out" AriaLive="assertive" />
+                </div>
+                <div class="wrapper">
+                    <div>Role="progressbar"</div>
+                    <BitSpinnerLoading Label="Exporting" Role="progressbar" />
                 </div>
             </div>
         </DemoExample>
@@ -435,8 +440,8 @@
                 For what no parameter covers, loaders read the <BitLink Href="#css-variables-section">CSS variables</BitLink>
                 listed below. Set on <code>:root</code> they restyle every loader, on an ancestor the loaders inside it,
                 and on a loader's <b>Style</b> that loader alone. The whole drawing is laid out from
-                <code>--bit-Loading-size</code>, so it resizes in CSS with any length - <code>1em</code> keeps an
-                inline loader the size of its text.
+                <code>--bit-Loading-size</code>, so it resizes in CSS with any length, <code>em</code> and
+                <code>rem</code> included.
             </div>
             <br />
             <div class="container">
@@ -465,7 +470,7 @@
             <div>
                 Use BitLoading in right-to-left (RTL). <b>Start</b> and <b>End</b> labels swap sides, and the two loaders
                 whose motion travels - the ellipsis and the rolling square - are mirrored so they run toward the end of
-                the line.
+                the line, whether <b>Dir</b> is set or the direction is inherited from the page.
             </div>
             <br />
             <div class="container" dir="rtl">

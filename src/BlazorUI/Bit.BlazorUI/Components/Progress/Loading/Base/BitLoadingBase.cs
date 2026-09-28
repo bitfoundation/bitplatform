@@ -57,7 +57,7 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <summary>
     /// Gets or sets how insistently the live region of the loading component announces itself.
     /// <br />
-    /// The default value is <strong>"polite"</strong>.
+    /// The default value is <strong>"polite"</strong> for the default "status" role, and none for any other.
     /// </summary>
     /// <remarks>
     /// This is rendered as the 'aria-live' attribute of the root element. "polite" waits for the screen reader
@@ -132,6 +132,9 @@ public abstract class BitLoadingBase : BitComponentBase
     /// An inline loader is laid out as an inline box aligned to the middle of the current line, so it can sit
     /// inside a sentence, a button, a table cell or a heading without pushing anything onto a new line. Every
     /// element of a loader is a span, so it is valid markup inside a paragraph or a button either way.
+    /// <br />
+    /// Unless <see cref="Size"/> or <see cref="CustomSize"/> says otherwise, it is drawn at the size of the
+    /// surrounding text (1em) and its label takes the text size too, so it fits the line it sits in.
     /// </remarks>
     [Parameter, ResetClassBuilder] public bool Inline { get; set; }
 
@@ -147,6 +150,9 @@ public abstract class BitLoadingBase : BitComponentBase
 
     /// <summary>
     /// The position of the label of the loading component.
+    /// <br />
+    /// The default value is <strong>Top</strong>, or <strong>End</strong> for an <see cref="Inline"/> loader, which keeps
+    /// its label on the line it sits in.
     /// </summary>
     /// <remarks>
     /// The Start and End positions follow the direction of the writing and swap sides in a right-to-left
@@ -185,11 +191,12 @@ public abstract class BitLoadingBase : BitComponentBase
     /// A "status" role turns the root into a live region, which is what makes a screen reader announce the
     /// label - or the fallback text, see <see cref="DefaultLoadingText"/> - when the loader appears.
     /// <br />
-    /// Prefer "progressbar" only where the wait is measured and reported through the aria-value attributes,
-    /// and be aware that everything inside a progressbar is presentational, so a visible label is no longer
-    /// announced from within it. Pass "none" for a purely decorative loader whose surroundings already report
-    /// the wait. A role passed straight through as a 'role' HTML attribute is honored while this parameter is
-    /// left unset.
+    /// "progressbar" makes it an indeterminate progress bar instead, which a screen reader lists as a control
+    /// but does not announce when it appears. Everything inside a progressbar is presentational, so the root is
+    /// named directly - with <see cref="BitComponentBase.AriaLabel"/>, then <see cref="Label"/>, then the
+    /// fallback text; give one drawn with a <see cref="LabelTemplate"/> an AriaLabel. Pass "none" for a purely
+    /// decorative loader whose surroundings already report the wait. A role passed straight through as a
+    /// 'role' HTML attribute is honored while this parameter is left unset.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
 
@@ -407,8 +414,13 @@ public abstract class BitLoadingBase : BitComponentBase
     /// The decorative case wins over a politeness that was asked for explicitly, as a parameter or as a
     /// passed-through attribute: the two contradict each other, and the role is the one that says what the
     /// loader is for. It is the same call <see cref="_ScreenReaderText"/> makes about the fallback text.
+    /// <br />
+    /// The "polite" default only restates what a status region already is, for the assistive technology
+    /// that reads the attribute rather than the role. Any other role is left to its own politeness: an
+    /// "alert" is assertive and a "progressbar" no live region at all, and a polite written onto either
+    /// would change what it is.
     /// </remarks>
-    internal string? _AriaLive => _IsDecorative ? null : (AriaLive ?? PassedThrough("aria-live") ?? "polite");
+    internal string? _AriaLive => _IsDecorative ? null : (AriaLive ?? PassedThrough("aria-live") ?? (_Role is "status" ? "polite" : null));
 
     /// <summary>The writing direction of the root element, resolved the same way as <see cref="_Role"/>.</summary>
     internal string? _Dir => Dir?.ToString().ToLower() ?? PassedThrough("dir");
@@ -421,7 +433,18 @@ public abstract class BitLoadingBase : BitComponentBase
     /// label: without one, the same text is rendered inside the live region as <see cref="_ScreenReaderText"/>
     /// instead, so that a screen reader is never handed the one text twice.
     /// </summary>
-    internal string? _AriaLabel => (_HasVisibleLabel ? AriaLabel : null) ?? PassedThrough("aria-label");
+    /// <remarks>
+    /// A progressbar is the exception. Its children are presentational, so neither the label nor the hidden
+    /// text inside it is ever read, and the role requires a name of its own: the root is named with the
+    /// AriaLabel, then the text of the Label, then the fallback text. A LabelTemplate has no text to hand
+    /// over, so a progressbar drawn with one takes its name from AriaLabel alone.
+    /// </remarks>
+    internal string? _AriaLabel => _IsProgressBar
+                                       ? AriaLabel ?? PassedThrough("aria-label") ?? (LabelTemplate is null ? Label ?? DefaultLoadingText : null)
+                                       : (_HasVisibleLabel ? AriaLabel : null) ?? PassedThrough("aria-label");
+
+    /// <summary>Whether the root is a progressbar, which is named on the root rather than by its content.</summary>
+    internal bool _IsProgressBar => _Role is "progressbar";
 
     /// <summary>
     /// Whether the loader was declared purely decorative, and so announces nothing of its own: the wait it
@@ -435,7 +458,7 @@ public abstract class BitLoadingBase : BitComponentBase
     /// the root as the accessible name of the live region and is what a screen reader reads there, so the
     /// hidden text underneath it would never be reached anyway.
     /// </remarks>
-    internal string? _ScreenReaderText => (_HasVisibleLabel || _IsDecorative || PassedThrough("aria-label") is not null)
+    internal string? _ScreenReaderText => (_HasVisibleLabel || _IsDecorative || _IsProgressBar || PassedThrough("aria-label") is not null)
                                           ? null
                                           : (AriaLabel ?? DefaultLoadingText);
 
@@ -488,12 +511,13 @@ public abstract class BitLoadingBase : BitComponentBase
         ClassBuilder.Register(() => Paused ? "bit-ldn-pau" : string.Empty);
 
         // A custom size takes no class: the drawing is sized by the inline variable, and the label scales from it.
+        // Nor does an unsized inline loader, which the bit-ldn-inl class sizes to the text around it.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-ldn-sm",
             BitSize.Medium => "bit-ldn-md",
             BitSize.Large => "bit-ldn-lg",
-            _ => CustomSize > 0 ? string.Empty : "bit-ldn-md"
+            _ => CustomSize > 0 || Inline ? string.Empty : "bit-ldn-md"
         });
 
         ClassBuilder.Register(() => LabelPosition switch
@@ -502,7 +526,8 @@ public abstract class BitLoadingBase : BitComponentBase
             BitLabelPosition.Bottom => "bit-ldn-lbm",
             BitLabelPosition.Start => "bit-ldn-lst",
             BitLabelPosition.End => "bit-ldn-led",
-            _ => "bit-ldn-ltp"
+            // An inline loader keeps its label on the line it sits in rather than stacking the two.
+            _ => Inline ? "bit-ldn-led" : "bit-ldn-ltp"
         });
 
         ClassBuilder.Register(() => Classes?.Root);

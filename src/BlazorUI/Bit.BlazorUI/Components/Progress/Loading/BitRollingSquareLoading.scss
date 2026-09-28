@@ -29,3 +29,7 @@
 .bit-rtl .bit-ldn-rsq-ccn {
     transform: scaleX(-1);
 }
+
+.bit-ldn-rsq-ccn:dir(rtl) {
+    transform: scaleX(-1);
+}

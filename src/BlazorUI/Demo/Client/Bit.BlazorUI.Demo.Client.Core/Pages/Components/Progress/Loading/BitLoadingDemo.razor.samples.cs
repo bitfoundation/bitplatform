@@ -111,15 +111,16 @@ private async Task StartWork()
     private readonly string example6RazorCode = @"
 <p>
     Fetching the latest results
-    <BitRingLoading Inline CustomSize=""16"" CustomColor=""currentColor"" />
+    <BitRingLoading Inline />
     please wait.
 </p>
 
+<BitText Typography=""BitTypography.H4"">
+    Syncing <BitDotsRingLoading Inline />
+</BitText>
+
 <BitButton IsEnabled=""false"">
-    <BitStack Horizontal FitWidth AutoHeight Gap=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
-        <BitRingLoading Inline CustomSize=""16"" CustomColor=""currentColor"" />
-        <span>Saving</span>
-    </BitStack>
+    <BitRingLoading Inline CustomColor=""currentColor"" Label=""Saving"" />
 </BitButton>";
 
     private readonly string example7RazorCode = @"
@@ -166,7 +167,10 @@ private async Task Refresh()
 <BitSpinnerLoading Role=""none"" />
 
 @* Interrupts the screen reader rather than waiting for it. *@
-<BitSpinnerLoading Label=""Signing you out"" AriaLive=""assertive"" />";
+<BitSpinnerLoading Label=""Signing you out"" AriaLive=""assertive"" />
+
+@* An indeterminate progress bar, named by its Label. *@
+<BitSpinnerLoading Label=""Exporting"" Role=""progressbar"" />";
 
     private readonly string example9RazorCode = @"
 <BitParams Parameters=""loadingParams"">

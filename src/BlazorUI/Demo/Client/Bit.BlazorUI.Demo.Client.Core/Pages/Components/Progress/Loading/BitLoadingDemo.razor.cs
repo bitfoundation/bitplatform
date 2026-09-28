@@ -40,7 +40,7 @@ public partial class BitLoadingDemo
             Name = "AriaLive",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The aria-live politeness of the root live region. Falls back to \"polite\"; ignored while the loader is decorative.",
+            Description = "The aria-live politeness of the root live region. Falls back to \"polite\" for the default status role and to the role's own politeness otherwise; ignored while the loader is decorative.",
         },
         new()
         {
@@ -86,7 +86,7 @@ public partial class BitLoadingDemo
             Name = "Inline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the loader out on the current line of text, a button or a table cell.",
+            Description = "Lays the loader out on the current line of text, a button or a table cell, at the size of the text (1em) unless Size or CustomSize is set.",
         },
         new()
         {
@@ -100,7 +100,7 @@ public partial class BitLoadingDemo
             Name = "LabelPosition",
             Type = "BitLabelPosition?",
             DefaultValue = "null",
-            Description = "The side of the drawing the label sits on. Start and End follow the writing direction.",
+            Description = "The side of the drawing the label sits on: Top by default, End for an Inline loader. Start and End follow the writing direction.",
             LinkType = LinkType.Link,
             Href = "#label-position-enum",
         },
@@ -123,7 +123,7 @@ public partial class BitLoadingDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The ARIA role of the root. Falls back to \"status\", a live region; \"none\" makes the loader decorative.",
+            Description = "The ARIA role of the root. Falls back to \"status\", a live region; \"progressbar\" makes an indeterminate progress bar named by AriaLabel, Label or \"Loading\"; \"none\" makes the loader decorative.",
         },
         new()
         {
@@ -398,8 +398,8 @@ public partial class BitLoadingDemo
         new()
         {
             Name = "--bit-Loading-size",
-            DefaultValue = "Size / CustomSize, or 64px",
-            Description = "Width and height of the drawing, which is laid out from it. Any CSS length: 1em sizes a loader with its text.",
+            DefaultValue = "Size / CustomSize, or 64px (1em when Inline)",
+            Description = "Width and height of the drawing, which is laid out from it. Any CSS length, em and rem included.",
         },
         new()
         {

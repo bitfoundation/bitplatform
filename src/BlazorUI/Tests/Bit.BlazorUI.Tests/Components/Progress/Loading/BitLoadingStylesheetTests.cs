@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -89,6 +90,30 @@ public class BitLoadingStylesheetTests
         StringAssert.Contains(@base, "@media (forced-colors: active)");
         StringAssert.Contains(@base, "--bit-ldn-color: CanvasText;");
         StringAssert.Contains(@base, "forced-color-adjust: none;");
+    }
+
+    [TestMethod]
+    public void BitLoadingShouldSizeAnInlineLoaderWithItsTextUnlessASizeIsGiven()
+    {
+        var @base = ReadStylesheets().Single(s => s.Name == "BitLoading.scss").Content;
+
+        var inline = @base.IndexOf("\n.bit-ldn-inl {\n    --bit-ldn-sz: 1em;\n    --bit-ldn-lfs: 1em;\n}", StringComparison.Ordinal);
+
+        // At equal specificity the later rule wins, so the 1em has to come after the root's own label size and
+        // before every size class, or an explicit Size on an inline loader would be overridden by it.
+        Assert.IsGreaterThan(@base.IndexOf("\n.bit-ldn {", StringComparison.Ordinal), inline);
+        Assert.IsLessThan(@base.IndexOf("\n.bit-ldn-sm {", StringComparison.Ordinal), inline);
+    }
+
+    [TestMethod,
+        DataRow("BitEllipsisLoading.scss", "elp"),
+        DataRow("BitRollingSquareLoading.scss", "rsq")]
+    public void BitLoadingShouldMirrorTheTravellingLoadersForAnInheritedRightToLeftDirection(string file, string loader)
+    {
+        var stylesheet = ReadStylesheets().Single(s => s.Name == file).Content;
+
+        StringAssert.Contains(stylesheet, $".bit-rtl .bit-ldn-{loader}-ccn {{");
+        StringAssert.Contains(stylesheet, $"\n.bit-ldn-{loader}-ccn:dir(rtl) {{");
     }
 
     private static (string Name, string Content)[] ReadStylesheets([CallerFilePath] string thisFile = "")

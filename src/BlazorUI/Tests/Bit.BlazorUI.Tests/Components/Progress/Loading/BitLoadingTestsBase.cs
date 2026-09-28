@@ -175,6 +175,23 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains(expectedClass));
     }
 
+    [TestMethod,
+        DataRow(null, "bit-ldn-led"),
+        DataRow(BitLabelPosition.Top, "bit-ldn-ltp"),
+        DataRow(BitLabelPosition.Start, "bit-ldn-lst")]
+    public void ShouldKeepTheLabelOfAnInlineLoadingOnItsLine(BitLabelPosition? position, string expectedClass)
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.LabelPosition, position);
+        });
+
+        var root = component.Find(".bit-ldn");
+        Assert.IsTrue(root.ClassList.Contains(expectedClass));
+        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-ldn-ltp" or "bit-ldn-lbm" or "bit-ldn-lst" or "bit-ldn-led"));
+    }
+
     [TestMethod]
     public void ShouldRespectRoleAndAriaLive()
     {
@@ -187,6 +204,62 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var root = component.Find(".bit-ldn");
         Assert.AreEqual("progressbar", root.GetAttribute("role"));
         Assert.AreEqual("assertive", root.GetAttribute("aria-live"));
+    }
+
+    [TestMethod,
+        DataRow(null, null, "Loading"),
+        DataRow("Exporting", null, "Exporting"),
+        DataRow("Exporting", "Exporting your report", "Exporting your report"),
+        DataRow(null, "Exporting your report", "Exporting your report")]
+    public void ShouldNameAProgressBarOnItsRoot(string? label, string? ariaLabel, string expectedName)
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Role, "progressbar");
+            parameters.Add(p => p.Label, label);
+            parameters.Add(p => p.AriaLabel, ariaLabel);
+        });
+
+        // The children of a progressbar are presentational, so neither the label nor the hidden text inside it
+        // is ever read, and the role requires a name: the root has to carry it.
+        Assert.AreEqual(expectedName, component.Find(".bit-ldn").GetAttribute("aria-label"));
+        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
+    }
+
+    [TestMethod,
+        DataRow("status", "polite"),
+        DataRow("progressbar", null),
+        DataRow("alert", null),
+        DataRow("log", null)]
+    public void ShouldOnlyDefaultTheStatusRoleToAPoliteLiveRegion(string role, string? expected)
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Role, role);
+        });
+
+        // Any other role keeps its own politeness: a polite written onto an alert would quieten it.
+        Assert.AreEqual(expected, component.Find(".bit-ldn").GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void ShouldLeaveTheNameOfAProgressBarWithALabelTemplateToTheAriaLabel()
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Role, "progressbar");
+            parameters.Add(p => p.Label, "Exporting");
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(b => b.AddMarkupContent(0, "<b>Exporting</b>")));
+        });
+
+        Assert.IsNull(component.Find(".bit-ldn").GetAttribute("aria-label"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Exporting your report");
+        });
+
+        Assert.AreEqual("Exporting your report", component.Find(".bit-ldn").GetAttribute("aria-label"));
     }
 
     [TestMethod,
@@ -504,6 +577,35 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         var withoutInline = RenderComponent<TLoading>();
         Assert.IsFalse(withoutInline.Find(".bit-ldn").ClassList.Contains("bit-ldn-inl"));
+    }
+
+    [TestMethod]
+    public void ShouldSizeAnUnsizedInlineLoadingWithItsText()
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+        });
+
+        // No size class, so the bit-ldn-inl class draws it at 1em rather than the 64px of the medium default.
+        var root = component.Find(".bit-ldn");
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-md"));
+        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Small);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-sm"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Size, null);
+            parameters.Add(p => p.CustomSize, 20);
+        });
+
+        StringAssert.Contains(StyleOf(component), "--bit-ldn-sz:20px");
     }
 
     [TestMethod]

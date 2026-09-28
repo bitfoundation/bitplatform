@@ -4,7 +4,8 @@
 //   --bit-Loading-color               color of the drawing                          (default: Color / CustomColor, or $clr-pri)
 //   --bit-Loading-track-color         full circle under the moving arcs of the Ring,
 //                                     DualRing and Xbox loaders                    (default: transparent)
-//   --bit-Loading-size                width and height of the drawing, any length   (default: per Size / CustomSize, 64px)
+//   --bit-Loading-size                width and height of the drawing, any length   (default: per Size / CustomSize, 64px,
+//                                                                                   1em when Inline)
 //   --bit-Loading-thickness           stroke width of the stroked loaders           (default: Thickness, or the authored width)
 //   --bit-Loading-speed               multiplier of the animation speed             (default: Speed, or 1)
 //   --bit-Loading-gap                 room between the drawing and the label        (default: spacing(1))
@@ -64,6 +65,14 @@
     &.bit-dis {
         opacity: $opa-dis;
     }
+}
+
+// An inline loader with no size of its own is drawn at the size of the text it sits in, and its label is that
+// text size too. The 1em is only resolved where the drawing and the label use it, so it follows the font of the
+// loader's surroundings. Written before the size classes so that an explicit Size still wins at equal specificity.
+.bit-ldn-inl {
+    --bit-ldn-sz: 1em;
+    --bit-ldn-lfs: 1em;
 }
 
 .bit-ldn-sm {

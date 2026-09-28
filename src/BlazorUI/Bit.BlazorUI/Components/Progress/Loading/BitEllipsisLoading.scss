@@ -70,3 +70,9 @@
 .bit-rtl .bit-ldn-elp-ccn {
     transform: scaleX(-1);
 }
+
+// The same for a loader that inherits a right-to-left direction from the page rather than being given one. Kept
+// in its own rule so a browser without :dir() drops only this.
+.bit-ldn-elp-ccn:dir(rtl) {
+    transform: scaleX(-1);
+}
