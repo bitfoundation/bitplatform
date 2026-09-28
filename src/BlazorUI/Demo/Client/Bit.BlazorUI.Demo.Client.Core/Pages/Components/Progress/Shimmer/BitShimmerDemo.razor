@@ -129,8 +129,8 @@
 
         <DemoExample Title="Loaded" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                <b>Loaded</b> swaps the placeholder for its content (<b>ChildContent</b>, or <b>Content</b>), which fades in and is laid out
-                by the page rather than by the placeholder's size.
+                <b>Loaded</b> swaps the placeholder for its content (<b>ChildContent</b>, or <b>Content</b>), which is laid out by the page
+                rather than by the placeholder's size. The content fades in only after a placeholder was seen; loaded from the start, it just appears.
             </div>
             <br />
             <BitShimmer Loaded="@isDataLoaded" Height="1.5rem">
@@ -165,7 +165,8 @@
         <DemoExample Title="Overlay" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>Overlay</b> lays the placeholder over content that is already on the page, so a refresh never moves the layout. The covered
-                content keeps its size but is hidden from sight, the tab order and screen readers. <b>Lines</b> and <b>Template</b> do not apply.
+                content keeps its size and its state - it is covered, never re-created - but is hidden from sight, the tab order and screen
+                readers. <b>Lines</b> and <b>Template</b> do not apply.
             </div>
             <br />
             <div>Overlay</div>

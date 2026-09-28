@@ -14,6 +14,11 @@ public partial class BitShimmer : BitComponentBase
     // Null until there has been a wait at all, so a shimmer that starts out loaded holds nothing back.
     private long? _waitStart;
     private CancellationTokenSource? _holdCts;
+    // Whether the content fades in as it replaces the placeholder. Only a placeholder that was actually seen
+    // has anything to fade from: content that was there from the first render, or a response that beat the
+    // ShowDelay holding the placeholder back, simply appears - a fade there would blink content that was never
+    // waited on, or that an overlay was still showing, out and back in.
+    private bool _reveal;
 
     // Circle is the older spelling of Shape.Circle and stays the fallback for a component that was written
     // before the shape had a name of its own; an explicit Shape always wins over it.
@@ -34,6 +39,8 @@ public partial class BitShimmer : BitComponentBase
     // The region is only worth having while there is something for it to say. It stays on the page across the
     // swap either way, so whichever of the two texts is missing simply empties it rather than removing it.
     private bool _hasLiveRegion => Label.HasValue() || LoadedLabel.HasValue();
+
+    private string _contentClass => _loaded ? _reveal ? "bit-smr-cnt bit-smr-rvl" : "bit-smr-cnt" : "bit-smr-cvd";
 
     private string _ariaLive => Politeness switch
     {
@@ -338,6 +345,10 @@ public partial class BitShimmer : BitComponentBase
     /// placeholder and fades in, and the sizing of the placeholder is dropped with it - unless the shimmer
     /// <see cref="Overlay"/>s its content, where the two are on the page together and only one is shown.
     /// <br />
+    /// The fade is kept for a placeholder that was actually seen: content that is loaded from the first render,
+    /// or that beats the <see cref="ShowDelay"/>, just appears. An overlay keeps its content across the swap,
+    /// so the components inside it are covered and uncovered rather than disposed and created again.
+    /// <br />
     /// The swap follows this parameter at once, except where <see cref="MinShowTime"/> is holding a
     /// placeholder that has only just appeared.
     /// </remarks>
@@ -539,6 +550,7 @@ public partial class BitShimmer : BitComponentBase
             // that was holding it back - nor for one that has already lived out its shortest life.
             if (MinShowTime.HasValue is false || elapsed < shown || remaining <= 0)
             {
+                _reveal = _waitStart.HasValue && elapsed >= shown;
                 _waitStart = null;
                 SetLoaded(true);
             }
@@ -589,6 +601,7 @@ public partial class BitShimmer : BitComponentBase
                 // the placeholder is still the right thing to be showing and there is nothing to swap.
                 if (Loaded is false) return;
 
+                _reveal = true;
                 _waitStart = null;
                 SetLoaded(true);
                 StateHasChanged();

@@ -129,7 +129,7 @@ public partial class BitShimmerDemo
             Name = "Loaded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Swaps the placeholder for the content, which fades in."
+            Description = "Swaps the placeholder for the content, which fades in if a placeholder was seen."
         },
         new()
         {
@@ -150,7 +150,7 @@ public partial class BitShimmerDemo
             Name = "Overlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws the placeholder over the content instead of in place of it, so the layout never moves. Lines and Template do not apply. Covered content leaves the tab order, so keep the control that starts a refresh outside it."
+            Description = "Draws the placeholder over the content instead of in place of it, so the layout never moves and the content keeps its state. Lines and Template do not apply. Covered content leaves the tab order, so keep the control that starts a refresh outside it."
         },
         new()
         {

@@ -211,7 +211,9 @@
     animation: bit-smr-anim-uncover calc(var(--bit-smr-dly, 0ms) + #{$mot-duration-long}) linear;
 }
 
-.bit-smr-cnt {
+// The content fades in only where it replaces a placeholder that was seen: content that was in from the first
+// render, or that beat the ShowDelay holding the placeholder back, has nothing to fade from and just appears.
+.bit-smr-rvl {
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     animation-timing-function: $mot-easing;

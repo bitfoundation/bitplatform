@@ -11,62 +11,59 @@
 
     RenderFragment body =
     @<text>
-        @if (_loaded)
-        {
-            if (Inline)
-            {
-                <span style="@Styles?.Content" class="bit-smr-cnt @Classes?.Content">@content</span>
-            }
-            else
-            {
-                <div style="@Styles?.Content" class="bit-smr-cnt @Classes?.Content">@content</div>
-            }
-        }
-        else if (_hasTemplate)
+        @if (_loaded is false && _hasTemplate)
         {
             @Template
         }
         else
         {
-            @if (Overlay)
+            @if (_loaded || Overlay)
             {
-                @* The content is rendered so that the box keeps the size of the thing it is waiting on, and taken
-                   out of sight so the placeholder is what is seen. Hiding it with visibility rather than with
-                   opacity is what also takes it out of the tab order and out of the accessibility tree, so nothing
-                   under the cover can be reached or read while it is covered. *@
+                @* The loaded content and the content an overlay covers are one and the same box, written once and
+                   told apart by its class alone. Were they two, the swap would be a different element in the render
+                   tree, and everything inside it - the components with their state, their subscriptions and the
+                   data they loaded themselves - would be torn down and built again by a refresh that only meant to
+                   cover it for a moment.
+                   Covered, the content is rendered so that the box keeps the size of the thing it is waiting on,
+                   and taken out of sight so the placeholder is what is seen. Hiding it with visibility rather than
+                   with opacity is what also takes it out of the tab order and out of the accessibility tree, so
+                   nothing under the cover can be reached or read while it is covered. *@
                 if (Inline)
                 {
-                    <span style="@Styles?.Content" class="bit-smr-cvd @Classes?.Content">@content</span>
+                    <span style="@Styles?.Content" class="@_contentClass @Classes?.Content">@content</span>
                 }
                 else
                 {
-                    <div style="@Styles?.Content" class="bit-smr-cvd @Classes?.Content">@content</div>
+                    <div style="@Styles?.Content" class="@_contentClass @Classes?.Content">@content</div>
                 }
             }
 
             @* The placeholder itself carries no information: it stands in for content that is not there yet, and
-               what is going on is already said by aria-busy on the root and by the live region above. Hiding it
+               what is going on is already said by aria-busy on the root and by the live region beside it. Hiding it
                keeps a shimmer built out of a dozen boxes from being read out as a dozen empty groups. *@
-            @for (var i = 0; i < _lineCount; i++)
+            @if (_loaded is false)
             {
-                var wrapperStyle = JoinStyles(Styles?.ShimmerWrapper, GetLineStyle(i));
-                var shimmerStyle = JoinStyles(Styles?.Shimmer, GetAnimationStyle(i));
+                for (var i = 0; i < _lineCount; i++)
+                {
+                    var wrapperStyle = JoinStyles(Styles?.ShimmerWrapper, GetLineStyle(i));
+                    var shimmerStyle = JoinStyles(Styles?.Shimmer, GetAnimationStyle(i));
 
-                if (Inline)
-                {
-                    <span style="@wrapperStyle"
-                          class="bit-smr-wrp @_backgroundClass @Classes?.ShimmerWrapper"
-                          aria-hidden="true"><span style="@shimmerStyle"
-                                                   class="bit-smr-anm @_animationClass @Classes?.Shimmer"></span></span>
-                }
-                else
-                {
-                    <div style="@wrapperStyle"
-                         class="bit-smr-wrp @_backgroundClass @Classes?.ShimmerWrapper"
-                         aria-hidden="true">
-                        <div style="@shimmerStyle"
-                             class="bit-smr-anm @_animationClass @Classes?.Shimmer"></div>
-                    </div>
+                    if (Inline)
+                    {
+                        <span style="@wrapperStyle"
+                              class="bit-smr-wrp @_backgroundClass @Classes?.ShimmerWrapper"
+                              aria-hidden="true"><span style="@shimmerStyle"
+                                                       class="bit-smr-anm @_animationClass @Classes?.Shimmer"></span></span>
+                    }
+                    else
+                    {
+                        <div style="@wrapperStyle"
+                             class="bit-smr-wrp @_backgroundClass @Classes?.ShimmerWrapper"
+                             aria-hidden="true">
+                            <div style="@shimmerStyle"
+                                 class="bit-smr-anm @_animationClass @Classes?.Shimmer"></div>
+                        </div>
+                    }
                 }
             }
         }

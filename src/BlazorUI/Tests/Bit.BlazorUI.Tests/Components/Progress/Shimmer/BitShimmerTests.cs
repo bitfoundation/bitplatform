@@ -902,6 +902,64 @@ public class BitShimmerTests : BunitTestContext
     }
 
 
+    // ----------------------------------------------------------------- reveal
+
+    [TestMethod]
+    public void BitShimmerShouldNotFadeInContentThatWasLoadedFromTheStart()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Loaded, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        // Nothing was waited on, so there is no placeholder for the content to fade in from.
+        Assert.IsFalse(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldFadeInContentThatReplacesAPlaceholder()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.AddChildContent("Loaded content"));
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        Assert.IsTrue(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotFadeInContentThatBeatTheShowDelay()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 10_000);
+            parameters.Add(p => p.Overlay, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // The placeholder was never seen, and the content an overlay covers was still showing all along, so a
+        // fade would blink it out and back in.
+        Assert.IsFalse(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldFadeInContentOnceAHeldBackSwapLands()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.MinShowTime, 300);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl")),
+                                   TimeSpan.FromSeconds(5));
+    }
+
+
     // ----------------------------------------------------------------- inline
 
     [TestMethod]
@@ -1356,6 +1414,36 @@ public class BitShimmerTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-smr-ovl"));
         Assert.IsTrue(root.ClassList.Contains("bit-smr-ldd"));
         Assert.IsTrue(component.Find(".bit-smr-cnt").TextContent.Contains("Covered content"));
+    }
+
+    [TestMethod]
+    public void BitShimmerOverlayShouldKeepTheComponentsItCoversAcrossTheSwap()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.Add(p => p.Loaded, true);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<StatefulProbe>(0);
+                builder.CloseComponent();
+            }));
+        });
+
+        var probe = component.FindComponent<StatefulProbe>().Instance;
+
+        // A refresh covers the content and uncovers it again: the components inside it are the same instances
+        // throughout, rather than being disposed and initialized - and made to load their data - once more.
+        component.Render(parameters => parameters.Add(p => p.Loaded, false));
+
+        Assert.AreSame(probe, component.FindComponent<StatefulProbe>().Instance);
+        Assert.AreEqual(1, component.FindAll(".bit-smr-cvd").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        Assert.AreSame(probe, component.FindComponent<StatefulProbe>().Instance);
+        Assert.AreEqual(1, component.FindAll(".bit-smr-cnt").Count);
+        Assert.AreEqual(1, probe.InitializedCount);
     }
 
     [TestMethod]
@@ -1901,5 +1989,14 @@ public class BitShimmerTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd")),
                                    TimeSpan.FromSeconds(5));
+    }
+
+
+    // A component with state of its own, standing for anything an overlay covers that must survive a refresh.
+    private class StatefulProbe : ComponentBase
+    {
+        public int InitializedCount { get; private set; }
+
+        protected override void OnInitialized() => InitializedCount++;
     }
 }
