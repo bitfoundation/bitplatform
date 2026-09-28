@@ -59,6 +59,26 @@ public class BitThemeColorVariants
     public string? Disabled { get; set; }
     public string? DisabledText { get; set; }
     public string? Focus { get; set; }
+
+    /// <summary>
+    /// The role's color when it is read as text or an icon on the page's own surfaces - an outlined or
+    /// text-only variant that drops the role's fill - rather than filled behind its on-color
+    /// (<see cref="Text"/>). <see cref="Main"/> is picked to fill a surface, which is why it is often too
+    /// light (or, in a dark scheme, too dark) to be read directly on the page. Emitted as
+    /// <c>--bit-clr-&lt;role&gt;-fg</c>; left unset, it defaults (in <c>Styles/family-tokens.scss</c>) to
+    /// <see cref="Main"/> shaded towards the primary foreground color, which keeps the hue and follows
+    /// whatever palette is active. Set it to pin a color that meets a design system's own contrast target.
+    /// </summary>
+    public string? Foreground { get; set; }
+
+    /// <summary>
+    /// The role laid over a surface as a faint wash rather than as a fill - the soft surface of a tinted
+    /// variant, read with <see cref="Foreground"/> on top of it. Emitted as <c>--bit-clr-&lt;role&gt;-tint</c>;
+    /// left unset, it defaults (in <c>Styles/family-tokens.scss</c>) to <see cref="Main"/> at 10% over
+    /// transparent, which tints whatever surface it sits on. Set it to pin an opaque "container" color of a
+    /// design system's own.
+    /// </summary>
+    public string? Tint { get; set; }
 }
 
 public class BitThemeGeneralColorVariants

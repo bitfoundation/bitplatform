@@ -55,6 +55,12 @@ public class BitThemeSizes
     /// <summary>The draggable handle of a <c>BitSlider</c> per size class (<c>--bit-siz-slider-thumb-{sm,md,lg}</c>).</summary>
     public BitThemeSizeScale SliderThumb { get; set; } = new();
 
+    /// <summary>The height of a <c>BitBadge</c> per size class, which is also the diameter of a single-digit counter (<c>--bit-siz-badge-{sm,md,lg}</c>).</summary>
+    public BitThemeSizeScale Badge { get; set; } = new();
+
+    /// <summary>The diameter of a dot <c>BitBadge</c> per size class (<c>--bit-siz-badge-dot-{sm,md,lg}</c>).</summary>
+    public BitThemeSizeScale BadgeDot { get; set; } = new();
+
     /// <summary>The stroke of every inline circular spinner (<c>--bit-siz-spinner-stroke</c>).</summary>
     public string? SpinnerStroke { get; set; }
 

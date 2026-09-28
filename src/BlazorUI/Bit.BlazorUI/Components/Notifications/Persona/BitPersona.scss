@@ -1,10 +1,45 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
+
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// persona and one set on the Style of an instance re-skins that one alone:
+//   --bit-Persona-surface-color            surface the persona sits on: the active ring's gap and the inside of the hollow presence dots (default: $clr-bg-pri)
+//   --bit-Persona-gap                      room between the coin and the details        (default: per size, spacing(1..2))
+//   --bit-Persona-primary-color            text of the primary row                      (default: $clr-fg-pri)
+//   --bit-Persona-primary-font-weight      weight of the primary row                    (default: $tg-fw-regular)
+//   --bit-Persona-secondary-color          text of the secondary, tertiary and optional rows (default: $clr-fg-sec)
+//   --bit-Persona-disabled-color           text of every row when disabled              (default: $clr-fg-dis)
+//   --bit-Persona-coin-background          fill of the coin, and the color of its active ring (default: the CoinColor's main color)
+//   --bit-Persona-coin-color               initials and coin icon                       (default: the CoinColor's text color)
+//   --bit-Persona-coin-radius              corner radius of the coin and its overlay    (default: per Shape - 50%, $shp-radius-control, 0)
+//   --bit-Persona-overlay-background       fill of the overlay a clickable coin reveals (default: the coin background)
+//   --bit-Persona-overlay-color            text of that overlay                         (default: the coin color)
+//   --bit-Persona-focus-color              focus ring of the coin and the action button (default: $clr-pri-focus)
+//   --bit-Persona-action-background        surface of the action button                 (default: $clr-bg-pri)
+//   --bit-Persona-action-color             glyph of the action button                   (default: $clr-fg-pri)
+//   --bit-Persona-action-hover-background  surface of the action button while hovered   (default: the action background, else $clr-bg-pri-hover)
+//   --bit-Persona-presence-border-color    ring the presence dot is cut out of          (default: $clr-brd-sec)
+//   --bit-Persona-presence-icon-color      glyph (and Dnd bar) inside the presence dot  (default: the status's paired text color)
+//   --bit-Persona-presence-online-color    fill of the Online dot                       (default: $clr-suc)
+//   --bit-Persona-presence-away-color      fill of the Away dot                         (default: $clr-wrn)
+//   --bit-Persona-presence-busy-color      fill of the Busy dot                         (default: $clr-err)
+//   --bit-Persona-presence-dnd-color       fill of the Dnd dot                          (default: $clr-err)
+//   --bit-Persona-presence-out-of-office-color fill of the OutOfOffice dot              (default: $clr-swr)
+//   --bit-Persona-presence-unknown-color   fill of the Unknown dot                      (default: $clr-fg-ter)
+//   --bit-Persona-presence-offline-color   stroke of the hollow Offline dot             (default: $clr-ntr-gray110)
+//   --bit-Persona-presence-blocked-color   stroke of the hollow Blocked dot             (default: $clr-err)
+//   --bit-Persona-ring-color               ring of an Active coin                       (default: the coin background)
+//   --bit-Persona-ring-width               width of that ring                           (default: per size, 1.5px..4px)
+//   --bit-Persona-ring-gap                 gap between the coin and that ring           (default: per size, 1.5px..4px)
+//   --bit-Persona-ring-gap-color           color the gap is cut in                      (default: the surface color)
+//   --bit-Persona-active-shadow            shadow of an Active coin (Shadow, RingShadow) (default: $box-shadow-card)
+//   --bit-Persona-inactive-opacity         opacity of an Inactive coin                  (default: 0.8)
+//   --bit-Persona-inactive-scale           scale of an Inactive coin                    (default: 0.875)
 
 .bit-prs {
     display: flex;
     font-weight: $tg-fw-regular;
     box-shadow: none;
-    color: $clr-fg-pri;
+    color: var(--bit-Persona-primary-color, #{$clr-fg-pri});
     width: fit-content;
     position: relative;
     align-items: center;
@@ -31,28 +66,33 @@
     // The action button sits inside the coin container, so on the smallest coins it is nearly as wide as
     // the coin itself and hangs out of the row. One knob, retuned by the size classes that need it smaller.
     --bit-prs-action-size: #{spacing(4)};
-    // The ring the dot is cut out of. A dot on a colored surface wants the ring to match that surface
-    // rather than the border color the default draws, which is what this is here to be retuned to.
-    --bit-prs-presence-brd-clr: #{$clr-brd-sec};
-    // The active ring: the gap between the coin and the ring, the ring itself, and the color the gap is
-    // cut in. The gap reads as the page showing through, so a persona on a surface of its own retunes it
-    // to that surface rather than being left with a stripe of the page color across it.
+    // The active ring: the gap between the coin and the ring, and the ring itself. Both are a proportion of
+    // the coin rather than a constant, so the size classes retune them; the public --bit-Persona-ring-gap and
+    // --bit-Persona-ring-width override every size at once.
     --bit-prs-ring-gap: #{rem2(2px)};
     --bit-prs-ring-width: #{rem2(2px)};
-    --bit-prs-ring-gap-clr: #{$clr-bg-pri};
-    // How far back an inactive persona is pushed. Neither of these is a design-system decision the theme
-    // publishes - the opacity is not the disabled one, and the scale is a proportion of the coin rather
-    // than a step of any ramp - so they are this component's own knobs, retunable by a preset.
-    --bit-prs-inactive-opacity: 0.8;
-    --bit-prs-inactive-scale: 0.875;
+    // The color of whatever the persona sits on, which the active ring's gap and the hollow presence dots are cut
+    // in. One public knob for a persona placed on a tinted card or a dark header, rather than one per cutout.
+    --bit-prs-surface: var(--bit-Persona-surface-color, #{$clr-bg-pri});
+    // The room between the coin and the details, retuned by the size classes.
+    --bit-prs-gap: #{spacing(1.5)};
+    // The corner of the coin, retuned by the shape classes.
+    --bit-prs-coin-radius: 50%;
     --bit-prs-flex-direction: row;
+    gap: var(--bit-Persona-gap, var(--bit-prs-gap));
     flex-direction: var(--bit-prs-flex-direction);
 
     &.bit-dis {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-Persona-disabled-color, #{$clr-fg-dis});
         user-select: none;
         pointer-events: none;
+
+        .bit-prs-stx,
+        .bit-prs-ttx,
+        .bit-prs-otx {
+            color: var(--bit-Persona-disabled-color, #{$clr-fg-dis});
+        }
 
         // The coin keeps its own colors and is dimmed instead: a persona is a picture of a person, not a
         // filled control, and repainting it in the disabled surface color reads as a broken image.
@@ -113,8 +153,8 @@
     overflow: hidden;
     font-weight: $tg-fw-semibold;
     position: relative;
-    border-radius: 50%;
     place-items: center;
+    border-radius: var(--bit-Persona-coin-radius, var(--bit-prs-coin-radius));
     // The declared width is the whole coin, border included - a 48px persona that measures 50px on the
     // page is one that no longer lines up with the row it sits in.
     box-sizing: border-box;
@@ -138,34 +178,57 @@
     --bit-prs-flex-direction: row-reverse;
 }
 
+// The coin stacked over its details, centered on one axis: the profile card, the member tile of a call grid.
+.bit-prs-vrt {
+    --bit-prs-flex-direction: column;
+
+    .bit-prs-det {
+        max-width: 100%;
+        text-align: center;
+        align-items: center;
+    }
+
+    // Stretched across its container, a stacked persona's details take the width rather than the height the
+    // coin leaves; the root's align-items is what keeps both centered across it.
+    &.bit-prs-fwi {
+        .bit-prs-det {
+            flex: none;
+            width: 100%;
+        }
+    }
+
+    // Reversed puts the details over the coin; the dot stays in the trailing corner, since a column has no
+    // side for it to follow across to.
+    &.bit-prs-rvs {
+        --bit-prs-flex-direction: column-reverse;
+
+        .bit-prs-pre {
+            inset-inline-start: unset;
+            inset-inline-end: var(--bit-prs-presence-inset);
+        }
+    }
+}
+
 .bit-prs-sqr {
     // The square coin's corner sits further out than the circle's, so the dot has to follow it out.
     --bit-prs-presence-inset: #{spacing(-0.4)};
-
-    .bit-prs-imc {
-        border-radius: $shp-radius-control;
-    }
-
-    .bit-prs-imo {
-        border-radius: $shp-radius-control;
-    }
+    --bit-prs-coin-radius: #{$shp-radius-control};
 }
 
 // The sharp square is the rounded one with its corners taken back: it keeps every nudge the rounded coin
 // tunes, and restates nothing but the radius.
 .bit-prs-sqs {
-    .bit-prs-imc,
-    .bit-prs-imo {
-        border-radius: $shp-radius-none;
-    }
+    --bit-prs-coin-radius: #{$shp-radius-none};
 }
 
 // An inactive persona is pushed back rather than dimmed out: it keeps its colors and its place in the row,
 // and only stops being the one the eye lands on first.
 .bit-prs-ina {
     .bit-prs-cin {
-        opacity: var(--bit-prs-inactive-opacity);
-        transform: scale(var(--bit-prs-inactive-scale));
+        // Neither is a design-system decision the theme publishes - the opacity is not the disabled one, and
+        // the scale is a proportion of the coin rather than a step of any ramp.
+        opacity: var(--bit-Persona-inactive-opacity, 0.8);
+        transform: scale(var(--bit-Persona-inactive-scale, 0.875));
     }
 }
 
@@ -196,11 +259,11 @@
     // action button at the foot of the coin, which the overlay covers exactly and which nobody could reach
     // with a pointer once the hover that reveals the overlay had already happened.
     pointer-events: none;
-    color: var(--bit-prs-coin-clr-txt);
-    background-color: var(--bit-prs-coin-clr-bg);
+    color: var(--bit-Persona-overlay-color, var(--bit-prs-coin-clr));
+    background-color: var(--bit-Persona-overlay-background, var(--bit-prs-coin-bg));
     // The coin the component draws clips the overlay for it, but a coin filled by a template is not clipped
     // by anything - and a square veil over a round picture is worse than no veil at all.
-    border-radius: $shp-radius-full;
+    border-radius: var(--bit-Persona-coin-radius, var(--bit-prs-coin-radius));
 }
 
 .bit-prs-ini {
@@ -252,7 +315,9 @@
 
 .bit-prs-pre {
     top: auto;
-    z-index: 2;
+    // Above the action button, whose opaque surface would otherwise hide the status where the two meet on the
+    // smaller coins - permanently so on a touch device, where the button is always shown.
+    z-index: 4;
     display: flex;
     width: spacing(1);
     height: spacing(1);
@@ -266,7 +331,9 @@
     justify-content: center;
     forced-color-adjust: none;
     background-clip: border-box;
-    border: $shp-border-width $shp-border-style var(--bit-prs-presence-brd-clr);
+    // The ring the dot is cut out of. A dot on a colored surface wants the ring to match that surface rather
+    // than the border color the default draws.
+    border: $shp-border-width $shp-border-style var(--bit-Persona-presence-border-color, #{$clr-brd-sec});
 }
 
 .bit-prs-rvs {
@@ -296,16 +363,28 @@
     text-overflow: ellipsis;
 }
 
+.bit-prs-ptx {
+    font-weight: var(--bit-Persona-primary-font-weight, #{$tg-fw-regular});
+}
+
+// The rows under the name are the supporting details and read one step quieter than it, the hierarchy every
+// design system draws between a name and what is said about it.
+.bit-prs-stx,
+.bit-prs-ttx,
+.bit-prs-otx {
+    color: var(--bit-Persona-secondary-color, #{$clr-fg-sec});
+}
+
 .bit-prs-abt {
     left: 50%;
     bottom: 0;
-    z-index: 1;
+    // Above the overlay a clickable coin reveals on the same hover, which would otherwise veil it.
+    z-index: 3;
     border: none;
     display: flex;
     cursor: pointer;
     font-weight: $tg-fw-regular;
-    background: unset;
-    color: transparent;
+    opacity: 0;
     position: absolute;
     width: var(--bit-prs-action-size);
     height: var(--bit-prs-action-size);
@@ -317,27 +396,60 @@
     font-size: $tg-fs-sm;
     transform: translateX(-50%);
     font-family: $tg-font-family;
-    background-color: transparent;
-    transition: color $mot-duration-short $mot-easing;
+    // The button sits on the picture, whose tones nobody can know in advance, so it carries a surface of its
+    // own: a bare glyph in the text color vanishes on a photo of the same tone.
+    border-radius: $shp-radius-full;
+    box-shadow: $box-shadow-card;
+    color: var(--bit-Persona-action-color, #{$clr-fg-pri});
+    background-color: var(--bit-Persona-action-background, #{$clr-bg-pri});
+    transition: opacity $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
+    // The button is drawn at the size the coin leaves room for, which on the smallest coins is under the 24px a
+    // pointer target needs (WCAG 2.5.8). The hit area is grown to that minimum around it, not the button itself.
+    &::before {
+        content: "";
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        width: max(100%, #{rem2(24px)});
+        height: max(100%, #{rem2(24px)});
+        transform: translate(-50%, -50%);
+    }
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
+            // A custom surface keeps itself on hover unless it is given a hover of its own, so a dark button is
+            // not snapped back to the light default under the glyph it was paired with.
+            background-color: var(--bit-Persona-action-hover-background, var(--bit-Persona-action-background, #{$clr-bg-pri-hover}));
         }
     }
 
     // Where there is no pointer there is no hover to reveal the button with, and a control that can only
     // be found by hovering is a control a touch device never shows at all.
     @media (hover: none) {
-        color: $clr-fg-pri;
+        opacity: 1;
     }
 
-    // The button is invisible until it is reached, so reaching it with the keyboard has to reveal it too -
-    // a focused control nobody can see is a focus indicator that is not there.
-    &:focus-visible {
-        color: $clr-fg-pri-hover;
+    // Forced colors strip the shadow that sets the button apart from the picture it sits on, and repaint its surface
+    // in the system button color - which leaves nothing to tell where it ends. A border in the system text color does.
+    @media (forced-colors: active) {
+        border: $shp-border-width $shp-border-style ButtonText;
+    }
 
-        @include focus-ring;
+    // The button is hidden until it is reached, so reaching it with the keyboard has to reveal it too - a
+    // focused control nobody can see is a focus indicator that is not there.
+    &:focus-visible {
+        opacity: 1;
+
+        @include focus-ring(var(--bit-Persona-focus-color, #{$clr-pri-focus}));
+    }
+}
+
+// Revealed by hovering the coin rather than the button itself: a control that only appears once the pointer
+// has already found the exact spot it hides in is one nobody finds.
+@media (hover: hover) {
+    .bit-prs-cin:hover > .bit-prs-abt {
+        opacity: 1;
     }
 }
 
@@ -363,7 +475,7 @@
         // The overlay names what activating the coin does, so it is shown to the keyboard on the same terms
         // as to the pointer.
         &:focus-visible {
-            @include focus-ring;
+            @include focus-ring(var(--bit-Persona-focus-color, #{$clr-pri-focus}));
 
             .bit-prs-imo {
                 opacity: 1;
@@ -377,22 +489,22 @@
 // the coin reads as lifted out of whatever it sits on rather than merely outlined.
 .bit-prs-arg {
     .bit-prs-imc {
-        box-shadow: 0 0 0 var(--bit-prs-ring-gap) var(--bit-prs-ring-gap-clr),
-                    0 0 0 calc(var(--bit-prs-ring-gap) + var(--bit-prs-ring-width)) var(--bit-prs-coin-clr-bg);
+        box-shadow: 0 0 0 var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) var(--bit-Persona-ring-gap-color, var(--bit-prs-surface)),
+                    0 0 0 calc(var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) + var(--bit-Persona-ring-width, var(--bit-prs-ring-width))) var(--bit-Persona-ring-color, var(--bit-prs-coin-bg));
     }
 }
 
 .bit-prs-ash {
     .bit-prs-imc {
-        box-shadow: $box-shadow-card;
+        box-shadow: var(--bit-Persona-active-shadow, #{$box-shadow-card});
     }
 }
 
 .bit-prs-ars {
     .bit-prs-imc {
-        box-shadow: 0 0 0 var(--bit-prs-ring-gap) var(--bit-prs-ring-gap-clr),
-                    0 0 0 calc(var(--bit-prs-ring-gap) + var(--bit-prs-ring-width)) var(--bit-prs-coin-clr-bg),
-                    $box-shadow-card;
+        box-shadow: 0 0 0 var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) var(--bit-Persona-ring-gap-color, var(--bit-prs-surface)),
+                    0 0 0 calc(var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) + var(--bit-Persona-ring-width, var(--bit-prs-ring-width))) var(--bit-Persona-ring-color, var(--bit-prs-coin-bg)),
+                    var(--bit-Persona-active-shadow, #{$box-shadow-card});
     }
 }
 
@@ -401,26 +513,38 @@
     .bit-prs-ars {
         .bit-prs-imc {
             outline: $shp-border-width-thick $shp-border-style;
-            outline-offset: var(--bit-prs-ring-gap);
+            outline-offset: var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap));
         }
     }
 }
 
+// Each status color is a product decision as much as a design-system one - the purple a chat product paints
+// out-of-office with, the amber another paints away with - so each is published as a knob of its own, read
+// with the semantic color it defaults to. A glyph in a filled dot (and the bar of Dnd) takes the text color
+// paired with that fill, which is the one the theme keeps legible on it; in a hollow dot it takes the stroke.
+//
+// The hollow dots (offline, blocked) are a ring around the page color rather than around white: a white disc
+// on a dark scheme reads as a status of its own rather than as the absence of one.
 .bit-prs-off {
-    background-color: $clr-ntr-white;
-    border: $shp-border-width-thick $shp-border-style $clr-ntr-gray110;
+    --bit-prs-presence-clr: var(--bit-Persona-presence-offline-color, #{$clr-ntr-gray110});
+    background-color: var(--bit-prs-surface);
+    color: var(--bit-Persona-presence-icon-color, var(--bit-prs-presence-clr));
+    border: $shp-border-width-thick $shp-border-style var(--bit-prs-presence-clr);
 }
 
 .bit-prs-onl {
-    background-color: $clr-suc;
+    background-color: var(--bit-Persona-presence-online-color, #{$clr-suc});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-suc-text});
 }
 
 .bit-prs-awy {
-    background-color: $clr-wrn;
+    background-color: var(--bit-Persona-presence-away-color, #{$clr-wrn});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-wrn-text});
 }
 
 .bit-prs-dnd {
-    background-color: $clr-err;
+    background-color: var(--bit-Persona-presence-dnd-color, #{$clr-err});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-err-text});
 
     // Busy and do-not-disturb are the same red, which leaves the two of them indistinguishable to anyone
     // who has not been told which is which. The bar is what the rest of the industry marks the stricter of
@@ -430,7 +554,7 @@
         width: 60%;
         height: $shp-border-width-thick;
         border-radius: $shp-radius-full;
-        background-color: $clr-ntr-white;
+        background-color: currentColor;
     }
 
     // A presence icon says the same thing better, so the bar steps aside for one.
@@ -440,24 +564,29 @@
 }
 
 .bit-prs-blk {
-    background-color: $clr-ntr-white;
-    border: $shp-border-width-thick $shp-border-style $clr-err;
+    --bit-prs-presence-clr: var(--bit-Persona-presence-blocked-color, #{$clr-err});
+    background-color: var(--bit-prs-surface);
+    color: var(--bit-Persona-presence-icon-color, var(--bit-prs-presence-clr));
+    border: $shp-border-width-thick $shp-border-style var(--bit-prs-presence-clr);
 }
 
 .bit-prs-bsy {
-    background-color: $clr-err;
+    background-color: var(--bit-Persona-presence-busy-color, #{$clr-err});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-err-text});
 }
 
 .bit-prs-oof {
-    background-color: $clr-swr;
+    background-color: var(--bit-Persona-presence-out-of-office-color, #{$clr-swr});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-swr-text});
 }
 
 .bit-prs-unk {
-    background-color: $clr-fg-ter;
+    background-color: var(--bit-Persona-presence-unknown-color, #{$clr-fg-ter});
+    color: var(--bit-Persona-presence-icon-color, #{$clr-bg-pri});
 }
 
 .bit-prs-s8 {
-    gap: spacing(1);
+    --bit-prs-gap: #{spacing(1)};
 
     .bit-prs-pre {
         position: static;
@@ -475,7 +604,7 @@
 }
 
 .bit-prs-s24 {
-    gap: spacing(1);
+    --bit-prs-gap: #{spacing(1)};
     --bit-prs-action-size: #{spacing(2.5)};
     // The ring is a proportion of the coin, not a constant: 2px around a 24px coin is a stripe, and 2px
     // around a 120px one is a hairline.
@@ -505,7 +634,7 @@
 }
 
 .bit-prs-s32 {
-    gap: spacing(1);
+    --bit-prs-gap: #{spacing(1)};
     --bit-prs-action-size: #{spacing(3)};
     --bit-prs-ring-gap: #{rem2(1.5px)};
     --bit-prs-ring-width: #{rem2(1.5px)};
@@ -532,7 +661,7 @@
 }
 
 .bit-prs-s40 {
-    gap: spacing(1.5);
+    --bit-prs-gap: #{spacing(1.5)};
     --bit-prs-action-size: #{spacing(3.5)};
 
     .bit-prs-imc {
@@ -548,7 +677,6 @@
     }
 
     .bit-prs-ptx {
-        font-weight: $tg-fw-regular;
         font-size: $tg-fs-sm;
     }
 
@@ -567,7 +695,7 @@
 }
 
 .bit-prs-s48 {
-    gap: spacing(1.5);
+    --bit-prs-gap: #{spacing(1.5)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -582,7 +710,6 @@
     }
 
     .bit-prs-ptx {
-        font-weight: $tg-fw-regular;
         font-size: $tg-fs-sm;
     }
 
@@ -601,7 +728,7 @@
 }
 
 .bit-prs-s56 {
-    gap: spacing(2);
+    --bit-prs-gap: #{spacing(2)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -616,7 +743,6 @@
     }
 
     .bit-prs-ptx {
-        font-weight: $tg-fw-regular;
         font-size: $tg-fs-xl;
     }
 
@@ -639,7 +765,7 @@
 }
 
 .bit-prs-s72 {
-    gap: spacing(2);
+    --bit-prs-gap: #{spacing(2)};
     --bit-prs-ring-gap: #{rem2(3px)};
     --bit-prs-ring-width: #{rem2(3px)};
 
@@ -656,7 +782,6 @@
     }
 
     .bit-prs-ptx {
-        font-weight: $tg-fw-regular;
         font-size: $tg-fs-xl;
     }
 
@@ -681,7 +806,7 @@
 }
 
 .bit-prs-s100 {
-    gap: spacing(2);
+    --bit-prs-gap: #{spacing(2)};
     --bit-prs-ring-gap: #{rem2(4px)};
     --bit-prs-ring-width: #{rem2(4px)};
 
@@ -698,7 +823,6 @@
     }
 
     .bit-prs-ptx {
-        font-weight: $tg-fw-regular;
         font-size: $tg-fs-xl;
     }
 
@@ -725,7 +849,7 @@
 }
 
 .bit-prs-s120 {
-    gap: spacing(2);
+    --bit-prs-gap: #{spacing(2)};
     --bit-prs-ring-gap: #{rem2(4px)};
     --bit-prs-ring-width: #{rem2(4px)};
 
@@ -742,7 +866,6 @@
     }
 
     .bit-prs-ptx {
-        font-weight: $tg-fw-regular;
         font-size: $tg-fs-xl;
     }
 
@@ -787,22 +910,38 @@
     }
 }
 
+// The coin reads its pair of colors through these two, so the public variables win over whichever CoinColor
+// (or AutoCoinColor) class declared the pair below.
+.bit-prs {
+    --bit-prs-coin-bg: var(--bit-Persona-coin-background, var(--bit-prs-coin-clr-bg));
+    --bit-prs-coin-clr: var(--bit-Persona-coin-color, var(--bit-prs-coin-clr-txt));
+}
+
 .bit-prs-fil {
-    color: var(--bit-prs-coin-clr-txt);
-    border-color: var(--bit-prs-coin-clr-bg);
-    background-color: var(--bit-prs-coin-clr-bg);
+    color: var(--bit-prs-coin-clr);
+    border-color: var(--bit-prs-coin-bg);
+    background-color: var(--bit-prs-coin-bg);
 }
 
 .bit-prs-otl {
     background-color: transparent;
-    color: var(--bit-prs-coin-clr-bg);
-    border-color: var(--bit-prs-coin-clr-bg);
+    color: var(--bit-prs-coin-bg);
+    border-color: var(--bit-prs-coin-bg);
 }
 
 .bit-prs-txt {
     border-color: transparent;
     background-color: transparent;
-    color: var(--bit-prs-coin-clr-bg);
+    color: var(--bit-prs-coin-bg);
+}
+
+// A filled coin's edge is drawn in its fill so the initials sit on one seamless disc, but a picture only covers the
+// inside of that edge and leaves it as a hairline of the coin color around the photo. The edge is cleared under a
+// picture instead - the fill stays behind it for the initials a loading picture shows through. An Outline coin keeps
+// its ring, which around a photo is the point of it.
+.bit-prs-cph.bit-prs-fil {
+    border-color: transparent;
+    background-clip: padding-box;
 }
 
 .bit-prs-pri {
