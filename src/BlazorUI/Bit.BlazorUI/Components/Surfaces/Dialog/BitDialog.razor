@@ -67,10 +67,11 @@
                             <div class="bit-dlg-htc">
                                 @if (Title.HasValue())
                                 {
-                                    @* A heading rather than a plain div: the title is the heading of the
-                                       Dialog, and a screen reader user navigating by heading expects to
-                                       find it there rather than only through the accessible name. *@
-                                    <div id="@_titleId" role="heading" aria-level="2" style="@Styles?.Title" class="bit-dlg-ttl @Classes?.Title">@Title</div>
+                                    @* A native heading: the title is the heading of the Dialog, and a screen
+                                       reader user navigating by heading expects to find it there rather than
+                                       only through the accessible name. The stylesheet sets everything an
+                                       application's own h2 rule could reach, so none of it leaks in. *@
+                                    <h2 id="@_titleId" style="@Styles?.Title" class="bit-dlg-ttl @Classes?.Title">@Title</h2>
                                 }
 
                                 @if (Subtitle.HasValue())
@@ -106,54 +107,56 @@
                     }
 
                     @(Body ?? ChildContent)
-
-                    @if (ShowOkButton || ShowCancelButton)
-                    {
-                        <div style="@Styles?.ButtonsContainer" class="bit-dlg-bct @Classes?.ButtonsContainer">
-                            @if (ShowOkButton)
-                            {
-                                @* The spinner replaces the label while the Ok callback runs, which would
-                                   otherwise leave the button nameless to a screen reader for as long as it
-                                   takes - so the label is kept as the accessible name for that stretch.
-                                   The button is held shut with aria-disabled rather than disabled while it
-                                   waits: it is the element the focus is on when it is pressed, and a button
-                                   that turns disabled drops the focus onto the page behind the Dialog. The
-                                   click handler refuses a second press on its own. *@
-                                <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
-                                        type="button"
-                                        disabled="@(IsEnabled is false || IsOkButtonEnabled is false)"
-                                        aria-disabled="@(_isLoading ? "true" : null)"
-                                        aria-busy="@(_isLoading ? "true" : null)"
-                                        aria-label="@(_isLoading ? OkText : null)"
-                                        style="@Styles?.OkButton"
-                                        class="bit-dlg-okb @Classes?.OkButton">
-                                    @if (_isLoading)
-                                    {
-                                        <div style="@Styles?.Spinner" class="bit-dlg-spn @Classes?.Spinner" aria-hidden="true"></div>
-                                    }
-                                    else
-                                    {
-                                        @OkText
-                                    }
-                                </button>
-                            }
-
-                            @if (ShowCancelButton)
-                            {
-                                @* Disabled while the Ok callback is running: a Cancel let through there would
-                                   answer a showing the Ok has already answered, and hand that second answer to
-                                   an awaiter while the first one is still doing its work. *@
-                                <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
-                                        type="button"
-                                        disabled="@(IsEnabled is false || IsCancelButtonEnabled is false || _isLoading)"
-                                        style="@Styles?.CancelButton"
-                                        class="bit-dlg-cnb @Classes?.CancelButton">
-                                    @CancelText
-                                </button>
-                            }
-                        </div>
-                    }
                 </div>
+                @* The actions sit beside the scrolling body rather than inside it, so a long body scrolls
+                   underneath nothing: a band pinned over the end of the scroller would hide the field the
+                   keyboard has just tabbed to behind it. *@
+                @if (ShowOkButton || ShowCancelButton)
+                {
+                    <div style="@Styles?.ButtonsContainer" class="bit-dlg-bct @Classes?.ButtonsContainer">
+                        @if (ShowOkButton)
+                        {
+                            @* The spinner replaces the label while the Ok callback runs, which would
+                               otherwise leave the button nameless to a screen reader for as long as it
+                               takes - so the label is kept as the accessible name for that stretch.
+                               The button is held shut with aria-disabled rather than disabled while it
+                               waits: it is the element the focus is on when it is pressed, and a button
+                               that turns disabled drops the focus onto the page behind the Dialog. The
+                               click handler refuses a second press on its own. *@
+                            <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
+                                    type="button"
+                                    disabled="@(IsEnabled is false || IsOkButtonEnabled is false)"
+                                    aria-disabled="@(_isLoading ? "true" : null)"
+                                    aria-busy="@(_isLoading ? "true" : null)"
+                                    aria-label="@(_isLoading ? OkText : null)"
+                                    style="@Styles?.OkButton"
+                                    class="bit-dlg-okb @Classes?.OkButton">
+                                @if (_isLoading)
+                                {
+                                    <div style="@Styles?.Spinner" class="bit-dlg-spn @Classes?.Spinner" aria-hidden="true"></div>
+                                }
+                                else
+                                {
+                                    @OkText
+                                }
+                            </button>
+                        }
+
+                        @if (ShowCancelButton)
+                        {
+                            @* Disabled while the Ok callback is running: a Cancel let through there would
+                               answer a showing the Ok has already answered, and hand that second answer to
+                               an awaiter while the first one is still doing its work. *@
+                            <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
+                                    type="button"
+                                    disabled="@(IsEnabled is false || IsCancelButtonEnabled is false || _isLoading)"
+                                    style="@Styles?.CancelButton"
+                                    class="bit-dlg-cnb @Classes?.CancelButton">
+                                @CancelText
+                            </button>
+                        }
+                    </div>
+                }
                 @if (FooterTemplate is not null)
                 {
                     <div style="@Styles?.Footer" class="bit-dlg-ftr @Classes?.Footer">

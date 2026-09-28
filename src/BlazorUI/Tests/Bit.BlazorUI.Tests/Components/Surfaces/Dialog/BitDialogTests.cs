@@ -553,8 +553,23 @@ public class BitDialogTests : BunitTestContext
 
         var title = component.Find(".bit-dlg-ttl");
 
-        Assert.AreEqual("heading", title.GetAttribute("role"));
-        Assert.AreEqual("2", title.GetAttribute("aria-level"));
+        // A native heading, rather than a div re-roled as one.
+        Assert.AreEqual("H2", title.TagName);
+        Assert.IsNull(title.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitDialogActionsShouldSitOutsideTheScrollingBody()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Message, "Message");
+        });
+
+        // A band pinned over the end of the scroller would hide a focused field scrolled underneath it.
+        Assert.IsEmpty(component.FindAll(".bit-dlg-scr-cnt .bit-dlg-bct"));
+        Assert.HasCount(1, component.FindAll(".bit-dlg-ctn > .bit-dlg-bct"));
     }
 
     [TestMethod]

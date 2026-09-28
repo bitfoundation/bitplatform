@@ -266,10 +266,15 @@
     text-align: var(--bit-dlg-text-align);
 }
 
+// A native h2, so every property an application's own heading rule is likely to set is set here too.
 .bit-dlg-ttl {
     margin: 0;
+    padding: 0;
     width: 100%;
     line-height: normal;
+    font-family: inherit;
+    letter-spacing: normal;
+    text-transform: none;
     min-height: spacing(2.5);
     color: var(--bit-Dialog-title-color, inherit);
     font-size: var(--bit-Dialog-title-font-size, #{$tg-dialog-title-font-size});
@@ -315,11 +320,12 @@
     margin-top: var(--bit-dlg-pad);
 }
 
+// The actions are a band of their own under the scrolling body rather than one pinned over the end of it,
+// so nothing the body scrolls ever passes underneath them - a focused field included.
 .bit-dlg-bct {
-    bottom: 0;
     z-index: 1;
     display: flex;
-    position: sticky;
+    flex-shrink: 0;
 
     // All three come from the theme so a Cupertino preset can stack the actions full-width and
     // centred (column + center + stretch) while Fluent and Material keep the trailing row of
@@ -329,7 +335,6 @@
     justify-content: $layout-dialog-actions-justify;
     padding: 0 var(--bit-dlg-pad) var(--bit-dlg-pad);
     background-color: var(--bit-dlg-bg);
-    margin-top: auto;
 
     // The actions are the last opaque band of a Dialog without a footer, so they take the bottom corners
     // with them - an opaque band squared off inside a rounded container shows at the corners as soon as a
@@ -608,5 +613,13 @@
 
     .bit-dlg-hdr {
         border-block-end: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    // The spinner is told apart from its track only by the color of its top edge, which a forced palette
+    // paints the same as the rest - leaving a ring that turns without showing it. The arc is put back in the
+    // system highlight.
+    .bit-dlg-spn {
+        border-color: GrayText;
+        border-top-color: Highlight;
     }
 }

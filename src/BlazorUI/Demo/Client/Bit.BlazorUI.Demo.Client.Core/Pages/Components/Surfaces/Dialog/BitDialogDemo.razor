@@ -118,8 +118,8 @@
         <DemoExample Title="Custom content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 Anything between the tags - or in <b>Body</b>, the same slot - renders in the scrollable body, above the buttons.
-                Without a <b>Title</b> the Dialog has no accessible name: point <b>TitleAriaId</b> at your own heading, or set
-                <b>AriaLabel</b>.
+                Without a <b>Title</b> the Dialog has no accessible name: point <b>TitleAriaId</b> at a heading of your own (an
+                <b>h2</b>, like the built-in title), or set <b>AriaLabel</b>.
             </div>
             <br />
             <BitButton OnClick="@(() => isOpenCustom = true)">Open Dialog</BitButton>
@@ -128,7 +128,7 @@
             <BitDialog @bind-IsOpen="isOpenCustom"
                        TitleAriaId="dialog-custom-title"
                        ShowCloseButton="false">
-                <div class="dialog-title" id="dialog-custom-title">All emails together</div>
+                <h2 class="dialog-title" id="dialog-custom-title">All emails together</h2>
                 <div class="dialog-body">
                     <p>Your inbox has changed: it no longer includes favorites, it is a single destination for all your emails.</p>
                     <br />

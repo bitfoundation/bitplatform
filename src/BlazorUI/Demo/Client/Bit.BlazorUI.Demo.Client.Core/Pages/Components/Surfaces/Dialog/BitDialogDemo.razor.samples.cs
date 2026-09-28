@@ -121,6 +121,7 @@ private bool isOpenFooterTemplate;";
     private readonly string example4RazorCode = @"
 <style>
     .dialog-title {
+        margin: 0;
         display: flex;
         font-size: 20px;
         font-weight: 600;
@@ -142,7 +143,7 @@ private bool isOpenFooterTemplate;";
 <BitDialog @bind-IsOpen=""isOpenCustom""
            TitleAriaId=""dialog-custom-title""
            ShowCloseButton=""false"">
-    <div class=""dialog-title"" id=""dialog-custom-title"">All emails together</div>
+    <h2 class=""dialog-title"" id=""dialog-custom-title"">All emails together</h2>
     <div class=""dialog-body"">
         <p>Your inbox has changed: it no longer includes favorites, it is a single destination for all your emails.</p>
         <br />
