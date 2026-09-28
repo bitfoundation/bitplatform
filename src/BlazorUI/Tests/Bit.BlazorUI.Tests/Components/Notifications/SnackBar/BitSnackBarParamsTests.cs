@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -105,6 +107,76 @@ public class BitSnackBarParamsTests : BunitTestContext
         foreach (var name in read)
         {
             CollectionAssert.Contains(documented, name, $"{name} is read but not documented.");
+        }
+    }
+
+    [TestMethod]
+    public void BitSnackBarParamsShouldCarryEveryPlainParameterOfTheComponent()
+    {
+        // A parameter added to the component without its counterpart here is one a BitParams cascade silently
+        // ignores. Callbacks and templates are deliberately left out: they belong to the code around one host - and
+        // so does ServiceHost, which marks one host out of the others rather than being something they share.
+        var paramsProperties = typeof(BitSnackBarParams).GetProperties().Select(p => p.Name).ToHashSet();
+        paramsProperties.Add(nameof(BitSnackBar.ServiceHost));
+
+        var missing = typeof(BitSnackBar).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                         .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                         .Where(p => p.PropertyType.Name.StartsWith("EventCallback") is false)
+                                         .Where(p => p.PropertyType.Name.StartsWith("RenderFragment") is false)
+                                         .Select(p => p.Name)
+                                         .Where(n => paramsProperties.Contains(n) is false)
+                                         .ToList();
+
+        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+    }
+
+    [TestMethod]
+    public void BitSnackBarParamsShouldApplyEveryPropertyItCarries()
+    {
+        // The other direction: a property added here but forgotten in UpdateParameters is accepted by the cascade
+        // and then never reaches the snack bar.
+        var snackBarParams = new BitSnackBarParams();
+        var snackBar = new BitSnackBar();
+
+        var properties = typeof(BitSnackBarParams).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                                  .Where(p => p.CanWrite)
+                                                  .ToArray();
+
+        foreach (var property in properties)
+        {
+            var target = typeof(BitSnackBar).GetProperty(property.Name)!;
+
+            property.SetValue(snackBarParams, SampleValue(property.PropertyType, target.GetValue(snackBar)));
+        }
+
+        snackBarParams.UpdateParameters(snackBar);
+
+        foreach (var property in properties)
+        {
+            var target = typeof(BitSnackBar).GetProperty(property.Name)!;
+
+            Assert.AreEqual(property.GetValue(snackBarParams), target.GetValue(snackBar), $"{property.Name} is not applied.");
+        }
+
+        // A value unlike the component's default, so the assertion above cannot pass by coincidence.
+        static object SampleValue(Type type, object? current)
+        {
+            var underlying = Nullable.GetUnderlyingType(type) ?? type;
+
+            if (underlying == typeof(bool)) return current is true ? false : true;
+            if (underlying == typeof(int)) return 7;
+            if (underlying == typeof(string)) return "sample";
+            if (underlying == typeof(TimeSpan)) return TimeSpan.FromSeconds(7);
+            if (underlying == typeof(string[])) return new[] { "F8" };
+            if (underlying == typeof(BitIconInfo)) return BitIconInfo.Css("sample");
+            if (underlying == typeof(BitSnackBarClassStyles)) return new BitSnackBarClassStyles();
+            if (underlying.IsEnum)
+            {
+                var values = Enum.GetValues(underlying);
+                return values.GetValue(values.Length - 1)!;
+            }
+
+            throw new NotSupportedException($"Add a sample value for {type}.");
         }
     }
 

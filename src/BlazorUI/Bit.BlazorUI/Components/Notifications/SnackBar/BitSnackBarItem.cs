@@ -214,6 +214,7 @@ public class BitSnackBarItem
     internal bool _paused;
     internal bool _hovered;
     internal bool _focused;
+    internal bool _focusWithin;
     internal bool _held;
     internal bool _dismissing;
     internal bool _activationPending;

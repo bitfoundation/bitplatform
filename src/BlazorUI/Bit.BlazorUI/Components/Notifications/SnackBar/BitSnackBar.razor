@@ -41,6 +41,8 @@
              role="@GetRenderedRole(item)"
              data-bit-snb-id="@(IsDismissible(item) ? item.Id.ToString() : null)"
              aria-live="off"
+             aria-labelledby="@GetItemLabelledBy(item)"
+             aria-describedby="@GetItemDescribedBy(item)"
              aria-busy="@(item.IsLoading ? "true" : null)"
              tabindex="@(IsClickable(item) ? "0" : null)"
              style="@JoinStyles(Styles?.Container, item.CssStyle)"
@@ -87,7 +89,8 @@
                         @* The tooltip is what a title cut off with an ellipsis is read in full from, so it is only
                            there while the title really is being cut off - on a wrapping title it would be a
                            duplicate of text that is already all on screen. *@
-                        <div title="@(Multiline ? null : item.Title)"
+                        <div id="@GetTitleId(item)"
+                             title="@(Multiline ? null : item.Title)"
                              style="@Styles?.Title"
                              class="bit-snb-ttl @(Multiline ? "" : "bit-snb-elp") @Classes?.Title">
                             @item.Title
@@ -119,7 +122,8 @@
                 {
                     @* Same reasoning as the title: a body kept to one line keeps the rest of its text in a tooltip
                        so it is still reachable, and a wrapping one has nothing left to put there. *@
-                    <div title="@(Multiline ? null : item.Body)"
+                    <div id="@GetBodyId(item)"
+                         title="@(Multiline ? null : item.Body)"
                          style="@Styles?.Body"
                          class="bit-snb-bdy @(Multiline ? "" : "bit-snb-elp") @Classes?.Body">
                         @item.Body

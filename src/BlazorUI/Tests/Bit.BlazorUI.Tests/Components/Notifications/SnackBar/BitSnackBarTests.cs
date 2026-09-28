@@ -3047,8 +3047,19 @@ public class BitSnackBarTests : BunitTestContext
 
         await ((IAsyncDisposable)com.Instance).DisposeAsync();
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.unregisterHotkey"));
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.unregisterSwipe"));
+        // One call lets go of the shortcut, the swipe listener and the remembered focus together.
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.dispose");
+        Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarDisposeWithoutScriptStateReachesTheScriptNotOnceTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await ((IAsyncDisposable)com.Instance).DisposeAsync();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.dispose"));
     }
 
     [TestMethod]
@@ -3259,5 +3270,206 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count);
         Assert.AreEqual(1, com.FindAll(".bit-snb-ico").Count);
+    }
+
+    [TestMethod,
+         DataRow(new[] { "F8" }, "Notifications (F8)"),
+         DataRow(new[] { "KeyT", "altKey" }, "Notifications (Alt+T)"),
+         DataRow(new[] { "shiftKey", "Digit1", "ctrlKey" }, "Notifications (Ctrl+Shift+1)")
+    ]
+    public void BitSnackBarDefaultAriaLabelNamesTheHotkeyTest(string[] hotkey, string label)
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.Hotkey, hotkey));
+
+        Assert.AreEqual(label, com.Find(".bit-snb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSnackBarAriaLabelWinsOverTheHotkeyLabelTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.Hotkey, ["F8"]);
+            parameters.Add(p => p.AriaLabel, "Alerts");
+        });
+
+        Assert.AreEqual("Alerts", com.Find(".bit-snb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSnackBarDefaultAriaLabelWithoutAHotkeyTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        Assert.AreEqual("Notifications", com.Find(".bit-snb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarItemIsNamedByItsTitleAndDescribedByItsBodyTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await com.Instance.Show("title", "body");
+
+        var item = com.Find(".bit-snb-itm");
+
+        Assert.AreEqual(com.Find(".bit-snb-ttl").Id, item.GetAttribute("aria-labelledby"));
+        Assert.AreEqual(com.Find(".bit-snb-bdy").Id, item.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarItemWithoutABodyIsNotDescribedTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await com.Instance.Show("title", "");
+
+        Assert.IsFalse(com.Find(".bit-snb-itm").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTemplatedItemPointsAtNothingTest()
+    {
+        RenderFragment<BitSnackBarItem> template = item => builder => builder.AddContent(0, item.Title);
+
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.Template, template));
+
+        await com.Instance.Show("title", "body");
+
+        var element = com.Find(".bit-snb-itm");
+
+        Assert.IsFalse(element.HasAttribute("aria-labelledby"));
+        Assert.IsFalse(element.HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarFocusAsyncGoesThroughTheScriptTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await com.Instance.FocusAsync();
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.focus");
+        Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClosingTheLastFocusedItemHandsTheFocusBackTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var item = await com.Instance.Show("title");
+
+        // An action inside the item that closes it is the usual way this happens.
+        com.Find(".bit-snb-itm").FocusIn();
+
+        await com.Instance.Close(item);
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus");
+        Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClosingAFocusedItemFocusesTheNextOneTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var first = await com.Instance.Show("first");
+        await com.Instance.Show("second");
+
+        com.FindAll(".bit-snb-itm")[0].FocusIn();
+
+        await com.Instance.Close(first);
+
+        // The item that is left takes the focus, so nothing goes back yet.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClosingAnUnfocusedItemLeavesTheFocusAloneTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var item = await com.Instance.Show("title");
+
+        await com.Instance.Close(item);
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarFocusLeavingTheItemIsTrackedWithoutPauseOnHoverTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnHover, false);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        var item = await com.Instance.Show("title");
+
+        com.Find(".bit-snb-itm").FocusIn();
+        com.Find(".bit-snb-itm").FocusOut();
+
+        await com.Instance.Close(item);
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarFocusedItemHandsTheFocusBackWithoutPauseOnHoverTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnHover, false);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        var item = await com.Instance.Show("title");
+
+        com.Find(".bit-snb-itm").FocusIn();
+
+        await com.Instance.Close(item);
+
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClearHandsTheFocusBackOnceTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        await com.Instance.Show("first");
+        await com.Instance.Show("second");
+        await com.Instance.Show("third");
+
+        com.FindAll(".bit-snb-itm")[0].FocusIn();
+
+        await com.Instance.Clear();
+
+        // Every item is leaving, so none of them is handed the focus on the way.
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClearOnNavigationLeavesTheFocusToTheNewPageTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnNavigation, true);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await com.Instance.Show("title");
+
+        com.Find(".bit-snb-itm").FocusIn();
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
     }
 }

@@ -26,6 +26,7 @@ public partial class BitSnackBar : BitComponentBase
     private readonly Dictionary<Guid, ElementReference> _dismissButtons = [];
 
     private BitPageVisibility? _pageVisibility;
+    private BitSnackBarService? _service;
     private NavigationManager? _navigationManager;
     private bool _pageHidden;
     private bool _windowBlurred;
@@ -33,6 +34,7 @@ public partial class BitSnackBar : BitComponentBase
     private string? _registeredHotkeyId;
     private string? _registeredSwipeId;
     private int _registeredSwipeThreshold;
+    private string? _focusedRegionId;
     private DotNetObjectReference<BitSnackBar>? _dotnetObj;
 
     // One counter per region rather than one shared between them: the counter keys the element that carries the
@@ -190,8 +192,12 @@ public partial class BitSnackBar : BitComponentBase
     /// <c>F8</c> as its default. This is off unless a shortcut is given; pass <c>["F8"]</c> for that default.
     /// <br />
     /// The modifiers are written as their property names - <c>["KeyT", "altKey"]</c> is Alt+T - and the shortcut
-    /// needs the bit BlazorUI script to be on the page. Say which shortcut it is in <c>AriaLabel</c>
-    /// (for example <c>"Notifications (F8)"</c>) so it can be discovered by the people it is for.
+    /// needs the bit BlazorUI script to be on the page. The default name of the region spells the shortcut out
+    /// (<c>"Notifications (Alt+T)"</c>) so the people it is for can discover it; a custom <c>AriaLabel</c> should
+    /// do the same.
+    /// <br />
+    /// Escape on the region, or the last item that held the focus leaving, hands the focus back to where it was
+    /// before the jump.
     /// </remarks>
     [Parameter] public string[]? Hotkey { get; set; }
 
@@ -401,6 +407,17 @@ public partial class BitSnackBar : BitComponentBase
     /// The size of the snack bar items.
     /// </summary>
     [Parameter] public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Makes this snack bar the one <see cref="BitSnackBarService"/> shows its notifications through.
+    /// </summary>
+    /// <remarks>
+    /// Mark the one host in the layout, and every part of the app can raise a notification by injecting the
+    /// service instead of being handed this snack bar's reference. The service needs the bit BlazorUI services to be
+    /// registered (<c>AddBitBlazorUIServices</c>). While several hosts are marked, the one rendered most recently
+    /// takes the notifications.
+    /// </remarks>
+    [Parameter] public bool ServiceHost { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the snack bar.
@@ -639,15 +656,24 @@ public partial class BitSnackBar : BitComponentBase
     /// The items are taken away at once rather than one exit animation after another, so clearing a full stack does
     /// not take as long as the stack is tall.
     /// </remarks>
-    public Task Clear() => InvokeAsync(async () =>
+    public Task Clear() => ClearAsync(restoreFocus: true);
+
+    private Task ClearAsync(bool restoreFocus) => InvokeAsync(async () =>
     {
         var queued = _queue.ToArray();
         _queue.Clear();
+
+        // Every item is leaving, so handing the focus from one to the next would only land it on the next one to
+        // go: it is handed back once, after all of them have left.
+        var hadFocus = _items.Exists(i => i._focusWithin);
+        _items.ForEach(i => i._focusWithin = false);
 
         foreach (var item in _items.ToArray())
         {
             await DismissAsync(item, animate: false, reason: BitSnackBarDismissReason.Clear);
         }
+
+        if (hadFocus && restoreFocus) await RestoreFocusAsync();
 
         foreach (var item in queued)
         {
@@ -689,11 +715,23 @@ public partial class BitSnackBar : BitComponentBase
     /// <remarks>
     /// This is what <see cref="Hotkey"/> does, offered on its own for an app that already has a shortcut
     /// registry of its own to hang it off. Focusing the region puts the next Tab inside the notifications, which
-    /// is how their dismiss buttons and actions are reached from the keyboard.
+    /// is how their dismiss buttons and actions are reached from the keyboard. The element that had the focus is
+    /// remembered and gets it back when Escape is pressed on the region, or when the last item holding the focus
+    /// leaves.
     /// </remarks>
-    public ValueTask FocusAsync()
+    public async ValueTask FocusAsync()
     {
-        return RootElement.Context is null ? ValueTask.CompletedTask : RootElement.FocusAsync();
+        // Through the script rather than the element reference, so the element the focus came from is remembered
+        // and handed the focus back once the user is done with the notifications - the same detour the Hotkey
+        // takes.
+        _focusedRegionId = _Id;
+
+        try
+        {
+            await _js.InvokeVoid("BitBlazorUI.SnackBars.focus", _Id);
+        }
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
     }
 
     /// <summary>
@@ -771,6 +809,8 @@ public partial class BitSnackBar : BitComponentBase
 
         await base.OnParametersSetAsync();
 
+        SyncServiceHost();
+
         await SyncQueueAsync();
 
         // A PauseOnPageHidden or PauseOnWindowBlur that is turned off again while it is holding everything back
@@ -778,6 +818,26 @@ public partial class BitSnackBar : BitComponentBase
         // re-evaluated here instead of leaving every countdown stopped for good.
         if (_items.Exists(i => i._paused) || _PageHeld) await SyncPageHoldAsync();
     }
+
+    // Resolved through the provider rather than injected, like the page visibility utility: a snack bar has to keep
+    // working in an app that never registered the services, where only this one opt-in feature is lost.
+    private void SyncServiceHost()
+    {
+        if (ServiceHost)
+        {
+            if (_service is not null) return;
+
+            _service = _serviceProvider?.GetService(typeof(BitSnackBarService)) as BitSnackBarService;
+            _service?.Register(this);
+        }
+        else if (_service is not null)
+        {
+            _service.Unregister(this);
+            _service = null;
+        }
+    }
+
+    internal bool Owns(BitSnackBarItem item) => _items.Contains(item) || _queue.Contains(item);
 
     private async Task SyncQueueAsync()
     {
@@ -927,7 +987,52 @@ public partial class BitSnackBar : BitComponentBase
 
     private string _DismissAriaLabel => DismissAriaLabel ?? "Close";
 
-    private string _RootAriaLabel => AriaLabel ?? "Notifications";
+    // The shortcut is spelled out in the default name, the way Radix Toast names its viewport, so the people it is
+    // for can discover it from the landmark list.
+    private string _RootAriaLabel => AriaLabel ?? (Hotkey is { Length: > 0 } ? $"Notifications ({FormatHotkey(Hotkey)})" : "Notifications");
+
+    // ["KeyT", "altKey"] reads as "Alt+T": the modifiers first and in the order people say them, the key codes
+    // without the prefix that only tells the kind of key apart.
+    private static string FormatHotkey(string[] keys)
+    {
+        string[] modifiers = ["ctrlKey", "altKey", "shiftKey", "metaKey"];
+
+        var parts = modifiers.Where(keys.Contains).Select(m => m switch
+        {
+            "ctrlKey" => "Ctrl",
+            "altKey" => "Alt",
+            "shiftKey" => "Shift",
+            _ => "Meta"
+        }).ToList();
+
+        foreach (var key in keys)
+        {
+            if (modifiers.Contains(key)) continue;
+
+            parts.Add(key.StartsWith("Key", StringComparison.Ordinal) && key.Length == 4 ? key[3..]
+                    : key.StartsWith("Digit", StringComparison.Ordinal) && key.Length == 6 ? key[5..]
+                    : key);
+        }
+
+        return string.Join('+', parts);
+    }
+
+    private string GetTitleId(BitSnackBarItem item) => $"{_Id}-{item.Id:N}-ttl";
+
+    private string GetBodyId(BitSnackBarItem item) => $"{_Id}-{item.Id:N}-bdy";
+
+    // The item is named by its own title and described by its body, so a clickable item reached with Tab is
+    // announced by what it says - a status takes no name from its content. A template draws its own text, so
+    // there is nothing of ours to point at.
+    private string? GetItemLabelledBy(BitSnackBarItem item)
+    {
+        return Template is null && TitleTemplate is null && item.Title.HasValue() ? GetTitleId(item) : null;
+    }
+
+    private string? GetItemDescribedBy(BitSnackBarItem item)
+    {
+        return Template is null && BodyTemplate is null && item.Body.HasValue() ? GetBodyId(item) : null;
+    }
 
     private bool IsDismissible(BitSnackBarItem item) => Persistent is false && item.Persistent is false;
 
@@ -1235,10 +1340,16 @@ public partial class BitSnackBar : BitComponentBase
 
         item._dismissing = false;
 
+        // An item that leaves while the keyboard focus is inside it - an action button that closes it, a countdown
+        // that was not held back, a Close from code - would take the focus with it, so the focus is handed on
+        // exactly as the dismiss button hands it on.
+        focusNext |= item._focusWithin;
+
         // An element taken out from under the pointer does not always report the pointer leaving it, so the hover
         // and focus states are cleared here rather than left to say the item is being read after it is gone - which
         // would start the next countdown of a re-shown item paused with nothing to let it go.
         item._hovered = false;
+        item._focusWithin = false;
         item._focused = false;
         item._held = false;
         item._activationPending = false;
@@ -1271,10 +1382,10 @@ public partial class BitSnackBar : BitComponentBase
         await OnDismiss.InvokeAsync(item);
     }
 
-    // A dismiss button that removes itself leaves the keyboard focus on nothing, which sends the next Tab back to
-    // the top of the page. Handing the focus to the nearest item that still offers a dismiss button - the one that
-    // took its place, or, failing that, the closest one before it - keeps a run of dismissals reachable from the
-    // keyboard.
+    // An item that leaves with the focus inside it leaves the keyboard focus on nothing, which sends the next Tab
+    // back to the top of the page. Handing the focus to the nearest item that still offers a dismiss button - the
+    // one that took its place, or, failing that, the closest one before it - keeps a run of dismissals reachable
+    // from the keyboard.
     private async Task FocusNeighbourAsync(int index)
     {
         for (var offset = 0; offset < _items.Count; offset++)
@@ -1291,6 +1402,8 @@ public partial class BitSnackBar : BitComponentBase
                 return;
             }
         }
+
+        await RestoreFocusAsync();
 
         bool TryPick(int at, out ElementReference reference)
         {
@@ -1319,6 +1432,18 @@ public partial class BitSnackBar : BitComponentBase
             // JSException and ObjectDisposedException both derive from this one.
             catch (InvalidOperationException) { }
         }
+    }
+
+    // Nothing is left to take the focus, so it goes back to where the user was before they jumped here (or,
+    // failing that, to the region), which ends the detour instead of stranding the focus on nothing.
+    private async Task RestoreFocusAsync()
+    {
+        try
+        {
+            await _js.InvokeVoid("BitBlazorUI.SnackBars.restoreFocus", _Id);
+        }
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
     }
 
     private async Task HandleItemClick(BitSnackBarItem item)
@@ -1405,6 +1530,10 @@ public partial class BitSnackBar : BitComponentBase
     // that hand-off run the countdown of an item the pointer had never left.
     private void HandleFocusStart(BitSnackBarItem item)
     {
+        // Where the focus is is tracked whatever PauseOnHover says: it also decides whether the item hands the focus
+        // on when it leaves.
+        item._focusWithin = true;
+
         if (PauseOnHover is false) return;
 
         item._focused = true;
@@ -1415,6 +1544,7 @@ public partial class BitSnackBar : BitComponentBase
     private void HandleFocusEnd(BitSnackBarItem item)
     {
         item._focused = false;
+        item._focusWithin = false;
 
         // A key held down while the focus moves away never reports its release here, so the note it left is
         // dropped rather than answered by the next key-up the item happens to see.
@@ -1436,7 +1566,9 @@ public partial class BitSnackBar : BitComponentBase
     {
         try
         {
-            await Clear();
+            // The page the focus would go back to is the one being left, and the new one decides where its own
+            // focus goes.
+            await ClearAsync(restoreFocus: false);
         }
         catch (ObjectDisposedException) { }
         catch (Exception ex) { await DispatchSafelyAsync(ex); }
@@ -1629,23 +1761,27 @@ public partial class BitSnackBar : BitComponentBase
             _navigationManager = null;
         }
 
-        if (_registeredHotkeyId is not null || _registeredSwipeId is not null)
+        _service?.Unregister(this);
+        _service = null;
+
+        // Whatever the script holds on this host's behalf - the shortcut, the swipe listener, the element the focus
+        // is to go back to - is let go of in one call per id it was held under.
+        string?[] scriptIds = [_registeredHotkeyId, _registeredSwipeId, _focusedRegionId];
+
+        _registeredHotkey = null;
+        _registeredHotkeyId = null;
+        _registeredSwipeId = null;
+        _focusedRegionId = null;
+
+        try
         {
-            var hotkeyId = _registeredHotkeyId;
-            var swipeId = _registeredSwipeId;
-
-            _registeredHotkey = null;
-            _registeredHotkeyId = null;
-            _registeredSwipeId = null;
-
-            try
+            foreach (var id in scriptIds.Where(i => i is not null).Distinct())
             {
-                if (hotkeyId is not null) await _js.InvokeVoid("BitBlazorUI.SnackBars.unregisterHotkey", hotkeyId);
-                if (swipeId is not null) await _js.InvokeVoid("BitBlazorUI.SnackBars.unregisterSwipe", swipeId);
+                await _js.InvokeVoid("BitBlazorUI.SnackBars.dispose", id);
             }
-            catch (JSDisconnectedException) { }
-            catch (ObjectDisposedException) { }
         }
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
 
         _dotnetObj?.Dispose();
         _dotnetObj = null;

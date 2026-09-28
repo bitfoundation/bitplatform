@@ -25,13 +25,14 @@
         <BitButton OnClick="OpenBasicSnackBar">Open SnackBar</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Position & Offset" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Position & Transition" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
             <b>Position</b> pins the stack to a corner or edge (default <b>BottomEnd</b>); start/end follow the text
             direction. <b>Offset</b> moves it away from the screen edges, clear of an app bar or a phone's safe area.
+            Items slide in from that edge over <b>TransitionDuration</b> (default 200ms; 0 removes them at once).
         </div>
         <br />
-        <BitSnackBar @ref="positionRef" Position="position" Offset="@offset" />
+        <BitSnackBar @ref="positionRef" Position="position" Offset="@offset" TransitionDuration="transitionDuration" />
         <BitChoiceGroup @bind-Value="position" Label="Position" Horizontal
                         TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
             <BitChoiceGroupOption Text="TopStart" Value="BitSnackBarPosition.TopStart" />
@@ -47,6 +48,13 @@
             <BitChoiceGroupOption Text="8px (default)" Value="@("8px")" />
             <BitChoiceGroupOption Text="2rem" Value="@("2rem")" />
             <BitChoiceGroupOption Text="4rem" Value="@("4rem")" />
+        </BitChoiceGroup>
+        <br />
+        <BitChoiceGroup @bind-Value="transitionDuration" Label="TransitionDuration" Horizontal
+                        TItem="BitChoiceGroupOption<int>" TValue="int">
+            <BitChoiceGroupOption Text="0" Value="0" />
+            <BitChoiceGroupOption Text="200ms (default)" Value="200" />
+            <BitChoiceGroupOption Text="600ms" Value="600" />
         </BitChoiceGroup>
         <br />
         <BitButton OnClick="OpenPositionSnackBar">Open SnackBar</BitButton>
@@ -262,7 +270,20 @@
         <div>Showing: <b>@controlRef?.Items.Count</b></div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Service" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            Mark the layout's host <b>ServiceHost</b> and inject <b>BitSnackBarService</b> (registered by
+            <b>AddBitBlazorUIServices</b>) to show notifications from any component, without passing the host's
+            reference around. It has the same <b>Show</b>, color shortcuts, <b>Close</b>, <b>Update</b> and
+            <b>Clear</b> as the host; with no host rendered, <b>IsHostAvailable</b> is false and nothing is shown.
+        </div>
+        <br />
+        <BitSnackBar ServiceHost ShowIcon AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)" />
+        <BitButton OnClick="SaveThroughService">Save</BitButton>
+        <BitButton OnClick="FailThroughService">Fail</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
             Items are announced through two live regions kept in the page: the problem colors interrupt (assertive),
             the rest wait (polite). <b>Role</b> overrides the choice - a non-live role stays silent - and
@@ -278,11 +299,11 @@
         <br /><br />
         <div>
             <b>Hotkey</b> (<b>KeyboardEvent.code</b> values, modifiers as <b>altKey</b>, <b>ctrlKey</b>...) moves the
-            focus into the region so a keyboard user reaches an item before it is gone; name it in <b>AriaLabel</b>.
-            <b>FocusAsync</b> does the same from code.
+            focus into the region, whose default name spells it out ("Notifications (F8)"); <b>FocusAsync</b> does the
+            same from code. Escape on the region, or the last focused item leaving, hands the focus back.
         </div>
         <br />
-        <BitSnackBar @ref="hotkeyRef" Hotkey="@(["F8"])" AriaLabel="Notifications (F8)"
+        <BitSnackBar @ref="hotkeyRef" Hotkey="@(["F8"])"
                      AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(30)" ShowIcon>
             <ActionsTemplate Context="item">
                 <BitButton Variant="BitVariant.Text" Color="BitColor.TertiaryBackground"
@@ -291,93 +312,6 @@
         </BitSnackBar>
         <BitButton OnClick="OpenHotkey">Open, then press F8</BitButton>
         <BitButton OnClick="FocusSnackBars">Focus the region from code</BitButton>
-    </DemoExample>
-
-    <DemoExample Title="Customization" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-        <div>
-            A playground for the main parameters. <b>TransitionDuration</b> sets the enter/exit animation (default
-            200ms); zero removes an item at once.
-        </div>
-        <br />
-        <BitSnackBar @ref="customizationRef"
-                     Dir="direction"
-                     Size="customSize"
-                     ShowIcon="customShowIcon"
-                     Variant="customVariant"
-                     Position="basicSnackBarPosition"
-                     Multiline="basicSnackBarMultiline"
-                     AutoDismiss="basicSnackBarAutoDismiss"
-                     TransitionDuration="customTransitionDuration"
-                     AutoDismissTime="TimeSpan.FromSeconds(basicSnackBarDismissSeconds)" />
-
-        <BitButton OnClick="OpenCustomizationSnackBar">Show</BitButton>
-        <br /><br />
-        <div class="example-box">
-            <BitChoiceGroup @bind-Value="basicSnackBarColor" Label="Color" TItem="BitChoiceGroupOption<BitColor>" TValue="BitColor">
-                <BitChoiceGroupOption Text="Primary" Value="BitColor.Primary" />
-                <BitChoiceGroupOption Text="Secondary" Value="BitColor.Secondary" />
-                <BitChoiceGroupOption Text="Tertiary" Value="BitColor.Tertiary" />
-                <BitChoiceGroupOption Text="Info" Value="BitColor.Info" />
-                <BitChoiceGroupOption Text="Success" Value="BitColor.Success" />
-                <BitChoiceGroupOption Text="Warning" Value="BitColor.Warning" />
-                <BitChoiceGroupOption Text="SevereWarning" Value="BitColor.SevereWarning" />
-                <BitChoiceGroupOption Text="Error" Value="BitColor.Error" />
-                <BitChoiceGroupOption Text="PrimaryBackground" Value="BitColor.PrimaryBackground" />
-                <BitChoiceGroupOption Text="SecondaryBackground" Value="BitColor.SecondaryBackground" />
-                <BitChoiceGroupOption Text="TertiaryBackground" Value="BitColor.TertiaryBackground" />
-                <BitChoiceGroupOption Text="PrimaryForeground" Value="BitColor.PrimaryForeground" />
-                <BitChoiceGroupOption Text="SecondaryForeground" Value="BitColor.SecondaryForeground" />
-                <BitChoiceGroupOption Text="TertiaryForeground" Value="BitColor.TertiaryForeground" />
-                <BitChoiceGroupOption Text="PrimaryBorder" Value="BitColor.PrimaryBorder" />
-                <BitChoiceGroupOption Text="SecondaryBorder" Value="BitColor.SecondaryBorder" />
-                <BitChoiceGroupOption Text="TertiaryBorder" Value="BitColor.TertiaryBorder" />
-            </BitChoiceGroup>
-
-            <div>
-                <BitChoiceGroup @bind-Value="basicSnackBarPosition" Label="Position" TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
-                    <BitChoiceGroupOption Text="TopStart" Value="BitSnackBarPosition.TopStart" />
-                    <BitChoiceGroupOption Text="TopCenter" Value="BitSnackBarPosition.TopCenter" />
-                    <BitChoiceGroupOption Text="TopEnd" Value="BitSnackBarPosition.TopEnd" />
-                    <BitChoiceGroupOption Text="BottomStart" Value="BitSnackBarPosition.BottomStart" />
-                    <BitChoiceGroupOption Text="BottomCenter" Value="BitSnackBarPosition.BottomCenter" />
-                    <BitChoiceGroupOption Text="BottomEnd" Value="BitSnackBarPosition.BottomEnd" />
-                </BitChoiceGroup>
-                <br />
-                <BitChoiceGroup @bind-Value="direction" Label="Direction" TItem="BitChoiceGroupOption<BitDir>" TValue="BitDir">
-                    <BitChoiceGroupOption Text="LTR" Value="BitDir.Ltr" />
-                    <BitChoiceGroupOption Text="RTL" Value="BitDir.Rtl" />
-                    <BitChoiceGroupOption Text="Auto" Value="BitDir.Auto" />
-                </BitChoiceGroup>
-            </div>
-
-            <div>
-                <BitChoiceGroup @bind-Value="customVariant" Label="Variant" TItem="BitChoiceGroupOption<BitVariant>" TValue="BitVariant">
-                    <BitChoiceGroupOption Text="Fill" Value="BitVariant.Fill" />
-                    <BitChoiceGroupOption Text="Outline" Value="BitVariant.Outline" />
-                    <BitChoiceGroupOption Text="Text" Value="BitVariant.Text" />
-                </BitChoiceGroup>
-                <br />
-                <BitChoiceGroup @bind-Value="customSize" Label="Size" TItem="BitChoiceGroupOption<BitSize>" TValue="BitSize">
-                    <BitChoiceGroupOption Text="Small" Value="BitSize.Small" />
-                    <BitChoiceGroupOption Text="Medium" Value="BitSize.Medium" />
-                    <BitChoiceGroupOption Text="Large" Value="BitSize.Large" />
-                </BitChoiceGroup>
-            </div>
-
-            <div>
-                <BitToggle @bind-Value="basicSnackBarAutoDismiss" Label="Auto Dismiss" Inline />
-                <BitNumberField @bind-Value="basicSnackBarDismissSeconds" IsEnabled="basicSnackBarAutoDismiss" Step="1" Min="1" Label="Dismiss Time (based on second)" />
-                <br />
-                <BitNumberField @bind-Value="customTransitionDuration" Step="50" Min="0" Max="2000" Label="Transition Duration (ms)" />
-                <br /><br />
-                <BitToggle @bind-Value="basicSnackBarMultiline" Label="Multiline" Inline />
-                <BitToggle @bind-Value="customShowIcon" Label="Show Icon" Inline />
-                <br /><br />
-                <BitTextField @bind-Value="basicSnackBarTitle" Label="Title" DefaultValue="Title" />
-                <BitTextField @bind-Value="basicSnackBarBody" Label="Body" Multiline Rows="6" DefaultValue="This is a body!" />
-            </div>
-        </div>
-        <br />
     </DemoExample>
 
     <DemoExample Title="Cascading parameters" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
@@ -391,7 +325,7 @@
             <BitSnackBar @ref="cascadedOwnRef" Position="BitSnackBarPosition.BottomCenter" />
         </BitParams>
         <BitSnackBar @ref="uncascadedRef" />
-        <BitButton OnClick="OpenCascaded">Takes the position, variant, icon and lifetime from the cascade</BitButton>
+        <BitButton OnClick="OpenCascaded">Takes the position, icon and lifetime from the cascade</BitButton>
         <br /><br />
         <BitButton OnClick="OpenCascadedOwn">Its own position, the cascaded rest</BitButton>
         <br /><br />

@@ -99,7 +99,7 @@ public partial class BitSnackBarDemo
             Name = "Hotkey",
             Type = "string[]?",
             DefaultValue = "null",
-            Description = "The keyboard shortcut that moves the focus to the snack bar region, as a list of KeyboardEvent.code values (the modifiers written as their property names, so [\"KeyT\", \"altKey\"] is Alt+T). A notification is at the end of the document and takes itself away again, so this is what makes the actions inside one operable from the keyboard at all. Off unless a shortcut is given; needs the bit BlazorUI script to be on the page.",
+            Description = "The keyboard shortcut that moves the focus to the snack bar region, as a list of KeyboardEvent.code values (the modifiers written as their property names, so [\"KeyT\", \"altKey\"] is Alt+T). A notification is at the end of the document and takes itself away again, so this is what makes the actions inside one operable from the keyboard at all. The default AriaLabel spells the shortcut out, and Escape on the region hands the focus back. Off unless a shortcut is given; needs the bit BlazorUI script to be on the page.",
         },
         new()
         {
@@ -242,6 +242,15 @@ public partial class BitSnackBarDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A custom ARIA role for every snack bar item, overriding the one its color implies. By default the colors that report a problem are announced as an alert (assertively) and the rest as a status (politely); a role that is not a live one leaves the item unannounced. An alert item is rendered with the status role so it is not announced twice.",
+        },
+        new()
+        {
+            Name = "ServiceHost",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes this snack bar the one BitSnackBarService shows its notifications through, so any component can raise one by injecting the service. While several hosts are marked, the one rendered most recently takes the notifications.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-service",
         },
         new()
         {
@@ -663,7 +672,7 @@ public partial class BitSnackBarDemo
                     Name = "Container",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the main container of the BitSnackBar."
+                    Description = "Custom CSS classes/styles for the container of each snack bar item."
                 },
                 new()
                 {
@@ -735,6 +744,50 @@ public partial class BitSnackBarDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the progress bar of the BitSnackBar."
                 }
+            ]
+        },
+        new()
+        {
+            Id = "snackbar-service",
+            Title = "BitSnackBarService",
+            Description = "Shows snack bar notifications from anywhere in the app through the BitSnackBar marked as ServiceHost. Registered by AddBitBlazorUIServices; also has the Info, Success, Warning, SevereWarning, Error and Show methods of the host.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "IsHostAvailable",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether a BitSnackBar marked as ServiceHost is rendered, so the notifications shown through the service reach the screen. Without one, a shown item comes back unshown and a warning is logged."
+                },
+                new()
+                {
+                    Name = "Host",
+                    Type = "BitSnackBar?",
+                    DefaultValue = "null",
+                    Description = "The snack bar the notifications are shown through, for everything it offers beyond the service (Items, Pause, Resume, FocusAsync)."
+                },
+                new()
+                {
+                    Name = "Close",
+                    Type = "Task Close(BitSnackBarItem item)",
+                    DefaultValue = "",
+                    Description = "Closes an item through whichever host is showing it."
+                },
+                new()
+                {
+                    Name = "Update",
+                    Type = "Task Update(BitSnackBarItem item)",
+                    DefaultValue = "",
+                    Description = "Re-renders an item after its properties were changed, restarts its countdown and announces it again."
+                },
+                new()
+                {
+                    Name = "Clear",
+                    Type = "Task Clear()",
+                    DefaultValue = "",
+                    Description = "Closes every item of the current host and drops its queue."
+                },
             ]
         },
         new()
@@ -1003,7 +1056,7 @@ public partial class BitSnackBarDemo
         {
             Name = "FocusAsync",
             Type = "ValueTask FocusAsync()",
-            Description = "Moves the keyboard focus to the snack bar region, which is what puts the next Tab inside the notifications. This is what Hotkey does, offered on its own for an app with a shortcut registry of its own.",
+            Description = "Moves the keyboard focus to the snack bar region, which is what puts the next Tab inside the notifications. This is what Hotkey does, offered on its own for an app with a shortcut registry of its own. The element that had the focus gets it back on Escape, or when the last focused item leaves.",
         },
         new()
         {
@@ -1078,7 +1131,7 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "--bit-SnackBar-border-width",
-            DefaultValue = "--bit-shp-border-width on Outline, 0 otherwise",
+            DefaultValue = "--bit-shp-brd-width on Outline, 0 otherwise",
             Description = "Border width of an item.",
         },
         new()
@@ -1153,6 +1206,7 @@ public partial class BitSnackBarDemo
 
 
     private string offset = "8px";
+    private int transitionDuration = 200;
     private BitSnackBar positionRef = default!;
     private BitSnackBarPosition position = BitSnackBarPosition.BottomEnd;
     private async Task OpenPositionSnackBar()
@@ -1408,6 +1462,19 @@ public partial class BitSnackBarDemo
     private async Task ClearAll() => await controlRef.Clear();
 
 
+    [AutoInject] private BitSnackBarService snackBarService { get; set; } = default!;
+
+    private async Task SaveThroughService()
+    {
+        await snackBarService.Success("Saved", "Shown from a component that has no reference to the host.");
+    }
+
+    private async Task FailThroughService()
+    {
+        await snackBarService.Error("Save failed", "The same service reports problems too.");
+    }
+
+
     private BitSnackBar a11yRef = default!;
 
     private async Task OpenPoliteA11y()
@@ -1452,32 +1519,11 @@ public partial class BitSnackBarDemo
     private async Task FocusSnackBars() => await hotkeyRef.FocusAsync();
 
 
-    private BitDir direction;
-    private bool customShowIcon;
-    private bool basicSnackBarMultiline;
-    private bool basicSnackBarAutoDismiss;
-    private int basicSnackBarDismissSeconds = 3;
-    private int customTransitionDuration = 200;
-    private BitSnackBar customizationRef = default!;
-    private BitSize customSize = BitSize.Medium;
-    private BitVariant customVariant = BitVariant.Fill;
-    private string basicSnackBarBody = "This is body";
-    private string basicSnackBarTitle = "This is title";
-    private BitColor basicSnackBarColor = BitColor.Info;
-    private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
-
-    private async Task OpenCustomizationSnackBar()
-    {
-        await customizationRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarColor);
-    }
-
-
     private readonly BitSnackBarParams[] snackBarParams =
     [
         new()
         {
             Position = BitSnackBarPosition.TopCenter,
-            Variant = BitVariant.Outline,
             ShowIcon = true,
             AutoDismiss = true,
             AutoDismissTime = TimeSpan.FromSeconds(4),
@@ -1487,11 +1533,11 @@ public partial class BitSnackBarDemo
     private BitSnackBar cascadedOwnRef = default!;
     private BitSnackBar uncascadedRef = default!;
 
-    private async Task OpenCascaded() => await cascadedRef.Success("Cascaded", "Top center, outlined, with an icon, for 4 seconds.");
+    private async Task OpenCascaded() => await cascadedRef.Success("Cascaded", "Top center, with an icon, for 4 seconds.");
 
     private async Task OpenCascadedOwn() => await cascadedOwnRef.Success("Own position", "Bottom center, the rest from the cascade.");
 
-    private async Task OpenUncascaded() => await uncascadedRef.Success("Defaults", "Bottom end, filled, no icon, until dismissed.");
+    private async Task OpenUncascaded() => await uncascadedRef.Success("Defaults", "Bottom end, no icon, until dismissed.");
 
 
     private BitSnackBar colorRef = default!;

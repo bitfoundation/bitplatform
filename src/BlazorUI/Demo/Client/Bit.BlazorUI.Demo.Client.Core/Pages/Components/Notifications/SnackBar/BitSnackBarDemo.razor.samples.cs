@@ -13,7 +13,7 @@ private async Task OpenBasicSnackBar()
 }";
 
     private readonly string example2RazorCode = @"
-<BitSnackBar @ref=""positionRef"" Position=""position"" Offset=""@offset"" />
+<BitSnackBar @ref=""positionRef"" Position=""position"" Offset=""@offset"" TransitionDuration=""transitionDuration"" />
 
 <BitChoiceGroup @bind-Value=""position"" Label=""Position"" Horizontal
                 TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
@@ -32,9 +32,17 @@ private async Task OpenBasicSnackBar()
     <BitChoiceGroupOption Text=""4rem"" Value=""@(""4rem"")"" />
 </BitChoiceGroup>
 
+<BitChoiceGroup @bind-Value=""transitionDuration"" Label=""TransitionDuration"" Horizontal
+                TItem=""BitChoiceGroupOption<int>"" TValue=""int"">
+    <BitChoiceGroupOption Text=""0"" Value=""0"" />
+    <BitChoiceGroupOption Text=""200ms (default)"" Value=""200"" />
+    <BitChoiceGroupOption Text=""600ms"" Value=""600"" />
+</BitChoiceGroup>
+
 <BitButton OnClick=""OpenPositionSnackBar"">Open SnackBar</BitButton>";
     private readonly string example2CsharpCode = @"
 private string offset = ""8px"";
+private int transitionDuration = 200;
 private BitSnackBar positionRef = default!;
 private BitSnackBarPosition position = BitSnackBarPosition.BottomEnd;
 private async Task OpenPositionSnackBar()
@@ -418,6 +426,26 @@ private async Task ResumeAll()
 private async Task ClearAll() => await controlRef.Clear();";
 
     private readonly string example13RazorCode = @"
+<BitSnackBar ServiceHost ShowIcon AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" />
+
+<BitButton OnClick=""SaveThroughService"">Save</BitButton>
+<BitButton OnClick=""FailThroughService"">Fail</BitButton>";
+    private readonly string example13CsharpCode = @"
+// Program.cs: builder.Services.AddBitBlazorUIServices();
+
+[Inject] private BitSnackBarService snackBarService { get; set; } = default!;
+
+private async Task SaveThroughService()
+{
+    await snackBarService.Success(""Saved"", ""Shown from a component that has no reference to the host."");
+}
+
+private async Task FailThroughService()
+{
+    await snackBarService.Error(""Save failed"", ""The same service reports problems too."");
+}";
+
+    private readonly string example14RazorCode = @"
 <BitSnackBar @ref=""a11yRef"" ShowIcon AriaLabel=""Demo notifications"" DismissAriaLabel=""Dismiss notification"" />
 
 <BitButton OnClick=""OpenPoliteA11y"">Polite (status)</BitButton>
@@ -425,7 +453,7 @@ private async Task ClearAll() => await controlRef.Clear();";
 <BitButton OnClick=""OpenAnnounceText"">Custom announcement</BitButton>
 <BitButton OnClick=""OpenSilentA11y"">Unannounced</BitButton>
 
-<BitSnackBar @ref=""hotkeyRef"" Hotkey=""@([""F8""])"" AriaLabel=""Notifications (F8)""
+<BitSnackBar @ref=""hotkeyRef"" Hotkey=""@([""F8""])""
              AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(30)"" ShowIcon>
     <ActionsTemplate Context=""item"">
         <BitButton Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground""
@@ -434,7 +462,7 @@ private async Task ClearAll() => await controlRef.Clear();";
 </BitSnackBar>
 <BitButton OnClick=""OpenHotkey"">Open, then press F8</BitButton>
 <BitButton OnClick=""FocusSnackBars"">Focus the region from code</BitButton>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitSnackBar a11yRef = default!;
 
 private async Task OpenPoliteA11y()
@@ -478,96 +506,6 @@ private async Task OpenHotkey()
 
 private async Task FocusSnackBars() => await hotkeyRef.FocusAsync();";
 
-    private readonly string example14RazorCode = @"
-<BitSnackBar @ref=""customizationRef""
-             Dir=""direction""
-             Size=""customSize""
-             ShowIcon=""customShowIcon""
-             Variant=""customVariant""
-             Position=""basicSnackBarPosition""
-             Multiline=""basicSnackBarMultiline""
-             AutoDismiss=""basicSnackBarAutoDismiss""
-             TransitionDuration=""customTransitionDuration""
-             AutoDismissTime=""TimeSpan.FromSeconds(basicSnackBarDismissSeconds)"" />
-
-<BitButton OnClick=""OpenCustomizationSnackBar"">Show</BitButton>
-
-<BitChoiceGroup @bind-Value=""basicSnackBarColor"" Label=""Color"" TItem=""BitChoiceGroupOption<BitColor>"" TValue=""BitColor"">
-    <BitChoiceGroupOption Text=""Primary"" Value=""BitColor.Primary"" />
-    <BitChoiceGroupOption Text=""Secondary"" Value=""BitColor.Secondary"" />
-    <BitChoiceGroupOption Text=""Tertiary"" Value=""BitColor.Tertiary"" />
-    <BitChoiceGroupOption Text=""Info"" Value=""BitColor.Info"" />
-    <BitChoiceGroupOption Text=""Success"" Value=""BitColor.Success"" />
-    <BitChoiceGroupOption Text=""Warning"" Value=""BitColor.Warning"" />
-    <BitChoiceGroupOption Text=""SevereWarning"" Value=""BitColor.SevereWarning"" />
-    <BitChoiceGroupOption Text=""Error"" Value=""BitColor.Error"" />
-    <BitChoiceGroupOption Text=""PrimaryBackground"" Value=""BitColor.PrimaryBackground"" />
-    <BitChoiceGroupOption Text=""SecondaryBackground"" Value=""BitColor.SecondaryBackground"" />
-    <BitChoiceGroupOption Text=""TertiaryBackground"" Value=""BitColor.TertiaryBackground"" />
-    <BitChoiceGroupOption Text=""PrimaryForeground"" Value=""BitColor.PrimaryForeground"" />
-    <BitChoiceGroupOption Text=""SecondaryForeground"" Value=""BitColor.SecondaryForeground"" />
-    <BitChoiceGroupOption Text=""TertiaryForeground"" Value=""BitColor.TertiaryForeground"" />
-    <BitChoiceGroupOption Text=""PrimaryBorder"" Value=""BitColor.PrimaryBorder"" />
-    <BitChoiceGroupOption Text=""SecondaryBorder"" Value=""BitColor.SecondaryBorder"" />
-    <BitChoiceGroupOption Text=""TertiaryBorder"" Value=""BitColor.TertiaryBorder"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup @bind-Value=""basicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
-    <BitChoiceGroupOption Text=""TopStart"" Value=""BitSnackBarPosition.TopStart"" />
-    <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
-    <BitChoiceGroupOption Text=""TopEnd"" Value=""BitSnackBarPosition.TopEnd"" />
-    <BitChoiceGroupOption Text=""BottomStart"" Value=""BitSnackBarPosition.BottomStart"" />
-    <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackBarPosition.BottomCenter"" />
-    <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitSnackBarPosition.BottomEnd"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup @bind-Value=""direction"" Label=""Direction"" TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
-    <BitChoiceGroupOption Text=""LTR"" Value=""BitDir.Ltr"" />
-    <BitChoiceGroupOption Text=""RTL"" Value=""BitDir.Rtl"" />
-    <BitChoiceGroupOption Text=""Auto"" Value=""BitDir.Auto"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup @bind-Value=""customVariant"" Label=""Variant"" TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
-    <BitChoiceGroupOption Text=""Fill"" Value=""BitVariant.Fill"" />
-    <BitChoiceGroupOption Text=""Outline"" Value=""BitVariant.Outline"" />
-    <BitChoiceGroupOption Text=""Text"" Value=""BitVariant.Text"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup @bind-Value=""customSize"" Label=""Size"" TItem=""BitChoiceGroupOption<BitSize>"" TValue=""BitSize"">
-    <BitChoiceGroupOption Text=""Small"" Value=""BitSize.Small"" />
-    <BitChoiceGroupOption Text=""Medium"" Value=""BitSize.Medium"" />
-    <BitChoiceGroupOption Text=""Large"" Value=""BitSize.Large"" />
-</BitChoiceGroup>
-
-<BitToggle @bind-Value=""basicSnackBarAutoDismiss"" Label=""Auto Dismiss"" Inline />
-<BitNumberField @bind-Value=""basicSnackBarDismissSeconds"" IsEnabled=""basicSnackBarAutoDismiss"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
-<BitNumberField @bind-Value=""customTransitionDuration"" Step=""50"" Min=""0"" Max=""2000"" Label=""Transition Duration (ms)"" />
-
-<BitToggle @bind-Value=""basicSnackBarMultiline"" Label=""Multiline"" Inline />
-<BitToggle @bind-Value=""customShowIcon"" Label=""Show Icon"" Inline />
-
-<BitTextField @bind-Value=""basicSnackBarTitle"" Label=""Title"" DefaultValue=""Title"" />
-<BitTextField @bind-Value=""basicSnackBarBody"" Label=""Body"" Multiline Rows=""6"" DefaultValue=""This is a body!"" />";
-    private readonly string example14CsharpCode = @"
-private BitDir direction;
-private bool customShowIcon;
-private bool basicSnackBarMultiline;
-private bool basicSnackBarAutoDismiss;
-private int basicSnackBarDismissSeconds = 3;
-private int customTransitionDuration = 200;
-private BitSnackBar customizationRef = default!;
-private BitSize customSize = BitSize.Medium;
-private BitVariant customVariant = BitVariant.Fill;
-private string basicSnackBarBody = ""This is body"";
-private string basicSnackBarTitle = ""This is title"";
-private BitColor basicSnackBarColor = BitColor.Info;
-private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
-
-private async Task OpenCustomizationSnackBar()
-{
-    await customizationRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarColor);
-}";
-
     private readonly string example15RazorCode = @"
 <BitParams Parameters=""snackBarParams"">
     <BitSnackBar @ref=""cascadedRef"" />
@@ -575,7 +513,7 @@ private async Task OpenCustomizationSnackBar()
 </BitParams>
 <BitSnackBar @ref=""uncascadedRef"" />
 
-<BitButton OnClick=""OpenCascaded"">Takes the position, variant, icon and lifetime from the cascade</BitButton>
+<BitButton OnClick=""OpenCascaded"">Takes the position, icon and lifetime from the cascade</BitButton>
 <BitButton OnClick=""OpenCascadedOwn"">Its own position, the cascaded rest</BitButton>
 <BitButton OnClick=""OpenUncascaded"">Outside the cascade, back to the defaults</BitButton>";
     private readonly string example15CsharpCode = @"
@@ -584,7 +522,6 @@ private readonly BitSnackBarParams[] snackBarParams =
     new()
     {
         Position = BitSnackBarPosition.TopCenter,
-        Variant = BitVariant.Outline,
         ShowIcon = true,
         AutoDismiss = true,
         AutoDismissTime = TimeSpan.FromSeconds(4),
@@ -594,11 +531,11 @@ private BitSnackBar cascadedRef = default!;
 private BitSnackBar cascadedOwnRef = default!;
 private BitSnackBar uncascadedRef = default!;
 
-private async Task OpenCascaded() => await cascadedRef.Success(""Cascaded"", ""Top center, outlined, with an icon, for 4 seconds."");
+private async Task OpenCascaded() => await cascadedRef.Success(""Cascaded"", ""Top center, with an icon, for 4 seconds."");
 
 private async Task OpenCascadedOwn() => await cascadedOwnRef.Success(""Own position"", ""Bottom center, the rest from the cascade."");
 
-private async Task OpenUncascaded() => await uncascadedRef.Success(""Defaults"", ""Bottom end, filled, no icon, until dismissed."");";
+private async Task OpenUncascaded() => await uncascadedRef.Success(""Defaults"", ""Bottom end, no icon, until dismissed."");";
 
     private readonly string example16RazorCode = @"
 <BitSnackBar @ref=""colorRef"" ShowIcon Variant=""colorVariant"" MaxItems=""4"" NewestOnTop />

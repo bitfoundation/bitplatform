@@ -3,6 +3,52 @@ namespace BitBlazorUI {
         private static _isInitialized = false;
         private static _hotkeys: Map<string, string[]> = new Map();
         private static _swipes: Map<string, BitSnackBarSwipe> = new Map();
+        private static _returnFocus: Map<string, HTMLElement> = new Map();
+
+        /**
+         * Moves the focus to a snack bar host, remembering where it came from.
+         * Jumping to the notifications is a detour, not a move: once the user is done with them (the last item
+         * leaves, or Escape is pressed on the region itself) the focus goes back to what they were working on,
+         * the same way Sonner hands it back after its hotkey.
+         */
+        public static focus(id: string) {
+            const element = document.getElementById(id);
+            if (!element) return;
+
+            const active = document.activeElement as HTMLElement | null;
+
+            // A second jump from inside the region keeps the first place the user came from.
+            if (active && active !== document.body && !element.contains(active)) {
+                SnackBars._returnFocus.set(id, active);
+            }
+
+            element.focus();
+
+            SnackBars.init();
+        }
+
+        /**
+         * Hands the focus back after the item that held it has left: to where the user was before they jumped
+         * to the notifications, or, when that is gone (or they never jumped), to the region itself, so the
+         * next Tab carries on from the notifications instead of starting over from the top of the page.
+         */
+        public static restoreFocus(id: string) {
+            const target = SnackBars._returnFocus.get(id);
+            SnackBars._returnFocus.delete(id);
+
+            if (target && target.isConnected) {
+                target.focus();
+                if (document.activeElement === target) return;
+            }
+
+            document.getElementById(id)?.focus();
+        }
+
+        public static dispose(id: string) {
+            SnackBars._returnFocus.delete(id);
+            SnackBars.unregisterHotkey(id);
+            SnackBars.unregisterSwipe(id);
+        }
 
         /**
          * Registers the keyboard shortcut that moves the focus to a snack bar host.
@@ -148,16 +194,26 @@ namespace BitBlazorUI {
             // One listener for every host on the page: the map is what tells them apart, so a page with several
             // snack bar hosts does not add a document listener per host.
             document.addEventListener('keydown', (e: KeyboardEvent) => {
+                // Escape on the region itself (not on an item, which dismisses that item) ends the detour the
+                // hotkey started and hands the focus back to where it came from.
+                if (e.key === 'Escape') {
+                    const active = document.activeElement as HTMLElement | null;
+                    if (active && active.id && SnackBars._returnFocus.has(active.id)) {
+                        e.preventDefault();
+                        SnackBars.restoreFocus(active.id);
+                    }
+                    return;
+                }
+
                 if (SnackBars._hotkeys.size === 0) return;
 
                 for (const [id, keys] of SnackBars._hotkeys) {
                     if (!SnackBars.matches(e, keys)) continue;
 
-                    const element = document.getElementById(id);
-                    if (!element) continue;
+                    if (!document.getElementById(id)) continue;
 
                     e.preventDefault();
-                    element.focus();
+                    SnackBars.focus(id);
 
                     return;
                 }
