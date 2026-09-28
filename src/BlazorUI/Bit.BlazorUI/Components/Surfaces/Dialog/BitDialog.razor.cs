@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Dialogs are temporary pop-ups that take focus from the page or app and require people to interact with them.
@@ -87,6 +89,19 @@ public partial class BitDialog : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the dialog component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple dialog components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitDialogParams.ParamName)]
+    public BitDialogParams? CascadingParameters { get; set; }
 
 
 
@@ -202,6 +217,20 @@ public partial class BitDialog : BitComponentBase
     /// placed the focus somewhere else on the page is a Dialog the key no longer reaches.
     /// </remarks>
     [Parameter] public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>
+    /// Dismisses the Dialog when its overlay is clicked.
+    /// <br />
+    /// The default value is <strong>true</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The counterpart of <see cref="CloseOnEscape"/>: turn it off for a Dialog holding work a stray click
+    /// outside would throw away, while the Escape key - a deliberate gesture - still closes it. A click it
+    /// refuses is answered the way every refused dismissal is (a shake and <see cref="OnDismissPrevented"/>).
+    /// <see cref="IsBlocking"/> refuses the click whatever this is set to, and a modeless Dialog has no
+    /// overlay to click.
+    /// </remarks>
+    [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
 
     /// <summary>
     /// The general color of the Dialog, which its Ok and Cancel buttons are painted in.
@@ -462,7 +491,8 @@ public partial class BitDialog : BitComponentBase
 
     /// <summary>
     /// A callback function for when a dismissal was refused: the Escape key on a Dialog that does not take
-    /// it, a click on the overlay of a blocking one, or a closing <see cref="OnDismissing"/> turned down.
+    /// it, a click on the overlay of one that does not take that (<see cref="CloseOnOverlayClick"/>,
+    /// <see cref="IsBlocking"/>), or a closing <see cref="OnDismissing"/> turned down.
     /// </summary>
     /// <remarks>
     /// The Dialog answers a refused dismissal on its own by shaking, so the gesture is not simply swallowed.
@@ -756,6 +786,16 @@ public partial class BitDialog : BitComponentBase
         }
 
         return base.OnInitializedAsync();
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDialogParams))]
+    protected override void OnParametersSet()
+    {
+        // The cascade fills in what the dialog left unset before anything reads it: the classes, the size and
+        // the behavior of the showing are all taken off the values it hands over.
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1163,7 +1203,7 @@ public partial class BitDialog : BitComponentBase
         // is the same story: an OnDismissing that is still deciding has not finished either.
         if (_isLoading || _isDismissing) return;
 
-        if (IsBlocking)
+        if (IsBlocking || CloseOnOverlayClick is false)
         {
             await PreventDismiss(BitDialogDismissReason.OverlayClick);
             return;
@@ -1348,12 +1388,15 @@ public partial class BitDialog : BitComponentBase
     // presets each keep the width of their own dialog (Fluent 2: 600px, Material: 560px, Cupertino: 270px).
     // It is capped at the area the Dialog is positioned in as well, so it can never be wider than the screen.
     //
+    // The public --bit-Dialog-max-width moves that ceiling for every Dialog it reaches - set on :root, on an
+    // ancestor or on the Style of one - while leaving the ones given a size of their own alone.
+    //
     // It is emitted here rather than declared in the stylesheet so that it applies only where nothing else
     // has already decided how wide the Dialog is: a Dialog given a width of its own would otherwise be
     // squeezed back under this, and a full-width one is asking for the whole of the area by name.
     private string? DefaultMaxWidth => (Width.HasValue() || FullWidth || FullSize)
                                         ? null
-                                        : $"--bit-dlg-mxw:min(100%,var({BitCss.Var.Size.DialogMaxWidth}));";
+                                        : $"--bit-dlg-mxw:min(100%,var(--bit-Dialog-max-width,var({BitCss.Var.Size.DialogMaxWidth})));";
 
     // An attribute selector rather than an id one, since an id is only a valid CSS identifier by accident:
     // a consumer-supplied Id can hold characters (a leading digit, a dot, a colon) that would make "#id"

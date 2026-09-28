@@ -1,12 +1,24 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
+.btn-container {
+    gap: 1rem;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.position-grid {
+    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
 .dialog-title {
     display: flex;
     font-weight: 600;
     align-items: center;
-    font-size: rem2(24px);
+    font-size: rem2(20px);
     justify-content: space-between;
-    border-top: rem2(4px) solid #0054C6;
+    border-top: rem2(4px) solid var(--bit-clr-pri);
     padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
 }
 
@@ -20,32 +32,14 @@
 
 .dialog-body {
     max-width: 40rem;
-    overflow-y: hidden;
     padding: 0 rem2(24px) rem2(24px);
 }
 
 .dialog-footer {
+    gap: 0.5rem;
     display: flex;
-    align-items: center;
     justify-content: flex-end;
-    padding: 0 rem2(14px) rem2(14px);
-}
-
-.btn-container {
-    gap: 1rem;
-    display: flex;
-    flex-flow: row wrap;
-}
-
-.position-btn {
-    gap: 1rem;
-    display: flex;
-    flex-flow: column nowrap;
-
-    div {
-        display: flex;
-        justify-content: space-between;
-    }
+    padding: 0 rem2(24px) rem2(24px);
 }
 
 .relative-container {
@@ -55,7 +49,21 @@
     padding: 0.5rem;
     margin-top: 1rem;
     position: relative;
-    border: rem2(2px) lightgreen solid;
+    box-sizing: border-box;
+    border: rem2(2px) solid var(--bit-clr-brd-pri);
+}
+
+.custom-dialog-variables {
+    --bit-Dialog-radius: 1.5rem;
+    --bit-Dialog-padding: 2rem;
+    --bit-Dialog-max-width: 26rem;
+    --bit-Dialog-text-align: center;
+    --bit-Dialog-border-width: #{rem2(2px)};
+    --bit-Dialog-border-color: #7a2e8e;
+    --bit-Dialog-title-color: #7a2e8e;
+    --bit-Dialog-title-font-weight: 700;
+    --bit-Dialog-overlay-backdrop-filter: blur(4px);
+    --bit-Dialog-overlay-background: rgba(122, 46, 142, 0.25);
 }
 
 ::deep {

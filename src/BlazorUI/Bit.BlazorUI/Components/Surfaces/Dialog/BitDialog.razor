@@ -112,10 +112,15 @@
                             {
                                 @* The spinner replaces the label while the Ok callback runs, which would
                                    otherwise leave the button nameless to a screen reader for as long as it
-                                   takes - so the label is kept as the accessible name for that stretch. *@
+                                   takes - so the label is kept as the accessible name for that stretch.
+                                   The button is held shut with aria-disabled rather than disabled while it
+                                   waits: it is the element the focus is on when it is pressed, and a button
+                                   that turns disabled drops the focus onto the page behind the Dialog. The
+                                   click handler refuses a second press on its own. *@
                                 <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
                                         type="button"
-                                        disabled="@(IsEnabled is false || IsOkButtonEnabled is false || _isLoading)"
+                                        disabled="@(IsEnabled is false || IsOkButtonEnabled is false)"
+                                        aria-disabled="@(_isLoading ? "true" : null)"
                                         aria-busy="@(_isLoading ? "true" : null)"
                                         aria-label="@(_isLoading ? OkText : null)"
                                         style="@Styles?.OkButton"

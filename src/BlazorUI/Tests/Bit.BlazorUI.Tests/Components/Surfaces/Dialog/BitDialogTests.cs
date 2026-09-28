@@ -1044,6 +1044,37 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogCloseOnOverlayClickOffShouldRefuseTheClickButStillTakeEscape()
+    {
+        var isOpen = true;
+        var overlayClicks = 0;
+        BitDialogDismissReason? prevented = null;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.CloseOnOverlayClick, false);
+            parameters.Add(p => p.OnOverlayClick, () => overlayClicks++);
+            parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
+        });
+
+        component.Find(".bit-dlg-ovl").Click();
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(1, overlayClicks);
+        Assert.AreEqual(BitDialogDismissReason.OverlayClick, prevented);
+        Assert.IsTrue(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-prv"));
+
+        // Only the click is refused: the role stays a plain dialog, and Escape still closes it.
+        Assert.AreEqual("dialog", component.Find(".bit-dlg-ctn").GetAttribute("role"));
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(BitDialogDismissReason.Escape, component.Instance.DismissReason);
+    }
+
+    [TestMethod]
     public void BitDialogAcceptedDismissShouldNotBeReportedAsRefused()
     {
         var isOpen = true;
@@ -1590,7 +1621,10 @@ public class BitDialogTests : BunitTestContext
         component.Find(".bit-dlg-okb").Click();
 
         component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-dlg-spn")), TimeSpan.FromSeconds(5));
-        Assert.IsTrue(component.Find(".bit-dlg-okb").HasAttribute("disabled"));
+        // Held shut with aria-disabled rather than disabled: the focus is on the button that was just pressed,
+        // and a button that turns disabled drops it onto the page behind the Dialog.
+        Assert.IsFalse(component.Find(".bit-dlg-okb").HasAttribute("disabled"));
+        Assert.AreEqual("true", component.Find(".bit-dlg-okb").GetAttribute("aria-disabled"));
         Assert.AreEqual("true", component.Find(".bit-dlg-okb").GetAttribute("aria-busy"));
         // The spinner replaced the label, so the button keeps its name through the aria-label instead.
         Assert.AreEqual("Ok", component.Find(".bit-dlg-okb").GetAttribute("aria-label"));
@@ -3195,7 +3229,8 @@ public class BitDialogTests : BunitTestContext
 
         // A Dialog is as wide as its content, so without a ceiling a two-sentence confirmation spans the
         // screen. The ceiling is the design system's, and it is capped at the area the Dialog is in as well.
-        Assert.AreEqual($"--bit-dlg-mxw:min(100%,var({BitCss.Var.Size.DialogMaxWidth}));", style);
+        // The public --bit-Dialog-max-width moves that ceiling without giving any one Dialog a size of its own.
+        Assert.AreEqual($"--bit-dlg-mxw:min(100%,var(--bit-Dialog-max-width,var({BitCss.Var.Size.DialogMaxWidth})));", style);
     }
 
     [TestMethod]

@@ -123,6 +123,7 @@
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;
+    --bit-layout-dialog-text-align: start;
     // M3 caps its basic dialog at 560px.
     --bit-siz-dialog-max-width: 35rem; //560px
 
@@ -137,6 +138,9 @@
     // Control labels: M3 label-large tracks at 0.1px; no uppercase in M3.
     --bit-tpg-ctrl-letter-spacing: 0.00625rem;
     --bit-tpg-ctrl-text-transform: none;
+    // M3 titles a dialog in headline-small: 24px regular.
+    --bit-tpg-dialog-title-font-size: 1.5rem; //24px
+    --bit-tpg-dialog-title-font-weight: 400;
     // The --bit-tpg-fs-* ramp is deliberately left at the core stylesheet's values rather than
     // retuned. The three steps the size classes read are already M3's own control sizes (sm -> 12px
     // label-medium, md -> 14px label-large, lg -> 16px body-large), and above them the M3 scale has
