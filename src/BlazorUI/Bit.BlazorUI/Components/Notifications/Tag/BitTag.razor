@@ -19,12 +19,8 @@
 
     @* The label of the tag names whatever the tag became: an anchor, a button or nothing at all. A tag that
        is one of the first two is the control a screen reader lands on, so the name moves onto that control
-       and only stays on the root when there is no control to carry it. *@
+       and only stays with the root when there is no control to carry it. *@
     var labelOnRoot = _isInteractive is false;
-
-    @* The picture only renders where there is no icon to take its place, so an alt only names the tag where
-       both of those hold - an IconAlt sitting next to an Icon names nothing and must not be taken for a name. *@
-    var pictureIsNamed = icon is null && IconUrl.HasValue() && IconAlt.HasValue();
 
     var describedById = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
 
@@ -64,10 +60,11 @@
     var linkLabel = label.HasValue() && newTabHint is not null ? $"{label} {newTabHint}" : label;
     var hintText = label.HasValue() ? null : newTabHint;
 
-    @* aria-label on an element with no role of its own is not guaranteed to be announced, so a static tag
-       with nothing to read - an icon-only or a picture-only one - carries its name as text no one can see
-       instead. A tag that has words in it, or a picture the alt already names, is named without it. *@
-    var hiddenLabel = labelOnRoot && label.HasValue() && hasLabel is false && ChildContent is null && pictureIsNamed is false;
+    @* ARIA forbids naming an element with no role of its own, and most screen readers ignore an aria-label
+       put there anyway, so a static tag never carries one: its name is text no one can see instead, and the
+       content it stands in for - the words, the picture's alt, a template - is hidden from assistive
+       technologies, which is exactly what an aria-label does to the content of a control. *@
+    var hiddenLabel = labelOnRoot && label.HasValue();
 
     var describedBy = describedById is not null
                     ? (splattedDescribedBy.HasValue() ? $"{describedById} {splattedDescribedBy}" : describedById)
@@ -152,7 +149,7 @@
       title="@(Title ?? splattedTitle)"
       style="@StyleBuilder.Value"
       class="@ClassBuilder.Value"
-      aria-label="@(labelOnRoot ? label : null)"
+      aria-label="@((string?)null)"
       aria-describedby="@rootDescribedBy"
       tabindex="@rootTabIndex"
       dir="@Dir?.ToString().ToLower()">
@@ -218,7 +215,7 @@
     }
     else
     {
-        <span style="@Styles?.Content" class="bit-tag-cnt @Classes?.Content">@content</span>
+        <span style="@Styles?.Content" class="bit-tag-cnt @Classes?.Content" aria-hidden="@(hiddenLabel ? "true" : null)">@content</span>
     }
 
     @if (OnDismiss.HasDelegate)

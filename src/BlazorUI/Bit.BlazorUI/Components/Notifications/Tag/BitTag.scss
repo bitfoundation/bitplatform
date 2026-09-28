@@ -26,7 +26,7 @@
 //   --bit-Tag-shadow                   elevation                                  (default: none)
 //
 //   SIZE
-//   --bit-Tag-min-height               smallest height, rule included             (default: per Size, 20/24/32px inside the rule)
+//   --bit-Tag-min-height               smallest height, rule included             (default: per Size, $siz-chip-* inside the rule)
 //   --bit-Tag-max-width                widest the tag gets before it wraps or,
 //                                      with NoWrap, ellipsizes                    (default: 100%)
 //   --bit-Tag-padding-x                inline inset of the content and the
@@ -396,9 +396,10 @@
 // the label off the rule, while the inline pad is what makes the chip read as a chip. It is taken from the
 // control padding of the theme rather than from a literal, since the corner is $shp-radius-chip - a pill in
 // Cupertino, 8px in Material - and a rounder corner eats into the inline inset. Half the control padding is
-// the chip's share of it: a tag is a label, not a button. The heights are measured inside the rule - 20, 24
-// and 32 pixels, the tag scale of Fluent 2 - since that is the height the dismiss button gets, which puts the
-// Medium default on the 24px pointer target of WCAG 2.2 whatever the width of the rule.
+// the chip's share of it: a tag is a label, not a button. The heights come from the chip tokens of the theme,
+// measured inside the rule - 20, 24 and 32 pixels by default, the tag scale of Fluent 2, and Material's 32dp
+// chip at Medium - since that is the height the dismiss button gets, which puts the Medium default on the 24px
+// pointer target of WCAG 2.2 whatever the width of the rule.
 .bit-tag-sm {
     --bit-tag-sz-gap: #{spacing(0.750)};
     --bit-tag-sz-lbl-gap: #{spacing(0.125)};
@@ -407,7 +408,7 @@
     --bit-tag-sz-img: #{spacing(1.750)};
     --bit-tag-sz-pad-y: #{spacing(0.250)};
     --bit-tag-sz-pad-x: calc(#{$siz-ctrl-pad-x-sm} / 2);
-    --bit-tag-sz-min-height: calc(#{spacing(2.5)} + 2 * var(--bit-tag-brd-w));
+    --bit-tag-sz-min-height: calc(#{$siz-chip-sm} + 2 * var(--bit-tag-brd-w));
 }
 
 .bit-tag-md {
@@ -418,7 +419,7 @@
     --bit-tag-sz-img: #{spacing(2)};
     --bit-tag-sz-pad-y: #{spacing(0.375)};
     --bit-tag-sz-pad-x: calc(#{$siz-ctrl-pad-x-md} / 2);
-    --bit-tag-sz-min-height: calc(#{spacing(3)} + 2 * var(--bit-tag-brd-w));
+    --bit-tag-sz-min-height: calc(#{$siz-chip-md} + 2 * var(--bit-tag-brd-w));
 }
 
 .bit-tag-lg {
@@ -429,7 +430,7 @@
     --bit-tag-sz-img: #{spacing(2.5)};
     --bit-tag-sz-pad-y: #{spacing(0.500)};
     --bit-tag-sz-pad-x: calc(#{$siz-ctrl-pad-x-lg} / 2);
-    --bit-tag-sz-min-height: calc(#{spacing(4)} + 2 * var(--bit-tag-brd-w));
+    --bit-tag-sz-min-height: calc(#{$siz-chip-lg} + 2 * var(--bit-tag-brd-w));
 }
 
 

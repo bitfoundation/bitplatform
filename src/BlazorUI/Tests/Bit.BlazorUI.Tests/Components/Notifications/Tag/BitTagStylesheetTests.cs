@@ -112,6 +112,18 @@ public class BitTagStylesheetTests
         }
     }
 
+    [TestMethod]
+    public void BitTagHeightsShouldComeFromTheChipTokensOfTheTheme()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // a preset re-sizes every tag through --bit-siz-chip-*, so no size class may pin a height of its own
+        foreach (var size in new[] { "sm", "md", "lg" })
+        {
+            StringAssert.Contains(stylesheet, $"--bit-tag-sz-min-height: calc(#{{$siz-chip-{size}}} + 2 * var(--bit-tag-brd-w));", size);
+        }
+    }
+
     private static string ReadStylesheet([CallerFilePath] string thisFile = "")
     {
         var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",

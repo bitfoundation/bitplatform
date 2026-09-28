@@ -1004,8 +1004,11 @@ public class BitTagTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, aria);
         });
 
+        // ARIA forbids naming an element with no role of its own, so a static tag carries its name as
+        // hidden text instead of an aria-label
         var root = component.Find(".bit-tag");
-        Assert.AreEqual(aria, root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-label"));
+        Assert.AreEqual(aria, root.QuerySelector(".bit-tag-vhd")!.TextContent);
     }
 
     [TestMethod]
@@ -1155,19 +1158,34 @@ public class BitTagTests : BunitTestContext
         // so the name of an icon-only static tag is carried as text taken out of the layout instead
         var hidden = component.Find(".bit-tag-vhd");
         Assert.AreEqual("Pinned to the top", hidden.TextContent);
-        Assert.AreEqual("Pinned to the top", component.Find(".bit-tag").GetAttribute("aria-label"));
+        Assert.IsNull(component.Find(".bit-tag").GetAttribute("aria-label"));
     }
 
     [TestMethod]
-    public void BitTagShouldNotCarryAHiddenLabelWhenItHasWordsOfItsOwn()
+    public void BitTagAriaLabelShouldReplaceTheWordsOfAStaticTag()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "3");
+            parameters.Add(p => p.AriaLabel, "3 unread messages");
+        });
+
+        // what an aria-label does to the content of a control: the name is read in place of the words
+        Assert.AreEqual("3 unread messages", component.Find(".bit-tag-vhd").TextContent);
+        Assert.AreEqual("true", component.Find(".bit-tag-cnt").GetAttribute("aria-hidden"));
+        Assert.AreEqual("3", component.Find(".bit-tag-tex").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTagContentShouldStayReadableWithoutAnAriaLabel()
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.Text, "Design");
-            parameters.Add(p => p.AriaLabel, "The design tag");
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+        Assert.IsNull(component.Find(".bit-tag-cnt").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -1186,7 +1204,7 @@ public class BitTagTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTagShouldNotCarryAHiddenLabelForATemplate()
+    public void BitTagAriaLabelShouldReplaceATemplateOfAStaticTag()
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
@@ -1194,7 +1212,22 @@ public class BitTagTests : BunitTestContext
             parameters.AddChildContent("<span>whatever the template says</span>");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+        Assert.AreEqual("A template", component.Find(".bit-tag-vhd").TextContent);
+        Assert.AreEqual("true", component.Find(".bit-tag-cnt").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitTagContentOfAControlShouldNeverBeHidden()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.AriaLabel, "The design filter");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // the aria-label of the button already replaces its content, and hiding a control would hide the control
+        Assert.IsNull(component.Find("button.bit-tag-cnt").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -1531,6 +1564,26 @@ public class BitTagTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTagLinkShouldNeverFlipItsOwnSelection()
+    {
+        var changed = 0;
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/design");
+            parameters.Add(p => p.DefaultSelected, true);
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<bool>(this, _ => changed++));
+        });
+
+        component.Find("a.bit-tag-cnt").Click();
+
+        // the click navigates; which link stands for the current page is for the app to say
+        Assert.AreEqual(0, changed);
+        Assert.IsTrue(component.Instance.Selected);
+        Assert.AreEqual("true", component.Find("a.bit-tag-cnt").GetAttribute("aria-current"));
+        Assert.IsNull(component.Find("a.bit-tag-cnt").GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
     public void BitTagUnselectedLinkShouldNotReportAriaCurrent()
     {
         var component = RenderComponent<BitTag>(parameters =>
@@ -1543,7 +1596,7 @@ public class BitTagTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTagShouldNotCarryAHiddenLabelWhenThePictureIsAlreadyNamed()
+    public void BitTagAriaLabelShouldBeReadInPlaceOfANamedPicture()
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
@@ -1552,8 +1605,9 @@ public class BitTagTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, "Annie Lindqvist");
         });
 
-        // the alt of the picture is already read out, and a name announced twice is worse than once
-        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+        // the picture sits in content hidden behind the name, so the name is read once rather than twice
+        Assert.AreEqual(1, component.FindAll(".bit-tag-vhd").Count);
+        Assert.AreEqual("true", component.Find(".bit-tag-cnt").GetAttribute("aria-hidden"));
     }
 
 
@@ -1587,7 +1641,8 @@ public class BitTagTests : BunitTestContext
             builder.CloseComponent();
         });
 
-        Assert.AreEqual("From the parameter", component.Find(".bit-tag").GetAttribute("aria-label"));
+        Assert.AreEqual("From the parameter", component.Find(".bit-tag-vhd").TextContent);
+        Assert.IsNull(component.Find(".bit-tag").GetAttribute("aria-label"));
     }
 
     [TestMethod]

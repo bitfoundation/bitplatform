@@ -170,7 +170,7 @@ public partial class BitTagDemo
             Name = "OnChange",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "Called after Selected changes. Setting it makes the tag a toggle."
+            Description = "Called after Selected changes. Setting it makes the tag a toggle (except a link, whose click navigates)."
         },
         new()
         {
@@ -971,7 +971,7 @@ public partial class BitTagDemo
         new()
         {
             Name = "--bit-Tag-min-height",
-            DefaultValue = "Per Size: 20px, 24px or 32px inside the rule",
+            DefaultValue = "--bit-siz-chip-{sm,md,lg} plus the rule",
             Description = "Smallest height, rule included; the tag still grows with wrapped text.",
         },
         new()

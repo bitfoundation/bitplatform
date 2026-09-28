@@ -231,6 +231,7 @@ private void ToggleFilter(string filter, bool selected)
     private readonly string example11RazorCode = @"
 <BitTag IconName=""@BitIconName.Filter"" AriaLabel=""Show the filters"" OnClick=""() => { }"" />
 <BitTag IconName=""@BitIconName.Pinned"" AriaLabel=""Pinned to the top"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""3"" IconName=""@BitIconName.Mail"" AriaLabel=""3 unread messages"" Color=""BitColor.Info"" />
 <BitTag Text=""Only mine"" @bind-Selected=""isOnlyMine"" Variant=""BitVariant.Outline"" AriaDescription=""Shows only the items you own"" />
 <BitTag Text=""Offline"" Color=""BitColor.Warning"" AriaDescription=""Dismissing hides the notice, not the problem"" OnDismiss=""() => { }"" />
 

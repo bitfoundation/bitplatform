@@ -186,7 +186,8 @@
             <b>Href</b> makes the tag a real anchor, with <b>Target</b>, <b>Rel</b> and <b>Download</b>. A new-tab link gets
             <code>rel="noopener"</code> unless Rel says otherwise, and is announced "(opens in a new tab)" - <b>NewTabHint</b> rewords it,
             an empty one removes it. A disabled link drops its href and leaves the tab order. A <b>Selected</b> link reports
-            <code>aria-current</code>, whose value <b>AriaCurrent</b> sets (<b>Page</b> for the page you are on).
+            <code>aria-current</code>, whose value <b>AriaCurrent</b> sets (<b>Page</b> for the page you are on); a click navigates rather
+            than toggling it.
         </div>
         <br />
         <div class="example-content">
@@ -259,13 +260,15 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
-            A tag with no words needs an <b>AriaLabel</b>: it lands on the button or link the tag becomes, or on the tag as hidden text when it
-            is neither. <b>AriaDescription</b> is read after the name - on a static dismissible tag, by its dismiss button too.
+            A tag with no words needs an <b>AriaLabel</b>. It names the button or link the tag becomes; on a static tag it is read in place of
+            the content ("3" becomes "3 unread messages"). <b>AriaDescription</b> is read after the name - on a static dismissible tag, by its
+            dismiss button too.
         </div>
         <br />
         <div class="example-content">
             <BitTag IconName="@BitIconName.Filter" AriaLabel="Show the filters" OnClick="() => { }" />
             <BitTag IconName="@BitIconName.Pinned" AriaLabel="Pinned to the top" Variant="BitVariant.Outline" />
+            <BitTag Text="3" IconName="@BitIconName.Mail" AriaLabel="3 unread messages" Color="BitColor.Info" />
             <BitTag Text="Only mine" @bind-Selected="isOnlyMine" Variant="BitVariant.Outline" AriaDescription="Shows only the items you own" />
             <BitTag Text="Offline" Color="BitColor.Warning" AriaDescription="Dismissing hides the notice, not the problem" OnDismiss="() => { }" />
         </div>
@@ -443,8 +446,9 @@
 
     <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
         <div>
-            <b>Small</b>, <b>Medium</b> (default) and <b>Large</b> set the type, the height and the inset together. From Medium up the dismiss
-            button meets the 24px minimum target size of WCAG 2.2.
+            <b>Small</b>, <b>Medium</b> (default) and <b>Large</b> set the type, the inset and the height - the theme's
+            <code>--bit-siz-chip-*</code> tokens, so a preset such as Material resizes every tag. From Medium up the dismiss button meets the
+            24px minimum target size of WCAG 2.2.
         </div>
         <br />
         <div class="example-content">

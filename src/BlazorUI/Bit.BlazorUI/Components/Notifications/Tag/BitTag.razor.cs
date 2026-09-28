@@ -14,7 +14,9 @@ public partial class BitTag : BitComponentBase
     // A tag that leads somewhere is an anchor, and a tag that does something - acting on the page or
     // toggling itself - is a button. Anything else is a label, which is not a control and never takes focus.
     private bool _isLink => Href.HasValue();
-    private bool _isToggle => SelectedChanged.HasDelegate || OnChange.HasDelegate || DefaultSelected.HasValue;
+    // A link is never a toggle: its selection is the aria-current the app sets for the page the reader is on,
+    // not something a click on it flips - the click navigates.
+    private bool _isToggle => _isLink is false && (SelectedChanged.HasDelegate || OnChange.HasDelegate || DefaultSelected.HasValue);
     private bool _isButton => _isLink is false && (OnClick.HasDelegate || _isToggle);
     private bool _isInteractive => _isLink || _isButton;
 
@@ -331,7 +333,8 @@ public partial class BitTag : BitComponentBase
     /// <remarks>
     /// Setting it - or binding <see cref="Selected"/>, or giving a <see cref="DefaultSelected"/> - is what
     /// turns the tag into a toggle: it becomes a button that flips its own selection on every activation and
-    /// reports that state through <c>aria-pressed</c>.
+    /// reports that state through <c>aria-pressed</c>. A tag with an <see cref="Href"/> stays a link instead,
+    /// whose click navigates rather than toggling.
     /// </remarks>
     [Parameter] public EventCallback<bool> OnChange { get; set; }
 
@@ -462,7 +465,8 @@ public partial class BitTag : BitComponentBase
     /// carries meaning rather than decoration, say so in the <c>AriaLabel</c> or in the text of the tag itself.
     /// <br />
     /// A tag that is a link reports it as <c>aria-current</c> instead, which is what marks the picked one of
-    /// a set of links; <c>aria-pressed</c> belongs to a button and would say nothing on an anchor.
+    /// a set of links; <c>aria-pressed</c> belongs to a button and would say nothing on an anchor. A link never
+    /// flips its own selection when clicked - the click navigates - so the app sets it for the current page.
     /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound]
     public bool Selected { get; set; }

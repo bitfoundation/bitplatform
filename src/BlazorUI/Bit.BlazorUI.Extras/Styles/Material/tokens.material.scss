@@ -112,6 +112,10 @@
     --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.625); //5px
     --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
     --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    // M3 chips: the 32dp assist, filter and input chip at the medium anchor.
+    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
 
     /*---- Opacity ----*/
     // M3 state layers: an element that is disabled but keeps its own colors sits at 38%, the one

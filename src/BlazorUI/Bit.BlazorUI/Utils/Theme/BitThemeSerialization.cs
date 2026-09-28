@@ -172,6 +172,7 @@ public static class BitThemeSerialization
         theme.Size.SliderThumb ??= new BitThemeSizeScale();
         theme.Size.Badge ??= new BitThemeSizeScale();
         theme.Size.BadgeDot ??= new BitThemeSizeScale();
+        theme.Size.Chip ??= new BitThemeSizeScale();
         theme.Size.Switch ??= new BitThemeSwitchSizes();
         theme.Size.Switch.Width ??= new BitThemeSizeScale();
         theme.Size.Switch.Height ??= new BitThemeSizeScale();
