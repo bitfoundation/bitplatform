@@ -28,7 +28,8 @@
     <DemoExample Title="Position & Transition" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
             <b>Position</b> pins the stack to a corner or edge (default <b>BottomEnd</b>); start/end follow the text
-            direction. <b>Offset</b> moves it away from the screen edges, clear of an app bar or a phone's safe area.
+            direction. <b>Offset</b> moves it away from the screen edges (on top of a phone's safe area), clear of an
+            app bar. On a phone-sized screen every item takes the stack's full width.
             Items slide in from that edge over <b>TransitionDuration</b> (default 200ms; 0 removes them at once).
         </div>
         <br />
@@ -253,15 +254,19 @@
     <DemoExample Title="Programmatic control" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             An item marked <b>IsLoading</b> shows a spinner and sits out the countdown; change it and pass it to
-            <b>Update</b> to turn it into the outcome, announced again. <b>Pause</b> / <b>Resume</b> hold the countdown
-            from code, <b>Clear</b> closes everything (<b>ClearOnNavigation</b> does so on every navigation) and
-            <b>Items</b> lists what is showing.
+            <b>Update</b> to turn it into the outcome, announced again. <b>Track</b> does both around a task: loading
+            while it runs, then Success or Error (a failure is still rethrown to the caller). <b>Pause</b> /
+            <b>Resume</b> hold the countdown from code, <b>Clear</b> closes everything (<b>ClearOnNavigation</b> does
+            so on every navigation) and <b>Items</b> lists what is showing.
         </div>
         <br />
         <BitSnackBar @ref="controlRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(6)" ShowIcon
                      OnShow="HandleControlChange" OnDismiss="HandleControlChange" />
         <BitButton OnClick="StartUpload">Start upload</BitButton>
         <BitButton OnClick="CompleteUpload" IsEnabled="uploadItem is not null">Complete upload</BitButton>
+        <br /><br />
+        <BitButton OnClick="TrackExport">Track a task</BitButton>
+        <BitButton OnClick="TrackFailingExport">Track a failing task</BitButton>
         <br /><br />
         <BitButton OnClick="PauseAll">Pause</BitButton>
         <BitButton OnClick="ResumeAll">Resume</BitButton>

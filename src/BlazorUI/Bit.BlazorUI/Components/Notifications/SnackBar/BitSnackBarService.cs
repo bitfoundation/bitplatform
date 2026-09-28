@@ -138,6 +138,54 @@ public class BitSnackBarService
     }
 
     /// <summary>
+    /// Shows a loading snackbar for as long as a task runs, then turns it into a Success or Error one reporting
+    /// how the task ended, through the current host.
+    /// </summary>
+    /// <remarks>
+    /// See <see cref="BitSnackBar.Track{T}(Task{T}, string, Func{T, string}, Func{Exception, string}, string?)"/>.
+    /// With no host rendered the task is still awaited, and its result or exception still comes back.
+    /// </remarks>
+    public Task<T> Track<T>(Task<T> task, string loadingTitle, Func<T, string> successTitle, Func<Exception, string> errorTitle, string? body = null)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        var host = Host;
+
+        if (host is null)
+        {
+            ReportMissingHost();
+
+            return task;
+        }
+
+        return host.Track(task, loadingTitle, successTitle, errorTitle, body);
+    }
+
+    /// <summary>
+    /// Shows a loading snackbar for as long as a task runs, then turns it into a Success or Error one reporting
+    /// how the task ended, through the current host.
+    /// </summary>
+    /// <remarks>
+    /// See <see cref="BitSnackBar.Track(Task, string, string, Func{Exception, string}, string?)"/>.
+    /// With no host rendered the task is still awaited, and its exception still comes back.
+    /// </remarks>
+    public Task Track(Task task, string loadingTitle, string successTitle, Func<Exception, string> errorTitle, string? body = null)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        var host = Host;
+
+        if (host is null)
+        {
+            ReportMissingHost();
+
+            return task;
+        }
+
+        return host.Track(task, loadingTitle, successTitle, errorTitle, body);
+    }
+
+    /// <summary>
     /// Closes a snackbar item shown through this service.
     /// </summary>
     /// <remarks>

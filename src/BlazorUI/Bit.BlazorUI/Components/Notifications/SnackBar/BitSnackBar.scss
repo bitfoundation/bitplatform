@@ -1,4 +1,5 @@
 @import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 // Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
 // ancestor, on the Style of a snack bar or (for the ones an item reads) on the cssStyle of a single item inherits
@@ -6,7 +7,7 @@
 //   --bit-SnackBar-z-index           stacking order of the stack                  (default: $zindex-snackbar)
 //   --bit-SnackBar-offset            distance of the stack from the screen edges  (default: 8px; the Offset parameter wins)
 //   --bit-SnackBar-gap               room between two stacked items               (default: 10px)
-//   --bit-SnackBar-min-width         minimum width of an item                     (default: none)
+//   --bit-SnackBar-min-width         minimum width of an item                     (default: none; the stack's width on a phone)
 //   --bit-SnackBar-max-width         maximum width of an item                     (default: none; the MaxWidth parameter wins)
 //   --bit-SnackBar-background        fill of an item                              (default: per Color and Variant)
 //   --bit-SnackBar-color             text color of an item                        (default: per Color and Variant)
@@ -49,6 +50,21 @@
     --bit-snb-off: var(--bit-SnackBar-offset, #{spacing(1)});
     --bit-snb-off-block: var(--bit-snb-off);
     --bit-snb-off-inline: var(--bit-snb-off);
+
+    // The offset is measured from the part of the screen that is safe to draw on, so a stack pinned to an edge
+    // clears the notch or the home indicator of a phone on a page that draws under them (viewport-fit=cover).
+    // On any other page the insets are zero and the offset is the whole distance.
+    --bit-snb-off-top: calc(var(--bit-snb-off-block) + env(safe-area-inset-top, 0px));
+    --bit-snb-off-bottom: calc(var(--bit-snb-off-block) + env(safe-area-inset-bottom, 0px));
+}
+
+// On a phone a notification sized to its text sits in a corner as a scrap of a box; every item takes the full
+// width of the stack instead, the way the notifications of the platform itself do. It is the fallback of the
+// public min-width, so a value set there still wins.
+@include xs {
+    .bit-snb {
+        --bit-snb-min-w: 100%;
+    }
 }
 
 // 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration animation never fires
@@ -75,7 +91,7 @@
     // An item is as wide as its longest line needs, capped by the MaxWidth parameter where one was given (or the
     // public variable where it was not), and never past the width of the stack whatever either says.
     max-width: min(100%, var(--bit-snb-max-w, var(--bit-SnackBar-max-width, 100%)));
-    min-width: min(100%, var(--bit-SnackBar-min-width, 0px));
+    min-width: min(100%, var(--bit-SnackBar-min-width, var(--bit-snb-min-w, 0px)));
     pointer-events: all;
     box-sizing: border-box;
     flex-flow: column nowrap;
@@ -227,7 +243,13 @@
 }
 
 // The bar grows away from the edge the item starts at, which is the other one in a right-to-left reading order.
+// :dir() also catches a page that is right to left as a whole while the snack bar sets no Dir of its own; it is a
+// rule of its own so a browser that does not know it still keeps the one above.
 .bit-rtl .bit-snb-prb {
+    transform-origin: right center;
+}
+
+.bit-snb-prb:dir(rtl) {
     transform-origin: right center;
 }
 
@@ -357,6 +379,11 @@
     .bit-snb-#{$role} {
         --bit-snb-bg: #{role($tokens, main)};
         --bit-snb-fg: #{role($tokens, on)};
+
+        // The unfilled variants put the role's color on the page surface as text, and a role's main color is
+        // picked to be a fill (a Warning yellow on white is well under 4.5:1): the text reads the role's
+        // foreground token instead, the shade the theme picks to be read on the page (WCAG 1.4.3).
+        --bit-snb-clr-txt: #{role($tokens, fg)};
     }
 }
 
@@ -373,7 +400,7 @@
 // background take the neutral surface rather than transparency - the text of a notification has to stay
 // readable over the content it covers.
 .bit-snb-otl {
-    --bit-snb-clr: var(--bit-snb-bg);
+    --bit-snb-clr: var(--bit-snb-clr-txt);
     --bit-snb-clr-bg: #{$clr-bg-pri};
     --bit-snb-clr-brd: var(--bit-snb-bg);
     --bit-snb-brd-w: #{$shp-border-width};
@@ -381,7 +408,7 @@
 
 .bit-snb-txt {
     --bit-snb-brd-w: 0px;
-    --bit-snb-clr: var(--bit-snb-bg);
+    --bit-snb-clr: var(--bit-snb-clr-txt);
     --bit-snb-clr-bg: #{$clr-bg-pri};
     --bit-snb-clr-brd: transparent;
 }
@@ -447,40 +474,40 @@
 
 
 .bit-snb-tst {
-    top: var(--bit-snb-off-block);
+    top: var(--bit-snb-off-top);
     inset-inline: var(--bit-snb-off-inline);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-tcn {
     left: 50%;
-    top: var(--bit-snb-off-block);
+    top: var(--bit-snb-off-top);
     align-items: center;
     transform: translateX(-50%);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-ten {
-    top: var(--bit-snb-off-block);
+    top: var(--bit-snb-off-top);
     align-items: flex-end;
     inset-inline: var(--bit-snb-off-inline);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-bst {
-    bottom: var(--bit-snb-off-block);
+    bottom: var(--bit-snb-off-bottom);
     inset-inline: var(--bit-snb-off-inline);
 }
 
 .bit-snb-bcn {
     left: 50%;
-    bottom: var(--bit-snb-off-block);
+    bottom: var(--bit-snb-off-bottom);
     align-items: center;
     transform: translateX(-50%);
 }
 
 .bit-snb-ben {
-    bottom: var(--bit-snb-off-block);
+    bottom: var(--bit-snb-off-bottom);
     align-items: flex-end;
     inset-inline: var(--bit-snb-off-inline);
 }

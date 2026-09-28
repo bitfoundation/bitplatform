@@ -372,6 +372,9 @@ private async Task OpenEvents()
 <BitButton OnClick=""StartUpload"">Start upload</BitButton>
 <BitButton OnClick=""CompleteUpload"" IsEnabled=""uploadItem is not null"">Complete upload</BitButton>
 
+<BitButton OnClick=""TrackExport"">Track a task</BitButton>
+<BitButton OnClick=""TrackFailingExport"">Track a failing task</BitButton>
+
 <BitButton OnClick=""PauseAll"">Pause</BitButton>
 <BitButton OnClick=""ResumeAll"">Resume</BitButton>
 <BitButton OnClick=""ClearAll"">Clear all</BitButton>
@@ -405,6 +408,35 @@ private async Task CompleteUpload()
     await controlRef.Update(uploadItem);
 
     uploadItem = null;
+}
+
+private async Task TrackExport()
+{
+    await controlRef.Track(ExportAsync(), ""Exporting..."", rows => $""Exported {rows} rows"", ex => ""Export failed"", ""orders.csv"");
+}
+
+private async Task TrackFailingExport()
+{
+    try
+    {
+        await controlRef.Track(FailingExportAsync(), ""Exporting..."", ""Exported"", ex => $""Export failed: {ex.Message}"", ""orders.csv"");
+    }
+    catch (InvalidOperationException)
+    {
+        // Already reported on screen; the failure is still the caller's to handle.
+    }
+}
+
+private static async Task<int> ExportAsync()
+{
+    await Task.Delay(2000);
+    return 1250;
+}
+
+private static async Task FailingExportAsync()
+{
+    await Task.Delay(2000);
+    throw new InvalidOperationException(""the disk is full"");
 }
 
 private async Task PauseAll()

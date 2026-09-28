@@ -263,7 +263,8 @@ public partial class BitSnackBar : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Any CSS length is accepted. This is what keeps a snack bar clear of the chrome the app already has at that
-    /// edge - a bottom app bar, a cookie banner, the safe area of a phone.
+    /// edge - a bottom app bar, a cookie banner. The safe area of a phone (its notch, its home indicator) is added
+    /// on top of it, so the offset is always measured from the part of the screen that can be drawn on.
     /// <br />
     /// The <c>--bit-SnackBar-offset</c> CSS variable sets the same distance for every snack bar under it; this
     /// parameter wins where both are set.
@@ -626,6 +627,92 @@ public partial class BitSnackBar : BitComponentBase
     }
 
     /// <summary>
+    /// Shows a loading snackbar for as long as a task runs, then turns it into a Success or Error one reporting
+    /// how the task ended - the promise toast of the JavaScript notification libraries.
+    /// </summary>
+    /// <remarks>
+    /// This is <see cref="BitSnackBarItem.IsLoading"/> and <see cref="Update(BitSnackBarItem)"/> wired together:
+    /// the item shows a spinner and sits out the countdown while the task runs, and its outcome is announced again
+    /// when it ends. An outcome whose loading item the user dismissed in the meantime is shown afresh, since it is
+    /// news the loading item never carried; a task that is canceled closes the item instead, since nothing
+    /// happened to report.
+    /// <br />
+    /// The returned task completes with the result of the tracked one, and a task that fails or is canceled
+    /// rethrows its exception after the snackbar has reported it, so the caller still decides what the failure
+    /// means for the rest of its code.
+    /// </remarks>
+    /// <param name="task">The work to report on.</param>
+    /// <param name="loadingTitle">The title while the task is running.</param>
+    /// <param name="successTitle">Builds the title from the result once the task has completed.</param>
+    /// <param name="errorTitle">Builds the title from the exception once the task has failed.</param>
+    /// <param name="body">The body of the item, kept through every state.</param>
+    public async Task<T> Track<T>(
+        Task<T> task,
+        string loadingTitle,
+        Func<T, string> successTitle,
+        Func<Exception, string> errorTitle,
+        string? body = null)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        ArgumentNullException.ThrowIfNull(successTitle);
+        ArgumentNullException.ThrowIfNull(errorTitle);
+
+        var item = await Show(new BitSnackBarItem { Title = loadingTitle, Body = body, Color = BitColor.Info, IsLoading = true });
+
+        T result;
+
+        try
+        {
+            result = await task;
+        }
+        catch (OperationCanceledException)
+        {
+            await Close(item);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await SettleAsync(item, errorTitle(ex), BitColor.Error);
+            throw;
+        }
+
+        await SettleAsync(item, successTitle(result), BitColor.Success);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Shows a loading snackbar for as long as a task runs, then turns it into a Success or Error one reporting
+    /// how the task ended - the promise toast of the JavaScript notification libraries.
+    /// </summary>
+    /// <remarks>
+    /// The same as <see cref="Track{T}(Task{T}, string, Func{T, string}, Func{Exception, string}, string?)"/> for a
+    /// task that has no result to put in the title.
+    /// </remarks>
+    /// <param name="task">The work to report on.</param>
+    /// <param name="loadingTitle">The title while the task is running.</param>
+    /// <param name="successTitle">The title once the task has completed.</param>
+    /// <param name="errorTitle">Builds the title from the exception once the task has failed.</param>
+    /// <param name="body">The body of the item, kept through every state.</param>
+    public Task Track(
+        Task task,
+        string loadingTitle,
+        string successTitle,
+        Func<Exception, string> errorTitle,
+        string? body = null)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        return Track(AsResultTask(task), loadingTitle, _ => successTitle, errorTitle, body);
+
+        static async Task<bool> AsResultTask(Task task)
+        {
+            await task;
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Closes a snackbar item.
     /// </summary>
     /// <remarks>
@@ -838,6 +925,25 @@ public partial class BitSnackBar : BitComponentBase
     }
 
     internal bool Owns(BitSnackBarItem item) => _items.Contains(item) || _queue.Contains(item);
+
+    // The loading item of Track becomes its outcome: updated in place while it is still showing, and left to arrive
+    // with the outcome already in it while it is still queued. One the user has already dismissed (or is leaving)
+    // keeps the reason it left with, and the outcome arrives as a notification of its own.
+    private Task SettleAsync(BitSnackBarItem item, string title, BitColor color) => InvokeAsync(async () =>
+    {
+        if (_queue.Contains(item) || (_items.Contains(item) && item._dismissing is false))
+        {
+            item.Title = title;
+            item.Color = color;
+            item.IsLoading = false;
+
+            await Update(item);
+
+            return;
+        }
+
+        await Show(new BitSnackBarItem { Title = title, Body = item.Body, Color = color });
+    });
 
     private async Task SyncQueueAsync()
     {

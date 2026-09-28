@@ -417,11 +417,11 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         await com.Instance.Update(item);
 
@@ -757,7 +757,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
@@ -765,7 +765,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
 
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
     }
@@ -783,7 +783,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         Assert.IsFalse(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
@@ -852,7 +852,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         // A countdown is held back for as long as any one reason to hold it back stands.
         await com.Instance.Resume(item);
@@ -863,7 +863,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
 
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
     }
@@ -880,7 +880,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         await com.Instance.Update(item);
 
@@ -2106,7 +2106,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
         com.Find(".bit-snb-itm").FocusIn();
 
         // Focus moving between the controls inside an item reports leaving it before it reports entering it
@@ -2118,7 +2118,7 @@ public class BitSnackBarTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
         Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
 
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
     }
@@ -2136,8 +2136,8 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("title");
 
         com.Find(".bit-snb-itm").FocusIn();
-        com.Find(".bit-snb-itm").MouseEnter();
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerEnter();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         await Task.Delay(700);
 
@@ -2598,8 +2598,8 @@ public class BitSnackBarTests : BunitTestContext
 
         // A hold taken from code is a hold of its own, so the pointer wandering over the item and away again
         // does not let it go.
-        com.Find(".bit-snb-itm").MouseEnter();
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerEnter();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         await Task.Delay(700);
 
@@ -3270,6 +3270,134 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count);
         Assert.AreEqual(1, com.FindAll(".bit-snb-ico").Count);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackTurnsTheLoadingItemIntoTheSuccessTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        var source = new TaskCompletionSource<int>();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", n => $"Saved {n} rows", ex => "Save failed", "orders.csv"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count));
+
+        var item = com.Instance.Items[0];
+        Assert.IsTrue(item.IsLoading);
+        Assert.AreEqual("Saving...", item.Title);
+        Assert.AreEqual("orders.csv", item.Body);
+
+        source.SetResult(3);
+
+        Assert.AreEqual(3, await tracking);
+
+        // The same item carries the outcome, so the notification changes in place rather than being replaced.
+        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.AreSame(item, com.Instance.Items[0]);
+        Assert.IsFalse(item.IsLoading);
+        Assert.AreEqual("Saved 3 rows", item.Title);
+        Assert.AreEqual(BitColor.Success, item.Color);
+        Assert.AreEqual("orders.csv", item.Body);
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackReportsAndRethrowsTheFailureTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        var source = new TaskCompletionSource();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => $"Failed: {ex.Message}"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        source.SetException(new InvalidOperationException("disk full"));
+
+        // The caller still sees the failure: reporting it on screen is not handling it.
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => tracking);
+
+        var item = com.Instance.Items[0];
+        Assert.AreEqual("Failed: disk full", item.Title);
+        Assert.AreEqual(BitColor.Error, item.Color);
+        Assert.IsFalse(item.IsLoading);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackClosesTheItemOfACanceledTaskTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var source = new TaskCompletionSource();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => "Save failed"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        source.SetCanceled();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => tracking);
+
+        Assert.AreEqual(0, com.Instance.Items.Count);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackShowsTheOutcomeOfADismissedLoadingItemAfreshTest()
+    {
+        var dismissed = new List<BitSnackBarItem>();
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.TransitionDuration, 0);
+            parameters.Add(p => p.OnDismiss, (BitSnackBarItem i) => dismissed.Add(i));
+        });
+
+        var source = new TaskCompletionSource();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => "Save failed"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        com.Find(".bit-snb-cbt").Click();
+
+        Assert.AreEqual(0, com.Instance.Items.Count);
+
+        source.SetResult();
+
+        await tracking;
+
+        // The loading item keeps the reason it left with, and the outcome arrives as news of its own.
+        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.AreNotSame(dismissed[0], com.Instance.Items[0]);
+        Assert.AreEqual(BitSnackBarDismissReason.DismissButton, dismissed[0].DismissReason);
+        Assert.AreEqual("Saved", com.Instance.Items[0].Title);
+        Assert.AreEqual(BitColor.Success, com.Instance.Items[0].Color);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarPointerHoverPausesAndTouchReleasesTheCountdownTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await com.Instance.Show("title");
+
+        // A touch pointer enters on the press and leaves as soon as the finger is lifted, so a tap holds the
+        // countdown only for as long as the finger is down.
+        com.Find(".bit-snb-itm").PointerEnter(new Microsoft.AspNetCore.Components.Web.PointerEventArgs { PointerType = "touch" });
+
+        Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
+
+        com.Find(".bit-snb-itm").PointerLeave(new Microsoft.AspNetCore.Components.Web.PointerEventArgs { PointerType = "touch" });
+
+        Assert.IsFalse(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod,

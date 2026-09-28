@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -138,5 +139,32 @@ public class BitSnackBarServiceTests : BunitTestContext
         await service.Clear();
 
         Assert.AreEqual(0, com.Instance.Items.Count);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarServiceTracksThroughTheHostTest()
+    {
+        var service = new BitSnackBarService();
+        Services.AddSingleton(service);
+
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.ServiceHost, true));
+
+        var result = await com.InvokeAsync(() => service.Track(Task.FromResult(42), "Loading", n => $"Got {n}", ex => "Failed"));
+
+        Assert.AreEqual(42, result);
+        Assert.AreEqual("Got 42", com.Instance.Items[0].Title);
+        Assert.AreEqual(BitColor.Success, com.Instance.Items[0].Color);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarServiceTrackWithoutAHostStillAwaitsTheTaskTest()
+    {
+        var service = new BitSnackBarService();
+
+        // Nothing is shown, but the code that tracked its work still gets its result and its failures back.
+        Assert.AreEqual(7, await service.Track(Task.FromResult(7), "Loading", n => "Done", ex => "Failed"));
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+            service.Track(Task.FromException(new InvalidOperationException()), "Loading", "Done", ex => "Failed"));
     }
 }

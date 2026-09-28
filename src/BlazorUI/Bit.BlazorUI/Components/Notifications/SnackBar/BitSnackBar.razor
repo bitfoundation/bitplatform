@@ -36,7 +36,10 @@
     @foreach (var item in _items)
     {
         @* The id is on the element for the swipe script to read, and only on the items a swipe is allowed to take
-           away, so a persistent one does not even follow the pointer. *@
+           away, so a persistent one does not even follow the pointer.
+           The hover hold follows pointer events rather than mouse events: a tap on a touch screen raises a
+           compatibility mouseenter with no mouseleave to match it, which would hold the countdown of a tapped item
+           for good, while a touch pointer leaves as soon as the finger is lifted. *@
         <div @key="item.Id"
              role="@GetRenderedRole(item)"
              data-bit-snb-id="@(IsDismissible(item) ? item.Id.ToString() : null)"
@@ -50,8 +53,8 @@
              @onclick="() => HandleItemClick(item)"
              @onkeydown="e => HandleItemKeyDown(e, item)"
              @onkeyup="e => HandleItemKeyUp(e, item)"
-             @onmouseenter="() => HandleHoverStart(item)"
-             @onmouseleave="() => HandleHoverEnd(item)"
+             @onpointerenter="() => HandleHoverStart(item)"
+             @onpointerleave="() => HandleHoverEnd(item)"
              @onfocusin="() => HandleFocusStart(item)"
              @onfocusout="() => HandleFocusEnd(item)">
 

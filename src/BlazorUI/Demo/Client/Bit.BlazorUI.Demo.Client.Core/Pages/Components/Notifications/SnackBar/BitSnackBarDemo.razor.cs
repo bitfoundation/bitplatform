@@ -150,7 +150,7 @@ public partial class BitSnackBarDemo
             Name = "Offset",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The distance of the stack from the edges of the screen (default is 8px). Any CSS length is accepted, which is how a snack bar is kept clear of the chrome the app already has at that edge.",
+            Description = "The distance of the stack from the edges of the screen (default is 8px), added on top of the safe-area inset of a phone. Any CSS length is accepted, which is how a snack bar is kept clear of the chrome the app already has at that edge.",
         },
         new()
         {
@@ -769,6 +769,13 @@ public partial class BitSnackBarDemo
                 },
                 new()
                 {
+                    Name = "Track",
+                    Type = "Task<T> Track<T>(Task<T> task, ...) / Task Track(Task task, ...)",
+                    DefaultValue = "",
+                    Description = "Shows a loading item through the current host while a task runs, then its Success or Error outcome. Without a host the task is still awaited and its result or exception still comes back."
+                },
+                new()
+                {
                     Name = "Close",
                     Type = "Task Close(BitSnackBarItem item)",
                     DefaultValue = "",
@@ -1032,6 +1039,18 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "Track",
+            Type = "Task<T> Track<T>(Task<T> task, string loadingTitle, Func<T, string> successTitle, Func<Exception, string> errorTitle, string? body = null)",
+            Description = "Shows a loading snackbar for as long as a task runs, then turns it into a Success or Error one reporting how the task ended (the promise toast of the JavaScript libraries). Returns the task's result; a failure is rethrown after being reported, and a canceled task closes the item and rethrows too.",
+        },
+        new()
+        {
+            Name = "Track",
+            Type = "Task Track(Task task, string loadingTitle, string successTitle, Func<Exception, string> errorTitle, string? body = null)",
+            Description = "The same as Track<T> for a task with no result.",
+        },
+        new()
+        {
             Name = "Close",
             Type = "Task Close(BitSnackBarItem item)",
             Description = "Closes a snackbar item. The returned task completes once the item has left the DOM, which is after its exit animation has played. An item that is still waiting in the queue is taken out of it instead.",
@@ -1090,7 +1109,7 @@ public partial class BitSnackBarDemo
         {
             Name = "--bit-SnackBar-offset",
             DefaultValue = "8px",
-            Description = "Distance of the stack from the edges of the screen. The Offset parameter wins over it.",
+            Description = "Distance of the stack from the edges of the screen, on top of a phone's safe-area inset. The Offset parameter wins over it.",
         },
         new()
         {
@@ -1102,7 +1121,7 @@ public partial class BitSnackBarDemo
         {
             Name = "--bit-SnackBar-min-width",
             DefaultValue = "none",
-            Description = "Minimum width of an item, so short notifications line up.",
+            Description = "Minimum width of an item, so short notifications line up. On a phone-sized screen (under 600px) it falls back to the stack's full width.",
         },
         new()
         {
@@ -1441,6 +1460,35 @@ public partial class BitSnackBarDemo
         await controlRef.Update(uploadItem);
 
         uploadItem = null;
+    }
+
+    private async Task TrackExport()
+    {
+        await controlRef.Track(ExportAsync(), "Exporting...", rows => $"Exported {rows} rows", ex => "Export failed", "orders.csv");
+    }
+
+    private async Task TrackFailingExport()
+    {
+        try
+        {
+            await controlRef.Track(FailingExportAsync(), "Exporting...", "Exported", ex => $"Export failed: {ex.Message}", "orders.csv");
+        }
+        catch (InvalidOperationException)
+        {
+            // Already reported on screen; the failure is still the caller's to handle.
+        }
+    }
+
+    private static async Task<int> ExportAsync()
+    {
+        await Task.Delay(2000);
+        return 1250;
+    }
+
+    private static async Task FailingExportAsync()
+    {
+        await Task.Delay(2000);
+        throw new InvalidOperationException("the disk is full");
     }
 
     private async Task PauseAll()
