@@ -1,4 +1,4 @@
-@page "/components/accordion"
+﻿@page "/components/accordion"
 
 <PageOutlet Url="components/accordion"
             Title="Accordion"
@@ -62,7 +62,8 @@
     <DemoExample Title="Actions" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>
             <b>Actions</b> render beside the header, outside the toggle button and its heading, so they can hold buttons of
-            their own - a button inside the header would be a button nested in a button.
+            their own - a button inside the header would be a button nested in a button. Once the accordion holds more than
+            its panel, the panel goes in <b>Body</b>, the named alias of the content written straight inside it.
         </div>
         <br />
         <BitAccordion Title="Project settings" Description="@($"Renamed {renameCount} times")">
@@ -175,29 +176,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Find & print" RazorCode="@example8RazorCode" Id="example8">
-        <div>
-            A closed panel is skipped by find-in-page and prints as a bare header. <b>HiddenUntilFound</b> hands it to the
-            browser as <b>hidden="until-found"</b>: <b>Ctrl+F</b> or a <b>#fragment</b> link finds text inside and the
-            accordion expands around the match (<b>OnToggling</b> sees <b>Reason</b> = <b>Reveal</b>). <b>ExpandOnPrint</b>
-            opens it on paper only (Ctrl+P), lifting <b>MaxHeight</b>. Both need the panel in the DOM: <b>HiddenUntilFound</b>
-            overrides <b>LazyContent</b> and <b>UnmountOnCollapse</b>, while content they left out cannot print.
-        </div>
-        <br />
-        <div>Search the page for <b>tangerine</b>, or open the print preview:</div>
-        <br />
-        <BitAccordion Title="Which fruits ship overnight?" HiddenUntilFound ExpandOnPrint>
-            Citrus like the tangerine ships overnight in insulated boxes; berries ship on the next business day.
-        </BitAccordion>
-        <BitAccordion Title="Can I change my order?" HiddenUntilFound ExpandOnPrint>
-            Orders can be changed until they are packed, usually within two hours of checkout.
-        </BitAccordion>
-        <BitAccordion Title="Printed as a bare header">
-            Returns are free within thirty days of delivery.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="MaxHeight & Transition" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="MaxHeight & Transition" RazorCode="@example8RazorCode" Id="example8">
         <div>
             <b>MaxHeight</b> (any CSS length) caps the open panel and scrolls its content; the scroll region takes a tab stop.
             <b>TransitionDuration</b> (ms) overrides the theme's duration, <b>0</b> turns it off. Reduced motion turns it off
@@ -216,6 +195,28 @@
         </BitAccordion>
         <BitAccordion Title="Instant (0)" TransitionDuration="0">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordion>
+    </DemoExample>
+
+    <DemoExample Title="Find & print" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            A closed panel is skipped by find-in-page and prints as a bare header. <b>HiddenUntilFound</b> hands it to the
+            browser as <b>hidden="until-found"</b>: <b>Ctrl+F</b> or a <b>#fragment</b> link finds text inside and the
+            accordion expands around the match (<b>OnToggling</b> sees <b>Reason</b> = <b>Reveal</b>). <b>ExpandOnPrint</b>
+            opens it on paper only (Ctrl+P), lifting <b>MaxHeight</b>. Both need the panel in the DOM: <b>HiddenUntilFound</b>
+            overrides <b>LazyContent</b> and <b>UnmountOnCollapse</b>, while content they left out cannot print.
+        </div>
+        <br />
+        <div>Search the page for <b>tangerine</b>, or open the print preview:</div>
+        <br />
+        <BitAccordion Title="Which fruits ship overnight?" HiddenUntilFound ExpandOnPrint>
+            Citrus like the tangerine ships overnight in insulated boxes; berries ship on the next business day.
+        </BitAccordion>
+        <BitAccordion Title="Can I change my order?" HiddenUntilFound ExpandOnPrint>
+            Orders can be changed until they are packed, usually within two hours of checkout.
+        </BitAccordion>
+        <BitAccordion Title="Printed as a bare header">
+            Returns are free within thirty days of delivery.
         </BitAccordion>
     </DemoExample>
 

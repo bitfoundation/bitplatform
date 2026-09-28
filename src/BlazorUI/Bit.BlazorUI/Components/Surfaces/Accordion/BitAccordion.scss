@@ -1,4 +1,4 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables (read here with a fallback and never declared, so they inherit: set one on :root, on any
 // ancestor, or on the Style of a single accordion - an accordion nested in the panel of another one inherits it too):
@@ -263,15 +263,16 @@
 // that strip in the accordion's own color beside a header that has gone darker. The state is still read off the
 // button, so the paint keeps meaning "a click here toggles" and stays away while the pointer is over the actions.
 // The rule is chained down from the root rather than reaching for a descendant, so that the disabled state of an
-// outer accordion does not take the hover away from the headers of the accordions nested in its panel.
+// outer accordion does not take the hover away from the headers of the accordions nested in its panel. A busy
+// header answers no click, so it is left unpainted too, the way a read-only one is.
 .bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {
     @media (hover: hover) {
-        &:has(> .bit-acd-hed > .bit-acd-hdr:hover) {
+        &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover) {
             background-color: var(--bit-acd-hov);
         }
     }
 
-    &:has(> .bit-acd-hed > .bit-acd-hdr:active) {
+    &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active) {
         background-color: var(--bit-acd-prs);
     }
 }
@@ -281,12 +282,12 @@
 // (--bit-Accordion-header-expanded-color) - white on a light grey, at worst. Without one it shades like any other.
 .bit-acd-exp:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {
     @media (hover: hover) {
-        &:has(> .bit-acd-hed > .bit-acd-hdr:hover) {
+        &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover) {
             background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));
         }
     }
 
-    &:has(> .bit-acd-hed > .bit-acd-hdr:active) {
+    &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active) {
         background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));
     }
 }
@@ -473,8 +474,17 @@
 // stays until the next render, so the pair opens the panel around the match at once - before the render that
 // expands the accordion for real, and even with no interactivity at all on a statically rendered page.
 // inherit rather than visible, so an accordion the Visibility parameter has hidden stays hidden.
+// The attribute arrives with the class as the close starts, and what it hides with - content-visibility, or display
+// in a browser that does not know the value and treats it as a plain hidden - is held back until the transition is
+// over: a discrete transition to a hiding value keeps the showing one for its whole duration. So the close plays at
+// whatever duration the theme, a TransitionDuration or a reduced-motion preference gives it. Opening, the showing
+// value takes over at once.
 .bit-acd-huf {
     visibility: inherit;
+    transition: opacity var(--bit-acd-dur) $mot-easing 0ms,
+                padding-block var(--bit-acd-dur) $mot-easing 0ms,
+                content-visibility var(--bit-acd-dur) linear 0ms allow-discrete,
+                display var(--bit-acd-dur) linear 0ms allow-discrete;
 
     &:not([hidden]) {
         opacity: 1;

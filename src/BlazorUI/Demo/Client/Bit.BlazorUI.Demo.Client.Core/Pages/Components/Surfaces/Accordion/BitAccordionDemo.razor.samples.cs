@@ -137,17 +137,6 @@ private async Task LoadOrders(BitAccordionToggleArgs args)
 }";
 
     private readonly string example8RazorCode = @"
-<BitAccordion Title=""Which fruits ship overnight?"" HiddenUntilFound ExpandOnPrint>
-    Citrus like the tangerine ships overnight in insulated boxes; berries ship on the next business day.
-</BitAccordion>
-<BitAccordion Title=""Can I change my order?"" HiddenUntilFound ExpandOnPrint>
-    Orders can be changed until they are packed, usually within two hours of checkout.
-</BitAccordion>
-<BitAccordion Title=""Printed as a bare header"">
-    Returns are free within thirty days of delivery.
-</BitAccordion>";
-
-    private readonly string example9RazorCode = @"
 <BitAccordion Title=""MaxHeight 6rem"" MaxHeight=""6rem"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
@@ -160,6 +149,17 @@ private async Task LoadOrders(BitAccordionToggleArgs args)
 </BitAccordion>
 <BitAccordion Title=""Instant (0)"" TransitionDuration=""0"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+</BitAccordion>";
+
+    private readonly string example9RazorCode = @"
+<BitAccordion Title=""Which fruits ship overnight?"" HiddenUntilFound ExpandOnPrint>
+    Citrus like the tangerine ships overnight in insulated boxes; berries ship on the next business day.
+</BitAccordion>
+<BitAccordion Title=""Can I change my order?"" HiddenUntilFound ExpandOnPrint>
+    Orders can be changed until they are packed, usually within two hours of checkout.
+</BitAccordion>
+<BitAccordion Title=""Printed as a bare header"">
+    Returns are free within thirty days of delivery.
 </BitAccordion>";
 
     private readonly string example10RazorCode = @"

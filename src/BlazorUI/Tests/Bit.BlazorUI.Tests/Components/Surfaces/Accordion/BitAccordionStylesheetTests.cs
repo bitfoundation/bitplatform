@@ -133,6 +133,32 @@ public class BitAccordionStylesheetTests
     }
 
     [TestMethod]
+    public void BitAccordionShouldHoldAHiddenUntilFoundPanelBackForTheWholeClose()
+    {
+        var huf = GetBlock(ReadStylesheet(), "\n.bit-acd-huf {");
+
+        // The attribute is applied as the close starts; what it hides with is held back by a discrete transition of
+        // the accordion's own duration, so the close plays out whatever the theme or TransitionDuration made it.
+        StringAssert.Contains(huf, "content-visibility var(--bit-acd-dur) linear 0ms allow-discrete");
+        StringAssert.Contains(huf, "display var(--bit-acd-dur) linear 0ms allow-discrete");
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldNotPaintABusyHeaderUnderThePointer()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A busy header answers no click, so neither the hover nor the pressed fill offers it as one.
+        foreach (var selector in new[] { "\n.bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {", "\n.bit-acd-exp:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {" })
+        {
+            var block = GetBlock(stylesheet, selector);
+
+            StringAssert.Contains(block, "&:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover)");
+            StringAssert.Contains(block, "&:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active)");
+        }
+    }
+
+    [TestMethod]
     public void BitAccordionShouldPrintAHiddenUntilFoundPanelWithExpandOnPrint()
     {
         // hidden="until-found" hides the content through content-visibility, which paper would honor too.

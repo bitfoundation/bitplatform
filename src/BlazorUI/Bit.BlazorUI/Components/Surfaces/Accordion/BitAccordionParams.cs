@@ -151,21 +151,24 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitAccordion);
 
-        if (Background.HasValue && bitAccordion.HasNotBeenSet(nameof(Background)))
+        // This runs on every render of every accordion under the BitParams, so a value that drives the class or the
+        // style of the root is only assigned - and the builder only reset - when it differs from the one the
+        // accordion already holds: an unchanged one would rebuild both strings on every render for nothing.
+        if (Background.HasValue && bitAccordion.HasNotBeenSet(nameof(Background)) && bitAccordion.Background != Background)
         {
             bitAccordion.Background = Background.Value;
 
             bitAccordion.ClassBuilder.Reset();
         }
 
-        if (Border.HasValue && bitAccordion.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue && bitAccordion.HasNotBeenSet(nameof(Border)) && bitAccordion.Border != Border)
         {
             bitAccordion.Border = Border.Value;
 
             bitAccordion.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitAccordion.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitAccordion.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitAccordion.Classes, Classes) is false)
         {
             bitAccordion.Classes = Classes;
 
@@ -192,14 +195,14 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
             bitAccordion.ExpanderIconName = ExpanderIconName;
         }
 
-        if (ExpanderIconPosition.HasValue && bitAccordion.HasNotBeenSet(nameof(ExpanderIconPosition)))
+        if (ExpanderIconPosition.HasValue && bitAccordion.HasNotBeenSet(nameof(ExpanderIconPosition)) && bitAccordion.ExpanderIconPosition != ExpanderIconPosition)
         {
             bitAccordion.ExpanderIconPosition = ExpanderIconPosition.Value;
 
             bitAccordion.ClassBuilder.Reset();
         }
 
-        if (ExpandOnPrint.HasValue && bitAccordion.HasNotBeenSet(nameof(ExpandOnPrint)))
+        if (ExpandOnPrint.HasValue && bitAccordion.HasNotBeenSet(nameof(ExpandOnPrint)) && bitAccordion.ExpandOnPrint != ExpandOnPrint.Value)
         {
             bitAccordion.ExpandOnPrint = ExpandOnPrint.Value;
 
@@ -227,7 +230,7 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
             bitAccordion.LazyContent = LazyContent.Value;
         }
 
-        if (MaxHeight.HasValue() && bitAccordion.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue() && bitAccordion.HasNotBeenSet(nameof(MaxHeight)) && bitAccordion.MaxHeight != MaxHeight)
         {
             bitAccordion.MaxHeight = MaxHeight;
 
@@ -235,7 +238,7 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
             bitAccordion.StyleBuilder.Reset();
         }
 
-        if (NoBorder.HasValue && bitAccordion.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue && bitAccordion.HasNotBeenSet(nameof(NoBorder)) && bitAccordion.NoBorder != NoBorder.Value)
         {
             bitAccordion.NoBorder = NoBorder.Value;
 
@@ -252,21 +255,21 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
             bitAccordion.NoExpanderRotation = NoExpanderRotation.Value;
         }
 
-        if (Size.HasValue && bitAccordion.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitAccordion.HasNotBeenSet(nameof(Size)) && bitAccordion.Size != Size)
         {
             bitAccordion.Size = Size.Value;
 
             bitAccordion.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitAccordion.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitAccordion.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitAccordion.Styles, Styles) is false)
         {
             bitAccordion.Styles = Styles;
 
             bitAccordion.StyleBuilder.Reset();
         }
 
-        if (TransitionDuration.HasValue && bitAccordion.HasNotBeenSet(nameof(TransitionDuration)))
+        if (TransitionDuration.HasValue && bitAccordion.HasNotBeenSet(nameof(TransitionDuration)) && bitAccordion.TransitionDuration != TransitionDuration)
         {
             bitAccordion.TransitionDuration = TransitionDuration.Value;
 

@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -15,11 +15,6 @@ public partial class BitAccordion : BitComponentBase
     // in its panel.
     internal const string HeadingLevelCascadeName = "BitAccordionHeadingLevel";
 
-    // How long a collapse waits before handing its closed panel to hidden="until-found" when no TransitionDuration
-    // says otherwise. It is the longest duration the packaged presets give the transition rather than a read of the
-    // theme: the attribute stops the panel from being drawn at all, so it only has to come after the close has played.
-    private const int DefaultCollapseDurationInMs = 400;
-
     private bool _isToggling;
     private bool _skipRender;
     private bool _wasExpanded;
@@ -27,11 +22,9 @@ public partial class BitAccordion : BitComponentBase
     private bool _contentHasFocus;
     private ElementReference _headerRef;
 
-    // Whether the close has finished playing, which is the only moment at which a HiddenUntilFound panel can be
-    // handed to hidden="until-found": the attribute stops the panel from being drawn at all, so applying it while
-    // the panel is still shrinking would cut the close short.
-    private bool _collapseEnded = true;
-    private CancellationTokenSource? _collapseCts;
+    // Settles when the awaited OnToggling in flight is over, so that a find-in-page reveal landing meanwhile can wait
+    // for it rather than be turned away as if it had been refused.
+    private TaskCompletionSource? _toggled;
 
     // Whether a find-in-page reveal was refused (by OnToggling): the browser took the hidden attribute off and the
     // panel stays shut, so the accordion stops offering itself to find-in-page until its state next changes.
@@ -217,8 +210,8 @@ public partial class BitAccordion : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is what a FAQ or a page of collapsed documentation wants: text the reader cannot see is still text they
-    /// can search for. The attribute is applied once the close has played, and the expansion the browser asks for is
-    /// reported like any other (<see cref="BitAccordionToggleReason.Reveal"/>), so <see cref="OnToggling"/> can still
+    /// can search for. The attribute is applied as the close starts and the stylesheet keeps the panel drawn until the
+    /// close has played, whatever its duration, and the expansion the browser asks for is reported like any other (<see cref="BitAccordionToggleReason.Reveal"/>), so <see cref="OnToggling"/> can still
     /// refuse it.
     /// <br />
     /// The panel has to be in the DOM to be found, so <see cref="LazyContent"/> and <see cref="UnmountOnCollapse"/>
@@ -446,8 +439,10 @@ public partial class BitAccordion : BitComponentBase
     // the match is, since the browser would otherwise reveal content inside a panel that stays shut.
     private bool _IsSearchable => HiddenUntilFound && IsEnabled && ReadOnly is false && _OwnsExpansion && _revealRefused is false;
 
-    // Whether the panel is hidden until found right now, which waits for the end of the close.
-    private bool _IsHiddenUntilFound => _IsSearchable && IsExpanded is false && _collapseEnded;
+    // Whether the panel is hidden until found right now. The attribute is applied as the close starts, and the
+    // stylesheet keeps the panel drawn until the transition is over (content-visibility, allow-discrete), which is the
+    // one place that knows how long the theme, a TransitionDuration or a reduced-motion preference made it.
+    private bool _IsHiddenUntilFound => _IsSearchable && IsExpanded is false;
 
     private Dictionary<string, object>? _ContentAttributes => _IsSearchable
         ? (_beforeMatchAttributes ??= new() { ["onbeforematch"] = EventCallback.Factory.Create(this, HandleOnBeforeMatch) })
@@ -597,18 +592,15 @@ public partial class BitAccordion : BitComponentBase
             await _headerRef.FocusAsync();
         }
 
-        TrackTheCollapse(firstRender);
+        // A real change of state, whoever made it, offers a panel whose reveal was refused to find-in-page again.
+        if (firstRender is false && _wasExpanded != IsExpanded)
+        {
+            _revealRefused = false;
+        }
 
         _wasExpanded = IsExpanded;
 
         await base.OnAfterRenderAsync(firstRender);
-    }
-
-    protected override ValueTask DisposeAsync(bool disposing)
-    {
-        CancelTheCollapseTracking();
-
-        return base.DisposeAsync(disposing);
     }
 
 
@@ -665,6 +657,10 @@ public partial class BitAccordion : BitComponentBase
         {
             _isToggling = true;
 
+            // Its continuations run off the dispatcher's queue rather than inline, so a reveal waiting on it only
+            // resumes once this toggle has gone on to assign the state it was let through with.
+            var toggled = _toggled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
             // The callback is awaited and nothing else toggles the accordion while it is running, so the
             // header says as much - a spinner, aria-busy and a busy cursor - rather than going on looking like a
             // toggle that answers.
@@ -685,6 +681,9 @@ public partial class BitAccordion : BitComponentBase
             finally
             {
                 _isToggling = false;
+                _toggled = null;
+
+                toggled.TrySetResult();
 
                 await RenderTheBusyState();
             }
@@ -720,86 +719,6 @@ public partial class BitAccordion : BitComponentBase
         return InvokeAsync(StateHasChanged);
     }
 
-    // Follows the state the render just drew, whoever changed it: the end of a close is what a HiddenUntilFound panel
-    // waits for before it is hidden until found, and a real change of state offers a panel whose reveal was refused
-    // to find-in-page again.
-    private void TrackTheCollapse(bool firstRender)
-    {
-        if (firstRender is false && _wasExpanded == IsExpanded) return;
-
-        if (firstRender is false)
-        {
-            _revealRefused = false;
-        }
-
-        CancelTheCollapseTracking();
-
-        if (IsExpanded)
-        {
-            _collapseEnded = false;
-            return;
-        }
-
-        // A panel that starts collapsed has played no close, and one that is not searchable has nothing to wait for.
-        if (firstRender || HiddenUntilFound is false)
-        {
-            _collapseEnded = true;
-            return;
-        }
-
-        var cts = new CancellationTokenSource();
-
-        _collapseCts = cts;
-
-        _ = EndTheCollapseAsync(TransitionDuration.HasValue ? Math.Max(0, TransitionDuration.Value) : DefaultCollapseDurationInMs, cts);
-    }
-
-    private async Task EndTheCollapseAsync(int wait, CancellationTokenSource cts)
-    {
-        try
-        {
-            if (wait > 0)
-            {
-                await Task.Delay(wait, cts.Token);
-            }
-
-            if (cts.IsCancellationRequested || IsDisposed || IsExpanded) return;
-
-            _collapseEnded = true;
-
-            if (_IsSearchable)
-            {
-                await InvokeAsync(() =>
-                {
-                    _skipRender = false;
-                    StateHasChanged();
-                });
-            }
-        }
-        catch (OperationCanceledException) { }
-        catch (ObjectDisposedException) { }
-        finally
-        {
-            if (ReferenceEquals(_collapseCts, cts))
-            {
-                _collapseCts = null;
-            }
-
-            cts.Dispose();
-        }
-    }
-
-    private void CancelTheCollapseTracking()
-    {
-        var cts = _collapseCts;
-
-        if (cts is null) return;
-
-        _collapseCts = null;
-
-        cts.Cancel();
-    }
-
     // The browser is about to reveal the collapsed panel because find-in-page or a fragment navigation landed inside
     // it. The stylesheet has already opened the panel around the match the moment the attribute came off, so the
     // accordion expands for real behind it - or, when OnToggling refuses, stops being searchable, which takes the
@@ -810,9 +729,17 @@ public partial class BitAccordion : BitComponentBase
 
         _skipRender = false;
 
-        await AssignExpanded(true, BitAccordionToggleReason.Reveal);
+        // A toggle already in flight is not a refusal of this reveal: the beforematch of an accordion nested in the
+        // panel bubbles up here ahead of this panel's own, and a click on the header can be waiting on OnToggling
+        // when the match lands. The reveal waits for it, and only asks for itself if that one left the panel shut.
+        while (_toggled is { } toggled)
+        {
+            await toggled.Task;
 
-        if (IsExpanded) return;
+            if (IsDisposed || IsExpanded || _IsSearchable is false) return;
+        }
+
+        if (await AssignExpanded(true, BitAccordionToggleReason.Reveal) || IsExpanded || IsDisposed) return;
 
         _revealRefused = true;
     }

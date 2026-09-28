@@ -2255,6 +2255,29 @@ public class BitAccordionTests : BunitTestContext
         Assert.IsNull(unnamed.Find(".bit-acd").GetAttribute("role"));
     }
 
+    [TestMethod,
+        DataRow(null),
+        DataRow("Settings"),
+    ]
+    public void BitAccordionShouldKeepARoleThePagePassesItself(string? ariaLabel)
+    {
+        // The splat only reaches the accordion through the render tree: HtmlAttributes is a plain parameter on
+        // BitComponentBase rather than a CaptureUnmatchedValues one, so bUnit's AddUnmatched cannot feed it.
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitAccordion>(0);
+                builder.AddAttribute(1, nameof(BitAccordion.AriaLabel), ariaLabel);
+                builder.AddAttribute(2, "role", "listitem");
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("listitem", com.Find(".bit-acd").GetAttribute("role"));
+    }
+
     [TestMethod]
     public void BitAccordionShouldNameTheHeaderAndThePanelByTheTitleAndDescribeThemByTheDescription()
     {
@@ -2461,23 +2484,23 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionHiddenUntilFoundShouldWaitForTheCloseBeforeHidingThePanel()
+    public void BitAccordionHiddenUntilFoundShouldHandTheCloseToTheStylesheet()
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
             parameters.Add(p => p.DefaultIsExpanded, true);
-            parameters.Add(p => p.TransitionDuration, 100);
         });
 
         com.Find(".bit-acd-hdr").Click();
 
-        // The close is still playing, so the panel is only on its way out.
-        Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
-        Assert.IsTrue(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-cco"));
+        // The attribute arrives as the close starts, and the stylesheet keeps the panel drawn until the transition
+        // is over - however long the theme made it - so no timer on this side has to guess at its duration.
+        var content = com.Find(".bit-acd-con");
 
-        com.WaitForAssertion(() => Assert.AreEqual("until-found", com.Find(".bit-acd-con").GetAttribute("hidden")),
-                             System.TimeSpan.FromSeconds(2));
+        Assert.AreEqual("until-found", content.GetAttribute("hidden"));
+        Assert.IsTrue(content.ClassList.Contains("bit-acd-huf"));
+        Assert.IsTrue(content.ClassList.Contains("bit-acd-cco"));
     }
 
     [TestMethod]
@@ -2487,15 +2510,83 @@ public class BitAccordionTests : BunitTestContext
         {
             parameters.Add(p => p.HiddenUntilFound, true);
             parameters.Add(p => p.DefaultIsExpanded, true);
-            parameters.Add(p => p.TransitionDuration, 50);
         });
 
         com.Find(".bit-acd-hdr").Click();
         com.Find(".bit-acd-hdr").Click();
 
-        System.Threading.Thread.Sleep(150);
-
         Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
+        Assert.IsFalse(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-huf"));
+    }
+
+    [TestMethod]
+    public async Task BitAccordionHiddenUntilFoundShouldNotTakeAToggleInFlightForARefusedReveal()
+    {
+        var gate = new TaskCompletionSource();
+        var reasons = new List<BitAccordionToggleReason>();
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.OnToggling, async (BitAccordionToggleArgs args) =>
+            {
+                reasons.Add(args.Reason);
+
+                if (args.Reason != BitAccordionToggleReason.Method) return;
+
+                await gate.Task;
+                args.Cancel = true;
+            });
+        });
+
+        var toggling = com.InvokeAsync(() => com.Instance.Toggle());
+
+        // The match lands while the toggle is still waiting on OnToggling: the panel the browser opened around it
+        // stays open, rather than being snapped shut as if the reveal had been refused.
+        var revealing = com.Find(".bit-acd-con").TriggerEventAsync("onbeforematch", System.EventArgs.Empty);
+
+        Assert.IsTrue(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-huf"));
+        Assert.IsTrue(com.Markup.Contains("onbeforematch"));
+
+        // The toggle in flight is refused, so the reveal then asks for itself - and is let through.
+        gate.SetResult();
+
+        await toggling;
+        await revealing;
+
+        com.WaitForAssertion(() => Assert.IsTrue(com.Instance.IsExpanded));
+        CollectionAssert.AreEqual(new[] { BitAccordionToggleReason.Method, BitAccordionToggleReason.Reveal }, reasons);
+    }
+
+    [TestMethod]
+    public async Task BitAccordionHiddenUntilFoundShouldLetAToggleInFlightAnswerTheReveal()
+    {
+        var gate = new TaskCompletionSource();
+        var calls = 0;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.OnToggling, async (BitAccordionToggleArgs _) =>
+            {
+                calls++;
+                await gate.Task;
+            });
+        });
+
+        // The beforematch of an accordion nested in the panel bubbles up ahead of the panel's own, so a second one
+        // arrives while the first is still waiting on OnToggling.
+        var first = com.Find(".bit-acd-con").TriggerEventAsync("onbeforematch", System.EventArgs.Empty);
+        var second = com.Find(".bit-acd-con").TriggerEventAsync("onbeforematch", System.EventArgs.Empty);
+
+        gate.SetResult();
+
+        await first;
+        await second;
+
+        com.WaitForAssertion(() => Assert.IsTrue(com.Instance.IsExpanded));
+        Assert.AreEqual(1, calls);
         Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
     }
 

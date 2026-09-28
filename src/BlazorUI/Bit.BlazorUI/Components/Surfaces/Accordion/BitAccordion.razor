@@ -1,10 +1,13 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @* A name on a plain div names nothing (the generic role cannot be named), so an AriaLabel makes the root a named
-   group - the way a screen reader tells two accordions on a page apart. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+   group - the way a screen reader tells two accordions on a page apart. The role comes ahead of the splatted
+   attributes, since the last of two attributes of the same name wins: a role the page passes itself is kept,
+   rather than replaced by this one or dropped along with the null this is without an AriaLabel. *@
+<div @ref="RootElement"
      role="@(AriaLabel.HasValue() ? "group" : null)"
+     @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
