@@ -971,8 +971,8 @@ public partial class BitTagDemo
         new()
         {
             Name = "--bit-Tag-min-height",
-            DefaultValue = "--bit-siz-chip-{sm,md,lg} plus the rule",
-            Description = "Smallest height, rule included; the tag still grows with wrapped text.",
+            DefaultValue = "--bit-siz-chip-{sm,md,lg}",
+            Description = "Smallest height inside the rule; the tag still grows with wrapped text.",
         },
         new()
         {

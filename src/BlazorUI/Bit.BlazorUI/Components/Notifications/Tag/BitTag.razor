@@ -28,6 +28,7 @@
        null one takes it off the element altogether. What the tag has of its own therefore still comes first,
        but it falls back to - and for a description joins - whatever came in with the attributes. *@
     var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
+    var splattedLabelledBy = HtmlAttributes.TryGetValue("aria-labelledby", out var slb) ? slb?.ToString() : null;
     var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
     var splattedDescribedBy = HtmlAttributes.TryGetValue("aria-describedby", out var sdb) ? sdb?.ToString() : null;
     var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
@@ -48,23 +49,41 @@
     var nativeDisabled = IsEnabled is false && AllowDisabledFocus is false;
     var ariaDisabled = IsEnabled || nativeDisabled ? null : "true";
 
+    @* A natively disabled button never fires a click, but one that only says so through aria-disabled still
+       does when Enter or Space presses it - and that click would bubble on to whatever holds the tag. The
+       handler already ignores it; stopping it here keeps it from reaching anything else either. *@
+    var stopClick = StopPropagation || IsEnabled is false;
+
     @* The name and the description follow the control the same way the tab index does: what the tag has of its
        own first, what came in with the attributes behind it, and both of them on the anchor or the button when
        the tag is one - a name left on a wrapper that has no role of its own is a name that may never be read. *@
     var label = AriaLabel ?? splattedLabel;
 
-    @* An aria-label replaces the content of the anchor rather than adding to it, so the new-tab sentence is
-       appended to the label where there is one, and rendered as hidden text inside the anchor where there is
-       none. *@
+    @* An aria-labelledby names the control the same way, so it moves onto the anchor or the button along with
+       the aria-label, and stays with the root only where there is no control to carry it. *@
+    var controlLabelledBy = labelOnRoot ? null : splattedLabelledBy;
+
+    @* The new-tab sentence has to land wherever the name of the anchor comes from, since a name given from
+       somewhere else replaces the content rather than adding to it. An aria-labelledby is the one that wins,
+       and it points at elements rather than holding text, so the sentence is rendered as an element of its
+       own and its id appended to the list; an aria-label holds the text itself, so the sentence is appended
+       to it; an anchor named by nothing but its own content gets the sentence as hidden text inside it. *@
     var newTabHint = _newTabHint;
-    var linkLabel = label.HasValue() && newTabHint is not null ? $"{label} {newTabHint}" : label;
-    var hintText = label.HasValue() ? null : newTabHint;
+    var hintId = $"{_Id}-nth";
+    var labelledByHint = newTabHint is not null && controlLabelledBy.HasValue();
+    var linkLabelledBy = labelledByHint ? $"{controlLabelledBy} {hintId}" : controlLabelledBy;
+    var linkLabel = label.HasValue() && newTabHint is not null && labelledByHint is false ? $"{label} {newTabHint}" : label;
+    var hintText = label.HasValue() && labelledByHint is false ? null : newTabHint;
 
     @* ARIA forbids naming an element with no role of its own, and most screen readers ignore an aria-label
-       put there anyway, so a static tag never carries one: its name is text no one can see instead, and the
-       content it stands in for - the words, the picture's alt, a template - is hidden from assistive
-       technologies, which is exactly what an aria-label does to the content of a control. *@
+       put there anyway, so a static tag never carries one: its name is text no one can see instead, and what
+       the tag renders of its own that the name stands in for - the words and the picture's alt - is hidden
+       from assistive technologies, which is exactly what an aria-label does to the content of a control. The
+       markup the app hands in through ChildContent and the templates is left alone: the tag cannot see what
+       is in it, and hiding a link or a button in there would leave the keyboard landing on something a
+       screen reader cannot name. *@
     var hiddenLabel = labelOnRoot && label.HasValue();
+    var ownContentHidden = hiddenLabel ? "true" : null;
 
     var describedBy = describedById is not null
                     ? (splattedDescribedBy.HasValue() ? $"{describedById} {splattedDescribedBy}" : describedById)
@@ -107,7 +126,7 @@
             {
                 @* The picture of what the tag stands for - an avatar, a flag, a logo. It is decorative next to
                    the label it sits beside, so it carries an empty alt unless one is given on purpose. *@
-                <img src="@IconUrl" alt="@(IconAlt ?? string.Empty)" style="@Styles?.Image" class="bit-tag-img @Classes?.Image" />
+                <img src="@IconUrl" alt="@(IconAlt ?? string.Empty)" aria-hidden="@ownContentHidden" style="@Styles?.Image" class="bit-tag-img @Classes?.Image" />
             }
 
             @if (ChildContent is not null)
@@ -116,7 +135,7 @@
             }
             else if (hasLabel)
             {
-                <span style="@Styles?.Label" class="bit-tag-lbl @Classes?.Label">
+                <span style="@Styles?.Label" class="bit-tag-lbl @Classes?.Label" aria-hidden="@ownContentHidden">
                     @if (Text.HasValue())
                     {
                         <span style="@Styles?.Text" class="bit-tag-tex @Classes?.Text">@Text</span>
@@ -150,6 +169,7 @@
       style="@StyleBuilder.Value"
       class="@ClassBuilder.Value"
       aria-label="@((string?)null)"
+      aria-labelledby="@(labelOnRoot ? splattedLabelledBy : null)"
       aria-describedby="@rootDescribedBy"
       tabindex="@rootTabIndex"
       dir="@Dir?.ToString().ToLower()">
@@ -171,7 +191,7 @@
         <a @ref="_contentRef"
            @onclick="HandleOnClick"
            @onclick:preventDefault="@(IsEnabled is false)"
-           @onclick:stopPropagation="StopPropagation"
+           @onclick:stopPropagation="stopClick"
            @onkeydown="onKeyDown"
            style="@Styles?.Content"
            class="bit-tag-cnt bit-tag-int @Classes?.Content"
@@ -184,12 +204,13 @@
            aria-disabled="@(IsEnabled ? null : "true")"
            aria-current="@(Selected ? _AriaCurrentMap[AriaCurrent] : null)"
            aria-label="@linkLabel"
+           aria-labelledby="@linkLabelledBy"
            aria-describedby="@describedBy">
             @content
 
             @if (hintText is not null)
             {
-                <span class="bit-tag-vhd">@hintText</span>
+                <span id="@(labelledByHint ? hintId : null)" class="bit-tag-vhd">@hintText</span>
             }
         </a>
     }
@@ -201,7 +222,7 @@
            assistive technology can reach. *@
         <button @ref="_contentRef"
                 @onclick="HandleOnClick"
-                @onclick:stopPropagation="StopPropagation"
+                @onclick:stopPropagation="stopClick"
                 @onkeydown="onKeyDown"
                 style="@Styles?.Content"
                 class="bit-tag-cnt bit-tag-int @Classes?.Content"
@@ -211,16 +232,18 @@
                 aria-disabled="@ariaDisabled"
                 aria-pressed="@(_isToggle ? Selected.ToString().ToLower() : null)"
                 aria-label="@label"
+                aria-labelledby="@controlLabelledBy"
                 aria-describedby="@describedBy">@content</button>
     }
     else
     {
-        <span style="@Styles?.Content" class="bit-tag-cnt @Classes?.Content" aria-hidden="@(hiddenLabel ? "true" : null)">@content</span>
+        <span style="@Styles?.Content" class="bit-tag-cnt @Classes?.Content">@content</span>
     }
 
     @if (OnDismiss.HasDelegate)
     {
         var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+        var dismissLabel = GetDismissLabel(label);
 
         <button @ref="_dismissRef"
                 @onclick="HandleOnDismissClick"
@@ -229,11 +252,11 @@
                 style="@Styles?.DismissButton"
                 class="bit-tag-cls @Classes?.DismissButton"
                 type="button"
-                title="@_dismissLabel"
+                title="@dismissLabel"
                 tabindex="@tabIndex"
                 disabled="@nativeDisabled"
                 aria-disabled="@ariaDisabled"
-                aria-label="@_dismissLabel"
+                aria-label="@dismissLabel"
                 aria-describedby="@rootDescribedBy">
             <i aria-hidden="true" style="@Styles?.DismissIcon" class="bit-tag-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
         </button>

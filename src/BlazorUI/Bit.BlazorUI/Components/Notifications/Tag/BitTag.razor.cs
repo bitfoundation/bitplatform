@@ -20,22 +20,6 @@ public partial class BitTag : BitComponentBase
     private bool _isButton => _isLink is false && (OnClick.HasDelegate || _isToggle);
     private bool _isInteractive => _isLink || _isButton;
 
-    // The dismiss button carries no text of its own, so the name it is given is the only thing a screen
-    // reader has to announce it by. A row of them all called "Dismiss" names none of the tags they remove,
-    // so with no name of its own the button is named after the text of the tag - or, for a tag with no words
-    // on it, after the AriaLabel that names it instead; a tag with neither falls back to a bare "Dismiss".
-    private string _dismissLabel
-    {
-        get
-        {
-            if (DismissLabel is not null) return DismissLabel;
-
-            var name = Text.HasValue() ? Text : AriaLabel;
-
-            return name.HasValue() ? Format(DismissLabelFormat ?? "Remove {0}", name!) : "Dismiss";
-        }
-    }
-
     // A tag that opens a new browsing context takes the reader somewhere the back button no longer returns
     // from, so it says so - the same sentence, and the same way of saying it, as every BitLink of the page.
     private string? _newTabHint
@@ -672,6 +656,20 @@ public partial class BitTag : BitComponentBase
     }
 
 
+
+    // The dismiss button carries no text of its own, so the name it is given is the only thing a screen
+    // reader has to announce it by. A row of them all called "Dismiss" names none of the tags they remove,
+    // so with no name of its own the button is named after the text of the tag - or, for a tag with no words
+    // on it, after the name the tag is given instead, its AriaLabel or an aria-label passed in through the
+    // attributes; a tag with neither falls back to a bare "Dismiss".
+    private string GetDismissLabel(string? label)
+    {
+        if (DismissLabel is not null) return DismissLabel;
+
+        var name = Text.HasValue() ? Text : label;
+
+        return name.HasValue() ? Format(DismissLabelFormat ?? "Remove {0}", name!) : "Dismiss";
+    }
 
     // A format string is app-supplied, so a wrong one is a typo rather than an exception: the tag falls back
     // to naming the button after itself.

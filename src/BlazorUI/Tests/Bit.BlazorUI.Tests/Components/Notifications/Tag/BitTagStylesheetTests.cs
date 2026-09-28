@@ -84,14 +84,50 @@ public class BitTagStylesheetTests
     }
 
     [TestMethod]
-    public void BitTagDisabledRootShouldKeepAnsweringThePointer()
+    public void BitTagDisabledRootShouldOnlyKeepAnsweringThePointerForItsTitle()
     {
         var stylesheet = ReadStylesheet();
         var start = stylesheet.IndexOf("&.bit-dis {", System.StringComparison.Ordinal);
-        var disabled = stylesheet[start..stylesheet.IndexOf('}', start)];
+        var disabled = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
 
-        // the controls inside stop answering it themselves; the root keeps it so the Title of a disabled tag still shows
-        Assert.IsFalse(disabled.Contains("pointer-events"), disabled);
+        // the whole tag is inert - a handler on the root and a link in a template included - except for a root
+        // that carries a title, which keeps the hover so the Title still shows; its content stays inert even then
+        StringAssert.Contains(disabled, "&:not([title]),\n        &[title=\"\"] {\n            pointer-events: none;", disabled);
+        StringAssert.Contains(disabled, ".bit-tag-cnt {\n            pointer-events: none;", disabled);
+    }
+
+    [TestMethod]
+    public void BitTagDisabledControlsShouldNotShowThePressPaint()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // a control kept focusable by AllowDisabledFocus is still made :active by a held Space
+        foreach (var control in new[] { "\n.bit-tag-int {", "\n.bit-tag-cls {" })
+        {
+            var start = stylesheet.IndexOf(control, System.StringComparison.Ordinal);
+            var rule = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal)];
+            var disabled = rule[rule.IndexOf("&[aria-disabled=\"true\"] {", System.StringComparison.Ordinal)..];
+
+            StringAssert.Contains(disabled[..disabled.IndexOf('}')], "background-color: transparent;", control);
+            Assert.IsTrue(rule.IndexOf("&:active", System.StringComparison.Ordinal) < rule.IndexOf("&[aria-disabled", System.StringComparison.Ordinal), control);
+        }
+    }
+
+    [TestMethod]
+    public void BitTagForcedColorsShouldKeepTheHighlightRingOnADisabledSelectedTag()
+    {
+        var stylesheet = ReadStylesheet();
+        var forced = stylesheet[stylesheet.IndexOf("@media (forced-colors: active)", System.StringComparison.Ordinal)..];
+
+        // a disabled tag is painted Canvas again, where a HighlightText ring would vanish
+        foreach (Match match in Regex.Matches(forced, @"\.bit-tag\.bit-tag-sel[^{,]*(?:,|\{)"))
+        {
+            if (match.Value.StartsWith(".bit-tag.bit-tag-sel {", System.StringComparison.Ordinal)) continue;
+
+            StringAssert.Contains(match.Value, ":not(.bit-dis)", match.Value);
+        }
+
+        StringAssert.Contains(forced, "&:not(.bit-dis) .bit-tag-int,");
     }
 
     [TestMethod]
@@ -120,8 +156,22 @@ public class BitTagStylesheetTests
         // a preset re-sizes every tag through --bit-siz-chip-*, so no size class may pin a height of its own
         foreach (var size in new[] { "sm", "md", "lg" })
         {
-            StringAssert.Contains(stylesheet, $"--bit-tag-sz-min-height: calc(#{{$siz-chip-{size}}} + 2 * var(--bit-tag-brd-w));", size);
+            StringAssert.Contains(stylesheet, $"--bit-tag-sz-min-height: #{{$siz-chip-{size}}};", size);
         }
+    }
+
+    [TestMethod]
+    public void BitTagHeightShouldBeSetInsideTheRule()
+    {
+        var stylesheet = ReadStylesheet();
+        var start = stylesheet.IndexOf("\n.bit-tag-cnt {", System.StringComparison.Ordinal);
+        var content = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal)];
+
+        // calc() cannot add a unitless 0 or a keyword border width to a length, so the height never adds the
+        // rule back in: it is the min-height of the content, which sits inside the rule
+        StringAssert.Contains(content, "min-height: var(--bit-Tag-min-height, var(--bit-tag-sz-min-height));");
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"^\s*min-height:", RegexOptions.Multiline).Count);
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"calc\([^)]*border-width|brd-w"), "the rule width must not enter a calc()");
     }
 
     private static string ReadStylesheet([CallerFilePath] string thisFile = "")

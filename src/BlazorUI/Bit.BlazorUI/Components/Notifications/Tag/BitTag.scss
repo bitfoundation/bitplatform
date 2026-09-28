@@ -26,7 +26,7 @@
 //   --bit-Tag-shadow                   elevation                                  (default: none)
 //
 //   SIZE
-//   --bit-Tag-min-height               smallest height, rule included             (default: per Size, $siz-chip-* inside the rule)
+//   --bit-Tag-min-height               smallest height inside the rule            (default: per Size, $siz-chip-*)
 //   --bit-Tag-max-width                widest the tag gets before it wraps or,
 //                                      with NoWrap, ellipsizes                    (default: 100%)
 //   --bit-Tag-padding-x                inline inset of the content and the
@@ -58,7 +58,10 @@
     --bit-tag-gap: var(--bit-Tag-gap, var(--bit-tag-sz-gap));
     --bit-tag-fs: var(--bit-Tag-font-size, var(--bit-tag-sz-fs));
     --bit-tag-icn-sz: var(--bit-Tag-icon-size, 1em);
-    --bit-tag-brd-w: var(--bit-Tag-border-width, #{$shp-border-width});
+    // Only Outline and Text step a selected tag further; unset here, rather than inherited from a tag this one
+    // sits inside, so Fill falls back to its resting pair.
+    --bit-tag-v-sel-hover-bg: initial;
+    --bit-tag-v-sel-active-bg: initial;
     line-height: 1;
     overflow: hidden;
     align-items: stretch;
@@ -76,36 +79,54 @@
     text-transform: $tg-ctrl-text-transform;
     max-width: var(--bit-Tag-max-width, 100%);
     font-weight: var(--bit-Tag-font-weight, #{$tg-font-weight});
-    border-width: var(--bit-tag-brd-w);
-    min-height: var(--bit-Tag-min-height, var(--bit-tag-sz-min-height));
+    border-width: var(--bit-Tag-border-width, #{$shp-border-width});
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     // A selected chip is already wearing its hover color in the Outline and Text variants, so the pointer has
-    // to take it one step further - otherwise a filter chip looks inert for as long as it is picked.
+    // to take it one step further - otherwise a filter chip looks inert for as long as it is picked. A variant
+    // with no deeper step of its own (Fill, whose overlay already deepens whatever it sits on) leaves the two
+    // selected slots unset and keeps its resting pair.
     &.bit-tag-sel {
         --bit-tag-fg: var(--bit-Tag-selected-color, var(--bit-Tag-color, var(--bit-tag-v-fg)));
         --bit-tag-bg: var(--bit-Tag-selected-background, var(--bit-tag-v-sel-bg));
         --bit-tag-brd: var(--bit-Tag-selected-border-color, var(--bit-tag-v-sel-brd));
-        --bit-tag-hover-bg: var(--bit-Tag-hover-background, var(--bit-tag-v-sel-hover-bg));
-        --bit-tag-active-bg: var(--bit-Tag-active-background, var(--bit-tag-v-sel-active-bg));
+        --bit-tag-hover-bg: var(--bit-Tag-hover-background, var(--bit-tag-v-sel-hover-bg, var(--bit-tag-v-hover-bg)));
+        --bit-tag-active-bg: var(--bit-Tag-active-background, var(--bit-tag-v-sel-active-bg, var(--bit-tag-v-active-bg)));
     }
 
     // Comes after the selected state and so takes its paint off with it. The glyphs follow the disabled text
-    // rather than a color of their own, which would leave them looking enabled. The root itself still answers
-    // the pointer - its controls are the ones that stop doing so - so the Title of a disabled tag, often the
-    // only place the text a NoWrap cut off can still be read, keeps showing on hover.
+    // rather than a color of their own, which would leave them looking enabled, and every variant dims its
+    // text to the same disabled text of the Color role.
+    //
+    // A disabled tag is inert to the pointer as a whole - the content, whatever a template put in it, and a
+    // handler the app attached to the root - with one exception: a root carrying a title keeps answering the
+    // hover, so the Title of a disabled tag, often the only place the text a NoWrap cut off can still be
+    // read, keeps showing. Its content stays inert even then.
     &.bit-dis {
         cursor: default;
         user-select: none;
         --bit-tag-icn-clr: currentcolor;
-        --bit-tag-fg: var(--bit-Tag-disabled-color, var(--bit-tag-v-dis-fg));
+        --bit-tag-fg: var(--bit-Tag-disabled-color, var(--bit-tag-clr-dis-text));
         --bit-tag-bg: var(--bit-Tag-disabled-background, var(--bit-tag-v-dis-bg));
         --bit-tag-brd: var(--bit-Tag-disabled-border-color, var(--bit-tag-v-dis-brd));
+
+        &:not([title]),
+        &[title=""] {
+            pointer-events: none;
+        }
+
+        .bit-tag-cnt {
+            pointer-events: none;
+        }
     }
 }
 
 // The content of the tag. It is the same box whether the tag is a label, a link or a button, so the three
 // read identically and the type is not reset by the user agent stylesheet of a button.
+//
+// It also carries the height of the chip. A min-height on the root would be measured around the rule, and adding
+// the width of that rule back in CSS breaks as soon as the width is a unitless 0 or a keyword - calc() cannot add
+// either to a length - so the height is set inside the rule instead, where the rule no longer enters into it.
 .bit-tag-cnt {
     min-width: 0;
     border: none;
@@ -122,6 +143,7 @@
     gap: var(--bit-tag-gap);
     background-color: transparent;
     padding: var(--bit-tag-pad-y) var(--bit-tag-pad-x);
+    min-height: var(--bit-Tag-min-height, var(--bit-tag-sz-min-height));
 }
 
 // A tag that is a link or a button answers the pointer, the keyboard and the focus like every other control
@@ -154,11 +176,13 @@
 
     // A button carries the disabled state itself; an anchor has no such state, so the link tag reports it
     // through aria-disabled - as does a button kept focusable by AllowDisabledFocus - and all of them are
-    // taken out of the pointer here.
+    // taken out of the pointer here. The keyboard still makes a focusable one :active while Space is held, so
+    // the press paint is taken off as well, rather than a disabled control looking as if it had answered.
     &:disabled,
     &[aria-disabled="true"] {
         cursor: default;
         pointer-events: none;
+        background-color: transparent;
     }
 }
 
@@ -323,6 +347,7 @@
     &[aria-disabled="true"] {
         cursor: default;
         pointer-events: none;
+        background-color: transparent;
     }
 }
 
@@ -335,16 +360,14 @@
     --bit-tag-v-brd: var(--bit-tag-clr);
     --bit-tag-v-sel-bg: var(--bit-tag-clr-active);
     --bit-tag-v-sel-brd: var(--bit-tag-clr-active);
-    --bit-tag-v-dis-fg: var(--bit-tag-clr-dis-text);
     --bit-tag-v-dis-bg: var(--bit-tag-clr-dis);
     --bit-tag-v-dis-brd: var(--bit-tag-clr-dis);
     // A filled tag is already wearing the role color, so it answers the pointer by deepening it. The overlay
     // is composited from the text color so that it works over every role, including the neutral ones whose
     // hover slot is not a deeper version of themselves - and over a background a --bit-Tag-* variable set.
+    // It deepens a selected tag the same way, so the selected pair is left to fall back to this one.
     --bit-tag-v-hover-bg: #{translucent(var(--bit-tag-fg), 12%)};
     --bit-tag-v-active-bg: #{translucent(var(--bit-tag-fg), 20%)};
-    --bit-tag-v-sel-hover-bg: #{translucent(var(--bit-tag-fg), 12%)};
-    --bit-tag-v-sel-active-bg: #{translucent(var(--bit-tag-fg), 20%)};
 }
 
 .bit-tag-otl {
@@ -353,7 +376,6 @@
     --bit-tag-v-brd: var(--bit-tag-clr);
     --bit-tag-v-sel-bg: var(--bit-tag-clr-light);
     --bit-tag-v-sel-brd: var(--bit-tag-clr);
-    --bit-tag-v-dis-fg: var(--bit-tag-clr-dis-text);
     --bit-tag-v-dis-bg: transparent;
     --bit-tag-v-dis-brd: var(--bit-tag-clr-dis);
     --bit-tag-v-hover-bg: var(--bit-tag-clr-light);
@@ -368,7 +390,6 @@
     --bit-tag-v-brd: transparent;
     --bit-tag-v-sel-bg: var(--bit-tag-clr-light);
     --bit-tag-v-sel-brd: transparent;
-    --bit-tag-v-dis-fg: var(--bit-tag-clr-dis-text);
     --bit-tag-v-dis-bg: transparent;
     --bit-tag-v-dis-brd: transparent;
     --bit-tag-v-hover-bg: var(--bit-tag-clr-light);
@@ -408,7 +429,7 @@
     --bit-tag-sz-img: #{spacing(1.750)};
     --bit-tag-sz-pad-y: #{spacing(0.250)};
     --bit-tag-sz-pad-x: calc(#{$siz-ctrl-pad-x-sm} / 2);
-    --bit-tag-sz-min-height: calc(#{$siz-chip-sm} + 2 * var(--bit-tag-brd-w));
+    --bit-tag-sz-min-height: #{$siz-chip-sm};
 }
 
 .bit-tag-md {
@@ -419,7 +440,7 @@
     --bit-tag-sz-img: #{spacing(2)};
     --bit-tag-sz-pad-y: #{spacing(0.375)};
     --bit-tag-sz-pad-x: calc(#{$siz-ctrl-pad-x-md} / 2);
-    --bit-tag-sz-min-height: calc(#{$siz-chip-md} + 2 * var(--bit-tag-brd-w));
+    --bit-tag-sz-min-height: #{$siz-chip-md};
 }
 
 .bit-tag-lg {
@@ -430,7 +451,7 @@
     --bit-tag-sz-img: #{spacing(2.5)};
     --bit-tag-sz-pad-y: #{spacing(0.500)};
     --bit-tag-sz-pad-x: calc(#{$siz-ctrl-pad-x-lg} / 2);
-    --bit-tag-sz-min-height: calc(#{$siz-chip-lg} + 2 * var(--bit-tag-brd-w));
+    --bit-tag-sz-min-height: #{$siz-chip-lg};
 }
 
 
@@ -483,9 +504,10 @@
         // their hover and active backgrounds would be painted in the authored colors again - over the system
         // highlight the selected tag has just taken, and under the HighlightText the label is now wearing.
         // Both states are pinned back to the highlight, which leaves the pairing readable and the chip picked
-        // throughout.
-        .bit-tag-int,
-        .bit-tag-cls {
+        // throughout. A disabled tag has taken the highlight off (below) and is left out, so a control kept
+        // focusable by AllowDisabledFocus does not light up again while Space holds it :active.
+        &:not(.bit-dis) .bit-tag-int,
+        &:not(.bit-dis) .bit-tag-cls {
             @media (hover: hover) {
                 &:hover {
                     background-color: Highlight;
@@ -515,10 +537,11 @@
     }
 
     // Every ring is inset, so a selected tag draws it over its own highlight fill, where Highlight would
-    // vanish; it takes the text color of that fill instead.
-    .bit-tag.bit-tag-sel:focus-visible,
-    .bit-tag.bit-tag-sel .bit-tag-int:focus-visible,
-    .bit-tag.bit-tag-sel .bit-tag-cls:focus-visible {
+    // vanish; it takes the text color of that fill instead. A disabled one is painted Canvas again, where
+    // HighlightText would vanish in turn, so it keeps the Highlight ring above.
+    .bit-tag.bit-tag-sel:not(.bit-dis):focus-visible,
+    .bit-tag.bit-tag-sel:not(.bit-dis) .bit-tag-int:focus-visible,
+    .bit-tag.bit-tag-sel:not(.bit-dis) .bit-tag-cls:focus-visible {
         outline-color: HighlightText;
     }
 }
