@@ -164,10 +164,29 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
 
 
+    /// <summary>
+    /// Whether a parameter declared by one of the input base classes was left unset in the markup of the
+    /// component, which is what a <see cref="BitParams"/> cascade asks before filling one in.
+    /// </summary>
+    /// <remarks>
+    /// The <c>HasNotBeenSet</c> a component gets from the source generator only knows the parameters that
+    /// component declares itself, because that is all its generated <c>SetParametersAsync</c> assigns.
+    /// The ones declared here and in <see cref="BitTextInputBase{TValue}"/> are assigned by the
+    /// hand-written overrides below instead, so they keep a record of their own. Each override clears
+    /// only its own record, which is what keeps the two independent of the order they run in.
+    /// </remarks>
+    internal virtual bool HasNotBeenSetOnInputBase(string name)
+    {
+        return _assignedInputParameters.Contains(name) is false;
+    }
+
+    private readonly HashSet<string> _assignedInputParameters = [];
+
     public override Task SetParametersAsync(ParameterView parameters)
     {
         ValueHasBeenSet = false;
         DefaultValueHasBeenSet = false;
+        _assignedInputParameters.Clear();
 
         _assignedInputParameters.Clear();
 

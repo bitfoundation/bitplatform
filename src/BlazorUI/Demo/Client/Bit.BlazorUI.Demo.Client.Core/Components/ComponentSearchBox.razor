@@ -6,9 +6,9 @@
    accessible announcements all included. *@
 <BitSearchBox Immediate
               HighlightSuggestItems
-              Id="@_rootId"
               Size="@Size"
               DebounceTime="300"
+              FocusShortcut="@(RegisterShortcut ? "Control+K Meta+K /" : null)"
               MaxSuggestCount="8"
               MinSuggestTriggerChars="1"
               AriaLabel="Search components"
