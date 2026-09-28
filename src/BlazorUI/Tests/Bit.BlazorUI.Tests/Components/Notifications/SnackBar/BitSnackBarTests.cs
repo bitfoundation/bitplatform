@@ -914,9 +914,9 @@ public class BitSnackBarTests : BunitTestContext
          DataRow(BitColor.Info, "status", "polite"),
          DataRow(BitColor.Success, "status", "polite"),
          DataRow(BitColor.Primary, "status", "polite"),
-         DataRow(BitColor.Warning, "alert", "assertive"),
-         DataRow(BitColor.SevereWarning, "alert", "assertive"),
-         DataRow(BitColor.Error, "alert", "assertive")
+         DataRow(BitColor.Warning, "status", "assertive"),
+         DataRow(BitColor.SevereWarning, "status", "assertive"),
+         DataRow(BitColor.Error, "status", "assertive")
     ]
     public async Task BitSnackBarItemLiveRegionTest(BitColor color, string role, string live)
     {
@@ -926,6 +926,8 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = com.Find(".bit-snb-itm");
 
+        // An alert is announced assertively by the host's region, but the item itself never carries the alert role:
+        // a browser raises an alert event of its own for every element that arrives with it, which would say it twice.
         Assert.AreEqual(role, item.GetAttribute("role"));
 
         // The item is never the live region itself: an element that arrives with its text already inside it is
@@ -959,7 +961,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show(new BitSnackBarItem { Title = "title", Color = BitColor.Info, Role = "alert" });
 
-        Assert.AreEqual("alert", com.Find(".bit-snb-itm").GetAttribute("role"));
+        Assert.AreEqual("status", com.Find(".bit-snb-itm").GetAttribute("role"));
         Assert.AreEqual("title", com.Find(".bit-snb-lvr[aria-live=\"assertive\"]").TextContent);
         Assert.AreEqual("", com.Find(".bit-snb-lvr[aria-live=\"polite\"]").TextContent);
     }
@@ -3198,5 +3200,64 @@ public class BitSnackBarTests : BunitTestContext
         });
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarLoadingItemTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        var item = await com.Instance.Show(new BitSnackBarItem { Title = "Uploading...", IsLoading = true });
+
+        // The spinner stands in for the icon even on a host that shows none, and the item is marked busy.
+        Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-snb-ico").Count);
+        Assert.AreEqual("true", com.Find(".bit-snb-itm").GetAttribute("aria-busy"));
+
+        // Work that is still running is not over, so the item sits out the countdown and draws no bar for it.
+        Assert.AreEqual(0, com.FindAll(".bit-snb-prb").Count);
+
+        await Task.Delay(500);
+
+        Assert.AreEqual(1, com.Instance.Items.Count);
+
+        // A loading item is still dismissible, unlike a persistent one.
+        Assert.AreEqual(1, com.FindAll(".bit-snb-cbt").Count);
+
+        item.IsLoading = false;
+        item.Title = "Uploaded";
+        item.Color = BitColor.Success;
+
+        await com.Instance.Update(item);
+
+        Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count);
+        Assert.IsFalse(com.Find(".bit-snb-itm").HasAttribute("aria-busy"));
+        Assert.AreEqual(1, com.FindAll(".bit-snb-prb").Count);
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarLoadingItemReplacesTheIconTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.ShowIcon, true));
+
+        var item = await com.Instance.Show(new BitSnackBarItem { Title = "Syncing", IsLoading = true });
+
+        Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-snb-ico").Count);
+        Assert.AreEqual("true", com.Find(".bit-snb-ict").GetAttribute("aria-hidden"));
+
+        item.IsLoading = false;
+
+        await com.Instance.Update(item);
+
+        Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count);
+        Assert.AreEqual(1, com.FindAll(".bit-snb-ico").Count);
     }
 }

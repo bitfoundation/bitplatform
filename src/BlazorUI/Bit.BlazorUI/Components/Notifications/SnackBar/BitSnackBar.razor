@@ -38,9 +38,10 @@
         @* The id is on the element for the swipe script to read, and only on the items a swipe is allowed to take
            away, so a persistent one does not even follow the pointer. *@
         <div @key="item.Id"
-             role="@GetItemRole(item)"
+             role="@GetRenderedRole(item)"
              data-bit-snb-id="@(IsDismissible(item) ? item.Id.ToString() : null)"
              aria-live="off"
+             aria-busy="@(item.IsLoading ? "true" : null)"
              tabindex="@(IsClickable(item) ? "0" : null)"
              style="@JoinStyles(Styles?.Container, item.CssStyle)"
              class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass"
@@ -62,7 +63,15 @@
                    so a screen reader reads the notification before it reaches the button that throws it away,
                    and the Tab order does the same. *@
                 <div style="@Styles?.Header" class="bit-snb-hdr @Classes?.Header">
-                    @if (ShowIcon && item.HideIcon is false)
+                    @if (item.IsLoading)
+                    {
+                        @* The spinner stands in for the icon whatever ShowIcon says: it is the one thing on screen
+                           that tells a notification still waiting on something from one that has its answer. *@
+                        <div style="@Styles?.IconContainer" class="bit-snb-ict @Classes?.IconContainer" aria-hidden="true">
+                            <span style="@Styles?.Spinner" class="bit-snb-spn @Classes?.Spinner"></span>
+                        </div>
+                    }
+                    else if (ShowIcon && item.HideIcon is false)
                     {
                         <div style="@Styles?.IconContainer" class="bit-snb-ict @Classes?.IconContainer" aria-hidden="true">
                             <i style="@Styles?.Icon" class="bit-snb-ico @GetIcon(item)?.GetCssClasses() @Classes?.Icon" />

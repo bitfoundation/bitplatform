@@ -44,42 +44,28 @@ private async Task OpenPositionSnackBar()
 
     private readonly string example3RazorCode = @"
 <BitSnackBar @ref=""autoDismissRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)""
+             ReverseProgress=""reverseProgress"" HideProgress=""hideProgress""
              PauseOnPageHidden PauseOnWindowBlur />
+
+<BitToggle @bind-Value=""reverseProgress"" Label=""ReverseProgress"" Inline />
+<BitToggle @bind-Value=""hideProgress"" Label=""HideProgress"" Inline />
+
 <BitButton OnClick=""OpenAutoDismiss"">Hover me to pause the countdown</BitButton>
-
-<BitSnackBar @ref=""reverseProgressRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" ReverseProgress />
-<BitButton OnClick=""OpenReverseProgress"">Draining progress bar</BitButton>
-
-<BitSnackBar @ref=""noProgressRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" HideProgress />
-<BitButton OnClick=""OpenNoProgress"">No progress bar</BitButton>
-
-<BitSnackBar @ref=""perItemTimeRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(10)"" />
 <BitButton OnClick=""OpenPerItemTime"">Per-item dismiss time</BitButton>";
     private readonly string example3CsharpCode = @"
+private bool hideProgress;
+private bool reverseProgress;
 private BitSnackBar autoDismissRef = default!;
-private BitSnackBar noProgressRef = default!;
-private BitSnackBar perItemTimeRef = default!;
-private BitSnackBar reverseProgressRef = default!;
 
 private async Task OpenAutoDismiss()
 {
     await autoDismissRef.Info(""Dismissing in 5 seconds"", ""Hover over me and the countdown holds."");
 }
 
-private async Task OpenReverseProgress()
-{
-    await reverseProgressRef.Info(""Dismissing in 5 seconds"", ""The bar drains as the time runs out."");
-}
-
-private async Task OpenNoProgress()
-{
-    await noProgressRef.Info(""Dismissing in 5 seconds"", ""The countdown runs without a progress bar."");
-}
-
 private async Task OpenPerItemTime()
 {
-    await perItemTimeRef.Show(""Quick one"", ""This item lives for 2 seconds."", autoDismissTime: TimeSpan.FromSeconds(2));
-    await perItemTimeRef.Show(""Slow one"", ""This item takes the host's 10 seconds."", BitColor.Success);
+    await autoDismissRef.Show(""Quick one"", ""This item lives for 2 seconds."", autoDismissTime: TimeSpan.FromSeconds(2));
+    await autoDismissRef.Show(""Slow one"", ""This item takes the host's 5 seconds."", BitColor.Success);
 }";
 
     private readonly string example4RazorCode = @"
@@ -87,15 +73,11 @@ private async Task OpenPerItemTime()
 <BitButton OnClick=""OpenPersistentSnackBar"">Open SnackBar</BitButton>
 <BitButton OnClick=""ClosePersistentSnackBar"">Close SnackBar</BitButton>
 
-<BitSnackBar @ref=""perItemPersistentRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(3)"" />
-<BitButton OnClick=""OpenMixedPersistence"">Open one of each</BitButton>
-
-<BitSnackBar @ref=""hideDismissRef"" HideDismiss AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" />
-<BitButton OnClick=""OpenHideDismiss"">No dismiss button</BitButton>";
+<BitSnackBar @ref=""perItemPersistentRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" />
+<BitButton OnClick=""OpenMixedPersistence"">Open one of each</BitButton>";
     private readonly string example4CsharpCode = @"
 private BitSnackBarItem? persistentItem;
 private BitSnackBar persistentRef = default!;
-private BitSnackBar hideDismissRef = default!;
 private BitSnackBar perItemPersistentRef = default!;
 
 private async Task OpenPersistentSnackBar()
@@ -116,23 +98,25 @@ private async Task ClosePersistentSnackBar()
 
 private async Task OpenMixedPersistence()
 {
-    await perItemPersistentRef.Info(""Goes away"", ""This one is dismissed after 3 seconds."");
+    await perItemPersistentRef.Info(""Goes away"", ""Dismissed after 5 seconds, or by its button."");
+    await perItemPersistentRef.Show(new BitSnackBarItem
+    {
+        Title = ""No button"",
+        Body = ""Still counts down and still answers Escape."",
+        Color = BitColor.Success,
+        HideDismiss = true
+    });
     await perItemPersistentRef.Show(new BitSnackBarItem
     {
         Title = ""Stays put"",
-        Body = ""This one is persistent, so it has no dismiss button and no countdown."",
+        Body = ""Persistent: no button and no countdown."",
         Color = BitColor.Warning,
         Persistent = true
     });
-}
-
-private async Task OpenHideDismiss()
-{
-    await hideDismissRef.Info(""No way out but the clock"", ""This item has no dismiss button, but it still counts down."");
 }";
 
     private readonly string example5RazorCode = @"
-<BitSnackBar @ref=""swipeRef"" SwipeToDismiss SwipeThreshold=""60"" ShowIcon OnDismiss=""HandleSwipeDismiss"" />
+<BitSnackBar @ref=""swipeRef"" SwipeToDismiss SwipeThreshold=""60"" OnDismiss=""HandleSwipeDismiss"" />
 <BitButton OnClick=""OpenSwipe"">Open, then drag it sideways</BitButton>
 
 <div>Last dismissal: <b>@swipeResult</b></div>";
@@ -200,16 +184,13 @@ private async Task OpenDuplicate()
 <BitButton OnClick=""OpenIconInfo"">Info</BitButton>
 <BitButton OnClick=""OpenIconSuccess"">Success</BitButton>
 <BitButton OnClick=""OpenIconError"">Error</BitButton>
+<BitButton OnClick=""OpenPerItemIcon"">Per-item icon</BitButton>
 
 <BitSnackBar @ref=""customIconRef"" ShowIcon IconName=""@BitIconName.Ringer"" />
-<BitButton OnClick=""OpenCustomIcon"">Custom icon</BitButton>
-
-<BitSnackBar @ref=""perItemIconRef"" ShowIcon />
-<BitButton OnClick=""OpenPerItemIcon"">Per-item icon</BitButton>";
+<BitButton OnClick=""OpenCustomIcon"">Host-wide icon</BitButton>";
     private readonly string example7CsharpCode = @"
 private BitSnackBar iconRef = default!;
 private BitSnackBar customIconRef = default!;
-private BitSnackBar perItemIconRef = default!;
 
 private async Task OpenIconInfo() => await iconRef.Info(""Info"", ""The icon follows the color of the item."");
 
@@ -217,27 +198,27 @@ private async Task OpenIconSuccess() => await iconRef.Success(""Success"", ""The
 
 private async Task OpenIconError() => await iconRef.Error(""Error"", ""The icon follows the color of the item."");
 
-private async Task OpenCustomIcon()
-{
-    await customIconRef.Info(""Reminder"", ""Every item of this host uses the Ringer icon."");
-}
-
 private async Task OpenPerItemIcon()
 {
-    await perItemIconRef.Show(new BitSnackBarItem
+    await iconRef.Show(new BitSnackBarItem
     {
         Title = ""Deployed"",
         Body = ""This one item asked for the Rocket icon."",
         Color = BitColor.Success,
         IconName = BitIconName.Rocket
     });
-    await perItemIconRef.Show(new BitSnackBarItem
+    await iconRef.Show(new BitSnackBarItem
     {
         Title = ""No icon"",
         Body = ""And this one dropped its icon."",
         Color = BitColor.Info,
         HideIcon = true
     });
+}
+
+private async Task OpenCustomIcon()
+{
+    await customIconRef.Info(""Reminder"", ""Every item of this host uses the Ringer icon."");
 }";
 
     private readonly string example8RazorCode = @"
@@ -266,27 +247,26 @@ private async Task Undo(BitSnackBarItem item)
 }";
 
     private readonly string example9RazorCode = @"
-<BitSnackBar @ref=""uncappedRef"" />
-<BitButton OnClick=""OpenUncapped"">Uncapped</BitButton>
+<BitSnackBar @ref=""multilineRef"" Multiline=""multiline"" MaxWidth=""@maxWidth"" />
 
-<BitSnackBar @ref=""singleLineRef"" MaxWidth=""20rem"" />
-<BitButton OnClick=""OpenSingleLine"">Single line, capped at 20rem</BitButton>
+<BitChoiceGroup @bind-Value=""maxWidth"" Label=""MaxWidth"" Horizontal
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""None"" Value=""@("""")"" />
+    <BitChoiceGroupOption Text=""20rem"" Value=""@(""20rem"")"" />
+</BitChoiceGroup>
+<BitToggle @bind-Value=""multiline"" Label=""Multiline"" Inline />
 
-<BitSnackBar @ref=""multilineRef"" Multiline MaxWidth=""20rem"" />
-<BitButton OnClick=""OpenMultiline"">Multiline, capped at 20rem</BitButton>";
+<BitButton OnClick=""OpenMultiline"">Show a long message</BitButton>";
     private readonly string example9CsharpCode = @"
-private BitSnackBar uncappedRef = default!;
-private BitSnackBar singleLineRef = default!;
+private bool multiline;
+private string maxWidth = ""20rem"";
 private BitSnackBar multilineRef = default!;
 
-private const string LongTitle = ""A title that is also too long to fit on one line"";
-private const string LongBody = ""This body is long enough that it does not fit on a single line, so it is either cut off with an ellipsis or wrapped over as many lines as it needs."";
-
-private async Task OpenUncapped() => await uncappedRef.Info(LongTitle, LongBody);
-
-private async Task OpenSingleLine() => await singleLineRef.Info(LongTitle, LongBody);
-
-private async Task OpenMultiline() => await multilineRef.Info(LongTitle, LongBody);";
+private async Task OpenMultiline()
+{
+    await multilineRef.Info(""A title that is also too long to fit on one line"",
+                            ""This body is long enough that it does not fit on a single line, so it is either cut off with an ellipsis or wrapped over as many lines as it needs."");
+}";
 
     private readonly string example10RazorCode = @"
 <BitSnackBar @ref=""titleTemplateRef"">
@@ -317,7 +297,7 @@ private async Task OpenMultiline() => await multilineRef.Info(LongTitle, LongBod
     <Template Context=""item"">
         <div style=""display: flex; align-items: center; gap: 10px;"">
             <BitPersona PrimaryText=""@item.Title"" SecondaryText=""@item.Body"" Size=""BitPersonaSize.Size32"" />
-            <BitButton Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground""
+            <BitButton Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" AriaLabel=""Close""
                        IconName=""@BitIconName.Cancel"" OnClick=""() => fullTemplateRef.Close(item)"" />
         </div>
     </Template>
@@ -402,7 +382,7 @@ private async Task StartUpload()
         Title = ""Uploading..."",
         Body = ""report.pdf"",
         Color = BitColor.Info,
-        Persistent = true
+        IsLoading = true
     });
 }
 
@@ -412,7 +392,7 @@ private async Task CompleteUpload()
 
     uploadItem.Title = ""Upload complete"";
     uploadItem.Color = BitColor.Success;
-    uploadItem.Persistent = false;
+    uploadItem.IsLoading = false;
 
     await controlRef.Update(uploadItem);
 
@@ -421,7 +401,7 @@ private async Task CompleteUpload()
 
 private async Task PauseAll()
 {
-    foreach (var item in controlRef.Items.ToArray())
+    foreach (var item in controlRef.Items)
     {
         await controlRef.Pause(item);
     }
@@ -429,7 +409,7 @@ private async Task PauseAll()
 
 private async Task ResumeAll()
 {
-    foreach (var item in controlRef.Items.ToArray())
+    foreach (var item in controlRef.Items)
     {
         await controlRef.Resume(item);
     }
@@ -589,6 +569,38 @@ private async Task OpenCustomizationSnackBar()
 }";
 
     private readonly string example15RazorCode = @"
+<BitParams Parameters=""snackBarParams"">
+    <BitSnackBar @ref=""cascadedRef"" />
+    <BitSnackBar @ref=""cascadedOwnRef"" Position=""BitSnackBarPosition.BottomCenter"" />
+</BitParams>
+<BitSnackBar @ref=""uncascadedRef"" />
+
+<BitButton OnClick=""OpenCascaded"">Takes the position, variant, icon and lifetime from the cascade</BitButton>
+<BitButton OnClick=""OpenCascadedOwn"">Its own position, the cascaded rest</BitButton>
+<BitButton OnClick=""OpenUncascaded"">Outside the cascade, back to the defaults</BitButton>";
+    private readonly string example15CsharpCode = @"
+private readonly BitSnackBarParams[] snackBarParams =
+[
+    new()
+    {
+        Position = BitSnackBarPosition.TopCenter,
+        Variant = BitVariant.Outline,
+        ShowIcon = true,
+        AutoDismiss = true,
+        AutoDismissTime = TimeSpan.FromSeconds(4),
+    }
+];
+private BitSnackBar cascadedRef = default!;
+private BitSnackBar cascadedOwnRef = default!;
+private BitSnackBar uncascadedRef = default!;
+
+private async Task OpenCascaded() => await cascadedRef.Success(""Cascaded"", ""Top center, outlined, with an icon, for 4 seconds."");
+
+private async Task OpenCascadedOwn() => await cascadedOwnRef.Success(""Own position"", ""Bottom center, the rest from the cascade."");
+
+private async Task OpenUncascaded() => await uncascadedRef.Success(""Defaults"", ""Bottom end, filled, no icon, until dismissed."");";
+
+    private readonly string example16RazorCode = @"
 <BitSnackBar @ref=""colorRef"" ShowIcon Variant=""colorVariant"" MaxItems=""4"" NewestOnTop />
 
 <BitChoiceGroup @bind-Value=""colorVariant"" Label=""Variant"" Horizontal TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
@@ -605,83 +617,50 @@ private async Task OpenCustomizationSnackBar()
 <BitButton OnClick=""@(async () => await colorRef.Show(""Primary"", ""This is a primary notification."", BitColor.Primary))"">Primary</BitButton>
 <BitButton OnClick=""@(async () => await colorRef.Show(""Secondary"", ""This is a secondary notification."", BitColor.Secondary))"">Secondary</BitButton>
 <BitButton OnClick=""@(async () => await colorRef.Show(""Tertiary"", ""This is a tertiary notification."", BitColor.Tertiary))"">Tertiary</BitButton>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private BitSnackBar colorRef = default!;
 private BitVariant colorVariant = BitVariant.Fill;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitSnackBar @ref=""dismissIconFaRef"" DismissIcon=""@BitIconInfo.Fa(""solid xmark"")"" />
-<BitButton OnClick=""OpenDismissIconFa"">FontAwesome dismiss icon</BitButton>
-
-<BitSnackBar @ref=""dismissIconCssRef"" DismissIcon=""@BitIconInfo.Css(""fa-solid fa-x"")"" />
-<BitButton OnClick=""OpenDismissIconCss"">CSS classes dismiss icon</BitButton>
-
-<BitSnackBar @ref=""leadingIconFaRef"" ShowIcon Icon=""@BitIconInfo.Fa(""solid circle-info"")"" />
-<BitButton OnClick=""OpenLeadingIconFa"">FontAwesome leading icon</BitButton>
-
-
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
-<BitSnackBar @ref=""dismissIconBiRef"" DismissIcon=""@BitIconInfo.Bi(""x-lg"")"" />
-<BitButton OnClick=""OpenDismissIconBi"">Bootstrap dismiss icon</BitButton>
+<BitSnackBar @ref=""iconFaRef"" ShowIcon Icon=""@BitIconInfo.Fa(""solid circle-info"")"" DismissIcon=""@BitIconInfo.Fa(""solid xmark"")"" />
+<BitButton OnClick=""OpenIconFa"">FontAwesome</BitButton>
 
-<BitSnackBar @ref=""dismissIconImplicitRef"" DismissIcon=""@(""bi bi-x-circle"")"" />
-<BitButton OnClick=""OpenDismissIconImplicit"">Implicit CSS dismiss icon</BitButton>";
-    private readonly string example16CsharpCode = @"
-private BitSnackBar dismissIconFaRef = default!;
-private BitSnackBar dismissIconCssRef = default!;
-private BitSnackBar leadingIconFaRef = default!;
-private BitSnackBar dismissIconBiRef = default!;
-private BitSnackBar dismissIconImplicitRef = default!;
+<BitSnackBar @ref=""iconBiRef"" ShowIcon Icon=""@BitIconInfo.Bi(""info-circle-fill"")"" DismissIcon=""@BitIconInfo.Bi(""x-lg"")"" />
+<BitButton OnClick=""OpenIconBi"">Bootstrap</BitButton>
 
-private async Task OpenDismissIconFa()
-{
-    await dismissIconFaRef.Info(""Notification"", ""Click the FontAwesome dismiss icon to close."");
-}
-
-private async Task OpenDismissIconCss()
-{
-    await dismissIconCssRef.Info(""Notification"", ""Click the CSS class dismiss icon to close."");
-}
-
-private async Task OpenLeadingIconFa()
-{
-    await leadingIconFaRef.Info(""Notification"", ""The leading icon comes from FontAwesome."");
-}
-
-private async Task OpenDismissIconBi()
-{
-    await dismissIconBiRef.Info(""Notification"", ""Click the Bootstrap dismiss icon to close."");
-}
-
-private async Task OpenDismissIconImplicit()
-{
-    await dismissIconImplicitRef.Info(""Notification"", ""Click the implicit CSS dismiss icon to close."");
-}";
-
-    private readonly string example17RazorCode = @"
-<BitSnackBar @ref=""sizeSmallRef"" ShowIcon Size=""BitSize.Small"" />
-<BitButton OnClick=""OpenSizeSmall"">Small</BitButton>
-
-<BitSnackBar @ref=""sizeMediumRef"" ShowIcon Size=""BitSize.Medium"" />
-<BitButton OnClick=""OpenSizeMedium"">Medium</BitButton>
-
-<BitSnackBar @ref=""sizeLargeRef"" ShowIcon Size=""BitSize.Large"" />
-<BitButton OnClick=""OpenSizeLarge"">Large</BitButton>";
+<BitSnackBar @ref=""iconCssRef"" ShowIcon Icon=""@BitIconInfo.Css(""fa-solid fa-bell"")"" DismissIcon=""@(""bi bi-x-circle"")"" />
+<BitButton OnClick=""OpenIconCss"">CSS classes</BitButton>";
     private readonly string example17CsharpCode = @"
-private BitSnackBar sizeSmallRef = default!;
-private BitSnackBar sizeMediumRef = default!;
-private BitSnackBar sizeLargeRef = default!;
+private BitSnackBar iconFaRef = default!;
+private BitSnackBar iconBiRef = default!;
+private BitSnackBar iconCssRef = default!;
 
-private async Task OpenSizeSmall() => await sizeSmallRef.Info(""Small"", ""The small size snack bar."");
+private async Task OpenIconFa() => await iconFaRef.Info(""FontAwesome"", ""Both icons come from FontAwesome."");
 
-private async Task OpenSizeMedium() => await sizeMediumRef.Info(""Medium"", ""The medium size snack bar."");
+private async Task OpenIconBi() => await iconBiRef.Info(""Bootstrap"", ""Both icons come from Bootstrap Icons."");
 
-private async Task OpenSizeLarge() => await sizeLargeRef.Info(""Large"", ""The large size snack bar."");";
+private async Task OpenIconCss() => await iconCssRef.Info(""CSS classes"", ""Icons from plain CSS class names."");";
 
     private readonly string example18RazorCode = @"
+<BitSnackBar @ref=""sizeRef"" ShowIcon Size=""size"" />
+
+<BitChoiceGroup @bind-Value=""size"" Label=""Size"" Horizontal TItem=""BitChoiceGroupOption<BitSize>"" TValue=""BitSize"">
+    <BitChoiceGroupOption Text=""Small"" Value=""BitSize.Small"" />
+    <BitChoiceGroupOption Text=""Medium"" Value=""BitSize.Medium"" />
+    <BitChoiceGroupOption Text=""Large"" Value=""BitSize.Large"" />
+</BitChoiceGroup>
+
+<BitButton OnClick=""OpenSize"">Open SnackBar</BitButton>";
+    private readonly string example18CsharpCode = @"
+private BitSnackBar sizeRef = default!;
+private BitSize size = BitSize.Medium;
+
+private async Task OpenSize() => await sizeRef.Info($""{size}"", $""The {size.ToString().ToLowerInvariant()} size snack bar."");";
+
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         background-color: tomato;
@@ -699,25 +678,27 @@ private async Task OpenSizeLarge() => await sizeLargeRef.Info(""Large"", ""The l
 
 
 <BitSnackBar @ref=""snackBarStyleRef"" />
-<BitButton OnClick=""OpenSnackBarStyle"">Custom style</BitButton>
-
-<BitSnackBar @ref=""snackBarClassRef"" />
-<BitButton OnClick=""OpenSnackBarClass"">Custom class</BitButton>
+<BitButton OnClick=""OpenSnackBarStyle"">Item style</BitButton>
+<BitButton OnClick=""OpenSnackBarClass"">Item class</BitButton>
 
 <BitSnackBar @ref=""snackBarStylesRef""
              Styles=""@(new() { Container = ""width: 16rem; background-color: purple;"",
                                Header = ""background-color: rebeccapurple; padding: 0.2rem;"" })"" />
-<BitButton OnClick=""OpenSnackBarStyles"">Custom styles</BitButton>
+<BitButton OnClick=""OpenSnackBarStyles"">Styles</BitButton>
 
 <BitSnackBar @ref=""snackBarClassesRef"" AutoDismiss
              Classes=""@(new() { Container = ""custom-container"",
                                 ProgressBar = ""custom-progress"" })"" />
-<BitButton OnClick=""OpenSnackBarClasses"">Custom classes</BitButton>";
-    private readonly string example18CsharpCode = @"
+<BitButton OnClick=""OpenSnackBarClasses"">Classes</BitButton>
+
+<BitSnackBar @ref=""cssVarsRef"" ShowIcon AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(6)""
+             Style=""--bit-SnackBar-background: #1e1b4b; --bit-SnackBar-color: #e0e7ff; --bit-SnackBar-icon-color: #a5b4fc; --bit-SnackBar-progress-color: #818cf8; --bit-SnackBar-radius: 1rem; --bit-SnackBar-padding: 1rem 1.25rem; --bit-SnackBar-min-width: 18rem; --bit-SnackBar-gap: 1rem;"" />
+<BitButton OnClick=""OpenCssVars"">CSS variables</BitButton>";
+    private readonly string example19CsharpCode = @"
 private BitSnackBar snackBarStyleRef = default!;
-private BitSnackBar snackBarClassRef = default!;
 private BitSnackBar snackBarStylesRef = default!;
 private BitSnackBar snackBarClassesRef = default!;
+private BitSnackBar cssVarsRef = default!;
 
 private async Task OpenSnackBarStyle()
 {
@@ -726,7 +707,7 @@ private async Task OpenSnackBarStyle()
 
 private async Task OpenSnackBarClass()
 {
-    await snackBarClassRef.Show(""This is title"", ""This is body"", cssClass: ""custom-class"");
+    await snackBarStyleRef.Show(""This is title"", ""This is body"", cssClass: ""custom-class"");
 }
 
 private async Task OpenSnackBarStyles()
@@ -737,13 +718,18 @@ private async Task OpenSnackBarStyles()
 private async Task OpenSnackBarClasses()
 {
     await snackBarClassesRef.Show(""This is title"", ""This is body"");
+}
+
+private async Task OpenCssVars()
+{
+    await cssVarsRef.Info(""Restyled"", ""Background, text, icon, bar, radius, padding and width from CSS variables."");
 }";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitSnackBar @ref=""rtlRef"" Dir=""BitDir.Rtl"" ShowIcon Position=""BitSnackBarPosition.BottomStart""
              AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" />
 <BitButton Dir=""BitDir.Rtl"" OnClick=""OpenRtl"">نمایش پیام</BitButton>";
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private BitSnackBar rtlRef = default!;
 
 private async Task OpenRtl()

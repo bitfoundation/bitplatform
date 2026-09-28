@@ -144,6 +144,19 @@ public class BitSnackBarItem
     public string? IconName { get; set; }
 
     /// <summary>
+    /// Marks this snack bar item as reporting work that is still in progress.
+    /// </summary>
+    /// <remarks>
+    /// A loading item shows a spinner in place of its leading icon (whether or not the host has
+    /// <see cref="BitSnackBar.ShowIcon"/> enabled), is marked <c>aria-busy</c>, and sits out the auto-dismiss
+    /// countdown - a notification about something unfinished is not over yet. Once the work is done, turn this off,
+    /// set the title, body and color to the outcome, and hand the item to <see cref="BitSnackBar.Update(BitSnackBarItem)"/>:
+    /// the spinner gives way to the icon and the countdown starts. Unlike <see cref="Persistent"/>, it leaves the item
+    /// dismissible. A <see cref="BitSnackBar.Template"/> renders no spinner of its own.
+    /// </remarks>
+    public bool IsLoading { get; set; }
+
+    /// <summary>
     /// A callback that is invoked when this snack bar item is clicked.
     /// </summary>
     /// <remarks>

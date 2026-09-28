@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -57,6 +59,17 @@ public partial class BitSnackBar : BitComponentBase
     [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the snack bar component.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple snack bar components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSnackBarParams.ParamName)]
+    public BitSnackBarParams? CascadingParameters { get; set; }
 
 
 
@@ -218,6 +231,9 @@ public partial class BitSnackBar : BitComponentBase
     /// Any CSS length is accepted, and the stack never grows past the width of the screen whatever this says.
     /// Unset, an item is as wide as its longest line needs, which on a wide screen is a line too long to be read
     /// comfortably - a notification of any length is worth capping at a readable measure.
+    /// <br />
+    /// The <c>--bit-SnackBar-max-width</c> CSS variable sets the same cap for every snack bar under it; this
+    /// parameter wins where both are set.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? MaxWidth { get; set; }
@@ -242,6 +258,9 @@ public partial class BitSnackBar : BitComponentBase
     /// <remarks>
     /// Any CSS length is accepted. This is what keeps a snack bar clear of the chrome the app already has at that
     /// edge - a bottom app bar, a cookie banner, the safe area of a phone.
+    /// <br />
+    /// The <c>--bit-SnackBar-offset</c> CSS variable sets the same distance for every snack bar under it; this
+    /// parameter wins where both are set.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Offset { get; set; }
@@ -357,6 +376,10 @@ public partial class BitSnackBar : BitComponentBase
     /// By default an item whose color reports a problem (Warning, SevereWarning, Error) is announced as an
     /// <c>alert</c> and every other item as a <c>status</c>. A single item can override this through
     /// <see cref="BitSnackBarItem.Role"/>.
+    /// <br />
+    /// The role decides how loudly the host's live region announces the item. An <c>alert</c> item is rendered with
+    /// the <c>status</c> role, because a browser raises an alert event of its own for every element that arrives with
+    /// the <c>alert</c> role and the notification would be heard twice.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
 
@@ -741,8 +764,11 @@ public partial class BitSnackBar : BitComponentBase
         StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-snb-max-w:{MaxWidth}" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSnackBarParams))]
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
 
         await SyncQueueAsync();
@@ -927,9 +953,11 @@ public partial class BitSnackBar : BitComponentBase
         return item.AutoDismissTime ?? AutoDismissTime ?? TimeSpan.FromSeconds(3);
     }
 
+    // A notification about work that is still running is not over yet, so it sits out the countdown until an Update
+    // turns it into the outcome.
     private bool IsAutoDismissed(BitSnackBarItem item)
     {
-        return AutoDismiss && IsDismissible(item) && GetAutoDismissTime(item) > TimeSpan.Zero;
+        return AutoDismiss && IsDismissible(item) && item.IsLoading is false && GetAutoDismissTime(item) > TimeSpan.Zero;
     }
 
     private bool ShowProgressBar(BitSnackBarItem item)
@@ -948,6 +976,17 @@ public partial class BitSnackBar : BitComponentBase
         if (Role.HasValue()) return Role!;
 
         return item.Color is BitColor.Warning or BitColor.SevereWarning or BitColor.Error ? "alert" : "status";
+    }
+
+    // The alert role is not only a live region: a browser also raises a system alert event for every element with
+    // that role the moment it is added, which NVDA and JAWS speak on top of whatever the live region says. An alert
+    // is already announced assertively by the host's own region, so the item itself is marked as a status, whose
+    // aria-live="off" really does keep it quiet - the same split Radix Toast makes.
+    private string GetRenderedRole(BitSnackBarItem item)
+    {
+        var role = GetItemRole(item);
+
+        return role == "alert" ? "status" : role;
     }
 
     // The politeness of the announcement follows the role rather than being declared beside it, and a role that is

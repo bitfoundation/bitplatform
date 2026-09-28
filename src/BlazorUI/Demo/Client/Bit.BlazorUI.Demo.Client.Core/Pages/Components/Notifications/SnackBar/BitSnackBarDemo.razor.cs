@@ -241,7 +241,7 @@ public partial class BitSnackBarDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A custom ARIA role for every snack bar item, overriding the one its color implies. By default the colors that report a problem are announced as an alert and the rest as a status, and a role that is not a live one leaves the item unannounced.",
+            Description = "A custom ARIA role for every snack bar item, overriding the one its color implies. By default the colors that report a problem are announced as an alert (assertively) and the rest as a status (politely); a role that is not a live one leaves the item unannounced. An alert item is rendered with the status role so it is not announced twice.",
         },
         new()
         {
@@ -688,6 +688,13 @@ public partial class BitSnackBarDemo
                 },
                 new()
                 {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spinner of a loading item of the BitSnackBar."
+                },
+                new()
+                {
                     Name = "DismissButton",
                     Type = "string?",
                     DefaultValue = "null",
@@ -847,6 +854,13 @@ public partial class BitSnackBarDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "The name of the leading icon of this snack bar item from the built-in Fluent UI icons."
+                },
+                new()
+                {
+                    Name = "IsLoading",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Marks the item as reporting work in progress: a spinner replaces its icon, it is marked aria-busy and it sits out the auto-dismiss countdown until an Update turns it off. It stays dismissible."
                 },
                 new()
                 {
@@ -1011,6 +1025,126 @@ public partial class BitSnackBarDemo
 
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-SnackBar-z-index",
+            DefaultValue = "--bit-zin-snackbar",
+            Description = "Stacking order of the stack, to keep it above or below the app's own overlays.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-offset",
+            DefaultValue = "8px",
+            Description = "Distance of the stack from the edges of the screen. The Offset parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-gap",
+            DefaultValue = "10px",
+            Description = "Room between two stacked items.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-min-width",
+            DefaultValue = "none",
+            Description = "Minimum width of an item, so short notifications line up.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-max-width",
+            DefaultValue = "none",
+            Description = "Maximum width of an item. The MaxWidth parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-background",
+            DefaultValue = "Per Color and Variant",
+            Description = "Fill of an item.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-color",
+            DefaultValue = "Per Color and Variant",
+            Description = "Text color of an item, which the icon, the dismiss button and the countdown bar follow.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-border-color",
+            DefaultValue = "Per Color and Variant",
+            Description = "Border color of an item.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-border-width",
+            DefaultValue = "--bit-shp-border-width on Outline, 0 otherwise",
+            Description = "Border width of an item.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of an item.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-shadow",
+            DefaultValue = "--bit-shd-snackbar",
+            Description = "Elevation of an item.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-padding",
+            DefaultValue = "Per Size",
+            Description = "Inner padding of an item.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-title-font-size",
+            DefaultValue = "Per Size",
+            Description = "Text size of the title.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-title-font-weight",
+            DefaultValue = "--bit-tpg-fw-medium",
+            Description = "Weight of the title.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-body-font-size",
+            DefaultValue = "Per Size",
+            Description = "Text size of the body.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-icon-color",
+            DefaultValue = "The text color",
+            Description = "Color of the leading icon and of the loading spinner.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-icon-size",
+            DefaultValue = "Per Size",
+            Description = "Size of the leading icon and of the loading spinner.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-progress-color",
+            DefaultValue = "The text color",
+            Description = "Color of the countdown bar.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-progress-height",
+            DefaultValue = "--bit-siz-track-md",
+            Description = "Thickness of the countdown bar.",
+        },
+    ];
+
+
+
     private BitSnackBar basicRef = default!;
     private async Task OpenBasicSnackBar()
     {
@@ -1027,36 +1161,24 @@ public partial class BitSnackBarDemo
     }
 
 
+    private bool hideProgress;
+    private bool reverseProgress;
     private BitSnackBar autoDismissRef = default!;
-    private BitSnackBar noProgressRef = default!;
-    private BitSnackBar perItemTimeRef = default!;
-    private BitSnackBar reverseProgressRef = default!;
 
     private async Task OpenAutoDismiss()
     {
         await autoDismissRef.Info("Dismissing in 5 seconds", "Hover over me and the countdown holds.");
     }
 
-    private async Task OpenReverseProgress()
-    {
-        await reverseProgressRef.Info("Dismissing in 5 seconds", "The bar drains as the time runs out.");
-    }
-
-    private async Task OpenNoProgress()
-    {
-        await noProgressRef.Info("Dismissing in 5 seconds", "The countdown runs without a progress bar.");
-    }
-
     private async Task OpenPerItemTime()
     {
-        await perItemTimeRef.Show("Quick one", "This item lives for 2 seconds.", autoDismissTime: TimeSpan.FromSeconds(2));
-        await perItemTimeRef.Show("Slow one", "This item takes the host's 10 seconds.", BitColor.Success);
+        await autoDismissRef.Show("Quick one", "This item lives for 2 seconds.", autoDismissTime: TimeSpan.FromSeconds(2));
+        await autoDismissRef.Show("Slow one", "This item takes the host's 5 seconds.", BitColor.Success);
     }
 
 
     private BitSnackBarItem? persistentItem;
     private BitSnackBar persistentRef = default!;
-    private BitSnackBar hideDismissRef = default!;
     private BitSnackBar perItemPersistentRef = default!;
 
     private async Task OpenPersistentSnackBar()
@@ -1077,20 +1199,21 @@ public partial class BitSnackBarDemo
 
     private async Task OpenMixedPersistence()
     {
-        await perItemPersistentRef.Info("Goes away", "This one is dismissed after 3 seconds.");
+        await perItemPersistentRef.Info("Goes away", "Dismissed after 5 seconds, or by its button.");
+        await perItemPersistentRef.Show(new BitSnackBarItem
+        {
+            Title = "No button",
+            Body = "Still counts down and still answers Escape.",
+            Color = BitColor.Success,
+            HideDismiss = true
+        });
         await perItemPersistentRef.Show(new BitSnackBarItem
         {
             Title = "Stays put",
-            Body = "This one is persistent, so it has no dismiss button and no countdown.",
+            Body = "Persistent: no button and no countdown.",
             Color = BitColor.Warning,
             Persistent = true
         });
-    }
-
-
-    private async Task OpenHideDismiss()
-    {
-        await hideDismissRef.Info("No way out but the clock", "This item has no dismiss button, but it still counts down.");
     }
 
 
@@ -1134,7 +1257,6 @@ public partial class BitSnackBarDemo
 
     private BitSnackBar iconRef = default!;
     private BitSnackBar customIconRef = default!;
-    private BitSnackBar perItemIconRef = default!;
 
     private async Task OpenIconInfo() => await iconRef.Info("Info", "The icon follows the color of the item.");
 
@@ -1142,27 +1264,27 @@ public partial class BitSnackBarDemo
 
     private async Task OpenIconError() => await iconRef.Error("Error", "The icon follows the color of the item.");
 
-    private async Task OpenCustomIcon()
-    {
-        await customIconRef.Info("Reminder", "Every item of this host uses the Ringer icon.");
-    }
-
     private async Task OpenPerItemIcon()
     {
-        await perItemIconRef.Show(new BitSnackBarItem
+        await iconRef.Show(new BitSnackBarItem
         {
             Title = "Deployed",
             Body = "This one item asked for the Rocket icon.",
             Color = BitColor.Success,
             IconName = BitIconName.Rocket
         });
-        await perItemIconRef.Show(new BitSnackBarItem
+        await iconRef.Show(new BitSnackBarItem
         {
             Title = "No icon",
             Body = "And this one dropped its icon.",
             Color = BitColor.Info,
             HideIcon = true
         });
+    }
+
+    private async Task OpenCustomIcon()
+    {
+        await customIconRef.Info("Reminder", "Every item of this host uses the Ringer icon.");
     }
 
 
@@ -1182,18 +1304,15 @@ public partial class BitSnackBarDemo
     }
 
 
-    private BitSnackBar uncappedRef = default!;
-    private BitSnackBar singleLineRef = default!;
+    private bool multiline;
+    private string maxWidth = "20rem";
     private BitSnackBar multilineRef = default!;
 
-    private const string LongTitle = "A title that is also too long to fit on one line";
-    private const string LongBody = "This body is long enough that it does not fit on a single line, so it is either cut off with an ellipsis or wrapped over as many lines as it needs.";
-
-    private async Task OpenUncapped() => await uncappedRef.Info(LongTitle, LongBody);
-
-    private async Task OpenSingleLine() => await singleLineRef.Info(LongTitle, LongBody);
-
-    private async Task OpenMultiline() => await multilineRef.Info(LongTitle, LongBody);
+    private async Task OpenMultiline()
+    {
+        await multilineRef.Info("A title that is also too long to fit on one line",
+                                "This body is long enough that it does not fit on a single line, so it is either cut off with an ellipsis or wrapped over as many lines as it needs.");
+    }
 
 
     private string? bodyTemplateAnswer;
@@ -1253,7 +1372,7 @@ public partial class BitSnackBarDemo
             Title = "Uploading...",
             Body = "report.pdf",
             Color = BitColor.Info,
-            Persistent = true
+            IsLoading = true
         });
     }
 
@@ -1263,7 +1382,7 @@ public partial class BitSnackBarDemo
 
         uploadItem.Title = "Upload complete";
         uploadItem.Color = BitColor.Success;
-        uploadItem.Persistent = false;
+        uploadItem.IsLoading = false;
 
         await controlRef.Update(uploadItem);
 
@@ -1272,7 +1391,7 @@ public partial class BitSnackBarDemo
 
     private async Task PauseAll()
     {
-        foreach (var item in controlRef.Items.ToArray())
+        foreach (var item in controlRef.Items)
         {
             await controlRef.Pause(item);
         }
@@ -1280,7 +1399,7 @@ public partial class BitSnackBarDemo
 
     private async Task ResumeAll()
     {
-        foreach (var item in controlRef.Items.ToArray())
+        foreach (var item in controlRef.Items)
         {
             await controlRef.Resume(item);
         }
@@ -1353,57 +1472,53 @@ public partial class BitSnackBarDemo
     }
 
 
+    private readonly BitSnackBarParams[] snackBarParams =
+    [
+        new()
+        {
+            Position = BitSnackBarPosition.TopCenter,
+            Variant = BitVariant.Outline,
+            ShowIcon = true,
+            AutoDismiss = true,
+            AutoDismissTime = TimeSpan.FromSeconds(4),
+        }
+    ];
+    private BitSnackBar cascadedRef = default!;
+    private BitSnackBar cascadedOwnRef = default!;
+    private BitSnackBar uncascadedRef = default!;
+
+    private async Task OpenCascaded() => await cascadedRef.Success("Cascaded", "Top center, outlined, with an icon, for 4 seconds.");
+
+    private async Task OpenCascadedOwn() => await cascadedOwnRef.Success("Own position", "Bottom center, the rest from the cascade.");
+
+    private async Task OpenUncascaded() => await uncascadedRef.Success("Defaults", "Bottom end, filled, no icon, until dismissed.");
+
+
     private BitSnackBar colorRef = default!;
     private BitVariant colorVariant = BitVariant.Fill;
 
 
-    private BitSnackBar dismissIconFaRef = default!;
-    private BitSnackBar dismissIconCssRef = default!;
-    private BitSnackBar leadingIconFaRef = default!;
-    private BitSnackBar dismissIconBiRef = default!;
-    private BitSnackBar dismissIconImplicitRef = default!;
+    private BitSnackBar iconFaRef = default!;
+    private BitSnackBar iconBiRef = default!;
+    private BitSnackBar iconCssRef = default!;
 
-    private async Task OpenDismissIconFa()
-    {
-        await dismissIconFaRef.Info("Notification", "Click the FontAwesome dismiss icon to close.");
-    }
+    private async Task OpenIconFa() => await iconFaRef.Info("FontAwesome", "Both icons come from FontAwesome.");
 
-    private async Task OpenDismissIconCss()
-    {
-        await dismissIconCssRef.Info("Notification", "Click the CSS class dismiss icon to close.");
-    }
+    private async Task OpenIconBi() => await iconBiRef.Info("Bootstrap", "Both icons come from Bootstrap Icons.");
 
-    private async Task OpenLeadingIconFa()
-    {
-        await leadingIconFaRef.Info("Notification", "The leading icon comes from FontAwesome.");
-    }
-
-    private async Task OpenDismissIconBi()
-    {
-        await dismissIconBiRef.Info("Notification", "Click the Bootstrap dismiss icon to close.");
-    }
-
-    private async Task OpenDismissIconImplicit()
-    {
-        await dismissIconImplicitRef.Info("Notification", "Click the implicit CSS dismiss icon to close.");
-    }
+    private async Task OpenIconCss() => await iconCssRef.Info("CSS classes", "Icons from plain CSS class names.");
 
 
-    private BitSnackBar sizeSmallRef = default!;
-    private BitSnackBar sizeMediumRef = default!;
-    private BitSnackBar sizeLargeRef = default!;
+    private BitSnackBar sizeRef = default!;
+    private BitSize size = BitSize.Medium;
 
-    private async Task OpenSizeSmall() => await sizeSmallRef.Info("Small", "The small size snack bar.");
-
-    private async Task OpenSizeMedium() => await sizeMediumRef.Info("Medium", "The medium size snack bar.");
-
-    private async Task OpenSizeLarge() => await sizeLargeRef.Info("Large", "The large size snack bar.");
+    private async Task OpenSize() => await sizeRef.Info($"{size}", $"The {size.ToString().ToLowerInvariant()} size snack bar.");
 
 
     private BitSnackBar snackBarStyleRef = default!;
-    private BitSnackBar snackBarClassRef = default!;
     private BitSnackBar snackBarStylesRef = default!;
     private BitSnackBar snackBarClassesRef = default!;
+    private BitSnackBar cssVarsRef = default!;
 
     private async Task OpenSnackBarStyle()
     {
@@ -1412,7 +1527,7 @@ public partial class BitSnackBarDemo
 
     private async Task OpenSnackBarClass()
     {
-        await snackBarClassRef.Show("This is title", "This is body", cssClass: "custom-class");
+        await snackBarStyleRef.Show("This is title", "This is body", cssClass: "custom-class");
     }
 
     private async Task OpenSnackBarStyles()
@@ -1423,6 +1538,11 @@ public partial class BitSnackBarDemo
     private async Task OpenSnackBarClasses()
     {
         await snackBarClassesRef.Show("This is title", "This is body");
+    }
+
+    private async Task OpenCssVars()
+    {
+        await cssVarsRef.Info("Restyled", "Background, text, icon, bar, radius, padding and width from CSS variables.");
     }
 
 
