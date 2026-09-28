@@ -71,7 +71,8 @@ public partial class BitTag : BitComponentBase
     /// <remarks>
     /// A description is read after the name of whatever carries it, so use it for what does not belong in
     /// the name itself - why a filter is unavailable, what dismissing the tag will do. It lands on the
-    /// anchor or the button the tag becomes while it is a control, and on the root of the tag otherwise.
+    /// anchor or the button the tag becomes while it is a control, and on the root of the tag otherwise -
+    /// and then on its dismiss button as well, which is the one part of such a tag the keyboard reaches.
     /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 

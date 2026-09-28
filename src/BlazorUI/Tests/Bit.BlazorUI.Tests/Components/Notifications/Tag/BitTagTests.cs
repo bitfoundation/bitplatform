@@ -1252,6 +1252,40 @@ public class BitTagTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTagAriaDescriptionShouldReachTheDismissButtonOfATagThatIsNotAControl()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Offline");
+            parameters.Add(p => p.AriaDescription, "Dismissing hides the notice");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var root = component.Find(".bit-tag");
+
+        // the dismiss button is the only thing such a tag offers the keyboard, so it is where the description is heard
+        Assert.AreEqual($"{root.Id}-dsc", root.GetAttribute("aria-describedby"));
+        Assert.AreEqual($"{root.Id}-dsc", component.Find(".bit-tag-cls").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTagAriaDescriptionShouldStayOffTheDismissButtonOfATagThatIsAControl()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Only mine");
+            parameters.Add(p => p.AriaDescription, "Shows only the items you own");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var root = component.Find(".bit-tag");
+
+        Assert.AreEqual($"{root.Id}-dsc", component.Find("button.bit-tag-cnt").GetAttribute("aria-describedby"));
+        Assert.IsNull(component.Find(".bit-tag-cls").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
     public void BitTagShouldNotRenderAnyDescriptionWithoutAnAriaDescription()
     {
         var component = RenderComponent<BitTag>(parameters =>
@@ -1875,6 +1909,51 @@ public class BitTagTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-tag-err"));
         Assert.IsFalse(root.ClassList.Contains("bit-tag-suc"));
         Assert.AreEqual("Own", component.Find(".bit-tag-tex").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTagShouldApplyCascadingSelectionAndBaseParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagParams
+            {
+                IsEnabled = false,
+                SelectedIconName = "FavoriteStarFill",
+                SecondaryIconName = "ChevronDown",
+                DismissLabelFormat = "Take {0} off",
+                Classes = new() { Root = "cascaded-root", SelectedIcon = "cascaded-sic" },
+                Styles = new() { Root = "margin: 1px;" },
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTag>(0);
+                builder.AddAttribute(1, nameof(BitTag.Text), "Design");
+                builder.AddAttribute(2, nameof(BitTag.Selected), true);
+                builder.AddAttribute(3, nameof(BitTag.SelectedChanged), EventCallback.Factory.Create<bool>(this, (bool _) => { }));
+                builder.AddAttribute(4, nameof(BitTag.OnDismiss), EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs _) => { }));
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-tag");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
+        StringAssert.Contains(root.GetAttribute("style")!, "margin: 1px;");
+        Assert.IsTrue(component.Find("button.bit-tag-cnt").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find(".bit-tag-cls").HasAttribute("disabled"));
+
+        var selectedIcon = component.Find(".bit-tag-sic");
+        Assert.IsTrue(selectedIcon.ClassList.Contains("bit-icon--FavoriteStarFill"));
+        Assert.IsTrue(selectedIcon.ClassList.Contains("cascaded-sic"));
+        Assert.IsTrue(component.Find(".bit-tag-sci").ClassList.Contains("bit-icon--ChevronDown"));
+        Assert.AreEqual("Take Design off", component.Find(".bit-tag-cls").GetAttribute("aria-label"));
     }
 
     [TestMethod]

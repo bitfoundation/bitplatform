@@ -60,6 +60,10 @@
                     ? (splattedDescribedBy.HasValue() ? $"{describedById} {splattedDescribedBy}" : describedById)
                     : splattedDescribedBy;
 
+    @* A tag that is not a control but can be dismissed has one thing the keyboard lands on, its dismiss button,
+       and a description left on the root alone - a span with no role, which never takes focus - is one a
+       screen reader only reads while walking the page line by line. The button carries it as well, which is
+       also where "what dismissing the tag will do" belongs. *@
     var rootDescribedBy = labelOnRoot ? describedBy : null;
 
     @* The keyboard shortcut of the dismiss button is the only reason the tag listens for a key at all, so
@@ -206,7 +210,8 @@
                 title="@_dismissLabel"
                 tabindex="@tabIndex"
                 disabled="@(IsEnabled is false)"
-                aria-label="@_dismissLabel">
+                aria-label="@_dismissLabel"
+                aria-describedby="@rootDescribedBy">
             <i aria-hidden="true" style="@Styles?.DismissIcon" class="bit-tag-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
         </button>
     }
