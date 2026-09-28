@@ -1,0 +1,63 @@
+﻿@* Covers BitCalloutParams: the cascaded values fill in the parameters the callout did not set itself, and never
+   overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitCalloutParams[]
+                         {
+                             new()
+                             {
+                                 Alignment = BitCalloutAlignment.Center,
+                                 AlignmentOffset = 4,
+                                 ArrowPadding = 20,
+                                 ArrowSize = 16,
+                                 AutoClose = true,
+                                 AutoFocus = true,
+                                 Background = BitColorKind.Secondary,
+                                 Border = BitColorKind.Tertiary,
+                                 CollisionPadding = 12,
+                                 Direction = BitDropDirection.All,
+                                 FixedCalloutWidth = true,
+                                 Gap = 8,
+                                 HoverCloseDelay = 300,
+                                 HoverOpenDelay = 100,
+                                 LazyRender = true,
+                                 MaxHeight = "20rem",
+                                 MaxWidth = "24rem",
+                                 MaxWindowWidth = 480,
+                                 MinWidth = "10rem",
+                                 Modal = true,
+                                 NoDismissOnEscape = true,
+                                 NoDismissOnOutsideClick = true,
+                                 NoFlip = true,
+                                 NoOverlay = true,
+                                 NoShadow = true,
+                                 OpenOnHover = true,
+                                 PanelPosition = BitPanelPosition.Start,
+                                 ResponsiveMode = BitResponsiveMode.Panel,
+                                 ScrollOffset = 6,
+                                 SetCalloutWidth = true,
+                                 ShowArrow = true,
+                                 Side = BitCalloutSide.End,
+                                 TrapFocus = true,
+                                 Width = "18rem",
+                                 Class = "cascaded",
+                                 Classes = new() { Content = "cascaded-content" },
+                                 Styles = new() { Root = "margin:1px" },
+                             }
+                         })">
+    <BitCallout>
+        <Anchor><button>First</button></Anchor>
+        <Content>First content</Content>
+    </BitCallout>
+    <BitCallout Background="BitColorKind.Primary"
+                Gap="2"
+                ShowArrow="false"
+                NoShadow="false"
+                TrapFocus="false"
+                Modal="false"
+                Side="BitCalloutSide.Top"
+                Width="12rem"
+                Class="own">
+        <Anchor><button>Second</button></Anchor>
+        <Content>Second content</Content>
+    </BitCallout>
+</BitParams>

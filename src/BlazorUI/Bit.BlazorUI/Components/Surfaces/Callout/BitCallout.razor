@@ -2,7 +2,7 @@
 @inherits BitComponentBase
 
 @* The keydown handler is here as well as on the callout because the focus is usually still on the trigger
-   inside the anchor while the callout is open - it only moves into the callout for AutoFocus and TrapFocus -
+   inside the anchor while the callout is open - it only moves into the callout for AutoFocus, TrapFocus and Modal -
    and Escape has to dismiss the callout from wherever the keyboard actually is. The keys stop here: the
    anchor of a callout nested in another one sits inside that one's content, so an Escape left to carry on
    up would dismiss the callout the keyboard is still working inside of along with the one it was meant for.
@@ -57,7 +57,7 @@
        the page-level handler on the JS side. *@
     <div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
          id="@_overlayId"
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         style="@GetOverlayStyles()"
          class="@GetOverlayCssClasses()">
     </div>
 }
@@ -83,7 +83,7 @@
      role="@GetRole()"
      aria-label="@AriaLabel"
      aria-labelledby="@GetAriaLabelledBy()"
-     aria-modal="@(TrapFocus ? "true" : null)"
+     aria-modal="@(KeepsFocus ? "true" : null)"
      style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()"
      dir="@Dir?.ToString().ToLower()">

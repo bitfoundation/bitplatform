@@ -361,6 +361,77 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCalloutShouldListenForEscapeOnThePageWithoutAnAnchorOfItsOwn()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.AnchorId, "external-anchor");
+        });
+
+        await component.InvokeAsync(() => component.Instance.Open());
+
+        // The focus is usually on the external trigger, outside of anything the component renders, so the key
+        // is listened for on the whole page; the empty root is named as the trigger only to leave the callout be.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscape"][^1].Arguments;
+
+        Assert.AreEqual(component.Find(".bit-clo-cal").Id, setup[0]);
+        Assert.AreEqual(component.Find(".bit-clo").Id, setup[2]);
+
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeEscape"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldNotCloseOnAPageEscapeWhenNoDismissOnEscape()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.AnchorId, "external-anchor");
+            parameters.Add(p => p.NoDismissOnEscape, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Open());
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.IsTrue(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldLeaveTheEscapeInsideItToThePageListenerWithoutAnAnchorOfItsOwn()
+    {
+        var dismissed = 0;
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.AnchorId, "external-anchor");
+            parameters.Add(p => p.OnDismiss, () => dismissed++);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Open());
+
+        // The JS listener reports this very key as well, so answering it here too would close the callout twice.
+        component.Find(".bit-clo-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(0, dismissed);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldNotListenForEscapeOnThePageWithAnAnchorOfItsOwn()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscape"].Count);
+    }
+
+    [TestMethod]
     public void BitCalloutShouldNotCloseOnEscapeWhenNoDismissOnEscape()
     {
         var component = RenderComponent<BitCallout>(parameters =>
@@ -1948,6 +2019,28 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalloutShouldTrapTheFocusWhenItIsModal()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            // A dimmed page the keyboard can still Tab into is modal to the eye alone.
+            parameters.Add(p => p.Modal, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+            parameters.AddChildContent("<button>Inside</button>");
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        var callout = component.Find(".bit-clo-cal");
+
+        Assert.AreEqual(callout.Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+        Assert.AreEqual(callout.Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][^1].Arguments[0]);
+        Assert.AreEqual("dialog", callout.GetAttribute("role"));
+        Assert.AreEqual("true", callout.GetAttribute("aria-modal"));
+        Assert.AreEqual("dialog", component.Find(".bit-clo-acn").GetAttribute("aria-haspopup"));
+    }
+
+    [TestMethod]
     public void BitCalloutShouldLetTheKeyboardBackOutWhenItCloses()
     {
         var component = RenderComponent<BitCallout>(parameters =>
@@ -2184,5 +2277,217 @@ public class BitCalloutTests : BunitTestContext
         {
             Assert.IsTrue(style.Contains(expectedStyle));
         }
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitCalloutCascadingParamsTest>();
+
+        var callouts = component.FindComponents<BitCallout>();
+
+        Assert.AreEqual(2, callouts.Count);
+
+        // The first one takes everything from the cascading parameters.
+        var first = callouts[0];
+        var firstCallout = first.Find(".bit-clo-cal");
+
+        Assert.IsTrue(first.Find(".bit-clo").ClassList.Contains("cascaded"));
+        StringAssert.Contains(first.Find(".bit-clo").GetAttribute("style")!, "margin:1px");
+        Assert.IsTrue(firstCallout.ClassList.Contains("cascaded-content"));
+        Assert.IsTrue(firstCallout.ClassList.Contains("bit-clo-bsg"));
+        Assert.IsTrue(firstCallout.ClassList.Contains("bit-clo-btr"));
+        Assert.IsTrue(firstCallout.ClassList.Contains("bit-clo-nsh"));
+        Assert.IsTrue(firstCallout.ClassList.Contains("bit-clo-res"));
+        Assert.IsTrue(firstCallout.ClassList.Contains("bit-clo-sta"));
+        Assert.AreEqual("dialog", firstCallout.GetAttribute("role"));
+        StringAssert.Contains(firstCallout.GetAttribute("style")!, "--bit-clo-wid:18rem");
+        StringAssert.Contains(firstCallout.GetAttribute("style")!, "--bit-clo-mnw:10rem");
+        StringAssert.Contains(firstCallout.GetAttribute("style")!, "--bit-clo-mxw:24rem");
+        StringAssert.Contains(firstCallout.GetAttribute("style")!, "--bit-clo-mxh:20rem");
+        StringAssert.Contains(first.Find(".bit-clo-arw").GetAttribute("style")!, "--bit-clo-arw-siz:16px");
+
+        // A modal callout keeps the overlay the cascade asked it to leave out, and dims it.
+        Assert.IsTrue(first.Find(".bit-clo-ovl").ClassList.Contains("bit-clo-ovm"));
+
+        // The lazy content is kept out of the page until the callout is opened.
+        Assert.IsFalse(firstCallout.TextContent.Contains("First content"));
+
+        var instance = first.Instance;
+
+        Assert.AreEqual(BitCalloutAlignment.Center, instance.Alignment);
+        Assert.AreEqual(4, instance.AlignmentOffset);
+        Assert.AreEqual(20, instance.ArrowPadding);
+        Assert.IsTrue(instance.AutoClose);
+        Assert.IsTrue(instance.AutoFocus);
+        Assert.AreEqual(12, instance.CollisionPadding);
+        Assert.AreEqual(BitDropDirection.All, instance.Direction);
+        Assert.IsTrue(instance.FixedCalloutWidth);
+        Assert.AreEqual(8, instance.Gap);
+        Assert.AreEqual(300, instance.HoverCloseDelay);
+        Assert.AreEqual(100, instance.HoverOpenDelay);
+        Assert.AreEqual(480, instance.MaxWindowWidth);
+        Assert.IsTrue(instance.NoDismissOnEscape);
+        Assert.IsTrue(instance.NoDismissOnOutsideClick);
+        Assert.IsTrue(instance.NoFlip);
+        Assert.IsTrue(instance.NoOverlay);
+        Assert.IsTrue(instance.OpenOnHover);
+        Assert.AreEqual(6, instance.ScrollOffset);
+        Assert.IsTrue(instance.SetCalloutWidth);
+        Assert.AreEqual(BitCalloutSide.End, instance.Side);
+
+        // The second one sets its own values, which the cascading parameters must not overwrite.
+        var second = callouts[1];
+        var secondCallout = second.Find(".bit-clo-cal");
+
+        Assert.IsTrue(second.Find(".bit-clo").ClassList.Contains("own"));
+        Assert.IsFalse(second.Find(".bit-clo").ClassList.Contains("cascaded"));
+        Assert.IsTrue(secondCallout.ClassList.Contains("bit-clo-bpg"));
+        Assert.IsFalse(secondCallout.ClassList.Contains("bit-clo-bsg"));
+        Assert.IsFalse(secondCallout.ClassList.Contains("bit-clo-nsh"));
+        Assert.IsNull(secondCallout.GetAttribute("role"));
+        StringAssert.Contains(secondCallout.GetAttribute("style")!, "--bit-clo-wid:12rem");
+        Assert.AreEqual(0, second.FindAll(".bit-clo-arw").Count);
+        Assert.AreEqual(2, second.Instance.Gap);
+        Assert.AreEqual(BitCalloutSide.Top, second.Instance.Side);
+
+        // What it did not set itself still comes from the cascade.
+        Assert.IsTrue(secondCallout.ClassList.Contains("bit-clo-btr"));
+        Assert.AreEqual(BitCalloutAlignment.Center, second.Instance.Alignment);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldCopyThePublicCssVariablesOntoThePartsItRelocates()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.ShowArrow, true);
+            parameters.Add(p => p.Style, "--bit-Callout-background: tomato; color: blue");
+            parameters.Add(p => p.Styles, new BitCalloutClassStyles { Root = "--bit-Callout-radius:0;margin:2px" });
+        });
+
+        // The callout, its arrow and its overlay are relocated to the body while it is open, out of the reach of
+        // what the root declares, so the public variables travel with them - and nothing else does.
+        foreach (var selector in new[] { ".bit-clo-cal", ".bit-clo-arw", ".bit-clo-ovl" })
+        {
+            var style = component.Find(selector).GetAttribute("style") ?? string.Empty;
+
+            StringAssert.Contains(style, "--bit-Callout-background: tomato;", selector);
+            StringAssert.Contains(style, "--bit-Callout-radius:0;", selector);
+            Assert.IsFalse(style.Contains("color: blue"), selector);
+            Assert.IsFalse(style.Contains("margin:2px"), selector);
+        }
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldLetTheStylesOfAPartWinOverTheCopiedVariables()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.ShowArrow, true);
+            parameters.Add(p => p.Style, "--bit-Callout-background: tomato");
+            parameters.Add(p => p.Styles, new BitCalloutClassStyles
+            {
+                Content = "--bit-Callout-background: teal",
+                Arrow = "--bit-Callout-background: navy",
+                Overlay = "--bit-Callout-overlay-background: gold",
+            });
+        });
+
+        var content = component.Find(".bit-clo-cal").GetAttribute("style")!;
+        var arrow = component.Find(".bit-clo-arw").GetAttribute("style")!;
+        var overlay = component.Find(".bit-clo-ovl").GetAttribute("style")!;
+
+        Assert.IsTrue(content.IndexOf("tomato", StringComparison.Ordinal) < content.IndexOf("teal", StringComparison.Ordinal));
+        Assert.IsTrue(arrow.IndexOf("tomato", StringComparison.Ordinal) < arrow.IndexOf("navy", StringComparison.Ordinal));
+        Assert.IsTrue(overlay.IndexOf("tomato", StringComparison.Ordinal) < overlay.IndexOf("gold", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldCopyNoVariablesWhenNoneIsSet()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Style, "color: blue");
+        });
+
+        Assert.IsNull(component.Find(".bit-clo-cal").GetAttribute("style"));
+        Assert.AreEqual("display:none;", component.Find(".bit-clo-ovl").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldHandTheFocusBackToWhatOpenedItWithoutAnAnchorOfItsOwn()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.AnchorId, "external-anchor");
+            parameters.AddChildContent("<button>Inside</button>");
+        });
+
+        var contentId = component.Find(".bit-clo-cal").Id;
+
+        await component.InvokeAsync(() => component.Instance.Open());
+
+        // What held the focus is remembered before anything moves it, since the callout has no anchor of its
+        // own to hand the keyboard back to.
+        Assert.AreEqual(contentId, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"][^1].Arguments[0]);
+
+        await component.InvokeAsync(() => component.Instance.Close());
+
+        Assert.AreEqual(contentId, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"][^1].Arguments[0]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldForgetTheFocusOriginWhenTheFocusWasNeverItsToHandBack()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(false);
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.AnchorId, "external-anchor");
+        });
+
+        await component.InvokeAsync(() => component.Instance.Open());
+        await component.InvokeAsync(() => component.Instance.Close());
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"].Count);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldNotRememberAFocusOriginWithAnAnchorOfItsOwn()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        // The anchor it renders is where the focus goes back to, so there is nothing else to remember.
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldHandTheFocusBackWhenTheParentClosesIt()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+            parameters.AddChildContent("<button>Done</button>");
+        });
+
+        // A Done button in the content that closes the callout through the bound IsOpen.
+        component.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        component.WaitForAssertion(() =>
+            Assert.AreEqual(component.Find(".bit-clo-acn").Id,
+                            Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][^1].Arguments[0]));
     }
 }

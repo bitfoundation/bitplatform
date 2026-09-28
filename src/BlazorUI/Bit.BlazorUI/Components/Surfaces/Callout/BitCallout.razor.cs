@@ -1,4 +1,7 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Text;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A callout is an anchored tip that can be used to teach people or guide them through the app without
@@ -9,6 +12,9 @@
 /// </summary>
 public partial class BitCallout : BitComponentBase
 {
+    // The public custom properties of the component, which are what its stylesheet reads with a fallback.
+    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Callout-";
+
     private string _anchorId = default!;
     private string _arrowId = default!;
     private string _bodyId = default!;
@@ -24,6 +30,11 @@ public partial class BitCallout : BitComponentBase
     private bool _contentRendered;
     private bool _selfDrivenIsOpen;
     private bool _focusTrapped;
+    private bool _focusOriginCaptured;
+    private bool _escapeRegistered;
+    private string? _publicCssVariables;
+    private string? _lastRootStyle;
+    private string? _lastStylesRoot;
     private bool _scrollLocked;
     private bool _hoverInside;
     private bool? _isHoverDevice;
@@ -36,6 +47,19 @@ public partial class BitCallout : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the callout component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple callout components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCalloutParams.ParamName)]
+    public BitCalloutParams? CascadingParameters { get; set; }
 
 
 
@@ -279,7 +303,8 @@ public partial class BitCallout : BitComponentBase
     /// <summary>
     /// Dims the page behind the callout and holds it still while the callout is open, so that the callout
     /// reads as the only thing in play. The overlay still dismisses the callout on a click unless
-    /// <see cref="NoDismissOnOutsideClick"/> says otherwise.
+    /// <see cref="NoDismissOnOutsideClick"/> says otherwise. It implies <see cref="TrapFocus"/>, so the callout
+    /// is modal to the keyboard and to the screen readers as well as to the eye.
     /// </summary>
     /// <remarks>
     /// The page is what would otherwise take the wheel and the touch away from the callout, and scrolling
@@ -544,6 +569,10 @@ public partial class BitCallout : BitComponentBase
 
         await DisposeScrollLock();
 
+        await DisposeEscape();
+
+        await ForgetFocusOrigin();
+
         _selfDrivenIsOpen = true;
         try
         {
@@ -565,6 +594,19 @@ public partial class BitCallout : BitComponentBase
 
     [JSInvokable("OnEnd")]
     public Task _OnEnd(decimal diffX, decimal diffY) => Task.CompletedTask;
+
+    [JSInvokable("OnEscape")]
+    public async Task _OnEscape()
+    {
+        // Escape pressed anywhere in the page while this is the innermost open callout (see Utils.setupEscape),
+        // which is how a callout with an external anchor or opened at a point is dismissed from the keyboard:
+        // the focus is usually on the trigger that opened it, outside of anything the component renders.
+        if (IsEnabled is false || IsOpen is false || NoDismissOnEscape) return;
+
+        await CloseCallout();
+
+        await InvokeAsync(StateHasChanged);
+    }
 
     [JSInvokable("OnClose")]
     public async Task _OnClose()
@@ -618,6 +660,14 @@ public partial class BitCallout : BitComponentBase
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCalloutParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -638,7 +688,7 @@ public partial class BitCallout : BitComponentBase
         // wait for the next time it opens.
         if (IsRendered && IsOpen)
         {
-            if (TrapFocus)
+            if (KeepsFocus)
             {
                 await SetupFocusTrap();
             }
@@ -693,17 +743,7 @@ public partial class BitCallout : BitComponentBase
             // was waiting for, in which case there is nothing left to open.
             if (IsOpen is false) return;
 
-            await ToggleCallout();
-
-            await SetupFocusTrap();
-
-            await SetupScrollLock();
-
-            await FocusCalloutIfNeeded();
-
-            await OnToggle.InvokeAsync(true);
-
-            await OnOpen.InvokeAsync();
+            await ShowCallout();
         }
         else if (_placeAfterRender)
         {
@@ -767,6 +807,9 @@ public partial class BitCallout : BitComponentBase
         if (IsEnabled is false || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
+
+        // A callout without an anchor of its own hears the key from the JS side instead, wherever it is pressed.
+        if (_escapeRegistered) return;
 
         // The key can come from the callout or from the anchor, since the focus stays on the trigger unless
         // the callout was asked to take it. Closing hands the focus back to the anchor when it was in the
@@ -851,7 +894,20 @@ public partial class BitCallout : BitComponentBase
             return;
         }
 
+        await ShowCallout();
+    }
+
+    // Every way of opening the callout ends here, once the render it may have waited for is in: the callout is
+    // shown and placed, the keyboard is handed over to it where it was asked to be, and the consumer is told.
+    private async Task ShowCallout()
+    {
+        // Remembered before anything moves the focus, so that a callout without an anchor of its own - an external
+        // one, or a point - can still hand the keyboard back to whatever opened it once it closes.
+        await CaptureFocusOrigin();
+
         await ToggleCallout();
+
+        await SetupEscape();
 
         await SetupFocusTrap();
 
@@ -890,14 +946,11 @@ public partial class BitCallout : BitComponentBase
 
         await DisposeScrollLock();
 
+        await DisposeEscape();
+
         await ToggleCallout();
 
-        // The element the focus was on is gone with the callout, which would leave the focus on the body
-        // and the keyboard back at the top of the page, so it goes back to the anchor it came from.
-        if (restoreFocus)
-        {
-            await FocusAnchor();
-        }
+        await ReturnFocus(restoreFocus);
     }
 
     // A callout that is turned off while it is open would leave it hanging over the page with a disabled
@@ -1073,25 +1126,23 @@ public partial class BitCallout : BitComponentBase
     {
         if (IsOpen)
         {
-            await ToggleCallout();
-
-            await SetupFocusTrap();
-
-            await SetupScrollLock();
-
-            await FocusCalloutIfNeeded();
-
-            await OnToggle.InvokeAsync(true);
-
-            await OnOpen.InvokeAsync();
+            await ShowCallout();
         }
         else
         {
+            // A parent closing the callout from inside it - a Done button setting IsOpen to false - would otherwise
+            // leave the focus on an element that is no longer shown.
+            var restoreFocus = await CalloutContainsFocus();
+
             await DisposeFocusTrap();
 
             await DisposeScrollLock();
 
+            await DisposeEscape();
+
             await ToggleCallout();
+
+            await ReturnFocus(restoreFocus);
 
             await OnToggle.InvokeAsync(false);
 
@@ -1103,7 +1154,7 @@ public partial class BitCallout : BitComponentBase
     {
         // A trapped callout has to hold the focus to trap it: leaving it on the anchor would let the very
         // first Tab out of the callout, since the trap only ever sees the keys pressed inside of it.
-        if ((AutoFocus || TrapFocus) is false || IsOpen is false || IsDisposed) return;
+        if ((AutoFocus || KeepsFocus) is false || IsOpen is false || IsDisposed) return;
 
         if (_dotnetObj is null) return;
 
@@ -1136,10 +1187,99 @@ public partial class BitCallout : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    // The element the focus was on is gone with the callout, which would leave the focus on the body and the
+    // keyboard back at the top of the page, so it goes back to where it came from: the anchor the callout
+    // renders itself, or else whatever held the focus when the callout opened - the external anchor that
+    // toggled it, or the element a context menu was opened over. A focus that was not in the callout is left
+    // alone, and the remembered origin is dropped either way, so a later opening captures anew.
+    private async Task ReturnFocus(bool restore)
+    {
+        if (restore && Anchor is not null)
+        {
+            await FocusAnchor();
+        }
+        else if (restore)
+        {
+            await RestoreFocusOrigin();
+        }
+        else
+        {
+            await ForgetFocusOrigin();
+        }
+    }
+
+    // A callout with an anchor of its own hears Escape through the root around that anchor and through the
+    // callout itself. One without has no element of its own where the focus usually is, so the key is listened
+    // for on the whole page while it is open. The root is named as the trigger only to leave the callout alone:
+    // for an external anchor it holds nothing, so every Escape outside the callout is reported.
+    private async Task SetupEscape()
+    {
+        if (Anchor is not null || _escapeRegistered || IsDisposed || _dotnetObj is null) return;
+
+        _escapeRegistered = true;
+
+        try
+        {
+            await _js.BitUtilsSetupEscape(_contentId, _dotnetObj, _Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task DisposeEscape()
+    {
+        if (_escapeRegistered is false) return;
+
+        _escapeRegistered = false;
+
+        try
+        {
+            await _js.BitUtilsDisposeEscape(_contentId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // Only a callout without an anchor of its own needs the origin: the one it renders is where the focus goes.
+    private async Task CaptureFocusOrigin()
+    {
+        if (Anchor is not null || IsDisposed || _dotnetObj is null) return;
+
+        _focusOriginCaptured = true;
+
+        try
+        {
+            await _js.BitUtilsCaptureFocusOrigin(_contentId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task RestoreFocusOrigin()
+    {
+        if (_focusOriginCaptured is false || IsDisposed) return;
+
+        _focusOriginCaptured = false;
+
+        try
+        {
+            await _js.BitUtilsRestoreFocusOrigin(_contentId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task ForgetFocusOrigin()
+    {
+        if (_focusOriginCaptured is false) return;
+
+        _focusOriginCaptured = false;
+
+        try
+        {
+            await _js.BitUtilsDisposeFocusOrigin(_contentId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     private async Task FocusAnchor()
     {
-        // Only the anchor the component renders itself is one it can hand the focus back to; an external
-        // anchor belongs to the consumer, who is the one that knows what in it should take the focus.
         if (IsDisposed || Anchor is null || _dotnetObj is null) return;
 
         try
@@ -1211,6 +1351,11 @@ public partial class BitCallout : BitComponentBase
     // modal callout without one would be modal in name only.
     private bool HasOverlay => NoOverlay is false || Modal;
 
+    // Whether the keyboard is kept inside the open callout. A modal callout keeps it as well: the page behind it
+    // is dimmed and held still, and a Tab that could still wander off into it would be moving the focus onto
+    // what the callout has just told every other user is out of play (WAI-ARIA APG, modal dialog).
+    private bool KeepsFocus => TrapFocus || Modal;
+
     private bool IsResponsive => ResponsiveMode is not null && ResponsiveMode != BitResponsiveMode.None;
 
     private void CancelHover()
@@ -1251,7 +1396,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task SetupFocusTrap()
     {
-        if (TrapFocus is false || _focusTrapped || IsDisposed || _dotnetObj is null) return;
+        if (KeepsFocus is false || _focusTrapped || IsDisposed || _dotnetObj is null) return;
 
         _focusTrapped = true;
 
@@ -1371,7 +1516,7 @@ public partial class BitCallout : BitComponentBase
     {
         if (Role.HasValue()) return Role;
 
-        if (TrapFocus) return "dialog";
+        if (KeepsFocus) return "dialog";
 
         // A name on a generic container is a name no screen reader announces, so a callout that was given
         // one is reported as the group of content it is, which is the role that carries a name without
@@ -1441,9 +1586,59 @@ public partial class BitCallout : BitComponentBase
         // theme sizes it to when nothing is asked for, and the consumer's own styles still win over both.
         var size = ArrowSize > 0 ? $"--bit-clo-arw-siz:{ArrowSize.Value}px;" : null;
 
-        var result = $"{size}{Styles?.Arrow}";
+        var result = $"{GetPublicCssVariables()}{size}{Styles?.Arrow}";
 
         return result.HasValue() ? result : null;
+    }
+
+    // The display is written here rather than in the stylesheet because it is what the component toggles the
+    // overlay with; Styles.Overlay is appended last, so a value written for the overlay still wins over the copy.
+    private string GetOverlayStyles()
+    {
+        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
+    }
+
+    // The public custom properties of the component (see BitCallout.scss). The callout, its arrow and its overlay
+    // are rendered outside the root and relocated to the body while the callout is open, so none of them inherits
+    // what the Style of the component declares; the --bit-Callout-* declarations of Style and Styles.Root are
+    // copied onto them by hand, and nothing else in those strings is. One Style on the component then restyles
+    // the callout it opens, which is what an author setting a variable on it expects.
+    private string? GetPublicCssVariables()
+    {
+        var style = Style;
+        var stylesRoot = Styles?.Root;
+
+        // Rebuilt only when one of the two strings it is made of has actually changed, since the three parts
+        // that read it ask for it on every render.
+        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
+            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
+        {
+            return _publicCssVariables;
+        }
+
+        _lastRootStyle = style;
+        _lastStylesRoot = stylesRoot;
+
+        StringBuilder? builder = null;
+
+        AppendPublicCssVariables(ref builder, style);
+        AppendPublicCssVariables(ref builder, stylesRoot);
+
+        _publicCssVariables = builder?.ToString();
+
+        return _publicCssVariables;
+    }
+
+    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
+    {
+        if (style.HasNoValue()) return;
+
+        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
+
+            (builder ??= new StringBuilder()).Append(declaration).Append(';');
+        }
     }
 
     private string GetArrowCssClasses()
@@ -1469,7 +1664,7 @@ public partial class BitCallout : BitComponentBase
         var minWidth = MinWidth.HasValue() ? $"--bit-clo-mnw:{MinWidth};" : null;
         var maxWidth = MaxWidth.HasValue() ? $"--bit-clo-mxw:{MaxWidth};" : null;
 
-        var result = $"{maxHeight}{width}{minWidth}{maxWidth}{Styles?.Content}";
+        var result = $"{GetPublicCssVariables()}{maxHeight}{width}{minWidth}{maxWidth}{Styles?.Content}";
 
         return result.HasValue() ? result : null;
     }
@@ -1602,6 +1797,17 @@ public partial class BitCallout : BitComponentBase
             {
                 await _js.BitCalloutClearCallout(_contentId);
                 await _js.BitUtilsDisposeFocusTrap(_contentId);
+
+                if (_escapeRegistered)
+                {
+                    await _js.BitUtilsDisposeEscape(_contentId);
+                }
+
+                // The remembered origin would otherwise keep its element alive for as long as the page lives.
+                if (_focusOriginCaptured)
+                {
+                    await _js.BitUtilsDisposeFocusOrigin(_contentId);
+                }
 
                 // A modal callout disposed while it is open would otherwise leave the page it was holding
                 // still unable to scroll again, with nothing left on the page to release it.
