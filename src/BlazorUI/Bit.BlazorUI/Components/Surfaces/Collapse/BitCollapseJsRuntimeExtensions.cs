@@ -2,8 +2,8 @@
 
 internal static class BitCollapseJsRuntimeExtensions
 {
-    internal static ValueTask<double?> BitCollapseGetTransitionTime(this IJSRuntime jsRuntime, ElementReference root)
+    internal static ValueTask<double?> BitCollapseGetRemainingTransitionTime(this IJSRuntime jsRuntime, ElementReference root)
     {
-        return jsRuntime.Invoke<double?>("BitBlazorUI.Collapse.getTransitionTime", root);
+        return jsRuntime.Invoke<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", root);
     }
 }

@@ -101,10 +101,9 @@
             <div>
                 <b>CollapsedSize</b> (any CSS length, padding included) leaves a peek of the content on the page - a "show more"
                 clamp. A peek keeps its opacity and stays readable by assistive technology; on a Horizontal collapse it is a width.
-                <b>--bit-Collapse-peek-fade</b> fades its trailing edge to show there is more.
             </div>
             <br /><br />
-            <BitCollapse Expanded="peekExpanded" CollapsedSize="4.5rem" Style="--bit-Collapse-peek-fade: 2rem;">
+            <BitCollapse Expanded="peekExpanded" CollapsedSize="4.5rem">
                 In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
                 to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
                 possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
@@ -185,14 +184,16 @@
             <br /><br />
             <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="clipExpanded" />
             <br /><br />
-            <BitCollapse Expanded="clipExpanded" NoPadding Duration="600">
-                <div class="clip-card">Default: the glow is cut off at the edge.</div>
-            </BitCollapse>
-            <br /><br />
-            <BitCollapse Expanded="clipExpanded" NoPadding NoClip Duration="600">
-                <div class="clip-card">NoClip: the glow is drawn in full once the section is open.</div>
-            </BitCollapse>
-            <br />
+            <div>
+                <BitCollapse Expanded="clipExpanded" NoPadding Duration="600">
+                    <div class="clip-card">Default: the glow is cut off at the edge.</div>
+                </BitCollapse>
+                <br /><br />
+                <BitCollapse Expanded="clipExpanded" NoPadding NoClip Duration="600">
+                    <div class="clip-card">NoClip: the glow is drawn in full once the section is open.</div>
+                </BitCollapse>
+                <br />
+            </div>
         </DemoExample>
 
         <DemoExample Title="Rendering & printing" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
@@ -239,8 +240,8 @@
                 label, <b>aria-expanded</b> and <b>aria-controls</b> set to <b>ContentId</b> (the root's id + <b>-content</b>),
                 which <b>BitToggleButton</b> renders through <b>AriaMode="Expanded"</b> and <b>AriaControls</b>.
                 <b>LabelledBy</b> or <b>AriaLabel</b> names the <b>region</b>; an empty <b>Role</b> drops the role and the name.
-                <b>TabIndex</b> makes the region a tab stop and <b>FocusAsync</b> moves the focus into it, best from
-                <b>OnExpanded</b>. A section closed from inside hands the focus back to its trigger from <b>OnCollapsing</b>.
+                An open region is a tab stop (<b>TabIndex="-1"</b> takes it out) and <b>FocusAsync</b> moves the focus into
+                it, best from <b>OnExpanded</b>. A section closed from inside hands the focus back to its trigger from <b>OnCollapsing</b>.
             </div>
             <br /><br />
             <BitToggleButton Id="a11y-trigger"
@@ -267,7 +268,8 @@
             <div>
                 The public <b>--bit-Collapse-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink>
                 table) inherit, so set them on <code>:root</code>, on an ancestor or on one collapse's <b>Style</b>. A parameter
-                wins over its variable: the second section keeps its own <b>Background</b>.
+                wins over its variable: the second section keeps its own <b>Background</b>. <b>--bit-Collapse-peek-fade</b>
+                fades the trailing edge of a closed <b>CollapsedSize</b> peek to show there is more.
             </div>
             <br /><br />
             <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="cssVarExpanded" />
@@ -280,6 +282,11 @@
             <br />
             <BitCollapse Expanded="cssVarExpanded" Style="--bit-Collapse-color: var(--bit-clr-pri); --bit-Collapse-font-size: var(--bit-tpg-fs-md);">
                 Color and font size on one collapse.
+            </BitCollapse>
+            <br />
+            <BitCollapse Expanded="cssVarExpanded" CollapsedSize="2.5rem" Style="--bit-Collapse-peek-fade: 1.5rem;">
+                A faded peek: while the section is closed, its last lines melt into the background, which tells the reader
+                there is more to it than the peek shows. Opening the section takes the fade off along with the clamp.
             </BitCollapse>
         </DemoExample>
 
@@ -308,18 +315,20 @@
             <br /><br />
             <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="styleExpanded" />
             <br /><br />
-            <BitCollapse Expanded="styleExpanded" Style="border-inline-start: 4px solid var(--bit-clr-pri);">
-                A styled root.
-            </BitCollapse>
-            <br />
-            <BitCollapse Expanded="styleExpanded"
-                         Styles="@(new() { Expanded = "border: 1px solid var(--bit-clr-brd-pri);", Wrapper = "font-style: italic;" })">
-                Styles for the expanded root and the wrapper.
-            </BitCollapse>
-            <br />
-            <BitCollapse Expanded="styleExpanded" Classes="@(new() { Expanded = "custom-expanded", Wrapper = "custom-wrapper" })">
-                Classes for the expanded root and the wrapper.
-            </BitCollapse>
+            <div>
+                <BitCollapse Expanded="styleExpanded" Style="border-inline-start: 4px solid var(--bit-clr-pri);">
+                    A styled root.
+                </BitCollapse>
+                <br />
+                <BitCollapse Expanded="styleExpanded"
+                             Styles="@(new() { Expanded = "border: 1px solid var(--bit-clr-brd-pri);", Wrapper = "font-style: italic;" })">
+                    Styles for the expanded root and the wrapper.
+                </BitCollapse>
+                <br />
+                <BitCollapse Expanded="styleExpanded" Classes="@(new() { Expanded = "custom-expanded", Wrapper = "custom-wrapper" })">
+                    Classes for the expanded root and the wrapper.
+                </BitCollapse>
+            </div>
         </DemoExample>
 
         <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">

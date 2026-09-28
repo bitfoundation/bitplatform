@@ -202,7 +202,7 @@ public partial class BitCollapseDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The ARIA role of the content region of the collapse, which is region by default. An empty string renders no role at all, and with it no aria-label or aria-labelledby, since ARIA prohibits naming an element with no role."
+            Description = "The ARIA role of the content region of the collapse, which is region by default. An empty string renders no role at all, and with it no aria-label or aria-labelledby, since ARIA prohibits naming an element with no role - as it does under none, presentation and generic, which drop the name the same way."
         },
         new()
         {
@@ -246,7 +246,7 @@ public partial class BitCollapseDemo
         {
             Name = "FocusAsync",
             Type = "ValueTask",
-            Description = "Moves the focus to the content region of the collapse, which is focusable without being a tab stop. Worth pairing with OnExpanded so the focus lands once the section has finished opening."
+            Description = "Moves the focus to the content region of the collapse, which is focusable while it is on the screen, even when a TabIndex of -1 takes it out of the tab order. Worth pairing with OnExpanded so the focus lands once the section has finished opening."
         },
         new()
         {
@@ -303,7 +303,7 @@ public partial class BitCollapseDemo
         new()
         {
             Name = "--bit-Collapse-peek-fade",
-            DefaultValue = "0px",
+            DefaultValue = "unset",
             Description = "Length of the fade on the trailing edge of a closed CollapsedSize peek, which shows there is more to read. No fade by default.",
         },
     ];

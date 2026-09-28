@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -8,10 +9,10 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitCollapse : BitComponentBase
 {
-    // The duration the stylesheet gives the transition when nothing overrides it. The end of a transition is
-    // timed off what the browser resolved the transition to (see OnAfterRenderAsync), so this is only the
-    // estimate for when that cannot be read - while prerendering, or before the runtime is connected - and it
-    // mirrors the --bit-mot-duration-long-full of the default theme.
+    // The duration the stylesheet gives the transition when nothing overrides it. The end of a transition that
+    // something waits for is timed off what the browser says is left of it (see OnAfterRenderAsync), so this is
+    // only the estimate for when that cannot be read - before the runtime is connected - or is not worth a round
+    // trip, and it mirrors the --bit-mot-duration-long-full of the default theme.
     private const int DefaultDurationInMs = 300;
 
     // Whether the content has ever been expanded, which is the whole of what LazyRender waits for and what
@@ -49,8 +50,8 @@ public partial class BitCollapse : BitComponentBase
     private CancellationTokenSource? _transitionCts;
 
     // A transition that has started and whose end is still to be scheduled: the render that follows the change
-    // of state is what puts the new pace on the root, so the time it takes is read after that render rather
-    // than guessed before it. The wait is the estimate used when the browser cannot be asked.
+    // of state is what puts the new pace on the root, so the time left of it is read after that render rather
+    // than guessed before it. The wait is the estimate used when the browser is not asked.
     private (bool Expanded, int Wait, CancellationTokenSource Cts)? _pendingTransition;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -96,22 +97,25 @@ public partial class BitCollapse : BitComponentBase
     // content-visibility that value carries hides the content from the same three places on its own.
     private bool _inert => _visible is false && _hiddenUntilFound is false;
 
-    // The content region is not a tab stop of its own: it holds no action, and a page of open sections would
-    // otherwise cost a keyboard user one extra press of Tab per section. -1 still lets FocusAsync move the
-    // focus into it, and an explicit TabIndex puts it in the tab order without ever taking a closed section
-    // back into it.
-    private string _tabIndex => (IsEnabled && _visible && TabIndex.HasValue()) ? TabIndex! : "-1";
+    // The content region is a tab stop while it is on the screen, which is what lets a keyboard reach and
+    // scroll a section that holds nothing focusable of its own, and an explicit TabIndex says where it sits
+    // in the tab order - "-1" takes it out while still letting FocusAsync move the focus into it - without
+    // ever taking a closed section back into it.
+    private string _tabIndex => (IsEnabled && _visible) ? (TabIndex.HasValue() ? TabIndex! : "0") : "-1";
 
     // An unnamed region is dropped by assistive technology rather than announced, so the role is worth
     // keeping only while the consumer can name it; it stays the default for the markup this component has
     // always rendered, and an explicitly empty Role takes it off.
     private string? _role => Role is null ? "region" : (Role.HasValue() ? Role : null);
 
-    // ARIA prohibits naming an element with no role - a generic div - and screen readers drop a name put
-    // there, so the name is only rendered on a content region that still carries a role.
-    private string? _ariaLabel => _role is null ? null : AriaLabel;
+    // ARIA prohibits naming an element with no role - a generic div - or with one of the roles that stand for
+    // the same thing, and screen readers drop a name put there, so the name is only rendered on a content
+    // region whose role can carry one.
+    private bool _nameable => _role is not null && RoleProhibitsName(_role) is false;
 
-    private string? _ariaLabelledBy => _role is null ? null : LabelledBy;
+    private string? _ariaLabel => _nameable ? AriaLabel : null;
+
+    private string? _ariaLabelledBy => _nameable ? LabelledBy : null;
 
     // Content that has never been expanded is not rendered at all while LazyRender is on, and content that
     // has been collapsed long enough for the transition to finish is dropped again while UnmountOnCollapse is.
@@ -120,6 +124,12 @@ public partial class BitCollapse : BitComponentBase
 
     // The pace of the transition that is playing, which is the one the direction of that transition asks for.
     private int? _durationValue => Expanded ? (ExpandDuration ?? Duration) : (CollapseDuration ?? Duration);
+
+    // Whether anything is waiting for the end of the transition in the given direction. Only then is the
+    // browser asked how long the transition takes; one nothing is waiting for is timed off the estimate.
+    private bool AwaitsTransitionEnd(bool expanded) => expanded
+        ? NoClip || OnExpanded.HasDelegate
+        : _searchable || (UnmountOnCollapse && _keepsContent is false) || OnCollapsed.HasDelegate;
 
 
 
@@ -483,7 +493,8 @@ public partial class BitCollapse : BitComponentBase
     /// <see cref="LabelledBy"/> or <see cref="BitComponentBase.AriaLabel"/> names it. Set it to an empty string
     /// to render no role at all, which is what a collapse holding something that already carries semantics of
     /// its own - a list, a table, a form - wants; the name goes with the role, since ARIA prohibits naming an
-    /// element that has none.
+    /// element that has none. It goes the same way under <c>none</c>, <c>presentation</c> and <c>generic</c>,
+    /// the roles that stand for having none.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
 
@@ -531,10 +542,10 @@ public partial class BitCollapse : BitComponentBase
     /// section so the reader carries on inside it rather than back at the trigger.
     /// </summary>
     /// <remarks>
-    /// The content region is focusable without being a tab stop, so this works whether or not a
-    /// <see cref="BitComponentBase.TabIndex"/> puts it in the tab order. A closed section cannot take the focus,
-    /// so this is worth pairing with <see cref="OnExpanded"/>: by the end of the expand transition the content
-    /// is on the screen.
+    /// The content region is focusable while it is on the screen, so this works even when a
+    /// <see cref="BitComponentBase.TabIndex"/> of <c>-1</c> takes it out of the tab order. A closed section cannot
+    /// take the focus, so this is worth pairing with <see cref="OnExpanded"/>: by the end of the expand transition
+    /// the content is on the screen.
     /// </remarks>
     public async ValueTask FocusAsync()
     {
@@ -623,20 +634,31 @@ public partial class BitCollapse : BitComponentBase
 
         var wait = pending.Wait;
 
-        try
+        // A transition nothing is waiting for is not worth a round trip to the browser: its end only has the
+        // bookkeeping of the closed state to do, which the estimate is good enough for.
+        if (AwaitsTransitionEnd(pending.Expanded))
         {
-            // The render that just finished put the new state and its pace on the root, so the computed style
-            // now holds the transition the browser is playing - whatever set its pace - and not an estimate.
-            var measured = await _js.BitCollapseGetTransitionTime(RootElement);
-
-            if (measured.HasValue)
+            try
             {
-                wait = (int)Math.Ceiling(Math.Max(0, measured.Value));
+                // The render that just finished put the new state and its pace on the root, so the browser now
+                // knows how much of the transition it is playing is left - whatever set its pace - and not an
+                // estimate. The answer is that time as it stood when the browser was asked, and half the round
+                // trip has passed since then, which is taken off so the end lands when the transition does.
+                var started = Stopwatch.GetTimestamp();
+
+                var remaining = await _js.BitCollapseGetRemainingTransitionTime(RootElement);
+
+                if (remaining.HasValue)
+                {
+                    var returnTrip = Stopwatch.GetElapsedTime(started).TotalMilliseconds / 2;
+
+                    wait = (int)Math.Ceiling(Math.Max(0, remaining.Value - returnTrip));
+                }
             }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+            catch (TaskCanceledException) { }
         }
-        catch (JSDisconnectedException) { }
-        catch (JSException) { }
-        catch (TaskCanceledException) { }
 
         if (pending.Cts.IsCancellationRequested || IsDisposed) return;
 
@@ -745,8 +767,9 @@ public partial class BitCollapse : BitComponentBase
 
         // The end of the transition is reached by the clock rather than by an event from the browser, so that
         // it is still reached when there is no transition to end - with NoAnimation, or while the collapse is
-        // not displayed at all. The clock is set to what the browser resolved the transition to, read once
-        // the render that starts it is done; the parameters give the estimate for when it cannot be read.
+        // not displayed at all. The clock is set to what the browser says is left of the transition, read once
+        // the render that starts it is done, whenever one of those options is waiting for it at that moment;
+        // the parameters give the estimate otherwise, and for when the browser cannot be asked.
         var cts = new CancellationTokenSource();
 
         _transitionCts = cts;
@@ -831,6 +854,20 @@ public partial class BitCollapse : BitComponentBase
 
             cts.Dispose();
         }
+    }
+
+    // The roles under which ARIA prohibits a name: generic, and none and presentation, which remove the
+    // semantics of the element altogether. A role is a list of tokens the browser takes the first it knows
+    // of, so the first token is the one that decides.
+    private static bool RoleProhibitsName(string role)
+    {
+        var span = role.AsSpan().Trim();
+        var end = span.IndexOfAny(' ', '\t', '\n');
+        var first = end < 0 ? span : span[..end];
+
+        return first.Equals("generic", StringComparison.OrdinalIgnoreCase)
+            || first.Equals("none", StringComparison.OrdinalIgnoreCase)
+            || first.Equals("presentation", StringComparison.OrdinalIgnoreCase);
     }
 
     private void SetEntered(bool value)

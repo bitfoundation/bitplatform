@@ -26,6 +26,15 @@ public partial class BitCollapseStylesheetTests
 
         foreach (var name in documented)
         {
+            // A variable documented as unset by default is read bare on purpose: an unset one invalidates what
+            // reads it, which is how the peek fade applies no mask at all rather than one that fades nothing.
+            if (Regex.IsMatch(stylesheet, $@"^//\s+{Regex.Escape(name)}\s.*\(default: unset", RegexOptions.Multiline))
+            {
+                StringAssert.Contains(stylesheet, $"var({name})", $"{name} is documented as unset but never read bare.");
+                Assert.IsFalse(stylesheet.Contains($"var({name}, "), $"{name} is documented as unset but read with a fallback.");
+                continue;
+            }
+
             StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
         }
     }
@@ -146,6 +155,9 @@ public partial class BitCollapseStylesheetTests
         StringAssert.Contains(block, "grid-template-columns: 1fr;");
         StringAssert.Contains(block, "visibility: inherit;");
         StringAssert.Contains(block, "content-visibility: visible;");
+
+        // A browser that treats hidden="until-found" as plain hidden takes the content out with display:none.
+        StringAssert.Contains(block, "> .bit-col-cco[hidden] {\n            display: block;");
     }
 
     [TestMethod]
@@ -154,7 +166,9 @@ public partial class BitCollapseStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // No fade unless the public variable asks for one, read once on the root so a nested collapse starts over.
-        StringAssert.Contains(stylesheet, "--bit-col-fade: var(--bit-Collapse-peek-fade, 0px);");
+        // There is no fallback, so an unset variable invalidates the mask rather than masking with a 0px fade.
+        StringAssert.Contains(stylesheet, "--bit-col-fade: var(--bit-Collapse-peek-fade);");
+        Assert.IsFalse(stylesheet.Contains("var(--bit-Collapse-peek-fade,"), "The peek fade must not fall back to a length.");
 
         // Only a closed peek is masked, along the axis it collapses on, and the sideways one follows the direction.
         StringAssert.Contains(stylesheet, ".bit-col-pek.bit-col-col > .bit-col-con {\n    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--bit-col-fade)), transparent);");
@@ -164,7 +178,7 @@ public partial class BitCollapseStylesheetTests
         // A section printed open prints its peek in full.
         var print = stylesheet[stylesheet.IndexOf("\n@media print {", System.StringComparison.Ordinal)..];
 
-        StringAssert.Contains(print, "--bit-col-fade: 0px;");
+        StringAssert.Contains(print, "--bit-col-fade: initial;");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

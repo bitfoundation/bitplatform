@@ -131,6 +131,41 @@ public class BitCollapseTests : BunitTestContext
         Assert.IsNull(content.GetAttribute("aria-labelledby"));
     }
 
+    [DataTestMethod,
+        DataRow("none"),
+        DataRow("presentation"),
+        DataRow("generic"),
+        DataRow(" Presentation "),
+        DataRow("none region")
+    ]
+    public void BitCollapseShouldDropTheNameUnderARoleThatProhibitsIt(string role)
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Role, role);
+            parameters.Add(p => p.AriaLabel, "Shipping details");
+            parameters.Add(p => p.LabelledBy, "trigger-id");
+        });
+
+        var content = component.Find(".bit-col-con");
+
+        Assert.AreEqual(role, content.GetAttribute("role"));
+        Assert.IsNull(content.GetAttribute("aria-label"));
+        Assert.IsNull(content.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldKeepTheNameUnderARoleThatAllowsIt()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Role, "group");
+            parameters.Add(p => p.AriaLabel, "Shipping details");
+        });
+
+        Assert.AreEqual("Shipping details", component.Find(".bit-col-con").GetAttribute("aria-label"));
+    }
+
     [TestMethod]
     public void BitCollapseShouldNameTheContentRegionWithTheAriaLabel()
     {
@@ -465,16 +500,15 @@ public class BitCollapseTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCollapseShouldKeepTheExpandedContentFocusableWithoutMakingItATabStop()
+    public void BitCollapseShouldKeepTheExpandedContentInTheTabOrder()
     {
-        // The region holds no action of its own, so it is not a tab stop; -1 still lets FocusAsync reach it.
         var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.Expanded, true));
 
-        Assert.AreEqual("-1", component.Find(".bit-col-con").GetAttribute("tabindex"));
+        Assert.AreEqual("0", component.Find(".bit-col-con").GetAttribute("tabindex"));
     }
 
     [TestMethod]
-    public void BitCollapseShouldNotMakeAPeekATabStop()
+    public void BitCollapseShouldKeepAPeekInTheTabOrder()
     {
         var component = RenderComponent<BitCollapse>(parameters =>
         {
@@ -482,19 +516,20 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.CollapsedSize, "3rem");
         });
 
-        Assert.AreEqual("-1", component.Find(".bit-col-con").GetAttribute("tabindex"));
+        Assert.AreEqual("0", component.Find(".bit-col-con").GetAttribute("tabindex"));
     }
 
     [TestMethod]
-    public void BitCollapseShouldPutTheExpandedContentInTheTabOrderWithATabIndex()
+    public void BitCollapseShouldTakeTheExpandedContentOutOfTheTabOrderWithANegativeTabIndex()
     {
+        // -1 takes the region out of the tab order and still lets FocusAsync move the focus into it.
         var component = RenderComponent<BitCollapse>(parameters =>
         {
             parameters.Add(p => p.Expanded, true);
-            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.TabIndex, "-1");
         });
 
-        Assert.AreEqual("0", component.Find(".bit-col-con").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", component.Find(".bit-col-con").GetAttribute("tabindex"));
     }
 
     [TestMethod]
@@ -1582,7 +1617,7 @@ public class BitCollapseTests : BunitTestContext
     {
         // The browser reports the transition it resolved - here a reduced motion preference or a theme preset that
         // is far quicker than the Duration - and the end is reported after that rather than after the parameter.
-        Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getTransitionTime", _ => true).SetResult(10);
+        Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true).SetResult(10);
 
         var expandedCount = 0;
 
@@ -1605,7 +1640,7 @@ public class BitCollapseTests : BunitTestContext
     {
         // A theme preset with a longer motion token than the default: the end waits for it rather than for the
         // estimate, so nothing is unmounted while the close is still playing.
-        Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getTransitionTime", _ => true).SetResult(700);
+        Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true).SetResult(700);
 
         var component = RenderComponent<BitCollapse>(parameters =>
         {
@@ -1627,10 +1662,14 @@ public class BitCollapseTests : BunitTestContext
     [TestMethod]
     public void BitCollapseShouldAskTheBrowserOnlyOncePerTransition()
     {
-        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getTransitionTime", _ => true);
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
         invocation.SetResult(0);
 
-        var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.Expanded, false));
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.OnExpanded, () => { });
+            parameters.Add(p => p.Expanded, false);
+        });
 
         Assert.AreEqual(0, invocation.Invocations.Count);
 
@@ -1645,9 +1684,54 @@ public class BitCollapseTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCollapseShouldNotAskTheBrowserWhenNothingWaitsForTheEnd()
+    {
+        // Without NoClip, UnmountOnCollapse, HiddenUntilFound, OnExpanded or OnCollapsed the end of the transition
+        // has nothing to do that is worth a round trip, so it is timed off the estimate.
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
+
+        var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.Expanded, false));
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.AreEqual(0, invocation.Invocations.Count);
+    }
+
+    [DataTestMethod,
+        DataRow(true, false, false, false),
+        DataRow(false, true, false, false),
+        DataRow(false, false, true, false),
+        DataRow(false, false, false, true)
+    ]
+    public void BitCollapseShouldAskTheBrowserWhenSomethingWaitsForTheEndOfTheClose(bool unmountOnCollapse,
+                                                                                    bool hiddenUntilFound,
+                                                                                    bool onCollapsed,
+                                                                                    bool onExpanded)
+    {
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
+        invocation.SetResult(0);
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.UnmountOnCollapse, unmountOnCollapse);
+            parameters.Add(p => p.HiddenUntilFound, hiddenUntilFound);
+            parameters.Add(p => p.ExpandedChanged, _ => { });
+            if (onCollapsed) parameters.Add(p => p.OnCollapsed, () => { });
+            if (onExpanded) parameters.Add(p => p.OnExpanded, () => { });
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        // OnExpanded waits for the end of an open, not of a close.
+        Assert.AreEqual(onExpanded ? 0 : 1, invocation.Invocations.Count);
+    }
+
+    [TestMethod]
     public void BitCollapseShouldNotAskTheBrowserWithoutAnimation()
     {
-        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getTransitionTime", _ => true);
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
 
         var component = RenderComponent<BitCollapse>(parameters =>
         {

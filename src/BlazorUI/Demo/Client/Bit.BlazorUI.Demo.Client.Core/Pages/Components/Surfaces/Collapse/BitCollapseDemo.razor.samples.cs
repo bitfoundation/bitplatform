@@ -62,7 +62,7 @@ private bool surfaceExpanded = true;";
 private bool horizontalExpanded = true;";
 
     private readonly string example5RazorCode = @"
-<BitCollapse Expanded=""peekExpanded"" CollapsedSize=""4.5rem"" Style=""--bit-Collapse-peek-fade: 2rem;"">
+<BitCollapse Expanded=""peekExpanded"" CollapsedSize=""4.5rem"">
     In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
@@ -249,6 +249,11 @@ private async Task HandleFocusCollapsing()
 
 <BitCollapse Expanded=""cssVarExpanded"" Style=""--bit-Collapse-color: var(--bit-clr-pri); --bit-Collapse-font-size: var(--bit-tpg-fs-md);"">
     Color and font size on one collapse.
+</BitCollapse>
+
+<BitCollapse Expanded=""cssVarExpanded"" CollapsedSize=""2.5rem"" Style=""--bit-Collapse-peek-fade: 1.5rem;"">
+    A faded peek: while the section is closed, its last lines melt into the background, which tells the reader
+    there is more to it than the peek shows. Opening the section takes the fade off along with the clamp.
 </BitCollapse>";
     private readonly string example12CsharpCode = @"
 private bool cssVarExpanded = true;";
