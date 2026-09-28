@@ -192,7 +192,8 @@ the whole library from one `:root[bit-theme="..."]` block.
   `$siz-sel-sm/md/lg`, popup list row heights `$siz-item-sm/md/lg`, pivot headers `$siz-tab` with
   selection-indicator stroke `$siz-tab-indicator`, separator thickness `$siz-divider`, linear progress
   tracks `$siz-track-sm/md/lg`, switch track and knob `$siz-switch-w/h/thumb-sm/md/lg`, slider handle
-  `$siz-slider-thumb-sm/md/lg`, scrolling popup lists `$siz-popup-max-height`.
+  `$siz-slider-thumb-sm/md/lg`, badge height and dot `$siz-badge-sm/md/lg` / `$siz-badge-dot-sm/md/lg`,
+  scrolling popup lists `$siz-popup-max-height`.
 - **Spacing & layout**: dialogs and message boxes inset their content with `$spa-dialog`; their action
   footers lay out via `$layout-dialog-actions-direction` / `$layout-dialog-actions-justify` /
   `$layout-dialog-actions-align` (never a literal `row` / `flex-end` / `center` in a dialog footer -

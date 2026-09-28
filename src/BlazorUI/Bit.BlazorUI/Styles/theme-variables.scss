@@ -248,6 +248,34 @@ $clr-swr-dis-text: var(--bit-clr-swr-dis-text);
 $clr-err-dis: var(--bit-clr-err-dis);
 $clr-err-dis-text: var(--bit-clr-err-dis-text);
 
+//foreground - each accent role's color when it is read as text or an icon on the page's own surfaces
+//(an outlined or text-only variant that drops the role's fill) instead of being filled behind its
+//on-color (-text). A role's main color is picked to fill a surface, so it is often too light (or, in a
+//dark scheme, too dark) to be read on the page directly. The palette-agnostic default lives once in
+//family-tokens.scss; a preset (in its own :root[bit-theme="..."] block) or BitTheme.Color.<Role>.Foreground
+//retunes it without selecting any component class.
+$clr-pri-fg: var(--bit-clr-pri-fg);
+$clr-sec-fg: var(--bit-clr-sec-fg);
+$clr-ter-fg: var(--bit-clr-ter-fg);
+$clr-inf-fg: var(--bit-clr-inf-fg);
+$clr-suc-fg: var(--bit-clr-suc-fg);
+$clr-wrn-fg: var(--bit-clr-wrn-fg);
+$clr-swr-fg: var(--bit-clr-swr-fg);
+$clr-err-fg: var(--bit-clr-err-fg);
+
+//tint - each accent role laid over a surface as a faint, translucent wash instead of a fill: the surface of
+//a tinted (soft) variant, whose text reads the role foreground above. The palette-agnostic default lives
+//once in family-tokens.scss; a preset (in its own :root[bit-theme="..."] block) or
+//BitTheme.Color.<Role>.Tint retunes it without selecting any component class.
+$clr-pri-tint: var(--bit-clr-pri-tint);
+$clr-sec-tint: var(--bit-clr-sec-tint);
+$clr-ter-tint: var(--bit-clr-ter-tint);
+$clr-inf-tint: var(--bit-clr-inf-tint);
+$clr-suc-tint: var(--bit-clr-suc-tint);
+$clr-wrn-tint: var(--bit-clr-wrn-tint);
+$clr-swr-tint: var(--bit-clr-swr-tint);
+$clr-err-tint: var(--bit-clr-err-tint);
+
 //focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
 $clr-pri-focus: var(--bit-clr-pri-focus);
 $clr-sec-focus: var(--bit-clr-sec-focus);
@@ -416,6 +444,14 @@ $shp-radius-button: var(--bit-shp-radius-button);
 $shp-radius-chip: var(--bit-shp-radius-chip);
 $shp-radius-selection: var(--bit-shp-radius-selection);
 
+//shape - the corners of the selection indicator of a tab strip (BitPivot): square under Fluent, a capsule
+//under Fluent 2, rounded on the edge facing the label under Material. Two tokens rather than one shorthand,
+//since the edge facing the label is the top one under a horizontal header but the inline-end one beside a
+//vertical header: -tab-indicator rounds the corners facing the label, -tab-indicator-base the ones on the
+//edge the indicator stands on, and follows the first unless a design system shapes the two apart.
+$shp-radius-tab-indicator: var(--bit-shp-radius-tab-indicator);
+$shp-radius-tab-indicator-base: var(--bit-shp-radius-tab-indicator-base, var(--bit-shp-radius-tab-indicator));
+
 /*---- Size ----*/
 //The dimensions every design system decides once and every component repeats: control heights,
 //icon glyph sizes, selection-indicator (checkbox box / radio ring) sizes, the spinner stroke and
@@ -436,6 +472,7 @@ $siz-item-md: var(--bit-siz-item-md);
 $siz-item-lg: var(--bit-siz-item-lg);
 $siz-tab: var(--bit-siz-tab);
 $siz-tab-indicator: var(--bit-siz-tab-indicator);
+$siz-tab-divider: var(--bit-siz-tab-divider);
 $siz-divider: var(--bit-siz-divider);
 $siz-track-sm: var(--bit-siz-track-sm);
 $siz-track-md: var(--bit-siz-track-md);
@@ -463,6 +500,14 @@ $siz-switch-thumb-lg: var(--bit-siz-switch-thumb-lg);
 $siz-slider-thumb-sm: var(--bit-siz-slider-thumb-sm);
 $siz-slider-thumb-md: var(--bit-siz-slider-thumb-md);
 $siz-slider-thumb-lg: var(--bit-siz-slider-thumb-lg);
+//the height of a badge per size class, which is also the diameter of a single-digit counter, and the
+//diameter of a dot badge (Fluent 2's 16/20/24px counters, Material's 16dp large and 6dp small badge).
+$siz-badge-sm: var(--bit-siz-badge-sm);
+$siz-badge-md: var(--bit-siz-badge-md);
+$siz-badge-lg: var(--bit-siz-badge-lg);
+$siz-badge-dot-sm: var(--bit-siz-badge-dot-sm);
+$siz-badge-dot-md: var(--bit-siz-badge-dot-md);
+$siz-badge-dot-lg: var(--bit-siz-badge-dot-lg);
 $siz-spinner-stroke: var(--bit-siz-spinner-stroke);
 $siz-popup-max-height: var(--bit-siz-popup-max-height);
 $siz-dialog-max-width: var(--bit-siz-dialog-max-width);

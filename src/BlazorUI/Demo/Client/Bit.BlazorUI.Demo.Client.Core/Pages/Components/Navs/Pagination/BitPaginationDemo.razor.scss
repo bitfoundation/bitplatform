@@ -1,13 +1,47 @@
-﻿::deep {
+﻿.binding-box {
+    gap: 0.5rem;
+    display: flex;
+    max-width: 16rem;
+    flex-direction: column;
+}
+
+.color-row {
+    gap: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.alignment-box {
+    padding: 0.5rem;
+    border: 1px solid gray;
+}
+
+// The public CSS variables inherit, so one block on an ancestor re-skins every pagination under it.
+// It sits outside ::deep because the wrapper is a plain element written in this page's own markup.
+.pill-pagination {
+    --bit-Pagination-gap: 0.375rem;
+    --bit-Pagination-button-radius: 999px;
+    --bit-Pagination-button-size: 2.25rem;
+    --bit-Pagination-button-color: #7c3aed;
+    --bit-Pagination-button-border-color: #ddd6fe;
+    --bit-Pagination-button-hover-color: #5b21b6;
+    --bit-Pagination-button-hover-background: #ede9fe;
+    --bit-Pagination-selected-color: #ffffff;
+    --bit-Pagination-selected-background: #7c3aed;
+    --bit-Pagination-focus-color: #7c3aed;
+    --bit-Pagination-input-border-color: #c4b5fd;
+}
+
+::deep {
     .custom-class {
-        margin-left: 1rem;
+        margin-inline: 1rem;
         border-radius: 0.125rem;
         box-shadow: aqua 0 0 0.5rem;
         background-color: #00ffff7d;
     }
 
     .custom-root {
-        margin-left: 1rem;
+        margin-inline: 1rem;
     }
 
     .custom-button {
@@ -25,9 +59,4 @@
         color: white;
         background-color: seagreen;
     }
-}
-
-.alignment-box {
-    padding: 0.5rem;
-    border: 1px solid gray;
 }

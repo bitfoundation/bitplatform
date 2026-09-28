@@ -48,6 +48,9 @@
     --bit-shp-radius-chip: 0.5rem; //8px
     // M3 checkbox: a 2dp corner on the 18dp box.
     --bit-shp-radius-selection: 0.125rem; //2px
+    // M3 primary tab indicator: 3dp corners on the edge facing the label, square on the edge it stands on.
+    --bit-shp-radius-tab-indicator: 0.1875rem; //3px
+    --bit-shp-radius-tab-indicator-base: 0;
     // M3 focus indicator: 3dp ring offset 2dp.
     --bit-shp-focus-ring-width: 0.1875rem; //3px
     --bit-shp-focus-ring-offset: 0.125rem; //2px
@@ -81,6 +84,7 @@
     --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7); //56px - one-line list item
     --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6); //48px
     --bit-siz-tab-indicator: 0.1875rem; //3px
+    --bit-siz-tab-divider: var(--bit-siz-divider); //1px - M3 tabs divider
     --bit-siz-track-sm: 0.25rem; //4px - M3 linear progress
     --bit-siz-track-md: 0.25rem; //4px
     --bit-siz-track-lg: 0.5rem; //8px
@@ -101,6 +105,13 @@
     --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
     --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
     --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    // M3 badge: the 16dp large badge at the medium anchor and the 6dp small badge as its dot.
+    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px
+    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.625); //5px
+    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
+    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
 
     /*---- Opacity ----*/
     // M3 state layers: an element that is disabled but keeps its own colors sits at 38%, the one

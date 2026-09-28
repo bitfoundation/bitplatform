@@ -208,7 +208,7 @@ public partial class BitNavPanelDemo
             Name = "IndentPadding",
             Type = "int",
             DefaultValue = "27",
-            Description = "The indentation padding in px for items without children (compensation space for chevron icon)."
+            Description = "The width in px of the chevron, which the items without children keep as padding in its place so every text lines up."
         },
         new()
         {
@@ -313,7 +313,7 @@ public partial class BitNavPanelDemo
             Name = "NoCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Disables and hides all collapse/expand buttons of the nav component.",
+            Description = "Keeps every item of the nav expanded and hides its collapse/expand buttons.",
         },
         new()
         {
