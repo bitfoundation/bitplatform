@@ -12,7 +12,8 @@
 //   --bit-Accordion-header-padding            padding of the header                         (default: per Size)
 //   --bit-Accordion-header-hover-background   fill of the header under the pointer          (default: per Background, its hover shade)
 //   --bit-Accordion-header-active-background  fill of the header while pressed              (default: the hover fill, then the active shade)
-//   --bit-Accordion-header-expanded-background fill of the header while expanded            (default: transparent)
+//   --bit-Accordion-header-expanded-background fill of the header while expanded, hovered too (default: transparent)
+//   --bit-Accordion-header-expanded-color     text of the header while expanded             (default: inherited; title/icon/expander colors win)
 //   --bit-Accordion-title-color               color of the title                            (default: inherited)
 //   --bit-Accordion-title-font-size           size of the title                             (default: per Size, $tg-fs-*)
 //   --bit-Accordion-title-font-weight         weight of the title                           (default: $tg-fw-semibold)
@@ -21,6 +22,8 @@
 //   --bit-Accordion-icon-color                color of the icon at the start of the header  (default: inherited)
 //   --bit-Accordion-expander-color            color of the expander                         (default: inherited)
 //   --bit-Accordion-content-padding           padding of the panel                          (default: per Size)
+//   --bit-Accordion-content-background        fill of the panel                             (default: transparent, the accordion's fill)
+//   --bit-Accordion-divider-color             rule between the header and the open panel    (default: transparent)
 //   --bit-Accordion-focus-color               keyboard focus ring                           (default: $clr-pri-focus)
 //   --bit-Accordion-disabled-color            text of a disabled accordion                  (default: $clr-fg-dis)
 //   --bit-Accordion-disabled-background       fill of a disabled accordion                  (default: $clr-bg-dis)
@@ -125,6 +128,12 @@
     border-end-start-radius: 0;
     border-end-end-radius: 0;
     background-color: var(--bit-Accordion-header-expanded-background, transparent);
+}
+
+// The text of the open header is set on the header line rather than left to a variable on the root, which would
+// inherit into every accordion nested in the panel as well. A disabled accordion keeps its own greyed-out text.
+.bit-acd-exp:not(.bit-dis) > .bit-acd-hwr {
+    color: var(--bit-Accordion-header-expanded-color, inherit);
 }
 
 
@@ -267,6 +276,21 @@
     }
 }
 
+// An open header given a fill of its own keeps it under the pointer as well: the hover shades are made for the
+// accordion's fill, and one painted over an expanded header would sit under text colored for the expanded fill
+// (--bit-Accordion-header-expanded-color) - white on a light grey, at worst. Without one it shades like any other.
+.bit-acd-exp:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {
+    @media (hover: hover) {
+        &:has(> .bit-acd-hed > .bit-acd-hdr:hover) {
+            background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));
+        }
+    }
+
+    &:has(> .bit-acd-hed > .bit-acd-hdr:active) {
+        background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));
+    }
+}
+
 // A read-only accordion keeps the colors of a live one - it is the panel that has to stay where it is, not one
 // that has been turned off - so the only thing left to report that the header answers nothing is the cursor.
 .bit-acd-rdo > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr {
@@ -352,9 +376,12 @@
 // intrinsic height of the content. The row is the outer element, the clipping the middle one, and the padding the
 // inner one - a border box can never be shorter than its own padding, so padding on either of the first two would
 // leave a collapsed panel that tall.
+// The fill of the panel sits on the grid row, which carries the rounding of the accordion's bottom corners and is
+// no taller than what is showing of the panel, so a collapsed panel paints nothing.
 .bit-acd-cnt {
     display: grid;
     grid-template-rows: 0fr;
+    background-color: var(--bit-Accordion-content-background, transparent);
     transition: grid-template-rows var(--bit-acd-dur) $mot-easing 0ms;
 }
 
@@ -369,6 +396,11 @@
 
 .bit-acd-con {
     padding: var(--bit-Accordion-content-padding, var(--bit-acd-pad));
+
+    // The divider is an inset shadow rather than a border: a border would add to the height of every panel, the
+    // collapsed ones included, while the shadow takes no room, is clipped and faded along with the panel as it
+    // closes, and stays put at the top of a panel whose content scrolls (MaxHeight). It is as thick as the outline.
+    box-shadow: inset 0 var(--bit-Accordion-border-width, #{$shp-border-width}) 0 0 var(--bit-Accordion-divider-color, transparent);
 
     // Opening: the panel is shown at once and the fade and the padding carry the rest of the way. The matching
     // transition of the collapsed state below is what holds the hiding back until the panel has finished

@@ -34,11 +34,12 @@
     flex-flow: column;
     --bit-Accordion-radius: 0.75rem;
     --bit-Accordion-header-padding: 1rem 1.25rem;
-    --bit-Accordion-content-padding: 0 1.25rem 1rem;
+    --bit-Accordion-content-padding: 1rem 1.25rem;
     --bit-Accordion-border-color: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
     --bit-Accordion-header-hover-background: color-mix(in srgb, var(--bit-clr-pri) 8%, transparent);
     --bit-Accordion-header-active-background: color-mix(in srgb, var(--bit-clr-pri) 16%, transparent);
     --bit-Accordion-header-expanded-background: color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);
+    --bit-Accordion-divider-color: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
     --bit-Accordion-title-color: var(--bit-clr-pri);
     --bit-Accordion-expander-color: var(--bit-clr-pri);
 }

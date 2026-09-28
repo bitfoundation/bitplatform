@@ -119,7 +119,28 @@ private BitAccordion accordionRef = default!;";
 </BitAccordion>
 <BitAccordion Title=""UnmountOnCollapse"" UnmountOnCollapse>
     <BitTextField Placeholder=""Thrown away on a collapse..."" />
+</BitAccordion>
+<BitAccordion Title=""Loaded on expand""
+              Description=""@(isLoadingOrders ? ""Loading..."" : null)""
+              LazyContent
+              OnToggling=""LoadOrders"">
+    @foreach (var order in orders)
+    {
+        <div>@order</div>
+    }
 </BitAccordion>";
+    private readonly string example7CsharpCode = @"
+private bool isLoadingOrders;
+private string[] orders = [];
+private async Task LoadOrders(BitAccordionToggleArgs args)
+{
+    if (args.IsExpanding is false || orders.Length > 0) return;
+
+    isLoadingOrders = true;
+    await Task.Delay(1500); // e.g. await Http.GetFromJsonAsync<string[]>(""api/orders"")
+    orders = [""#1001 - 2 items"", ""#1002 - 5 items"", ""#1003 - 1 item""];
+    isLoadingOrders = false;
+}";
 
     private readonly string example8RazorCode = @"
 <BitAccordion Title=""Which fruits ship overnight?"" HiddenUntilFound>
@@ -221,7 +242,7 @@ private int readOnlyClickCount;";
 </BitAccordion>";
 
     private readonly string example13RazorCode = @"
-<BitAccordion Title=""Under an h2"" Description=""aria-level 3"" HeadingLevel=""3"">
+<BitAccordion Title=""Top-level section"" Description=""aria-level 2"" HeadingLevel=""2"">
     <BitLink Href=""/components/accordion"">A link Tab only reaches while this panel is open.</BitLink>
 </BitAccordion>
 <BitAccordion HeaderAriaLabel=""Notifications"">
@@ -323,7 +344,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
 
     private readonly string example18RazorCode = @"
 <BitAccordion Title=""On the instance""
-              Style=""--bit-Accordion-radius: 0; --bit-Accordion-border-width: 2px; --bit-Accordion-border-color: seagreen; --bit-Accordion-title-color: seagreen; --bit-Accordion-expander-color: seagreen;"">
+              Style=""--bit-Accordion-radius: 0; --bit-Accordion-border-width: 2px; --bit-Accordion-border-color: seagreen; --bit-Accordion-header-expanded-background: seagreen; --bit-Accordion-header-expanded-color: white; --bit-Accordion-content-background: color-mix(in srgb, seagreen 10%, transparent);"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 <div class=""faq-accordions"">
@@ -367,11 +388,12 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     // The variables inherit, so one block on an ancestor re-skins every accordion underneath it.
     --bit-Accordion-radius: 0.75rem;
     --bit-Accordion-header-padding: 1rem 1.25rem;
-    --bit-Accordion-content-padding: 0 1.25rem 1rem;
+    --bit-Accordion-content-padding: 1rem 1.25rem;
     --bit-Accordion-border-color: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
     --bit-Accordion-header-hover-background: color-mix(in srgb, var(--bit-clr-pri) 8%, transparent);
     --bit-Accordion-header-active-background: color-mix(in srgb, var(--bit-clr-pri) 16%, transparent);
     --bit-Accordion-header-expanded-background: color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);
+    --bit-Accordion-divider-color: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
     --bit-Accordion-title-color: var(--bit-clr-pri);
     --bit-Accordion-expander-color: var(--bit-clr-pri);
 }

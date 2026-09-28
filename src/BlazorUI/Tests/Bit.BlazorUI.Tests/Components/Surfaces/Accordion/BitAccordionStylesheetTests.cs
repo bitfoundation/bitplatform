@@ -27,6 +27,7 @@ public class BitAccordionStylesheetTests
         "--bit-Accordion-header-hover-background",
         "--bit-Accordion-header-active-background",
         "--bit-Accordion-header-expanded-background",
+        "--bit-Accordion-header-expanded-color",
         "--bit-Accordion-title-color",
         "--bit-Accordion-title-font-size",
         "--bit-Accordion-title-font-weight",
@@ -35,6 +36,8 @@ public class BitAccordionStylesheetTests
         "--bit-Accordion-icon-color",
         "--bit-Accordion-expander-color",
         "--bit-Accordion-content-padding",
+        "--bit-Accordion-content-background",
+        "--bit-Accordion-divider-color",
         "--bit-Accordion-focus-color",
         "--bit-Accordion-disabled-color",
         "--bit-Accordion-disabled-background",
@@ -87,6 +90,36 @@ public class BitAccordionStylesheetTests
         StringAssert.Contains(GetBlock(stylesheet, "\n.bit-acd-sbr {"), "--bit-acd-brd: #{$clr-brd-sec};");
 
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-acd {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-acd-tbg {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldKeepTheExpandedHeaderColorOffNestedAccordions()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // Set on the open accordion's own header line, never on the root, where it would inherit into every accordion
+        // nested in the panel; and not on a disabled one, which keeps its greyed-out text.
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-acd-exp:not(.bit-dis) > .bit-acd-hwr {"), "color: var(--bit-Accordion-header-expanded-color, inherit);");
+        StringAssert.DoesNotMatch(GetBlock(stylesheet, "\n.bit-acd {"), new Regex("header-expanded-color"));
+
+        // The hover and pressed shades do not replace an expanded fill, whose text color was picked against it; the
+        // rule has the specificity of the generic one and so has to follow it.
+        var expandedHover = stylesheet.IndexOf("\n.bit-acd-exp:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {", System.StringComparison.Ordinal);
+
+        Assert.IsTrue(expandedHover > stylesheet.IndexOf("\n.bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {", System.StringComparison.Ordinal));
+        StringAssert.Contains(stylesheet[expandedHover..], "background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));");
+        StringAssert.Contains(stylesheet[expandedHover..], "background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));");
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldDrawTheDividerWithoutTakingRoom()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An inset shadow on the panel, not a border that would add to the height of a collapsed one; the fill sits
+        // on the grid row, which is no taller than what is showing of the panel.
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-acd-con {"), "box-shadow: inset 0 var(--bit-Accordion-border-width, #{$shp-border-width}) 0 0 var(--bit-Accordion-divider-color, transparent);");
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-acd-cnt {\n    display: grid;"), "background-color: var(--bit-Accordion-content-background, transparent);");
     }
 
     [TestMethod]

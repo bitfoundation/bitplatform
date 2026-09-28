@@ -115,14 +115,14 @@ public partial class BitAccordionDemo
             Name = "ExpanderTemplate",
             Type = "RenderFragment<bool>?",
             DefaultValue = "null",
-            Description = "The custom content to render in place of the expander icon, leaving the rest of the header as it is and receiving the current expanded state. It sits inside the wrapper the rotation is applied to, so it still turns over unless NoExpanderRotation keeps it still, and HideExpanderIcon still removes it. HeaderTemplate replaces it along with the rest of the header."
+            Description = "Custom content in place of the expander icon, receiving the expanded state. It still turns over unless NoExpanderRotation is set, and HideExpanderIcon still removes it; HeaderTemplate replaces it with the rest of the header."
         },
         new()
         {
             Name = "ExpandOnPrint",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Opens the panel of the accordion while the page is being printed, so that a collapsed section is not left out of the paper as a bare header. The scroll cap of MaxHeight is lifted along with it. Content that is not in the DOM at all - a LazyContent panel that has never been opened, a collapsed UnmountOnCollapse panel - is still printed as a bare header."
+            Description = "Opens the panel on paper, so a collapsed section is not printed as a bare header, and lifts the MaxHeight scroll cap. Content not in the DOM (a never-opened LazyContent panel, a collapsed UnmountOnCollapse one) still cannot print."
         },
         new()
         {
@@ -206,7 +206,7 @@ public partial class BitAccordionDemo
             Name = "NoContentRegion",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the region role from the panel of the accordion, leaving it a plain container. The role names the panel as a landmark, which helps a screen reader user find their way back to the content of a panel that holds headings or another accordion; the WAI-ARIA authoring practices ask for it to be dropped where it would flood the page with landmarks instead - more than about six panels that can all be open at the same time."
+            Description = "Removes the region role (a landmark) from the panel, leaving a plain container. The WAI-ARIA authoring practices ask for it where more than about six panels can be open at once, so the landmarks do not flood the page."
         },
         new()
         {
@@ -243,7 +243,7 @@ public partial class BitAccordionDemo
         {
             Name = "OnToggling",
             Type = "EventCallback<BitAccordionToggleArgs>",
-            Description = "Callback invoked before the accordion expands or collapses, letting the change be cancelled. Since the callback is awaited, it can also run asynchronous work like loading the content of the panel or asking for a confirmation first, and nothing else toggles the accordion while it is running. A change that comes from the IsExpanded parameter itself is not offered here.",
+            Description = "Called before the accordion expands or collapses; set Cancel to refuse the change. It is awaited, so it can load the panel's content or ask for a confirmation first, and the header reports busy meanwhile. A change made through the IsExpanded parameter itself is not offered here.",
             LinkType = LinkType.Link,
             Href = "#accordion-toggle-args",
         },
@@ -663,7 +663,13 @@ public partial class BitAccordionDemo
         {
             Name = "--bit-Accordion-header-expanded-background",
             DefaultValue = "transparent",
-            Description = "Fill of the header while the accordion is expanded.",
+            Description = "Fill of the header while the accordion is expanded; once set, the hover and pressed shades no longer replace it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-header-expanded-color",
+            DefaultValue = "inherit",
+            Description = "Text of the header while the accordion is expanded. The title, icon and expander colors win over it; nested accordions do not inherit it.",
         },
         new()
         {
@@ -715,6 +721,18 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "--bit-Accordion-content-background",
+            DefaultValue = "transparent",
+            Description = "Fill of the panel, drawn over the accordion's own fill.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-divider-color",
+            DefaultValue = "transparent",
+            Description = "Rule between the header and the open panel, as thick as the outline.",
+        },
+        new()
+        {
             Name = "--bit-Accordion-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
             Description = "Keyboard focus ring of the header and of a scrolling panel.",
@@ -756,6 +774,18 @@ public partial class BitAccordionDemo
     }
 
     private BitAccordion accordionRef = default!;
+
+    private bool isLoadingOrders;
+    private string[] orders = [];
+    private async Task LoadOrders(BitAccordionToggleArgs args)
+    {
+        if (args.IsExpanding is false || orders.Length > 0) return;
+
+        isLoadingOrders = true;
+        await Task.Delay(1500); // e.g. await Http.GetFromJsonAsync<string[]>("api/orders")
+        orders = ["#1001 - 2 items", "#1002 - 5 items", "#1003 - 1 item"];
+        isLoadingOrders = false;
+    }
 
     private int readOnlyClickCount;
 

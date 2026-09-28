@@ -152,11 +152,12 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Content rendering" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Content rendering" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             The panel is rendered while closed by default, keeping its state. <b>LazyContent</b> waits for the first expand,
             then keeps it; <b>UnmountOnCollapse</b> drops it on every collapse (no closing animation). Type into both, then
-            close and reopen them.
+            close and reopen them. To fetch the content first, await it in <b>OnToggling</b>: the panel opens once it is
+            loaded, and the header reports <b>aria-busy</b> meanwhile.
         </div>
         <br />
         <BitAccordion Title="LazyContent" LazyContent>
@@ -164,6 +165,15 @@
         </BitAccordion>
         <BitAccordion Title="UnmountOnCollapse" UnmountOnCollapse>
             <BitTextField Placeholder="Thrown away on a collapse..." />
+        </BitAccordion>
+        <BitAccordion Title="Loaded on expand"
+                      Description="@(isLoadingOrders ? "Loading..." : null)"
+                      LazyContent
+                      OnToggling="LoadOrders">
+            @foreach (var order in orders)
+            {
+                <div>@order</div>
+            }
         </BitAccordion>
     </DemoExample>
 
@@ -292,7 +302,7 @@
             role for pages with many open panels.
         </div>
         <br />
-        <BitAccordion Title="Under an h2" Description="aria-level 3" HeadingLevel="3">
+        <BitAccordion Title="Top-level section" Description="aria-level 2" HeadingLevel="2">
             <BitLink Href="/components/accordion">A link Tab only reaches while this panel is open.</BitLink>
         </BitAccordion>
         <BitAccordion HeaderAriaLabel="Notifications">
@@ -424,7 +434,7 @@
         <div class="example-content">
             <div>CSS variables:</div>
             <BitAccordion Title="On the instance"
-                          Style="--bit-Accordion-radius: 0; --bit-Accordion-border-width: 2px; --bit-Accordion-border-color: seagreen; --bit-Accordion-title-color: seagreen; --bit-Accordion-expander-color: seagreen;">
+                          Style="--bit-Accordion-radius: 0; --bit-Accordion-border-width: 2px; --bit-Accordion-border-color: seagreen; --bit-Accordion-header-expanded-background: seagreen; --bit-Accordion-header-expanded-color: white; --bit-Accordion-content-background: color-mix(in srgb, seagreen 10%, transparent);">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
             <div class="faq-accordions">
