@@ -61,6 +61,17 @@
         <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
     </PropertyGroup>
 
+    <!-- Static web assets packed in the format every SDK reads. With net11.0 among TargetFrameworks, the .NET 11 SDK
+         packs the whole package in its new format - a json manifest behind a generated build\<PackageId>.targets -
+         which the .NET 8, 9 and 10 SDKs don't read: an app built with one of them got none of the package's css and js.
+         That generated file also took the place of a package's own build\<PackageId>.targets, which is how
+         Bit.Butil's publish-time trimming stopped running. The switch is the SDK's own (private, read only by
+         Microsoft.NET.Sdk.StaticWebAssets.Pack.targets); drop it once every SDK the packages support reads the new
+         format. -->
+    <PropertyGroup>
+        <_UseJsonManifestPackaging>false</_UseJsonManifestPackaging>
+    </PropertyGroup>
+
     <!-- README and LICENSE -->
     <PropertyGroup>
         <SignAssembly>True</SignAssembly>
