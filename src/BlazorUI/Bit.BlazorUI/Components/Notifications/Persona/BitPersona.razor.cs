@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using ErrorEventArgs = Microsoft.AspNetCore.Components.Web.ErrorEventArgs;
 
@@ -14,6 +15,19 @@ public partial class BitPersona : BitComponentBase
     private string? _rel;
     private bool _isLoaded;
     private bool _hasError;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the persona component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple persona components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPersonaParams.ParamName)]
+    public BitPersonaParams? CascadingParameters { get; set; }
 
 
 
@@ -477,6 +491,20 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public bool ShowOverflowTooltip { get; set; } = true;
 
     /// <summary>
+    /// Puts the built-in glyph of each status in the presence dot - a check for Online, a clock for Away, a cross for
+    /// Offline - so the statuses are told apart by shape as well as by color.
+    /// </summary>
+    /// <remarks>
+    /// Online, Away and Busy are otherwise three discs that differ only in color, which is no difference at all to
+    /// a reader who cannot tell red from green. A glyph given by <see cref="PresenceIcons"/>,
+    /// <see cref="PresenceIconNames"/>, <see cref="PresenceIcon"/> or <see cref="PresenceIconName"/> takes
+    /// precedence, and like those the glyphs are only drawn on coins of 40px and up. The glyphs of Online, Away
+    /// and Offline ship with the core package; those of Blocked, OutOfOffice and Unknown are named from the
+    /// Bit.BlazorUI.Icons set, which an app has to reference for them to be drawn.
+    /// </remarks>
+    [Parameter] public bool ShowDefaultPresenceIcons { get; set; }
+
+    /// <summary>
     /// Shows the secondary text at every size, including the small ones that normally leave no room for it.
     /// </summary>
     /// <remarks>
@@ -554,6 +582,16 @@ public partial class BitPersona : BitComponentBase
     /// </remarks>
     [Parameter] public string? UnknownIconName { get; set; }
 
+    /// <summary>
+    /// Stacks the coin over the details and centers both, instead of laying them out side by side.
+    /// </summary>
+    /// <remarks>
+    /// This is the layout of a profile card or of a member tile in a call grid. Combined with
+    /// <see cref="Reversed"/> it puts the details over the coin.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
+
 
 
     protected override string RootElementClass => "bit-prs";
@@ -565,6 +603,8 @@ public partial class BitPersona : BitComponentBase
         ClassBuilder.Register(() => FullWidth ? "bit-prs-fwi" : string.Empty);
 
         ClassBuilder.Register(() => Reversed ? "bit-prs-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => Vertical ? "bit-prs-vrt" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
@@ -611,6 +651,14 @@ public partial class BitPersona : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPersonaParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
 
@@ -681,8 +729,33 @@ public partial class BitPersona : BitComponentBase
 
         // The single-status pair is what a persona that only ever shows one status reaches for instead of
         // declaring a map of all eight, so it answers only where the map had nothing to say.
-        return BitIconInfo.From(PresenceIcon, PresenceIconName);
+        var single = BitIconInfo.From(PresenceIcon, PresenceIconName);
+        if (single is not null || ShowDefaultPresenceIcons is false) return single;
+
+        var defaultName = GetDefaultPresenceIconName(Presence);
+
+        return defaultName is null ? null : BitIconInfo.Bit(defaultName);
     }
+
+    /// <summary>
+    /// The glyph <see cref="ShowDefaultPresenceIcons"/> puts in the dot of each status.
+    /// </summary>
+    /// <remarks>
+    /// Dnd has none because it already draws a bar of its own at every size, and Busy is left the plain disc: the one
+    /// filled status with nothing on it, which is what sets it apart from the rest. The three glyphs the core icon
+    /// subset carries are taken from it, so the statuses that most need a shape cue keep one in an app without
+    /// Bit.BlazorUI.Icons.
+    /// </remarks>
+    private static string? GetDefaultPresenceIconName(BitPersonaPresence presence) => presence switch
+    {
+        BitPersonaPresence.Online => "Accept",
+        BitPersonaPresence.Away => "Clock",
+        BitPersonaPresence.Offline => "Cancel",
+        BitPersonaPresence.Blocked => "Blocked2",
+        BitPersonaPresence.OutOfOffice => "Airplane",
+        BitPersonaPresence.Unknown => "Help",
+        _ => null
+    };
 
     /// <summary>
     /// What the presence dot is called - its tooltip when one was given, and its accessible name either way.
@@ -1003,7 +1076,13 @@ public partial class BitPersona : BitComponentBase
         // draws itself. Everything about the element as a control - the pointer, the focus ring, the overlay
         // it reveals - is hung off the first, so a coin filled by a template is as reachable as any other;
         // everything about how the coin looks stays on the second, which a template has taken over.
-        string?[] classes = ["bit-prs-cne", CoinTemplate is null ? "bit-prs-imc" : null, GetCoinClass(), Classes?.ImageContainer];
+        // bit-prs-cph marks a coin that is showing a picture, which has no use for the edge a filled coin draws
+        // in its own color around the initials: around a photo it is a hairline of an unrelated color.
+        string?[] classes = ["bit-prs-cne",
+                             CoinTemplate is null ? "bit-prs-imc" : null,
+                             ShowsPicture ? "bit-prs-cph" : null,
+                             GetCoinClass(),
+                             Classes?.ImageContainer];
 
         return string.Join(' ', classes.Where(c => c.HasValue()));
     }
@@ -1045,6 +1124,12 @@ public partial class BitPersona : BitComponentBase
     private bool HasImage => ImageUrl.HasValue() || ImageSrcSet.HasValue();
 
     /// <summary>
+    /// Whether the coin is showing a picture right now: one was given, nothing has taken its place, and it has not
+    /// failed to load.
+    /// </summary>
+    private bool ShowsPicture => HasImage && Unknown is false && CoinTemplate is null && _hasError is false;
+
+    /// <summary>
     /// Whether the persona has no visible text of its own, in which case the coin is the whole of it and has
     /// to carry a name for anyone who cannot see it.
     /// </summary>
@@ -1074,7 +1159,10 @@ public partial class BitPersona : BitComponentBase
 
             if (ImageOverlayText.HasNoValue()) return false;
 
-            return OnImageClick.HasDelegate || HasNotBeenSet(nameof(ImageOverlayText)) is false;
+            // A text handed down by a BitParams ancestor is named by the caller just the same.
+            return OnImageClick.HasDelegate
+                || HasNotBeenSet(nameof(ImageOverlayText)) is false
+                || CascadingParameters?.ImageOverlayText.HasValue() is true;
         }
     }
 
@@ -1244,7 +1332,7 @@ public partial class BitPersona : BitComponentBase
         StateHasChanged();
     }
 
-    private void OnSetHrefAndRel()
+    internal void OnSetHrefAndRel()
     {
         if (Href.HasNoValue() || Href!.StartsWith('#'))
         {

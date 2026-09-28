@@ -1,30 +1,39 @@
 /*
- * Family tokens - the per-family shape and elevation alias tier
+ * Family tokens - the per-family shape, elevation and role-foreground alias tier
  * --------------------------------------------------
- * Purpose-named aliases that give every component FAMILY its own radius and its own elevation:
- *   radius    - control (buttons, inputs, tags, ...), surface (cards, ...), popup (callouts, menus,
- *               tooltips, ...), dialog (dialogs, modals)
- *   elevation - card, popup, dialog, sheet, tooltip, snackbar, appbar-top, appbar-bottom
+ * Purpose-named aliases that give every component FAMILY its own radius and its own elevation, and
+ * every accent role its own foreground and tint:
+ *   radius     - control (buttons, inputs, tags, ...), surface (cards, ...), popup (callouts, menus,
+ *                tooltips, ...), dialog (dialogs, modals)
+ *   elevation  - card, popup, dialog, sheet, tooltip, snackbar, appbar-top, appbar-bottom
+ *   foreground - pri/sec/ter/inf/suc/wrn/swr/err: the role's color when it is READ on the page's own
+ *                surfaces (an outlined or text-only variant) instead of filled behind its on-color
+ *   tint       - pri/sec/ter/inf/suc/wrn/swr/err: the role laid over a surface as a faint wash (the
+ *                soft surface of a tinted variant) instead of a fill
  *
- * Components consume THESE (via $shp-radius-control, $box-shadow-popup, ... in theme-variables.scss)
- * instead of the single --bit-shp-brd-radius / --bit-shd-cal primitives, so a design system that
- * rounds a button, a card, a menu and a dialog differently, or elevates a menu differently from a
- * dialog, retunes one token per family. Under Fluent every family points at the same primitive, so
- * overriding the legacy --bit-shp-brd-radius or --bit-shd-cal still flows through to every component
- * exactly as before.
+ * Components consume THESE (via $shp-radius-control, $box-shadow-popup, $clr-wrn-fg, ... in
+ * theme-variables.scss) instead of the single --bit-shp-brd-radius / --bit-shd-cal primitives or a
+ * color derived in their own stylesheet, so a design system that rounds a button, a card, a menu and
+ * a dialog differently, elevates a menu differently from a dialog, or picks its own readable shade of
+ * a role, retunes one token per family. Under Fluent every shape and elevation family points at the
+ * same primitive, so overriding the legacy --bit-shp-brd-radius or --bit-shd-cal still flows through
+ * to every component exactly as before.
  *
  * Positioning: the tier is palette-agnostic (pure var() references and foreground-tinted
  * expressions), so it lives in the shared bundle and tracks whatever preset or custom palette is
- * active. A preset for another design system overrides the family tokens in its own
- * :root[bit-theme="..."] block; that block is loaded after this file and wins on source order.
+ * active - the generated colors.*.scss palettes never declare these. A preset for another design
+ * system overrides the family tokens in its own :root[bit-theme="..."] block; that block is loaded
+ * after this file and wins on source order.
  *
- * Themable from C# via BitTheme.Shape.Radius.* and BitTheme.BoxShadow.* (the mapper emits the same
- * names). The mapper contract tests pin this file, theme-variables.scss and the model to each other.
+ * Themable from C# via BitTheme.Shape.Radius.*, BitTheme.BoxShadow.* and
+ * BitTheme.Color.<Role>.Foreground / .Tint (the mapper emits the same names). The mapper contract tests pin
+ * this file, theme-variables.scss and the model to each other.
  */
 // The `:root [bit-theme]` twin re-declares the aliases on scoped-preset elements (any descendant
 // carrying a bit-theme attribute) for the same reason semantic-tokens.scss does: a custom property's
 // var() references are substituted at the element that DEFINES it, so an alias defined only on :root
-// would freeze the document's primitives and ignore a scoped region's re-themed radius or shadow.
+// would freeze the document's primitives and ignore a scoped region's re-themed radius, shadow or
+// role color.
 :root,
 :root [bit-theme] {
     // radius per family - all four default to the legacy global radius.
@@ -57,4 +66,35 @@
     --bit-shd-snackbar: none;
     --bit-shd-appbar-top: 0 #{rem2(2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
     --bit-shd-appbar-bottom: 0 #{rem2(-2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(-4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
+
+    // foreground per accent role - a role's main color is picked to FILL a surface rather than to be
+    // read on the page (a warning amber is under 2:1 on white), so the unfilled variants of a
+    // role-colored component (an outlined or text-only message, ...) read this instead: main shaded
+    // towards the primary foreground, which keeps the hue and follows both schemes of any palette. It
+    // is a starting point, not a contrast guarantee - a palette whose main colors sit unusually close
+    // to its page surface sets its own value (in its :root[bit-theme="..."] block, or from C# via
+    // BitTheme.Color.<Role>.Foreground) to meet the contrast target of its design system.
+    --bit-clr-pri-fg: color-mix(in srgb, var(--bit-clr-pri) 55%, var(--bit-clr-fg-pri));
+    --bit-clr-sec-fg: color-mix(in srgb, var(--bit-clr-sec) 55%, var(--bit-clr-fg-pri));
+    --bit-clr-ter-fg: color-mix(in srgb, var(--bit-clr-ter) 55%, var(--bit-clr-fg-pri));
+    --bit-clr-inf-fg: color-mix(in srgb, var(--bit-clr-inf) 55%, var(--bit-clr-fg-pri));
+    --bit-clr-suc-fg: color-mix(in srgb, var(--bit-clr-suc) 55%, var(--bit-clr-fg-pri));
+    --bit-clr-wrn-fg: color-mix(in srgb, var(--bit-clr-wrn) 55%, var(--bit-clr-fg-pri));
+    --bit-clr-swr-fg: color-mix(in srgb, var(--bit-clr-swr) 55%, var(--bit-clr-fg-pri));
+    --bit-clr-err-fg: color-mix(in srgb, var(--bit-clr-err) 55%, var(--bit-clr-fg-pri));
+
+    // tint per accent role - the role laid over whatever surface is below as a faint wash rather than
+    // a fill (the soft surface of a tinted message, ...), with the role foreground above read on top
+    // of it. It is translucent, so it tints a card or a sidebar as readily as the page, and the amount
+    // is kept low enough for every role foreground to keep 4.5:1 on it under the packaged palettes. A
+    // design system with opaque "container" colors of its own sets them in its preset block, or from
+    // C# via BitTheme.Color.<Role>.Tint.
+    --bit-clr-pri-tint: color-mix(in srgb, var(--bit-clr-pri) 10%, transparent);
+    --bit-clr-sec-tint: color-mix(in srgb, var(--bit-clr-sec) 10%, transparent);
+    --bit-clr-ter-tint: color-mix(in srgb, var(--bit-clr-ter) 10%, transparent);
+    --bit-clr-inf-tint: color-mix(in srgb, var(--bit-clr-inf) 10%, transparent);
+    --bit-clr-suc-tint: color-mix(in srgb, var(--bit-clr-suc) 10%, transparent);
+    --bit-clr-wrn-tint: color-mix(in srgb, var(--bit-clr-wrn) 10%, transparent);
+    --bit-clr-swr-tint: color-mix(in srgb, var(--bit-clr-swr) 10%, transparent);
+    --bit-clr-err-tint: color-mix(in srgb, var(--bit-clr-err) 10%, transparent);
 }

@@ -52,11 +52,18 @@ namespace BitBlazorUI {
             if (!header) return [];
 
             try {
-                return Array.from(header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)')).map(el => el.id);
+                return Pivot.getOwnItems(header).map(el => el.id);
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.getItemsOrder:', e);
                 return [];
             }
+        }
+
+        // The tabs of this tablist, wherever they sit in it: an app can wrap each of them in an element of
+        // its own, but the tabs of a pivot nested in a header template belong to that pivot's tablist.
+        public static getOwnItems(header: HTMLElement): HTMLElement[] {
+            return Array.from(header.querySelectorAll<HTMLElement>('.bit-pvti'))
+                        .filter(el => el.closest('.bit-pvt-hct') === header);
         }
 
         // Brings a tab back into view after a selection or a focus move that did not come from a click
@@ -117,11 +124,10 @@ namespace BitBlazorUI {
                 if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
 
                 // only the tab itself: a header template can hold something interactive of its own, and
-                // the space typed into an input there belongs to the input rather than to the tablist.
-                // the More button keeps its own space as well, which is what raises the click that opens
-                // its menu.
+                // the space typed into an input there belongs to the input rather than to the tablist - as
+                // do the tabs of a pivot nested in one, whose keys are handled by that pivot.
                 const target = e.target as HTMLElement | null;
-                if (!target || !target.matches || !target.matches('.bit-pvti:not(.bit-pvt-mor)')) return;
+                if (!target || !target.classList || !target.classList.contains('bit-pvti') || target.closest('.bit-pvt-hct') !== header) return;
 
                 e.preventDefault();
             };
@@ -202,7 +208,12 @@ namespace BitBlazorUI {
         public start() {
             try {
                 this.observer = new ResizeObserver(() => this.update());
-                this.observer.observe(this.header);
+                // the More button of the Menu behavior sits beside the header, so showing it shrinks the
+                // header from inside this very callback. the wrapper around the two keeps its size through
+                // that, and observing it is what keeps the fold from re-triggering the observer (a resize
+                // loop the browser reports on window every time the fold changes).
+                const observed = this.isMenu && this.header.parentElement ? this.header.parentElement : this.header;
+                this.observer.observe(observed);
 
                 if (this.isSlide) {
                     const throttled = Utils.throttle(() => this.updateSlide(), 100) as () => void;
@@ -289,7 +300,7 @@ namespace BitBlazorUI {
         }
 
         private getItems(): HTMLElement[] {
-            return Array.from(this.header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)'));
+            return Pivot.getOwnItems(this.header);
         }
 
         private outerSize(el: HTMLElement): number {

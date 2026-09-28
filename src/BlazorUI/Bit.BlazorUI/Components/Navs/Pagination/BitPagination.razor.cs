@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -19,6 +20,10 @@ namespace Bit.BlazorUI;
 /// The range of pages is either given as a <see cref="Count"/> or worked out from <see cref="TotalItems"/> and
 /// <see cref="PageSize"/>. The second is the form to reach for whenever the size of the result set is known,
 /// since the range then follows the page size on its own.
+/// <br />
+/// Its look is themeable through the public --bit-Pagination-* CSS variables, which inherit, and a
+/// <see cref="BitPaginationParams"/> inside a <see cref="BitParams"/> sets the defaults (the texts and labels of a
+/// localized app included) of every pagination under it.
 /// </remarks>
 public partial class BitPagination : BitComponentBase
 {
@@ -113,9 +118,27 @@ public partial class BitPagination : BitComponentBase
     // is only ever handed to the page the pagination just settled on, which is always one of the rendered ones.
     private readonly Dictionary<int, ElementReference> _pageRefs = [];
 
+    // The cascade is applied while initializing, ahead of the first OnParametersSetAsync of the same parameter set,
+    // which is what this tells apart from every later parameter set.
+    private bool _cascadeAppliedOnInit;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the pagination component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings (the texts and labels of a localized app
+    /// included) to be applied to multiple pagination components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPaginationParams.ParamName)]
+    public BitPaginationParams? CascadingParameters { get; set; }
 
 
 
@@ -148,7 +171,8 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the pagination.
     /// </summary>
-    [Parameter] public BitPaginationClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitPaginationClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Turns every ellipsis into a control that jumps into the middle of the pages it collapses.
@@ -160,9 +184,10 @@ public partial class BitPagination : BitComponentBase
     /// makes the middle of a few hundred pages reachable in a couple of clicks.
     /// <br />
     /// The ellipsis follows the rest of the pagination: it is a button, or a link as soon as
-    /// <see cref="GetPageHref"/> hands it an address, and it takes its accessible name from
-    /// <see cref="EllipsisAriaLabel"/>. While it is off, the ellipsis stays the plain text it is by default and
-    /// is hidden from assistive technologies.
+    /// <see cref="GetPageHref"/> hands it an address, and it is named (and given a tooltip) by
+    /// <see cref="EllipsisAriaLabel"/> followed by the label of the page it jumps to ("More pages (Page 38)"),
+    /// worded by <see cref="GetPageAriaLabel"/> like every other page. While it is off, the ellipsis stays the
+    /// plain text it is by default and is hidden from assistive technologies.
     /// <br />
     /// The jump can spell the pages it landed among out in place of the gap that was clicked, so the keyboard
     /// focus is handed over to the page it settled on rather than being dropped on the document.
@@ -202,8 +227,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A plain gap keeps its glyph hidden from assistive technologies and lets the item around it carry this
     /// label, so it is reported as one item instead of being read as a run of punctuation. A
-    /// <see cref="ClickableEllipsis"/> is a control of its own, so it is named by this label directly and the
-    /// item around it is left unnamed beside it.
+    /// <see cref="ClickableEllipsis"/> is a control of its own, so it is named by this label directly, followed
+    /// by the label of the page it jumps to, and the item around it is left unnamed beside it.
     /// </remarks>
     [Parameter] public string EllipsisAriaLabel { get; set; } = "More pages";
 
@@ -245,7 +270,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="FirstButtonAriaLabel"/>, so a short visible
-    /// text can sit next to a fuller spoken one.
+    /// text can sit next to a fuller spoken one. Keep the text inside that name ("First" beside
+    /// "First page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? FirstButtonText { get; set; }
 
@@ -255,7 +281,8 @@ public partial class BitPagination : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the hook to localize the page buttons, or to make them announce what the page holds
-    /// (for example "Page 3 of 12" or "Results 21 to 30").
+    /// (for example "Page 3 of 12" or "Page 3, results 21 to 30"). Keep the page number in the label: it is
+    /// the text the button shows, and a name that leaves it out is one speech input cannot reach the button by.
     /// <br />
     /// The selected page also reports aria-current, so the label does not have to say that it is the
     /// current one for a screen reader to announce it as such.
@@ -282,15 +309,34 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public Func<int, string?>? GetPageHref { get; set; }
 
     /// <summary>
+    /// Provides the text of the summary while <see cref="TotalItems"/> is set, from the one-based numbers of the
+    /// first and the last items of the selected page and the total number of items, replacing the default
+    /// "{first} - {last} of {total}" text.
+    /// </summary>
+    /// <remarks>
+    /// This is the hook to localize or reword the item range (for example "Showing 21 to 30 of 240 results").
+    /// It is handed the numbers the pagination worked out itself, the last page stopping at the last item, so a
+    /// single one set through a <see cref="BitPaginationParams"/> serves every pagination of an app whatever
+    /// each of them pages through.
+    /// <br />
+    /// It wins over <see cref="GetSummary"/> while <see cref="TotalItems"/> is set, and is not called otherwise -
+    /// unless it only comes from a <see cref="BitPaginationParams"/> and the pagination was given a
+    /// <see cref="GetSummary"/> of its own, since a parameter set on the instance outranks a cascaded one.
+    /// It is only called while <see cref="ShowSummary"/> is on.
+    /// </remarks>
+    [Parameter] public Func<int, int, int, string>? GetItemsSummary { get; set; }
+
+    /// <summary>
     /// Provides the text of the summary, from the selected page and the total number of pages, replacing the
     /// default "Page {number} of {count}" text.
     /// </summary>
     /// <remarks>
-    /// This is the hook to localize the summary, or to report the position in terms of the items rather than
-    /// the pages (for example "Showing 21 to 30 of 240 results") from numbers only the consumer holds.
+    /// This is the hook to localize the summary, or to reword it (for example "3 / 12").
     /// <br />
-    /// The default text already counts the items ("1 - 10 of 240") whenever <see cref="TotalItems"/> is set, so
-    /// this is only needed there to word or localize that text differently.
+    /// The default text already counts the items ("1 - 10 of 240") whenever <see cref="TotalItems"/> is set, and
+    /// <see cref="GetItemsSummary"/> is the hook that words that text differently: it is handed the item range,
+    /// and wins over this one there - except over one set on the pagination itself while it only comes from a
+    /// <see cref="BitPaginationParams"/>.
     /// <br />
     /// It is only called while <see cref="ShowSummary"/> is on.
     /// </remarks>
@@ -364,7 +410,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="LastButtonAriaLabel"/>, so a short visible
-    /// text can sit next to a fuller spoken one.
+    /// text can sit next to a fuller spoken one. Keep the text inside that name ("Last" beside
+    /// "Last page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? LastButtonText { get; set; }
 
@@ -422,7 +469,8 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="NextButtonAriaLabel"/>, so a short visible
-    /// text can sit next to a fuller spoken one.
+    /// text can sit next to a fuller spoken one. Keep the text inside that name ("Next" beside
+    /// "Next page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? NextButtonText { get; set; }
 
@@ -535,15 +583,21 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
     /// is given. The accessible name still comes from <see cref="PreviousButtonAriaLabel"/>, so a short
-    /// visible text can sit next to a fuller spoken one.
+    /// visible text can sit next to a fuller spoken one. Keep the text inside that name ("Previous" beside
+    /// "Previous page"), which is what lets speech input reach the button by what it reads.
     /// </remarks>
     [Parameter] public string? PreviousButtonText { get; set; }
 
     /// <summary>
-    /// Renders the buttons of the pagination with fully rounded (circular) corners.
+    /// Renders the buttons and the ellipses of the pagination with fully rounded corners: circles, or pills where a
+    /// button is wider than it is tall.
     /// <br />
     /// The default value is <strong>false</strong>.
     /// </summary>
+    /// <remarks>
+    /// It wins over a --bit-Pagination-button-radius inherited from an ancestor, since it is asked for by the
+    /// instance itself.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Rounded { get; set; }
 
@@ -559,6 +613,8 @@ public partial class BitPagination : BitComponentBase
 
     /// <summary>
     /// Determines whether to show the first button.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
     [Parameter] public bool ShowFirstButton { get; set; }
 
@@ -576,11 +632,15 @@ public partial class BitPagination : BitComponentBase
 
     /// <summary>
     /// Determines whether to show the last button.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
     [Parameter] public bool ShowLastButton { get; set; }
 
     /// <summary>
     /// Determines whether to show the next button.
+    /// <br />
+    /// The default value is <strong>true</strong>.
     /// </summary>
     [Parameter] public bool ShowNextButton { get; set; } = true;
 
@@ -611,13 +671,15 @@ public partial class BitPagination : BitComponentBase
 
     /// <summary>
     /// Determines whether to show the previous button.
+    /// <br />
+    /// The default value is <strong>true</strong>.
     /// </summary>
     [Parameter] public bool ShowPreviousButton { get; set; } = true;
 
     /// <summary>
-    /// Shows the position in the range, which reads "Page {number} of {count}" (or "1 - 10 of 240" while
-    /// <see cref="TotalItems"/> is set) unless <see cref="GetSummary"/> replaces it, ahead of the buttons of
-    /// the pagination.
+    /// Shows the position in the range, ahead of the buttons of the pagination: "Page {number} of {count}",
+    /// which <see cref="GetSummary"/> rewords, or "1 - 10 of 240" while <see cref="TotalItems"/> is set, which
+    /// <see cref="GetItemsSummary"/> rewords.
     /// <br />
     /// The default value is <strong>false</strong>.
     /// </summary>
@@ -637,7 +699,8 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the pagination.
     /// </summary>
-    [Parameter] public BitPaginationClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitPaginationClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The total number of items the pagination pages through, which the number of pages is worked out from
@@ -761,8 +824,16 @@ public partial class BitPagination : BitComponentBase
         _ => null
     };
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPaginationParams))]
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is applied here as well as in OnParametersSetAsync, because the default selection is settled
+        // while initializing, which is before OnParametersSetAsync has run for the first time, and the range it is
+        // clamped into already follows the page sizes a cascade may be offering. The first OnParametersSetAsync
+        // runs in the same parameter set, so it is told not to apply the very same cascade a second time.
+        CascadingParameters?.UpdateParameters(this);
+        _cascadeAppliedOnInit = true;
+
         // The offered page sizes are needed before the first parameter set is over, since the page size is what
         // the number of pages the default selection is clamped into follows from.
         UpdatePageSizeOptions();
@@ -782,6 +853,15 @@ public partial class BitPagination : BitComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        if (_cascadeAppliedOnInit)
+        {
+            _cascadeAppliedOnInit = false;
+        }
+        else
+        {
+            CascadingParameters?.UpdateParameters(this);
+        }
+
         UpdatePageSizeOptions();
 
         // A page size that the selector cannot report (a value that is not positive) is written back the same
@@ -1003,18 +1083,38 @@ public partial class BitPagination : BitComponentBase
         return GetPageAriaLabel?.Invoke(page, isSelected) ?? $"Page {page}";
     }
 
+    // A gap that jumps somewhere is named by where it jumps to as well, since the two gaps of a range are otherwise
+    // announced (and shown as a tooltip) with the very same name. The page is worded by the hook that words every
+    // other page, so localizing the pages and the gap localizes this as well.
+    private string GetEllipsisLabel(int page)
+    {
+        return $"{EllipsisAriaLabel} ({GetPageLabel(page, false)})";
+    }
+
     private string GetSummaryText()
     {
-        if (GetSummary is not null) return GetSummary(_SelectedPage, _Count);
-
         // A known number of items is what the position is worth reporting in: "1 - 10 of 240" says how far along
-        // the result set the page sits, which the page number on its own does not.
-        if (TotalItems > 0)
-        {
-            var first = (long)(_SelectedPage - 1) * _PageSize + 1;
+        // the result set the page sits, which the page number on its own does not. The range is only worked out
+        // here, where it is handed to the one hook that is given it, so that a hook shared across paginations
+        // does not have to know what each of them pages through.
+        // A hook the pagination was given itself outranks one a BitParams handed down, the way every other
+        // parameter does, so a GetSummary set on the instance is not overridden by a GetItemsSummary that only
+        // came from the cascade.
+        var getItemsSummary = GetItemsSummary is not null && HasNotBeenSet(nameof(GetItemsSummary)) && GetSummary is not null && HasNotBeenSet(nameof(GetSummary)) is false
+            ? null
+            : GetItemsSummary;
 
-            return $"{first} - {Math.Min(first + _PageSize - 1, TotalItems)} of {TotalItems}";
+        if (TotalItems > 0 && (getItemsSummary is not null || GetSummary is null))
+        {
+            // The math runs in long, since the page before the last one times a big page size can run past an
+            // int, and the first item of a page never lies past the total, which is what makes the cast safe.
+            var first = (int)Math.Min((long)(_SelectedPage - 1) * _PageSize + 1, TotalItems);
+            var last = (int)Math.Min((long)first + _PageSize - 1, TotalItems);
+
+            return getItemsSummary?.Invoke(first, last, TotalItems) ?? $"{first} - {last} of {TotalItems}";
         }
+
+        if (GetSummary is not null) return GetSummary(_SelectedPage, _Count);
 
         return $"Page {_SelectedPage} of {_Count}";
     }

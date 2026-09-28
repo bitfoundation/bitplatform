@@ -143,9 +143,11 @@
                 @if (isCoinLink)
                 {
                     @* An anchor cannot be disabled, so a disabled one is stripped of the href that made it a
-                       link and taken out of the tab order by hand. *@
+                       link and taken out of the tab order by hand. Losing the href loses the implicit link role
+                       with it, which is put back so the element is still announced as a link - a disabled one. *@
                     <a style="@GetImageContainerStyle()"
                        class="@GetImageContainerClass()"
+                       role="@(IsEnabled ? null : "link")"
                        href="@(IsEnabled ? Href : null)"
                        rel="@_rel"
                        target="@Target"

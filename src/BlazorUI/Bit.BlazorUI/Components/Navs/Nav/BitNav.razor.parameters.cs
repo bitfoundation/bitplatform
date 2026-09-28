@@ -3,7 +3,8 @@ namespace Bit.BlazorUI;
 public partial class BitNav<TItem>
 {
     /// <summary>
-    /// The accent color of the nav.
+    /// The accent color of the nav: the background of the hovered and the selected item. A background,
+    /// foreground or border role tints the item, while a semantic role fills it and recolors its content.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
@@ -39,7 +40,9 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The default aria-label of the expand/collapse button of an expanded item.
+    /// The default aria-label of the expand/collapse button of an expanded item: the chevron of a parent that
+    /// has a URL (a parent without one toggles on a click anywhere on it, so its chevron is decoration only),
+    /// or a group header in the Grouped render type.
     /// The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided
     /// the text of the item is used, so the button is never left without an accessible name.
     /// </summary>
@@ -57,7 +60,9 @@ public partial class BitNav<TItem>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
-    /// The default aria-label of the expand/collapse button of a collapsed item.
+    /// The default aria-label of the expand/collapse button of a collapsed item: the chevron of a parent that
+    /// has a URL (a parent without one toggles on a click anywhere on it, so its chevron is decoration only),
+    /// or a group header in the Grouped render type.
     /// The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided
     /// the text of the item is used, so the button is never left without an accessible name.
     /// </summary>
@@ -92,7 +97,7 @@ public partial class BitNav<TItem>
     public bool IconOnly { get; set; }
 
     /// <summary>
-    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// The width in px of the chevron, which the items without children keep as padding in its place so every text lines up.
     /// </summary>
     [Parameter] public int IndentPadding { get; set; } = 27;
 
@@ -122,7 +127,7 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
 
     /// <summary>
-    /// Gets or sets a value representing the global URL matching behavior of the nav.
+    /// The URL matching behavior of the nav in the Automatic mode.
     /// The Match of an item takes precedence over this value, and when neither is provided the URL of an
     /// item has to match the current one exactly.
     /// </summary>
@@ -143,7 +148,7 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// Hides all collapse/expand buttons and remove their spaces at the start of each node.
+    /// Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item.
     /// </summary>
     [Parameter] public bool NoCollapse { get; set; }
 
@@ -153,7 +158,7 @@ public partial class BitNav<TItem>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// Callback invoked when a group header is clicked and Expanded or Collapse.
+    /// Callback invoked when an item (or a group header) is expanded or collapsed.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemToggle { get; set; }
 

@@ -53,6 +53,9 @@
     //underline are independent decisions.
     --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
     --bit-siz-tab-indicator: 0.125rem; //2px
+    //the rule a tab strip draws under its whole header, which the indicator of the selected tab sits
+    //on. Fluent draws none; Material draws the divider hairline.
+    --bit-siz-tab-divider: 0;
 
     //the thickness of a divider rule (BitSeparator, menu separators). Defaults to the hairline
     //border width; a preset can thin it (Cupertino's 0.5px hairline) without touching control borders.
@@ -76,6 +79,15 @@
     --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
     --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
     --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+
+    //the height of a badge per size class - also the diameter of a single-digit counter - and the
+    //diameter of a dot badge. Density-aware like the control heights.
+    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.125); //9px
+    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
 
     //the thickness of a linear track (BitProgress bar) per size class.
     --bit-siz-track-sm: 0.125rem; //2px

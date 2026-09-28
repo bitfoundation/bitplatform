@@ -209,6 +209,8 @@
                     <li><code>-text</code> - the on-color</li>
                     <li><code>-dis</code> / <code>-dis-text</code> - the disabled pair</li>
                     <li><code>-focus</code> - the focus indicator</li>
+                    <li><code>-fg</code> - the role read as text on the page's own surfaces, for the variants that drop the fill (an outlined or text-only message); a family token rather than a palette slot, see <i>Family tokens</i> below</li>
+                    <li><code>-tint</code> - the role laid over a surface as a faint, translucent wash, the soft surface of a tinted variant (a tinted message) read with <code>-fg</code> on top; a family token too</li>
                 </ul>
 
                 <BitText>
@@ -284,10 +286,12 @@
                     <li><code>--bit-siz-sel-{sm,md,lg}</code> - checkbox box / radio ring: 14/20/26px</li>
                     <li><code>--bit-siz-item-{sm,md,lg}</code> - popup list row heights: 30/36/44px</li>
                     <li><code>--bit-siz-tab</code> / <code>--bit-siz-tab-indicator</code> - pivot header height and selection-indicator stroke: 44px / 2px</li>
+                    <li><code>--bit-siz-tab-divider</code> - the rule under a pivot's whole header: none under Fluent; Material draws the 1px divider</li>
                     <li><code>--bit-siz-divider</code> - separator thickness; follows <code>--bit-shp-brd-width</code> until a preset thins it - Cupertino's 0.5px hairline</li>
                     <li><code>--bit-siz-track-{sm,md,lg}</code> - linear progress track thickness: 2/4/8px</li>
                     <li><code>--bit-siz-switch-{w,h,thumb}-{sm,md,lg}</code> - BitToggle's track and knob: 40x20 with a 12px knob at md; Material 52x32/24, Cupertino 51x31/27</li>
                     <li><code>--bit-siz-slider-thumb-{sm,md,lg}</code> - BitSlider's handle: 12/16/24px</li>
+                    <li><code>--bit-siz-badge-{sm,md,lg}</code> / <code>--bit-siz-badge-dot-{sm,md,lg}</code> - BitBadge's height and dot: 16/20/24px and 8/9/12px; Material 14/16/20 with its 6dp dot</li>
                     <li><code>--bit-siz-spinner-stroke</code> - the stroke of an inline spinner</li>
                     <li><code>--bit-siz-popup-max-height</code> - the height a scrolling popup list stops at</li>
                     <li><code>--bit-siz-dialog-max-width</code> - the width a dialog stops growing at on its own</li>
@@ -394,6 +398,9 @@
                         <code>-dis-text</code> holds <b>&#8805; 3:1</b> over <code>-dis</code>. Disabled controls are exempt from WCAG 1.4.3, but text nobody can read is still text nobody can read.
                     </li>
                     <li>
+                        <code>-fg</code> is <i>derived</i> rather than solved: by default it is the role's base color shaded towards <code>--bit-clr-fg-pri</code>, which keeps the hue and follows any palette in either scheme, but promises no ratio for a palette it has never seen. A preset whose role colors sit close to its page surface sets its own <code>-fg</code> values.
+                    </li>
+                    <li>
                         <code>--bit-clr-fg-pri</code> and <code>--bit-clr-fg-sec</code> clear <b>4.5:1</b> over <code>bg-pri</code>, <code>bg-sec</code> <i>and</i> <code>bg-ter</code> (they sit at 14.6:1 and 6.6:1 even on the deepest of the three). <code>--bit-clr-fg-ter</code>, the subtle/placeholder tier, clears 4.5:1 on the page surface and stays above 4:1 on the deepest one. <code>--bit-clr-brd-pri</code> keeps <b>&#8805; 3:1</b> over all three (SC 1.4.11, non-text contrast). <code>brd-sec</code> and <code>brd-ter</code> are the <i>decorative</i> stroke tiers - spinner tracks, menu separators, calendar grid lines - and are tuned for definition rather than to a contrast floor. Reach for <code>brd-pri</code> when a border is a control boundary.
                     </li>
                 </ul>
@@ -446,7 +453,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
                 <BitText>
                     Between the primitives and the components sits a second alias tier, shipped in every bundle in
                     <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/family-tokens.scss" Target="_blank">family-tokens.scss</BitLink>.
-                    Every component takes its outer corner radius and its elevation from the <i>family</i> it belongs to, instead of from the single <code>--bit-shp-brd-radius</code> / <code>--bit-shd-cal</code> primitives:
+                    Every component takes its outer corner radius and its elevation from the <i>family</i> it belongs to, instead of from the single <code>--bit-shp-brd-radius</code> / <code>--bit-shd-cal</code> primitives, and reads an accent role as text from that role's own foreground token rather than shading the role in its own stylesheet:
                 </BitText>
 
                 <CodeBox Language="css">/* radius per family - inputs, pickers, dropdown triggers, badges, pagination ... */
@@ -460,6 +467,11 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 --bit-shp-radius-chip      /* &rarr; var(--bit-shp-radius-control)  tags and the chips inside fields */
 --bit-shp-radius-selection /* &rarr; var(--bit-shp-radius-control)  the checkbox box */
 
+/* the selection indicator of a tab strip - a primitive of its own, 0 under Fluent: the corners
+   facing the label, and those on the edge it stands on (&rarr; the first unless set; 0 under Material) */
+--bit-shp-radius-tab-indicator
+--bit-shp-radius-tab-indicator-base
+
 /* elevation per surface family */
 --bit-shd-card             /* &rarr; var(--bit-shd-cal) */
 --bit-shd-popup            /* &rarr; var(--bit-shd-cal) */
@@ -468,10 +480,26 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 --bit-shd-tooltip          /* &rarr; var(--bit-shd-cal) */
 --bit-shd-snackbar         /* &rarr; none */
 --bit-shd-appbar-top       /* header, cast downwards, foreground-tinted so it survives dark palettes */
---bit-shd-appbar-bottom    /* footer, cast upwards */</CodeBox>
+--bit-shd-appbar-bottom    /* footer, cast upwards */
+
+/* foreground per accent role - the role read as text on the page (outlined and text-only variants) */
+--bit-clr-pri-fg           /* &rarr; color-mix(in srgb, var(--bit-clr-pri) 55%, var(--bit-clr-fg-pri)) */
+--bit-clr-sec-fg           /* ... and likewise for sec, ter, inf, suc, wrn, swr, err */
+
+/* tint per accent role - the role as a faint wash over a surface (tinted variants) */
+--bit-clr-pri-tint         /* &rarr; color-mix(in srgb, var(--bit-clr-pri) 10%, transparent) */
+--bit-clr-sec-tint         /* ... and likewise for sec, ter, inf, suc, wrn, swr, err */</CodeBox>
 
                 <BitText>
                     Under Fluent every family points at the same primitive, so overriding <code>--bit-shp-brd-radius</code> still re-rounds everything exactly as before. The families exist for the design systems that disagree: Material rounds a button (pill), a chip (8px), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino capsules its buttons and chips over 8px fields, and separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS - exactly what the packaged Material and Cupertino presets do; see <i>Authoring your own preset</i> below. Themable from C# via <code>BitTheme.Shape.Radius.*</code> and <code>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</code>.
+                </BitText>
+
+                <BitText>
+                    The role foregrounds are the one family that is a color. A role's base color is picked to <i>fill</i> a surface - a warning amber is under 2:1 on white - so a variant that drops the fill and prints the role as text needs a different shade of it. The default mixes the role towards <code>--bit-clr-fg-pri</code>, which keeps the hue in both schemes of any palette; a design system with its own contrast target sets <code>--bit-clr-&lt;role&gt;-fg</code> in its preset block, or from C# via <code>BitTheme.Color.&lt;Role&gt;.Foreground</code>, and every component that prints the role as text follows without a single component selector. An inline override that re-values a role or the primary foreground re-declares the affected role foregrounds on the same element, exactly as for the other family aliases.
+                </BitText>
+
+                <BitText>
+                    The role tints are their companion: the role laid over a surface as a faint wash, the soft look of a tinted message, with the role foreground read on top. The default is translucent, so a tinted component on a card or a sidebar tints that surface rather than painting a patch of the page on it, and it is kept faint enough for every role foreground to hold 4.5:1 on it under the packaged palettes. A design system with opaque "container" colors of its own - Material's error container, say - sets <code>--bit-clr-&lt;role&gt;-tint</code> in its preset block, or from C# via <code>BitTheme.Color.&lt;Role&gt;.Tint</code>; an inline override that re-values a role re-declares that role's tint.
                 </BitText>
             </DocSection>
 
@@ -1376,7 +1404,7 @@ await BitThemeManager.ApplyBitThemeAsync(fromDesign);</CodeBox>
                 </BitText>
 
                 <ul>
-                    <li>color, including the per-role <code>Focus</code>/<code>Disabled</code>/<code>DisabledText</code> slots</li>
+                    <li>color, including the per-role <code>Focus</code>/<code>Disabled</code>/<code>DisabledText</code>/<code>Foreground</code>/<code>Tint</code> slots</li>
                     <li>shadow, with <code>Shadow.FocusRing</code> and the per-surface <code>Shadow.Card</code>/<code>Popup</code>/<code>Dialog</code>/&hellip;</li>
                     <li>z-index</li>
                     <li>shape, with the focus-ring width/offset and <code>Shape.Radius.*</code></li>
