@@ -59,10 +59,13 @@ public partial class BitCardStylesheetTests
         // The disabled colors first, then what a parameter asked for, then the public variable, then the theme - all
         // read by the one rule painting the root, so a Classes.Root class still competes with it at equal weight.
         StringAssert.Contains(stylesheet, "color: var(--bit-crd-dis-txt, var(--bit-crd-fg, var(--bit-Card-color, ");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-dis-bg, var(--bit-crd-bg, var(--bit-Card-background, ");
+        // The surface and the shadow chains are the shared $crd-bg / $crd-shd the states read as well.
+        StringAssert.Contains(stylesheet, "$crd-bg: var(--bit-crd-bg, var(--bit-Card-background, ");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-dis-bg, #{$crd-bg});");
         StringAssert.Contains(stylesheet, "border-color: var(--bit-crd-dis-brd, var(--bit-crd-brd-clr, var(--bit-Card-border-color, ");
         StringAssert.Contains(stylesheet, "border-radius: var(--bit-crd-radius, var(--bit-Card-radius, ");
-        StringAssert.Contains(stylesheet, "box-shadow: var(--bit-crd-shd, var(--bit-Card-shadow, ");
+        StringAssert.Contains(stylesheet, "$crd-shd: var(--bit-crd-shd, var(--bit-Card-shadow, ");
+        StringAssert.Contains(stylesheet, "box-shadow: $crd-shd;");
     }
 
     [TestMethod]
@@ -163,8 +166,9 @@ public partial class BitCardStylesheetTests
         // A lift alone is lost on a flat card and absent under a design system with no shadows, so a control also shades
         // its surface: in its role's own shades when it is filled, otherwise the public variable, otherwise a wash of the
         // text color over whatever the card rests on.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-bg-hov, var(--bit-Card-hover-background, color-mix(in srgb, currentcolor 5%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));");
+        StringAssert.Contains(stylesheet, "$crd-bg: var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec}));");
+        StringAssert.Contains(stylesheet, "$crd-bg-hover: var(--bit-crd-bg-hov, var(--bit-Card-hover-background, color-mix(in srgb, currentcolor 5%, #{$crd-bg})));");
+        StringAssert.Contains(stylesheet, "$crd-bg-active: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, #{$crd-bg})));");
 
         var fill = Block(stylesheet, ".bit-crd-vfl");
         StringAssert.Contains(fill, "--bit-crd-bg-hov: var(--bit-crd-clr-hover);");
@@ -172,7 +176,20 @@ public partial class BitCardStylesheetTests
 
         // Only a control is shaded: a Hoverable card reacts to the pointer without being one, and only lifts.
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-Card-hover-background,").Count);
-        StringAssert.Contains(stylesheet, "    .bit-crd-int:hover {\n        background-color: var(--bit-crd-bg-hov,");
+        StringAssert.Contains(stylesheet, "    .bit-crd-int:hover {\n        background-color: $crd-bg-hover;");
+    }
+
+    [TestMethod]
+    public void BitCardShouldReadItsSurfaceChainsFromOnePlace()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The resting surface is written once and read by the root and by every state, so a change to the default
+        // surface cannot leave hover and press shading a different color from the card at rest.
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-crd-bg, ").Count, "The resting surface chain is written more than once.");
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-crd-shd, ").Count, "The resting shadow chain is written more than once.");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-dis-bg, #{$crd-bg});");
+        StringAssert.Contains(stylesheet, "box-shadow: $crd-shd;");
     }
 
     [TestMethod]
@@ -180,10 +197,34 @@ public partial class BitCardStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        // :active reaches every ancestor, so pressing a button in the header or the footer would press the card as
-        // well; a card with a stretched control is pressed through that control alone.
-        StringAssert.Contains(stylesheet, ".bit-crd-int:has(> .bit-crd-lnk:active),\n.bit-crd-int:not(:has(> .bit-crd-lnk)):active {");
-        Assert.IsFalse(stylesheet.Contains("\n.bit-crd-int:active"), "The whole card is pressed by any control inside it.");
+        // A card that is a button is pressed through its root, in a rule that needs no :has, so a browser that cannot
+        // read :has keeps the press of a root that is the control rather than dropping it with the rest of a list.
+        StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active {\n    box-shadow: $crd-shd-active;\n    background-color: $crd-bg-active;\n}");
+
+        // A linked card is pressed through its anchor alone, since :active on the root would also be the press of a
+        // control in its header or its footer.
+        StringAssert.Contains(stylesheet, "\n.bit-crd-int:has(> .bit-crd-lnk:active) {\n    box-shadow: $crd-shd-active;");
+        Assert.IsFalse(stylesheet.Contains("\n.bit-crd-int:active"), "A linked card is pressed by any control inside it.");
+
+        // ...and pressing one of the controls in the slots of a card that is a button leaves the card where it is.
+        StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active:has(> .bit-crd-fac:active, > .bit-crd-mai > .bit-crd-hdr > .bit-crd-act:active, > .bit-crd-mai > .bit-crd-ftr:active) {\n    box-shadow: $crd-shd;");
+    }
+
+    [TestMethod]
+    public void BitCardStretchedButtonShouldCoverTheCardAndLetThePointerThrough()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A button whose width is auto fits its content instead of stretching between its insets, and this one has
+        // none, so the size is spelled out or the focus ring drawn inside it collapses to nothing.
+        var overlay = Block(stylesheet, ".bit-crd-lnk");
+        StringAssert.Contains(overlay, "inset: 0;");
+        StringAssert.Contains(overlay, "width: 100%;");
+        StringAssert.Contains(overlay, "height: 100%;");
+
+        // The root answers a click anywhere on the card, so the button is left to the keyboard and lets the pointer
+        // reach the body: its controls, its text and its scrollbar. The anchor of a linked card keeps the pointer.
+        StringAssert.Contains(Block(stylesheet, "button.bit-crd-lnk"), "pointer-events: none;");
     }
 
     [TestMethod]

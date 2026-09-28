@@ -1473,6 +1473,7 @@ public class BitCardTests : BunitTestContext
         Assert.IsNull(card.GetAttribute("tabindex"));
         Assert.IsNull(button.GetAttribute("tabindex"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-int"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-btn"));
     }
 
     [TestMethod]
@@ -1528,6 +1529,60 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardStretchedButtonWithACustomHeaderShouldBeNamedByTheBody()
+    {
+        // A card whose header is a template has no title to point at. Naming it by the whole card would fold the
+        // controls of its actions and its footer into the name, each of which is announced on its own as well, so
+        // the body names it instead.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Id, "crd");
+            parameters.Add(p => p.OnClick, () => { });
+            parameters.Add(p => p.HeaderTemplate, (RenderFragment)(builder => builder.AddContent(0, "Ada Lovelace")));
+            parameters.Add(p => p.Actions, (RenderFragment)(builder => builder.AddContent(0, "More")));
+            parameters.Add(p => p.Footer, (RenderFragment)(builder => builder.AddContent(0, "Open")));
+            parameters.AddChildContent("The first programmer.");
+        });
+
+        var body = component.Find(".bit-crd-bdy");
+
+        Assert.AreEqual("crd-bdy", body.Id);
+        Assert.AreEqual("crd-bdy", component.Find(".bit-crd-lnk").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardBodyShouldOnlyCarryAnIdWhereItNamesTheStretchedControl()
+    {
+        // The title names the button here, so nothing points at the body and it is given no id to be pointed at.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Id, "crd");
+            parameters.Add(p => p.Title, "Backups");
+            parameters.Add(p => p.OnClick, () => { });
+            parameters.AddChildContent("Nightly, kept for a month.");
+        });
+
+        Assert.IsFalse(component.Find(".bit-crd-bdy").HasAttribute("id"));
+        Assert.AreEqual("crd-ttl", component.Find(".bit-crd-lnk").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardLoadingCardShouldNotBeNamedByItsPlaceholder()
+    {
+        // The placeholder of a loading card says nothing, so a body that holds it is no name at all.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Id, "crd");
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.OnClick, () => { });
+            parameters.Add(p => p.HeaderTemplate, (RenderFragment)(builder => builder.AddContent(0, "Ada Lovelace")));
+            parameters.AddChildContent("The first programmer.");
+        });
+
+        Assert.AreEqual("crd", component.Find(".bit-crd-lnk").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
     public void BitCardClickOnTheStretchedButtonShouldFireOnClick()
     {
         var clicked = 0;
@@ -1556,6 +1611,78 @@ public class BitCardTests : BunitTestContext
 
         Assert.AreEqual("option", card.GetAttribute("role"));
         Assert.AreEqual("0", card.GetAttribute("tabindex"));
+        Assert.AreEqual(0, component.FindAll(".bit-crd-lnk").Count);
+    }
+
+    [TestMethod]
+    [DataRow("listitem")]
+    [DataRow("article")]
+    [DataRow("region")]
+    [DataRow("group")]
+    [DataRow("none")]
+    [DataRow("presentation")]
+    public void BitCardSplattedStructuralRoleShouldKeepTheStretchedButton(string role)
+    {
+        // A structural role says what the card is on the page rather than what it does, so it does not make the
+        // root a control: the button is still stretched over it, and it is the button that reports the state.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Selected), true);
+            builder.AddAttribute(2, nameof(BitCard.SelectedChanged), EventCallback.Factory.Create<bool>(this, _ => { }));
+            builder.AddAttribute(3, "role", role);
+        });
+
+        var card = component.Find(".bit-crd");
+        var button = component.Find(".bit-crd > button.bit-crd-lnk");
+
+        Assert.AreEqual(role, card.GetAttribute("role"));
+        Assert.IsNull(card.GetAttribute("tabindex"));
+        Assert.IsNull(card.GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", button.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void BitCardBlankSplattedRoleShouldCountAsNoRole(string role)
+    {
+        // A blank role says nothing: it neither makes the root the control nor ends up on the element as an empty
+        // attribute, and the role the card picks for itself takes its place.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(2, "role", role);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsFalse(card.HasAttribute("role"));
+        Assert.IsNull(card.GetAttribute("tabindex"));
+        Assert.AreEqual(1, component.FindAll(".bit-crd > button.bit-crd-lnk").Count);
+    }
+
+    [TestMethod]
+    [DataRow("checkbox")]
+    [DataRow("switch")]
+    [DataRow("radio")]
+    [DataRow("menuitemcheckbox")]
+    [DataRow("menuitemradio")]
+    public void BitCardSelectedShouldReportAriaCheckedOnARoleThatCarriesIt(string role)
+    {
+        // A card made a box to tick is that control itself, and reports its selection as the state it answers to.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Selected), true);
+            builder.AddAttribute(2, nameof(BitCard.SelectedChanged), EventCallback.Factory.Create<bool>(this, _ => { }));
+            builder.AddAttribute(3, "role", role);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("true", card.GetAttribute("aria-checked"));
+        Assert.AreEqual("0", card.GetAttribute("tabindex"));
+        Assert.IsNull(card.GetAttribute("aria-pressed"));
+        Assert.IsNull(card.GetAttribute("aria-selected"));
         Assert.AreEqual(0, component.FindAll(".bit-crd-lnk").Count);
     }
 
@@ -1791,11 +1918,15 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCardFooterKeyPressShouldReachTheAncestorsOfACardThatIsAButton()
+    [DataRow(nameof(BitCard.Actions))]
+    [DataRow(nameof(BitCard.Footer))]
+    [DataRow(nameof(BitCard.FloatingActions))]
+    public void BitCardSlotKeyPressShouldNotReachTheAncestorsOfACardThatIsAButton(string slot)
     {
-        // The card answers only a key pressed on itself (see registerButtonKeys), so the keys of the controls it
-        // holds are left to bubble on: a card inside a keyboard-driven list keeps the list's arrow keys working.
+        // A key pressed on a control in one of the slots is that control's: on a card that is a control of its own it
+        // stops there, so Enter on a footer button does not also act on the list or the grid the card is an item of.
         var selected = false;
+        var slotKeys = 0;
         var outerKeys = 0;
 
         var component = Context.Render(builder =>
@@ -1803,21 +1934,24 @@ public class BitCardTests : BunitTestContext
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => outerKeys++));
             builder.OpenComponent<BitCard>(2);
-            builder.AddAttribute(3, nameof(BitCard.Selected), selected);
-            builder.AddAttribute(4, nameof(BitCard.SelectedChanged), EventCallback.Factory.Create<bool>(this, v => selected = v));
-            builder.AddAttribute(5, nameof(BitCard.Footer), (RenderFragment)(b =>
+            builder.AddAttribute(3, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(4, nameof(BitCard.Selected), selected);
+            builder.AddAttribute(5, nameof(BitCard.SelectedChanged), EventCallback.Factory.Create<bool>(this, v => selected = v));
+            builder.AddAttribute(6, slot, (RenderFragment)(b =>
             {
                 b.OpenElement(0, "button");
-                b.AddAttribute(1, "class", "footer-button");
+                b.AddAttribute(1, "class", "slot-button");
+                b.AddAttribute(2, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => slotKeys++));
                 b.CloseElement();
             }));
             builder.CloseComponent();
             builder.CloseElement();
         });
 
-        component.Find(".footer-button").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        component.Find(".slot-button").KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
-        Assert.AreEqual(1, outerKeys);
+        Assert.AreEqual(1, slotKeys);
+        Assert.AreEqual(0, outerKeys);
         Assert.IsFalse(selected);
     }
 

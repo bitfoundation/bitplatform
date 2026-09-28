@@ -143,7 +143,7 @@ public partial class BitCardDemo
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Replaces the icon, the title and the subtitle; Actions still renders beside it. Give a linked or clickable card with one an AriaLabel.",
+            Description = "Replaces the icon, the title and the subtitle; Actions still renders beside it. A linked or clickable card with one is named by its body; an AriaLabel says it shorter.",
         },
         new()
         {
@@ -178,7 +178,7 @@ public partial class BitCardDemo
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Stretches a link to this URL over the whole card, named by the AriaLabel, an aria-labelledby, the Title or the Subtitle (which describes a link the Title names), or else by all the card says. Actions, Footer and FloatingActions stay above it.",
+            Description = "Stretches a link to this URL over the whole card, named by the AriaLabel, an aria-labelledby, the Title, the Subtitle (which describes a link the Title names) or the body, or else by all the card says. Actions, Footer and FloatingActions stay above it; the rest of the card is under it.",
         },
         new()
         {
@@ -302,7 +302,7 @@ public partial class BitCardDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Stretches a native button over the card, named like the link of Href, so the title stays a heading and Actions, Footer and FloatingActions stay separate controls. Under a splatted role (option, tab) the card itself is the control.",
+            Description = "Stretches a native button over the card, named like the link of Href, so the title stays a heading and Actions, Footer and FloatingActions stay separate controls. The button lets the pointer through, so the body still scrolls and its controls still answer the pointer. Under a splatted widget role (option, tab, row) the card itself is the control; a structural one (listitem, article) keeps the button.",
         },
         new()
         {
@@ -339,7 +339,7 @@ public partial class BitCardDemo
             Name = "Selected",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws the selection ring. Binding it makes the card a toggle whose button reports aria-pressed, or aria-selected under a splatted option, row, gridcell, tab or treeitem role.",
+            Description = "Draws the selection ring. Binding it makes the card a toggle whose button reports aria-pressed, or aria-selected under a splatted option, row, gridcell, tab or treeitem role, or aria-checked under a splatted checkbox, switch or radio role.",
         },
         new()
         {

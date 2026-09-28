@@ -1,5 +1,14 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// The chains the surface and the shadow of a card resolve through, written once: the resting paint, the root rule and
+// the three states read the same ones, so a change to the default surface cannot leave hover and press shading a
+// different color from the card at rest.
+$crd-bg: var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec}));
+$crd-bg-hover: var(--bit-crd-bg-hov, var(--bit-Card-hover-background, color-mix(in srgb, currentcolor 5%, #{$crd-bg})));
+$crd-bg-active: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, #{$crd-bg})));
+$crd-shd: var(--bit-crd-shd, var(--bit-Card-shadow, #{$box-shadow-card}));
+$crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-Card-shadow, #{$box-shadow-card})));
+
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // card and one set on the Style of an instance re-skins that one alone:
 //   --bit-Card-color                 text color                                     (default: $clr-fg-pri)
@@ -72,11 +81,11 @@
     // then the theme - so this stays the one rule painting the card, and a class passed through Classes.Root
     // still competes with it at equal weight.
     color: var(--bit-crd-dis-txt, var(--bit-crd-fg, var(--bit-Card-color, #{$clr-fg-pri})));
-    background-color: var(--bit-crd-dis-bg, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})));
+    background-color: var(--bit-crd-dis-bg, #{$crd-bg});
     border-width: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0));
     border-color: var(--bit-crd-dis-brd, var(--bit-crd-brd-clr, var(--bit-Card-border-color, #{$clr-brd-pri})));
     border-radius: var(--bit-crd-radius, var(--bit-Card-radius, #{$shp-radius-surface}));
-    box-shadow: var(--bit-crd-shd, var(--bit-Card-shadow, #{$box-shadow-card}));
+    box-shadow: $crd-shd;
     transition: box-shadow $mot-duration-short $mot-easing,
                 border-color $mot-duration-short $mot-easing,
                 background-color $mot-duration-short $mot-easing;
@@ -325,10 +334,17 @@ i.bit-crd-hic {
 // whole surface, which is how a card leads somewhere or does something without wrapping its content in a control
 // - see the comments in BitCard.razor. It sits under everything the card raises above it (the header actions, the
 // footer and the floating actions). The button draws nothing of its own: the card is what it looks like.
+//
+// The size is spelled out as well as the inset: a button whose width is auto is sized to fit its content rather than
+// stretched between its insets, and this one has no content, so it would collapse to nothing - and take the focus
+// ring drawn inside it along.
 .bit-crd-lnk {
     position: absolute;
     inset: 0;
     z-index: 1;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
     border: none;
@@ -355,6 +371,14 @@ i.bit-crd-hic {
         cursor: default;
         pointer-events: none;
     }
+}
+
+// The button of a clickable card is there for the keyboard and for assistive technologies, and lets the pointer
+// through to what it covers: the root answers a click anywhere on the card on its own, so the pointer loses nothing,
+// while the controls in the body stay within reach of the pointer as they are of the keyboard and a scrolling body
+// keeps its wheel. The anchor of a linked card cannot: the pointer is what opens a link in a new tab or copies it.
+button.bit-crd-lnk {
+    pointer-events: none;
 }
 
 
@@ -637,18 +661,39 @@ i.bit-crd-hic {
     }
 
     .bit-crd-int:hover {
-        background-color: var(--bit-crd-bg-hov, var(--bit-Card-hover-background, color-mix(in srgb, currentcolor 5%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));
+        background-color: $crd-bg-hover;
     }
 }
 
 // The press settles the card back to where it rests rather than lifting it, unless an elevation says where to.
-// :active reaches every ancestor of what is pressed, so a card that stretches a link or a button over itself is
-// only pressed through that control: pressing the menu in its header or a button in its footer presses that
-// control and leaves the card where it is. A root that is the control itself has nothing stretched over it.
-.bit-crd-int:has(> .bit-crd-lnk:active),
-.bit-crd-int:not(:has(> .bit-crd-lnk)):active {
-    --bit-crd-shd: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-Card-shadow, #{$box-shadow-card})));
-    background-color: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));
+//
+// A card that is a button is pressed through its root: the button stretched over it lets the pointer through, so the
+// press lands on whatever is under it and reaches the root as :active reaches every ancestor. That needs no :has,
+// so it is a rule of its own - a selector list is dropped whole by a browser that cannot read one of its selectors,
+// and the root that is a control would lose its press along with the rest.
+.bit-crd-btn:active {
+    box-shadow: $crd-shd-active;
+    background-color: $crd-bg-active;
+}
+
+// A linked card is pressed through its anchor alone, since :active on the root would also be the press of the menu in
+// its header or of a button in its footer. The stretched button of a clickable card is pressed here too when the
+// keyboard presses it.
+.bit-crd-int:has(> .bit-crd-lnk:active) {
+    box-shadow: $crd-shd-active;
+    background-color: $crd-bg-active;
+}
+
+// Pressing a control in the header actions, the footer or the floating actions of a card that is a button presses
+// that control, and leaves the card at rest - or at hover, under a pointer that hovers. Where :has cannot be read the
+// card is pressed along with the control, which is the lesser of the two ways to be wrong.
+.bit-crd-btn:active:has(> .bit-crd-fac:active, > .bit-crd-mai > .bit-crd-hdr > .bit-crd-act:active, > .bit-crd-mai > .bit-crd-ftr:active) {
+    box-shadow: $crd-shd;
+    background-color: $crd-bg;
+
+    @media (hover: hover) {
+        background-color: $crd-bg-hover;
+    }
 }
 
 

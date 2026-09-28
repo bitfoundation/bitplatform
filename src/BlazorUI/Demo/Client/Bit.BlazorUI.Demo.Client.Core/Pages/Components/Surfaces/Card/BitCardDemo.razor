@@ -151,8 +151,8 @@
         <div>
             <b>ImageUrl</b> puts a full-bleed picture on top, cropped by <b>ImageHeight</b> or by <b>CoverRatio</b> (which stays level as the card narrows)
             and framed by <b>ImagePosition</b>. It is decorative unless <b>ImageAlt</b> describes it, and <b>ImageLoading</b> can defer it.
-            <b>Cover</b> takes any markup instead, <b>Reversed</b> moves the cover under the content, and <b>CoverOverlay</b> lays it behind the
-            content - give that card a <b>Height</b> and a scrim (<code>--bit-Card-scrim</code>, see CSS variables) so its text stays readable.
+            <b>Cover</b> takes any markup instead, and <b>Reversed</b> moves the cover under the content. <b>CoverOverlay</b>, which lays the
+            cover behind the content, needs a scrim to keep its text readable, so it is shown under CSS variables, where the scrim is introduced.
         </div>
         <br /><br />
         <div class="card-row">
@@ -181,16 +181,6 @@
                 </ChildContent>
             </BitCard>
 
-            <BitCard CoverOverlay Title="Olympic National Park" Subtitle="Washington, USA" Width="18rem" Height="14rem"
-                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"
-                     Style="--bit-Card-scrim: linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.3)); --bit-Card-color: white; --bit-Card-subtitle-color: rgb(255 255 255 / 0.85);">
-                <ChildContent>
-                    <BitText Typography="BitTypography.Body2">The content is written over the picture.</BitText>
-                </ChildContent>
-                <Footer>
-                    <BitButton Size="BitSize.Small">Explore</BitButton>
-                </Footer>
-            </BitCard>
         </div>
     </DemoExample>
 
@@ -340,7 +330,7 @@
             Wrap a run of cards in a named list and give their titles a <b>HeadingLevel</b>. A linked or clickable card is then read as its title,
             described by its subtitle, with its actions as separate controls. An <b>AriaLabel</b> gives a plain card the <code>group</code> role;
             a splatted <code>option</code>, <code>tab</code> or <code>row</code> role makes the card itself the control and reports
-            <code>aria-selected</code>. Loading sets <code>aria-busy</code>. Focus rings are drawn inside the card, and forced-colors mode restores
+            <code>aria-selected</code>, while a structural one such as <code>listitem</code> keeps the stretched button. Loading sets <code>aria-busy</code>. Focus rings are drawn inside the card, and forced-colors mode restores
             its border.
         </div>
         <br /><br />
@@ -384,6 +374,19 @@
                 </Footer>
             </BitCard>
             <BitCard @bind-Selected="isBrandSelected" Title="Selectable" Subtitle="Amber ring, indigo hover" Width="14rem" />
+        </div>
+        <br />
+        <div class="card-row">
+            <BitCard CoverOverlay Title="Olympic National Park" Subtitle="Washington, USA" Width="18rem" Height="14rem"
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"
+                     Style="--bit-Card-scrim: linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.3)); --bit-Card-color: white; --bit-Card-subtitle-color: rgb(255 255 255 / 0.85);">
+                <ChildContent>
+                    <BitText Typography="BitTypography.Body2">A CoverOverlay card, read against the scrim set on its own Style.</BitText>
+                </ChildContent>
+                <Footer>
+                    <BitButton Size="BitSize.Small">Explore</BitButton>
+                </Footer>
+            </BitCard>
         </div>
     </DemoExample>
 

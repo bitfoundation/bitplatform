@@ -135,17 +135,6 @@ private bool isStarred;";
     <ChildContent>
         <BitText Typography=""BitTypography.Body2"">The Cover template takes the place of the image.</BitText>
     </ChildContent>
-</BitCard>
-
-<BitCard CoverOverlay Title=""Olympic National Park"" Subtitle=""Washington, USA"" Width=""18rem"" Height=""14rem""
-         ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg""
-         Style=""--bit-Card-scrim: linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.3)); --bit-Card-color: white; --bit-Card-subtitle-color: rgb(255 255 255 / 0.85);"">
-    <ChildContent>
-        <BitText Typography=""BitTypography.Body2"">The content is written over the picture.</BitText>
-    </ChildContent>
-    <Footer>
-        <BitButton Size=""BitSize.Small"">Explore</BitButton>
-    </Footer>
 </BitCard>";
 
     private readonly string example6RazorCode = @"
@@ -289,7 +278,19 @@ private double elevation = 4;";
         </Footer>
     </BitCard>
     <BitCard @bind-Selected=""isBrandSelected"" Title=""Selectable"" Subtitle=""Amber ring, indigo hover"" Width=""14rem"" />
-</div>";
+</div>
+
+
+<BitCard CoverOverlay Title=""Olympic National Park"" Subtitle=""Washington, USA"" Width=""18rem"" Height=""14rem""
+         ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg""
+         Style=""--bit-Card-scrim: linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.3)); --bit-Card-color: white; --bit-Card-subtitle-color: rgb(255 255 255 / 0.85);"">
+    <ChildContent>
+        <BitText Typography=""BitTypography.Body2"">A CoverOverlay card, read against the scrim set on its own Style.</BitText>
+    </ChildContent>
+    <Footer>
+        <BitButton Size=""BitSize.Small"">Explore</BitButton>
+    </Footer>
+</BitCard>";
     private readonly string example13CsharpCode = @"
 private bool isBrandSelected = true;";
 

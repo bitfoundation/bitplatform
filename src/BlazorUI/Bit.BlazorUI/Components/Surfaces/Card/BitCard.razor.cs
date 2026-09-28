@@ -11,11 +11,12 @@ public partial class BitCard : BitComponentBase
     private bool _buttonKeysRegistered;
     private ElementReference _stretchedRef;
 
-    // Whether the card was sectioned and whether it was a control the last time its classes were built. Neither
-    // is a parameter the generated setter can watch for: they are read off templates and event callbacks, and a
-    // lambda or a template written in markup is a new delegate on every render, so watching them there would
-    // rebuild the class string on every render of every card. They are compared here instead.
-    private (bool Sectioned, bool Interactive)? _classState;
+    // Whether the card was sectioned, whether it was a control and whether that control was a button the last time
+    // its classes were built. None of them is a parameter the generated setter can watch for: they are read off
+    // templates and event callbacks, and a lambda or a template written in markup is a new delegate on every
+    // render, so watching them there would rebuild the class string on every render of every card. They are
+    // compared here instead.
+    private (bool Sectioned, bool Interactive, bool Button)? _classState;
 
     // A card that leads somewhere gets a stretched anchor laid over it rather than becoming one: an anchor
     // that wraps the whole card would swallow every link and button inside it, which is neither valid HTML
@@ -36,16 +37,27 @@ public partial class BitCard : BitComponentBase
     // over the same surface would be two tab stops on something the reader sees as a single thing.
     private bool _IsButton => _IsClickable && _IsLink is false;
 
-    // Where that button lives. A card the app splatted a role of its own onto - an option of a listbox, a tab of a
-    // tab strip - is that control itself, so the root takes the focus and the keys. Any other clickable card lays a
-    // native button over its surface the way a linked card lays its anchor, rather than turning the root into one:
-    // the children of a button are presentational, so the root as a button would bury the controls of its Actions,
-    // Footer and FloatingActions inside another control and could never keep its title a heading.
-    private bool _HasOwnRole => HtmlAttributes.TryGetValue("role", out var role) && role is not null;
+    // The role the app splatted onto the root, read in one place so the markup and the checks below never disagree
+    // about whether there is one. A blank role says nothing, and is treated as no role at all - which also puts the
+    // role the card works out for itself in its place.
+    private string? _SplattedRole => HtmlAttributes.TryGetValue("role", out var role) && role?.ToString() is { } value && value.HasValue()
+                                        ? value.Trim()
+                                        : null;
 
-    private bool _IsRootControl => _IsButton && _HasOwnRole;
+    // Where that button lives. A card the app splatted a widget role onto - an option of a listbox, a tab of a tab
+    // strip, a row of a grid - is that control itself, so the root takes the focus and the keys. Any other clickable
+    // card lays a native button over its surface the way a linked card lays its anchor, rather than turning the root
+    // into one: the children of a button are presentational, so the root as a button would bury the controls of its
+    // Actions, Footer and FloatingActions inside another control and could never keep its title a heading. That
+    // includes a card splatted with a structural role - a listitem, an article, a region, a group - which says what
+    // the card is on the page rather than what it does, and has to keep the button to be a control at all.
+    private bool _HasControlRole => _SplattedRole is "button" or "checkbox" or "columnheader" or "gridcell" or "link"
+                                                  or "menuitem" or "menuitemcheckbox" or "menuitemradio" or "option"
+                                                  or "radio" or "row" or "rowheader" or "switch" or "tab" or "treeitem";
 
-    private bool _IsStretchedButton => _IsButton && _HasOwnRole is false;
+    private bool _IsRootControl => _IsButton && _HasControlRole;
+
+    private bool _IsStretchedButton => _IsButton && _HasControlRole is false;
 
     private bool _HasStretchedControl => _IsLink || _IsStretchedButton;
 
@@ -256,8 +268,9 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// <see cref="Actions"/> still renders beside it, so the trailing controls of the header survive a custom
     /// header. What does not survive is the <see cref="Title"/> and the <see cref="Subtitle"/> - a linked or
-    /// clickable card with a header of its own therefore names its stretched link or button with everything it
-    /// says, and wants a <see cref="BitComponentBase.AriaLabel"/> to say it shorter.
+    /// clickable card with a header of its own therefore names its stretched link or button with its body, or with
+    /// everything it says where it has no body, and wants a <see cref="BitComponentBase.AriaLabel"/> to say it
+    /// shorter.
     /// </remarks>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
@@ -289,10 +302,11 @@ public partial class BitCard : BitComponentBase
     /// Everything in <see cref="Actions"/> and <see cref="Footer"/> stays above that anchor and keeps working;
     /// an interactive element anywhere else in the card is covered by it, so put the controls of a linked card
     /// in one of those two slots, and so is the text of the body, which a reader can no longer select with the
-    /// pointer - the price the block-link pattern pays everywhere it is used. The anchor is named by
-    /// <see cref="BitComponentBase.AriaLabel"/>, by an <c>aria-labelledby</c> splatted onto the card, by its
-    /// <see cref="Title"/> or by its <see cref="Subtitle"/>, in that order, and failing all of those by everything
-    /// the card says; the name is moved onto the anchor rather than left on the card as a second copy of itself.
+    /// pointer, nor scroll with the wheel on a card with <see cref="ScrollableBody"/> - the price the block-link
+    /// pattern pays everywhere it is used. The anchor is named by <see cref="BitComponentBase.AriaLabel"/>, by an
+    /// <c>aria-labelledby</c> splatted onto the card, by its <see cref="Title"/>, by its <see cref="Subtitle"/> or by
+    /// its body, in that order, and failing all of those by everything the card says; the name is moved onto the
+    /// anchor rather than left on the card as a second copy of itself.
     /// </remarks>
     [Parameter, CallOnSet(nameof(OnSetHrefAndRel)), ResetClassBuilder]
     public string? Href { get; set; }
@@ -444,12 +458,16 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// Setting it makes the card a button the way <see cref="Href"/> makes it a link: a native button is stretched
     /// over the surface, which takes the focus, answers Enter and Space, and is named by the <see cref="Title"/> and
-    /// described by the <see cref="Subtitle"/> (or named by <see cref="BitComponentBase.AriaLabel"/>, or failing
-    /// all of those by everything the card says). The root stays a plain box, so its title can still be a heading
-    /// and the controls in <see cref="Actions"/>, <see cref="Footer"/> and <see cref="FloatingActions"/>, which sit
-    /// above the button, stay controls of their own; their clicks and key presses never fire this a second time.
-    /// Anything else in the card is covered by the button. A card splatted with a <c>role</c> of its own - an
-    /// <c>option</c>, a <c>tab</c> - is that control itself instead: its root takes the focus and the keys.
+    /// described by the <see cref="Subtitle"/> (or named by <see cref="BitComponentBase.AriaLabel"/>, or by the
+    /// body, or failing all of those by everything the card says). The root stays a plain box, so its title can
+    /// still be a heading and the controls in <see cref="Actions"/>, <see cref="Footer"/> and
+    /// <see cref="FloatingActions"/> stay controls of their own; their clicks and key presses never fire this a
+    /// second time, nor reach whatever holds the card. Unlike the anchor of a linked card, the button lets the
+    /// pointer through: a click anywhere else on the card reaches the root and fires this, and the body still
+    /// scrolls and its controls still answer the pointer - a click on one of them fires this as well, the same way
+    /// Enter on one does, unless it stops the click itself. A card splatted with a widget <c>role</c> of its own - an
+    /// <c>option</c>, a <c>tab</c>, a <c>row</c> - is that control itself instead: its root takes the focus and
+    /// the keys. A structural role - a <c>listitem</c>, an <c>article</c> - keeps the button.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -495,7 +513,9 @@ public partial class BitCard : BitComponentBase
     /// while it carries it, even where the app flips the value itself rather than binding it. A card splatted with a role that carries
     /// a selection of its own - <c>option</c>, <c>row</c>, <c>gridcell</c>, <c>tab</c>, <c>treeitem</c>,
     /// <c>columnheader</c>, <c>rowheader</c> - reports it through <c>aria-selected</c> instead, which is the state
-    /// those roles answer to. A card with neither kind of role has only the ring to show for it.
+    /// those roles answer to, and one splatted with <c>checkbox</c>, <c>switch</c>, <c>radio</c>,
+    /// <c>menuitemcheckbox</c> or <c>menuitemradio</c> through <c>aria-checked</c>. A card with none of those roles
+    /// has only the ring to show for it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool Selected { get; set; }
@@ -697,6 +717,10 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => _IsLink || _IsButton ? "bit-crd-int" : string.Empty);
 
+        // A card that is a button - through its root or through the button stretched over it - is pressed through
+        // the root itself, since that button lets the pointer through; a linked card only through its anchor.
+        ClassBuilder.Register(() => _IsButton ? "bit-crd-btn" : string.Empty);
+
         ClassBuilder.Register(() => Hoverable ? "bit-crd-hov" : string.Empty);
 
         ClassBuilder.Register(() => Loading ? "bit-crd-ldg" : string.Empty);
@@ -746,7 +770,7 @@ public partial class BitCard : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        var classState = (_IsSectioned, _IsLink || _IsButton);
+        var classState = (_IsSectioned, _IsLink || _IsButton, _IsButton);
         if (_classState != classState)
         {
             _classState = classState;

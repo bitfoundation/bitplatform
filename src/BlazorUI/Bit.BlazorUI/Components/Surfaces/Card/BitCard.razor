@@ -18,7 +18,7 @@
     @* An attribute written after the splat wins over the one the app passed in through HtmlAttributes, and a
        null one takes it off the element altogether. What the card has of its own therefore comes first, but
        it falls back to whatever came in with the attributes. *@
-    var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
+    var splattedRole = _SplattedRole;
     var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
     var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
     var splattedLabelledBy = HtmlAttributes.TryGetValue("aria-labelledby", out var slb) ? slb?.ToString() : null;
@@ -55,9 +55,11 @@
 
     @* A card that carries a selection reports it with the state its control actually carries: a button - the
        one stretched over a clickable card, or a root splatted with that role - says aria-pressed, while the
-       roles that make a card an item of a list, a grid or a tab strip say aria-selected instead. A card with
-       neither has nothing to report the state with and is left with only the ring to show for it. *@
+       roles that make a card an item of a list, a grid or a tab strip say aria-selected instead, and the roles
+       that make it a box to tick say aria-checked. A card with none of them has nothing to report the state with
+       and is left with only the ring to show for it. *@
     var selectedRole = role is "option" or "row" or "gridcell" or "tab" or "treeitem" or "columnheader" or "rowheader";
+    var checkedRole = role is "checkbox" or "switch" or "radio" or "menuitemcheckbox" or "menuitemradio";
     var selectedState = _IsSelectable ? (Selected ? "true" : "false") : null;
 
     @* aria-disabled is a widget attribute rather than a global one: a div with no role of its own maps to the
@@ -68,10 +70,15 @@
 
     @* The stretched link or button carries no text of its own, so what names it is whatever the card was named
        by: an aria-labelledby the app splatted in, or failing that the title of the card, or failing that its
-       subtitle, which is the only other thing on the card that says what it is. A card with none of them - a
-       plain padded box, or one whose header is a template - is named by everything it says, which is verbose
-       but never nameless; an AriaLabel says it shorter. *@
-    var stretchedLabelledBy = label.HasValue() ? null : (splattedLabelledBy ?? titleId ?? subtitleId ?? _Id);
+       subtitle, which is the only other thing on the card that says what it is. A card with none of them - one
+       whose header is a template above all - is named by its body, which leaves the controls of its Actions,
+       Footer and FloatingActions out of the name: each of them is a tab stop announced on its own, and folded
+       into the name as well it would be read out again on every stop of the card. Only a card with no body to
+       point at either - a plain padded box, or one that is still loading - is named by everything it says,
+       which is verbose but never nameless; an AriaLabel says it shorter. *@
+    var bodyId = _IsSectioned && Loading is false && ChildContent is not null ? $"{_Id}-bdy" : null;
+    var stretchedLabelledBy = label.HasValue() ? null : (splattedLabelledBy ?? titleId ?? subtitleId ?? bodyId ?? _Id);
+    var bodyNamesControl = _HasStretchedControl && bodyId is not null && stretchedLabelledBy == bodyId;
 
     @* A control named by the title leaves the subtitle beside it unread - a reader tabbing through a page of
        cards hears "Theming, link" and never the "5 min read" under it - so the subtitle describes it instead. It
@@ -103,6 +110,7 @@
      aria-labelledby="@(labelOnRoot ? splattedLabelledBy : null)"
      aria-pressed="@(role is "button" ? selectedState : null)"
      aria-selected="@(selectedRole ? selectedState : null)"
+     aria-checked="@(checkedRole ? selectedState : null)"
      aria-busy="@(Loading ? "true" : null)"
      aria-disabled="@(role is not null && IsEnabled is false ? "true" : null)"
      style="@StyleBuilder.Value"
@@ -138,7 +146,12 @@
            button: the children of a button are presentational, so the controls in its Actions, Footer and
            FloatingActions would be controls nested in another one - which no screen reader reaches on their own -
            and its title could never be a heading. A native button laid over the surface answers Enter and Space
-           by itself, and its click bubbles up to the handler of the root like a click anywhere else on the card. *@
+           by itself, and its click bubbles up to the handler of the root like a click anywhere else on the card.
+
+           Unlike the anchor, it is there for the keyboard and for assistive technologies alone and lets the pointer
+           through (see .bit-crd-lnk in BitCard.scss): the root already answers a click anywhere on the card, so the
+           pointer loses nothing, while the body keeps scrolling under the wheel and the controls in it stay within
+           reach of the pointer as they are of the keyboard. *@
         <button @ref="_stretchedRef"
                 type="button"
                 style="@Styles?.Link"
@@ -159,9 +172,10 @@
 
            Like the two slots inside the column of parts, it keeps the clicks of the controls in it away from a card
            that has one of its own: pressing the favourite toggle of such a card is pressing the toggle, and not the
-           card under it as well. A key pressed on one of them never reaches the card either, since the card only
-           answers a key pressed on itself. *@
+           card under it as well - and a key pressed on one of them stays here too, so it does not also act on
+           whatever holds the card, a list or a grid answering Enter on the item the card is. *@
         <div @onclick:stopPropagation="_IsClickable"
+             @onkeydown:stopPropagation="_IsClickable"
              style="@Styles?.FloatingActions"
              class="bit-crd-fac @Classes?.FloatingActions">@FloatingActions</div>
     }
@@ -236,9 +250,11 @@
                         {
                             @* Outside the title block and raised above the stretched link, so the controls it holds
                                are controls of their own rather than part of whatever the card leads to - and on a card
-                               that has a click of its own, the click stops here rather than reaching
-                               the root as well, so acting on the menu of a card is not also acting on the card. *@
+                               that has a click of its own, the click and the keys stop here rather than reaching
+                               the root and what holds it as well, so acting on the menu of a card is not also acting
+                               on the card. *@
                             <div @onclick:stopPropagation="_IsClickable"
+                                 @onkeydown:stopPropagation="_IsClickable"
                                  style="@Styles?.Actions"
                                  class="bit-crd-act @Classes?.Actions">@Actions</div>
                         }
@@ -266,15 +282,16 @@
                 }
                 else if (ChildContent is not null)
                 {
-                    <div style="@Styles?.Body" class="bit-crd-bdy @Classes?.Body">@ChildContent</div>
+                    <div id="@(bodyNamesControl ? bodyId : null)" style="@Styles?.Body" class="bit-crd-bdy @Classes?.Body">@ChildContent</div>
                 }
 
                 @if (Footer is not null)
                 {
                     @* Raised above the stretched link for the same reason the header actions are: the buttons of a
-                       linked card have to stay reachable by the pointer and by the keyboard, and their clicks stop
-                       here on a card that has a click of its own rather than firing it a second time. *@
+                       linked card have to stay reachable by the pointer and by the keyboard, and their clicks and
+                       keys stop here on a card that has a click of its own rather than firing it a second time. *@
                     <div @onclick:stopPropagation="_IsClickable"
+                         @onkeydown:stopPropagation="_IsClickable"
                          style="@Styles?.Footer"
                          class="bit-crd-ftr @Classes?.Footer">@Footer</div>
                 }
