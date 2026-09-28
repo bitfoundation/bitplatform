@@ -507,10 +507,18 @@
     }
 
     // currentcolor is the forced text color here, which a selected tag has opted out of, so the ring is
-    // pinned to the system highlight for both.
+    // pinned to a system color instead: the highlight here, the text over it on a selected tag below.
     .bit-tag:focus-visible,
     .bit-tag-int:focus-visible,
     .bit-tag-cls:focus-visible {
         outline-color: Highlight;
+    }
+
+    // Every ring is inset, so a selected tag draws it over its own highlight fill, where Highlight would
+    // vanish; it takes the text color of that fill instead.
+    .bit-tag.bit-tag-sel:focus-visible,
+    .bit-tag.bit-tag-sel .bit-tag-int:focus-visible,
+    .bit-tag.bit-tag-sel .bit-tag-cls:focus-visible {
+        outline-color: HighlightText;
     }
 }
