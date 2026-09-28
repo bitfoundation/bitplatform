@@ -1062,6 +1062,50 @@
             Callouts.remove(calloutId, false);
         }
 
+        // Hands the keyboard over to an opening BitCallout in one call rather than one per piece, since each
+        // is a round trip of its own on a server-rendered page and all of them stand between the click and the
+        // focus moving into the callout: the element the focus is on is remembered (to be handed back to on
+        // close), Escape is listened for on the page, Tab and Shift+Tab are kept inside the callout, or the
+        // callout is put into the tab order after its trigger. Each is asked for on its own, and the ones the
+        // component has already set up are not asked for again. Reports whether a focus origin was remembered.
+        public static setupKeyboard(
+            calloutId: string,
+            dotnetObj: DotNetObject,
+            captureFocusOrigin: boolean,
+            escape: boolean,
+            escapeTriggerId: string | null,
+            focusTrap: boolean,
+            tabOutTriggerId: string | null) {
+            const captured = captureFocusOrigin && Utils.captureFocusOrigin(calloutId);
+
+            if (escape) {
+                Utils.setupEscape(calloutId, dotnetObj, escapeTriggerId);
+            }
+
+            if (focusTrap) {
+                Utils.setupFocusTrap(calloutId);
+            }
+
+            if (tabOutTriggerId) {
+                Utils.setupTabOut(calloutId, tabOutTriggerId, dotnetObj);
+            }
+
+            return captured;
+        }
+
+        // Takes back everything setupKeyboard may have set up for a closing BitCallout, in one call. Each of
+        // the disposals is a no-op for what was never set up. The remembered focus origin is only forgotten
+        // when the component is not about to hand the focus back to it.
+        public static disposeKeyboard(calloutId: string, forgetFocusOrigin: boolean) {
+            Utils.disposeFocusTrap(calloutId);
+            Utils.disposeTabOut(calloutId);
+            Utils.disposeEscape(calloutId);
+
+            if (forgetFocusOrigin) {
+                Utils.disposeFocusOrigin(calloutId);
+            }
+        }
+
         // Whether the callout about to be opened belongs to a component that sits inside the innermost open
         // callout. The component is measured where it is: only the callout is ever relocated to the body.
         private static isNestedInTop(callout: BitCallout): boolean {

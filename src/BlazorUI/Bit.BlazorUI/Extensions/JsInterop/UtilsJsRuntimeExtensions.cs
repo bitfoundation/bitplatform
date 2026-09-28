@@ -52,6 +52,13 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Stops watching the anchor BitUtilsSyncAriaPopup keeps the relationship on the current trigger of.
+    internal static ValueTask BitUtilsDisposeAriaPopup(this IJSRuntime jsRuntime, string anchorId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeAriaPopup", anchorId);
+    }
+
+
     // Mirrors the relationship a tooltip declares onto the element the reader actually lands on: a tooltip
     // renders the consumer's anchor inside a plain container of its own, and a relationship declared on a
     // container that is neither focusable nor interactive is one no screen reader ever reads. An empty
@@ -136,6 +143,15 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
+    }
+
+
+    // The same hand-back, reporting whether the focus was taken care of: false when there was no origin to
+    // hand it back to (the focus was on the body when the popup opened) or the origin has left the page, which
+    // leaves the caller the focus to place itself.
+    internal static ValueTask<bool> BitUtilsTryRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
     }
 
 

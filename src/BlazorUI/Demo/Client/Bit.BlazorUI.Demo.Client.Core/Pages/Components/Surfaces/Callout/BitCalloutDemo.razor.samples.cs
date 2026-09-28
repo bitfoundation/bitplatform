@@ -190,8 +190,8 @@ private string contextAction = ""none"";";
     <BitChoiceGroupOption Text=""Center"" Value=""BitCalloutAlignment.Center"" />
     <BitChoiceGroupOption Text=""End"" Value=""BitCalloutAlignment.End"" />
 </BitChoiceGroup>
-<BitNumberField Label=""Gap"" @bind-Value=""placementGap"" Min=""0"" Max=""64"" />
-<BitNumberField Label=""AlignmentOffset"" @bind-Value=""placementOffset"" Min=""0"" Max=""64"" />
+<BitNumberField Label=""Gap"" @bind-Value=""placementGap"" Min=""0"" Max=""64"" Style=""max-width:8rem"" />
+<BitNumberField Label=""AlignmentOffset"" @bind-Value=""placementOffset"" Min=""0"" Max=""64"" Style=""max-width:8rem"" />
 <BitCheckbox Label=""NoFlip"" @bind-Value=""placementNoFlip"" />
 
 <BitCallout Side=""PlacementSide"" Alignment=""placementAlignment"" Gap=""placementGap"" AlignmentOffset=""placementOffset"" NoFlip=""placementNoFlip"">
