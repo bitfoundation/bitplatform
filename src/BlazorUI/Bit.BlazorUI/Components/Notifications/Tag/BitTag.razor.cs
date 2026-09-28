@@ -20,10 +20,35 @@ public partial class BitTag : BitComponentBase
 
     // The dismiss button carries no text of its own, so the name it is given is the only thing a screen
     // reader has to announce it by. A row of them all called "Dismiss" names none of the tags they remove,
-    // so with no name of its own the button is named after the text of the tag; a tag with no text either
-    // falls back to a bare "Dismiss".
-    private string _dismissLabel => DismissLabel
-                                 ?? (Text.HasValue() ? Format(DismissLabelFormat ?? "Remove {0}", Text!) : "Dismiss");
+    // so with no name of its own the button is named after the text of the tag - or, for a tag with no words
+    // on it, after the AriaLabel that names it instead; a tag with neither falls back to a bare "Dismiss".
+    private string _dismissLabel
+    {
+        get
+        {
+            if (DismissLabel is not null) return DismissLabel;
+
+            var name = Text.HasValue() ? Text : AriaLabel;
+
+            return name.HasValue() ? Format(DismissLabelFormat ?? "Remove {0}", name!) : "Dismiss";
+        }
+    }
+
+    // A tag that opens a new browsing context takes the reader somewhere the back button no longer returns
+    // from, so it says so - the same sentence, and the same way of saying it, as every BitLink of the page.
+    private string? _newTabHint
+    {
+        get
+        {
+            if (_isLink is false || IsEnabled is false) return null;
+
+            if (string.Equals(Target, "_blank", StringComparison.OrdinalIgnoreCase) is false) return null;
+
+            var hint = NewTabHint ?? "(opens in a new tab)";
+
+            return hint.HasValue() ? hint : null;
+        }
+    }
 
     private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
     {
@@ -49,6 +74,20 @@ public partial class BitTag : BitComponentBase
     public BitTagParams? CascadingParameters { get; set; }
 
 
+
+    /// <summary>
+    /// Keeps a disabled tag that is a control - a button, a link, or a dismissible tag - focusable and
+    /// discoverable by assistive technologies.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The disabled state is then reported through <c>aria-disabled</c> instead of the native <c>disabled</c>
+    /// attribute, so the keyboard still lands on the tag while its click, its toggle and its dismissal stay
+    /// suppressed. That is what lets a reader find a filter that is unavailable and hear its
+    /// <see cref="AriaDescription"/> say why, instead of skipping past it without knowing it is there.
+    /// </remarks>
+    [Parameter] public bool AllowDisabledFocus { get; set; }
 
     /// <summary>
     /// What a selected tag that is a link reports itself as through <c>aria-current</c>.
@@ -262,6 +301,18 @@ public partial class BitTag : BitComponentBase
     [Parameter] public string? IconUrl { get; set; }
 
     /// <summary>
+    /// Replaces the text a link tag opening a new tab is announced with, for translating it or for saying it
+    /// another way.
+    /// </summary>
+    /// <remarks>
+    /// A tag whose <see cref="Target"/> is <c>_blank</c> carries the sentence saying so -
+    /// "<c>(opens in a new tab)</c>" unless this replaces it - as visually hidden text after its content, or
+    /// appended to its <c>AriaLabel</c> when it has one, since an aria-label replaces the content rather than
+    /// adding to it. An empty value takes the announcement off, for a tag whose label already says it.
+    /// </remarks>
+    [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
     /// Keeps the content of the tag on a single line and ends it with an ellipsis where it does not fit.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -319,8 +370,8 @@ public partial class BitTag : BitComponentBase
     /// <see cref="MouseEventArgs"/>.
     /// <br />
     /// With no name given to the button through <see cref="DismissLabel"/>, it is named after the
-    /// <see cref="Text"/> of the tag - "Remove Design" - so a row of them names the tag each one removes
-    /// rather than announcing "Dismiss" over and over.
+    /// <see cref="Text"/> of the tag - "Remove Design" - or after its <c>AriaLabel</c> where it has no text,
+    /// so a row of them names the tag each one removes rather than announcing "Dismiss" over and over.
     /// <br />
     /// The component does not remove itself: what the handler does with the dismissal - taking the tag out of
     /// a list, clearing a filter - is up to the app.
@@ -476,6 +527,10 @@ public partial class BitTag : BitComponentBase
     /// <summary>
     /// The browsing context the <see cref="Href"/> of the tag is opened in, for example <c>_blank</c>.
     /// </summary>
+    /// <remarks>
+    /// A tag opening a new browsing context gets <c>rel="noopener"</c> unless <see cref="Rel"/> says otherwise,
+    /// and is announced as opening a new tab - see <see cref="NewTabHint"/>.
+    /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
     public string? Target { get; set; }

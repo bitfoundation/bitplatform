@@ -139,28 +139,7 @@
         <div>Tag clicks: <b>@clickCount</b>, dismissals: <b>@dismissCount</b>, card clicks: <b>@cardClickCount</b></div>
     </DemoExample>
 
-    <DemoExample Title="Link" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            <b>Href</b> makes the tag a real anchor, with <b>Target</b>, <b>Rel</b> and <b>Download</b>. A new-tab link with no Rel gets
-            <code>rel="noopener"</code>. A disabled link drops its href and leaves the tab order. A <b>Selected</b> link reports
-            <code>aria-current</code>, whose value <b>AriaCurrent</b> sets (<b>Page</b> for the page you are on).
-        </div>
-        <br />
-        <div class="example-content">
-            <BitTag Text="Iconography" IconName="@BitIconName.Ribbon" Href="/iconography" Variant="BitVariant.Outline" />
-            <BitTag Text="Docs" Color="BitColor.Info" Href="https://blazorui.bitplatform.dev" Target="_blank"
-                    SecondaryIconName="@BitIconName.OpenInNewWindow" />
-            <BitTag Text="Source" Color="BitColor.Secondary" Href="https://github.com/bitfoundation/bitplatform" Target="_blank"
-                    Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" />
-            <BitTag Text="Logo" IconName="@BitIconName.Download" Color="BitColor.Success" Variant="BitVariant.Outline"
-                    Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" Download="bit-logo.png" />
-            <BitTag Text="Disabled" Href="https://bitplatform.dev" IsEnabled="false" />
-            <BitTag Text="This page" Href="#example7" Selected AriaCurrent="BitNavAriaCurrent.Page"
-                    Color="BitColor.Info" Variant="BitVariant.Outline" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Selection" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Selection" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             Binding <b>Selected</b> (or setting <b>OnChange</b>) makes a filter chip: a toggle button reporting <code>aria-pressed</code>, with a
             checkmark so the state is not carried by color alone. <b>SelectedIconName</b> changes the checkmark, <b>HideSelectedIcon</b> removes it.
@@ -199,6 +178,28 @@
         <br />
         <div class="example-content">
             <BitTag Text="Static selection" Selected Color="BitColor.Success" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Link" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            <b>Href</b> makes the tag a real anchor, with <b>Target</b>, <b>Rel</b> and <b>Download</b>. A new-tab link gets
+            <code>rel="noopener"</code> unless Rel says otherwise, and is announced "(opens in a new tab)" - <b>NewTabHint</b> rewords it,
+            an empty one removes it. A disabled link drops its href and leaves the tab order. A <b>Selected</b> link reports
+            <code>aria-current</code>, whose value <b>AriaCurrent</b> sets (<b>Page</b> for the page you are on).
+        </div>
+        <br />
+        <div class="example-content">
+            <BitTag Text="Iconography" IconName="@BitIconName.Ribbon" Href="/iconography" Variant="BitVariant.Outline" />
+            <BitTag Text="Docs" Color="BitColor.Info" Href="https://blazorui.bitplatform.dev" Target="_blank"
+                    SecondaryIconName="@BitIconName.OpenInNewWindow" />
+            <BitTag Text="Source" Color="BitColor.Secondary" Href="https://github.com/bitfoundation/bitplatform" Target="_blank"
+                    Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" NewTabHint="(opens GitHub in a new tab)" />
+            <BitTag Text="Logo" IconName="@BitIconName.Download" Color="BitColor.Success" Variant="BitVariant.Outline"
+                    Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" Download="bit-logo.png" />
+            <BitTag Text="Disabled" Href="https://bitplatform.dev" IsEnabled="false" />
+            <BitTag Text="This page" Href="#example8" Selected AriaCurrent="BitNavAriaCurrent.Page"
+                    Color="BitColor.Info" Variant="BitVariant.Outline" />
         </div>
     </DemoExample>
 
@@ -271,12 +272,15 @@
         <br /><br />
         <div>
             A plain tag takes no focus. <b>TabIndex</b> puts it in the tab order, and <b>FocusAsync</b> focuses it - or, on any other tag, the
-            button, link or dismiss button it renders.
+            button, link or dismiss button it renders. <b>AllowDisabledFocus</b> keeps a disabled control in the tab order as
+            <code>aria-disabled</code>, so its description still says why it is unavailable.
         </div>
         <br />
         <div class="example-content">
             <BitTag @ref="plainFocusTag" Text="A plain tag with a TabIndex" TabIndex="0" Variant="BitVariant.Outline" />
             <BitButton Variant="BitVariant.Outline" OnClick="() => plainFocusTag?.FocusAsync()">Focus it</BitButton>
+            <BitTag Text="Shared with me" DefaultSelected="false" Variant="BitVariant.Outline" IsEnabled="false" AllowDisabledFocus
+                    AriaDescription="Unavailable while offline" />
         </div>
     </DemoExample>
 

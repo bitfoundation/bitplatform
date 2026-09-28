@@ -83,6 +83,35 @@ public class BitTagStylesheetTests
         StringAssert.Contains(forced, "\n    .bit-tag.bit-dis {");
     }
 
+    [TestMethod]
+    public void BitTagDisabledRootShouldKeepAnsweringThePointer()
+    {
+        var stylesheet = ReadStylesheet();
+        var start = stylesheet.IndexOf("&.bit-dis {", System.StringComparison.Ordinal);
+        var disabled = stylesheet[start..stylesheet.IndexOf('}', start)];
+
+        // the controls inside stop answering it themselves; the root keeps it so the Title of a disabled tag still shows
+        Assert.IsFalse(disabled.Contains("pointer-events"), disabled);
+    }
+
+    [TestMethod]
+    public void BitTagControlsKeptFocusableWhileDisabledShouldStillIgnoreThePointer()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // anchored at the start of a line, since the reversed tag nests a rule of the dismiss button of its own
+        foreach (var control in new[] { "\n.bit-tag-int {", "\n.bit-tag-cls {" })
+        {
+            var start = stylesheet.IndexOf(control, System.StringComparison.Ordinal);
+
+            Assert.IsTrue(start >= 0, control);
+
+            var rule = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal)];
+
+            StringAssert.Contains(rule, "&[aria-disabled=\"true\"]", control);
+        }
+    }
+
     private static string ReadStylesheet([CallerFilePath] string thisFile = "")
     {
         var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",

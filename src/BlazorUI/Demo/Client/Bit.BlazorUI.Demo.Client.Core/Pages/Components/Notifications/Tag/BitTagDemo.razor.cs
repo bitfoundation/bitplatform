@@ -6,6 +6,13 @@ public partial class BitTagDemo
     [
         new()
         {
+            Name = "AllowDisabledFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps a disabled button, link or dismiss button in the tab order, reporting aria-disabled instead of disabled."
+        },
+        new()
+        {
             Name = "AriaCurrent",
             Type = "BitNavAriaCurrent",
             DefaultValue = "BitNavAriaCurrent.True",
@@ -75,7 +82,7 @@ public partial class BitTagDemo
             Name = "DismissLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name and tooltip of the dismiss button. Defaults to DismissLabelFormat applied to Text, or \"Dismiss\" without a Text."
+            Description = "The accessible name and tooltip of the dismiss button. Defaults to DismissLabelFormat applied to Text (or AriaLabel), else \"Dismiss\"."
         },
         new()
         {
@@ -143,6 +150,13 @@ public partial class BitTagDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A picture shown in place of the icon, cropped to a circle. Ignored while Icon or IconName is set."
+        },
+        new()
+        {
+            Name = "NewTabHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The announcement of a Target=\"_blank\" link, \"(opens in a new tab)\" by default; an empty value removes it."
         },
         new()
         {

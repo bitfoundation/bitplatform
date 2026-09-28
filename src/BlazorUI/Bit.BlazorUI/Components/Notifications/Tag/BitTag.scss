@@ -91,11 +91,12 @@
     }
 
     // Comes after the selected state and so takes its paint off with it. The glyphs follow the disabled text
-    // rather than a color of their own, which would leave them looking enabled.
+    // rather than a color of their own, which would leave them looking enabled. The root itself still answers
+    // the pointer - its controls are the ones that stop doing so - so the Title of a disabled tag, often the
+    // only place the text a NoWrap cut off can still be read, keeps showing on hover.
     &.bit-dis {
         cursor: default;
         user-select: none;
-        pointer-events: none;
         --bit-tag-icn-clr: currentcolor;
         --bit-tag-fg: var(--bit-Tag-disabled-color, var(--bit-tag-v-dis-fg));
         --bit-tag-bg: var(--bit-Tag-disabled-background, var(--bit-tag-v-dis-bg));
@@ -152,7 +153,8 @@
     }
 
     // A button carries the disabled state itself; an anchor has no such state, so the link tag reports it
-    // through aria-disabled and both are taken out of the pointer here.
+    // through aria-disabled - as does a button kept focusable by AllowDisabledFocus - and all of them are
+    // taken out of the pointer here.
     &:disabled,
     &[aria-disabled="true"] {
         cursor: default;
@@ -317,7 +319,8 @@
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 
-    &:disabled {
+    &:disabled,
+    &[aria-disabled="true"] {
         cursor: default;
         pointer-events: none;
     }

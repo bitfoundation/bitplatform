@@ -41,15 +41,28 @@
        where a TabIndex is what makes a plain tag reachable at all, and what FocusAsync then has to focus.
        Anywhere else the root drops it, splatted or not: a wrapper that takes focus of its own is a second tab
        stop on something the reader sees as one thing. A disabled tag is out of the tab order whatever was
-       asked for. *@
+       asked for, unless AllowDisabledFocus keeps it there. *@
     var tabIndexOnRoot = _isInteractive is false && OnDismiss.HasDelegate is false;
     var tabIndex = TabIndex ?? splattedTabIndex;
-    var rootTabIndex = tabIndexOnRoot && IsEnabled ? tabIndex : null;
+    var focusable = IsEnabled || AllowDisabledFocus;
+    var rootTabIndex = tabIndexOnRoot && focusable ? tabIndex : null;
+
+    @* A disabled control that keeps its focus reports the state through aria-disabled instead of the native
+       disabled attribute, which would take it out of the tab order along with the pointer. *@
+    var nativeDisabled = IsEnabled is false && AllowDisabledFocus is false;
+    var ariaDisabled = IsEnabled || nativeDisabled ? null : "true";
 
     @* The name and the description follow the control the same way the tab index does: what the tag has of its
        own first, what came in with the attributes behind it, and both of them on the anchor or the button when
        the tag is one - a name left on a wrapper that has no role of its own is a name that may never be read. *@
     var label = AriaLabel ?? splattedLabel;
+
+    @* An aria-label replaces the content of the anchor rather than adding to it, so the new-tab sentence is
+       appended to the label where there is one, and rendered as hidden text inside the anchor where there is
+       none. *@
+    var newTabHint = _newTabHint;
+    var linkLabel = label.HasValue() && newTabHint is not null ? $"{label} {newTabHint}" : label;
+    var hintText = label.HasValue() ? null : newTabHint;
 
     @* aria-label on an element with no role of its own is not guaranteed to be announced, so a static tag
        with nothing to read - an icon-only or a picture-only one - carries its name as text no one can see
@@ -154,7 +167,10 @@
     {
         @* A tag that leads somewhere is a real anchor: it comes with the context menu, the middle click, the
            status bar and the announcement that every link of the page comes with, none of which a click
-           handler on a span can reproduce. A disabled one keeps neither the href nor the focus. *@
+           handler on a span can reproduce. A disabled one drops the href, and with it the role of a link, which
+           is given back explicitly so that its aria-disabled still has a link to describe; it leaves the tab
+           order too, unless AllowDisabledFocus keeps it there - an anchor without an href only takes focus
+           through a tabindex of its own. *@
         <a @ref="_contentRef"
            @onclick="HandleOnClick"
            @onclick:preventDefault="@(IsEnabled is false)"
@@ -163,14 +179,22 @@
            style="@Styles?.Content"
            class="bit-tag-cnt bit-tag-int @Classes?.Content"
            href="@(IsEnabled ? Href : null)"
+           role="@(IsEnabled ? null : "link")"
            rel="@_rel"
            target="@Target"
            download="@Download"
-           tabindex="@(IsEnabled ? tabIndex : "-1")"
+           tabindex="@(IsEnabled ? tabIndex : (AllowDisabledFocus ? tabIndex ?? "0" : "-1"))"
            aria-disabled="@(IsEnabled ? null : "true")"
            aria-current="@(Selected ? _AriaCurrentMap[AriaCurrent] : null)"
-           aria-label="@label"
-           aria-describedby="@describedBy">@content</a>
+           aria-label="@linkLabel"
+           aria-describedby="@describedBy">
+            @content
+
+            @if (hintText is not null)
+            {
+                <span class="bit-tag-vhd">@hintText</span>
+            }
+        </a>
     }
     else if (_isButton)
     {
@@ -186,7 +210,8 @@
                 class="bit-tag-cnt bit-tag-int @Classes?.Content"
                 type="button"
                 tabindex="@tabIndex"
-                disabled="@(IsEnabled is false)"
+                disabled="@nativeDisabled"
+                aria-disabled="@ariaDisabled"
                 aria-pressed="@(_isToggle ? Selected.ToString().ToLower() : null)"
                 aria-label="@label"
                 aria-describedby="@describedBy">@content</button>
@@ -209,7 +234,8 @@
                 type="button"
                 title="@_dismissLabel"
                 tabindex="@tabIndex"
-                disabled="@(IsEnabled is false)"
+                disabled="@nativeDisabled"
+                aria-disabled="@ariaDisabled"
                 aria-label="@_dismissLabel"
                 aria-describedby="@rootDescribedBy">
             <i aria-hidden="true" style="@Styles?.DismissIcon" class="bit-tag-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />

@@ -100,23 +100,6 @@ private int dismissCount;
 private int cardClickCount;";
 
     private readonly string example7RazorCode = @"
-<BitTag Text=""Iconography"" IconName=""@BitIconName.Ribbon"" Href=""/iconography"" Variant=""BitVariant.Outline"" />
-
-<BitTag Text=""Docs"" Color=""BitColor.Info"" Href=""https://blazorui.bitplatform.dev"" Target=""_blank""
-        SecondaryIconName=""@BitIconName.OpenInNewWindow"" />
-
-<BitTag Text=""Source"" Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank""
-        Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" />
-
-<BitTag Text=""Logo"" IconName=""@BitIconName.Download"" Color=""BitColor.Success"" Variant=""BitVariant.Outline""
-        Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" Download=""bit-logo.png"" />
-
-<BitTag Text=""Disabled"" Href=""https://bitplatform.dev"" IsEnabled=""false"" />
-
-<BitTag Text=""This page"" Href=""#example7"" Selected AriaCurrent=""BitNavAriaCurrent.Page""
-        Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />";
-
-    private readonly string example8RazorCode = @"
 @foreach (var filter in filters)
 {
     <BitTag Text=""@filter""
@@ -138,7 +121,7 @@ private int cardClickCount;";
 <BitToggle @bind-Value=""allowSelectionChange"" Label=""Allow the change"" Inline />
 
 <BitTag Text=""Static selection"" Selected Color=""BitColor.Success"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isPinned;
 private bool isStarred = true;
 private bool allowSelectionChange;
@@ -160,6 +143,23 @@ private void ToggleFilter(string filter, bool selected)
         selectedFilters.Remove(filter);
     }
 }";
+
+    private readonly string example8RazorCode = @"
+<BitTag Text=""Iconography"" IconName=""@BitIconName.Ribbon"" Href=""/iconography"" Variant=""BitVariant.Outline"" />
+
+<BitTag Text=""Docs"" Color=""BitColor.Info"" Href=""https://blazorui.bitplatform.dev"" Target=""_blank""
+        SecondaryIconName=""@BitIconName.OpenInNewWindow"" />
+
+<BitTag Text=""Source"" Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank""
+        Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" NewTabHint=""(opens GitHub in a new tab)"" />
+
+<BitTag Text=""Logo"" IconName=""@BitIconName.Download"" Color=""BitColor.Success"" Variant=""BitVariant.Outline""
+        Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" Download=""bit-logo.png"" />
+
+<BitTag Text=""Disabled"" Href=""https://bitplatform.dev"" IsEnabled=""false"" />
+
+<BitTag Text=""This page"" Href=""#example8"" Selected AriaCurrent=""BitNavAriaCurrent.Page""
+        Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />";
 
     private readonly string example9RazorCode = @"
 <style>
@@ -236,7 +236,9 @@ private void ToggleFilter(string filter, bool selected)
 
 
 <BitTag @ref=""plainFocusTag"" Text=""A plain tag with a TabIndex"" TabIndex=""0"" Variant=""BitVariant.Outline"" />
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => plainFocusTag?.FocusAsync()"">Focus it</BitButton>";
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => plainFocusTag?.FocusAsync()"">Focus it</BitButton>
+<BitTag Text=""Shared with me"" DefaultSelected=""false"" Variant=""BitVariant.Outline"" IsEnabled=""false"" AllowDisabledFocus
+        AriaDescription=""Unavailable while offline"" />";
     private readonly string example11CsharpCode = @"
 private bool isOnlyMine;
 private BitTag? plainFocusTag;";
