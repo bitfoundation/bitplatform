@@ -9,7 +9,7 @@ public partial class BitCard : BitComponentBase
 {
     private string? _rel;
     private bool _buttonKeysRegistered;
-    private ElementReference _linkRef;
+    private ElementReference _stretchedRef;
 
     // Whether the card was sectioned and whether it was a control the last time its classes were built. Neither
     // is a parameter the generated setter can watch for: they are read off templates and event callbacks, and a
@@ -32,9 +32,22 @@ public partial class BitCard : BitComponentBase
 
     private bool _IsClickable => OnClick.HasDelegate || _IsToggle;
 
-    // The root only becomes a control where there is no stretched link to be one instead - two controls over
-    // the same surface would be two tab stops on something the reader sees as a single thing.
+    // A clickable card is a button only where there is no stretched link to be the control instead - two controls
+    // over the same surface would be two tab stops on something the reader sees as a single thing.
     private bool _IsButton => _IsClickable && _IsLink is false;
+
+    // Where that button lives. A card the app splatted a role of its own onto - an option of a listbox, a tab of a
+    // tab strip - is that control itself, so the root takes the focus and the keys. Any other clickable card lays a
+    // native button over its surface the way a linked card lays its anchor, rather than turning the root into one:
+    // the children of a button are presentational, so the root as a button would bury the controls of its Actions,
+    // Footer and FloatingActions inside another control and could never keep its title a heading.
+    private bool _HasOwnRole => HtmlAttributes.TryGetValue("role", out var role) && role is not null;
+
+    private bool _IsRootControl => _IsButton && _HasOwnRole;
+
+    private bool _IsStretchedButton => _IsButton && _HasOwnRole is false;
+
+    private bool _HasStretchedControl => _IsLink || _IsStretchedButton;
 
     // A card that carries any of the parts below is laid out as a stack of them, with the padding moved from
     // the root onto each part so that the cover can run edge to edge. A card that carries none of them keeps
@@ -242,9 +255,9 @@ public partial class BitCard : BitComponentBase
     /// </summary>
     /// <remarks>
     /// <see cref="Actions"/> still renders beside it, so the trailing controls of the header survive a custom
-    /// header. What does not survive is the <see cref="Title"/> and the <see cref="Subtitle"/> - a card with an
-    /// <see cref="Href"/> and a header of its own therefore has nothing left to name its stretched link with,
-    /// and wants a <see cref="BitComponentBase.AriaLabel"/>.
+    /// header. What does not survive is the <see cref="Title"/> and the <see cref="Subtitle"/> - a linked or
+    /// clickable card with a header of its own therefore names its stretched link or button with everything it
+    /// says, and wants a <see cref="BitComponentBase.AriaLabel"/> to say it shorter.
     /// </remarks>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
@@ -255,10 +268,11 @@ public partial class BitCard : BitComponentBase
     /// A card in a list of cards is usually a section of the page, and the title of such a section is a
     /// heading - which is what lets a screen reader user jump between the cards instead of reading through
     /// them. Leaving it unset keeps the title plain text, which is the right choice for a card whose title is
-    /// only a label. Values outside 1-6 are ignored, and so is any value at all on a card wearing a role that
-    /// presents its children - the button it becomes through <see cref="OnClick"/> above all, but an <c>option</c>
-    /// or a <c>tab</c> splatted in just the same. What such a role holds is read as the name of the control rather
-    /// than as structure, so a heading in one is never reached and is left off the card entirely.
+    /// only a label. Values outside 1-6 are ignored, and so is any value at all on a card splatted with a role
+    /// that presents its children, such as an <c>option</c> or a <c>tab</c>: what such a role holds is read as the
+    /// name of the control rather than as structure, so a heading in one is never reached and is left off the card
+    /// entirely. A card made clickable through <see cref="OnClick"/> keeps it, since its button is stretched over
+    /// the content rather than wrapped around it.
     /// </remarks>
     [Parameter] public int? HeadingLevel { get; set; }
 
@@ -277,8 +291,8 @@ public partial class BitCard : BitComponentBase
     /// in one of those two slots, and so is the text of the body, which a reader can no longer select with the
     /// pointer - the price the block-link pattern pays everywhere it is used. The anchor is named by
     /// <see cref="BitComponentBase.AriaLabel"/>, by an <c>aria-labelledby</c> splatted onto the card, by its
-    /// <see cref="Title"/> or by its <see cref="Subtitle"/>, in that order; the name is moved onto the anchor
-    /// rather than left on the card as a second copy of itself.
+    /// <see cref="Title"/> or by its <see cref="Subtitle"/>, in that order, and failing all of those by everything
+    /// the card says; the name is moved onto the anchor rather than left on the card as a second copy of itself.
     /// </remarks>
     [Parameter, CallOnSet(nameof(OnSetHrefAndRel)), ResetClassBuilder]
     public string? Href { get; set; }
@@ -428,13 +442,14 @@ public partial class BitCard : BitComponentBase
     /// The callback for when the card is clicked.
     /// </summary>
     /// <remarks>
-    /// Setting it turns the card into a button: it takes focus, it answers Enter and Space, and it reports
-    /// itself as a control to assistive technologies. A card that is a button should not hold controls of its
-    /// own - the children of a button are presentational, so nothing inside one is reachable on its own - use
-    /// <see cref="Href"/> with <see cref="Actions"/> or <see cref="Footer"/> for a card that leads somewhere and
-    /// still carries buttons. Whatever the card has in <see cref="Actions"/>, <see cref="Footer"/> or
-    /// <see cref="FloatingActions"/> keeps its click and its key press to itself either way, rather than firing
-    /// this a second time - so a linked card with a click handler of its own is safe to fill with controls.
+    /// Setting it makes the card a button the way <see cref="Href"/> makes it a link: a native button is stretched
+    /// over the surface, which takes the focus, answers Enter and Space, and is named by the <see cref="Title"/> and
+    /// described by the <see cref="Subtitle"/> (or named by <see cref="BitComponentBase.AriaLabel"/>, or failing
+    /// all of those by everything the card says). The root stays a plain box, so its title can still be a heading
+    /// and the controls in <see cref="Actions"/>, <see cref="Footer"/> and <see cref="FloatingActions"/>, which sit
+    /// above the button, stay controls of their own; their clicks and key presses never fire this a second time.
+    /// Anything else in the card is covered by the button. A card splatted with a <c>role</c> of its own - an
+    /// <c>option</c>, a <c>tab</c> - is that control itself instead: its root takes the focus and the keys.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -475,9 +490,9 @@ public partial class BitCard : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Binding it turns the card into a toggle the same way <see cref="OnClick"/> turns it into a button:
-    /// clicking it flips the value, and the card reports its state through <c>aria-pressed</c>. A card that is a
-    /// button through <see cref="OnClick"/> reports the state through <c>aria-pressed</c> as well while it carries
-    /// it, even where the app flips the value itself rather than binding it. A card splatted with a role that carries
+    /// clicking it flips the value, and the button stretched over the card reports it through <c>aria-pressed</c>.
+    /// A card that is a button through <see cref="OnClick"/> reports the state through <c>aria-pressed</c> as well
+    /// while it carries it, even where the app flips the value itself rather than binding it. A card splatted with a role that carries
     /// a selection of its own - <c>option</c>, <c>row</c>, <c>gridcell</c>, <c>tab</c>, <c>treeitem</c>,
     /// <c>columnheader</c>, <c>rowheader</c> - reports it through <c>aria-selected</c> instead, which is the state
     /// those roles answer to. A card with neither kind of role has only the ring to show for it.
@@ -565,28 +580,29 @@ public partial class BitCard : BitComponentBase
     /// Gives focus to the card.
     /// </summary>
     /// <remarks>
-    /// What takes the focus is whatever the card made focusable: the anchor stretched over a linked card, and
-    /// the root of a card that is a button or that was given a tab index of its own. A card that is none of
-    /// those has nothing to focus.
+    /// What takes the focus is whatever the card made focusable: the link or the button stretched over a linked
+    /// or a clickable card, and the root of a card splatted with a role of its own or given a tab index of its
+    /// own. A card that is none of those has nothing to focus.
     /// </remarks>
-    public ValueTask FocusAsync() => _IsLink ? _linkRef.FocusAsync() : RootElement.FocusAsync();
+    public ValueTask FocusAsync() => _HasStretchedControl ? _stretchedRef.FocusAsync() : RootElement.FocusAsync();
 
 
 
     protected override string RootElementClass => "bit-crd";
 
-    // The root of a clickable card is a button in everything but its tag name, so it answers the keys a button
-    // answers: Enter as the key goes down, Space as it comes back up, and neither one scrolling the page. That is
-    // wired up in the browser, where a key pressed on the card itself can be told apart from one pressed on a
-    // control it holds - which a Blazor keydown handler cannot see, nor prevent the default of per key. The root
-    // is the same element for the lifetime of the card, so it is registered once, the first time the card is a
-    // button; once registered it only ever turns a key into a click, which a card that stopped being a button
-    // has no handler for.
+    // The root of a clickable card splatted with a role of its own is the control, so it answers the keys a
+    // button answers: Enter as the key goes down, Space as it comes back up, and neither one scrolling the page.
+    // That is wired up in the browser, where a key pressed on the card itself can be told apart from one pressed
+    // on a control it holds - which a Blazor keydown handler cannot see, nor prevent the default of per key. The
+    // root is the same element for the lifetime of the card, so it is registered once, the first time the root is
+    // a control; once registered it only ever turns a key pressed on the root into a click, and a root that
+    // stopped being a control is no longer focusable for one to be pressed on. The stretched button of every other
+    // clickable card is a native one and needs none of this.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_buttonKeysRegistered || _IsButton is false) return;
+        if (_buttonKeysRegistered || _IsRootControl is false) return;
 
         _buttonKeysRegistered = true;
 

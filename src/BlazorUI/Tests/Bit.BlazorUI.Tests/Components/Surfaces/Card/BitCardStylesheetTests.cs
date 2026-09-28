@@ -176,6 +176,17 @@ public partial class BitCardStylesheetTests
     }
 
     [TestMethod]
+    public void BitCardShouldOnlyBePressedThroughItsOwnControl()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // :active reaches every ancestor, so pressing a button in the header or the footer would press the card as
+        // well; a card with a stretched control is pressed through that control alone.
+        StringAssert.Contains(stylesheet, ".bit-crd-int:has(> .bit-crd-lnk:active),\n.bit-crd-int:not(:has(> .bit-crd-lnk)):active {");
+        Assert.IsFalse(stylesheet.Contains("\n.bit-crd-int:active"), "The whole card is pressed by any control inside it.");
+    }
+
+    [TestMethod]
     public void BitCardShouldOnlyPaintTheScrimOverAnOverlaidCover()
     {
         var stylesheet = ReadStylesheet();

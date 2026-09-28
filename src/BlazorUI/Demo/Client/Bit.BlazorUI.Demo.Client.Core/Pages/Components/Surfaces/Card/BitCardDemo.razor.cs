@@ -143,14 +143,14 @@ public partial class BitCardDemo
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Replaces the icon, the title and the subtitle; Actions still renders beside it. A linked card with one needs an AriaLabel.",
+            Description = "Replaces the icon, the title and the subtitle; Actions still renders beside it. Give a linked or clickable card with one an AriaLabel.",
         },
         new()
         {
             Name = "HeadingLevel",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Makes the title a heading of this level (1-6). Ignored on a card whose role presents its children, such as the button a clickable card is.",
+            Description = "Makes the title a heading of this level (1-6). Ignored under a splatted role that presents its children, such as option or tab.",
         },
         new()
         {
@@ -178,7 +178,7 @@ public partial class BitCardDemo
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Stretches a link to this URL over the whole card, named by the AriaLabel, an aria-labelledby, the Title or the Subtitle (which describes a link the Title names). Actions, Footer and FloatingActions stay above it.",
+            Description = "Stretches a link to this URL over the whole card, named by the AriaLabel, an aria-labelledby, the Title or the Subtitle (which describes a link the Title names), or else by all the card says. Actions, Footer and FloatingActions stay above it.",
         },
         new()
         {
@@ -302,7 +302,7 @@ public partial class BitCardDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Makes the card a button: focusable, pressed by Enter and Space, reported as a button, shaded under the pointer and the press. A button card should hold no controls of its own.",
+            Description = "Stretches a native button over the card, named like the link of Href, so the title stays a heading and Actions, Footer and FloatingActions stay separate controls. Under a splatted role (option, tab) the card itself is the control.",
         },
         new()
         {
@@ -339,7 +339,7 @@ public partial class BitCardDemo
             Name = "Selected",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws the selection ring. Binding it makes the card a toggle reporting aria-pressed, or aria-selected under a splatted option, row, gridcell, tab or treeitem role.",
+            Description = "Draws the selection ring. Binding it makes the card a toggle whose button reports aria-pressed, or aria-selected under a splatted option, row, gridcell, tab or treeitem role.",
         },
         new()
         {
@@ -418,7 +418,7 @@ public partial class BitCardDemo
         {
             Name = "FocusAsync",
             Type = "ValueTask",
-            Description = "Focuses the card: the link of a linked card, or the root of a clickable card or one given a TabIndex."
+            Description = "Focuses the card: the stretched link or button of a linked or clickable card, or else the root of one given a role or a TabIndex."
         },
     ];
 
@@ -442,7 +442,7 @@ public partial class BitCardDemo
                     Name = "Link",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the stretched link that covers a card with an Href."
+                    Description = "Custom CSS classes/styles for the stretched link (Href) or button (OnClick) that covers the card."
                 },
                 new()
                 {

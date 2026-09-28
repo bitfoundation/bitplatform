@@ -321,16 +321,27 @@ i.bit-crd-hic {
 }
 
 
-// The block-link overlay. It is the anchor of the card stretched over the whole surface, which is how a card
-// leads somewhere without wrapping its content in a link - see the comment in BitCard.razor. It sits under
-// everything the card raises above it (the header actions, the footer and the floating actions).
+// The block-link overlay. It is the anchor of a linked card, or the button of a clickable one, stretched over the
+// whole surface, which is how a card leads somewhere or does something without wrapping its content in a control
+// - see the comments in BitCard.razor. It sits under everything the card raises above it (the header actions, the
+// footer and the floating actions). The button draws nothing of its own: the card is what it looks like.
 .bit-crd-lnk {
     position: absolute;
     inset: 0;
     z-index: 1;
+    margin: 0;
+    padding: 0;
+    border: none;
+    font: inherit;
     color: inherit;
+    cursor: pointer;
+    background: none;
+    appearance: none;
     border-radius: inherit;
     text-decoration: none;
+    // the card shades itself under the press, so the grey box a touch browser flashes over a tapped control would
+    // be a second press state laid over the whole card.
+    -webkit-tap-highlight-color: transparent;
 
     // An inset outline rather than the shared focus ring: a sectioned card clips its content to the corner it
     // draws, so a ring painted outside the element would be cut off by it.
@@ -339,6 +350,7 @@ i.bit-crd-hic {
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 
+    &:disabled,
     &[aria-disabled="true"] {
         cursor: default;
         pointer-events: none;
@@ -630,7 +642,11 @@ i.bit-crd-hic {
 }
 
 // The press settles the card back to where it rests rather than lifting it, unless an elevation says where to.
-.bit-crd-int:active {
+// :active reaches every ancestor of what is pressed, so a card that stretches a link or a button over itself is
+// only pressed through that control: pressing the menu in its header or a button in its footer presses that
+// control and leaves the card where it is. A root that is the control itself has nothing stretched over it.
+.bit-crd-int:has(> .bit-crd-lnk:active),
+.bit-crd-int:not(:has(> .bit-crd-lnk)):active {
     --bit-crd-shd: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-Card-shadow, #{$box-shadow-card})));
     background-color: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));
 }

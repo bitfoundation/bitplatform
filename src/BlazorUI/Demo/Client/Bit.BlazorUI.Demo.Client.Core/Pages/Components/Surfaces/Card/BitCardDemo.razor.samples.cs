@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Card;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Card;
 
 public partial class BitCardDemo
 {
@@ -166,7 +166,12 @@ private bool isStarred;";
 
     private readonly string example7RazorCode = @"
 <BitCard OnClick=""() => clickCount++"" Title=""Clickable"" Width=""14rem"">
-    <BitText Typography=""BitTypography.Body2"">Clicked @clickCount times.</BitText>
+    <Actions>
+        <BitButton Variant=""BitVariant.Text"" IconOnly IconName=""@BitIconName.Refresh"" Title=""Reset"" OnClick=""() => clickCount = 0"" />
+    </Actions>
+    <ChildContent>
+        <BitText Typography=""BitTypography.Body2"">Clicked @clickCount times.</BitText>
+    </ChildContent>
 </BitCard>
 
 <BitCard OnClick=""() => clickCount++"" IsEnabled=""false"" Title=""Disabled"" Width=""14rem"">
