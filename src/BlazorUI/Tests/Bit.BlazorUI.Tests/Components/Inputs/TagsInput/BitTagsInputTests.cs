@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -128,6 +128,40 @@ public class BitTagsInputTests : BunitTestContext
 
         Assert.AreEqual("Press Enter after each tag.", description.TextContent.Trim());
         Assert.AreEqual(description.Id, com.Find(".bit-tgi-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputKeepsAnAriaLabelledByOfTheConsumerTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-labelledby", "my-heading" } });
+        });
+
+        // An attribute rendered after the splatted ones replaces them even when what it holds is nothing,
+        // so a field named by a heading of its own would otherwise be left nameless.
+        Assert.AreEqual("my-heading", com.Find(".bit-tgi-inp").GetAttribute("aria-labelledby"));
+
+        // A label of the component's own is the better name, and it wins.
+        com.Render(parameters => parameters.Add(p => p.Label, "Tags"));
+
+        Assert.AreEqual(com.Find(".bit-tgi-lbl").Id, com.Find(".bit-tgi-inp").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputKeepsAnAriaLabelOfTheConsumerTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-label", "Skills" } });
+        });
+
+        Assert.AreEqual("Skills", com.Find(".bit-tgi-inp").GetAttribute("aria-label"));
+
+        // AriaLabel is the first-class way of saying the same thing, so it wins over the splatted one.
+        com.Render(parameters => parameters.Add(p => p.AriaLabel, "Tags"));
+
+        Assert.AreEqual("Tags", com.Find(".bit-tgi-inp").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -322,6 +356,12 @@ public class BitTagsInputTests : BunitTestContext
         Assert.AreEqual("To:", com.Find(".bit-tgi-pre").TextContent.Trim());
         Assert.AreEqual("cm", com.Find(".bit-tgi-suf").TextContent.Trim());
 
+        // What a sighted user reads inside the field is announced with it, in the order it is drawn.
+        var describedBy = com.Find(".bit-tgi-inp").GetAttribute("aria-describedby");
+
+        Assert.IsNotNull(describedBy);
+        StringAssert.StartsWith(describedBy, $"{com.Find(".bit-tgi-pre").Id} {com.Find(".bit-tgi-suf").Id}");
+
         // Neither of them is part of the value the field posts.
         com.Render(parameters => parameters.Add(p => p.Name, "tags"));
 
@@ -335,6 +375,19 @@ public class BitTagsInputTests : BunitTestContext
 
         Assert.AreEqual(0, com.FindAll(".bit-tgi-pre").Count);
         Assert.AreEqual(0, com.FindAll(".bit-tgi-suf").Count);
+    }
+
+    [TestMethod]
+    public void BitTagsInputAffixTemplatesAreNotAnnouncedWithTheFieldTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.PrefixTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<i></i>")));
+            parameters.Add(p => p.SuffixTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<i></i>")));
+        });
+
+        // Markup of the consumer is as likely to be a glyph as a word, so what it means belongs in the label.
+        Assert.IsFalse(com.Find(".bit-tgi-inp").HasAttribute("aria-describedby"));
     }
 
     [TestMethod]
@@ -1388,6 +1441,58 @@ public class BitTagsInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitTagsInputOnBeforeAddCorrectsTheTagOnItsWayInTest()
+    {
+        IReadOnlyList<string>? added = null;
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.OnBeforeAdd, (BitTagsInputBeforeArgs args) => args.Tag = args.Tag.ToUpperInvariant());
+            parameters.Add(p => p.OnAdd, (IReadOnlyList<string> tags) => added = tags);
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "apple" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // What the handler leaves in the args is what is added, announced and reported.
+        CollectionAssert.AreEqual(new List<string> { "APPLE" }, com.Instance.Value?.ToList());
+        Assert.AreEqual("APPLE", com.Find(".bit-tgi-ttx").TextContent.Trim());
+        Assert.AreEqual("APPLE added.", com.Find(".bit-tgi-lvr").TextContent.Trim());
+        CollectionAssert.AreEqual(new List<string> { "APPLE" }, added?.ToList());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputOnBeforeAddCorrectsEveryTagOfABatchTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.Separators, new[] { "," });
+            parameters.Add(p => p.OnBeforeAdd, (BitTagsInputBeforeArgs args) => args.Tag = $"#{args.Tag}");
+        });
+
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "a,b" });
+
+        CollectionAssert.AreEqual(new List<string> { "#a", "#b" }, com.Instance.Value?.ToList());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputAnEmptiedOnBeforeAddTagIsNotACancelTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.OnBeforeAdd, (BitTagsInputBeforeArgs args) => args.Tag = string.Empty);
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "apple" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // Cancel is what calls an add off; a handler that wrote nothing has left the tag as it stood.
+        CollectionAssert.AreEqual(new List<string> { "apple" }, com.Instance.Value?.ToList());
+    }
+
+    [TestMethod]
     public async Task BitTagsInputOnInputCallbackTest()
     {
         string? typed = null;
@@ -2263,18 +2368,24 @@ public class BitTagsInputTests : BunitTestContext
         Assert.AreEqual("blueberry", options[1].GetAttribute("value"));
     }
 
-    [TestMethod]
-    public async Task BitTagsInputMaxSuggestionsMatchingFollowsTheComparisonTest()
+    [TestMethod,
+        DataRow(StringComparison.Ordinal),
+        DataRow(StringComparison.OrdinalIgnoreCase)]
+    public async Task BitTagsInputMaxSuggestionsMatchesWithoutRegardToCaseTest(StringComparison comparison)
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
             parameters.Add(p => p.MaxSuggestions, 3);
-            parameters.Add(p => p.Comparison, StringComparison.OrdinalIgnoreCase);
+            parameters.Add(p => p.Comparison, comparison);
             parameters.Add(p => p.Suggestions, new[] { "Apple", "Banana" });
         });
 
         await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "app" });
 
+        // The browser filters the list it is handed all over again, and it does so without regard to
+        // case: narrowing with the Comparison would leave the ceiling offering nothing at all to a user
+        // typing "app" over a catalogue of capitalized values. The Comparison says when two tags are the
+        // same value, which is a different question from which values are worth offering.
         Assert.AreEqual(1, com.FindAll("datalist option").Count);
         Assert.AreEqual("Apple", com.Find("datalist option").GetAttribute("value"));
     }
@@ -2415,7 +2526,7 @@ public class BitTagsInputTests : BunitTestContext
 
         Assert.IsNotNull(invalidArgs);
         Assert.AreEqual(BitTagsInputInvalidReason.NotSuggested, invalidArgs.Reason);
-        Assert.AreEqual("blazor", com.Find(".bit-tgi-ttx").TextContent.Trim());
+        CollectionAssert.AreEqual(new List<string> { "blazor" }, com.Instance.Value?.ToList());
     }
 
     [TestMethod]
@@ -2609,6 +2720,72 @@ public class BitTagsInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitTagsInputTheChipBeingCorrectedIsMarkedTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.EditableTags, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "apple", "banana" });
+            parameters.Add(p => p.Classes, new BitTagsInputClassStyles { EditingTag = "custom-editing" });
+        });
+
+        await com.FindAll(".bit-tgi-tag")[1].KeyDownAsync(new KeyboardEventArgs { Key = "F2" });
+
+        // The caret inside the chip is otherwise the only thing that says which tag is being edited.
+        var tags = com.FindAll(".bit-tgi-tag");
+
+        Assert.IsFalse(tags[0].ClassList.Contains("bit-tgi-tag-edt"));
+        Assert.IsTrue(tags[1].ClassList.Contains("bit-tgi-tag-edt"));
+        Assert.IsTrue(tags[1].ClassList.Contains("custom-editing"));
+
+        await com.Find(".bit-tgi-eip").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-tag-edt").Count);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputTheEditInputIsAsWideAsItsTextTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.EditableTags, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a-fairly-long-tag" });
+        });
+
+        await com.Find(".bit-tgi-tag").KeyDownAsync(new KeyboardEventArgs { Key = "F2" });
+
+        // A field-sizing sizes the box to its text where it is supported and ignores this; everywhere else
+        // this is what keeps a long tag from being corrected through a box a few characters wide.
+        Assert.AreEqual("18", com.Find(".bit-tgi-eip").GetAttribute("size"));
+
+        await com.Find(".bit-tgi-eip").InputAsync(new ChangeEventArgs { Value = "ab" });
+
+        Assert.AreEqual("4", com.Find(".bit-tgi-eip").GetAttribute("size"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputTheEditInputFollowsTheFieldsKeyboardTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.EditableTags, true);
+            parameters.Add(p => p.SpellCheck, true);
+            parameters.Add(p => p.InputMode, BitInputMode.Email);
+            parameters.Add(p => p.EnterKeyHint, BitEnterKeyHint.Done);
+            parameters.Add(p => p.DefaultValue, new List<string> { "ada@example.com" });
+        });
+
+        await com.Find(".bit-tgi-tag").KeyDownAsync(new KeyboardEventArgs { Key = "F2" });
+
+        // Those belong to the values the field collects rather than to the one box they are typed into.
+        var editInput = com.Find(".bit-tgi-eip");
+
+        Assert.AreEqual("email", editInput.GetAttribute("inputmode"));
+        Assert.AreEqual("done", editInput.GetAttribute("enterkeyhint"));
+        Assert.AreEqual("true", editInput.GetAttribute("spellcheck"));
+    }
+
+    [TestMethod]
     public async Task BitTagsInputEditIsValidatedTest()
     {
         BitTagsInputInvalidArgs? invalidArgs = null;
@@ -2629,6 +2806,44 @@ public class BitTagsInputTests : BunitTestContext
 
         Assert.IsNotNull(invalidArgs);
         Assert.AreEqual(BitTagsInputInvalidReason.MinLength, invalidArgs.Reason);
+        CollectionAssert.AreEqual(new List<string> { "apple" }, com.Instance.Value?.ToList());
+
+        // An error is the one moment a field must not lose what was just entered, so the refused text is
+        // handed back in the still open input rather than the chip snapping back to what it said before.
+        Assert.AreEqual("ab", com.Find(".bit-tgi-eip").GetAttribute("value"));
+
+        // Typing is the answer to the refusal, exactly as it is in the main input.
+        Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+
+        await com.Find(".bit-tgi-eip").InputAsync(new ChangeEventArgs { Value = "abcd" });
+
+        Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+
+        await com.Find(".bit-tgi-eip").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-eip").Count);
+        Assert.AreEqual("abcd", com.Find(".bit-tgi-ttx").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputARefusedEditIsLetGoOfWhenTheFocusLeavesTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.EditableTags, true);
+            parameters.Add(p => p.MinLength, 4);
+            parameters.Add(p => p.DefaultValue, new List<string> { "apple" });
+        });
+
+        await com.Find(".bit-tgi-tag").KeyDownAsync(new KeyboardEventArgs { Key = "F2" });
+
+        var editInput = com.Find(".bit-tgi-eip");
+        await editInput.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await editInput.FocusOutAsync(new FocusEventArgs());
+
+        // Leaving the field is abandoning the correction: pulling the focus back would undo the very move
+        // that caused the commit.
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-eip").Count);
         Assert.AreEqual("apple", com.Find(".bit-tgi-ttx").TextContent.Trim());
     }
 
@@ -2676,7 +2891,8 @@ public class BitTagsInputTests : BunitTestContext
 
         Assert.IsNotNull(invalidArgs);
         Assert.AreEqual(BitTagsInputInvalidReason.Duplicate, invalidArgs.Reason);
-        Assert.AreEqual("apple", com.FindAll(".bit-tgi-ttx")[0].TextContent.Trim());
+        CollectionAssert.AreEqual(new List<string> { "apple", "banana" }, com.Instance.Value?.ToList());
+        Assert.AreEqual("banana", com.Find(".bit-tgi-eip").GetAttribute("value"));
     }
 
     [TestMethod]
@@ -2852,6 +3068,92 @@ public class BitTagsInputTests : BunitTestContext
 
         Assert.AreEqual(0, edits);
         Assert.AreEqual("apple", com.Find(".bit-tgi-ttx").TextContent);
+    }
+
+    #endregion
+
+    #region the count the input describes itself with
+
+    [TestMethod]
+    public void BitTagsInputNoCountDescriptionOnAnEmptyFieldTest()
+    {
+        var com = RenderComponent<BitTagsInput>();
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-cvs").Count);
+        Assert.IsFalse(com.Find(".bit-tgi-inp").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+        DataRow(0, "2 tags."),
+        DataRow(5, "2 of 5 tags.")]
+    public void BitTagsInputCountDescriptionTest(int maxTags, string expected)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MaxTags, maxTags);
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "apple", "pear" });
+        });
+
+        var count = com.Find(".bit-tgi-cvs");
+
+        // Referenced rather than announced: read on arriving in a field that is not empty, and never
+        // while it is being typed into.
+        Assert.AreEqual(expected, count.TextContent.Trim());
+        Assert.AreEqual(count.Id, com.Find(".bit-tgi-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputCountDescriptionComesAfterTheDescriptionTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Press Enter after each tag.");
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "apple" });
+        });
+
+        var descriptionId = com.Find(".bit-tgi-dsc").Id;
+        var countId = com.Find(".bit-tgi-cvs").Id;
+
+        Assert.AreEqual($"{descriptionId} {countId}", com.Find(".bit-tgi-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputCustomCountDescriptionTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MaxTags, 5);
+            parameters.Add(p => p.TagCountAriaDescriptionFormat, "{0} of {1} skills chosen.");
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "apple", "pear" });
+        });
+
+        Assert.AreEqual("2 of 5 skills chosen.", com.Find(".bit-tgi-cvs").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTagsInputEmptyCountDescriptionIsNotRenderedTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.TagCountAriaDescriptionFormat, string.Empty);
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "apple" });
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-cvs").Count);
+        Assert.IsFalse(com.Find(".bit-tgi-inp").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputCountDescriptionCountsTheFoldedTagsTooTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MaxDisplayedTags, 1);
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "apple", "pear", "plum" });
+        });
+
+        // Only how much is drawn changes; the field still holds three.
+        Assert.AreEqual("3 tags.", com.Find(".bit-tgi-cvs").TextContent.Trim());
     }
 
     #endregion
@@ -3540,6 +3842,732 @@ public class BitTagsInputTests : BunitTestContext
         Assert.AreEqual(2, com.FindAll(".bit-tgi-tag").Count);
     }
 
+
+    [TestMethod]
+    public void BitTagsInputTagIsNamedByItsTagTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "blazor" });
+        });
+
+        // The chip holds a handle and a dismiss button that carry names of their own, so it says what it
+        // stands for rather than letting its own name be read off all three.
+        Assert.AreEqual("blazor", com.Find(".bit-tgi-tag").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputGetTagNameNamesTheChipAndItsButtonsTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "ada@example.com", "grace@example.com" });
+            parameters.Add(p => p.GetTagName, (Func<string, string?>)(t => t == "ada@example.com" ? "Ada Lovelace" : null));
+            parameters.Add(p => p.TagTemplate, (RenderFragment<string>)(tag => builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddContent(1, "Ada Lovelace");
+                builder.CloseElement();
+            }));
+        });
+
+        // A template is markup nothing can read a name off, so this is the one place the chip gets one.
+        Assert.AreEqual("Ada Lovelace", com.FindAll(".bit-tgi-tag")[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Remove Ada Lovelace", com.FindAll(".bit-tgi-dbt")[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Move Ada Lovelace", com.FindAll(".bit-tgi-rbt")[0].GetAttribute("aria-label"));
+
+        // null falls back to the tag, so only the tags that need a name of their own carry one.
+        Assert.AreEqual("grace@example.com", com.FindAll(".bit-tgi-tag")[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputGetTagNameNamesTheAnnouncementsTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.GetTagName, (Func<string, string?>)(t => t.ToUpperInvariant()));
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "apple" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // The list a reader hears is the list they see, whichever of the two the value behind it is.
+        Assert.AreEqual("APPLE added.", com.Find(".bit-tgi-lvr").TextContent.Trim());
+
+        await com.Find(".bit-tgi-dbt").ClickAsync(new MouseEventArgs());
+
+        Assert.AreEqual("APPLE removed.", com.Find(".bit-tgi-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTagsInputThrowingGetTagNameLeavesTheTagAsTheNameTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, new List<string> { "apple" });
+            parameters.Add(p => p.GetTagName, (Func<string, string?>)(_ => throw new InvalidOperationException()));
+        });
+
+        // A function of the consumer must not be able to leave a chip nameless.
+        Assert.AreEqual("apple", com.Find(".bit-tgi-tag").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputReorderHandleFollowsAllowReorderTest()
+    {
+        var plain = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+        });
+
+        Assert.AreEqual(0, plain.FindAll(".bit-tgi-rbt").Count);
+
+        var reorderable = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+        });
+
+        Assert.AreEqual(2, reorderable.FindAll(".bit-tgi-rbt").Count);
+        Assert.AreEqual("-1", reorderable.FindAll(".bit-tgi-rbt")[0].GetAttribute("tabindex"));
+        Assert.AreEqual("Move a", reorderable.FindAll(".bit-tgi-rbt")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputReorderHandleIsNotDrawnOnALoneTagTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a" });
+        });
+
+        // There is nowhere to put it down, so the handle would be chrome that does nothing.
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-rbt").Count);
+    }
+
+    [TestMethod,
+        DataRow(true, true),
+        DataRow(false, false)]
+    public void BitTagsInputReorderHandleIsNotOfferedByAFieldThatRefusesChangesTest(bool readOnly, bool isEnabled)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-rbt").Count);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputReorderHandlePicksUpAndPutsDownTheTagTest()
+    {
+        BitTagsInputReorderArgs? reorderArgs = null;
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b", "c" });
+            parameters.Add(p => p.OnReorder, (BitTagsInputReorderArgs args) => reorderArgs = args);
+        });
+
+        await com.FindAll(".bit-tgi-rbt")[0].ClickAsync(new MouseEventArgs());
+
+        Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-pck"));
+        Assert.IsTrue(com.FindAll(".bit-tgi-tag")[0].ClassList.Contains("bit-tgi-tag-lft"));
+        Assert.AreEqual("true", com.FindAll(".bit-tgi-rbt")[0].GetAttribute("aria-pressed"));
+
+        // While a tag is carried, the other handles offer to put it down rather than to pick their own up.
+        Assert.AreEqual("Move a here", com.FindAll(".bit-tgi-rbt")[2].GetAttribute("aria-label"));
+        Assert.IsFalse(com.FindAll(".bit-tgi-rbt")[2].HasAttribute("aria-pressed"));
+
+        // The whole chip is the place to put it down, not only the handle it was picked up with.
+        await com.FindAll(".bit-tgi-tag")[2].ClickAsync(new MouseEventArgs());
+
+        var texts = com.FindAll(".bit-tgi-ttx").Select(t => t.TextContent.Trim()).ToArray();
+        CollectionAssert.AreEqual(new[] { "b", "c", "a" }, texts);
+
+        Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-pck"));
+        Assert.IsNotNull(reorderArgs);
+        Assert.AreEqual("a", reorderArgs.Tag);
+        Assert.AreEqual(0, reorderArgs.OldIndex);
+        Assert.AreEqual(2, reorderArgs.NewIndex);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputReorderHandlePutsTheTagBackTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b", "c" });
+        });
+
+        await com.FindAll(".bit-tgi-rbt")[1].ClickAsync(new MouseEventArgs());
+        await com.FindAll(".bit-tgi-rbt")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-pck"));
+
+        var texts = com.FindAll(".bit-tgi-ttx").Select(t => t.TextContent.Trim()).ToArray();
+        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, texts);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputEscapePutsAPickedUpTagBackTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b", "c" });
+        });
+
+        await com.FindAll(".bit-tgi-rbt")[0].ClickAsync(new MouseEventArgs());
+        await com.FindAll(".bit-tgi-tag")[0].KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-pck"));
+
+        var texts = com.FindAll(".bit-tgi-ttx").Select(t => t.TextContent.Trim()).ToArray();
+        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, texts);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputPickedUpTagIsPutBackByAClickOnTheFieldTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b", "c" });
+        });
+
+        await com.FindAll(".bit-tgi-rbt")[0].ClickAsync(new MouseEventArgs());
+        await com.Find(".bit-tgi-cnt").ClickAsync(new MouseEventArgs());
+
+        Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-pck"));
+    }
+
+    #endregion
+
+    #region the sentence a refusal is reported with
+
+    [TestMethod,
+        DataRow(3, 0, "ab", null, "ab was not added. A tag must be at least 3 characters."),
+        DataRow(0, 1, "pear", null, "pear was not added. No more than 1 tags are allowed."),
+        DataRow(0, 0, "apple", null, "apple was not added. It is already in the list."),
+        DataRow(0, 0, "ab", "^x+$", "ab was not added. It is not in the expected format.")]
+    public async Task BitTagsInputRefusalSaysWhyTest(int minLength, int maxTags, string tag, string? pattern, string expected)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "apple" });
+            parameters.Add(p => p.MinLength, minLength);
+            parameters.Add(p => p.MaxTags, maxTags);
+            parameters.Add(p => p.Pattern, pattern);
+            parameters.Add(p => p.ShowInvalidMessage, true);
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = tag });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // A refusal that is only signalled is a refusal half the readers of the page never understand.
+        Assert.AreEqual(expected, com.Find(".bit-tgi-lvr").TextContent.Trim());
+        Assert.AreEqual(expected, com.Find(".bit-tgi-ivm").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputRefusalIsNotDrawnWithoutShowInvalidMessageTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // Announced all the same: the live region is the one channel a screen reader always has.
+        Assert.AreEqual("ab was not added. A tag must be at least 3 characters.", com.Find(".bit-tgi-lvr").TextContent.Trim());
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-ivm").Count);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputTheRefusalStandsWhereTheDescriptionDoesTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+            parameters.Add(p => p.ShowInvalidMessage, true);
+            parameters.Add(p => p.Description, "Three characters at least.");
+        });
+
+        var descriptionId = com.Find(".bit-tgi-dsc").Id;
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        var message = com.Find(".bit-tgi-ivm");
+
+        // The refusal takes the place of the helper text and its id with it, so the input never points
+        // at an element that is not there and describes itself with the answer to what was just done.
+        Assert.AreEqual(descriptionId, message.Id);
+        StringAssert.Contains(com.Find(".bit-tgi-inp").GetAttribute("aria-describedby"), descriptionId);
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-dsc").Count);
+
+        // Typing is the answer to the refusal, so the helper text comes back with the first keystroke.
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "abc" });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-ivm").Count);
+        Assert.AreEqual("Three characters at least.", com.Find(".bit-tgi-dsc").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputCustomInvalidAnnouncementFormatTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+            parameters.Add(p => p.ShowInvalidMessage, true);
+            parameters.Add(p => p.InvalidAnnouncementFormat, "{1} ({0})");
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual("A tag must be at least 3 characters. (ab)", com.Find(".bit-tgi-ivm").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputEmptyInvalidAnnouncementFormatIsSilentTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+            parameters.Add(p => p.ShowInvalidMessage, true);
+            parameters.Add(p => p.InvalidAnnouncementFormat, string.Empty);
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(string.Empty, com.Find(".bit-tgi-lvr").TextContent.Trim());
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-ivm").Count);
+
+        // The field still wears the refusal: only the sentence was called off.
+        Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputGetInvalidMessageWritesTheSentenceTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+            parameters.Add(p => p.ShowInvalidMessage, true);
+            parameters.Add(p => p.GetInvalidMessage, (Func<BitTagsInputInvalidArgs, string?>)(args => $"Zu kurz: {args.Tag}"));
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual("Zu kurz: ab", com.Find(".bit-tgi-ivm").TextContent.Trim());
+        Assert.AreEqual("Zu kurz: ab", com.Find(".bit-tgi-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputGetInvalidMessageFallsBackOnNullTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+            parameters.Add(p => p.ShowInvalidMessage, true);
+            parameters.Add(p => p.GetInvalidMessage, (Func<BitTagsInputInvalidArgs, string?>)(args =>
+                args.Reason == BitTagsInputInvalidReason.Pattern ? "nope" : null));
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // null is "say it the usual way"; only an empty string is the consumer asking for silence.
+        Assert.AreEqual("ab was not added. A tag must be at least 3 characters.", com.Find(".bit-tgi-ivm").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputEmptyGetInvalidMessageIsSilentTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+            parameters.Add(p => p.ShowInvalidMessage, true);
+            parameters.Add(p => p.GetInvalidMessage, (Func<BitTagsInputInvalidArgs, string?>)(_ => string.Empty));
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-ivm").Count);
+        Assert.AreEqual(string.Empty, com.Find(".bit-tgi-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputThrowingGetInvalidMessageFallsBackTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+            parameters.Add(p => p.ShowInvalidMessage, true);
+            parameters.Add(p => p.GetInvalidMessage, (Func<BitTagsInputInvalidArgs, string?>)(_ => throw new InvalidOperationException()));
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // A function of the consumer must not be able to break the input.
+        Assert.AreEqual("ab was not added. A tag must be at least 3 characters.", com.Find(".bit-tgi-ivm").TextContent.Trim());
+    }
+
+    #endregion
+
+    #region the mark a refused tag leaves
+
+    [TestMethod]
+    public async Task BitTagsInputMarksTheFieldWhenATagIsRefusedTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+        Assert.AreEqual("true", com.Find(".bit-tgi-inp").GetAttribute("aria-invalid"));
+
+        // Typing is the answer to the refusal, so the mark goes with the first keystroke after it.
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "abc" });
+
+        Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+        Assert.IsFalse(com.Find(".bit-tgi-inp").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputMarksTheTagARefusedDuplicateCollidedWithTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, new List<string> { "apple", "pear" });
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "pear" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsFalse(com.FindAll(".bit-tgi-tag")[0].ClassList.Contains("bit-tgi-tag-dup"));
+        Assert.IsTrue(com.FindAll(".bit-tgi-tag")[1].ClassList.Contains("bit-tgi-tag-dup"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputDoesNotMarkADuplicateThatIsFoldedAwayTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MaxDisplayedTags, 1);
+            parameters.Add(p => p.DefaultValue, new List<string> { "apple", "pear" });
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "pear" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // The field still says it refused the tag; the chip it collided with is simply not drawn.
+        Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-tag-dup").Count);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputNoInvalidHighlightLeavesTheFieldUnmarkedTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.NoInvalidHighlight, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "apple" });
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "apple" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-tag-dup").Count);
+        Assert.IsFalse(com.Find(".bit-tgi-inp").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputTheMarkGoesWhenTheTagIsAcceptedTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.MinLength, 3);
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "abc" });
+        await com.Find(".bit-tgi-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-tag").Count);
+    }
+
+    #endregion
+
+    #region rate limiting the input callback
+
+    [TestMethod]
+    public async Task BitTagsInputRaisesOnInputAtOnceByDefaultTest()
+    {
+        var raised = new List<string>();
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.OnInput, (string text) => raised.Add(text));
+        });
+
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "bl" });
+
+        CollectionAssert.AreEqual(new[] { "bl" }, raised.ToArray());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputDebounceTimeDelaysOnInputTest()
+    {
+        var raised = new List<string>();
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DebounceTime, 100);
+            parameters.Add(p => p.OnInput, (string text) => raised.Add(text));
+        });
+
+        // The handler of the keystroke is what carries the wait, so the raise is awaited rather than the
+        // typing: what is being asserted is that the callback did not arrive with the keystroke itself.
+        var typing = com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "bla" });
+
+        Assert.AreEqual(0, raised.Count);
+
+        await typing;
+
+        CollectionAssert.AreEqual(new[] { "bla" }, raised.ToArray());
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputCommittingATagReportsTheEmptiedInputAtOnceTest()
+    {
+        var raised = new List<string>();
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DebounceTime, 100);
+            parameters.Add(p => p.OnInput, (string text) => raised.Add(text));
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+
+        // The typed text is tracked at once however long the wait is, so the Enter arriving while the
+        // callback is still pending commits the tag all the same.
+        var typing = input.InputAsync(new ChangeEventArgs { Value = "blazor" });
+
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-tag").Count);
+
+        await typing;
+
+        // The emptying is reported straight away, and the pending callback for text the field no longer
+        // holds is dropped rather than arriving after it.
+        CollectionAssert.AreEqual(new[] { "" }, raised.ToArray());
+    }
+
+    #endregion
+
+    #region clicking a tag
+
+    [TestMethod]
+    public async Task BitTagsInputOnTagClickCallbackTest()
+    {
+        string? clicked = null;
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+            parameters.Add(p => p.OnTagClick, (string tag) => clicked = tag);
+        });
+
+        await com.FindAll(".bit-tgi-tag")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.AreEqual("b", clicked);
+
+        // The click still gives the tag the focus, so the arrow keys carry on from it.
+        Assert.AreEqual("0", com.FindAll(".bit-tgi-tag")[1].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputEnterOpensAClickableTagTest()
+    {
+        string? clicked = null;
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+            parameters.Add(p => p.OnTagClick, (string tag) => clicked = tag);
+        });
+
+        // What the pointer can reach the keyboard has to reach too (WCAG 2.2, SC 2.1.1).
+        await com.FindAll(".bit-tgi-tag")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual("b", clicked);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputTheInlineEditKeepsTheEnterKeyTest()
+    {
+        string? clicked = null;
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.EditableTags, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+            parameters.Add(p => p.OnTagClick, (string tag) => clicked = tag);
+        });
+
+        await com.FindAll(".bit-tgi-tag")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        // The correction is the gesture a chip is expected to answer Enter with.
+        Assert.IsNull(clicked);
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-eip").Count);
+    }
+
+    [TestMethod]
+    public void BitTagsInputAClickableTagSaysSoTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, new List<string> { "a" });
+            parameters.Add(p => p.OnTagClick, (string _) => { });
+        });
+
+        // The pointer is told, and so is the reader that has just reached the chip.
+        Assert.IsTrue(com.Find(".bit-tgi-tag").ClassList.Contains("bit-tgi-tag-clk"));
+        Assert.AreEqual("Press Enter to open, or Delete to remove.", com.Find(".bit-tgi-vsh").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTagsInputAPlainTagIsNotDrawnAsClickableTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, new List<string> { "a" });
+        });
+
+        Assert.IsFalse(com.Find(".bit-tgi-tag").ClassList.Contains("bit-tgi-tag-clk"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputADisabledTagIsNotDrawnAsClickableTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a" });
+            parameters.Add(p => p.OnTagClick, (string _) => { });
+        });
+
+        // A disabled field answers no click, so a chip that reacted to the pointer would be a promise
+        // it does not keep.
+        Assert.IsFalse(com.Find(".bit-tgi-tag").ClassList.Contains("bit-tgi-tag-clk"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputAReadOnlyTagStillOpensTest()
+    {
+        string? clicked = null;
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a" });
+            parameters.Add(p => p.OnTagClick, (string tag) => clicked = tag);
+        });
+
+        // The one gesture a read-only chip still answers to, and the only one it is promised.
+        Assert.AreEqual("Press Enter to open.", com.Find(".bit-tgi-vsh").TextContent.Trim());
+
+        await com.Find(".bit-tgi-tag").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual("a", clicked);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputTheDismissButtonIsNotAClickOnTheTagTest()
+    {
+        string? clicked = null;
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+            parameters.Add(p => p.OnTagClick, (string tag) => clicked = tag);
+        });
+
+        await com.FindAll(".bit-tgi-dbt")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.IsNull(clicked);
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-tag").Count);
+    }
+
+    #endregion
+
+    #region the Escape key
+
+    [TestMethod]
+    public async Task BitTagsInputNoClearOnEscapeLeavesTheKeyAloneTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.NoClearOnEscape, true);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "half typed" });
+        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual("half typed", com.Find(".bit-tgi-inp").GetAttribute("value"));
+
+        await com.Find(".bit-tgi-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(2, com.FindAll(".bit-tgi-tag").Count);
+    }
+
     #endregion
 
     #region public API
@@ -3938,6 +4966,462 @@ public class BitTagsInputTests : BunitTestContext
         input.KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
         Assert.IsFalse(com.Find(".bit-tgi").ClassList.Contains("bit-inv"));
+    }
+
+    #endregion
+
+    #region input attributes
+
+    [TestMethod]
+    public void BitTagsInputDefaultInputAttributesTest()
+    {
+        var com = RenderComponent<BitTagsInput>();
+
+        var input = com.Find(".bit-tgi-inp");
+
+        // A datalist of our own is what the field suggests with, so the browser's autofill is kept out of
+        // its way, and a tag is a value rather than a sentence, so it is not spell checked either.
+        Assert.AreEqual("off", input.GetAttribute("autocomplete"));
+        Assert.AreEqual("false", input.GetAttribute("spellcheck"));
+        Assert.IsFalse(input.HasAttribute("inputmode"));
+        Assert.IsFalse(input.HasAttribute("enterkeyhint"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputAutoCompleteTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AutoComplete, "email");
+        });
+
+        Assert.AreEqual("email", com.Find(".bit-tgi-inp").GetAttribute("autocomplete"));
+    }
+
+    [TestMethod,
+        DataRow(BitInputMode.Email, "email"),
+        DataRow(BitInputMode.Numeric, "numeric"),
+        DataRow(BitInputMode.Url, "url")]
+    public void BitTagsInputInputModeTest(BitInputMode inputMode, string expected)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.InputMode, inputMode);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-tgi-inp").GetAttribute("inputmode"));
+    }
+
+    [TestMethod,
+        DataRow(BitEnterKeyHint.Done, "done"),
+        DataRow(BitEnterKeyHint.Next, "next")]
+    public void BitTagsInputEnterKeyHintTest(BitEnterKeyHint enterKeyHint, string expected)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.EnterKeyHint, enterKeyHint);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-tgi-inp").GetAttribute("enterkeyhint"));
+    }
+
+    [TestMethod,
+        DataRow(true, "true"),
+        DataRow(false, "false")]
+    public void BitTagsInputSpellCheckTest(bool spellCheck, string expected)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.SpellCheck, spellCheck);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-tgi-inp").GetAttribute("spellcheck"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputDescribedByKeepsTheConsumersOwnIdsTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Press Enter after each tag.");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "my-hint" } });
+        });
+
+        var describedBy = com.Find(".bit-tgi-inp").GetAttribute("aria-describedby");
+
+        // aria-describedby is a list of ids, so the description is added to whatever the consumer wrote
+        // rather than written over it.
+        Assert.IsNotNull(describedBy);
+        StringAssert.StartsWith(describedBy, "my-hint ");
+        StringAssert.Contains(describedBy, com.Find(".bit-tgi-dsc").Id);
+    }
+
+    [TestMethod]
+    public void BitTagsInputDescribedByIsOnlyTheConsumersOwnIdsWithoutADescriptionTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "my-hint" } });
+        });
+
+        Assert.AreEqual("my-hint", com.Find(".bit-tgi-inp").GetAttribute("aria-describedby"));
+    }
+
+    #endregion
+
+    #region fixed tags
+
+    [TestMethod]
+    public void BitTagsInputFixedTagRendersNoDismissButtonTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "owner", "editor" });
+            parameters.Add(p => p.CanRemoveTag, (Func<string, bool>)(t => t != "owner"));
+        });
+
+        var tags = com.FindAll(".bit-tgi-tag");
+
+        Assert.AreEqual(2, tags.Count);
+        Assert.IsTrue(tags[0].ClassList.Contains("bit-tgi-tag-fix"));
+        Assert.IsFalse(tags[1].ClassList.Contains("bit-tgi-tag-fix"));
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-dbt").Count);
+    }
+
+    [TestMethod]
+    public void BitTagsInputFixedTagIgnoresTheDeleteKeyTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "owner", "editor" });
+            parameters.Add(p => p.CanRemoveTag, (Func<string, bool>)(t => t != "owner"));
+        });
+
+        var tags = com.FindAll(".bit-tgi-tag");
+        tags[0].KeyDown(new KeyboardEventArgs { Key = "Delete" });
+
+        Assert.AreEqual(2, com.FindAll(".bit-tgi-tag").Count);
+
+        com.FindAll(".bit-tgi-tag")[1].KeyDown(new KeyboardEventArgs { Key = "Delete" });
+
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-tag").Count);
+    }
+
+    [TestMethod]
+    public void BitTagsInputFixedLastTagSurvivesTheBackspaceOnTheEmptyInputTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "editor", "owner" });
+            parameters.Add(p => p.CanRemoveTag, (Func<string, bool>)(t => t != "owner"));
+        });
+
+        com.Find(".bit-tgi-inp").KeyDown(new KeyboardEventArgs { Key = "Backspace" });
+
+        Assert.AreEqual(2, com.FindAll(".bit-tgi-tag").Count);
+    }
+
+    [TestMethod]
+    public void BitTagsInputClearKeepsTheFixedTagsTest()
+    {
+        var cleared = new List<string>();
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "owner", "editor", "reader" });
+            parameters.Add(p => p.CanRemoveTag, (Func<string, bool>)(t => t != "owner"));
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.OnClear, (IReadOnlyList<string> tags) => cleared = [.. tags]);
+        });
+
+        com.Find(".bit-tgi-cbt").Click();
+
+        var tags = com.FindAll(".bit-tgi-tag");
+
+        Assert.AreEqual(1, tags.Count);
+        Assert.AreEqual("owner", tags[0].TextContent.Trim());
+
+        // What is reported is what actually went.
+        CollectionAssert.AreEqual(new[] { "editor", "reader" }, cleared);
+    }
+
+    [TestMethod]
+    public void BitTagsInputHasNoClearButtonWhenEveryTagIsFixedTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "owner" });
+            parameters.Add(p => p.CanRemoveTag, (Func<string, bool>)(_ => false));
+            parameters.Add(p => p.ShowClearButton, true);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-cbt").Count);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputRemoveTagAsyncIgnoresCanRemoveTagTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "owner", "editor" });
+            parameters.Add(p => p.CanRemoveTag, (Func<string, bool>)(_ => false));
+        });
+
+        // The predicate is what the user may do, not what the consumer may.
+        await com.Instance.RemoveTagAsync("owner");
+
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-tag").Count);
+    }
+
+    [TestMethod]
+    public void BitTagsInputFixedTagIsDescribedApartTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (ICollection<string>?)new List<string> { "owner", "editor" });
+            parameters.Add(p => p.CanRemoveTag, (Func<string, bool>)(t => t != "owner"));
+            parameters.Add(p => p.EditableTags, true);
+        });
+
+        var tags = com.FindAll(".bit-tgi-tag");
+
+        var fixedHintId = tags[0].GetAttribute("aria-describedby");
+        var hintId = tags[1].GetAttribute("aria-describedby");
+
+        Assert.IsNotNull(fixedHintId);
+        Assert.IsNotNull(hintId);
+        Assert.AreNotEqual(hintId, fixedHintId);
+
+        StringAssert.Contains(com.Find($"#{fixedHintId}").TextContent, "cannot be removed");
+        StringAssert.Contains(com.Find($"#{hintId}").TextContent, "Delete to remove");
+    }
+
+    #endregion
+
+    #region loading
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public void BitTagsInputIsLoadingTest(bool isLoading)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, isLoading);
+        });
+
+        var spinners = com.FindAll(".bit-tgi-spn");
+
+        Assert.AreEqual(isLoading ? 1 : 0, spinners.Count);
+
+        if (isLoading is false) return;
+
+        // An indeterminate progressbar: a busy state a screen reader can read rather than a decoration.
+        Assert.AreEqual("progressbar", spinners[0].GetAttribute("role"));
+        Assert.AreEqual("Loading", spinners[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputLoadingAriaLabelTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingAriaLabel, "Fetching suggestions");
+        });
+
+        Assert.AreEqual("Fetching suggestions", com.Find(".bit-tgi-spn").GetAttribute("aria-label"));
+    }
+
+    #endregion
+
+    #region cascading parameters
+
+    [TestMethod]
+    public void BitTagsInputParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitTagsInput)}", BitTagsInputParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitTagsInputParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitTagsInputParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitTagsInputParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitTagsInputShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagsInputParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Variant = BitVariant.Fill,
+                TagVariant = BitVariant.Outline,
+                TagsPlaceholder = "Cascaded placeholder",
+                ShowClearButton = true,
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTagsInput>(0);
+                builder.AddAttribute(1, nameof(BitTagsInput.DefaultValue), (ICollection<string>?)new List<string> { "blazor" });
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-tgi");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tgi-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgi-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgi-fil"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgi-tgo"));
+        Assert.AreEqual("Cascaded placeholder", com.Find(".bit-tgi-inp").GetAttribute("placeholder"));
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-cbt").Count);
+    }
+
+    [TestMethod]
+    public void BitTagsInputDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagsInputParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Placeholder = "Cascaded placeholder",
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTagsInput>(0);
+                builder.AddAttribute(1, nameof(BitTagsInput.Color), BitColor.Error);
+                builder.AddAttribute(2, nameof(BitTagsInput.Placeholder), "Own placeholder");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-tgi");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tgi-err"));
+        Assert.AreEqual("Own placeholder", com.Find(".bit-tgi-inp").GetAttribute("placeholder"));
+
+        // What the field left unset is still filled in from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-tgi-lg"));
+    }
+
+    [TestMethod]
+    public void BitTagsInputCascadedSeparatorsAndRulesShouldBeAppliedTest()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagsInputParams
+            {
+                Separators = [","],
+                MinLength = 3,
+                Transformer = t => t.ToUpperInvariant(),
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTagsInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+
+        // The cascaded separators reach the script side through the data attribute, which is what
+        // proves OnSetSeparators ran for a value that arrived from the cascade rather than from markup.
+        Assert.AreEqual("[\",\"]", input.GetAttribute("data-separators"));
+
+        // Pasting a separated list splits it, the transformer normalizes each piece, and the one that is
+        // too short for the cascaded MinLength is refused.
+        input.Input(new ChangeEventArgs { Value = "blazor,ui" });
+
+        var tags = com.FindAll(".bit-tgi-tag");
+        Assert.AreEqual(1, tags.Count);
+        Assert.AreEqual("BLAZOR", tags[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTagsInputCascadedPatternShouldBeCompiledTest()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagsInputParams { Pattern = "^[0-9]+$" }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTagsInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+
+        input.Input(new ChangeEventArgs { Value = "abc" });
+        input.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgi-tag").Count);
+
+        input.Input(new ChangeEventArgs { Value = "123" });
+        input.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(1, com.FindAll(".bit-tgi-tag").Count);
+    }
+
+    [TestMethod]
+    public void BitTagsInputCascadedInputAttributesShouldBeAppliedTest()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagsInputParams
+            {
+                InputMode = BitInputMode.Email,
+                EnterKeyHint = BitEnterKeyHint.Done,
+                SpellCheck = true,
+                AutoComplete = "email",
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTagsInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+
+        Assert.AreEqual("email", input.GetAttribute("inputmode"));
+        Assert.AreEqual("done", input.GetAttribute("enterkeyhint"));
+        Assert.AreEqual("true", input.GetAttribute("spellcheck"));
+        Assert.AreEqual("email", input.GetAttribute("autocomplete"));
     }
 
     #endregion

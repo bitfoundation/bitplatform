@@ -41,7 +41,7 @@ public partial class MainLayout
                 new() { Text = "Rating", Url = "/components/rating" },
                 new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"], Data = "AutoComplete" },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
-                new() { Text = "TagsInput", Url = "/components/tagsinput", AdditionalUrls = ["/components/tags-input"] },
+                new() { Text = "TagsInput", Url = "/components/tagsinput", AdditionalUrls = ["/components/tags-input"], Description = "Chips, Tokens", Data = "TagBox, TokenInput, ChipInput, TagField, Keywords, Labels, Recipients, Multiple" },
                 new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = ["/components/text-field"], Description = "TextInput" },
                 new() { Text = "Toggle", Url = "/components/toggle", Description = "Switch" },
                 new()
