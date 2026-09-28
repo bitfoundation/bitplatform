@@ -347,6 +347,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitMessage", "BitMessageParams")]
     [DataRow("BitBadge", "BitBadgeParams")]
     [DataRow("BitPivot", "BitPivotParams")]
+    [DataRow("BitCollapse", "BitCollapseParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });

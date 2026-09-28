@@ -10,12 +10,6 @@ public partial class BitCollapseDemo
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
     shaped into meaning, and the emotions ready to resonate with every reader.
-    <br />
-    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-    begins here, in this quiet moment where everything is possible.
 </BitCollapse>";
     private readonly string example1CsharpCode = @"
 private bool expanded = true;";
@@ -23,43 +17,49 @@ private bool expanded = true;";
     private readonly string example2RazorCode = @"
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""boundExpanded"" />
 <BitCollapse @bind-Expanded=""boundExpanded"">
-    The button above and the collapse share one value, so either of them can change it and both of them see it.
+    The button and the collapse share one value: <b>@boundExpanded</b>.
 </BitCollapse>
-<div>The bound value is currently <b>@boundExpanded</b>.</div>
 
-<BitButton OnClick=""() => defaultCollapseRef?.ToggleAsync()"">Toggle</BitButton>
-<BitCollapse @ref=""defaultCollapseRef"" DefaultExpanded OnChange=""HandleDefaultChange"">
-    This section starts open because DefaultExpanded is set, and nothing on the page holds its state.
+<div style=""display:flex;gap:0.5rem"">
+    <BitButton OnClick=""() => collapseRef?.ExpandAsync()"">Expand</BitButton>
+    <BitButton OnClick=""() => collapseRef?.CollapseAsync()"">Collapse</BitButton>
+    <BitButton OnClick=""() => collapseRef?.ToggleAsync()"">Toggle</BitButton>
+</div>
+<BitCollapse @ref=""collapseRef"" DefaultExpanded OnChange=""HandleChange"">
+    Starts open through DefaultExpanded; nothing on the page holds its state.
 </BitCollapse>
-<div>@defaultChangeLog</div>
-
-<BitButton OnClick=""() => imperativeCollapseRef?.ExpandAsync()"">Expand</BitButton>
-<BitButton OnClick=""() => imperativeCollapseRef?.CollapseAsync()"">Collapse</BitButton>
-<BitButton OnClick=""() => imperativeCollapseRef?.ToggleAsync()"">Toggle</BitButton>
-<BitCollapse @ref=""imperativeCollapseRef"">
-    ExpandAsync, CollapseAsync and ToggleAsync go through the same path a bound value does, so the change is
-    reported once through both ExpandedChanged and OnChange.
-</BitCollapse>";
+<div>@changeLog</div>";
     private readonly string example2CsharpCode = @"
 private bool boundExpanded = true;
-private string defaultChangeLog = string.Empty;
-private BitCollapse? defaultCollapseRef;
-private BitCollapse? imperativeCollapseRef;
+private string changeLog = string.Empty;
+private BitCollapse? collapseRef;
 
-private void HandleDefaultChange(bool value)
-{
-    defaultChangeLog = $""OnChange reported {value}."";
-}";
+private void HandleChange(bool value) => changeLog = $""OnChange({value.ToString().ToLower()})"";";
 
     private readonly string example3RazorCode = @"
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""horizontalExpanded"" />
-<BitCollapse Horizontal Expanded=""horizontalExpanded"" Background=""BitColorKind.Secondary"">
-    <div style=""white-space:nowrap"">This panel opens sideways.</div>
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""surfaceExpanded"" />
+
+<BitCollapse Expanded=""surfaceExpanded"">Default: padding and the primary background.</BitCollapse>
+
+<BitCollapse Expanded=""surfaceExpanded"" Background=""BitColorKind.Secondary"">Secondary background.</BitCollapse>
+
+<BitCollapse Expanded=""surfaceExpanded"" Background=""BitColorKind.Transparent"" NoPadding>
+    <BitMessage Color=""BitColor.Info"">Transparent, no padding: the content carries its own surface and insets.</BitMessage>
 </BitCollapse>";
     private readonly string example3CsharpCode = @"
-private bool horizontalExpanded = true;";
+private bool surfaceExpanded = true;";
 
     private readonly string example4RazorCode = @"
+<div style=""display:flex;align-items:center;gap:1rem"">
+    <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""horizontalExpanded"" />
+    <BitCollapse Horizontal Expanded=""horizontalExpanded"" Background=""BitColorKind.Secondary"">
+        <div style=""white-space:nowrap"">This panel opens sideways.</div>
+    </BitCollapse>
+</div>";
+    private readonly string example4CsharpCode = @"
+private bool horizontalExpanded = true;";
+
+    private readonly string example5RazorCode = @"
 <BitCollapse Expanded=""peekExpanded"" CollapsedSize=""4.5rem"">
     In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
@@ -74,36 +74,35 @@ private bool horizontalExpanded = true;";
 <BitButton Variant=""BitVariant.Text"" OnClick=""() => peekExpanded = !peekExpanded"">
     @(peekExpanded ? ""Show less"" : ""Show more"")
 </BitButton>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool peekExpanded;";
 
-    private readonly string example5RazorCode = @"
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""transitionExpanded"" />
-<BitCollapse Expanded=""transitionExpanded"" Duration=""1000"" Delay=""200"" Easing=""cubic-bezier(0.68, -0.55, 0.27, 1.55)"">
-    A thousand milliseconds after a two hundred millisecond wait, on an easing that overshoots at both ends.
-</BitCollapse>
-
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""paceExpanded"" />
-<BitCollapse Expanded=""paceExpanded"" ExpandDuration=""900"" CollapseDuration=""200"">
-    Nine hundred milliseconds to open, two hundred to close.
-</BitCollapse>
-
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""noFadeExpanded"" />
-<BitCollapse Expanded=""noFadeExpanded"" NoFade Duration=""800"">
-    The size opens and closes this section; the content never changes its opacity.
-</BitCollapse>
-
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""noAnimationExpanded"" />
-<BitCollapse Expanded=""noAnimationExpanded"" NoAnimation>
-    There is no transition here at all, which is what a section that toggles as part of a larger change wants.
-</BitCollapse>";
-    private readonly string example5CsharpCode = @"
-private bool transitionExpanded = true;
-private bool paceExpanded = true;
-private bool noFadeExpanded = true;
-private bool noAnimationExpanded = true;";
-
     private readonly string example6RazorCode = @"
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""transitionExpanded"" />
+
+<div>Duration=""1000"" Delay=""200"" and an overshooting Easing</div>
+<BitCollapse Expanded=""transitionExpanded"" Duration=""1000"" Delay=""200"" Easing=""cubic-bezier(0.68, -0.55, 0.27, 1.55)"">
+    A thousand milliseconds after a two hundred millisecond wait.
+</BitCollapse>
+
+<div>ExpandDuration=""900"" CollapseDuration=""200""</div>
+<BitCollapse Expanded=""transitionExpanded"" ExpandDuration=""900"" CollapseDuration=""200"">
+    Opens slowly, closes quickly.
+</BitCollapse>
+
+<div>NoFade</div>
+<BitCollapse Expanded=""transitionExpanded"" NoFade Duration=""800"">
+    The content never changes its opacity.
+</BitCollapse>
+
+<div>NoAnimation</div>
+<BitCollapse Expanded=""transitionExpanded"" NoAnimation>
+    Appears and disappears at once.
+</BitCollapse>";
+    private readonly string example6CsharpCode = @"
+private bool transitionExpanded = true;";
+
+    private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => eventsCollapseRef?.ToggleAsync()"">@(eventsExpanded ? ""Collapse"" : ""Expand"")</BitButton>
 <BitCollapse @ref=""eventsCollapseRef""
              @bind-Expanded=""eventsExpanded""
@@ -113,15 +112,14 @@ private bool noAnimationExpanded = true;";
              OnCollapsing=""HandleEventsCollapsing""
              OnExpanded=""HandleEventsExpanded""
              OnCollapsed=""HandleEventsCollapsed"">
-    OnChange and the -ing callback land as soon as the button is pressed; the -ed one arrives six hundred
-    milliseconds later, when this section has stopped moving.
+    The -ing callback lands at once; the -ed one six hundred milliseconds later.
 </BitCollapse>
 
 @foreach (var entry in eventsLog)
 {
     <div>@entry</div>
 }";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool eventsExpanded = true;
 private BitCollapse? eventsCollapseRef;
 private readonly List<string> eventsLog = [];
@@ -142,19 +140,6 @@ private void LogCollapseEvent(string name)
     }
 }";
 
-    private readonly string example7RazorCode = @"
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""surfaceExpanded"" />
-
-<BitCollapse Expanded=""surfaceExpanded"">The padding and the primary background of the component.</BitCollapse>
-
-<BitCollapse Expanded=""surfaceExpanded"" Background=""BitColorKind.Secondary"">A background of the secondary color kind.</BitCollapse>
-
-<BitCollapse Expanded=""surfaceExpanded"" Background=""BitColorKind.Transparent"" NoPadding>
-    <BitMessage Color=""BitColor.Info"">Content that carries its own surface and its own insets.</BitMessage>
-</BitCollapse>";
-    private readonly string example7CsharpCode = @"
-private bool surfaceExpanded = true;";
-
     private readonly string example8RazorCode = @"
 <style>
     .clip-card {
@@ -169,35 +154,40 @@ private bool surfaceExpanded = true;";
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""clipExpanded"" />
 
 <BitCollapse Expanded=""clipExpanded"" NoPadding Duration=""600"">
-    <div class=""clip-card"">The glow around this card is cut off at the edge of the collapse.</div>
+    <div class=""clip-card"">Default: the glow is cut off at the edge.</div>
 </BitCollapse>
 
 <BitCollapse Expanded=""clipExpanded"" NoPadding NoClip Duration=""600"">
-    <div class=""clip-card"">The same glow is drawn in full once the section has finished opening.</div>
+    <div class=""clip-card"">NoClip: the glow is drawn in full once the section is open.</div>
 </BitCollapse>";
     private readonly string example8CsharpCode = @"
 private bool clipExpanded = true;";
 
     private readonly string example9RazorCode = @"
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""lazyExpanded"" />
-<BitCollapse LazyRender Expanded=""lazyExpanded"" OnExpanded=""() => lazyOpenCount++"">
-    <div>This content was built the first time the section was opened, and has stayed since; the section has been opened @lazyOpenCount time(s).</div>
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""renderingExpanded"" />
+
+<div>LazyRender</div>
+<BitCollapse LazyRender Expanded=""renderingExpanded"" OnExpanded=""() => lazyOpenCount++"">
+    Built on the first open, kept since. Opened @lazyOpenCount time(s).
 </BitCollapse>
 
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""unmountExpanded"" />
-<BitCollapse UnmountOnCollapse Expanded=""unmountExpanded"">
+<div>UnmountOnCollapse</div>
+<BitCollapse UnmountOnCollapse Expanded=""renderingExpanded"">
     <BitTextField Label=""Type something, then close and reopen"" />
+</BitCollapse>
+
+<div>ExpandOnPrint</div>
+<BitCollapse ExpandOnPrint Expanded=""renderingExpanded"">
+    On paper this section is always open.
 </BitCollapse>";
     private readonly string example9CsharpCode = @"
-private bool lazyExpanded;
-private int lazyOpenCount;
-private bool unmountExpanded = true;";
+private bool renderingExpanded;
+private int lazyOpenCount;";
 
     private readonly string example10RazorCode = @"
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""findExpanded"" />
 <BitCollapse HiddenUntilFound @bind-Expanded=""findExpanded"">
-    The passphrase kept in this section is <b>marmalade skies</b>. Close the section, press Ctrl+F, search
-    for it, and watch the browser open the collapse around the match.
+    The passphrase kept in this section is <b>marmalade skies</b>. Close the section, press Ctrl+F and search for it.
 </BitCollapse>";
     private readonly string example10CsharpCode = @"
 private bool findExpanded = true;";
@@ -214,9 +204,8 @@ private bool findExpanded = true;";
 </BitCollapse>
 
 <BitButton OnClick=""() => focusCollapseRef?.ExpandAsync()"">Open and focus</BitButton>
-<BitCollapse @ref=""focusCollapseRef"" @bind-Expanded=""focusExpanded"" OnExpanded=""HandleFocusExpanded"">
-    The focus ring around this section was put here by FocusAsync at the end of the expand transition, so
-    the reader carries on inside the section rather than back at the button.
+<BitCollapse @ref=""focusCollapseRef"" @bind-Expanded=""focusExpanded"" AriaLabel=""Focused section"" OnExpanded=""HandleFocusExpanded"">
+    FocusAsync put the focus here at the end of the expand transition.
 </BitCollapse>";
     private readonly string example11CsharpCode = @"
 private bool a11yExpanded;
@@ -233,51 +222,85 @@ private async Task HandleFocusExpanded()
 }";
 
     private readonly string example12RazorCode = @"
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""cssVarExpanded"" />
+
+<div style=""--bit-Collapse-background: var(--bit-clr-bg-sec);
+            --bit-Collapse-padding: 1.5rem;
+            --bit-Collapse-duration: 800ms;
+            --bit-Collapse-easing: cubic-bezier(0.2, 0, 0, 1);"">
+    <BitCollapse Expanded=""cssVarExpanded"">Background, padding, pace and easing from an ancestor.</BitCollapse>
+    <BitCollapse Expanded=""cssVarExpanded"" Background=""BitColorKind.Tertiary"">Same ancestor, its own Background.</BitCollapse>
+</div>
+
+<BitCollapse Expanded=""cssVarExpanded"" Style=""--bit-Collapse-color: var(--bit-clr-pri); --bit-Collapse-font-size: var(--bit-tpg-fs-md);"">
+    Color and font size on one collapse.
+</BitCollapse>";
+    private readonly string example12CsharpCode = @"
+private bool cssVarExpanded = true;";
+
+    private readonly string example13RazorCode = @"
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""cascadingExpanded"" />
+
+<BitParams Parameters=""collapseParams"">
+    <BitCollapse Expanded=""cascadingExpanded"">Secondary background, no padding, a slower pace.</BitCollapse>
+    <BitCollapse Expanded=""cascadingExpanded"">The same, from the same BitParams.</BitCollapse>
+    <BitCollapse Expanded=""cascadingExpanded"" NoPadding=""false"">Keeps its own padding.</BitCollapse>
+</BitParams>";
+    private readonly string example13CsharpCode = @"
+private bool cascadingExpanded = true;
+private readonly BitCollapseParams[] collapseParams =
+[
+    new()
+    {
+        Background = BitColorKind.Secondary,
+        NoPadding = true,
+        Duration = 700,
+    }
+];";
+
+    private readonly string example14RazorCode = @"
 <style>
     .custom-expanded {
-        padding: 10px;
-        background-color: #808080;
-        border: 1px solid #0054C6;
+        border-radius: 0.5rem;
+        box-shadow: var(--bit-shd-2);
     }
 
     .custom-wrapper {
-        font-style: italic;
+        font-weight: 600;
+        color: var(--bit-clr-sec);
     }
 </style>
 
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""expandedStyle"" />
-<BitCollapse Expanded=""expandedStyle"" Styles=""@(new() { Expanded = ""padding:10px;background-color:#333;border: 1px solid #ff0000;"" })"">
-    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-    vibrant narratives of tomorrow.
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""styleExpanded"" />
+
+<BitCollapse Expanded=""styleExpanded"" Style=""border-inline-start: 4px solid var(--bit-clr-pri);"">
+    A styled root.
 </BitCollapse>
 
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""expandedClass"" />
-<BitCollapse Expanded=""expandedClass"" Classes=""@(new() { Expanded = ""custom-expanded"", Wrapper = ""custom-wrapper"" })"">
-    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-    opportunity to craft, inspire, and create.
+<BitCollapse Expanded=""styleExpanded""
+             Styles=""@(new() { Expanded = ""border: 1px solid var(--bit-clr-brd-pri);"", Wrapper = ""font-style: italic;"" })"">
+    Styles for the expanded root and the wrapper.
+</BitCollapse>
+
+<BitCollapse Expanded=""styleExpanded"" Classes=""@(new() { Expanded = ""custom-expanded"", Wrapper = ""custom-wrapper"" })"">
+    Classes for the expanded root and the wrapper.
 </BitCollapse>";
-    private readonly string example12CsharpCode = @"
-private bool expandedClass = true;
-private bool expandedStyle = true;";
+    private readonly string example14CsharpCode = @"
+private bool styleExpanded = true;";
 
-    private readonly string example13RazorCode = @"
-<BitToggleButton OnText=""بستن"" OffText=""باز کردن"" @bind-IsChecked=""expandedRtl"" />
-<BitCollapse Expanded=""expandedRtl"" Dir=""BitDir.Rtl"">
-    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
-    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-</BitCollapse>
-
+    private readonly string example15RazorCode = @"
 <div dir=""rtl"">
-    <BitToggleButton OnText=""بستن"" OffText=""باز کردن"" @bind-IsChecked=""expandedRtlHorizontal"" />
-    <BitCollapse Horizontal Expanded=""expandedRtlHorizontal"" Dir=""BitDir.Rtl"" Background=""BitColorKind.Secondary"">
-        <div style=""white-space:nowrap"">این بخش به سمت راست باز می شود.</div>
+    <BitToggleButton OnText=""بستن"" OffText=""باز کردن"" @bind-IsChecked=""rtlExpanded"" />
+    <BitCollapse Expanded=""rtlExpanded"" Dir=""BitDir.Rtl"">
+        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+        و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+    </BitCollapse>
+
+    <BitCollapse Horizontal Expanded=""rtlExpanded"" Dir=""BitDir.Rtl"" Background=""BitColorKind.Secondary"">
+        <div style=""white-space:nowrap"">این بخش از سمت راست باز می شود.</div>
     </BitCollapse>
 </div>";
-    private readonly string example13CsharpCode = @"
-private bool expandedRtl = true;
-private bool expandedRtlHorizontal = true;";
+    private readonly string example15CsharpCode = @"
+private bool rtlExpanded = true;";
 }
