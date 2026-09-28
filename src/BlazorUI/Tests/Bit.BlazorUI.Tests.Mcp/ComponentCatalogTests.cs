@@ -344,6 +344,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitPagination", "BitPaginationParams")]
     [DataRow("BitBreadcrumb", "BitBreadcrumbParams")]
     [DataRow("BitBasicList", "BitBasicListParams")]
+    [DataRow("BitPersona", "BitPersonaParams")]
     [DataRow("BitMessage", "BitMessageParams")]
     [DataRow("BitBadge", "BitBadgeParams")]
     [DataRow("BitPivot", "BitPivotParams")]
