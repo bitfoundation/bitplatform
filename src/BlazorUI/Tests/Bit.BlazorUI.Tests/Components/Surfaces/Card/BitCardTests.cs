@@ -1827,6 +1827,48 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardLinkNamedByTheTitleShouldBeDescribedByTheSubtitle()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Title, "Theming");
+            parameters.Add(p => p.Subtitle, "5 min read");
+        });
+
+        var link = component.Find(".bit-crd-lnk");
+
+        Assert.AreEqual(component.Find(".bit-crd-ttl").Id, link.GetAttribute("aria-labelledby"));
+        Assert.AreEqual(component.Find(".bit-crd-sub").Id, link.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitCardLinkShouldNotBeDescribedByTheSubtitleThatNamesIt()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Subtitle, "blazorui.bitplatform.dev");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd-lnk").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitCardLinkNamedByTheAppShouldNotBeDescribedByTheSubtitle()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Title, "Theming");
+            parameters.Add(p => p.Subtitle, "5 min read");
+            parameters.Add(p => p.AriaLabel, "Read the theming guide");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd-lnk").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
     public void BitCardLinkAriaLabelShouldWinOverTheTitle()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -2853,6 +2895,48 @@ public class BitCardTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-scb"));
+    }
+
+    [TestMethod]
+    public void BitCardCascadedLoadingShouldStandInForTheBodyOfEveryCard()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCardParams
+            {
+                Loading = true,
+                LoadingTemplate = builder => builder.AddMarkupContent(0, "<span class=\"cascaded-placeholder\"></span>")
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.AddAttribute(1, nameof(BitCard.ChildContent), (RenderFragment)(b => b.AddContent(0, "Loaded")));
+                builder.CloseComponent();
+
+                builder.OpenComponent<BitCard>(2);
+                builder.AddAttribute(3, nameof(BitCard.Loading), false);
+                builder.AddAttribute(4, nameof(BitCard.ChildContent), (RenderFragment)(b => b.AddContent(0, "Own")));
+                builder.CloseComponent();
+            });
+        });
+
+        var cards = component.FindAll(".bit-crd");
+
+        Assert.IsTrue(cards[0].ClassList.Contains("bit-crd-ldg"));
+        Assert.IsTrue(cards[0].ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual("true", cards[0].GetAttribute("aria-busy"));
+        Assert.AreEqual(1, cards[0].QuerySelectorAll(".cascaded-placeholder").Length);
+        Assert.IsFalse(cards[0].TextContent.Contains("Loaded"));
+
+        // A card that set Loading itself keeps it, whatever the cascade says.
+        Assert.IsFalse(cards[1].ClassList.Contains("bit-crd-ldg"));
+        Assert.IsNull(cards[1].GetAttribute("aria-busy"));
+        Assert.AreEqual("Own", cards[1].TextContent);
     }
 
     [TestMethod]

@@ -72,6 +72,11 @@
        nothing to be named by and needs an AriaLabel. *@
     var linkLabelledBy = label.HasValue() ? null : (splattedLabelledBy ?? titleId ?? subtitleId);
 
+    @* A link named by the title leaves the subtitle beside it unread - a reader tabbing through a page of cards
+       hears "Theming, link" and never the "5 min read" under it - so the subtitle describes the link instead. It
+       does not where it is already the name, nor where the app named the link itself and chose what it says. *@
+    var linkDescribedBy = linkLabelledBy is not null && linkLabelledBy == titleId ? subtitleId : null;
+
     @* A linked card hands its tab index to the anchor stretched over it, which is the control a reader lands
        on; a copy of it on the wrapper as well would be two tab stops on something the reader sees as a single
        thing. A card that is a button is reachable by the keyboard without being asked, and a disabled card of
@@ -119,6 +124,7 @@
            tabindex="@(IsEnabled ? tabIndex : "-1")"
            aria-disabled="@(IsEnabled ? null : "true")"
            aria-labelledby="@linkLabelledBy"
+           aria-describedby="@linkDescribedBy"
            aria-label="@label"></a>
     }
 

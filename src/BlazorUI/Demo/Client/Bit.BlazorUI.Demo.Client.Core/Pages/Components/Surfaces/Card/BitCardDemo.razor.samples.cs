@@ -273,7 +273,8 @@ private double elevation = 4;";
 
 
 <div style=""--bit-Card-background: #1e1b4b; --bit-Card-color: #e0e7ff; --bit-Card-subtitle-color: #a5b4fc; --bit-Card-divider-color: #4338ca;
-            --bit-Card-selected-color: #fbbf24; --bit-Card-focus-color: #fbbf24; --bit-Card-title-font-weight: 700;"">
+            --bit-Card-selected-color: #fbbf24; --bit-Card-focus-color: #fbbf24; --bit-Card-title-font-weight: 700;
+            --bit-Card-hover-background: #312e81; --bit-Card-active-background: #3730a3;"">
     <BitCard Divider Title=""Brand"" Subtitle=""Custom colors"" Width=""14rem"">
         <ChildContent>
             <BitText Typography=""BitTypography.Body2"">A body under a divider.</BitText>
@@ -282,7 +283,7 @@ private double elevation = 4;";
             <BitText Typography=""BitTypography.Caption1"">A footer</BitText>
         </Footer>
     </BitCard>
-    <BitCard @bind-Selected=""isBrandSelected"" Title=""Selectable"" Subtitle=""Amber ring and focus"" Width=""14rem"" />
+    <BitCard @bind-Selected=""isBrandSelected"" Title=""Selectable"" Subtitle=""Amber ring, indigo hover"" Width=""14rem"" />
 </div>";
     private readonly string example13CsharpCode = @"
 private bool isBrandSelected = true;";

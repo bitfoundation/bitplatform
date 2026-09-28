@@ -220,7 +220,7 @@
 
     <DemoExample Title="Click & Selection" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
-            <b>OnClick</b> makes the card a button: focusable, pressed by Enter and Space, lifted under the pointer. Binding <b>Selected</b>
+            <b>OnClick</b> makes the card a button: focusable, pressed by Enter and Space, lifted and shaded under the pointer. Binding <b>Selected</b>
             makes it a toggle that reports <code>aria-pressed</code> and draws a selection ring. <b>IsEnabled="false"</b> takes it out of the
             tab order, and <b>StopPropagation</b> keeps its click from reaching its ancestors. A button card should hold no controls of its own -
             use the <b>Href</b> below with <b>Actions</b> or a <b>Footer</b> for that.
@@ -247,7 +247,8 @@
 
     <DemoExample Title="Link" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
-            <b>Href</b> stretches a link over the whole card, named by the <b>AriaLabel</b>, the <b>Title</b> or the <b>Subtitle</b>. Controls in
+            <b>Href</b> stretches a link over the whole card, named by the <b>AriaLabel</b>, the <b>Title</b> or the <b>Subtitle</b> (a Subtitle under a
+            naming Title describes it). Controls in
             <b>Actions</b>, <b>Footer</b> and <b>FloatingActions</b> sit above it and keep working. <b>Target</b>, <b>Rel</b> and <b>Download</b>
             reach the link, and <code>_blank</code> adds <code>noopener</code> on its own.
         </div>
@@ -335,7 +336,7 @@
             An <b>AriaLabel</b> gives a plain card the <code>group</code> role. A clickable card is a <code>button</code>, a bound one reports
             <code>aria-pressed</code> (or <code>aria-selected</code> under a splatted <code>option</code>, <code>row</code>, <code>gridcell</code>
             or <code>tab</code> role) and a loading one <code>aria-busy</code>. Wrap a run of cards in a named list and give their titles a
-            <b>HeadingLevel</b>; a linked card is then read as its title, and its actions stay separate controls. Focus rings are drawn inside the
+            <b>HeadingLevel</b>; a linked card is then read as its title, described by its subtitle, and its actions stay separate controls. Focus rings are drawn inside the
             card so a cover never clips them, and forced-colors mode restores the border.
         </div>
         <br /><br />
@@ -369,7 +370,7 @@
             <BitCard Hoverable Border="BitColorKind.Primary" Title="Border wins" Subtitle="A parameter beats the variable" Width="14rem" />
         </div>
         <br />
-        <div class="card-row" style="--bit-Card-background: #1e1b4b; --bit-Card-color: #e0e7ff; --bit-Card-subtitle-color: #a5b4fc; --bit-Card-divider-color: #4338ca; --bit-Card-selected-color: #fbbf24; --bit-Card-focus-color: #fbbf24; --bit-Card-title-font-weight: 700;">
+        <div class="card-row" style="--bit-Card-background: #1e1b4b; --bit-Card-color: #e0e7ff; --bit-Card-subtitle-color: #a5b4fc; --bit-Card-divider-color: #4338ca; --bit-Card-selected-color: #fbbf24; --bit-Card-focus-color: #fbbf24; --bit-Card-title-font-weight: 700; --bit-Card-hover-background: #312e81; --bit-Card-active-background: #3730a3;">
             <BitCard Divider Title="Brand" Subtitle="Custom colors" Width="14rem">
                 <ChildContent>
                     <BitText Typography="BitTypography.Body2">A body under a divider.</BitText>
@@ -378,7 +379,7 @@
                     <BitText Typography="BitTypography.Caption1">A footer</BitText>
                 </Footer>
             </BitCard>
-            <BitCard @bind-Selected="isBrandSelected" Title="Selectable" Subtitle="Amber ring and focus" Width="14rem" />
+            <BitCard @bind-Selected="isBrandSelected" Title="Selectable" Subtitle="Amber ring, indigo hover" Width="14rem" />
         </div>
     </DemoExample>
 

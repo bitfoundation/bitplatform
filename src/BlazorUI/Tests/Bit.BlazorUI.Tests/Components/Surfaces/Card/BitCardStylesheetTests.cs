@@ -136,8 +136,43 @@ public partial class BitCardStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The light shade of a role is a pastel in a dark scheme, which leaves the words in the role color unreadable on it.
+        // The tint is the theme's own wash, laid over the surface rather than replacing it, so a Background still shows.
         Assert.IsFalse(stylesheet.Contains("role($tokens, light)"), "A card surface is painted in the role's light shade.");
-        StringAssert.Contains(stylesheet, "--bit-crd-bg: color-mix(in srgb, var(--bit-crd-clr) 12%, var(--bit-Card-background, #{$clr-bg-sec}));");
+        StringAssert.Contains(stylesheet, "--bit-crd-clr-tint: #{role($tokens, tint)};");
+        StringAssert.Contains(Block(stylesheet, ".bit-crd-vtx"), "background-image: linear-gradient(var(--bit-crd-clr-tint), var(--bit-crd-clr-tint));");
+    }
+
+    [TestMethod,
+        DataRow(".bit-crd-vot"),
+        DataRow(".bit-crd-vtx")]
+    public void BitCardShouldWriteAnUnfilledVariantInTheReadableShadeOfItsRole(string variant)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A role's main color is picked to be a fill - a warning amber is under 2:1 on white - so the words of a card that
+        // is not filled read the role's foreground shade, which the theme keeps readable on the page.
+        StringAssert.Contains(stylesheet, "--bit-crd-clr-fg: #{role($tokens, fg)};");
+        StringAssert.Contains(Block(stylesheet, variant), "--bit-crd-fg: var(--bit-crd-clr-fg);");
+    }
+
+    [TestMethod]
+    public void BitCardShouldShadeACardThatIsAControlUnderThePointerAndThePress()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A lift alone is lost on a flat card and absent under a design system with no shadows, so a control also shades
+        // its surface: in its role's own shades when it is filled, otherwise the public variable, otherwise a wash of the
+        // text color over whatever the card rests on.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-bg-hov, var(--bit-Card-hover-background, color-mix(in srgb, currentcolor 5%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));");
+
+        var fill = Block(stylesheet, ".bit-crd-vfl");
+        StringAssert.Contains(fill, "--bit-crd-bg-hov: var(--bit-crd-clr-hover);");
+        StringAssert.Contains(fill, "--bit-crd-bg-act: var(--bit-crd-clr-active);");
+
+        // Only a control is shaded: a Hoverable card reacts to the pointer without being one, and only lifts.
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-Card-hover-background,").Count);
+        StringAssert.Contains(stylesheet, "    .bit-crd-int:hover {\n        background-color: var(--bit-crd-bg-hov,");
     }
 
     [TestMethod]
@@ -157,6 +192,14 @@ public partial class BitCardStylesheetTests
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
+    }
+
+    private static string Block(string stylesheet, string selector)
+    {
+        var start = stylesheet.IndexOf($"\n{selector} {{", System.StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0, $"{selector} has no rule of its own.");
+
+        return stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
     }
 
     // The header comment is where the variables are documented, so only what follows it is searched for declarations.

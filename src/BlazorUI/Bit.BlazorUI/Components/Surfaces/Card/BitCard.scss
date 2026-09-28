@@ -13,6 +13,12 @@
 //                                    card under the pointer                         (default: $box-shadow-card-hover)
 //   --bit-Card-active-shadow         shadow of a clickable or linked card while
 //                                    pressed                                        (default: the resting shadow)
+//   --bit-Card-hover-background      background of a clickable or linked card
+//                                    under the pointer                              (default: the resting background
+//                                                                                   washed 5% with the text color)
+//   --bit-Card-active-background     background of a clickable or linked card
+//                                    while pressed                                  (default: the resting background
+//                                                                                   washed 10% with the text color)
 //   --bit-Card-padding               inset of the card and of each of its parts    (default: $spa-card-sm/md/lg)
 //   --bit-Card-gap                   room between the parts and inside the header  (default: per Size)
 //   --bit-Card-title-font-size       title text size                                (default: per Size, from the type ramp)
@@ -28,7 +34,8 @@
 //                                    under the content                              (default: none)
 //
 // A parameter set on the card itself wins over them - Background, Border, Color, Elevation, NoShadow, Outlined,
-// Square, NoPadding, CoverWidth - since it is the more specific ask; the variables re-skin what the theme would
+// Square, NoPadding, CoverWidth - since it is the more specific ask (a Fill card also keeps the hover and pressed
+// shades of its role rather than the two background variables); the variables re-skin what the theme would
 // otherwise decide. A disabled card ignores the colors above and keeps the disabled colors of the theme, so it
 // never reads as an enabled one.
 //
@@ -38,6 +45,8 @@
 .bit-crd {
     --bit-crd-fg: initial;
     --bit-crd-bg: initial;
+    --bit-crd-bg-hov: initial;
+    --bit-crd-bg-act: initial;
     --bit-crd-shd: initial;
     --bit-crd-shd-hov: initial;
     --bit-crd-shd-act: initial;
@@ -481,19 +490,27 @@ i.bit-crd-hic {
     .bit-crd-#{$role} {
         --bit-crd-clr: #{role($tokens, main)};
         --bit-crd-clr-txt: #{role($tokens, on)};
+        --bit-crd-clr-fg: #{role($tokens, fg)};
+        --bit-crd-clr-tint: #{role($tokens, tint)};
+        --bit-crd-clr-hover: #{role($tokens, hover)};
+        --bit-crd-clr-active: #{role($tokens, active)};
         --bit-crd-clr-dis: #{role($tokens, dis)};
         --bit-crd-clr-dis-text: #{role($tokens, dis-text)};
     }
 }
 
-// Fill paints the whole card in the role and takes the text with it; Outline keeps the rule and the words in
-// the role over whatever background the card already had; Text drops the rule and the shadow and tints the
-// surface instead - a faint wash of the role over the neutral surface rather than the role's light shade, which
-// is a pastel in a dark scheme and leaves the words in the role color unreadable on it. The three are written after the neutral paints and the root's disabled block above, so they
-// win over both.
+// Fill paints the whole card in the role and takes the text with it; Outline keeps the rule in the role and the
+// words in the role's foreground shade over whatever background the card already had; Text drops the rule and
+// the shadow and washes the surface with the role's tint instead. The two unfilled variants read the foreground
+// shade rather than the role itself because a role is picked to be a fill, not to be read on the page - a warning
+// amber is under 2:1 on white. The tint is translucent, so it is laid over the surface as an image rather than
+// replacing it, and a Background or a --bit-Card-background under it still shows through. The three are written
+// after the neutral paints and the root's disabled block above, so they win over both.
 .bit-crd-vfl {
     --bit-crd-fg: var(--bit-crd-clr-txt);
     --bit-crd-bg: var(--bit-crd-clr);
+    --bit-crd-bg-hov: var(--bit-crd-clr-hover);
+    --bit-crd-bg-act: var(--bit-crd-clr-active);
     --bit-crd-brd-clr: var(--bit-crd-clr);
     // the neutral rule and ring colors are chosen against the page, not against a card painted in a role, so the
     // hairline between the parts and the selection ring follow the words the fill already picked for itself.
@@ -508,7 +525,7 @@ i.bit-crd-hic {
 }
 
 .bit-crd-vot {
-    --bit-crd-fg: var(--bit-crd-clr);
+    --bit-crd-fg: var(--bit-crd-clr-fg);
     --bit-crd-shd: none;
     --bit-crd-shd-act: none;
     --bit-crd-brd-wid: var(--bit-Card-border-width, #{$shp-border-width});
@@ -521,14 +538,14 @@ i.bit-crd-hic {
 }
 
 .bit-crd-vtx {
-    --bit-crd-fg: var(--bit-crd-clr);
-    --bit-crd-bg: color-mix(in srgb, var(--bit-crd-clr) 12%, var(--bit-Card-background, #{$clr-bg-sec}));
+    --bit-crd-fg: var(--bit-crd-clr-fg);
     --bit-crd-shd: none;
     --bit-crd-shd-act: none;
+    background-image: linear-gradient(var(--bit-crd-clr-tint), var(--bit-crd-clr-tint));
 
     &.bit-dis {
         --bit-crd-dis-txt: var(--bit-crd-clr-dis);
-        --bit-crd-dis-bg: color-mix(in srgb, var(--bit-crd-clr-dis) 12%, var(--bit-Card-background, #{$clr-bg-sec}));
+        background-image: linear-gradient(#{translucent(var(--bit-crd-clr-dis), 10%)}, #{translucent(var(--bit-crd-clr-dis), 10%)});
     }
 }
 
@@ -595,16 +612,27 @@ i.bit-crd-hic {
 
 // The lift. A card that is a control lifts on its own; Hoverable is for one that reacts to the pointer without
 // being a control. Only where hovering is a thing the input device does at all.
+//
+// A card that is a control also shades its surface under the pointer and under the press, the way every other
+// control of the library does - a lift alone is lost on a card resting at no shadow, and a design system without
+// shadows (Cupertino) would leave it with no feedback at all. The shade is the text color washed over whatever the
+// card rests on, so it follows a Background, a --bit-Card-background and both schemes without a token per surface;
+// a Fill card steps to the hover and pressed shades of its role instead, like a button of that role.
 @media (hover: hover) {
     .bit-crd-int:hover,
     .bit-crd-hov:hover {
         --bit-crd-shd: var(--bit-crd-shd-hov, var(--bit-Card-hover-shadow, #{$box-shadow-card-hover}));
+    }
+
+    .bit-crd-int:hover {
+        background-color: var(--bit-crd-bg-hov, var(--bit-Card-hover-background, color-mix(in srgb, currentcolor 5%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));
     }
 }
 
 // The press settles the card back to where it rests rather than lifting it, unless an elevation says where to.
 .bit-crd-int:active {
     --bit-crd-shd: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-Card-shadow, #{$box-shadow-card})));
+    background-color: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec})))));
 }
 
 

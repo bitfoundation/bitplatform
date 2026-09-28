@@ -178,7 +178,7 @@ public partial class BitCardDemo
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Stretches a link to this URL over the whole card, named by the AriaLabel, an aria-labelledby, the Title or the Subtitle. Actions, Footer and FloatingActions stay above it.",
+            Description = "Stretches a link to this URL over the whole card, named by the AriaLabel, an aria-labelledby, the Title or the Subtitle (which describes a link the Title names). Actions, Footer and FloatingActions stay above it.",
         },
         new()
         {
@@ -302,7 +302,7 @@ public partial class BitCardDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Makes the card a button: focusable, pressed by Enter and Space, reported as a button. A button card should hold no controls of its own.",
+            Description = "Makes the card a button: focusable, pressed by Enter and Space, reported as a button, shaded under the pointer and the press. A button card should hold no controls of its own.",
         },
         new()
         {
@@ -399,7 +399,7 @@ public partial class BitCardDemo
             Name = "Variant",
             Type = "BitVariant?",
             DefaultValue = "null",
-            Description = "How a Color is applied: Fill (the default), Outline or Text. Ignored without a Color.",
+            Description = "How a Color is applied: Fill (the default) paints the surface, Outline the border, Text tints the surface; the last two write in the role's readable foreground shade. Ignored without a Color.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
         },
@@ -963,6 +963,18 @@ public partial class BitCardDemo
             Name = "--bit-Card-active-shadow",
             DefaultValue = "The resting shadow",
             Description = "Shadow of a clickable or linked card while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-Card-hover-background",
+            DefaultValue = "The resting background washed 5% with the text color",
+            Description = "Background of a clickable or linked card under the pointer. A Fill card uses its role's hover shade instead.",
+        },
+        new()
+        {
+            Name = "--bit-Card-active-background",
+            DefaultValue = "The resting background washed 10% with the text color",
+            Description = "Background of a clickable or linked card while pressed. A Fill card uses its role's pressed shade instead.",
         },
         new()
         {
