@@ -1,23 +1,101 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so they inherit: a value set on :root
+// re-skins every pivot, and one set on the Style of an instance re-skins that one along with any pivot
+// nested in its panel that does not set its own (the overflow menu is rendered inside the root, so it
+// inherits them from there too):
+//   --bit-Pivot-color                        accent: the Link indicator, the fill of the selected
+//                                            Tab, the outer edge of the selected Outline tab,
+//                                            the drop marker and the More button holding
+//                                            the selection                                   (default: the Color role's main color)
+//   --bit-Pivot-focus-color                  focus ring color                                (default: the Color role's focus color)
+//   --bit-Pivot-disabled-color               indicator and Tab fill of a disabled selection  (default: the Color role's disabled color)
+//   --bit-Pivot-disabled-text-color          text of a disabled item                         (default: the Color role's disabled text color)
+//   --bit-Pivot-indicator-color              selection indicator, and the outer edge of the
+//                                            selected Outline tab                            (default: --bit-Pivot-color)
+//   --bit-Pivot-indicator-thickness          stroke of the selection indicator               (default: $siz-tab-indicator)
+//   --bit-Pivot-indicator-inset              inset of the indicator from the item's edges    (default: spacing(1))
+//   --bit-Pivot-indicator-radius             corner radius of the indicator, one length for
+//                                            every corner                                    (default: $shp-radius-tab-indicator facing the
+//                                                                                             label, $shp-radius-tab-indicator-base elsewhere)
+//   --bit-Pivot-item-color                   text of an item at rest                         (default: $clr-fg-pri)
+//   --bit-Pivot-item-hover-color             text of a hovered item                          (default: $clr-fg-pri-hover, the role's on-color for Tab)
+//   --bit-Pivot-item-hover-background        background of a hovered item                    (default: $clr-bg-pri-hover, the role's hover color for Tab)
+//   --bit-Pivot-item-selected-color          text of the selected item                       (default: $clr-fg-pri, the role's on-color for Tab)
+//   --bit-Pivot-item-selected-background     background of the selected item                 (default: transparent, --bit-Pivot-color for Tab,
+//                                                                                             $clr-bg-pri for Outline)
+//   --bit-Pivot-item-font-weight             weight of an item's text at rest                (default: $tg-fw-regular)
+//   --bit-Pivot-item-selected-font-weight    weight of the selected item's text              (default: $tg-fw-semibold)
+//   --bit-Pivot-item-height                  height of an item, the slide and add buttons    (default: $siz-tab; x0.75 Small, x1.25 Large)
+//   --bit-Pivot-item-padding-inline          inline padding of an item                       (default: spacing(1))
+//   --bit-Pivot-item-radius                  corner radius of an item, its focus ring and the
+//                                            header's own buttons (slide, add)               (default: 0, $shp-radius-control for Tab and
+//                                                                                             the outer corners of Outline)
+//   --bit-Pivot-item-min-width               narrowest an item gets                          (default: auto)
+//   --bit-Pivot-item-max-width               widest an item gets; a longer header text ends
+//                                            in an ellipsis                                  (default: none)
+//   --bit-Pivot-font-size                    text size of the items and the overflow menu    (default: per size, from the type ramp)
+//   --bit-Pivot-gap                          room between the items; the Gap parameter
+//                                            overrides it                                    (default: spacing(1), spacing(0.5) vertical and wrapped, 0 FullWidth)
+//   --bit-Pivot-icon-size                    size of an item's icon                          (default: inherited)
+//   --bit-Pivot-dismiss-size                 box of the dismiss button, its pointer target   (default: spacing(3), the WCAG 2.2 SC 2.5.8 floor)
+//   --bit-Pivot-divider-thickness            the rule between the header and the panel       (default: $siz-tab-divider, $shp-border-width
+//                                                                                             for Outline)
+//   --bit-Pivot-divider-color                color of that rule, and of the border of the
+//                                            selected Outline tab                            (default: $clr-brd-sec)
+//   --bit-Pivot-body-padding                 padding of the tab panel                        (default: 0)
+//   --bit-Pivot-body-gap                     room between the header and the tab panel       (default: spacing(2))
+//   --bit-Pivot-callout-background           background of the overflow menu                 (default: $clr-bg-pri)
+//   --bit-Pivot-callout-shadow               elevation of the overflow menu                  (default: $box-shadow-popup)
+//   --bit-Pivot-callout-radius               corner radius of the overflow menu              (default: $shp-radius-popup)
+
+// Whatever depends on how a pivot is configured reaches its parts from its own root through child combinators
+// only. A pivot nested in the panel of another one - a vertical settings pivot holding a horizontal one - would
+// otherwise take on the position, the header type, the overflow behavior and the state of the one around it.
+// The rules that are the same for every pivot are written against the part alone.
+// The tabs are therefore styled as direct children of the tablist, which is how the header lays them out anyway
+// (the gutter, FullWidth's shares): an item wrapped in an element of the app's own is still found by the JS half
+// (the fold, the order, the keys), but is not drawn like a tab. CSS has no "nearest pivot" to stop at, so
+// reaching through wrappers would reach into a pivot nested in a header template as well.
+// The wrappers on the way are matched inside :where(), so a rule weighs what the plain descendant selector it
+// stands for would (the modifier and the part), and a class given through Classes still overrides it.
+@function in-header($part) {
+    @return "> :where(.bit-pvt-hwr) > #{$part}";
+}
+
+@function in-tablist($part) {
+    @return "> :where(.bit-pvt-hwr) > :where(.bit-pvt-hct) > #{$part}";
+}
+
+$hwr: "> .bit-pvt-hwr";
+$hct: in-header(".bit-pvt-hct");
+$pnl: "> .bit-pvt-cct";
+$tab: in-tablist(".bit-pvti");
+$sel: in-tablist(".bit-pvti-sel");
+// The tabs, and the More button of the Menu behavior, which is drawn like one of them beside the tablist.
+$itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
+
 .bit-pvt {
-    gap: spacing(2);
     display: flex;
+    gap: var(--bit-Pivot-body-gap, #{spacing(2)});
+    // The Gap parameter writes this on the root inline; a nested pivot resets it so it never inherits the
+    // gap of the pivot around it.
+    --bit-pvt-gap: initial;
 
     &.bit-dis {
-        .bit-pvt-cct {
+        #{$pnl} {
             cursor: default;
             pointer-events: none;
             color: var(--bit-pvt-clr-dis-text);
         }
 
-        .bit-pvti {
+        #{$itm} {
             cursor: default;
             pointer-events: none;
             color: var(--bit-pvt-clr-dis-text);
         }
 
-        .bit-pvti-sel::before {
+        #{$sel}::before {
             background-color: var(--bit-pvt-clr-dis);
         }
     }
@@ -34,11 +112,24 @@
     min-width: 0;
     position: relative;
     align-items: center;
-}
 
-.bit-pvt-hwr > .bit-pvt-hct {
-    flex: 1 1 auto;
-    min-width: 0;
+    // The rule between the header and the panel runs under the whole header, the affordances at its ends
+    // included. It is the first thing painted in the header, so the indicator of the selected tab is laid
+    // over it rather than beside it. A zero thickness (the Fluent default) draws nothing.
+    &::before {
+        bottom: 0;
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        pointer-events: none;
+        height: var(--bit-Pivot-divider-thickness, #{$siz-tab-divider});
+        background-color: var(--bit-Pivot-divider-color, #{$clr-brd-sec});
+    }
+
+    > .bit-pvt-hct {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
 }
 
 .bit-pvt-hst,
@@ -51,7 +142,6 @@
 
 .bit-pvt-cct {
     margin: 0;
-    padding: 0;
     flex-grow: 1;
     box-shadow: none;
     font-weight: $tg-fw-regular;
@@ -59,6 +149,7 @@
     box-sizing: border-box;
     font-size: $tg-fs-sm;
     color: $clr-fg-pri;
+    padding: var(--bit-Pivot-body-padding, 0);
 
     // The panel is a tab stop of its own (the WAI-ARIA tabs pattern asks for it when the content
     // holds nothing focusable), so it needs a focus ring like any other.
@@ -73,52 +164,121 @@
 
 .bit-pvt-btm {
     flex-flow: column-reverse;
+
+    // The header sits under the panel, so the rule between the two runs along the top of the header.
+    #{$hwr}::before {
+        top: 0;
+        bottom: auto;
+    }
+
+    // The indicator runs along the edge of the tab facing the panel, as it does under a Top header. It is
+    // mirrored rather than moved, so a radius that rounds only the edge facing the label (Material's) still
+    // rounds the right one.
+    #{$tab}::before {
+        top: 0;
+        bottom: auto;
+        transform: scale(0, -1);
+    }
+
+    #{$sel}::before {
+        transform: scale(1, -1);
+    }
+
+    // The header sits at the foot of the pivot, where a menu opening downwards would run off the end of the
+    // page, so it opens over the header instead.
+    // It opens upwards there, so it only fades in: the shared entry slides down, away from the header.
+    #{in-header(".bit-pvt-mnc")} {
+        top: auto;
+        bottom: 100%;
+        animation-name: bit-fade-show;
+        border-radius: var(--bit-Pivot-callout-radius, #{$shp-radius-popup}) var(--bit-Pivot-callout-radius, #{$shp-radius-popup}) 0 0;
+    }
 }
 
 .bit-pvt-sta {
     flex-flow: row;
+
+    #{$hwr}::before {
+        inset-inline: auto 0;
+    }
+
+    #{in-header(".bit-pvt-mnc")} {
+        top: auto;
+        bottom: 0;
+        animation-name: bit-fade-show;
+        inset-inline-end: auto;
+        inset-inline-start: 100%;
+        border-radius: var(--bit-Pivot-callout-radius, #{$shp-radius-popup});
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+    }
 }
 
 .bit-pvt-end {
     flex-flow: row-reverse;
+
+    #{$hwr}::before {
+        inset-inline: 0 auto;
+    }
+
+    #{in-header(".bit-pvt-mnc")} {
+        top: auto;
+        bottom: 0;
+        animation-name: bit-fade-show;
+        inset-inline-start: auto;
+        inset-inline-end: 100%;
+        border-radius: var(--bit-Pivot-callout-radius, #{$shp-radius-popup});
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+    }
 }
 
 .bit-pvt-sta,
 .bit-pvt-end {
-    .bit-pvt-hct {
-        height: unset;
-        flex-flow: column;
-    }
-
-    .bit-pvt-hwr {
+    #{$hwr} {
         flex-flow: column;
         flex-shrink: 0;
         align-items: stretch;
+
+        // The rule between the header and the panel runs down the side of the header facing the panel.
+        &::before {
+            top: 0;
+            bottom: 0;
+            height: auto;
+            width: var(--bit-Pivot-divider-thickness, #{$siz-tab-divider});
+        }
     }
 
-    .bit-pvt-hwr > .bit-pvt-hct {
+    #{$hct} {
+        height: unset;
         min-height: 0;
+        flex-flow: column;
     }
 
-    .bit-pvt-cct {
+    #{$pnl} {
         min-width: 0;
     }
 
-    .bit-pvt-sbt,
-    .bit-pvt-abt {
+    #{in-header(".bit-pvt-sbt")},
+    #{in-header(".bit-pvt-abt")} {
         width: 100%;
         height: spacing(4);
     }
 
     // A tab in a column reads as a row of a list rather than as a centred chip, so its content runs
     // from the start edge and the trailing gutter of the horizontal layout is dropped.
-    .bit-pvti {
+    #{$itm} {
         text-align: start;
+        justify-content: flex-start;
         margin-inline-end: 0;
-        margin-block-end: var(--bit-pvt-gap, #{spacing(0.5)});
+        margin-block-end: var(--bit-pvt-gap, var(--bit-Pivot-gap, #{spacing(0.5)}));
     }
 
-    &.bit-pvt-scr .bit-pvt-hct {
+    &.bit-pvt-fwd #{$tab} {
+        justify-content: flex-start;
+    }
+
+    &.bit-pvt-scr #{$hct} {
         overflow-x: hidden;
         overflow-y: auto;
         padding-bottom: 0;
@@ -129,51 +289,72 @@
             width: spacing(0.625);
         }
     }
-}
 
-// The header of a Bottom pivot sits at the foot of it, where a menu opening downwards would run off
-// the end of the page, so it opens over the header instead.
-.bit-pvt-btm .bit-pvt-mnc {
-    top: auto;
-    bottom: 100%;
-    border-radius: $shp-radius-popup $shp-radius-popup 0 0;
-}
+    // The indicator runs down the side here, so it collapses along the other axis. The selected state is
+    // restated below, since this rule outweighs the unqualified .bit-pvti-sel::before.
+    #{$tab}::before {
+        bottom: auto;
+        transform: scaleY(0);
+        inset-inline-start: 0;
+        top: var(--bit-Pivot-indicator-inset, #{spacing(1)});
+        width: var(--bit-Pivot-indicator-thickness, #{$siz-tab-indicator});
+        height: calc(100% - 2 * var(--bit-Pivot-indicator-inset, #{spacing(1)}));
+        transition: top $mot-duration-long $mot-easing 0s, height $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
+        // Stood on the inline-start edge of the tab, so the edge facing the label is the inline-end one.
+        border-start-start-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator-base});
+        border-end-start-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator-base});
+        border-start-end-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator});
+        border-end-end-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator});
+    }
 
-.bit-pvt-sta .bit-pvt-mnc {
-    top: auto;
-    bottom: 0;
-    inset-inline-end: auto;
-    inset-inline-start: 100%;
-    border-radius: 0 $shp-radius-popup $shp-radius-popup 0;
-}
-
-.bit-pvt-end .bit-pvt-mnc {
-    top: auto;
-    bottom: 0;
-    inset-inline-start: auto;
-    inset-inline-end: 100%;
-    border-radius: $shp-radius-popup 0 0 $shp-radius-popup;
-}
-
-.bit-pvt-lnk {
-    .bit-pvti {
-        // Every item carries the indicator color, not just the selected one, so the item losing the
-        // selection stays painted while its indicator scales away. Unselected items are collapsed to
-        // a zero scale (see .bit-pvti::before), so this paints nothing until an item is selected.
+    #{$sel} {
         &::before {
-            background-color: var(--bit-pvt-clr);
+            transform: scaleY(1);
         }
 
         @media(hover:hover) {
             &:hover {
-                cursor: pointer;
-                color: $clr-fg-pri-hover;
-                background-color: $clr-bg-pri-hover;
+                &::before {
+                    top: 0;
+                    height: 100%;
+                }
             }
         }
     }
 
-    .bit-pvti-sel {
+    #{in-tablist(".bit-pvti-dro")}::after {
+        top: 0;
+        bottom: auto;
+        width: auto;
+        inset-inline: 0;
+        height: $shp-border-width-thick;
+    }
+
+    #{in-tablist(".bit-pvti-dro-end")}::after {
+        top: auto;
+        bottom: 0;
+    }
+}
+
+.bit-pvt-lnk {
+    #{$itm} {
+        @media(hover:hover) {
+            &:hover {
+                cursor: pointer;
+                color: var(--bit-Pivot-item-hover-color, #{$clr-fg-pri-hover});
+                background-color: var(--bit-Pivot-item-hover-background, #{$clr-bg-pri-hover});
+            }
+        }
+    }
+
+    // Every item carries the indicator color, not just the selected one, so the item losing the selection
+    // stays painted while its indicator scales away. Unselected items are collapsed to a zero scale (see
+    // .bit-pvti::before), so this paints nothing until an item is selected.
+    #{$tab}::before {
+        background-color: var(--bit-Pivot-indicator-color, var(--bit-pvt-clr));
+    }
+
+    #{$sel} {
         @media(hover:hover) {
             &:hover {
                 &::before {
@@ -187,25 +368,136 @@
 .bit-pvt-tab {
     // A filled tab is a shape of its own rather than a label with a line under it, so its corner is
     // the one the design system gives every other control of the same family.
-    .bit-pvti {
-        border-radius: $shp-radius-control;
+    // The slide and add buttons sit on the same line and hover the same way, so they take the same corner.
+    #{$itm},
+    #{in-header('.bit-pvt-sbt')},
+    #{in-header('.bit-pvt-abt')} {
+        border-radius: var(--bit-Pivot-item-radius, #{$shp-radius-control});
+    }
+
+    #{$itm} {
 
         @media(hover:hover) {
             &:hover {
-                color: var(--bit-pvt-clr-text);
-                background-color: var(--bit-pvt-clr-hover);
+                color: var(--bit-Pivot-item-hover-color, var(--bit-pvt-clr-text));
+                background-color: var(--bit-Pivot-item-hover-background, var(--bit-pvt-clr-hover));
             }
         }
     }
 
-    .bit-pvti-sel {
-        color: var(--bit-pvt-clr-text);
-        background-color: var(--bit-pvt-clr);
+    #{$sel} {
+        color: var(--bit-Pivot-item-selected-color, var(--bit-pvt-clr-text));
+        background-color: var(--bit-Pivot-item-selected-background, var(--bit-pvt-clr));
+    }
+
+    // A disabled selection keeps its fill, in the muted pair of the role, so the text on it stays legible
+    // instead of fading out over the full accent.
+    &.bit-dis #{$sel},
+    #{$sel}.bit-dis {
+        color: var(--bit-pvt-clr-dis-text);
+        background-color: var(--bit-pvt-clr-dis);
     }
 }
 
+// #region Outline header type
+
+// The edges of an outlined tab for one position of the header: $far is the edge away from the panel, which
+// carries the accent, $near the one facing it, left open so the selected tab and the panel read as one surface.
+// Every tab carries the same border widths (transparent until selected), so a selection never shifts a tab.
+@mixin outline-edges($far, $near, $corners) {
+    #{$itm} {
+        border-#{$far}-width: $shp-border-width-thick;
+
+        @each $corner in $corners {
+            #{$corner}: var(--bit-Pivot-item-radius, #{$shp-radius-control});
+        }
+    }
+
+    #{$sel} {
+        border-#{$near}-color: transparent;
+        border-#{$far}-color: var(--bit-Pivot-indicator-color, var(--bit-pvt-clr));
+    }
+
+    &.bit-dis #{$sel},
+    #{$sel}.bit-dis {
+        border-#{$far}-color: var(--bit-pvt-clr-dis);
+    }
+}
+
+// The selected tab is drawn from the rule between the header and the panel: it is bordered in the rule's color,
+// filled with the panel's background, and laid over the rule so the two join. The rule is therefore always drawn
+// here, whatever the theme's tab divider (none under Fluent). The line indicator gives way to the accented edge.
+.bit-pvt-oln {
+    #{$itm} {
+        border-radius: 0;
+        border: $shp-border-width $shp-border-style transparent;
+
+        @media(hover:hover) {
+            &:hover {
+                cursor: pointer;
+                color: var(--bit-Pivot-item-hover-color, #{$clr-fg-pri-hover});
+                background-color: var(--bit-Pivot-item-hover-background, #{$clr-bg-pri-hover});
+            }
+        }
+    }
+
+    #{$tab}::before {
+        display: none;
+    }
+
+    #{$sel} {
+        border-color: var(--bit-Pivot-divider-color, #{$clr-brd-sec});
+        color: var(--bit-Pivot-item-selected-color, #{$clr-fg-pri});
+        background-color: var(--bit-Pivot-item-selected-background, #{$clr-bg-pri});
+
+        @media(hover:hover) {
+            &:hover {
+                color: var(--bit-Pivot-item-selected-color, #{$clr-fg-pri});
+                background-color: var(--bit-Pivot-item-selected-background, #{$clr-bg-pri});
+            }
+        }
+    }
+
+    &.bit-pvt-top,
+    &.bit-pvt-btm {
+        #{$hwr}::before {
+            height: var(--bit-Pivot-divider-thickness, #{$shp-border-width});
+        }
+    }
+
+    &.bit-pvt-sta,
+    &.bit-pvt-end {
+        #{$hwr}::before {
+            width: var(--bit-Pivot-divider-thickness, #{$shp-border-width});
+        }
+    }
+
+    &.bit-pvt-top {
+        @include outline-edges(block-start, block-end, (border-start-start-radius, border-start-end-radius));
+
+        // The Scroll behavior draws its rule on the tablist itself (see .bit-pvt-scr).
+        &.bit-pvt-scr #{$hct} {
+            background-size: 100% var(--bit-Pivot-divider-thickness, #{$shp-border-width});
+        }
+    }
+
+    &.bit-pvt-btm {
+        @include outline-edges(block-end, block-start, (border-end-start-radius, border-end-end-radius));
+    }
+
+    &.bit-pvt-sta {
+        @include outline-edges(inline-start, inline-end, (border-start-start-radius, border-end-start-radius));
+    }
+
+    &.bit-pvt-end {
+        @include outline-edges(inline-end, inline-start, (border-start-end-radius, border-end-end-radius));
+    }
+}
+
+// #endregion
+
 .bit-pvt-scr {
-    .bit-pvt-hct {
+    #{$hct} {
         overflow-x: auto;
         overflow-y: hidden;
         padding-bottom: spacing(0.5);
@@ -224,75 +516,98 @@
             background-color: $clr-fg-sec;
         }
     }
+
+    // A Top header keeps its scrollbar between the tabs and the foot of the header, where the divider runs, so
+    // the indicator would float above the divider rather than lie on it. The divider is drawn under the tabs
+    // instead: the bottom of the content box of the tablist, scrolling along with them.
+    &.bit-pvt-top {
+        #{$hwr}::before {
+            content: none;
+        }
+
+        #{$hct} {
+            background-repeat: no-repeat;
+            background-position: bottom;
+            background-origin: content-box;
+            background-attachment: local;
+            background-size: 100% var(--bit-Pivot-divider-thickness, #{$siz-tab-divider});
+            background-image: linear-gradient(var(--bit-Pivot-divider-color, #{$clr-brd-sec}), var(--bit-Pivot-divider-color, #{$clr-brd-sec}));
+        }
+    }
 }
 
 // Lets the header run onto as many extra lines as it needs instead of folding, sliding or scrolling
 // the tabs that do not fit, which keeps every tab reachable without any affordance at all.
 .bit-pvt-wrp {
-    .bit-pvt-hct {
+    #{$hct} {
         flex-wrap: wrap;
-        row-gap: var(--bit-pvt-gap, #{spacing(0.5)});
+        row-gap: var(--bit-pvt-gap, var(--bit-Pivot-gap, #{spacing(0.5)}));
     }
 
-    &.bit-pvt-sta .bit-pvt-hct,
-    &.bit-pvt-end .bit-pvt-hct {
-        column-gap: var(--bit-pvt-gap, #{spacing(0.5)});
+    &.bit-pvt-sta #{$hct},
+    &.bit-pvt-end #{$hct} {
+        column-gap: var(--bit-pvt-gap, var(--bit-Pivot-gap, #{spacing(0.5)}));
     }
 }
 
-// The size classes move the header along the type ramp. Each of the three lands on a step of its
-// own - a Medium header that reads the same as a Large one is not a size at all - and the rule is
-// scoped to the parts that carry text so that it never resizes the content of a custom Header.
-.bit-pvt-sm .bit-pvt-hct {
-    .bit-pvti,
-    .bit-pvti-txt,
-    .bit-pvti-cnr {
-        font-size: $tg-fs-xs;
-    }
+// The size classes move the items along the type ramp, their height along with it off the one tab height the
+// design system decides (density included), the glyphs of the slide and add buttons along the icon scale and
+// the rows of the overflow menu along the popup row heights. Each of the three lands on a step of its own - a Medium
+// header that reads the same as a Large one is not a size at all. The steps are declared on the root and
+// read by the items, so a pivot nested in the panel of another one keeps its own size.
+.bit-pvt-sm {
+    --bit-pvt-fs: #{$tg-fs-xs};
+    --bit-pvt-ih: calc(#{$siz-tab} * 0.75);
+    --bit-pvt-is: #{$siz-icon-sm};
+    --bit-pvt-mh: #{$siz-item-sm};
 }
 
-.bit-pvt-md .bit-pvt-hct {
-    .bit-pvti,
-    .bit-pvti-txt,
-    .bit-pvti-cnr {
-        font-size: $tg-fs-sm;
-    }
+.bit-pvt-md {
+    --bit-pvt-fs: #{$tg-fs-sm};
+    --bit-pvt-ih: #{$siz-tab};
+    --bit-pvt-is: #{$siz-icon-md};
+    --bit-pvt-mh: #{$siz-item-md};
 }
 
-.bit-pvt-lg .bit-pvt-hct {
-    .bit-pvti,
-    .bit-pvti-txt,
-    .bit-pvti-cnr {
-        font-size: $tg-fs-md;
-    }
+.bit-pvt-lg {
+    --bit-pvt-fs: #{$tg-fs-md};
+    --bit-pvt-ih: calc(#{$siz-tab} * 1.25);
+    --bit-pvt-is: #{$siz-icon-lg};
+    --bit-pvt-mh: #{$siz-item-lg};
 }
 
 // Stretches the items over the whole header, which is what turns a handful of tabs into a segmented
 // control rather than a row of labels huddled at one edge.
 .bit-pvt-fwd {
-    // The overflow More button carries .bit-pvti as well, and it is a fixed affordance rather than
-    // one of the tabs sharing the line, so it keeps its natural width.
-    .bit-pvt-hct > .bit-pvti:not(.bit-pvt-mor) {
+    #{$tab} {
         flex: 1 1 0;
         min-width: 0;
+        // A segment centres its label, the way every segmented control does.
+        justify-content: center;
 
         // Sharing the whole line leaves nothing between the items unless the pivot asks for a gap.
-        margin-inline-end: var(--bit-pvt-gap, 0);
+        margin-inline-end: var(--bit-pvt-gap, var(--bit-Pivot-gap, 0));
     }
 }
 
 // The icon over the label instead of beside it, which buys a much shorter tab for the same words.
 .bit-pvt-stk {
-    .bit-pvti {
+    #{$itm} {
         height: auto;
         line-height: normal;
         padding-block: spacing(0.75);
-        min-height: calc(#{$siz-tab} * 1.6);
+        min-height: calc(var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab})) * 1.6);
     }
 
-    .bit-pvti > span {
-        gap: spacing(0.25);
-        flex-flow: column;
+    // Only the icon goes on a line of its own: the count stays beside the label it counts.
+    #{$tab} > span {
+        flex-flow: row wrap;
+        justify-content: center;
+        gap: spacing(0.25) spacing(0.5);
+    }
+
+    #{$tab} > span > .bit-pvti-icn {
+        flex-basis: 100%;
         justify-content: center;
     }
 }
@@ -300,24 +615,29 @@
 .bit-pvti {
     border: 0;
     cursor: pointer;
-    border-radius: 0;
     user-select: none;
     position: relative;
     text-align: center;
-    height: $siz-tab;
     outline: transparent;
     align-items: center;
     display: inline-flex;
-    padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
     scroll-margin: spacing(1);
-    margin-inline-end: var(--bit-pvt-gap, #{spacing(1)});
-    line-height: $siz-tab;
     background-color: transparent;
-    color: $clr-fg-pri;
-    font-size: $tg-fs-sm;
+    height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));
+    line-height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));
+    padding: 0 var(--bit-Pivot-item-padding-inline, #{spacing(1)});
+    margin-inline-end: var(--bit-pvt-gap, var(--bit-Pivot-gap, #{spacing(1)}));
+    border-radius: var(--bit-Pivot-item-radius, 0);
+    min-width: var(--bit-Pivot-item-min-width, auto);
+    max-width: var(--bit-Pivot-item-max-width, none);
+    color: var(--bit-Pivot-item-color, #{$clr-fg-pri});
+    font-size: var(--bit-Pivot-font-size, var(--bit-pvt-fs, #{$tg-fs-sm}));
+    // Set rather than inherited, so a pivot placed inside bold text does not draw every tab as the selected one.
+    font-weight: var(--bit-Pivot-item-font-weight, #{$tg-fw-regular});
     letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 
     &:focus-visible {
         @include focus-ring(var(--bit-pvt-clr-focus));
@@ -332,10 +652,12 @@
         content: "";
         position: absolute;
         transform: scaleX(0);
-        height: $siz-tab-indicator;
-        inset-inline-end: spacing(1);
-        inset-inline-start: spacing(1);
         background-color: transparent;
+        height: var(--bit-Pivot-indicator-thickness, #{$siz-tab-indicator});
+        // The top edge faces the label (a Bottom header mirrors the whole indicator, corners included).
+        border-radius: var(--bit-Pivot-indicator-radius, #{$shp-radius-tab-indicator} #{$shp-radius-tab-indicator} #{$shp-radius-tab-indicator-base} #{$shp-radius-tab-indicator-base});
+        inset-inline-end: var(--bit-Pivot-indicator-inset, #{spacing(1)});
+        inset-inline-start: var(--bit-Pivot-indicator-inset, #{spacing(1)});
         transition: inset-inline-start $mot-duration-long $mot-easing 0s, inset-inline-end $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
     }
 
@@ -360,10 +682,31 @@
     }
 }
 
+// The Menu, Slide and Scroll behaviors clip whatever runs out of the header, and a ring drawn around the outside
+// of a tab would be clipped along with it - the keyboard user would lose sight of the focus. The ring is drawn
+// on the inside of the tab there instead.
+.bit-pvt-mnu,
+.bit-pvt-sld,
+.bit-pvt-scr {
+    #{$tab}:focus-visible {
+        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);
+
+        @media (forced-colors: active) {
+            outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        }
+    }
+}
+
+.bit-pvti-icn {
+    display: flex;
+    align-items: center;
+    font-size: var(--bit-Pivot-icon-size, inherit);
+}
+
 // The gutter belongs between the items rather than after the last one, which would otherwise hold a
 // header aligned to the end (or centred) away from the place it is aligned to. Carries the class of the
-// root so that it outweighs the FullWidth rule above, which sets a margin of its own.
-.bit-pvt .bit-pvt-hct > .bit-pvti:last-child {
+// root so that it outweighs the FullWidth and the vertical rules above, which set a margin of their own.
+.bit-pvt #{$tab}:last-child {
     margin-inline-end: 0;
     margin-block-end: 0;
 }
@@ -377,9 +720,14 @@
 // The header text of the selected item turns semibold, which is wider than the same words in the
 // regular weight and would shove every tab after it sideways on each selection change. The room for
 // the bold copy is reserved up front by laying an invisible bold duplicate under the label, so the
-// tab is the same width whether or not it happens to be the selected one.
+// tab is the same width whether or not it happens to be the selected one. A tab held narrower than its
+// text (--bit-Pivot-item-max-width, FullWidth) ends the text in an ellipsis rather than spilling it.
 .bit-pvti-txt {
+    min-width: 0;
     display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 
     &::after {
         height: 0;
@@ -388,13 +736,14 @@
         visibility: hidden;
         pointer-events: none;
         content: attr(data-content);
-        font-weight: $tg-fw-semibold;
+        font-weight: var(--bit-Pivot-item-selected-font-weight, #{$tg-fw-semibold});
     }
 }
 
 .bit-pvti-sel {
-    color: $clr-fg-pri;
-    font-weight: $tg-fw-semibold;
+    color: var(--bit-Pivot-item-selected-color, #{$clr-fg-pri});
+    background-color: var(--bit-Pivot-item-selected-background, transparent);
+    font-weight: var(--bit-Pivot-item-selected-font-weight, #{$tg-fw-semibold});
 
     // Only the scale differs from the unselected state; the geometry, color and transition all come
     // from .bit-pvti::before so both ends of a selection change animate with the same curve.
@@ -428,22 +777,6 @@
     inset-inline-end: 0;
 }
 
-.bit-pvt-sta,
-.bit-pvt-end {
-    .bit-pvti-dro::after {
-        top: 0;
-        bottom: auto;
-        width: auto;
-        inset-inline: 0;
-        height: $shp-border-width-thick;
-    }
-
-    .bit-pvti-dro-end::after {
-        top: auto;
-        bottom: 0;
-    }
-}
-
 // #endregion
 
 // Folded away by the Menu overflow behavior. A class rather than an inline display, so that hiding
@@ -452,6 +785,8 @@
     display: none !important;
 }
 
+// The pointer target of the dismiss button is the floor WCAG 2.2 sets for one (SC 2.5.8), since it sits
+// inside another target - the tab - and so cannot rely on the spacing exception; the glyph stays small.
 .bit-pvti-dbt {
     border: 0;
     padding: 0;
@@ -461,12 +796,13 @@
     align-items: center;
     color: currentcolor;
     justify-content: center;
-    width: spacing(2);
-    height: spacing(2);
     box-sizing: border-box;
-    margin-inline-start: spacing(0.5);
+    margin-inline-start: spacing(0.25);
+    margin-inline-end: calc(-1 * #{spacing(0.5)});
     border-radius: $shp-radius-full;
     background-color: transparent;
+    width: var(--bit-Pivot-dismiss-size, #{spacing(3)});
+    height: var(--bit-Pivot-dismiss-size, #{spacing(3)});
 
     @media (hover: hover) {
         &:hover {
@@ -480,26 +816,28 @@
     }
 }
 
+// A glyph inside a control, sized like every other one; the button around it is what gives it its target.
 .bit-pvti-dsi {
-    font-size: $tg-fs-2xs;
+    font-size: $siz-icon-sm;
 }
 
 // Asks for a new tab rather than being one of them, so it is a fixed affordance beside the header
 // that keeps its own width whatever the tabs sharing the line do.
 .bit-pvt-abt {
     border: 0;
+    border-radius: var(--bit-Pivot-item-radius, 0);
     padding: 0;
     flex-shrink: 0;
     cursor: pointer;
-    border-radius: 0;
     color: $clr-fg-pri;
     width: spacing(4);
     align-items: center;
-    height: $siz-tab;
     display: inline-flex;
     box-sizing: border-box;
     justify-content: center;
     background-color: transparent;
+    font-size: var(--bit-pvt-is, #{$siz-icon-md});
+    height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));
 
     @media (hover: hover) {
         &:hover {
@@ -519,54 +857,27 @@
     }
 }
 
-.bit-pvt-sta,
-.bit-pvt-end {
-    // The indicator runs down the side here, so it collapses along the other axis. Both rules below
-    // are needed: this one outweighs the unqualified .bit-pvti-sel::before, so the selected state has
-    // to be restated at this specificity or the vertical indicator would stay collapsed.
-    .bit-pvti::before {
-        bottom: auto;
-        top: spacing(1);
-        width: $siz-tab-indicator;
-        transform: scaleY(0);
-        inset-inline-start: 0;
-        height: calc(100% - spacing(2));
-        transition: top $mot-duration-long $mot-easing 0s, height $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
-    }
-
-    .bit-pvti-sel {
-        &::before {
-            transform: scaleY(1);
-        }
-
-        @media(hover:hover) {
-            &:hover {
-                &::before {
-                    top: 0;
-                    height: 100%;
-                }
-            }
-        }
-    }
-}
-
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). The public
+// variables are resolved here, once per pivot, so every rule below reads the same accent.
 @each $role, $tokens in $bit-color-roles {
     .bit-pvt-#{$role} {
-        --bit-pvt-clr: #{role($tokens, main)};
+        --bit-pvt-clr: var(--bit-Pivot-color, #{role($tokens, main)});
         --bit-pvt-clr-hover: #{role($tokens, hover)};
-        --bit-pvt-clr-focus: #{role($tokens, focus)};
+        --bit-pvt-clr-focus: var(--bit-Pivot-focus-color, #{role($tokens, focus)});
         --bit-pvt-clr-text: #{role($tokens, on)};
-        --bit-pvt-clr-dis: #{role($tokens, dis)};
-        --bit-pvt-clr-dis-text: #{role($tokens, dis-text)};
+        --bit-pvt-clr-dis: var(--bit-Pivot-disabled-color, #{role($tokens, dis)});
+        --bit-pvt-clr-dis-text: var(--bit-Pivot-disabled-text-color, #{role($tokens, dis-text)});
     }
 }
 
 // #region Slide overflow behavior
 
 .bit-pvt-sld {
-    .bit-pvt-hct {
-        overflow: hidden;
+    // Scrollable rather than clipped, with the scrollbar hidden: the buttons are the visible affordance, but a
+    // touch swipe or a trackpad gesture over the header moves it along as well, as it does any other strip.
+    #{$hct} {
+        overflow-x: auto;
+        overflow-y: hidden;
         scroll-behavior: smooth;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -579,22 +890,29 @@
             scroll-behavior: auto;
         }
     }
+
+    &.bit-pvt-sta #{$hct},
+    &.bit-pvt-end #{$hct} {
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
 }
 
 .bit-pvt-sbt {
     border: 0;
+    border-radius: var(--bit-Pivot-item-radius, 0);
     padding: 0;
     flex-shrink: 0;
     cursor: pointer;
-    border-radius: 0;
     color: $clr-fg-pri;
     width: spacing(4);
     align-items: center;
-    height: $siz-tab;
     display: inline-flex;
     box-sizing: border-box;
     justify-content: center;
     background-color: transparent;
+    font-size: var(--bit-pvt-is, #{$siz-icon-md});
+    height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));
 
     @media (hover: hover) {
         &:hover {
@@ -619,14 +937,16 @@
 // #region Menu overflow behavior
 
 .bit-pvt-mnu {
-    .bit-pvt-hct {
+    #{$hct} {
         overflow: hidden;
     }
 }
 
-.bit-pvt-mor {
+// Beside the tablist rather than inside it (a tablist owns tabs only), drawn like one of its items.
+.bit-pvt .bit-pvt-mor {
+    margin: 0;
     flex-shrink: 0;
-    margin-inline-end: 0;
+    font-family: inherit;
 
     &:disabled {
         cursor: default;
@@ -638,7 +958,7 @@
     // reads as if nothing were selected, so the button holding it carries the selection instead.
     &.bit-pvt-mor-sel {
         color: var(--bit-pvt-clr);
-        font-weight: $tg-fw-semibold;
+        font-weight: var(--bit-Pivot-item-selected-font-weight, #{$tg-fw-semibold});
     }
 }
 
@@ -663,29 +983,19 @@
     inset-inline-end: 0;
     z-index: $zindex-callout;
     max-height: $siz-popup-max-height;
-    box-shadow: $box-shadow-popup;
-    border-radius: 0 0 $shp-radius-popup $shp-radius-popup;
-    background-color: $clr-bg-pri;
+    animation-fill-mode: both;
+    animation-duration: $mot-duration-long;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: $mot-easing-decelerate;
+    box-shadow: var(--bit-Pivot-callout-shadow, #{$box-shadow-popup});
+    background-color: var(--bit-Pivot-callout-background, #{$clr-bg-pri});
+    border-radius: 0 0 var(--bit-Pivot-callout-radius, #{$shp-radius-popup}) var(--bit-Pivot-callout-radius, #{$shp-radius-popup});
 
     // The menu itself is what holds the focus while it is open and points at the item it is on with
     // an aria-activedescendant, so the ring belongs on that item rather than around the whole menu.
     &:focus,
     &:focus-visible {
         outline: none;
-    }
-}
-
-// forced-colors: the selected-tab indicator is a background-painted ::before, which High Contrast
-// strips entirely; repaint it with the system Highlight color (GrayText when disabled) so the
-// selected tab stays distinguishable.
-@media (forced-colors: active) {
-    .bit-pvti-sel::before {
-        background-color: Highlight;
-    }
-
-    .bit-dis .bit-pvti-sel::before,
-    .bit-pvti-sel.bit-dis::before {
-        background-color: GrayText;
     }
 }
 
@@ -699,8 +1009,15 @@
     color: $clr-fg-pri;
     white-space: nowrap;
     align-items: center;
+    font-family: inherit;
+    box-sizing: border-box;
     background-color: transparent;
-    padding: spacing(1) spacing(2);
+    font-weight: var(--bit-Pivot-item-font-weight, #{$tg-fw-regular});
+    padding: spacing(0.5) spacing(2);
+    min-height: var(--bit-pvt-mh, #{$siz-item-md});
+    font-size: var(--bit-Pivot-font-size, var(--bit-pvt-fs, #{$tg-fs-sm}));
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 
     @media (hover: hover) {
         &:hover {
@@ -720,7 +1037,7 @@
     }
 
     &.bit-pvt-mni-sel {
-        font-weight: $tg-fw-semibold;
+        font-weight: var(--bit-Pivot-item-selected-font-weight, #{$tg-fw-semibold});
     }
 
     // The item the aria-activedescendant of the menu points at: the real focus never leaves the menu,
@@ -728,6 +1045,48 @@
     &.bit-pvt-mni-act {
         @include focus-ring(var(--bit-pvt-clr-focus));
     }
+
+    // The menu scrolls, and so clips anything drawn outside its rows: a ring around the outside of one would
+    // show as a stray line along a single edge. It is drawn on the inside of the row instead, as on the tabs.
+    &:focus-visible,
+    &.bit-pvt-mni-act {
+        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);
+
+        @media (forced-colors: active) {
+            outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        }
+    }
 }
 
 // #endregion
+
+// forced-colors: High Contrast repaints every author color, which strips the background-painted indicator,
+// the drop marker and the divider, and remaps the muted text of a disabled tab to the plain text color. The
+// system colors put the distinctions back. Each selector carries the weight of the header-type rule it
+// replaces, and comes after it.
+@media (forced-colors: active) {
+    .bit-pvt #{$sel}::before {
+        background-color: Highlight;
+    }
+
+    .bit-pvt.bit-dis #{$sel}::before,
+    .bit-pvt #{$sel}.bit-dis::before {
+        background-color: GrayText;
+    }
+
+    .bit-pvt.bit-dis #{$tab},
+    .bit-pvt #{$tab}.bit-dis {
+        color: GrayText;
+    }
+
+    .bit-pvti-dro::after,
+    .bit-pvt-hwr::before {
+        background-color: CanvasText;
+    }
+
+    // The forced colors drop the gradient the Scroll behavior draws its divider with, so it goes back to the
+    // foot of the header there.
+    .bit-pvt-scr.bit-pvt-top #{$hwr}::before {
+        content: "";
+    }
+}
