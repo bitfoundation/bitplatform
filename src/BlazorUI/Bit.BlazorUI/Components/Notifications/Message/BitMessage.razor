@@ -60,7 +60,7 @@
                 </div>
             </div>
 
-            @if (Actions is not null && Multiline is false)
+            @if (Actions is not null && _IsMultiline is false)
             {
                 <div style="@Styles?.Actions" class="bit-msg-act @Classes?.Actions">@Actions</div>
             }
@@ -110,7 +110,7 @@
             }
         </div>
 
-        @if (Actions is not null && Multiline)
+        @if (Actions is not null && _IsMultiline)
         {
             <div style="@Styles?.Actions" class="bit-msg-act bit-msg-mac @Classes?.Actions">@Actions</div>
         }

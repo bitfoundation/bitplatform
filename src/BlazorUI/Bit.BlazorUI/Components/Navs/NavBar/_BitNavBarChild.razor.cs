@@ -21,6 +21,8 @@ public partial class _BitNavBarChild
 
     [Parameter] public string? Href { get; set; }
 
+    [Parameter] public bool IsLink { get; set; }
+
     [Parameter] public EventCallback OnClick { get; set; }
 
     [Parameter] public EventCallback OnFocusIn { get; set; }
