@@ -40,6 +40,7 @@
 
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="11.0.0-rc.1.26451.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="11.0.0-rc.1.26425.128" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
         <PackageReference Include="Velopack" Version="1.2.158" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

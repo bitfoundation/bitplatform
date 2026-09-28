@@ -42,6 +42,7 @@
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
         <PackageReference Include="Microsoft.Web.WebView2" />
         <PackageReference Include="Velopack" />
         <!--/+:msbuild-conditional:noEmit -->

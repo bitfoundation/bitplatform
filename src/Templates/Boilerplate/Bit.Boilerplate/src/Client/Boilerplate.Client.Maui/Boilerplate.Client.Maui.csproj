@@ -147,6 +147,7 @@
         <PackageReference Include="EmbedIO" />
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
