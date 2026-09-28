@@ -119,6 +119,15 @@
         <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorJsRuntimeExtensions.cs" Link="cs-sources\BitRichTextEditorJsRuntimeExtensions.cs">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <!-- BitAccordionStylesheetTests pins the public bit-Accordion CSS variables against both the
+             stylesheet that reads them and the demo page table that documents them, so both are copied
+             beside the tests at their paths relative to the BlazorUI folder. -->
+        <None Include="..\..\Bit.BlazorUI\Components\Surfaces\Accordion\BitAccordion.scss" Link="Bit.BlazorUI\Components\Surfaces\Accordion\BitAccordion.scss">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Surfaces\Accordion\BitAccordionDemo.razor.cs" Link="Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Surfaces\Accordion\BitAccordionDemo.razor.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <!-- The flag images a BitFlag with an ImageSet points at ship in Bit.BlazorUI.Assets, tied to the

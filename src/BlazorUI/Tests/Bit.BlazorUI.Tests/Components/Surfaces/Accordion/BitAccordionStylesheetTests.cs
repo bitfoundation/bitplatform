@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -168,15 +167,14 @@ public class BitAccordionStylesheetTests
         return ReadFile("Bit.BlazorUI", "Components", "Surfaces", "Accordion", "BitAccordion.scss");
     }
 
-    // The path is relative to the BlazorUI folder this test file sits five levels under.
+    // The path is relative to the BlazorUI folder; the test project copies each file it reads to the same path under
+    // the output directory.
     private static string ReadFile(params string[] segments)
     {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(GetThisFile())!, "..", "..", "..", "..", "..", .. segments]));
+        var path = Path.Combine([System.AppContext.BaseDirectory, .. segments]);
 
         Assert.IsTrue(File.Exists(path), $"Missing {path}.");
 
         return File.ReadAllText(path).Replace("\r\n", "\n");
     }
-
-    private static string GetThisFile([CallerFilePath] string thisFile = "") => thisFile;
 }
