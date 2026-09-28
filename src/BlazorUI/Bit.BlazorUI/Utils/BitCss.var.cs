@@ -15,6 +15,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-pri-dis";
                 public const string DisabledText = "--bit-clr-pri-dis-text";
                 public const string Focus = "--bit-clr-pri-focus";
+                public const string Foreground = "--bit-clr-pri-fg";
+                public const string Tint = "--bit-clr-pri-tint";
 
                 public static class Hover
                 {
@@ -40,6 +42,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-sec-dis";
                 public const string DisabledText = "--bit-clr-sec-dis-text";
                 public const string Focus = "--bit-clr-sec-focus";
+                public const string Foreground = "--bit-clr-sec-fg";
+                public const string Tint = "--bit-clr-sec-tint";
 
                 public static class Hover
                 {
@@ -65,6 +69,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-ter-dis";
                 public const string DisabledText = "--bit-clr-ter-dis-text";
                 public const string Focus = "--bit-clr-ter-focus";
+                public const string Foreground = "--bit-clr-ter-fg";
+                public const string Tint = "--bit-clr-ter-tint";
 
                 public static class Hover
                 {
@@ -90,6 +96,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-inf-dis";
                 public const string DisabledText = "--bit-clr-inf-dis-text";
                 public const string Focus = "--bit-clr-inf-focus";
+                public const string Foreground = "--bit-clr-inf-fg";
+                public const string Tint = "--bit-clr-inf-tint";
 
                 public static class Hover
                 {
@@ -115,6 +123,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-suc-dis";
                 public const string DisabledText = "--bit-clr-suc-dis-text";
                 public const string Focus = "--bit-clr-suc-focus";
+                public const string Foreground = "--bit-clr-suc-fg";
+                public const string Tint = "--bit-clr-suc-tint";
 
                 public static class Hover
                 {
@@ -140,6 +150,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-wrn-dis";
                 public const string DisabledText = "--bit-clr-wrn-dis-text";
                 public const string Focus = "--bit-clr-wrn-focus";
+                public const string Foreground = "--bit-clr-wrn-fg";
+                public const string Tint = "--bit-clr-wrn-tint";
 
                 public static class Hover
                 {
@@ -165,6 +177,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-swr-dis";
                 public const string DisabledText = "--bit-clr-swr-dis-text";
                 public const string Focus = "--bit-clr-swr-focus";
+                public const string Foreground = "--bit-clr-swr-fg";
+                public const string Tint = "--bit-clr-swr-tint";
 
                 public static class Hover
                 {
@@ -190,6 +204,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-err-dis";
                 public const string DisabledText = "--bit-clr-err-dis-text";
                 public const string Focus = "--bit-clr-err-focus";
+                public const string Foreground = "--bit-clr-err-fg";
+                public const string Tint = "--bit-clr-err-tint";
 
                 public static class Hover
                 {
@@ -554,6 +570,8 @@ public static partial class BitCss
                 public const string Button = "--bit-shp-radius-button";
                 public const string Chip = "--bit-shp-radius-chip";
                 public const string Selection = "--bit-shp-radius-selection";
+                public const string TabIndicator = "--bit-shp-radius-tab-indicator";
+                public const string TabIndicatorBase = "--bit-shp-radius-tab-indicator-base";
             }
         }
 
@@ -628,6 +646,7 @@ public static partial class BitCss
 
             public const string Tab = "--bit-siz-tab";
             public const string TabIndicator = "--bit-siz-tab-indicator";
+            public const string TabDivider = "--bit-siz-tab-divider";
             public const string Divider = "--bit-siz-divider";
 
             public static class Track
@@ -677,6 +696,20 @@ public static partial class BitCss
                 public const string Sm = "--bit-siz-slider-thumb-sm";
                 public const string Md = "--bit-siz-slider-thumb-md";
                 public const string Lg = "--bit-siz-slider-thumb-lg";
+            }
+
+            public static class Badge
+            {
+                public const string Sm = "--bit-siz-badge-sm";
+                public const string Md = "--bit-siz-badge-md";
+                public const string Lg = "--bit-siz-badge-lg";
+            }
+
+            public static class BadgeDot
+            {
+                public const string Sm = "--bit-siz-badge-dot-sm";
+                public const string Md = "--bit-siz-badge-dot-md";
+                public const string Lg = "--bit-siz-badge-dot-lg";
             }
 
             public const string SpinnerStroke = "--bit-siz-spinner-stroke";

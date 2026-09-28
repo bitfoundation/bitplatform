@@ -1,6 +1,9 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    var descriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
+}
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onmouseenter="HandleOnMouseEnter"
      @onmouseleave="HandleOnMouseLeave"
@@ -9,7 +12,13 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
     @* A button hidden from assistive technology that is still in the tab sequence is focus a screen
-       reader cannot announce, so hiding it takes it out of the tab order along with it. *@
+       reader cannot announce, so hiding it takes it out of the tab order along with it.
+       The content of the callout is whatever the page puts in it - a form, a filter panel, a list of
+       links - so the button announces the dialog it opens rather than a menu, which would promise the
+       arrow-key navigation of menu items that arbitrary content does not have (BitMenuButton is the
+       one that renders a real menu).
+       A loading button stays enabled and says it is unavailable through aria-disabled instead: the
+       native attribute would drop the focus of a keyboard user to the body the moment it applies. *@
     <button @ref="_buttonRef"
             @onclick="HandleOnClick"
             @onkeydown="HandleOnButtonKeyDown"
@@ -18,13 +27,14 @@
             title="@Title"
             tabindex="@(AriaHidden ? "-1" : TabIndex)"
             aria-label="@AriaLabel"
-            aria-haspopup="@(TrapFocus ? "dialog" : "true")"
+            aria-haspopup="dialog"
             aria-controls="@_calloutId"
             aria-hidden="@(AriaHidden ? "true" : null)"
             style="@Styles?.Button"
-            aria-describedby="@AriaDescription"
+            aria-describedby="@descriptionId"
             aria-busy="@(IsLoading ? "true" : null)"
-            disabled="@(IsEnabled is false || IsLoading)"
+            aria-disabled="@(IsLoading && IsEnabled ? "true" : null)"
+            disabled="@(IsEnabled is false)"
             aria-expanded="@(IsOpen ? "true" : "false")"
             class="bit-drm-btn @Classes?.Button">
         @if (Template is not null)
@@ -66,24 +76,39 @@
             }
         }
     </button>
+
+    @* Rendered beside the button rather than inside it, so that it is read after the name through
+       aria-describedby instead of joining it. *@
+    @if (descriptionId is not null)
+    {
+        <span id="@descriptionId" class="bit-drm-dsc">@AriaDescription</span>
+    }
 </div>
 
 <div @onclick="CloseCallout" @onclick:stopPropagation
-     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+     aria-hidden="true"
+     style="@GetOverlayStyles()"
      id="@_overlayId"
      class="@($"bit-drm-ovl{(HoverDriven ? " bit-drm-ovl-hov" : null)} {Classes?.Overlay}")"></div>
 
+@* The callout is a dialog in every mode, named by the button that opens it, so a screen reader that
+   follows the focus into it says what it is in: it is relocated to the end of the body while it is open,
+   far from the button in the reading order. It is only a modal one when TrapFocus keeps the keyboard in it. *@
+@* Escape is answered through Utils.setupEscape rather than an @onkeydown here: only the JS side can tell a
+   press that closes a popup opened from inside the callout from one meant for the callout itself. *@
 <div @onclick="HandleOnCalloutClick"
-     @onkeydown="HandleOnCalloutKeyDown"
      @onmouseenter="HandleOnMouseEnter"
      @onmouseleave="HandleOnMouseLeave"
      id="@_calloutId"
      tabindex="-1"
+     role="dialog"
      style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()"
      aria-labelledby="@_buttonId"
-     role="@(TrapFocus ? "dialog" : null)"
      aria-modal="@(TrapFocus ? "true" : null)"
      dir="@Dir?.ToString().ToLower()">
-    @(Body ?? ChildContent)
+    @if (ContentRendered)
+    {
+        @(Body ?? ChildContent)
+    }
 </div>
