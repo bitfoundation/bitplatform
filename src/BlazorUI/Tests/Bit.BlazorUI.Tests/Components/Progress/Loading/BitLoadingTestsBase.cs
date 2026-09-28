@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -27,12 +28,6 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     /// <summary>How many child elements the animation container holds. Zero for the loaders drawn purely with pseudo-elements.</summary>
     protected abstract int ChildCount { get; }
 
-    /// <summary>The CSS variables the component registers on its root, which all scale with the size.</summary>
-    protected virtual string[] ScaledVariables => [];
-
-    /// <summary>The size the drawing was authored at, which is what <c>Convert</c> scales away from.</summary>
-    protected virtual int OriginalSize => 80;
-
     private string ContainerClass => $"{RootClass}-ccn";
 
     private string ChildClass => $"{RootClass}-chl";
@@ -56,7 +51,24 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-ltp"));
 
         var container = component.Find($".{ContainerClass}");
+        Assert.IsTrue(container.ClassList.Contains("bit-ldn-ccn"));
         Assert.AreEqual(ChildCount, container.GetElementsByClassName(ChildClass).Length);
+        Assert.AreEqual(ChildCount, container.GetElementsByClassName("bit-ldn-chl").Length);
+    }
+
+    [TestMethod]
+    public void ShouldRenderNothingButSpans()
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Loading...");
+        });
+
+        // A div is not allowed where an inline loader goes - in a paragraph, a button, a label - and the HTML
+        // parser closes an open paragraph at one, so prerendered markup would break the sentence apart.
+        var root = component.Find(".bit-ldn");
+        Assert.AreEqual("SPAN", root.TagName);
+        Assert.IsTrue(root.QuerySelectorAll("*").All(e => e.TagName == "SPAN"));
     }
 
     [TestMethod]
@@ -273,15 +285,23 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         DataRow(BitColor.PrimaryBorder, "var(--bit-clr-brd-pri)"),
         DataRow(BitColor.SecondaryBorder, "var(--bit-clr-brd-sec)"),
         DataRow(BitColor.TertiaryBorder, "var(--bit-clr-brd-ter)"),
-        DataRow(null, "var(--bit-clr-pri)")]
-    public void ShouldHonorColor(BitColor? color, string expectedColor)
+        DataRow(null, null)]
+    public void ShouldHonorColor(BitColor? color, string? expectedColor)
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
             parameters.Add(p => p.Color, color);
         });
 
-        StringAssert.Contains(StyleOf(component), $"--bit-ldn-color: {expectedColor}");
+        if (expectedColor is null)
+        {
+            // Left to the stylesheet, which falls back to the primary color behind --bit-Loading-color.
+            StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-clr"));
+        }
+        else
+        {
+            StringAssert.Contains(StyleOf(component), $"--bit-ldn-clr:{expectedColor}");
+        }
     }
 
     [TestMethod]
@@ -292,7 +312,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.CustomColor, "hotpink");
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-color: hotpink");
+        StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:hotpink");
     }
 
     [TestMethod]
@@ -304,59 +324,60 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.CustomColor, "hotpink");
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-color: var(--bit-clr-err)");
+        StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:var(--bit-clr-err)");
     }
 
     [TestMethod,
-        DataRow(null, 64, "14"),
-        DataRow(BitSize.Small, 40, "10"),
-        DataRow(BitSize.Medium, 64, "14"),
-        DataRow(BitSize.Large, 88, "18")]
-    public void ShouldScaleEverythingWithTheSize(BitSize? size, int expectedSize, string expectedFontSize)
+        DataRow(null, "bit-ldn-md"),
+        DataRow(BitSize.Small, "bit-ldn-sm"),
+        DataRow(BitSize.Medium, "bit-ldn-md"),
+        DataRow(BitSize.Large, "bit-ldn-lg")]
+    public void ShouldSizeTheLoadingWithAClass(BitSize? size, string expectedClass)
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
             parameters.Add(p => p.Size, size);
         });
 
-        var style = StyleOf(component);
+        var root = component.Find(".bit-ldn");
+        Assert.IsTrue(root.ClassList.Contains(expectedClass));
+        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg"));
 
-        StringAssert.Contains(style, $"--bit-ldn-size:{expectedSize}px");
-        StringAssert.Contains(style, $"--bit-ldn-font-size:{expectedFontSize}px");
-
-        foreach (var variable in ScaledVariables)
-        {
-            var suffix = variable[(variable.LastIndexOf('-') + 1)..];
-            if (int.TryParse(suffix, NumberStyles.Integer, CultureInfo.InvariantCulture, out var basis) is false)
-            {
-                // A variable whose name does not carry its own basis, e.g. --bit-ldn-xbx-25f. Its presence
-                // is all this test can claim, which the assertion below still covers.
-                StringAssert.Contains(style, $"{variable}:");
-                continue;
-            }
-
-            var expected = Math.Round(basis * (double)expectedSize / OriginalSize, 4).ToString(CultureInfo.InvariantCulture);
-            StringAssert.Contains(style, $"{variable}:{expected}px");
-        }
+        // The size lives in the stylesheet, behind --bit-Loading-size, and the whole drawing is laid out in
+        // CSS from it - nothing about the geometry is written into the style attribute.
+        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz|--bit-ldn-size|px"));
     }
 
     [TestMethod,
-        DataRow(16, "3.5"),
-        DataRow(24, "5.25"),
-        DataRow(64, "14"),
-        DataRow(100, "21.88"),
-        DataRow(128, "28")]
-    public void ShouldScaleTheLabelWithACustomSize(int customSize, string expectedFontSize)
+        DataRow(16),
+        DataRow(100),
+        DataRow(128)]
+    public void ShouldSizeTheLoadingWithACustomSize(int customSize)
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
             parameters.Add(p => p.CustomSize, customSize);
         });
 
-        var style = StyleOf(component);
+        var root = component.Find(".bit-ldn");
+        StringAssert.Contains(StyleOf(component), $"--bit-ldn-sz:{customSize}px");
 
-        StringAssert.Contains(style, $"--bit-ldn-size:{customSize}px");
-        StringAssert.Contains(style, $"--bit-ldn-font-size:{expectedFontSize}px");
+        // No size class, so the label scales from the custom size instead of taking a step of the ramp.
+        Assert.IsFalse(root.ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg"));
+    }
+
+    [TestMethod,
+        DataRow(0),
+        DataRow(-8)]
+    public void ShouldIgnoreAnUnusableCustomSize(int customSize)
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.CustomSize, customSize);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-md"));
+        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
     }
 
     [TestMethod]
@@ -368,7 +389,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.CustomSize, 128);
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-size:88px");
+        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-lg"));
+        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
     }
 
     [TestMethod,
@@ -382,7 +404,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Speed, speed);
         });
 
-        StringAssert.Contains(StyleOf(component), $"--bit-ldn-mot-factor:calc(var(--bit-mot-loop-factor, 1) / {expected})");
+        StringAssert.Contains(StyleOf(component), $"--bit-ldn-spd:{expected}");
     }
 
     [TestMethod,
@@ -396,7 +418,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Speed, speed);
         });
 
-        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-mot-factor"));
+        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-spd|--bit-ldn-mot-factor"));
     }
 
     [TestMethod,
@@ -777,8 +799,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Size, BitSize.Small);
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-color: var(--bit-clr-err)");
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-size:40px");
+        StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:var(--bit-clr-err)");
+        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-sm"));
 
         component.Render(parameters =>
         {
@@ -787,8 +809,170 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.LabelPosition, BitLabelPosition.End);
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-color: var(--bit-clr-suc)");
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-size:88px");
+        StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:var(--bit-clr-suc)");
+        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-lg"));
+        Assert.IsFalse(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-sm"));
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-led"));
+    }
+
+    [TestMethod]
+    public void ShouldDimAndHoldADisabledLoading()
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        // The stylesheet dims bit-dis and holds its animation the way it holds bit-ldn-pau; the drawing stays.
+        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-dis"));
+        Assert.HasCount(1, component.FindAll($".{ContainerClass}"));
+    }
+
+    [TestMethod]
+    public void ShouldApplyCascadingParametersFromBitParams()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitLoadingParams
+                {
+                    Color = BitColor.Error,
+                    Size = BitSize.Large,
+                    Label = "Cascaded",
+                    LabelPosition = BitLabelPosition.End,
+                    Inline = true,
+                    Paused = true,
+                    Speed = 2,
+                    Thickness = 3,
+                    Role = "progressbar",
+                    AriaLive = "assertive",
+                    Classes = new() { Root = "cascaded-root", Label = "cascaded-label" },
+                    Styles = new() { Root = "margin:3px" }
+                }
+            });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<TLoading>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-ldn");
+        var style = root.GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "--bit-ldn-clr:var(--bit-clr-err)");
+        StringAssert.Contains(style, "--bit-ldn-spd:2");
+        StringAssert.Contains(style, "--bit-ldn-stroke:3px");
+        StringAssert.Contains(style, "margin:3px");
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-led"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-inl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-pau"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
+        Assert.AreEqual("progressbar", root.GetAttribute("role"));
+        Assert.AreEqual("assertive", root.GetAttribute("aria-live"));
+
+        var label = component.Find(".bit-ldn-lbl");
+        Assert.AreEqual("Cascaded", label.TextContent.Trim());
+        Assert.IsTrue(label.ClassList.Contains("cascaded-label"));
+
+        // The cascade is not a parameter of the root element, so it must not leak onto it as an attribute.
+        Assert.IsNull(root.GetAttribute("cascadingparameters"));
+    }
+
+    [TestMethod]
+    public void ShouldLetDirectParametersWinOverCascadingParameters()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitLoadingParams { Color = BitColor.Error, Size = BitSize.Large, Label = "Cascaded", Paused = true }
+            });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<TLoading>(0);
+                builder.AddAttribute(1, nameof(BitLoadingBase.Color), (BitColor?)BitColor.Success);
+                builder.AddAttribute(2, nameof(BitLoadingBase.Size), (BitSize?)BitSize.Small);
+                builder.AddAttribute(3, nameof(BitLoadingBase.Label), "Own");
+                builder.AddAttribute(4, nameof(BitLoadingBase.Paused), false);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-ldn");
+
+        StringAssert.Contains(root.GetAttribute("style") ?? string.Empty, "--bit-ldn-clr:var(--bit-clr-suc)");
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-lg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-pau"));
+        Assert.AreEqual("Own", component.Find(".bit-ldn-lbl").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void ShouldHoldTheContentBackForACascadedDelay()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams { Delay = 100 } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<TLoading>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        // The cascade is applied before the delay window is opened, so it holds the content back like a Delay
+        // written on the loader itself.
+        Assert.AreEqual(0, component.Find(".bit-ldn").ChildElementCount);
+
+        component.WaitForAssertion(() => Assert.AreNotEqual(0, component.Find(".bit-ldn").ChildElementCount), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void ShouldApplyACascadedCustomSizeAndCustomColor()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams { CustomSize = 24, CustomColor = "currentColor" } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<TLoading>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-ldn");
+        var style = root.GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "--bit-ldn-sz:24px");
+        StringAssert.Contains(style, "--bit-ldn-clr:currentColor");
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-md"));
+    }
+
+    [TestMethod]
+    public void ShouldLetTheLoadingsOwnCustomSizeAndCustomColorWinOverACascadedSizeAndColor()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams { Size = BitSize.Large, Color = BitColor.Error } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<TLoading>(0);
+                builder.AddAttribute(1, nameof(BitLoadingBase.CustomSize), (int?)24);
+                builder.AddAttribute(2, nameof(BitLoadingBase.CustomColor), "hotpink");
+                builder.CloseComponent();
+            });
+        });
+
+        // Size outranks CustomSize and Color outranks CustomColor, so applying the cascade here would override what
+        // was written on the loader itself.
+        var root = component.Find(".bit-ldn");
+        var style = root.GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "--bit-ldn-sz:24px");
+        StringAssert.Contains(style, "--bit-ldn-clr:hotpink");
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-lg"));
     }
 }

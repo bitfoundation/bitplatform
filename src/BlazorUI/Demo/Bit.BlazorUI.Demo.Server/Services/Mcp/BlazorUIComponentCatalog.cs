@@ -220,7 +220,7 @@ public static class BlazorUIComponentCatalog
         return [.. ComponentCatalog.Items.Select(item =>
         {
             var name = $"Bit{item.Name}";
-            var componentType = FindType(name);
+            var componentType = FindComponentType(name);
             var demoType = demoAssembly.GetTypes().FirstOrDefault(t => t.Name == $"{name}Demo");
             var demo = demoType is null ? null : BlazorUIDemoSource.Get(demoType);
             var tables = demoType is null ? null : DemoTables.Read(demoType);
@@ -538,6 +538,21 @@ public static class BlazorUIComponentCatalog
         var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase));
 
         return ([.. own[true]], [.. own[false]]);
+    }
+
+    /// <summary>
+    /// The type whose API a nav entry documents. That is the type of the same name, except for a family of
+    /// components documented on one page - the eighteen loaders on Loading - whose name belongs to the shell they
+    /// all render through (<c>BitLoading</c>, a plain <c>ComponentBase</c> taking <c>This</c>): the family's
+    /// parameters, its base and its <c>BitParams</c> cascade are declared on its abstract <c>...Base</c> instead.
+    /// </summary>
+    private static Type? FindComponentType(string name)
+    {
+        var type = FindType(name);
+
+        if (type is null || typeof(BitComponentBase).IsAssignableFrom(type)) return type;
+
+        return FindType($"{name}Base") is { } family && typeof(BitComponentBase).IsAssignableFrom(family) ? family : type;
     }
 
     private static Type? FindType(string name)

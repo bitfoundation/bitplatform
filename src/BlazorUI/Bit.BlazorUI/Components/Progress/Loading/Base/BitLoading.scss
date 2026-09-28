@@ -1,9 +1,37 @@
+// Public CSS variables, shared by all eighteen loaders. They are read with a fallback and never declared here, so
+// a value set on :root re-skins every loader, one set on an ancestor the loaders inside it, and one set on the
+// Style of a loader that loader alone. Each one wins over the parameter it stands beside.
+//   --bit-Loading-color               color of the drawing                          (default: Color / CustomColor, or $clr-pri)
+//   --bit-Loading-track-color         full circle under the moving arcs of the Ring,
+//                                     DualRing and Xbox loaders                    (default: transparent)
+//   --bit-Loading-size                width and height of the drawing, any length   (default: per Size / CustomSize, 64px)
+//   --bit-Loading-thickness           stroke width of the stroked loaders           (default: Thickness, or the authored width)
+//   --bit-Loading-speed               multiplier of the animation speed             (default: Speed, or 1)
+//   --bit-Loading-gap                 room between the drawing and the label        (default: spacing(1))
+//   --bit-Loading-label-color         color of the label                            (default: the surrounding text color)
+//   --bit-Loading-label-font-size     text size of the label                        (default: per Size, from the type ramp)
+//   --bit-Loading-label-font-weight   text weight of the label                      (default: $tg-fw-regular)
+
 .bit-ldn {
     display: flex;
-    gap: spacing(1);
     width: fit-content;
     align-items: center;
     justify-content: center;
+    gap: var(--bit-Loading-gap, #{spacing(1)});
+
+    // What every part of a loader reads, resolved here, once, from the public variable, then the parameter
+    // (written in the style attribute under a name of its own, so it cannot outrank the variable), then the
+    // theme. The drawing's geometry is expressed in units of an 80th of the size - the grid the artwork was
+    // drawn on - so it rescales in CSS alone, which is what lets --bit-Loading-size resize a loader whole.
+    --bit-ldn-color: var(--bit-Loading-color, var(--bit-ldn-clr, #{$clr-pri}));
+    --bit-ldn-track: var(--bit-Loading-track-color, transparent);
+    --bit-ldn-size: var(--bit-Loading-size, var(--bit-ldn-sz, 64px));
+    --bit-ldn-unit: calc(var(--bit-ldn-size) / 80);
+    --bit-ldn-thickness: var(--bit-Loading-thickness, var(--bit-ldn-stroke, var(--bit-ldn-stroke-authored)));
+
+    // A custom size takes the label along, within the readable range of the type ramp: the 14px it has at 64px,
+    // never below the smallest body text nor above the large step. The three sizes use the ramp exactly.
+    --bit-ldn-lfs: clamp(#{$tg-fs-xs}, calc(var(--bit-ldn-size) * 0.21875), #{$tg-fs-lg});
 
     // Loading animations loop forever, so they keep literal durations rather than going through the
     // --bit-mot-duration* tokens: a near-zero looping duration renders as flicker, and stopping a
@@ -11,9 +39,9 @@
     // in every loading component is written as a multiple of this factor, so the animation is
     // stretched as a whole and the phase offsets that stagger the parts against each other survive -
     // scaling the durations alone would bunch them up. It follows the theme's shared loop factor,
-    // which already slows under reduced motion and is restored by ForceAnimation, and stays a knob a
-    // consumer can override on a single loader - which is what the Speed parameter writes over it.
-    --bit-ldn-mot-factor: #{$mot-loop-factor};
+    // which already slows under reduced motion and is restored by ForceAnimation, divided by the
+    // speed the loader was asked for.
+    --bit-ldn-mot-factor: calc(#{$mot-loop-factor} / var(--bit-Loading-speed, var(--bit-ldn-spd, 1)));
 
     // Paused holds every animation of the drawing at the frame it had reached rather than removing it, so
     // the shape and the space it takes up are exactly what they were and nothing around it moves. The
@@ -21,13 +49,47 @@
     // and ::after, which a plain descendant selector never reaches. The root class is doubled up because
     // every loader declares its animation with the shorthand, which implicitly resets the play state to
     // running - and those rules are bundled after this file, so at equal specificity they would win the
-    // cascade and the pause would never take.
+    // cascade and the pause would never take. A disabled loader is held the same way.
     &.bit-ldn-pau,
     &.bit-ldn-pau *,
     &.bit-ldn-pau *::before,
-    &.bit-ldn-pau *::after {
+    &.bit-ldn-pau *::after,
+    &.bit-dis,
+    &.bit-dis *,
+    &.bit-dis *::before,
+    &.bit-dis *::after {
         animation-play-state: paused;
     }
+
+    &.bit-dis {
+        opacity: $opa-dis;
+    }
+}
+
+.bit-ldn-sm {
+    --bit-ldn-sz: 40px;
+    --bit-ldn-lfs: #{$tg-fs-xs};
+}
+
+.bit-ldn-md {
+    --bit-ldn-sz: 64px;
+    --bit-ldn-lfs: #{$tg-fs-sm};
+}
+
+.bit-ldn-lg {
+    --bit-ldn-sz: 88px;
+    --bit-ldn-lfs: #{$tg-fs-md};
+}
+
+// The drawing and its parts are spans, so that a loader is valid markup wherever text may go; they are blocks
+// unless a loader lays them out otherwise, and the drawing never gives up its size to a crowded row.
+.bit-ldn-ccn,
+.bit-ldn-chl {
+    display: block;
+}
+
+.bit-ldn-ccn {
+    flex: none;
 }
 
 // An inline loader sits in a line of text, a button or a table cell instead of taking a line of its
@@ -38,8 +100,13 @@
     vertical-align: middle;
 }
 
+// The color is inherited, so a label keeps the color of the surface it sits on - the text of a button, a
+// banner, a dark card - the way the loader's own currentColor does.
 .bit-ldn-lbl {
-    font-size: var(--bit-ldn-font-size);
+    font-family: $tg-font-family;
+    color: var(--bit-Loading-label-color, currentColor);
+    font-size: var(--bit-Loading-label-font-size, var(--bit-ldn-lfs));
+    font-weight: var(--bit-Loading-label-font-weight, #{$tg-fw-regular});
 }
 
 // The text a labelless loader announces. Taken out of the flow rather than merely hidden, so that it
@@ -71,4 +138,17 @@
 
 .bit-ldn-led {
     flex-direction: row-reverse;
+}
+
+// Forced colors replace every background with the canvas, and most loaders are drawn with backgrounds, so the
+// drawing would vanish. It keeps its own colors instead, all of them the text color of the user's palette.
+@media (forced-colors: active) {
+    .bit-ldn {
+        --bit-ldn-color: CanvasText;
+        --bit-ldn-track: transparent;
+    }
+
+    .bit-ldn-ccn {
+        forced-color-adjust: none;
+    }
 }

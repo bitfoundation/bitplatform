@@ -2,15 +2,34 @@
 
 public partial class BitLoadingDemo
 {
-    private bool _isPaused;
-    private bool _isWorking;
+    private bool isPaused;
+    private bool isWorking;
+    private bool isRefreshing;
 
     private async Task StartWork()
     {
-        _isWorking = true;
+        isWorking = true;
         await Task.Delay(1500);
-        _isWorking = false;
+        isWorking = false;
     }
+
+    private async Task Refresh()
+    {
+        isRefreshing = true;
+        await Task.Delay(2000);
+        isRefreshing = false;
+    }
+
+    private readonly BitLoadingParams[] loadingParams =
+    [
+        new()
+        {
+            CustomSize = 48,
+            Thickness = 3,
+            Speed = 1.5,
+            LabelPosition = BitLabelPosition.End
+        }
+    ];
 
 
 
@@ -21,7 +40,7 @@ public partial class BitLoadingDemo
             Name = "AriaLive",
             Type = "string?",
             DefaultValue = "null",
-            Description = "How insistently the live region of the loading component announces itself, rendered as the aria-live attribute of the root element. Falls back to \"polite\".",
+            Description = "The aria-live politeness of the root live region. Falls back to \"polite\"; ignored while the loader is decorative.",
         },
         new()
         {
@@ -37,7 +56,7 @@ public partial class BitLoadingDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the loading component.",
+            Description = "The theme color of the drawing.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -46,42 +65,42 @@ public partial class BitLoadingDemo
             Name = "CustomColor",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom css color of the loading component. Only applies while Color is left unset.",
+            Description = "Any CSS color for the drawing, currentColor included. Only applies while Color is unset.",
         },
         new()
         {
             Name = "CustomSize",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The custom size of the loading component in px. Only applies while Size is left unset.",
+            Description = "The size of the drawing in px; the label scales along within a readable range. Only applies while Size is unset. Zero and negative values are ignored.",
         },
         new()
         {
             Name = "Delay",
             Type = "int",
             DefaultValue = "0",
-            Description = "How long, in milliseconds, the loading component waits before it shows anything, so that a quick task never makes it flash up and vanish again. Changing the value opens the window again from the new length.",
+            Description = "How long, in ms, the loader waits before showing anything, so quick work never flashes it. Changing the value restarts the wait.",
         },
         new()
         {
             Name = "Inline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the loading component out as an inline box aligned to the middle of the current line, so it can sit inside a sentence, a button or a table cell.",
+            Description = "Lays the loader out on the current line of text, a button or a table cell.",
         },
         new()
         {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text content of the label of the loading component, which is also what assistive technology announces.",
+            Description = "The status text shown beside the drawing and announced by screen readers.",
         },
         new()
         {
             Name = "LabelPosition",
             Type = "BitLabelPosition?",
             DefaultValue = "null",
-            Description = "The position of the label of the loading component.",
+            Description = "The side of the drawing the label sits on. Start and End follow the writing direction.",
             LinkType = LinkType.Link,
             Href = "#label-position-enum",
         },
@@ -90,28 +109,28 @@ public partial class BitLoadingDemo
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content of the label of the loading component.",
+            Description = "Custom content for the label. Takes the place of Label.",
         },
         new()
         {
             Name = "Paused",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Holds the animation of the loading component at the frame it had reached instead of running it. The drawing keeps its shape and its place in the layout, so only the movement stops.",
+            Description = "Freezes the animation on its current frame, keeping the layout and the live region as they are.",
         },
         new()
         {
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The ARIA role of the root element of the loading component. Falls back to \"status\", which makes the root a live region.",
+            Description = "The ARIA role of the root. Falls back to \"status\", a live region; \"none\" makes the loader decorative.",
         },
         new()
         {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The Size of the loading component.",
+            Description = "The size of the loader: 40px, 64px or 88px, with the label on the matching step of the type ramp.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -120,7 +139,7 @@ public partial class BitLoadingDemo
             Name = "Speed",
             Type = "double?",
             DefaultValue = "null",
-            Description = "How fast the animation runs, as a multiplier of its normal speed: 2 is twice as fast, 0.5 half as fast. Zero and negative values are ignored.",
+            Description = "A multiplier of the animation speed: 2 is twice as fast. Composes with reduced motion. Zero and negative values are ignored.",
         },
         new()
         {
@@ -136,7 +155,7 @@ public partial class BitLoadingDemo
             Name = "Thickness",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The thickness, in px, of the stroke the loading component is drawn with. Only the loaders drawn with a stroke read it - BitRingLoading, BitDualRingLoading, BitRippleLoading, BitXboxLoading and BitSpinnerLoading - and it does not scale with Size. Zero and negative values are ignored.",
+            Description = "The stroke width in px of the Ring, DualRing, Ripple, Xbox and Spinner loaders. Does not scale with the size. Zero and negative values are ignored.",
         }
     ];
 
@@ -362,231 +381,61 @@ public partial class BitLoadingDemo
         },
     ];
 
-
-
-    private readonly string example1RazorCode = @"
-<BitBarsLoading />
-
-<BitCircleLoading />
-
-<BitDotsRingLoading />
-
-<BitDualRingLoading />
-
-<BitEllipsisLoading />
-
-<BitGridLoading />
-
-<BitHeartLoading />
-
-<BitHourglassLoading />
-
-<BitRingLoading />
-
-<BitRippleLoading />
-
-<BitRollerLoading />
-
-<BitSpinnerLoading />
-
-<BitXboxLoading />
-
-<BitSlickBarsLoading />
-
-<BitBouncingDotsLoading />
-
-<BitRollingDashesLoading />
-
-<BitOrbitingDotsLoading />
-
-<BitRollingSquareLoading />";
-
-    private readonly string example2RazorCode = @"
-<BitGridLoading Label=""Loading"" />
-
-<BitRingLoading Label=""Uploading photos..."" />";
-
-    private readonly string example3RazorCode = @"
-<BitDotsRingLoading Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
-
-<BitDotsRingLoading Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
-
-<BitDotsRingLoading Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
-
-<BitDotsRingLoading Label=""End"" LabelPosition=""BitLabelPosition.End"" />";
-
-    private readonly string example4RazorCode = @"
-<BitEllipsisLoading>
-    <LabelTemplate>
-        <div style=""color:green""><b>Loading</b></div>
-    </LabelTemplate>
-</BitEllipsisLoading>
-
-<BitRollerLoading LabelPosition=""BitLabelPosition.Bottom"">
-    <LabelTemplate>
-        <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.SecondaryForeground"">
-            Restoring your session
-        </BitText>
-    </LabelTemplate>
-</BitRollerLoading>";
-
-    private readonly string example5RazorCode = @"
-<BitRingLoading Label=""0.5x"" Speed=""0.5"" />
-
-<BitRingLoading Label=""1x (default)"" />
-
-<BitRingLoading Label=""2x"" Speed=""2"" />
-
-<BitRingLoading Label=""4x"" Speed=""4"" />";
-
-    private readonly string example6RazorCode = @"
-<BitToggleButton @bind-IsChecked=""_isPaused"" Text=""@(_isPaused ? ""Resume"" : ""Pause"")"" />
-
-<BitRingLoading Label=""Ring"" Paused=""_isPaused"" />
-
-<BitBarsLoading Label=""Bars"" Paused=""_isPaused"" />
-
-<BitHourglassLoading Label=""Hourglass"" Paused=""_isPaused"" />";
-    private readonly string example6CsharpCode = @"
-private bool _isPaused;";
-
-    private readonly string example7RazorCode = @"
-<BitButton OnClick=""StartWork"" IsEnabled=""@(_isWorking is false)"">Run a 1.5s task</BitButton>
-
-@if (_isWorking)
-{
-    <BitSpinnerLoading />
-
-    <BitSpinnerLoading Delay=""500"" />
-
-    @* The task is over before the delay elapses, so this one never renders at all. *@
-    <BitSpinnerLoading Delay=""3000"" />
-}";
-    private readonly string example7CsharpCode = @"
-private bool _isWorking;
-
-private async Task StartWork()
-{
-    _isWorking = true;
-    await Task.Delay(1500);
-    _isWorking = false;
-}";
-
-    private readonly string example8RazorCode = @"
-<BitRingLoading Label=""Default"" />
-
-<BitRingLoading Label=""Thickness=2"" Thickness=""2"" />
-
-<BitRingLoading Label=""Thickness=12"" Thickness=""12"" />
-
-
-<BitSpinnerLoading Label=""Spinner"" Thickness=""10"" />
-
-<BitDualRingLoading Label=""DualRing"" Thickness=""2"" />
-
-<BitRippleLoading Label=""Ripple"" Thickness=""8"" />
-
-<BitXboxLoading Label=""Xbox"" Thickness=""6"" />";
-
-    private readonly string example9RazorCode = @"
-<div>
-    Fetching the latest results
-    <BitRingLoading Inline CustomSize=""16"" CustomColor=""currentColor"" />
-    please wait.
-</div>
-
-<BitButton IsEnabled=""false"">
-    <BitStack Horizontal FitWidth AutoHeight Gap=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
-        <BitRingLoading Inline CustomSize=""16"" CustomColor=""currentColor"" />
-        <span>Saving</span>
-    </BitStack>
-</BitButton>";
-
-    private readonly string example10RazorCode = @"
-@* role=""status"" aria-live=""polite"" and a visually hidden ""Loading"" by default. *@
-<BitSpinnerLoading />
-
-@* The hidden text becomes the AriaLabel. *@
-<BitSpinnerLoading AriaLabel=""Fetching your orders"" />
-
-@* Decorative: the surroundings already report the wait. *@
-<BitSpinnerLoading Role=""none"" />
-
-@* Interrupts the screen reader rather than waiting for it. *@
-<BitSpinnerLoading Label=""Signing you out"" AriaLive=""assertive"" />";
-
-    private readonly string example11RazorCode = @"
-<BitBarsLoading Label=""Primary"" Color=""BitColor.Primary"" />
-
-<BitCircleLoading Label=""Secondary"" Color=""BitColor.Secondary"" />
-
-<BitDotsRingLoading Label=""Tertiary"" Color=""BitColor.Tertiary"" />
-
-<BitDualRingLoading Label=""Info"" Color=""BitColor.Info"" />
-
-<BitEllipsisLoading Label=""Success"" Color=""BitColor.Success"" />
-
-<BitGridLoading Label=""Warning"" Color=""BitColor.Warning"" />
-
-<BitHeartLoading Label=""SevereWarning"" Color=""BitColor.SevereWarning"" />
-
-<BitHourglassLoading Label=""Error"" Color=""BitColor.Error"" />
-
-
-<BitBarsLoading Label=""brown"" CustomColor=""brown"" />
-
-<BitCircleLoading Label=""rgb(0 107 185 / 75%)"" CustomColor=""rgb(0 107 185 / 75%)"" />
-
-<BitDotsRingLoading Label=""#426985"" CustomColor=""#426985"" />
-
-<BitDualRingLoading Label=""hsl(106 100% 22% / 1)"" CustomColor=""hsl(106 100% 22% / 1)"" />
-
-<div style=""color:mediumvioletred"">
-    <BitSpinnerLoading Label=""currentColor"" CustomColor=""currentColor"" />
-</div>";
-
-    private readonly string example12RazorCode = @"
-<BitXboxLoading Label=""Small"" Size=""BitSize.Small"" />
-
-<BitXboxLoading Label=""Medium"" Size=""BitSize.Medium"" />
-
-<BitXboxLoading Label=""Large"" Size=""BitSize.Large"" />
-
-<BitXboxLoading Label=""Custom (128)"" CustomSize=""128"" />
-
-<BitXboxLoading Label=""Custom (24)"" CustomSize=""24"" />";
-
-    private readonly string example13RazorCode = @"
-<BitRingLoading Label=""Style"" Style=""padding:1rem;border:1px solid gray;border-radius:8px"" />
-
-<BitRingLoading Label=""Class"" Class=""custom-class"" />
-
-
-<BitDotsRingLoading Label=""Variables"" Style=""--bit-ldn-color:rebeccapurple;--bit-ldn-size:48px;--bit-ldn-mot-factor:0.5"" />
-
-
-<BitGridLoading Label=""Styles""
-                Styles=""@(new() { Root = ""padding:0.5rem"",
-                                  Container = ""outline:1px dashed gray"",
-                                  Child = ""border-radius:0"",
-                                  Label = ""color:tomato;font-weight:bold"" })"" />
-
-<BitGridLoading Label=""Classes""
-                Classes=""@(new() { Root = ""custom-root"",
-                                   Child = ""custom-child"",
-                                   Label = ""custom-label"" })"" />";
-
-    private readonly string example14RazorCode = @"
-<div dir=""rtl"">
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPosition=""BitLabelPosition.Start"" />
-
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPosition=""BitLabelPosition.End"" />
-
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""در حال بارگذاری"" LabelPosition=""BitLabelPosition.Bottom"" />
-
-    @* The two loaders whose motion travels across the box are mirrored, so they run toward the end of the line. *@
-    <BitEllipsisLoading Dir=""BitDir.Rtl"" Label=""نقطه‌ها"" />
-
-    <BitRollingSquareLoading Dir=""BitDir.Rtl"" Label=""مربع"" />
-</div>";
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Loading-color",
+            DefaultValue = "Color / CustomColor, or the primary color",
+            Description = "Color of the drawing.",
+        },
+        new()
+        {
+            Name = "--bit-Loading-track-color",
+            DefaultValue = "transparent",
+            Description = "The full circle under the moving arcs of the Ring, DualRing and Xbox loaders.",
+        },
+        new()
+        {
+            Name = "--bit-Loading-size",
+            DefaultValue = "Size / CustomSize, or 64px",
+            Description = "Width and height of the drawing, which is laid out from it. Any CSS length: 1em sizes a loader with its text.",
+        },
+        new()
+        {
+            Name = "--bit-Loading-thickness",
+            DefaultValue = "Thickness, or the width each drawing was made with",
+            Description = "Stroke width of the Ring, DualRing, Ripple, Xbox and Spinner loaders.",
+        },
+        new()
+        {
+            Name = "--bit-Loading-speed",
+            DefaultValue = "Speed, or 1",
+            Description = "Multiplier of the animation speed; a positive number.",
+        },
+        new()
+        {
+            Name = "--bit-Loading-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the drawing and the label.",
+        },
+        new()
+        {
+            Name = "--bit-Loading-label-color",
+            DefaultValue = "The surrounding text color",
+            Description = "Color of the label.",
+        },
+        new()
+        {
+            Name = "--bit-Loading-label-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the label.",
+        },
+        new()
+        {
+            Name = "--bit-Loading-label-font-weight",
+            DefaultValue = "$tg-fw-regular",
+            Description = "Text weight of the label.",
+        }
+    ];
 }
