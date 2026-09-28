@@ -2191,4 +2191,347 @@ public class BitAccordionTests : BunitTestContext
 
         Assert.AreEqual("after", com.Find(".bit-acd-ttl").TextContent.Trim());
     }
+
+
+
+    [TestMethod]
+    public void BitAccordionShouldMakeANamedRootAGroup()
+    {
+        var named = RenderComponent<BitAccordion>(parameters => parameters.Add(p => p.AriaLabel, "Settings"));
+        var unnamed = RenderComponent<BitAccordion>();
+
+        Assert.AreEqual("group", named.Find(".bit-acd").GetAttribute("role"));
+        Assert.IsNull(unnamed.Find(".bit-acd").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldNameTheHeaderAndThePanelByTheTitleAndDescribeThemByTheDescription()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Id, "acd");
+            parameters.Add(p => p.Title, "General");
+            parameters.Add(p => p.Description, "The general settings");
+        });
+
+        var header = com.Find(".bit-acd-hdr");
+
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-ttl").GetAttribute("id"));
+        Assert.AreEqual("acd-des", com.Find(".bit-acd-des").GetAttribute("id"));
+        Assert.AreEqual("acd-ttl", header.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-des", header.GetAttribute("aria-describedby"));
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldNotDescribeTheHeaderWithoutADescription()
+    {
+        var com = RenderComponent<BitAccordion>(parameters => parameters.Add(p => p.Title, "General"));
+
+        Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldNameTheHeaderByTheTitleTemplateToo()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Id, "acd");
+            parameters.Add(p => p.TitleTemplate, "<b>General</b>");
+        });
+
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldLeaveTheNamingToAHeaderAriaLabel()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Id, "acd");
+            parameters.Add(p => p.Title, "General");
+            parameters.Add(p => p.Description, "The general settings");
+            parameters.Add(p => p.HeaderAriaLabel, "General settings");
+        });
+
+        var header = com.Find(".bit-acd-hdr");
+
+        Assert.IsNull(header.GetAttribute("aria-labelledby"));
+        Assert.IsNull(header.GetAttribute("aria-describedby"));
+        Assert.AreEqual("acd-hdr", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldLeaveTheNamingToAHeaderTemplate()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Id, "acd");
+            parameters.Add(p => p.Title, "General");
+            parameters.Add(p => p.HeaderTemplate, _ => "<span>Custom</span>");
+        });
+
+        Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-hdr", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
+    }
+
+
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldHideACollapsedPanelUntilFound()
+    {
+        var com = RenderComponent<BitAccordion>(parameters => parameters.Add(p => p.HiddenUntilFound, true));
+
+        var content = com.Find(".bit-acd-con");
+
+        Assert.AreEqual("until-found", content.GetAttribute("hidden"));
+        Assert.IsTrue(content.ClassList.Contains("bit-acd-huf"));
+        Assert.IsTrue(com.Markup.Contains("onbeforematch"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldNotHideAPanelUntilFoundByDefault()
+    {
+        var com = RenderComponent<BitAccordion>();
+
+        var content = com.Find(".bit-acd-con");
+
+        Assert.IsFalse(content.HasAttribute("hidden"));
+        Assert.IsFalse(content.ClassList.Contains("bit-acd-huf"));
+        Assert.IsFalse(com.Markup.Contains("onbeforematch"));
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldNotHideAnExpandedPanel()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.DefaultIsExpanded, true);
+        });
+
+        Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldKeepTheContentInTheDom()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.LazyContent, true);
+            parameters.Add(p => p.UnmountOnCollapse, true);
+            parameters.Add(p => p.ChildContent, "<span class=\"body\">Body</span>");
+        });
+
+        Assert.AreEqual(1, com.FindAll(".body").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldExpandOnABeforeMatch()
+    {
+        BitAccordionToggleArgs? toggling = null;
+        var changed = false;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs args) => toggling = args);
+            parameters.Add(p => p.OnChange, (bool v) => changed = v);
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
+
+        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(changed);
+        Assert.IsNotNull(toggling);
+        Assert.IsTrue(toggling.IsExpanding);
+        Assert.AreEqual(BitAccordionToggleReason.Reveal, toggling.Reason);
+        Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
+        Assert.IsFalse(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-huf"));
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldWriteTheRevealBackToTheBinding()
+    {
+        var isExpanded = false;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
+
+        Assert.IsTrue(isExpanded);
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldStopBeingSearchableWhenTheRevealIsRefused()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs args) => args.Cancel = true);
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
+
+        var content = com.Find(".bit-acd-con");
+
+        Assert.IsFalse(com.Instance.IsExpanded);
+        Assert.IsFalse(content.HasAttribute("hidden"));
+        Assert.IsFalse(content.ClassList.Contains("bit-acd-huf"));
+        Assert.IsTrue(content.ClassList.Contains("bit-acd-cco"));
+        Assert.IsFalse(com.Markup.Contains("onbeforematch"));
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldBeSearchableAgainAfterTheStateChangesForReal()
+    {
+        var refuse = true;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.TransitionDuration, 0);
+            parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs args) => args.Cancel = refuse && args.Reason == BitAccordionToggleReason.Reveal);
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
+
+        Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
+
+        com.Find(".bit-acd-hdr").Click();
+        com.Find(".bit-acd-hdr").Click();
+
+        com.WaitForAssertion(() => Assert.AreEqual("until-found", com.Find(".bit-acd-con").GetAttribute("hidden")));
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldWaitForTheCloseBeforeHidingThePanel()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.TransitionDuration, 100);
+        });
+
+        com.Find(".bit-acd-hdr").Click();
+
+        // The close is still playing, so the panel is only on its way out.
+        Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
+        Assert.IsTrue(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-cco"));
+
+        com.WaitForAssertion(() => Assert.AreEqual("until-found", com.Find(".bit-acd-con").GetAttribute("hidden")),
+                             System.TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldNotHideThePanelOfAnAccordionThatExpandsAgainDuringTheClose()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.TransitionDuration, 50);
+        });
+
+        com.Find(".bit-acd-hdr").Click();
+        com.Find(".bit-acd-hdr").Click();
+
+        System.Threading.Thread.Sleep(150);
+
+        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
+    }
+
+    [TestMethod,
+        DataRow("disabled"),
+        DataRow("readonly"),
+        DataRow("controlled"),
+    ]
+    public void BitAccordionHiddenUntilFoundShouldNotOfferAnAccordionThatCannotExpandItself(string kind)
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            if (kind == "disabled") parameters.Add(p => p.IsEnabled, false);
+            if (kind == "readonly") parameters.Add(p => p.ReadOnly, true);
+            if (kind == "controlled") parameters.Add(p => p.IsExpanded, false);
+        });
+
+        var content = com.Find(".bit-acd-con");
+
+        Assert.IsFalse(content.HasAttribute("hidden"));
+        Assert.IsFalse(content.ClassList.Contains("bit-acd-huf"));
+        Assert.IsFalse(com.Markup.Contains("onbeforematch"));
+    }
+
+
+
+    [TestMethod]
+    public void BitAccordionShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitAccordionCascadingParamsTest>();
+
+        var accordions = component.FindComponents<BitAccordion>();
+
+        Assert.AreEqual(5, accordions.Count);
+
+        // The first one takes everything from the cascading parameters.
+        var first = accordions[0];
+        var root = first.Find(".bit-acd");
+
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
+        Assert.IsTrue(root.ClassList.Contains("bit-acd-tbg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-acd-sbr"));
+        Assert.IsTrue(root.ClassList.Contains("bit-acd-sei"));
+        Assert.IsTrue(root.ClassList.Contains("bit-acd-eop"));
+        Assert.IsTrue(root.ClassList.Contains("bit-acd-mxh"));
+        Assert.IsTrue(root.ClassList.Contains("bit-acd-nbd"));
+        Assert.IsTrue(root.ClassList.Contains("bit-acd-lg"));
+        StringAssert.Contains(root.GetAttribute("style")!, "margin:1px");
+        StringAssert.Contains(root.GetAttribute("style")!, "--bit-acd-max-h:10rem");
+        StringAssert.Contains(root.GetAttribute("style")!, "--bit-acd-dur-full:150ms");
+        Assert.IsTrue(root.QuerySelector(".bit-acd-ttl")!.ClassList.Contains("cascaded-title"));
+        Assert.AreEqual("2", root.QuerySelector(".bit-acd-hed")!.GetAttribute("aria-level"));
+        Assert.IsTrue(root.QuerySelector(".bit-acd-eic")!.ClassList.Contains("bit-icon--Add"));
+        Assert.AreEqual("until-found", root.QuerySelector(".bit-acd-con")!.GetAttribute("hidden"));
+        Assert.IsNull(root.QuerySelector(".bit-acd-con")!.GetAttribute("role"));
+
+        // A nested accordion keeps taking the level below the one holding it.
+        var nested = accordions[1];
+
+        Assert.AreEqual("3", nested.Find(".bit-acd-hed").GetAttribute("aria-level"));
+        Assert.IsTrue(nested.Find(".bit-acd").ClassList.Contains("bit-acd-lg"));
+
+        // The second one keeps every parameter it sets itself.
+        var own = accordions[2].Find(".bit-acd");
+
+        Assert.IsTrue(own.ClassList.Contains("own"));
+        Assert.IsFalse(own.ClassList.Contains("cascaded"));
+        Assert.IsTrue(own.ClassList.Contains("bit-acd-pbg"));
+        Assert.IsTrue(own.ClassList.Contains("bit-acd-sm"));
+        Assert.IsTrue(own.ClassList.Contains("bit-acd-sbr"));
+        Assert.AreEqual("4", own.QuerySelector(".bit-acd-hed")!.GetAttribute("aria-level"));
+        Assert.IsTrue(own.QuerySelector(".bit-acd-eic")!.ClassList.Contains("bit-icon--ChevronDown"));
+        Assert.IsFalse(own.QuerySelector(".bit-acd-con")!.HasAttribute("hidden"));
+        Assert.AreEqual("region", own.QuerySelector(".bit-acd-con")!.GetAttribute("role"));
+
+        // LazyContent holds the first render of the body back.
+        Assert.AreEqual(0, accordions[3].FindAll(".lazy-body").Count);
+
+        // UnmountOnCollapse drops the body on the collapse, and the expander is gone.
+        var unmounted = accordions[4];
+
+        Assert.AreEqual(1, unmounted.FindAll(".unmounted-body").Count);
+        Assert.AreEqual(0, unmounted.FindAll(".bit-acd-eiw").Count);
+
+        unmounted.Find(".bit-acd-hdr").Click();
+
+        Assert.AreEqual(0, unmounted.FindAll(".unmounted-body").Count);
+    }
 }

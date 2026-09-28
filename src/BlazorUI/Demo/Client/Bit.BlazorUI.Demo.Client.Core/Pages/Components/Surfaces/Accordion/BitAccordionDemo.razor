@@ -6,135 +6,69 @@
 
 <DemoPage Name="Accordion"
           SecondaryNames="@(["Expander"])"
-          Description="The Accordion shows and hides a section of related content behind a header the reader can open and close. It carries a title, an optional description and icons, animates the panel open to whatever height its content needs, and can be driven by binding, by events or by its own Expand, Collapse and Toggle methods - which a callback of its own can refuse before the panel moves. The header is a button inside a heading, wired to the panel the way the WAI-ARIA accordion pattern asks for."
+          Description="The Accordion shows and hides a section of content behind a header. The header is a button inside a heading, wired to its panel the way the WAI-ARIA accordion pattern asks; the panel animates to its content's height, can be found by find-in-page while closed, and the whole component is driven by binding, events or its Expand, Collapse and Toggle methods."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
           GitHubUrl="Surfaces/Accordion/BitAccordion.razor"
           GitHubDemoUrl="Surfaces/Accordion/BitAccordionDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>The <code>Title</code> names the section in the header and everything inside the component is the panel the header shows and hides. The accordion starts collapsed; set <code>DefaultIsExpanded</code> to have it open on the first render.</div>
+        <div>
+            <b>Title</b> names the header; everything inside the component is the panel. <b>Description</b> adds a quieter
+            second line, <b>IconName</b> (or <b>Icon</b>) a leading glyph, and <b>DefaultIsExpanded</b> opens it on the first
+            render. Each accordion keeps its own state - for one collection driving many (one open at a time, arrow keys),
+            use <BitLink Href="/components/accordionlist">BitAccordionList</BitLink>.
+        </div>
         <br />
         <BitAccordion Title="Accordion">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </BitAccordion>
-        <br />
-        <BitAccordion Title="Expanded by default" DefaultIsExpanded>
+        <BitAccordion Title="General settings" Description="The general settings of the application" IconName="@BitIconName.Settings">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordion>
+        <BitAccordion Title="Expanded by default" IconName="@BitIconName.People" DefaultIsExpanded>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Multiple" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Expander icon" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            Accordions stack on top of each other and each one keeps its own state, so any number of them can be open at
-            the same time. To have a single collection drive them - one open at a time, keys, expand all - use the
-            <BitLink Href="/components/accordionlist">BitAccordionList</BitLink> component instead.
+            <b>ExpanderIconName</b> / <b>ExpanderIcon</b> replace the chevron, <b>ExpanderIconPosition</b> moves it to the start,
+            <b>HideExpanderIcon</b> removes it and <b>NoExpanderRotation</b> keeps it still. <b>ExpandedExpanderIconName</b> swaps
+            it while open, which also stops the rotation.
         </div>
         <br />
-        <BitAccordion Title="Accordion 1">
-            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-            when possibilities are limitless, waiting for content to emerge.
-        </BitAccordion>
-        <BitAccordion Title="Accordion 2">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </BitAccordion>
-        <BitAccordion Title="Accordion 3">
-            In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-            to awaken. These words are temporary, standing in place of ideas yet to come.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Description" RazorCode="@example3RazorCode" Id="example3">
-        <div>The <code>Description</code> adds a second, quieter line of text beside the title, for the summary of what the panel holds or for the current value of the setting it hides.</div>
-        <br />
-        <BitAccordion Title="General settings" Description="The general settings of the application">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
-        <div>An <code>IconName</code> (or an <code>Icon</code> for an external icon library) puts a glyph at the start of the header, before the title, so a list of accordions can be scanned by icon.</div>
-        <br />
-        <BitAccordion Title="General settings" IconName="@BitIconName.Settings">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        </BitAccordion>
-        <br />
-        <BitAccordion Title="Users" IconName="@BitIconName.People" Description="You are currently not an owner">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Expander icon" RazorCode="@example5RazorCode" Id="example5">
-        <div>
-            The expander is the chevron that turns over as the panel opens. <code>ExpanderIconName</code> and
-            <code>ExpanderIcon</code> replace it, <code>ExpanderIconPosition</code> moves it to the start of the header,
-            <code>HideExpanderIcon</code> removes it, and <code>NoExpanderRotation</code> keeps it still. Giving an
-            <code>ExpandedExpanderIconName</code> swaps the icon for another one while the panel is open, which also
-            stops the rotation - a swapped icon already reports the state on its own. For an expander that is not an
-            icon at all, <BitLink Href="#example15">ExpanderTemplate</BitLink> puts any content in its place.
-        </div>
-        <br /><br />
         <div class="example-content">
-            <div>ExpanderIconName &amp; ExpanderIcon:</div>
-            <BitAccordion Title="ExpanderIconName" ExpanderIconName="ChevronDown">
+            <BitAccordion Title="ExpanderIconName" ExpanderIconName="@BitIconName.ChevronDown">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
-            <BitAccordion Title="ExpanderIcon" ExpanderIcon="@BitIconInfo.Bit("ChevronDownEnd")">
+            <BitAccordion Title="ExpanderIconPosition Start" IconName="@BitIconName.Settings" ExpanderIconPosition="BitIconPosition.Start">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>ExpanderIconPosition:</div>
-            <BitAccordion Title="Start" ExpanderIconPosition="BitIconPosition.Start">
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            </BitAccordion>
-            <BitAccordion Title="Start with an icon" IconName="@BitIconName.Settings" ExpanderIconPosition="BitIconPosition.Start">
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            </BitAccordion>
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>HideExpanderIcon, NoExpanderRotation &amp; ExpandedExpanderIconName:</div>
             <BitAccordion Title="HideExpanderIcon" HideExpanderIcon>
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
-            <BitAccordion Title="NoExpanderRotation" ExpanderIconName="ChevronDown" NoExpanderRotation>
+            <BitAccordion Title="NoExpanderRotation" ExpanderIconName="@BitIconName.ChevronDown" NoExpanderRotation>
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
-            <BitAccordion Title="ExpandedExpanderIconName" ExpanderIconName="Add" ExpandedExpanderIconName="Remove">
+            <BitAccordion Title="ExpandedExpanderIconName" ExpanderIconName="@BitIconName.Add" ExpandedExpanderIconName="@BitIconName.Remove">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Actions" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Actions" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>
-            The <code>Actions</code> render beside the header, outside of the toggle button and of the heading that
-            wraps it, so they can hold interactive elements of their own: a button inside the header would otherwise be
-            a button nested in a button, which no browser lets the reader reach.
+            <b>Actions</b> render beside the header, outside the toggle button and its heading, so they can hold buttons of
+            their own - a button inside the header would be a button nested in a button.
         </div>
         <br />
         <BitAccordion Title="Project settings" Description="@($"Renamed {renameCount} times")">
             <Actions>
-                <BitButton Variant="BitVariant.Text"
-                           IconName="@BitIconName.Rename"
-                           Title="Rename"
-                           OnClick="() => renameCount++" />
-                <BitButton Variant="BitVariant.Text"
-                           Color="BitColor.Error"
-                           IconName="@BitIconName.Delete"
-                           Title="Delete" />
+                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Rename" Title="Rename" OnClick="() => renameCount++" />
+                <BitButton Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete" Title="Delete" />
             </Actions>
             <Body>
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
@@ -142,113 +76,70 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Controlled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            Handing <code>IsExpanded</code> a value the page owns, without binding it back, makes the accordion fully
-            controlled: it never changes state on its own, and <code>OnClick</code> is where the page decides what the
-            click means. Here one variable holds the open panel, so opening one closes the others and clicking the open
-            one closes it again.
+            <b>@@bind-IsExpanded</b> keeps the state and a field in step both ways. <b>IsExpanded</b> bound one way makes the
+            accordion controlled: it never moves on its own, and <b>OnClick</b> is where the page decides - here, one open at a
+            time. <b>IsEnabled="false"</b> ignores pointer and keyboard, while the binding still drives it.
         </div>
         <br />
-        <BitAccordion Title="General settings"
-                      Description="I am an accordion"
-                      OnClick="() => controlledAccordionExpandedItem = controlledAccordionExpandedItem == 1 ? 0 : 1"
-                      IsExpanded="controlledAccordionExpandedItem == 1">
-            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-            Each word carried meaning, each pause brought understanding.
-        </BitAccordion>
-        <BitAccordion Title="Users"
-                      Description="You are currently not an owner"
-                      OnClick="() => controlledAccordionExpandedItem = controlledAccordionExpandedItem == 2 ? 0 : 2"
-                      IsExpanded="controlledAccordionExpandedItem == 2">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </BitAccordion>
-        <BitAccordion Title="Advanced settings"
-                      Description="Filtering has been entirely disabled for whole web server"
-                      OnClick="() => controlledAccordionExpandedItem = controlledAccordionExpandedItem == 3 ? 0 : 3"
-                      IsExpanded="controlledAccordionExpandedItem == 3">
-            In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-            to awaken. These words are temporary, standing in place of ideas yet to come.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>
-            <code>@@bind-IsExpanded</code> keeps the state of the accordion and a field of the page in step in both
-            directions, so the panel can be opened from elsewhere and every toggle is written back. A disabled accordion
-            (<code>IsEnabled="false"</code>) ignores the pointer and the keyboard, and reports itself as disabled to
-            assistive technology, but the binding still drives it.
+        <div class="example-content">
+            <div>Two-way:</div>
+            <BitToggle @bind-Value="bindingIsEnabled" OnText="Enabled" OffText="Disabled" />
+            <BitToggle @bind-Value="bindingIsExpanded" OnText="Expanded" OffText="Collapsed" />
+            <BitAccordion Title="Bound" IsEnabled="bindingIsEnabled" @bind-IsExpanded="bindingIsExpanded">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
         </div>
-        <br />
-        <BitToggle @bind-Value="accordionToggleIsEnabled" OnText="Enabled" OffText="Disabled" />
-        <br />
-        <BitToggle @bind-Value="accordionToggleIsExpanded" OnText="Expanded" OffText="Collapsed" />
         <br /><br />
-        <BitAccordion Title="Accordion"
-                      Description="I am an accordion"
-                      IsEnabled="accordionToggleIsEnabled"
-                      @bind-IsExpanded="accordionToggleIsExpanded">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>
-            <code>OnClick</code> reports every click on the header, whether or not it changed anything.
-            <code>OnChange</code> reports the new state, and <code>OnExpand</code> and <code>OnCollapse</code> report
-            each half of it on its own, so a panel that loads its data when it opens does not have to test the flag.
-            All three report a change that has already happened; <BitLink Href="#example10">OnToggling</BitLink> is
-            the one that runs before it and can still refuse it.
+        <div class="example-content">
+            <div>Controlled (one open at a time):</div>
+            <BitAccordion Title="General settings"
+                          IsExpanded="controlledExpandedItem == 1"
+                          OnClick="() => controlledExpandedItem = controlledExpandedItem == 1 ? 0 : 1">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
+            <BitAccordion Title="Users"
+                          IsExpanded="controlledExpandedItem == 2"
+                          OnClick="() => controlledExpandedItem = controlledExpandedItem == 2 ? 0 : 2">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
+            <BitAccordion Title="Advanced settings"
+                          IsExpanded="controlledExpandedItem == 3"
+                          OnClick="() => controlledExpandedItem = controlledExpandedItem == 3 ? 0 : 3">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
         </div>
-        <br />
-        <BitAccordion Title="Accordion"
-                      Description="I am an accordion"
-                      OnClick="() => clickCount++"
-                      OnChange="(bool v) => lastChange = v"
-                      OnExpand="() => expandCount++"
-                      OnCollapse="() => collapseCount++">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        </BitAccordion>
-        <br />
-        <div>Clicks: <b>@clickCount</b></div>
-        <div>Last OnChange: <b>@lastChange</b></div>
-        <div>Expanded: <b>@expandCount</b> times, collapsed: <b>@collapseCount</b> times</div>
     </DemoExample>
 
-    <DemoExample Title="Cancelling a toggle" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
-            <code>OnToggling</code> runs before the panel moves and can refuse the change: set <code>Cancel</code>
-            on the arguments it hands over and the accordion stays where it is, with nothing written back to the
-            binding and neither <code>OnChange</code> nor <code>OnExpand</code>/<code>OnCollapse</code> raised.
-            <code>IsExpanding</code> tells an expansion from a collapse and <code>Reason</code> tells a click on
-            the header from an <code>Expand</code>, <code>Collapse</code> or <code>Toggle</code> call. The
-            callback is awaited, so it can load the panel or ask for a confirmation first - nothing else toggles
-            the accordion while it is running, and the header reports itself as busy for as long as it does.
+            <b>OnClick</b> reports every click on the header; <b>OnChange</b>, <b>OnExpand</b> and <b>OnCollapse</b> report a
+            change that happened. <b>OnToggling</b> runs before it and can refuse it with <b>Cancel</b>; it is awaited (the
+            header reports busy meanwhile) and says why through <b>IsExpanding</b> and <b>Reason</b>.
         </div>
         <br />
         <BitToggle @bind-Value="lockAccordion" OnText="Locked open" OffText="Unlocked" />
-        <br />
         <BitAccordion Title="Unsaved changes"
                       Description="@(lockAccordion ? "Unlock to close this panel" : "Free to close")"
                       DefaultIsExpanded
+                      OnClick="() => clickCount++"
+                      OnChange="(bool v) => lastChange = v"
+                      OnExpand="() => expandCount++"
+                      OnCollapse="() => collapseCount++"
                       OnToggling="HandleOnToggling">
-            The collapse of this panel is refused while it is locked, the way a panel holding a form that has not
-            been filled in yet would refuse to close on the reader.
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
         <br />
-        <div>Refused: <b>@refusedCount</b> times</div>
+        <div>Clicks: <b>@clickCount</b>, last OnChange: <b>@lastChange</b></div>
+        <div>Expanded: <b>@expandCount</b>, collapsed: <b>@collapseCount</b>, refused: <b>@refusedCount</b></div>
     </DemoExample>
 
-    <DemoExample Title="Programmatic control" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Programmatic control" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            A reference to the component exposes <code>Expand</code>, <code>Collapse</code> and <code>Toggle</code>,
-            which report the change through the binding and the events exactly as a click on the header would. They
-            work on a disabled accordion too, so an app can still open one to show why it is disabled.
-            <code>FocusAsync</code> moves the keyboard to the header, so a panel the app has just opened is also
-            where the reader is standing - and the other way round, a panel that closes on the element the keyboard
-            was in hands the focus back to its own header on its own, whoever closed it.
+            <b>Expand</b>, <b>Collapse</b> and <b>Toggle</b> report through the binding and events like a click (and work on a
+            disabled accordion). <b>FocusAsync</b> moves the keyboard to the header; a panel that closes on the focus hands it
+            back to its header on its own.
         </div>
         <br />
         <BitButton OnClick="() => accordionRef.Expand()">Expand</BitButton>
@@ -256,194 +147,154 @@
         <BitButton OnClick="() => accordionRef.Toggle()">Toggle</BitButton>
         <BitButton OnClick="async () => { await accordionRef.Expand(); await accordionRef.FocusAsync(); }">Expand &amp; focus</BitButton>
         <br /><br />
-        <BitAccordion @ref="accordionRef" Title="Accordion" Description="I am an accordion">
+        <BitAccordion @ref="accordionRef" Title="Accordion">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Content rendering" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Content rendering" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            By default the panel is rendered even while it is closed, which is what keeps the state its content holds -
-            a half-filled form, a scroll position, a running timer - across a collapse. <code>LazyContent</code> holds
-            the first render back until the panel is opened, and then keeps it: the right choice for a heavy panel that
-            should not cost anything until it is asked for. <code>UnmountOnCollapse</code> goes further and drops the
-            content again on every collapse, which stops whatever it was running but leaves nothing to animate on the
-            way out. A collapsed panel is hidden from the reader either way, so its text is out of reach of the
-            find-in-page of the browser whichever of the three is chosen - and only the first of the three can
-            still be <BitLink Href="#example18">printed</BitLink>, since the other two have nothing in the DOM
-            to print.
+            The panel is rendered while closed by default, keeping its state. <b>LazyContent</b> waits for the first expand,
+            then keeps it; <b>UnmountOnCollapse</b> drops it on every collapse (no closing animation). Type into both, then
+            close and reopen them.
         </div>
-        <br />
-        <div>Type into both, then close and open them again: the first one finds its text where it was left, the second one has thrown it away.</div>
         <br />
         <BitAccordion Title="LazyContent" LazyContent>
             <BitTextField Placeholder="Kept after a collapse..." />
         </BitAccordion>
-        <br />
         <BitAccordion Title="UnmountOnCollapse" UnmountOnCollapse>
             <BitTextField Placeholder="Thrown away on a collapse..." />
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="MaxHeight" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Find in page" RazorCode="@example8RazorCode" Id="example8">
         <div>
-            <code>MaxHeight</code> (any CSS length) caps how tall the open panel grows and lets its content scroll
-            inside instead, so a long panel cannot push the rest of the page out of reach. The scrolling region takes a
-            tab stop of its own, so it can be scrolled from the keyboard as well.
+            A closed panel is hidden from find-in-page. <b>HiddenUntilFound</b> hands it to the browser as
+            <b>hidden="until-found"</b>: <b>Ctrl+F</b> or a <b>#fragment</b> link finds text inside and the accordion expands
+            around the match (<b>OnToggling</b> sees <b>Reason</b> = <b>Reveal</b>). It keeps the panel in the DOM, overriding
+            <b>LazyContent</b> and <b>UnmountOnCollapse</b>.
         </div>
         <br />
-        <BitAccordion Title="Accordion" MaxHeight="10rem" DefaultIsExpanded>
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        <div>Search the page for <b>tangerine</b>:</div>
+        <br />
+        <BitAccordion Title="Which fruits ship overnight?" HiddenUntilFound>
+            Citrus like the tangerine ships overnight in insulated boxes; berries ship on the next business day.
+        </BitAccordion>
+        <BitAccordion Title="Can I change my order?" HiddenUntilFound>
+            Orders can be changed until they are packed, usually within two hours of checkout.
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Transition" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="MaxHeight & Transition" RazorCode="@example9RazorCode" Id="example9">
         <div>
-            The panel animates open to whatever height its content needs. <code>TransitionDuration</code> (in
-            milliseconds) overrides the duration the theme provides, and <code>0</code> turns the animation off. A
-            reader who asks for reduced motion gets no animation either way, unless the component opts out of that with
-            <code>ForceAnimation</code>.
+            <b>MaxHeight</b> (any CSS length) caps the open panel and scrolls its content; the scroll region takes a tab stop.
+            <b>TransitionDuration</b> (ms) overrides the theme's duration, <b>0</b> turns it off. Reduced motion turns it off
+            too, unless <b>ForceAnimation</b> is set.
         </div>
         <br />
+        <BitAccordion Title="MaxHeight 6rem" MaxHeight="6rem">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. This space is yours to craft, yours to shape.
+        </BitAccordion>
         <BitAccordion Title="Slow (1000ms)" TransitionDuration="1000">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
-        <br />
         <BitAccordion Title="Instant (0)" TransitionDuration="0">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Templates" RazorCode="@example10RazorCode" CodeFiles="@example10CodeFiles" Id="example10">
         <div>
-            <code>TitleTemplate</code> takes the place of the title text and leaves the rest of the header - the icon,
-            the description and the expander - as it is. <code>ExpanderTemplate</code> does the same for the expander,
-            receiving the current expanded state and sitting inside the wrapper the rotation is applied to, so its
-            content still turns over unless <code>NoExpanderRotation</code> keeps it still.
-            <code>HeaderTemplate</code> goes further and replaces the whole header, expander included, receiving the
-            expanded state so the template can draw its own indicator. Anything interactive belongs in
-            <code>Actions</code> rather than in any of the three, all of which are rendered inside the toggle button.
-            The panel itself takes any content at all.
+            <b>TitleTemplate</b> replaces the title text, <b>ExpanderTemplate</b> the expander (still rotated unless
+            <b>NoExpanderRotation</b>), and <b>HeaderTemplate</b> the whole header. All three render inside the toggle button,
+            so anything interactive belongs in <b>Actions</b>.
         </div>
-        <br /><br />
+        <br />
         <div class="example-content">
-            <div>TitleTemplate:</div>
-            <BitAccordion IconName="@BitIconName.Settings" Description="I am an accordion">
+            <BitAccordion IconName="@BitIconName.Settings" Description="TitleTemplate">
                 <TitleTemplate>
                     <BitStack Horizontal FitWidth AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
                         <span>Advanced settings</span>
-                        <BitIcon IconName="@BitIconName.Info" Color="BitColor.Info" />
+                        <BitTag Text="New" Color="BitColor.Info" Size="BitSize.Small" />
                     </BitStack>
                 </TitleTemplate>
                 <Body>
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                 </Body>
             </BitAccordion>
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>ExpanderTemplate:</div>
-            <BitAccordion Title="Show more" IconName="@BitIconName.Info" NoExpanderRotation>
+            <BitAccordion Title="ExpanderTemplate" NoExpanderRotation>
                 <ExpanderTemplate Context="isExpanded">
-                    <BitText Typography="BitTypography.Caption1" Color="BitColor.Primary">
-                        @(isExpanded ? "Less" : "More")
-                    </BitText>
+                    <BitText Typography="BitTypography.Caption1" Color="BitColor.Primary">@(isExpanded ? "Less" : "More")</BitText>
                 </ExpanderTemplate>
                 <Body>
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                 </Body>
             </BitAccordion>
-            <BitAccordion Title="Turning with the panel">
-                <ExpanderTemplate>
-                    <BitIcon IconName="@BitIconName.CirclePlus" />
-                </ExpanderTemplate>
+            <BitAccordion>
+                <HeaderTemplate Context="isExpanded">
+                    <BitIcon IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                    <div class="custom-header">
+                        <span class="custom-title">HeaderTemplate</span>
+                        <span class="custom-desc">@(isExpanded ? "Open" : "Closed")</span>
+                    </div>
+                </HeaderTemplate>
                 <Body>
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                 </Body>
             </BitAccordion>
         </div>
-        <br /><br />
-        <div>HeaderTemplate:</div>
+    </DemoExample>
+
+    <DemoExample Title="Read-only" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>ReadOnly</b> is the panel that must stay as it is (e.g. the last open one): it keeps its colors and tab stop,
+            reports <b>aria-disabled</b>, still raises <b>OnClick</b> and still answers the methods. Compare
+            <b>IsEnabled="false"</b>, which greys it out and drops the tab stop.
+        </div>
         <br />
-        <BitAccordion>
-            <HeaderTemplate Context="isExpanded">
-                <BitIcon IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
-                <div class="custom-header">
-                    <span class="custom-title">Accordion 1</span>
-                    <span class="custom-desc">I am an accordion</span>
-                </div>
-            </HeaderTemplate>
-            <Body>
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-            </Body>
+        <BitAccordion Title="Read-only"
+                      Description="@($"Clicked {readOnlyClickCount} times, still open")"
+                      OnClick="() => readOnlyClickCount++"
+                      ReadOnly
+                      DefaultIsExpanded>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
-        <br /><br />
-        <div>This Accordion content is customized by the BitCarousel.</div><br />
-        <BitAccordion Title="Nature" Description="I am an accordion">
-            <BitCarousel AnimationDuration="1">
-                <BitCarouselItem>
-                    <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                </BitCarouselItem>
-            </BitCarousel>
+        <BitAccordion Title="Disabled" IsEnabled="false" DefaultIsExpanded>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Printing" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            The header is a button inside a heading, the panel is a region named by that button, and the two are tied
-            together with <code>aria-controls</code> and <code>aria-expanded</code> - the structure the WAI-ARIA
-            accordion pattern asks for. <code>HeadingLevel</code> is what puts the header at the right depth of the
-            heading outline of the page (3 by default, clamped to 1..6), so the accordions of a section sit one level
-            below the heading that introduces them; an accordion nested in the panel of another one takes the level
-            below its own without being told. A collapsed panel is taken out of the tab order and out of the
-            accessibility tree, so nothing inside a closed accordion answers Tab. A header that does not name itself -
-            an icon-only <code>HeaderTemplate</code> - takes a <code>HeaderAriaLabel</code>, which names both the toggle
-            and the panel it opens. <code>NoContentRegion</code> drops the landmark role from the panel, which the
-            authoring practices ask for on a page carrying more than about six panels that can all be open at once,
-            where the landmarks would get in the way rather than help. A panel that cannot be closed because
-            something has to stay open reports itself as <code>aria-disabled</code> through
-            <BitLink Href="#example19">ReadOnly</BitLink>, which is the state the authoring practices ask for
-            there rather than the greying-out of <code>IsEnabled="false"</code>.
+            A closed panel prints as a bare header. <b>ExpandOnPrint</b> opens it on paper only (lifting <b>MaxHeight</b>);
+            content not in the DOM (<b>LazyContent</b> never opened, <b>UnmountOnCollapse</b>) still cannot print. Try the
+            print preview (Ctrl+P).
         </div>
         <br />
-        <BitAccordion Title="Under an h2" HeadingLevel="3">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            <br /><br />
-            <BitLink Href="/components/accordion">A link the Tab key only reaches while this panel is open.</BitLink>
-        </BitAccordion>
-        <br />
-        <BitAccordion Title="Under an h3" HeadingLevel="4">
+        <BitAccordion Title="Printed with its content" ExpandOnPrint>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
+        <BitAccordion Title="Printed as a bare header">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordion>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            The header is a button in a heading, named by the <b>Title</b> and described by the <b>Description</b>; the panel is
+            a region it controls. <b>HeadingLevel</b> sets the heading depth (3 by default; nested accordions go one deeper on
+            their own). A closed panel is out of the tab order and the accessibility tree. <b>HeaderAriaLabel</b> names an
+            icon-only header, <b>AriaLabel</b> names the accordion as a group, and <b>NoContentRegion</b> drops the landmark
+            role for pages with many open panels.
+        </div>
         <br />
+        <BitAccordion Title="Under an h2" Description="aria-level 3" HeadingLevel="3">
+            <BitLink Href="/components/accordion">A link Tab only reaches while this panel is open.</BitLink>
+        </BitAccordion>
         <BitAccordion HeaderAriaLabel="Notifications">
             <HeaderTemplate>
                 <BitIcon IconName="@BitIconName.Ringer" />
@@ -452,88 +303,48 @@
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </Body>
         </BitAccordion>
-        <br />
         <BitAccordion Title="Nested (aria-level 3)" NoContentRegion DefaultIsExpanded>
-            The accordion below is announced one level under this one, and neither of the two panels is a landmark.
-            <br /><br />
             <BitAccordion Title="Nested (aria-level 4)" NoContentRegion>
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="NoBorder" RazorCode="@example17RazorCode" Id="example17">
-        <div><code>NoBorder</code> drops the border of the accordion and fills it with the secondary background instead, for a flat accordion that leans on the surface it sits on rather than on an outline.</div>
-        <br />
-        <BitAccordion Title="Accordion" NoBorder>
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Printing" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
-            A collapsed panel is hidden outright, so an accordion prints as a bare header and everything it was
-            about is left off the paper. <code>ExpandOnPrint</code> opens the panel for the print stylesheet
-            alone - what is on screen stays exactly where the reader left it - and lifts the scroll cap of
-            <code>MaxHeight</code> with it, since paper does not scroll. What is not in the DOM at all cannot be
-            printed by any of this: a <code>LazyContent</code> panel that has never been opened, and every closed
-            panel of an accordion using <code>UnmountOnCollapse</code>, still print as a bare header.
+            <b>BitParams</b> with a <b>BitAccordionParams</b> sets defaults for every accordion inside it. An accordion's own
+            parameters win; only unset ones are filled in. A cascaded <b>HeadingLevel</b> reaches top-level accordions only.
         </div>
         <br />
-        <div>Leave both of these closed and open the print preview of the browser (Ctrl+P): only the first one carries its text onto the page.</div>
-        <br />
-        <BitAccordion Title="Printed with its content" ExpandOnPrint>
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </BitAccordion>
-        <br />
-        <BitAccordion Title="Printed as a bare header">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        </BitAccordion>
+        <BitParams Parameters="@accordionParams">
+            <BitAccordion Title="Takes the cascade">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
+            <BitAccordion Title="Also takes the cascade" Description="Searchable while closed">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
+            <BitAccordion Title="Sets its own ExpanderIconPosition" ExpanderIconPosition="BitIconPosition.End">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
+        </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Read-only" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
-            <code>ReadOnly</code> is for the panel that has to stay as it is rather than the one that is turned
-            off: the header keeps the colors of a live one and its place in the tab order, and reports itself as
-            <code>aria-disabled</code> the way the authoring practices ask an open panel that cannot be closed
-            to - the last one left open in a one-at-a-time accordion, for instance. <code>OnClick</code> still
-            reports the click, so the page can say why nothing moved, and <code>Expand</code>,
-            <code>Collapse</code> and <code>Toggle</code> still drive it: what is closed is the way in from the
-            header, not the one the app itself uses. Compare it with <code>IsEnabled="false"</code> beside it,
-            which greys the whole accordion out and takes the header out of the tab order altogether.
+            <b>Background</b> and <b>Border</b> pick the color kind of the surface and the outline (<b>Transparent</b> lets the
+            underlying surface show). <b>NoBorder</b> drops the outline and fills with the secondary background.
         </div>
         <br />
-        <BitAccordion Title="Read-only"
-                      Description="@($"Clicked {readOnlyClickCount} times, still open")"
-                      OnClick="() => readOnlyClickCount++"
-                      ReadOnly
-                      DefaultIsExpanded>
-            This panel answers no click and no key, but it is not greyed out: it is open on purpose and nothing
-            about it is unavailable.
-        </BitAccordion>
-        <br />
-        <BitAccordion Title="Disabled" Description="Turned off altogether" IsEnabled="false" DefaultIsExpanded>
-            This one is greyed out and its header is out of the tab order.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Color" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
-        <div><code>Background</code> and <code>Border</code> pick the color kind of the surface and of the outline of the accordion, so it can be tuned to the surface it is placed on - <b>Transparent</b> letting whatever is underneath show through.</div>
-        <br /><br />
         <div class="example-content">
             <div>Background:</div>
-            <BitChoiceGroup @bind-Value="backgroundColorKind" Horizontal
-                            TItem="BitChoiceGroupOption<BitColorKind>" TValue="BitColorKind">
+            <BitChoiceGroup @bind-Value="backgroundColorKind" Horizontal TItem="BitChoiceGroupOption<BitColorKind>" TValue="BitColorKind">
                 <BitChoiceGroupOption Text="Primary" Value="BitColorKind.Primary" />
                 <BitChoiceGroupOption Text="Secondary" Value="BitColorKind.Secondary" />
                 <BitChoiceGroupOption Text="Tertiary" Value="BitColorKind.Tertiary" />
                 <BitChoiceGroupOption Text="Transparent" Value="BitColorKind.Transparent" />
             </BitChoiceGroup>
-            <div style="padding:2rem;background:gray">
-                <BitAccordion Title="Accordion" Background="backgroundColorKind">
+            <div style="padding: 2rem; background: gray;">
+                <BitAccordion Title="Background" Background="backgroundColorKind">
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                 </BitAccordion>
             </div>
@@ -541,128 +352,104 @@
         <br /><br />
         <div class="example-content">
             <div>Border:</div>
-            <BitChoiceGroup @bind-Value="borderColorKind" Horizontal
-                            TItem="BitChoiceGroupOption<BitColorKind>" TValue="BitColorKind">
+            <BitChoiceGroup @bind-Value="borderColorKind" Horizontal TItem="BitChoiceGroupOption<BitColorKind>" TValue="BitColorKind">
                 <BitChoiceGroupOption Text="Primary" Value="BitColorKind.Primary" />
                 <BitChoiceGroupOption Text="Secondary" Value="BitColorKind.Secondary" />
                 <BitChoiceGroupOption Text="Tertiary" Value="BitColorKind.Tertiary" />
                 <BitChoiceGroupOption Text="Transparent" Value="BitColorKind.Transparent" />
             </BitChoiceGroup>
-            <BitAccordion Title="Accordion" Border="borderColorKind">
+            <BitAccordion Title="Border" Border="borderColorKind">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>NoBorder:</div>
+            <BitAccordion Title="NoBorder" NoBorder>
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>
-            <code>Icon</code> and <code>ExpanderIcon</code> take a <code>BitIconInfo</code> rather than the name of a
-            built-in icon, so an accordion can be dressed in the icons of any library that draws them from CSS classes.
-            <code>BitIconInfo.Css</code> takes the classes as they are - a bare string is enough, as the first accordion
-            below shows - while <code>BitIconInfo.Fa</code> and <code>BitIconInfo.Bi</code> spell out the prefixes of
-            FontAwesome and Bootstrap Icons for you.
+            <b>Icon</b>, <b>ExpanderIcon</b> and <b>ExpandedExpanderIcon</b> take a <b>BitIconInfo</b>, so any CSS icon library
+            works: a bare class string or <b>BitIconInfo.Css</b>, or the <b>BitIconInfo.Fa</b> / <b>BitIconInfo.Bi</b> shortcuts.
         </div>
-
         <br />
-        <br />
-
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
-        <div>FontAwesome:</div>
-        <br />
-        <BitAccordion Title="Chevron Down" ExpanderIcon="@("fa-solid fa-chevron-down")">
-            ExpanderIcon=@@("fa-solid fa-chevron-down")
-        </BitAccordion>
-
-        <br/>
-
-        <BitAccordion Title="Chevron Right" ExpanderIcon="@BitIconInfo.Css("fa-solid fa-chevron-right")">
-            ExpanderIcon="@@BitIconInfo.Css("fa-solid fa-chevron-right")"
-        </BitAccordion>
-
-        <br/>
-
-        <BitAccordion Title="Angle Down" ExpanderIcon="@BitIconInfo.Fa("solid angle-down")">
-            ExpanderIcon="@@BitIconInfo.Fa("solid angle-down")"
-        </BitAccordion>
-
-        <br/>
-
-        <BitAccordion Title="Gear" Icon="@BitIconInfo.Fa("solid gear")" ExpanderIcon="@BitIconInfo.Fa("solid caret-down")">
-            Icon="@@BitIconInfo.Fa("solid gear")"
-        </BitAccordion>
-
-        <br /><br /><br /><br />
-
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
-        <div>Bootstrap:</div>
-        <br />
-        <BitAccordion Title="Chevron Down" ExpanderIcon="@("bi bi-chevron-down")">
-            ExpanderIcon=@@("bi bi-chevron-down")
-        </BitAccordion>
-
-        <br/>
-
-        <BitAccordion Title="Chevron Right" ExpanderIcon="@BitIconInfo.Css("bi bi-chevron-right")">
-            ExpanderIcon="@@BitIconInfo.Css("bi bi-chevron-right")"
-        </BitAccordion>
-
-        <br/>
-
-        <BitAccordion Title="Arrow Down" ExpanderIcon="@BitIconInfo.Bi("arrow-down")">
-            ExpanderIcon="@@BitIconInfo.Bi("arrow-down")"
-        </BitAccordion>
-
-        <br/>
-
-        <BitAccordion Title="Gear" Icon="@BitIconInfo.Bi("gear")" ExpanderIcon="@BitIconInfo.Bi("caret-down-fill")">
-            Icon="@@BitIconInfo.Bi("gear")"
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22">
-        <div>The <code>Size</code> drives the padding of the header and of the panel and the type scale of the whole accordion - the title, the description, the icons and the text of the panel - so it can be tuned to how much room it is given.</div>
-        <br />
-        <BitAccordion Title="Small" Size="BitSize.Small" IconName="@BitIconName.Settings">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        </BitAccordion>
-        <br />
-        <BitAccordion Title="Medium" Size="BitSize.Medium" IconName="@BitIconName.Settings">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        </BitAccordion>
-        <br />
-        <BitAccordion Title="Large" Size="BitSize.Large" IconName="@BitIconName.Settings">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" Id="example23">
-        <div>
-            <code>Style</code> and <code>Class</code> dress the root element, while <code>Styles</code> and
-            <code>Classes</code> reach each part of the accordion on its own - the header, the title, the expander
-            icon, the panel and everything between them. Two of their slots are states rather than parts:
-            <code>Expanded</code> is added to the root only while the panel is open, and <code>ExpandedIcon</code>
-            only to the expander icon while it is, so the open accordion can be dressed differently from the
-            closed one without a line of C#.
+        <div class="example-content">
+            <div>FontAwesome:</div>
+            <BitAccordion Title="Bare class string" ExpanderIcon="@("fa-solid fa-chevron-down")">
+                ExpanderIcon=@@("fa-solid fa-chevron-down")
+            </BitAccordion>
+            <BitAccordion Title="Gear" Icon="@BitIconInfo.Fa("solid gear")" ExpanderIcon="@BitIconInfo.Fa("solid plus")" ExpandedExpanderIcon="@BitIconInfo.Fa("solid minus")">
+                Icon="@@BitIconInfo.Fa("solid gear")"
+            </BitAccordion>
         </div>
         <br /><br />
         <div class="example-content">
-            <div>Component's style &amp; class:</div>
-            <BitAccordion Title="Style" Style="border-color: var(--bit-clr-pri); border-width: 2px;">
+            <div>Bootstrap:</div>
+            <BitAccordion Title="BitIconInfo.Css" ExpanderIcon="@BitIconInfo.Css("bi bi-chevron-down")">
+                ExpanderIcon="@@BitIconInfo.Css("bi bi-chevron-down")"
+            </BitAccordion>
+            <BitAccordion Title="Gear" Icon="@BitIconInfo.Bi("gear")" ExpanderIcon="@BitIconInfo.Bi("caret-down-fill")">
+                Icon="@@BitIconInfo.Bi("gear")"
+            </BitAccordion>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+        <div><b>Size</b> scales the padding and the type of the whole accordion - header, icons and panel.</div>
+        <br />
+        <BitAccordion Title="Small" Description="Description" Size="BitSize.Small" IconName="@BitIconName.Settings">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordion>
+        <BitAccordion Title="Medium" Description="Description" Size="BitSize.Medium" IconName="@BitIconName.Settings">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordion>
+        <BitAccordion Title="Large" Description="Description" Size="BitSize.Large" IconName="@BitIconName.Settings">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordion>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CodeFiles="@example18CodeFiles" Id="example18">
+        <div>
+            Reach for the <b>--bit-Accordion-*</b> CSS variables first (listed in the API section): they inherit, so set them on
+            <b>:root</b>, an ancestor or an instance's <b>Style</b>. <b>Style</b>/<b>Class</b> and <b>Styles</b>/<b>Classes</b>
+            (per part; <b>Expanded</b> and <b>ExpandedIcon</b> apply only while open) cover the rest.
+        </div>
+        <br />
+        <div class="example-content">
+            <div>CSS variables:</div>
+            <BitAccordion Title="On the instance"
+                          Style="--bit-Accordion-radius: 0; --bit-Accordion-border-width: 2px; --bit-Accordion-border-color: seagreen; --bit-Accordion-title-color: seagreen; --bit-Accordion-expander-color: seagreen;">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
+            <div class="faq-accordions">
+                <BitAccordion Title="On an ancestor" Description="Every accordion below it">
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                </BitAccordion>
+                <BitAccordion Title="Takes the same look">
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                </BitAccordion>
+            </div>
+        </div>
+        <br /><br />
+        @* A plain element of this page, which the scoped ::deep rules of the classes below anchor to. *@
+        <div class="example-content">
+            <div>Style &amp; Class:</div>
+            <BitAccordion Title="Style" Style="box-shadow: var(--bit-shd-card);">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
             <BitAccordion Title="Class" Class="custom-class">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div><b>Styles</b> &amp; <b>Classes</b>:</div>
+            <div>Styles &amp; Classes:</div>
             <BitAccordion Title="Styles"
                           Description="I am an accordion"
-                          Styles="@(new() { Header = "background: var(--bit-clr-bg-sec);",
-                                            Title = "color: tomato;",
+                          Styles="@(new() { Title = "color: tomato;",
                                             ExpanderIcon = "color: tomato;",
                                             ExpandedIcon = "color: seagreen;",
                                             Expanded = "border-color: seagreen;",
@@ -677,15 +464,14 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example24RazorCode" Id="example24">
-        <div>Set <code>Dir</code> to <code>BitDir.Rtl</code> - or let it cascade from an ancestor - and the whole header turns around: the icon leads from the right, the expander closes on the left, and the padding of the panel follows with it.</div><br />
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+        <div><b>Dir="BitDir.Rtl"</b> (or a cascaded one) mirrors the header: the icon leads from the right, the expander closes on the left.</div>
+        <br />
         <BitAccordion Dir="BitDir.Rtl"
                       Title="تنظیمات"
                       IconName="@BitIconName.Settings"
                       Description="من یک آکاردئون هستم!">
             لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
-            و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
         </BitAccordion>
     </DemoExample>
 </DemoPage>
