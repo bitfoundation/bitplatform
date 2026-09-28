@@ -20,12 +20,13 @@ private bool expanded = true;";
     The button and the collapse share one value: <b>@boundExpanded</b>.
 </BitCollapse>
 
-<div style=""display:flex;gap:0.5rem"">
+<div style=""display:flex;align-items:center;gap:0.5rem"">
     <BitButton OnClick=""() => collapseRef?.ExpandAsync()"">Expand</BitButton>
     <BitButton OnClick=""() => collapseRef?.CollapseAsync()"">Collapse</BitButton>
     <BitButton OnClick=""() => collapseRef?.ToggleAsync()"">Toggle</BitButton>
+    <BitCheckbox Label=""Enabled"" @bind-Value=""collapseEnabled"" />
 </div>
-<BitCollapse @ref=""collapseRef"" DefaultExpanded OnChange=""HandleChange"">
+<BitCollapse @ref=""collapseRef"" DefaultExpanded IsEnabled=""collapseEnabled"" OnChange=""HandleChange"">
     Starts open through DefaultExpanded; nothing on the page holds its state.
 </BitCollapse>
 <div>@changeLog</div>";
@@ -33,6 +34,7 @@ private bool expanded = true;";
 private bool boundExpanded = true;
 private string changeLog = string.Empty;
 private BitCollapse? collapseRef;
+private bool collapseEnabled = true;
 
 private void HandleChange(bool value) => changeLog = $""OnChange({value.ToString().ToLower()})"";";
 
@@ -60,7 +62,7 @@ private bool surfaceExpanded = true;";
 private bool horizontalExpanded = true;";
 
     private readonly string example5RazorCode = @"
-<BitCollapse Expanded=""peekExpanded"" CollapsedSize=""4.5rem"">
+<BitCollapse Expanded=""peekExpanded"" CollapsedSize=""4.5rem"" Style=""--bit-Collapse-peek-fade: 2rem;"">
     In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
@@ -197,20 +199,26 @@ private bool findExpanded = true;";
            aria-controls=""a11y-collapse-content""
            aria-expanded=""@(a11yExpanded ? ""true"" : ""false"")""
            OnClick=""() => a11yExpanded = !a11yExpanded"">
-    @(a11yExpanded ? ""Hide shipping details"" : ""Show shipping details"")
+    Shipping details
 </BitButton>
 <BitCollapse Id=""a11y-collapse"" Expanded=""a11yExpanded"" LabelledBy=""a11y-trigger"">
     Orders placed before 2 pm ship the same day. <BitLink Href=""/components/collapse"">Read the full policy</BitLink>.
 </BitCollapse>
 
-<BitButton OnClick=""() => focusCollapseRef?.ExpandAsync()"">Open and focus</BitButton>
-<BitCollapse @ref=""focusCollapseRef"" @bind-Expanded=""focusExpanded"" AriaLabel=""Focused section"" OnExpanded=""HandleFocusExpanded"">
+<BitButton @ref=""focusTriggerRef"" OnClick=""() => focusCollapseRef?.ExpandAsync()"">Open and focus</BitButton>
+<BitCollapse @ref=""focusCollapseRef""
+             @bind-Expanded=""focusExpanded""
+             AriaLabel=""Focused section""
+             OnExpanded=""HandleFocusExpanded""
+             OnCollapsing=""HandleFocusCollapsing"">
     FocusAsync put the focus here at the end of the expand transition.
+    <BitButton Variant=""BitVariant.Text"" OnClick=""() => focusCollapseRef?.CollapseAsync()"">Close</BitButton>
 </BitCollapse>";
     private readonly string example11CsharpCode = @"
 private bool a11yExpanded;
 
 private bool focusExpanded;
+private BitButton? focusTriggerRef;
 private BitCollapse? focusCollapseRef;
 
 private async Task HandleFocusExpanded()
@@ -218,6 +226,14 @@ private async Task HandleFocusExpanded()
     if (focusCollapseRef is not null)
     {
         await focusCollapseRef.FocusAsync();
+    }
+}
+
+private async Task HandleFocusCollapsing()
+{
+    if (focusTriggerRef is not null)
+    {
+        await focusTriggerRef.FocusAsync();
     }
 }";
 

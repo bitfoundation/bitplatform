@@ -134,6 +134,25 @@ public partial class BitCollapseStylesheetTests
         StringAssert.Contains(block, "content-visibility: visible;");
     }
 
+    [TestMethod]
+    public void BitCollapseShouldFadeOnlyTheEdgeOfAClosedPeek()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // No fade unless the public variable asks for one, read once on the root so a nested collapse starts over.
+        StringAssert.Contains(stylesheet, "--bit-col-fade: var(--bit-Collapse-peek-fade, 0px);");
+
+        // Only a closed peek is masked, along the axis it collapses on, and the sideways one follows the direction.
+        StringAssert.Contains(stylesheet, ".bit-col-pek.bit-col-col > .bit-col-con {\n    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--bit-col-fade)), transparent);");
+        StringAssert.Contains(stylesheet, "linear-gradient(to right, #000 calc(100% - var(--bit-col-fade)), transparent)");
+        StringAssert.Contains(stylesheet, "&.bit-col-pek.bit-col-col:dir(rtl) > .bit-col-con {");
+
+        // A section printed open prints its peek in full.
+        var print = stylesheet[stylesheet.IndexOf("\n@media print {", System.StringComparison.Ordinal)..];
+
+        StringAssert.Contains(print, "--bit-col-fade: 0px;");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();

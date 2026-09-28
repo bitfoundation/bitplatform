@@ -193,6 +193,8 @@ public partial class BitCollapse : BitComponentBase
     /// <remarks>
     /// This is the height of the closed collapse, or its width while <see cref="Horizontal"/> is on. It is
     /// what a "show more" clamp is made of: the first few lines stay readable and the rest of them animate in.
+    /// The <c>--bit-Collapse-peek-fade</c> CSS variable fades the trailing edge of the closed peek out, which
+    /// tells the reader there is more to it.
     /// <br />
     /// A collapse that keeps a peek is still partly on the screen, so it neither fades out nor hides itself
     /// from assistive technology while it is closed, and it ignores <see cref="LazyRender"/>,
@@ -441,6 +443,10 @@ public partial class BitCollapse : BitComponentBase
     /// holding or gets out of the way of the space it is about to give back. Like <see cref="OnCollapsed"/>
     /// it reports every close, whether the page made it by assigning to <see cref="Expanded"/> or the
     /// component made it itself, and it never fires for a collapse that was closed to begin with.
+    /// <br />
+    /// It is also the place to move the focus back to the trigger when the section is closed from inside -
+    /// a "Done" or "Show less" button in its content - since the closed content can no longer hold the focus
+    /// and the browser would otherwise drop it to the page. The content is still focusable while it runs.
     /// </remarks>
     [Parameter] public EventCallback OnCollapsing { get; set; }
 

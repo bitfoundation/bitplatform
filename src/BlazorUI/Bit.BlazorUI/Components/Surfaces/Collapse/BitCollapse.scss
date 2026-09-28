@@ -9,6 +9,7 @@
 //   --bit-Collapse-focus-color    focus ring color of the content region       (default: $clr-pri-focus)
 //   --bit-Collapse-duration       pace of the expand/collapse transition       (default: $mot-duration-long)
 //   --bit-Collapse-easing         timing function of the transition            (default: $mot-easing)
+//   --bit-Collapse-peek-fade      length of the fade on the edge of a peek     (default: 0px, no fade)
 //
 // A parameter always wins over the variable standing for the same thing: Background over the background,
 // NoPadding over the padding, Duration / ExpandDuration / CollapseDuration over the duration and Easing over
@@ -43,6 +44,8 @@
     // lengthening it - so it is read straight from the parameter.
     --bit-col-easing: var(--bit-col-eas, var(--bit-Collapse-easing, #{$mot-easing}));
     --bit-col-size: var(--bit-col-csz, 0px);
+    // The length of the fade on the trailing edge of a closed peek; none by default.
+    --bit-col-fade: var(--bit-Collapse-peek-fade, 0px);
 
     width: 100%;
     display: grid;
@@ -176,6 +179,15 @@
     }
 }
 
+// A closed peek can fade its trailing edge out, which is what tells a reader the section holds more than the
+// peek shows. The mask is on the content region, the box the peek clips, so it fades the edge of the section
+// rather than the end of the content; it is off (0px) unless --bit-Collapse-peek-fade asks for it, and it comes
+// off the moment the collapse starts opening, or when ExpandOnPrint prints the section open.
+.bit-col-pek.bit-col-col > .bit-col-con {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--bit-col-fade)), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--bit-col-fade)), transparent);
+}
+
 
 .bit-col-nfd > .bit-col-cco {
     opacity: 1;
@@ -218,6 +230,17 @@
         min-height: 0;
         min-width: var(--bit-col-size);
     }
+
+    // The trailing edge of a sideways peek is the end edge, which follows the direction of the page.
+    &.bit-col-pek.bit-col-col > .bit-col-con {
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--bit-col-fade)), transparent);
+        mask-image: linear-gradient(to right, #000 calc(100% - var(--bit-col-fade)), transparent);
+    }
+
+    &.bit-col-pek.bit-col-col:dir(rtl) > .bit-col-con {
+        -webkit-mask-image: linear-gradient(to left, #000 calc(100% - var(--bit-col-fade)), transparent);
+        mask-image: linear-gradient(to left, #000 calc(100% - var(--bit-col-fade)), transparent);
+    }
 }
 
 
@@ -230,10 +253,12 @@
 
 // A closed section prints as nothing at all, which is how a page of them ends up on paper with everything it
 // was about left out. ExpandOnPrint opens it for the print stylesheet: the track is given its full size, and
-// the fade, the visibility and the hidden="until-found" hiding of the closed state are undone. The block sits
-// at the end of the file because the rules it overrides are declared at the same specificity.
+// the fade, the faded edge of a peek, the visibility and the hidden="until-found" hiding of the closed state are
+// undone. The block sits at the end of the file because the rules it overrides are declared at the same specificity.
 @media print {
     .bit-col-eop {
+        --bit-col-fade: 0px;
+
         &.bit-col-col {
             grid-template-rows: 1fr;
         }

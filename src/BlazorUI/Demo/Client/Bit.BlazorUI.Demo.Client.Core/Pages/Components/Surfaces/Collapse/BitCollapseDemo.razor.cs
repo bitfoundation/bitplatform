@@ -181,7 +181,7 @@ public partial class BitCollapseDemo
             Name = "OnCollapsing",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "Callback that is called as the collapse starts closing, which is the start of the collapse transition."
+            Description = "Callback that is called as the collapse starts closing, which is the start of the collapse transition. It is the place to move the focus back to the trigger when it is inside the section, since the closed content can no longer hold it."
         },
         new()
         {
@@ -300,6 +300,12 @@ public partial class BitCollapseDemo
             DefaultValue = "--bit-mot-easing",
             Description = "Timing function of the transition. The Easing parameter wins over it.",
         },
+        new()
+        {
+            Name = "--bit-Collapse-peek-fade",
+            DefaultValue = "0px",
+            Description = "Length of the fade on the trailing edge of a closed CollapsedSize peek, which shows there is more to read. No fade by default.",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -393,6 +399,7 @@ public partial class BitCollapseDemo
     private bool boundExpanded = true;
     private string changeLog = string.Empty;
     private BitCollapse? collapseRef;
+    private bool collapseEnabled = true;
 
     private bool surfaceExpanded = true;
 
@@ -415,6 +422,7 @@ public partial class BitCollapseDemo
 
     private bool a11yExpanded;
     private bool focusExpanded;
+    private BitButton? focusTriggerRef;
     private BitCollapse? focusCollapseRef;
 
     private bool cssVarExpanded = true;
@@ -459,6 +467,14 @@ public partial class BitCollapseDemo
         if (focusCollapseRef is not null)
         {
             await focusCollapseRef.FocusAsync();
+        }
+    }
+
+    private async Task HandleFocusCollapsing()
+    {
+        if (focusTriggerRef is not null)
+        {
+            await focusTriggerRef.FocusAsync();
         }
     }
 }

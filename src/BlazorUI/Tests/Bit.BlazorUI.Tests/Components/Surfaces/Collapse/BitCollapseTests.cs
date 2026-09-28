@@ -1174,6 +1174,28 @@ public class BitCollapseTests : BunitTestContext
         Assert.AreEqual(1, collapsingCount);
     }
 
+    // OnCollapsing is where a page moves the focus out of a section that is closed from inside, which only
+    // works while the content can still hold it: the callback has to run before the render that makes it inert.
+    [TestMethod]
+    public void BitCollapseShouldCallOnCollapsingWhileTheContentIsStillFocusable()
+    {
+        bool? inertWhileCollapsing = null;
+
+        IRenderedComponent<BitCollapse>? component = null;
+
+        component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 3000);
+            parameters.Add(p => p.OnCollapsing, () => inertWhileCollapsing = component!.Find(".bit-col-con").HasAttribute("inert"));
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.IsFalse(inertWhileCollapsing);
+        Assert.IsTrue(component.Find(".bit-col-con").HasAttribute("inert"));
+    }
+
     [TestMethod]
     public void BitCollapseShouldNotCallTheStartCallbacksForTheStateItStartsIn()
     {

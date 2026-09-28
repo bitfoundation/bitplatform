@@ -45,7 +45,8 @@
             <div>
                 <b>@@bind-Expanded</b> keeps the state on the page, <b>DefaultExpanded</b> leaves it to the component, and
                 <b>ExpandAsync</b>, <b>CollapseAsync</b> and <b>ToggleAsync</b> drive it through a reference. <b>OnChange</b>
-                reports the changes the component makes itself. A disabled collapse (<b>IsEnabled="false"</b>) keeps its state.
+                reports the changes the component makes itself. A disabled collapse (<b>IsEnabled="false"</b>) keeps its state,
+                ignores the three methods and takes the disabled colors.
             </div>
             <br /><br />
             <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="boundExpanded" />
@@ -53,12 +54,13 @@
                 The button and the collapse share one value: <b>@boundExpanded</b>.
             </BitCollapse>
             <br /><br />
-            <div style="display:flex;gap:0.5rem">
+            <div style="display:flex;align-items:center;gap:0.5rem">
                 <BitButton OnClick="() => collapseRef?.ExpandAsync()">Expand</BitButton>
                 <BitButton OnClick="() => collapseRef?.CollapseAsync()">Collapse</BitButton>
                 <BitButton OnClick="() => collapseRef?.ToggleAsync()">Toggle</BitButton>
+                <BitCheckbox Label="Enabled" @bind-Value="collapseEnabled" />
             </div>
-            <BitCollapse @ref="collapseRef" DefaultExpanded OnChange="HandleChange">
+            <BitCollapse @ref="collapseRef" DefaultExpanded IsEnabled="collapseEnabled" OnChange="HandleChange">
                 Starts open through DefaultExpanded; nothing on the page holds its state.
             </BitCollapse>
             <div>@changeLog</div>
@@ -98,10 +100,11 @@
         <DemoExample Title="Collapsed size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>CollapsedSize</b> (any CSS length, padding included) leaves a peek of the content on the page - a "show more"
-                clamp. A peek never fades and stays readable by assistive technology; on a Horizontal collapse it is a width.
+                clamp. A peek keeps its opacity and stays readable by assistive technology; on a Horizontal collapse it is a width.
+                <b>--bit-Collapse-peek-fade</b> fades its trailing edge to show there is more.
             </div>
             <br /><br />
-            <BitCollapse Expanded="peekExpanded" CollapsedSize="4.5rem">
+            <BitCollapse Expanded="peekExpanded" CollapsedSize="4.5rem" Style="--bit-Collapse-peek-fade: 2rem;">
                 In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
                 to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
                 possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
@@ -232,26 +235,32 @@
 
         <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
-                Closed content is out of the tab order and the accessibility tree. The trigger is yours, so give it
-                <b>aria-expanded</b> and point its <b>aria-controls</b> at <b>ContentId</b> (the root's id + <b>-content</b>).
-                <b>LabelledBy</b> or <b>AriaLabel</b> names the <b>region</b> (<b>Role</b> changes it; an empty Role removes it
-                and the name). The region is not a tab stop unless a <b>TabIndex</b> is set; <b>FocusAsync</b> moves the focus
-                into it, best from <b>OnExpanded</b>.
+                Closed content is out of the tab order and the accessibility tree. The trigger is yours: give it
+                <b>aria-expanded</b> and a label that stays the same, and point its <b>aria-controls</b> at <b>ContentId</b> (the
+                root's id + <b>-content</b>). <b>LabelledBy</b> or <b>AriaLabel</b> names the <b>region</b> (<b>Role</b> changes
+                it; an empty Role removes it and the name). The region is not a tab stop unless a <b>TabIndex</b> is set;
+                <b>FocusAsync</b> moves the focus into it, best from <b>OnExpanded</b>. Closing a section that holds the focus
+                would drop it to the page, so move it back to the trigger from <b>OnCollapsing</b>.
             </div>
             <br /><br />
             <BitButton Id="a11y-trigger"
                        aria-controls="a11y-collapse-content"
                        aria-expanded="@(a11yExpanded ? "true" : "false")"
                        OnClick="() => a11yExpanded = !a11yExpanded">
-                @(a11yExpanded ? "Hide shipping details" : "Show shipping details")
+                Shipping details
             </BitButton>
             <BitCollapse Id="a11y-collapse" Expanded="a11yExpanded" LabelledBy="a11y-trigger">
                 Orders placed before 2 pm ship the same day. <BitLink Href="/components/collapse">Read the full policy</BitLink>.
             </BitCollapse>
             <br /><br />
-            <BitButton OnClick="() => focusCollapseRef?.ExpandAsync()">Open and focus</BitButton>
-            <BitCollapse @ref="focusCollapseRef" @bind-Expanded="focusExpanded" AriaLabel="Focused section" OnExpanded="HandleFocusExpanded">
+            <BitButton @ref="focusTriggerRef" OnClick="() => focusCollapseRef?.ExpandAsync()">Open and focus</BitButton>
+            <BitCollapse @ref="focusCollapseRef"
+                         @bind-Expanded="focusExpanded"
+                         AriaLabel="Focused section"
+                         OnExpanded="HandleFocusExpanded"
+                         OnCollapsing="HandleFocusCollapsing">
                 FocusAsync put the focus here at the end of the expand transition.
+                <BitButton Variant="BitVariant.Text" OnClick="() => focusCollapseRef?.CollapseAsync()">Close</BitButton>
             </BitCollapse>
         </DemoExample>
 
