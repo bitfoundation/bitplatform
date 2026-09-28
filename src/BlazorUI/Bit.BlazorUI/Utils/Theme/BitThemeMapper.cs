@@ -172,6 +172,43 @@ internal static class BitThemeMapper
     internal static string RoleTintDefault(string roleMain)
         => $"color-mix(in srgb, var({roleMain}) 10%, transparent)";
 
+    /// <summary>
+    /// Each card inset token paired with the unitless steps of the spacing unit it is derived from,
+    /// mirroring <c>Styles/Fluent/shapes.fluent.scss</c> and the Extras presets' <c>tokens.*.scss</c>.
+    /// </summary>
+    internal static readonly IReadOnlyList<KeyValuePair<string, string>> CardSpacingStepTargets =
+    [
+        new(BitCss.Var.Spacing.Card.Sm, "--bit-spa-card-sm-steps"),
+        new(BitCss.Var.Spacing.Card.Md, "--bit-spa-card-md-steps"),
+        new(BitCss.Var.Spacing.Card.Lg, "--bit-spa-card-lg-steps"),
+    ];
+
+    /// <summary>
+    /// Re-declares the card insets next to a re-valued density scale or spacing unit, so a theme
+    /// applied lower in the tree resizes the cards of its subtree.
+    /// </summary>
+    /// <remarks>
+    /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>: the
+    /// stylesheets compute <c>--bit-spa-card-{sm,md,lg}</c> on <c>:root</c> from
+    /// <c>--bit-spa-scaling-factor</c> and <c>--bit-layout-density-scale</c>, and descendants inherit
+    /// the already-computed length, so an inline <see cref="BitThemeLayout.DensityScale"/> alone would
+    /// leave every card inside it at the document's inset. Each preset declares its steps as a
+    /// unitless token that inherits unchanged, so the expression re-declared here still lands on the
+    /// active preset's steps. An inset the theme sets explicitly always wins.
+    /// </remarks>
+    internal static void AugmentWithSpacingReSubstitution(Dictionary<string, string> cssVariables)
+    {
+        if (cssVariables.ContainsKey(BitCss.Var.Layout.DensityScale) is false &&
+            cssVariables.ContainsKey(BitCss.Var.Spacing.ScalingFactor) is false) return; // neither input touched
+
+        foreach (var (inset, steps) in CardSpacingStepTargets)
+        {
+            if (cssVariables.ContainsKey(inset)) continue; // explicit inset wins
+
+            cssVariables[inset] = $"calc(var({BitCss.Var.Spacing.ScalingFactor}) * var({BitCss.Var.Layout.DensityScale}) * var({steps}))";
+        }
+    }
+
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
     {
         var result = new Dictionary<string, string>();

@@ -113,9 +113,12 @@
     /*---- Spacing / layout ----*/
     --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px - alert edge inset
     // The 16pt inset of an inset-grouped section, with 12 and 20 either side of it.
-    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
-    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-spa-card-sm-steps: 1.5;
+    --bit-spa-card-md-steps: 2;
+    --bit-spa-card-lg-steps: 2.5;
+    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-sm-steps)); //12px
+    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-md-steps)); //16px
+    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-lg-steps)); //20px
     // iOS alerts stack their actions full-width and centred; the stretch is what runs them the
     // whole width of the alert, separated by the margins the actions already carry.
     --bit-layout-dialog-actions-direction: column;

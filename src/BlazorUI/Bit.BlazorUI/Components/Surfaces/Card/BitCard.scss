@@ -544,7 +544,7 @@ i.bit-crd-hic {
     --bit-crd-brd-clr: var(--bit-crd-clr);
 
     &.bit-dis {
-        --bit-crd-dis-txt: var(--bit-crd-clr-dis);
+        --bit-crd-dis-txt: var(--bit-crd-clr-dis-text);
         --bit-crd-dis-brd: var(--bit-crd-clr-dis);
     }
 }
@@ -556,7 +556,7 @@ i.bit-crd-hic {
     background-image: linear-gradient(var(--bit-crd-clr-tint), var(--bit-crd-clr-tint));
 
     &.bit-dis {
-        --bit-crd-dis-txt: var(--bit-crd-clr-dis);
+        --bit-crd-dis-txt: var(--bit-crd-clr-dis-text);
         background-image: linear-gradient(#{translucent(var(--bit-crd-clr-dis), 10%)}, #{translucent(var(--bit-crd-clr-dis), 10%)});
     }
 }
