@@ -355,18 +355,20 @@
                 animated part, the content and the live region.
             </div>
             <br />
-            <div>Component's Style & Class:</div><br />
-            <BitShimmer Height="2.7rem" Style="border:2px solid gray" />
-            <br /><br />
-            <BitShimmer Height="2.7rem" Class="custom-class" />
-            <br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div><br />
-            <BitShimmer Height="2.7rem" Styles="@(new() { ShimmerWrapper = "background-color: saddlebrown",
-                                                          Shimmer = "background: linear-gradient(90deg, transparent, goldenrod, transparent)" })" />
-            <br /><br />
-            <BitShimmer Height="2.7rem" Lines="2" Classes="@(new() { Root = "custom-root",
-                                                                     Shimmer = "custom-shimmer",
-                                                                     ShimmerWrapper = "custom-wrapper" })" />
+            <div>
+                <div>Component's Style & Class:</div><br />
+                <BitShimmer Height="2.7rem" Style="border:2px solid gray" />
+                <br /><br />
+                <BitShimmer Height="2.7rem" Class="custom-class" />
+                <br /><br /><br />
+                <div><b>Styles</b> & <b>Classes</b>:</div><br />
+                <BitShimmer Height="2.7rem" Styles="@(new() { ShimmerWrapper = "background-color: saddlebrown",
+                                                              Shimmer = "background: linear-gradient(90deg, transparent, goldenrod, transparent)" })" />
+                <br /><br />
+                <BitShimmer Height="2.7rem" Lines="2" Classes="@(new() { Root = "custom-root",
+                                                                         Shimmer = "custom-shimmer",
+                                                                         ShimmerWrapper = "custom-wrapper" })" />
+            </div>
             <br /><br /><br />
             <div>
                 <BitLink Href="#css-variables-section">CSS variables</BitLink> inherit: set one on <code>:root</code> to restyle every

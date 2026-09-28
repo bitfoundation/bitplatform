@@ -101,7 +101,7 @@ public partial class BitShimmerDemo
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Screen-reader text announced while the shimmer waits, in a live region that switches to LoadedLabel when the content arrives."
+            Description = "Screen-reader text announced while the shimmer waits, in a live region that switches to LoadedLabel when the content arrives. The region is rendered right after the root, so a sibling selector sees it too, and it follows the root's Visibility, hidden, inert, aria-hidden, Dir and lang but not a stylesheet that hides it."
         },
         new()
         {
@@ -237,26 +237,26 @@ public partial class BitShimmerDemo
         new()
         {
             Name = "--bit-Shimmer-background",
-            DefaultValue = "Per Background (--bit-clr-bg-sec)",
-            Description = "Resting color of the placeholder, which the animation plays over.",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Resting color of the placeholder, which the animation plays over. The Background parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Shimmer-color",
-            DefaultValue = "Per Color (--bit-clr-bg-ter)",
-            Description = "Color of the animated part: the wave band, or the block the pulse and the fade play on.",
+            DefaultValue = "--bit-clr-bg-ter",
+            Description = "Color of the animated part: the wave band, or the block the pulse and the fade play on. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Shimmer-height",
-            DefaultValue = "Per Size",
-            Description = "Height of a line. The Height parameter wins over it.",
+            DefaultValue = "spacing(4)",
+            Description = "Height of a line. The Height and Size parameters win over it.",
         },
         new()
         {
             Name = "--bit-Shimmer-circle-size",
-            DefaultValue = "Per Size",
-            Description = "Diameter of a circle. The Height parameter wins over it.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Diameter of a circle. The Height and Size parameters win over it.",
         },
         new()
         {
@@ -317,7 +317,7 @@ public partial class BitShimmerDemo
                    Name = "Label",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the live region of the BitShimmer that carries its Label and LoadedLabel. It is rendered right after the root, not inside it."
+                   Description = "Custom CSS classes/styles for the live region of the BitShimmer that carries its Label and LoadedLabel. It is rendered right after the root, not inside it, so a shimmer hidden by a stylesheet hides the region through these as well."
                },
                new()
                {

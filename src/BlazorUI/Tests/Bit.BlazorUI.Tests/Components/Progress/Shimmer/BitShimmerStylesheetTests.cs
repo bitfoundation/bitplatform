@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -60,13 +60,19 @@ public class BitShimmerStylesheetTests
 
         // The parameters publish the private properties inline, so they are read first and the variable only
         // restyles what the shimmer did not set.
-        StringAssert.Contains(stylesheet, "var(--bit-smr-hgt, var(--bit-Shimmer-height, var(--bit-smr-lnh)))");
-        StringAssert.Contains(stylesheet, "var(--bit-smr-hgt, var(--bit-Shimmer-circle-size, var(--bit-smr-crs)))");
+        StringAssert.Contains(stylesheet, "var(--bit-smr-hgt, var(--bit-smr-lnh, var(--bit-Shimmer-height, ");
+        StringAssert.Contains(stylesheet, "var(--bit-smr-hgt, var(--bit-smr-crs, var(--bit-Shimmer-circle-size, ");
         StringAssert.Contains(stylesheet, "var(--bit-smr-gap, var(--bit-Shimmer-gap, ");
         StringAssert.Contains(stylesheet, "var(--bit-smr-llw, var(--bit-Shimmer-last-line-width, 60%))");
 
         // A Square or a Pill is a choice rather than a default, so it outranks the variable as well.
         StringAssert.Contains(stylesheet, "var(--bit-smr-rad, var(--bit-smr-shp, var(--bit-Shimmer-radius, ");
+
+        // So is an explicit Size, Color or Background, whose classes publish these only while they are set.
+        StringAssert.Contains(stylesheet, "var(--bit-smr-wrp-bg, var(--bit-Shimmer-background, ");
+        StringAssert.Contains(stylesheet, "var(--bit-smr-bg-clr, var(--bit-Shimmer-color, ");
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Shimmer-[a-z-]+, var\(--bit-smr-"), "A public variable is read before the parameter it restyles the default of.");
     }
 
     [TestMethod]
@@ -78,7 +84,7 @@ public class BitShimmerStylesheetTests
         root = root[..root.IndexOf("\n}", System.StringComparison.Ordinal)];
 
         // A Template is built out of shimmers of its own, which must not inherit the corner of the outer shape.
-        foreach (var property in new[] { "--bit-smr-hgt", "--bit-smr-gap", "--bit-smr-llw", "--bit-smr-rad", "--bit-smr-shp", "--bit-smr-dly" })
+        foreach (var property in new[] { "--bit-smr-hgt", "--bit-smr-gap", "--bit-smr-llw", "--bit-smr-rad", "--bit-smr-shp", "--bit-smr-dly", "--bit-smr-lnh", "--bit-smr-crs", "--bit-smr-bg-clr", "--bit-smr-wrp-bg" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }

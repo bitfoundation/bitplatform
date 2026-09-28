@@ -20,6 +20,12 @@ public partial class BitShimmer : BitComponentBase
     // waited on, or that an overlay was still showing, out and back in.
     private bool _reveal;
 
+    // The time an Overlay's cover takes to fade in once its ShowDelay is over: the longest $mot-duration-long of
+    // the packaged presets. The covered content is held on the page for that long (bit-smr-anim-uncover), so a
+    // refresh that ends inside the window uncovers content that never left, and fading it in would blink it.
+    // Erring long only costs the fade on a refresh that ends just after the cover is fully in.
+    private const int CoverFadeTime = 400;
+
     // Circle is the older spelling of Shape.Circle and stays the fallback for a component that was written
     // before the shape had a name of its own; an explicit Shape always wins over it.
     private BitShimmerShape _shape => Shape ?? (Circle ? BitShimmerShape.Circle : BitShimmerShape.Rounded);
@@ -41,11 +47,21 @@ public partial class BitShimmer : BitComponentBase
     private bool _hasLiveRegion => Label.HasValue() || LoadedLabel.HasValue();
 
     // The region sits beside the root rather than in it, so nothing that hides the root hides the region along
-    // with it: whatever takes the root away - the Visibility parameter, or a hidden or aria-hidden="true" the page
-    // splatted onto it - has to be followed by hand, or a shimmer that is not there would still be talking.
+    // with it: whatever takes the root away - the Visibility parameter, or a hidden, an inert or an
+    // aria-hidden="true" the page splatted onto it - has to be followed by hand, or a shimmer that is not there
+    // would still be talking. A stylesheet that hides the root (a display:none in Style or behind a Class) is
+    // out of reach of any of that, which is what Styles.Label and Classes.Label are there to follow.
     private bool _liveRegionHidden => Visibility is not BitVisibility.Visible
                                       || GetSplattedAttribute("hidden") is not null
+                                      || GetSplattedAttribute("inert") is not null
                                       || string.Equals(GetSplattedAttribute("aria-hidden")?.Trim(), "true", StringComparison.OrdinalIgnoreCase);
+
+    // The language and the direction the root is given are not inherited by a sibling either, and the label is read
+    // in both: a Persian label on a shimmer marked lang="fa" read out in the page's English voice is mispronounced.
+    private string? _liveRegionLang => GetSplattedAttribute("lang");
+
+    // The root's dir attribute is written after the splatted ones, so Dir is the only direction it ever carries.
+    private string? _liveRegionDir => Dir?.ToString().ToLower();
 
     private string _contentClass => _loaded ? _reveal ? "bit-smr-cnt bit-smr-rvl" : "bit-smr-cnt" : "bit-smr-cvd";
 
@@ -115,6 +131,8 @@ public partial class BitShimmer : BitComponentBase
         return width.HasValue() ? $"width:{width}" : null;
     }
 
+    // Background, Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a
+    // default from a choice: the public --bit-Shimmer-* variables restyle the default and never an explicit value.
     private string _backgroundClass => Background switch
     {
         BitColor.Primary => "bit-smr-bpri",
@@ -134,7 +152,7 @@ public partial class BitShimmer : BitComponentBase
         BitColor.PrimaryBorder => "bit-smr-bpbr",
         BitColor.SecondaryBorder => "bit-smr-bsbr",
         BitColor.TertiaryBorder => "bit-smr-btbr",
-        _ => "bit-smr-bsbg"
+        _ => string.Empty
     };
 
 
@@ -296,6 +314,16 @@ public partial class BitShimmer : BitComponentBase
     /// <br />
     /// Set it on the one shimmer that stands for the whole region rather than on each of a group of them, so
     /// that a card built from six placeholders is announced once.
+    /// <br />
+    /// The region is rendered right after the root rather than inside it, so while this or
+    /// <see cref="LoadedLabel"/> is set the shimmer is two elements side by side, and a selector that counts or
+    /// pairs siblings - <c>:last-child</c>, <c>:nth-child</c>, <c>+</c> - sees the region as well.
+    /// <br />
+    /// It follows the root wherever it can: it is hidden with a <c>Visibility</c> other than visible and with a
+    /// <c>hidden</c>, an <c>inert</c> or an <c>aria-hidden="true"</c> written on the shimmer, and it is read in
+    /// the <c>Dir</c> and the <c>lang</c> the shimmer was given. A root hidden by a stylesheet - a
+    /// <c>display:none</c> in its style or behind a class - cannot be followed, so hide the region the same way
+    /// through <see cref="BitShimmerClassStyles.Label"/>, or the shimmer keeps talking while it is not there.
     /// </remarks>
     [Parameter] public string? Label { get; set; }
 
@@ -353,7 +381,8 @@ public partial class BitShimmer : BitComponentBase
     /// <see cref="Overlay"/>s its content, where the two are on the page together and only one is shown.
     /// <br />
     /// The fade is kept for a placeholder that was actually seen: content that is loaded from the first render,
-    /// or that beats the <see cref="ShowDelay"/>, just appears. An overlay keeps its content across the swap,
+    /// or that beats the <see cref="ShowDelay"/>, just appears, and so does the content of an <see cref="Overlay"/>
+    /// whose refresh ends before the cover has finished fading in over it. An overlay keeps its content across the swap,
     /// so the components inside it are covered and uncovered rather than disposed and created again.
     /// <br />
     /// The swap follows this parameter at once, except where <see cref="MinShowTime"/> is holding a
@@ -557,7 +586,7 @@ public partial class BitShimmer : BitComponentBase
             // that was holding it back - nor for one that has already lived out its shortest life.
             if (MinShowTime.HasValue is false || elapsed < shown || remaining <= 0)
             {
-                _reveal = _waitStart.HasValue && elapsed >= shown;
+                _reveal = _waitStart.HasValue && WasPlaceholderSeen(elapsed, shown);
                 _waitStart = null;
                 SetLoaded(true);
             }
@@ -569,6 +598,10 @@ public partial class BitShimmer : BitComponentBase
 
         base.OnParametersSet();
     }
+
+    // A placeholder has been seen once its ShowDelay is over - the content it stood in for was gone from that
+    // moment on - but the content an Overlay covers is still on the page until the cover has finished fading in.
+    private bool WasPlaceholderSeen(long elapsed, int shown) => elapsed >= shown + (Overlay ? CoverFadeTime : 0);
 
     // The swap is what the class and the style builders are keyed on, so a swap that is deferred defers their
     // reset with it: the ResetClassBuilder on the parameter fires when the parameter changes, which is not
@@ -608,7 +641,8 @@ public partial class BitShimmer : BitComponentBase
                 // the placeholder is still the right thing to be showing and there is nothing to swap.
                 if (Loaded is false) return;
 
-                _reveal = true;
+                _reveal = _waitStart.HasValue is false
+                          || WasPlaceholderSeen(Environment.TickCount64 - _waitStart.Value, Math.Max(0, ShowDelay ?? 0));
                 _waitStart = null;
                 SetLoaded(true);
                 StateHasChanged();
@@ -690,7 +724,7 @@ public partial class BitShimmer : BitComponentBase
             BitSize.Small => "bit-smr-sm",
             BitSize.Medium => "bit-smr-md",
             BitSize.Large => "bit-smr-lg",
-            _ => "bit-smr-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Color switch
@@ -712,7 +746,7 @@ public partial class BitShimmer : BitComponentBase
             BitColor.PrimaryBorder => "bit-smr-pbr",
             BitColor.SecondaryBorder => "bit-smr-sbr",
             BitColor.TertiaryBorder => "bit-smr-tbr",
-            _ => "bit-smr-tbg"
+            _ => string.Empty
         });
     }
 }
