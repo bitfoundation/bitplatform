@@ -245,4 +245,49 @@ public class BitDialogParamsTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-dlg-cnb").HasAttribute("disabled"));
         Assert.IsTrue(component.Find(".bit-dlg-cls").HasAttribute("disabled"));
     }
+
+    [TestMethod]
+    public void BitDialogOwnCloseIconNameShouldNotBeReplacedByACascadedCloseIcon()
+    {
+        // CloseIcon wins over CloseIconName, so the pair is one setting: a cascaded CloseIcon filled in beside the
+        // dialog's own CloseIconName would replace the icon the dialog asked for.
+        var @params = new BitDialogParams { CloseIcon = BitIconInfo.Css("cascaded-icon") };
+
+        var component = RenderWithParams(@params, RenderDialog(builder =>
+        {
+            builder.AddAttribute(10, nameof(BitDialog.CloseIconName), "ChromeClose");
+        }));
+
+        var icon = component.Find(".bit-dlg-cli");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--ChromeClose"));
+        Assert.IsFalse(icon.ClassList.Contains("cascaded-icon"));
+    }
+
+    [TestMethod]
+    public void BitDialogOwnCloseIconShouldNotBeJoinedByACascadedCloseIconName()
+    {
+        var @params = new BitDialogParams { CloseIconName = "ChromeClose" };
+
+        var component = RenderWithParams(@params, RenderDialog(builder =>
+        {
+            // Boxed, since BitIconInfo converts to a string and would otherwise pick that overload.
+            builder.AddAttribute(10, nameof(BitDialog.CloseIcon), (object)BitIconInfo.Css("own-icon"));
+        }));
+
+        var dialog = component.FindComponent<BitDialog>();
+
+        Assert.IsNull(dialog.Instance.CloseIconName);
+        Assert.IsTrue(component.Find(".bit-dlg-cli").ClassList.Contains("own-icon"));
+    }
+
+    [TestMethod]
+    public void BitDialogCascadedCloseIconShouldApplyToADialogThatSetNeither()
+    {
+        var @params = new BitDialogParams { CloseIcon = BitIconInfo.Css("cascaded-icon") };
+
+        var component = RenderWithParams(@params, RenderDialog());
+
+        Assert.IsTrue(component.Find(".bit-dlg-cli").ClassList.Contains("cascaded-icon"));
+    }
 }

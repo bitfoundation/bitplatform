@@ -93,17 +93,19 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    // Writes down, for every Escape pressed inside a surface, whether it belongs to something inside it (an IME
-    // composition, a control that took it, a component whose own popup is open); see Utils.guardEscape.
-    internal static ValueTask BitUtilsGuardEscape(this IJSRuntime jsRuntime, string elementId)
+    // Answers an Escape pressed inside a surface through the OnEscape callback, only when nothing inside it took
+    // the key first (an IME composition, a control, a component whose own popup is open, a surface nested inside
+    // it); see Utils.setupSurfaceEscape.
+    internal static ValueTask BitUtilsSetupSurfaceEscape<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.guardEscape", elementId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupSurfaceEscape", elementId, dotnetObj);
     }
 
 
-    internal static ValueTask<bool> BitUtilsIsEscapeClaimed(this IJSRuntime jsRuntime, string elementId)
+    internal static ValueTask BitUtilsDisposeSurfaceEscape(this IJSRuntime jsRuntime, string elementId)
     {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isEscapeClaimed", elementId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeSurfaceEscape", elementId);
     }
 
 

@@ -3,7 +3,7 @@
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
 // dialog, one set on an ancestor the dialogs inside it, and one set on the Style of an instance that one alone:
-//   --bit-Dialog-z-index                   stacking order of the dialog                   (default: $zindex-modal, auto when AbsolutePosition)
+//   --bit-Dialog-z-index                   stacking order of the dialog                   (default: $zindex-modal; not read by AbsolutePosition)
 //   --bit-Dialog-margin                    space kept between the surface and its area    (default: 0, e.g. 16px for a gutter on phones)
 //   --bit-Dialog-overlay-background        color of the overlay behind the surface        (default: $clr-bg-overlay)
 //   --bit-Dialog-overlay-backdrop-filter   filter over the page behind the overlay        (default: none, e.g. blur(4px))
@@ -129,8 +129,12 @@
     display: none;
 }
 
+// An absolutely positioned Dialog stacks inside the area it is laid out in, among that area's own content, so
+// it leaves --bit-Dialog-z-index alone: a value set on :root to lift the full-screen Dialogs above the page's
+// fixed chrome would otherwise lift every one of these out of its local stacking along with them. One that
+// needs a z-index is given it through its own Class or Style.
 .bit-dlg-abs {
-    z-index: var(--bit-Dialog-z-index, auto);
+    z-index: auto;
     position: absolute;
 }
 
@@ -259,23 +263,27 @@
 }
 
 // Holds the title and the subtitle as one block so the close button stays beside both of them rather
-// than beside the title alone.
+// than beside the title alone. It sets no alignment of its own: it also wraps a HeaderTemplate, whose
+// content is the consumer's to lay out.
 .bit-dlg-htc {
     flex-grow: 1;
     min-width: 0;
-    text-align: var(--bit-dlg-text-align);
 }
 
-// A native h2, so every property an application's own heading rule is likely to set is set here too.
+// A native h2, so every property an application's own heading rule is likely to set is set here too - the
+// alignment included, which an element rule for h2 would otherwise win over an inherited one.
 .bit-dlg-ttl {
     margin: 0;
     padding: 0;
     width: 100%;
     line-height: normal;
+    font-style: normal;
     font-family: inherit;
     letter-spacing: normal;
     text-transform: none;
+    text-decoration: none;
     min-height: spacing(2.5);
+    text-align: var(--bit-dlg-text-align);
     color: var(--bit-Dialog-title-color, inherit);
     font-size: var(--bit-Dialog-title-font-size, #{$tg-dialog-title-font-size});
     font-weight: var(--bit-Dialog-title-font-weight, #{$tg-dialog-title-font-weight});
@@ -288,7 +296,20 @@
     font-weight: $tg-fw-regular;
     font-size: $tg-fs-sm;
     padding-top: spacing(0.5);
+    text-align: var(--bit-dlg-text-align);
     color: var(--bit-Dialog-subtitle-color, #{$clr-fg-sec});
+}
+
+// Centred text is centred on the surface rather than on the room the close button leaves beside it, which
+// would put it half a button off the axis the message and the stacked actions below are centred on. The
+// title and the subtitle are given the button's width back on their start side, so the space they are
+// centred in is symmetric about the middle of the header. A style query, since it depends on what the
+// alignment resolves to; a browser without style queries centres them in the room beside the button.
+@container style(--bit-dlg-text-align: center) {
+    .bit-dlg-htc:not(:last-child) > .bit-dlg-ttl,
+    .bit-dlg-htc:not(:last-child) > .bit-dlg-sub {
+        padding-inline-start: $siz-ctrl-md;
+    }
 }
 
 .bit-dlg-scr-cnt {

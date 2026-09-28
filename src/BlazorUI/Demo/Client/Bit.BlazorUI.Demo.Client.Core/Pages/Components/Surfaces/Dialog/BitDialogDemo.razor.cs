@@ -857,7 +857,7 @@ public partial class BitDialogDemo
         {
             Name = "--bit-Dialog-z-index",
             DefaultValue = "--bit-zin-modal",
-            Description = "Stacking order of the Dialog. An AbsolutePosition Dialog defaults to auto.",
+            Description = "Stacking order of the full-screen Dialog. An AbsolutePosition Dialog stacks inside its own area at auto and does not read it; give one a z-index through its own Class or Style.",
         },
         new()
         {

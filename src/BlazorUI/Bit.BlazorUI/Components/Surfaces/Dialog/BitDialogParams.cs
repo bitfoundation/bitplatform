@@ -267,14 +267,20 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.CloseButtonTitle = CloseButtonTitle;
         }
 
-        if (CloseIcon is not null && bitDialog.HasNotBeenSet(nameof(CloseIcon)))
+        // The two are one setting - which icon the close button shows - and CloseIcon wins over CloseIconName,
+        // so a Dialog that picked its icon through either of them keeps it: a cascaded CloseIcon filled in beside
+        // a CloseIconName of its own would otherwise replace the icon the Dialog asked for.
+        if (bitDialog.HasNotBeenSet(nameof(CloseIcon)) && bitDialog.HasNotBeenSet(nameof(CloseIconName)))
         {
-            bitDialog.CloseIcon = CloseIcon;
-        }
+            if (CloseIcon is not null)
+            {
+                bitDialog.CloseIcon = CloseIcon;
+            }
 
-        if (CloseIconName.HasValue() && bitDialog.HasNotBeenSet(nameof(CloseIconName)))
-        {
-            bitDialog.CloseIconName = CloseIconName;
+            if (CloseIconName.HasValue())
+            {
+                bitDialog.CloseIconName = CloseIconName;
+            }
         }
 
         if (CloseOnEscape.HasValue && bitDialog.HasNotBeenSet(nameof(CloseOnEscape)))

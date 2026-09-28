@@ -87,8 +87,52 @@ public class BitDialogStylesheetTests
         var rules = GetRules(ReadStylesheet());
 
         StringAssert.Contains(rules, "--bit-dlg-text-align: var(--bit-Dialog-text-align, #{$layout-dialog-text-align});");
-        StringAssert.Contains(GetRule(rules, "htc"), "text-align: var(--bit-dlg-text-align);");
-        StringAssert.Contains(GetRule(rules, "msg"), "text-align: var(--bit-dlg-text-align);");
+
+        // Set on the title itself, since an application's element rule for h2 wins over an inherited alignment.
+        foreach (var text in new[] { "ttl", "sub", "msg" })
+        {
+            StringAssert.Contains(GetRule(rules, text), "text-align: var(--bit-dlg-text-align);", $"The {text} does not follow the alignment.");
+        }
+
+        // The wrapper also holds a HeaderTemplate, whose content is the consumer's to lay out.
+        Assert.IsFalse(GetRule(rules, "htc").Contains("text-align"), "A HeaderTemplate is re-aligned along with the title.");
+    }
+
+    [TestMethod]
+    public void BitDialogCentredTitleShouldBeCentredOnTheSurfaceBesideTheCloseButton()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        // The title and subtitle are given the close button's width back on their start side while centred, so
+        // they are centred on the surface rather than on the room the button leaves beside them.
+        var query = Regex.Match(rules, @"@container style\(--bit-dlg-text-align: center\) \{.*?\n\}", RegexOptions.Singleline).Value;
+
+        StringAssert.Contains(query, ".bit-dlg-htc:not(:last-child) > .bit-dlg-ttl");
+        StringAssert.Contains(query, ".bit-dlg-htc:not(:last-child) > .bit-dlg-sub");
+        StringAssert.Contains(query, "padding-inline-start: $siz-ctrl-md;");
+    }
+
+    [TestMethod]
+    public void BitDialogAbsolutePositionShouldNotReadThePublicZIndex()
+    {
+        // A value set on :root to restack the full-screen Dialogs must not lift every absolutely positioned one
+        // out of the stacking of the area it is laid out in.
+        var rule = GetRule(GetRules(ReadStylesheet()), "abs");
+
+        StringAssert.Contains(rule, "z-index: auto;");
+        Assert.IsFalse(rule.Contains("--bit-Dialog-z-index"), "An absolutely positioned Dialog reads the public z-index.");
+    }
+
+    [TestMethod]
+    public void BitDialogTitleShouldSetWhatAnApplicationsHeadingRuleCouldReach()
+    {
+        var rule = GetRule(GetRules(ReadStylesheet()), "ttl");
+
+        foreach (var declaration in new[] { "margin: 0;", "padding: 0;", "font-style: normal;", "font-family: inherit;",
+                                            "letter-spacing: normal;", "text-transform: none;", "text-decoration: none;" })
+        {
+            StringAssert.Contains(rule, declaration);
+        }
     }
 
     [TestMethod]

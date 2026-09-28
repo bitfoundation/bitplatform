@@ -796,7 +796,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissedCount++);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsFalse(isOpen);
         Assert.AreEqual(1, dismissedCount);
@@ -813,7 +813,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.CloseOnEscape, false);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsTrue(isOpen);
     }
@@ -829,46 +829,56 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.IsBlocking, true);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsTrue(isOpen);
     }
 
     [TestMethod]
-    public void BitDialogEscapeClaimedByTheContentShouldNeitherDismissNorBeRefused()
+    public void BitDialogShouldAnswerTheEscapeKeyOfItsRootWhileItIsOpen()
     {
-        // The browser side reports the key as taken by something inside the Dialog - a combo box closing the
-        // popup it has open, an IME composition - which is neither a dismissal nor one to refuse.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isEscapeClaimed", _ => true).SetResult(true);
+        // The JS side decides whether an Escape is the Dialog's own - no popup of its content open, no control
+        // having taken it, no IME composition - and only then calls OnEscape. It listens on the root, which is
+        // where a press on the overlay lands the focus, so the key is answered from there too.
+        var isOpen = true;
 
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.KeepMounted, true);
+        });
+
+        var rootId = component.Find(".bit-dlg").Id;
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupSurfaceEscape"];
+        Assert.HasCount(1, setup);
+        Assert.AreEqual(rootId, setup[0].Arguments[0]);
+        Assert.IsInstanceOfType<Microsoft.JSInterop.DotNetObjectReference<BitDialog>>(setup[0].Arguments[1]);
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        var dispose = Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeSurfaceEscape"];
+        Assert.HasCount(1, dispose);
+        Assert.AreEqual(rootId, dispose[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitDialogEscapeShouldBeIgnoredWhenDisabled()
+    {
         var isOpen = true;
         var prevented = 0;
 
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsEnabled, false);
             parameters.Add(p => p.OnDismissPrevented, () => prevented++);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(0, prevented);
-        Assert.IsEmpty(component.FindAll(".bit-dlg-prv"));
-    }
-
-    [TestMethod]
-    public void BitDialogShouldGuardTheEscapeKeyOfItsRootWhenItOpens()
-    {
-        var component = RenderComponent<BitDialog>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, true);
-        });
-
-        var rootId = component.Find(".bit-dlg").Id;
-
-        Assert.IsTrue(Context.JSInterop.Invocations
-                             .Any(i => i.Identifier == "BitBlazorUI.Utils.guardEscape" && Equals(i.Arguments[0], rootId)));
     }
 
     [TestMethod]
@@ -885,21 +895,6 @@ public class BitDialogTests : BunitTestContext
 
         Assert.IsTrue(overlay.ParentElement!.ClassList.Contains("bit-dlg"));
         Assert.IsTrue(overlay.NextElementSibling!.ClassList.Contains("bit-dlg-doc"));
-    }
-
-    [TestMethod]
-    public void BitDialogOtherKeysShouldNotDismiss()
-    {
-        var isOpen = true;
-
-        var component = RenderComponent<BitDialog>(parameters =>
-        {
-            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-        });
-
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Enter" });
-
-        Assert.IsTrue(isOpen);
     }
 
     [TestMethod]
@@ -955,7 +950,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(BitDialogDismissReason.Escape, prevented);
@@ -976,13 +971,13 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.IsBlocking, true);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         var first = component.Find(".bit-dlg-ctn").ClassList;
         Assert.IsTrue(first.Contains("bit-dlg-prv"));
         Assert.IsTrue(first.Contains("bit-dlg-pva"));
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         // An animation restarts only when the name it resolves to changes, so the second refusal is
         // answered by the other of the two classes rather than by re-applying the one already there.
@@ -1007,7 +1002,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.IsBlocking, true);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         // An animation starts when the animation-name it resolves to changes, so a surface handed none of the
         // refusal classes back resolves to the entrance animation and grows back into place. The played-back
@@ -1033,13 +1028,13 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.IsBlocking, true);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         component.WaitForAssertion(
             () => Assert.IsTrue(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-pvn")),
             TimeSpan.FromSeconds(5));
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         // The name has to change for the movement to run at all, and the settled class is a name of its own,
         // so the refusal that follows one is answered with the first of the pair rather than with nothing.
@@ -1064,7 +1059,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.KeepMounted, true);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         component.WaitForAssertion(
             () => Assert.IsTrue(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-pvn")),
@@ -1136,7 +1131,7 @@ public class BitDialogTests : BunitTestContext
         // Only the click is refused: the role stays a plain dialog, and Escape still closes it.
         Assert.AreEqual("dialog", component.Find(".bit-dlg-ctn").GetAttribute("role"));
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsFalse(isOpen);
         Assert.AreEqual(BitDialogDismissReason.Escape, component.Instance.DismissReason);
@@ -1154,7 +1149,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.OnDismissPrevented, () => preventedCount++);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsFalse(isOpen);
         Assert.AreEqual(0, preventedCount);
@@ -1212,7 +1207,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.AreEqual(BitDialogDismissReason.Escape, component.Instance.DismissReason);
     }
@@ -1334,7 +1329,7 @@ public class BitDialogTests : BunitTestContext
         component.Find(".bit-dlg-cnb").Click();
         component.Find(".bit-dlg-cls").Click();
         component.Find(".bit-dlg-ovl").Click();
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(0, okCount);
@@ -1429,7 +1424,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.IsOkButtonEnabled, false);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         component.WaitForAssertion(() => Assert.IsFalse(isOpen), TimeSpan.FromSeconds(5));
         Assert.AreEqual(BitDialogDismissReason.Escape, component.Instance.DismissReason);
@@ -1534,7 +1529,7 @@ public class BitDialogTests : BunitTestContext
         var showTask = component.Instance.Show();
 
         component.WaitForState(() => component.FindAll(".bit-dlg-ctn").Count == 1);
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -1755,7 +1750,7 @@ public class BitDialogTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-dlg-cls").HasAttribute("disabled"));
 
         component.Find(".bit-dlg-ovl").Click();
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(0, cancelCount);
@@ -2032,20 +2027,6 @@ public class BitDialogTests : BunitTestContext
         var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1];
         Assert.AreEqual(component.Find(".bit-dlg-ctn").Id, setup.Arguments[0]);
         Assert.AreEqual(component.Find(".bit-dlg").Id, setup.Arguments[1]);
-    }
-
-    [TestMethod]
-    public void BitDialogEscapeShouldDismissFromTheRootTheOverlayPressLandsOn()
-    {
-        var isOpen = true;
-        var component = RenderComponent<BitDialog>(parameters =>
-        {
-            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-        });
-
-        component.Find(".bit-dlg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-
-        Assert.IsFalse(isOpen);
     }
 
     [TestMethod]
@@ -2847,7 +2828,7 @@ public class BitDialogTests : BunitTestContext
     public void BitDialogOnDismissingShouldSeeTheReasonOfTheEscapeKey()
     {
         Assert.AreEqual(BitDialogDismissReason.Escape,
-                        DismissingReasonOf(c => c.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" })));
+                        DismissingReasonOf(PressEscape));
     }
 
     [TestMethod]
@@ -2855,6 +2836,19 @@ public class BitDialogTests : BunitTestContext
     {
         Assert.AreEqual(BitDialogDismissReason.Programmatic,
                         DismissingReasonOf(c => c.InvokeAsync(() => c.Instance.Close()).GetAwaiter().GetResult()));
+    }
+
+    // Escape reaches the Dialog through the JS side (Utils.setupSurfaceEscape), which calls OnEscape only once it
+    // has made sure the key is the Dialog's own - so that call is what a press of the key is to the .NET side.
+    // Like a bUnit event trigger it does not wait for a handler that is still awaiting something to finish.
+    private static void PressEscape(IRenderedComponent<BitDialog> component)
+    {
+        var task = component.InvokeAsync(component.Instance._OnEscape);
+
+        if (task.IsFaulted)
+        {
+            task.GetAwaiter().GetResult();
+        }
     }
 
     // Opens a Dialog, makes the given gesture on it, and reports the reason OnDismissing was handed.
@@ -2925,7 +2919,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(BitDialogDismissReason.Escape, prevented);
@@ -3046,7 +3040,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(BitDialogDismissReason.Escape, prevented);
@@ -3079,7 +3073,7 @@ public class BitDialogTests : BunitTestContext
         component.Find(".bit-dlg-cnb").Click();
         component.Find(".bit-dlg-cls").Click();
         component.Find(".bit-dlg-ovl").Click();
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
 
         Assert.AreEqual(1, okCount);
         Assert.AreEqual(1, dismissingCount);
@@ -3126,7 +3120,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
         });
 
-        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        PressEscape(component);
         component.Find(".bit-dlg-ovl").Click();
 
         // A blocking Dialog is refusing on its own terms, so there is nothing for OnDismissing to decide.

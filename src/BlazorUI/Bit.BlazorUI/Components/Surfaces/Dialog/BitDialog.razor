@@ -6,12 +6,14 @@
     @* While a kept-mounted Dialog is closed it is still in the page, only hidden: inert and aria-hidden
        take it out of the tab sequence and out of the reading order for the browsers that would otherwise
        still reach into a display:none subtree through a stale reference. *@
-    @* The keydown handler sits on the root so that Escape dismisses the Dialog from anywhere inside it -
-       the surface, the overlay, whichever part of it the keyboard happens to be in. The keys stop here:
-       a Dialog opened from inside another one renders inside that one's surface, so an Escape left to
-       carry on up would dismiss the Dialog the keyboard is still working inside of along with the one it
-       was meant for - and it stops only Blazor's own bubbling, so native listeners (the focus trap among
-       them) still see the key.
+    @* Escape is answered through Utils.setupSurfaceEscape on this root rather than an @onkeydown here: only
+       the JS side can tell, as the key is pressed, a press that closes a popup opened from inside the Dialog
+       (or that a control inside it took) from one meant for the Dialog itself, and it answers from anywhere
+       inside it - the surface, the overlay, whichever part of it the keyboard happens to be in. A Dialog
+       opened from inside another one answers the key first and the outer one leaves it alone.
+       The keys stop here for the handlers of the page around the Dialog, which have no business reacting to
+       what is typed inside it. It stops only Blazor's own bubbling, so native listeners (the focus trap and
+       the Escape key among them) still see the key.
        tabindex="-1" makes the root programmatically focusable so that a press on the overlay lands the focus
        inside the Dialog rather than on the body. The root only catches it: the focus trap passes it straight
        on into the surface below, where the dialog role is (Utils.setupFocusTrap has the whole of it). It is
@@ -19,7 +21,6 @@
     <div @ref="RootElement"
          tabindex="@(TabIndex ?? "-1")"
          @attributes="HtmlAttributes"
-         @onkeydown="HandleOnKeyDown"
          @onkeydown:stopPropagation="true"
          id="@_Id"
          style="@StyleBuilder.Value"

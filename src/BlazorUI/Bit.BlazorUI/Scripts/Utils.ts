@@ -373,40 +373,59 @@
             Utils._focusTraps.delete(elementId);
         }
 
-        // Records, for every Escape pressed inside the given surface, whether the key belongs to something
-        // other than the surface itself, so the .NET handler that closes the surface can ask afterwards
-        // (isEscapeClaimed). Three things own the key before a surface does: an IME composition, which
-        // Escape cancels; a control that has already taken it (defaultPrevented); and a component inside the
-        // surface whose own popup is open - a combo box, a search box's suggestions, a date picker - which
-        // closes that popup on the key and has its keydown bubble on up through the surface. The answer has to
-        // be written down here, as the key is pressed: Blazor dispatches the component's handler and the
-        // surface's one as two separate calls, and by the time the surface's arrives the popup may already
-        // have been closed by the first. A native listener on the element runs before Blazor's delegation
-        // does, so the stack of open callouts is still the one the key was pressed against - and it listens
-        // in the bubbling phase, after the listeners of the controls inside have had the chance to take the
-        // key. It is registered once per element and is garbage-collected with it.
-        public static guardEscape(elementId: string) {
-            const element = document.getElementById(elementId) as any;
-            if (!element || element.__bitEscapeGuarded) return;
+        private static _surfaceEscapes = new Map<string, AbortController>();
 
-            element.__bitEscapeGuarded = true;
+        // Answers an Escape pressed inside a surface (a dialog) through the OnEscape callback - but only when the
+        // key is the surface's own. Four things own it first: an IME composition, which Escape cancels; a
+        // control that has taken it (defaultPrevented); a component inside the surface whose own popup is open -
+        // a combo box, a search box's suggestions, a date picker - which closes that popup on the key and has its
+        // keydown bubble on up through the surface; and a surface nested inside this one (a dialog opened from
+        // inside it), which has answered the key before it got here.
+        // The popups are read as the key is pressed: this listener is on the element, so it runs before Blazor's
+        // document-level delegation lets the component close its popup, while the stack of open callouts is still
+        // the one the key was pressed against. Whether a control took the key is read once the whole dispatch is
+        // over instead, since a Blazor handler's @onkeydown:preventDefault is applied by that same delegation,
+        // after this listener has run. The decision is made here, in the browser, so the surface is only called
+        // when it is to act - there is no round trip to ask whether it should.
+        // Registering again on the same element replaces the previous registration.
+        public static setupSurfaceEscape(elementId: string, dotnetObj: DotNetObject) {
+            Utils.disposeSurfaceEscape(elementId);
 
-            element.addEventListener('keydown', (e: KeyboardEvent) => {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            element.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
 
-                element.__bitEscapeClaimed = e.isComposing
-                    || e.keyCode === 229
-                    || e.defaultPrevented
-                    || Callouts.componentContains(e.target as Node | null, element);
-            });
+                // The nearest surface owns the key whatever it goes on to do with it, so an outer one never
+                // answers an Escape an inner one has already seen.
+                const event = e as KeyboardEvent & { __bitSurfaceEscape?: boolean };
+                if (event.__bitSurfaceEscape) return;
+                event.__bitSurfaceEscape = true;
+
+                if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
+
+                if (Callouts.componentContains(e.target as Node | null, element)) return;
+
+                setTimeout(() => {
+                    if (e.defaultPrevented || signal.aborted) return;
+
+                    dotnetObj.invokeMethodAsync('OnEscape');
+                });
+            }, { signal });
+
+            Utils._surfaceEscapes.set(elementId, controller);
         }
 
-        // Whether the last Escape pressed inside the given surface belonged to something inside it (see
-        // guardEscape), and so is not the surface's to act on.
-        public static isEscapeClaimed(elementId: string) {
-            const element = document.getElementById(elementId) as any;
+        public static disposeSurfaceEscape(elementId: string) {
+            const controller = Utils._surfaceEscapes.get(elementId);
+            if (!controller) return;
 
-            return element?.__bitEscapeClaimed === true;
+            controller.abort();
+            Utils._surfaceEscapes.delete(elementId);
         }
 
         private static _tabOuts = new Map<string, AbortController>();

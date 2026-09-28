@@ -58,6 +58,9 @@ public partial class BitDialog : BitComponentBase
     // Whether the focus trap is currently registered on the JS side, so it is torn down exactly once
     // and only when it was actually set up.
     private bool _focusTrapped;
+    // The same for the Escape key, which the JS side answers through OnEscape (see SetupEscape).
+    private bool _escapeRegistered;
+    private DotNetObjectReference<BitDialog> _dotnetObj = default!;
     // Whether an element was remembered on the JS side when this Dialog opened, so the close sequence
     // only tries to hand the focus back when there is something to hand it back to.
     private bool _focusSaved;
@@ -218,7 +221,9 @@ public partial class BitDialog : BitComponentBase
     /// <br />
     /// An Escape that something inside the Dialog answers first is left to it: a combo box, a search box or a
     /// date picker closing the list it has open, and an IME composition being cancelled, close that and
-    /// nothing else - neither dismissing the Dialog nor counting as a refused dismissal.
+    /// nothing else - neither dismissing the Dialog nor counting as a refused dismissal. So does a control that
+    /// prevents the default of the key, natively or with <c>@onkeydown:preventDefault</c>, which is how content
+    /// of your own claims the Escape it acts on.
     /// </remarks>
     [Parameter] public bool CloseOnEscape { get; set; } = true;
 
@@ -781,6 +786,8 @@ public partial class BitDialog : BitComponentBase
         _subtitleId = $"BitDialog-{UniqueId}-subtitle";
         _messageId = $"BitDialog-{UniqueId}-message";
 
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         // The uncontrolled starting state, which only applies while the consumer is not driving IsOpen
         // itself. It is read once here rather than every time the parameters are set, so that closing an
         // uncontrolled Dialog is not undone by the next render.
@@ -867,8 +874,7 @@ public partial class BitDialog : BitComponentBase
         await SyncDragHandlers();
         if (Overtaken()) return;
 
-        // Registered once per root, so a kept-mounted Dialog that is opened again is not handed a second one.
-        await InvokeJs(_js.BitUtilsGuardEscape(_Id));
+        await SetupEscape();
         if (Overtaken()) return;
 
         // Reset before ToggleScroll: when AutoToggleScroll is false it returns early without
@@ -912,6 +918,9 @@ public partial class BitDialog : BitComponentBase
         _dismissPreventedGeneration++;
 
         await DisposeFocusTrap();
+        if (Overtaken()) return;
+
+        await DisposeEscape();
         if (Overtaken()) return;
 
         await RemoveDragHandlers();
@@ -1044,6 +1053,29 @@ public partial class BitDialog : BitComponentBase
         _focusTrapped = false;
 
         await InvokeJs(_js.BitUtilsDisposeFocusTrap(_containerId));
+    }
+
+    // The Escape key is answered on the JS side, which is the only side that can tell - as the key is pressed -
+    // whether it belongs to the Dialog or to something inside it, and which then calls OnEscape only for a key
+    // that is the Dialog's. Deciding there costs no round trip of its own: the Dialog is not asked afterwards
+    // whether to act on a key it has already been sent. It listens on the root, so the key is answered from
+    // anywhere in the Dialog - the root included, which is where a press on the overlay lands the focus.
+    private async Task SetupEscape()
+    {
+        if (_escapeRegistered) return;
+
+        _escapeRegistered = true;
+
+        await InvokeJs(_js.BitUtilsSetupSurfaceEscape(_Id, _dotnetObj));
+    }
+
+    private async Task DisposeEscape()
+    {
+        if (_escapeRegistered is false) return;
+
+        _escapeRegistered = false;
+
+        await InvokeJs(_js.BitUtilsDisposeSurfaceEscape(_Id));
     }
 
     private async Task SaveFocus()
@@ -1220,18 +1252,17 @@ public partial class BitDialog : BitComponentBase
         await DismissDialog(e, BitDialogDismissReason.OverlayClick);
     }
 
-    private async Task HandleOnKeyDown(KeyboardEventArgs e)
+    [JSInvokable("OnEscape")]
+    public async Task _OnEscape()
     {
-        if (e.Key is not "Escape") return;
-
+        // Escape pressed inside the Dialog, which the JS side only reports once it has made sure the key is the
+        // Dialog's own rather than something's inside it: a combo box or a search box closing the popup it has
+        // open, a date picker closing its calendar, a control that took the key, an IME composition being
+        // cancelled, a Dialog opened from inside this one (see Utils.setupSurfaceEscape). Closing the Dialog on
+        // any of those would throw away the very field the user was still working in.
+        // Nothing is awaited before these are read, so an Ok callback that started after the key was pressed
+        // holds the Dialog shut as surely as one that was already running.
         if (IsEnabled is false || IsOpen is false || _isLoading || _isDismissing) return;
-
-        // The key may belong to something inside the Dialog rather than to the Dialog itself: a combo box or a
-        // search box closing the popup it has open, a date picker closing its calendar, an IME composition being
-        // cancelled. Their keydown bubbles up to here all the same, and closing the Dialog on it would throw
-        // away the very field the user was still working in - so the key is only the Dialog's when the browser
-        // side saw no one else take it.
-        if (await IsEscapeClaimed()) return;
 
         // A blocking Dialog can only be answered with its buttons, which is as true of the keyboard as
         // it is of a click on the overlay.
@@ -1242,18 +1273,9 @@ public partial class BitDialog : BitComponentBase
         }
 
         await DismissDialog(new MouseEventArgs(), BitDialogDismissReason.Escape);
-    }
 
-    private async Task<bool> IsEscapeClaimed()
-    {
-        try
-        {
-            return await _js.BitUtilsIsEscapeClaimed(_Id);
-        }
-        catch (JSDisconnectedException)
-        {
-            return false;
-        }
+        // Called from the JS side rather than as an event handler of the markup, so nothing re-renders it on its own.
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
@@ -1453,6 +1475,8 @@ public partial class BitDialog : BitComponentBase
 
         try
         {
+            await DisposeEscape();
+
             if (_internalIsOpen)
             {
                 await DisposeFocusTrap();
@@ -1476,6 +1500,8 @@ public partial class BitDialog : BitComponentBase
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _dotnetObj?.Dispose();
 
         await base.DisposeAsync(disposing);
     }
