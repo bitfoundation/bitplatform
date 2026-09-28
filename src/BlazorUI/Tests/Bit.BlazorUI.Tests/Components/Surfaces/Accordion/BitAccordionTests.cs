@@ -2061,6 +2061,57 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitAccordionShouldStandASpinnerInTheExpandersSlotWhileBusy()
+    {
+        var gate = new TaskCompletionSource();
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.OnToggling, async (BitAccordionToggleArgs _) => await gate.Task);
+            parameters.Add(p => p.Classes, new() { Spinner = "custom-spinner" });
+            parameters.Add(p => p.Styles, new() { Spinner = "color: red;" });
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-acd-spn").Count);
+        Assert.AreEqual(1, com.FindAll(".bit-acd-eic").Count);
+
+        var toggling = com.InvokeAsync(() => com.Instance.Toggle());
+
+        var spinner = com.Find(".bit-acd-eiw > .bit-acd-spn");
+
+        Assert.AreEqual("true", spinner.GetAttribute("aria-hidden"));
+        Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
+        Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
+        Assert.AreEqual(0, com.FindAll(".bit-acd-eic").Count);
+
+        gate.SetResult();
+
+        await toggling;
+
+        Assert.AreEqual(0, com.FindAll(".bit-acd-spn").Count);
+        Assert.AreEqual(1, com.FindAll(".bit-acd-eic").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldShowTheSpinnerEvenWithTheExpanderHidden()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HideExpanderIcon, true);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
+
+        com.Render(parameters => parameters.Add(p => p.Busy, true));
+
+        Assert.AreEqual(1, com.FindAll(".bit-acd-eiw > .bit-acd-spn").Count);
+
+        com.Render(parameters => parameters.Add(p => p.Busy, false));
+
+        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
+    }
+
+    [TestMethod]
     public async Task BitAccordionShouldDropTheBusyStateOfACancelledToggleToo()
     {
         var gate = new TaskCompletionSource();

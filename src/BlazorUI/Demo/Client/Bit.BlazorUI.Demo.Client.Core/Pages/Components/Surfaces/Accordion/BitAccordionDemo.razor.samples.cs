@@ -120,34 +120,31 @@ private BitAccordion accordionRef = default!;";
 <BitAccordion Title=""UnmountOnCollapse"" UnmountOnCollapse>
     <BitTextField Placeholder=""Thrown away on a collapse..."" />
 </BitAccordion>
-<BitAccordion Title=""Loaded on expand""
-              Description=""@(isLoadingOrders ? ""Loading..."" : null)""
-              LazyContent
-              OnToggling=""LoadOrders"">
+<BitAccordion Title=""Loaded on expand"" LazyContent OnToggling=""LoadOrders"">
     @foreach (var order in orders)
     {
         <div>@order</div>
     }
 </BitAccordion>";
     private readonly string example7CsharpCode = @"
-private bool isLoadingOrders;
 private string[] orders = [];
 private async Task LoadOrders(BitAccordionToggleArgs args)
 {
     if (args.IsExpanding is false || orders.Length > 0) return;
 
-    isLoadingOrders = true;
     await Task.Delay(1500); // e.g. await Http.GetFromJsonAsync<string[]>(""api/orders"")
     orders = [""#1001 - 2 items"", ""#1002 - 5 items"", ""#1003 - 1 item""];
-    isLoadingOrders = false;
 }";
 
     private readonly string example8RazorCode = @"
-<BitAccordion Title=""Which fruits ship overnight?"" HiddenUntilFound>
+<BitAccordion Title=""Which fruits ship overnight?"" HiddenUntilFound ExpandOnPrint>
     Citrus like the tangerine ships overnight in insulated boxes; berries ship on the next business day.
 </BitAccordion>
-<BitAccordion Title=""Can I change my order?"" HiddenUntilFound>
+<BitAccordion Title=""Can I change my order?"" HiddenUntilFound ExpandOnPrint>
     Orders can be changed until they are packed, usually within two hours of checkout.
+</BitAccordion>
+<BitAccordion Title=""Printed as a bare header"">
+    Returns are free within thirty days of delivery.
 </BitAccordion>";
 
     private readonly string example9RazorCode = @"
@@ -234,14 +231,6 @@ private async Task LoadOrders(BitAccordionToggleArgs args)
 private int readOnlyClickCount;";
 
     private readonly string example12RazorCode = @"
-<BitAccordion Title=""Printed with its content"" ExpandOnPrint>
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-<BitAccordion Title=""Printed as a bare header"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-
-    private readonly string example13RazorCode = @"
 <BitAccordion Title=""Top-level section"" Description=""aria-level 2"" HeadingLevel=""2"">
     <BitLink Href=""/components/accordion"">A link Tab only reaches while this panel is open.</BitLink>
 </BitAccordion>
@@ -259,7 +248,7 @@ private int readOnlyClickCount;";
     </BitAccordion>
 </BitAccordion>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitParams Parameters=""@accordionParams"">
     <BitAccordion Title=""Takes the cascade"">
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
@@ -271,7 +260,7 @@ private int readOnlyClickCount;";
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </BitAccordion>
 </BitParams>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly BitAccordionParams[] accordionParams =
 [
     new()
@@ -283,7 +272,7 @@ private readonly BitAccordionParams[] accordionParams =
     }
 ];";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitChoiceGroup @bind-Value=""backgroundColorKind"" Horizontal TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
     <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
     <BitChoiceGroupOption Text=""Secondary"" Value=""BitColorKind.Secondary"" />
@@ -309,11 +298,11 @@ private readonly BitAccordionParams[] accordionParams =
 <BitAccordion Title=""NoBorder"" NoBorder>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitColorKind backgroundColorKind = BitColorKind.Primary;
 private BitColorKind borderColorKind = BitColorKind.Primary;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -331,7 +320,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     Icon=""@BitIconInfo.Bi(""gear"")""
 </BitAccordion>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitAccordion Title=""Small"" Description=""Description"" Size=""BitSize.Small"" IconName=""@BitIconName.Settings"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
@@ -342,7 +331,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitAccordion Title=""On the instance""
               Style=""--bit-Accordion-radius: 0; --bit-Accordion-border-width: 2px; --bit-Accordion-border-color: seagreen; --bit-Accordion-header-expanded-background: seagreen; --bit-Accordion-header-expanded-color: white; --bit-Accordion-content-background: color-mix(in srgb, seagreen 10%, transparent);"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
@@ -380,7 +369,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </BitAccordion>
 </div>";
-    private const string example18ScssCode = @"
+    private const string example17ScssCode = @"
 .faq-accordions {
     gap: 0.5rem;
     display: flex;
@@ -413,12 +402,12 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
         font-family: monospace;
     }
 }";
-    private readonly DemoCodeFile[] example18CodeFiles =
+    private readonly DemoCodeFile[] example17CodeFiles =
     [
-        new("BitAccordionDemo.razor.scss", example18ScssCode),
+        new("BitAccordionDemo.razor.scss", example17ScssCode),
     ];
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitAccordion Dir=""BitDir.Rtl""
               Title=""تنظیمات""
               IconName=""@BitIconName.Settings""

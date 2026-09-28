@@ -41,7 +41,7 @@ public partial class BitAccordionDemo
             Name = "Busy",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reports the header as busy - aria-busy for a screen reader, a busy cursor for a pointer - while something the page is doing on the accordion's behalf is still running. An accordion whose own OnToggling is being awaited reports itself as busy without being told to."
+            Description = "Reports the header as busy - a spinner in the expander's slot, aria-busy and a busy cursor, and no click toggles it - while something the page is doing on the accordion's behalf is still running. An accordion whose own OnToggling is being awaited reports itself as busy without being told to."
         },
         new()
         {
@@ -567,6 +567,13 @@ public partial class BitAccordionDemo
                 },
                 new()
                 {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spinner that stands in the expander's slot while the BitAccordion is busy."
+                },
+                new()
+                {
                     Name = "Actions",
                     Type = "string?",
                     DefaultValue = "null",
@@ -699,7 +706,7 @@ public partial class BitAccordionDemo
         {
             Name = "--bit-Accordion-icon-size",
             DefaultValue = "Per Size, --bit-siz-icon-sm/md/lg",
-            Description = "Size of the icon and of the expander icon.",
+            Description = "Size of the icon, of the expander icon and of the busy spinner.",
         },
         new()
         {
@@ -711,7 +718,7 @@ public partial class BitAccordionDemo
         {
             Name = "--bit-Accordion-expander-color",
             DefaultValue = "inherit",
-            Description = "Color of the expander icon (or of the ExpanderTemplate content).",
+            Description = "Color of the expander icon (or of the ExpanderTemplate content) and of the busy spinner.",
         },
         new()
         {
@@ -775,16 +782,13 @@ public partial class BitAccordionDemo
 
     private BitAccordion accordionRef = default!;
 
-    private bool isLoadingOrders;
     private string[] orders = [];
     private async Task LoadOrders(BitAccordionToggleArgs args)
     {
         if (args.IsExpanding is false || orders.Length > 0) return;
 
-        isLoadingOrders = true;
         await Task.Delay(1500); // e.g. await Http.GetFromJsonAsync<string[]>("api/orders")
         orders = ["#1001 - 2 items", "#1002 - 5 items", "#1003 - 1 item"];
-        isLoadingOrders = false;
     }
 
     private int readOnlyClickCount;

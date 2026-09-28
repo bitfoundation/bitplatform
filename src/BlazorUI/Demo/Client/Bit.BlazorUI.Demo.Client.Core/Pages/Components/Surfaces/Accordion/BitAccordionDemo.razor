@@ -157,7 +157,8 @@
             The panel is rendered while closed by default, keeping its state. <b>LazyContent</b> waits for the first expand,
             then keeps it; <b>UnmountOnCollapse</b> drops it on every collapse (no closing animation). Type into both, then
             close and reopen them. To fetch the content first, await it in <b>OnToggling</b>: the panel opens once it is
-            loaded, and the header reports <b>aria-busy</b> meanwhile.
+            loaded, and the header shows a spinner (and <b>aria-busy</b>) meanwhile. <b>Busy</b> shows the same for work
+            the page runs itself.
         </div>
         <br />
         <BitAccordion Title="LazyContent" LazyContent>
@@ -166,10 +167,7 @@
         <BitAccordion Title="UnmountOnCollapse" UnmountOnCollapse>
             <BitTextField Placeholder="Thrown away on a collapse..." />
         </BitAccordion>
-        <BitAccordion Title="Loaded on expand"
-                      Description="@(isLoadingOrders ? "Loading..." : null)"
-                      LazyContent
-                      OnToggling="LoadOrders">
+        <BitAccordion Title="Loaded on expand" LazyContent OnToggling="LoadOrders">
             @foreach (var order in orders)
             {
                 <div>@order</div>
@@ -177,21 +175,25 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Find in page" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Find & print" RazorCode="@example8RazorCode" Id="example8">
         <div>
-            A closed panel is hidden from find-in-page. <b>HiddenUntilFound</b> hands it to the browser as
-            <b>hidden="until-found"</b>: <b>Ctrl+F</b> or a <b>#fragment</b> link finds text inside and the accordion expands
-            around the match (<b>OnToggling</b> sees <b>Reason</b> = <b>Reveal</b>). It keeps the panel in the DOM, overriding
-            <b>LazyContent</b> and <b>UnmountOnCollapse</b>.
+            A closed panel is skipped by find-in-page and prints as a bare header. <b>HiddenUntilFound</b> hands it to the
+            browser as <b>hidden="until-found"</b>: <b>Ctrl+F</b> or a <b>#fragment</b> link finds text inside and the
+            accordion expands around the match (<b>OnToggling</b> sees <b>Reason</b> = <b>Reveal</b>). <b>ExpandOnPrint</b>
+            opens it on paper only (Ctrl+P), lifting <b>MaxHeight</b>. Both need the panel in the DOM: <b>HiddenUntilFound</b>
+            overrides <b>LazyContent</b> and <b>UnmountOnCollapse</b>, while content they left out cannot print.
         </div>
         <br />
-        <div>Search the page for <b>tangerine</b>:</div>
+        <div>Search the page for <b>tangerine</b>, or open the print preview:</div>
         <br />
-        <BitAccordion Title="Which fruits ship overnight?" HiddenUntilFound>
+        <BitAccordion Title="Which fruits ship overnight?" HiddenUntilFound ExpandOnPrint>
             Citrus like the tangerine ships overnight in insulated boxes; berries ship on the next business day.
         </BitAccordion>
-        <BitAccordion Title="Can I change my order?" HiddenUntilFound>
+        <BitAccordion Title="Can I change my order?" HiddenUntilFound ExpandOnPrint>
             Orders can be changed until they are packed, usually within two hours of checkout.
+        </BitAccordion>
+        <BitAccordion Title="Printed as a bare header">
+            Returns are free within thirty days of delivery.
         </BitAccordion>
     </DemoExample>
 
@@ -278,22 +280,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Printing" RazorCode="@example12RazorCode" Id="example12">
-        <div>
-            A closed panel prints as a bare header. <b>ExpandOnPrint</b> opens it on paper only (lifting <b>MaxHeight</b>);
-            content not in the DOM (<b>LazyContent</b> never opened, <b>UnmountOnCollapse</b>) still cannot print. Try the
-            print preview (Ctrl+P).
-        </div>
-        <br />
-        <BitAccordion Title="Printed with its content" ExpandOnPrint>
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        </BitAccordion>
-        <BitAccordion Title="Printed as a bare header">
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        </BitAccordion>
-    </DemoExample>
-
-    <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" Id="example12">
         <div>
             The header is a button in a heading, named by the <b>Title</b> and described by the <b>Description</b>; the panel is
             a region it controls. <b>HeadingLevel</b> sets the heading depth (3 by default; nested accordions go one deeper on
@@ -320,7 +307,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>BitParams</b> with a <b>BitAccordionParams</b> sets defaults for every accordion inside it. An accordion's own
             parameters win; only unset ones are filled in. A cascaded <b>HeadingLevel</b> reaches top-level accordions only.
@@ -339,7 +326,7 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
             <b>Background</b> and <b>Border</b> pick the color kind of the surface and the outline (<b>Transparent</b> lets the
             underlying surface show). <b>NoBorder</b> drops the outline and fills with the secondary background.
@@ -381,7 +368,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>Icon</b>, <b>ExpanderIcon</b> and <b>ExpandedExpanderIcon</b> take a <b>BitIconInfo</b>, so any CSS icon library
             works: a bare class string or <b>BitIconInfo.Css</b>, or the <b>BitIconInfo.Fa</b> / <b>BitIconInfo.Bi</b> shortcuts.
@@ -410,7 +397,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
         <div><b>Size</b> scales the padding and the type of the whole accordion - header, icons and panel.</div>
         <br />
         <BitAccordion Title="Small" Description="Description" Size="BitSize.Small" IconName="@BitIconName.Settings">
@@ -424,7 +411,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CodeFiles="@example18CodeFiles" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CodeFiles="@example17CodeFiles" Id="example17">
         <div>
             Reach for the <b>--bit-Accordion-*</b> CSS variables first (listed in the API section): they inherit, so set them on
             <b>:root</b>, an ancestor or an instance's <b>Style</b>. <b>Style</b>/<b>Class</b> and <b>Styles</b>/<b>Classes</b>
@@ -474,7 +461,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <div><b>Dir="BitDir.Rtl"</b> (or a cascaded one) mirrors the header: the icon leads from the right, the expander closes on the left.</div>
         <br />
         <BitAccordion Dir="BitDir.Rtl"

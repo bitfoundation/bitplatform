@@ -80,7 +80,15 @@
                         }
                     </div>
 
-                    @if (HideExpanderIcon is false)
+                    @* A busy header stands the spinner in the expander's slot - even where the expander is hidden, since
+                       the cursor alone tells nothing to a touch or a keyboard user - so waiting moves nothing around it. *@
+                    @if (_IsBusy)
+                    {
+                        <span style="@Styles?.ExpanderIconWrapper" class="bit-acd-eiw @Classes?.ExpanderIconWrapper">
+                            <span aria-hidden="true" style="@Styles?.Spinner" class="bit-acd-spn @Classes?.Spinner"></span>
+                        </span>
+                    }
+                    else if (HideExpanderIcon is false)
                     {
                         <span style="@Styles?.ExpanderIconWrapper"
                               class="bit-acd-eiw @Classes?.ExpanderIconWrapper @(rotated ? "bit-ico--r180" : "")">

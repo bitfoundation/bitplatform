@@ -99,8 +99,9 @@ public partial class BitAccordion : BitComponentBase
     /// running - the awaited work of a list that owns the expansion, most of all.
     /// </summary>
     /// <remarks>
-    /// The header says as much - <c>aria-busy</c> for a screen reader, a busy cursor for a pointer - rather
-    /// than going on looking like a toggle that answers at once. An accordion whose own
+    /// The header says as much - a spinner in the expander's slot, <c>aria-busy</c> for a screen reader and a
+    /// busy cursor for a pointer - and answers no click meanwhile, rather than going on looking like a toggle
+    /// that answers at once. An accordion whose own
     /// <see cref="OnToggling"/> is being awaited reports itself as busy without being told to.
     /// </remarks>
     [Parameter] public bool Busy { get; set; }
@@ -665,8 +666,8 @@ public partial class BitAccordion : BitComponentBase
             _isToggling = true;
 
             // The callback is awaited and nothing else toggles the accordion while it is running, so the
-            // header says as much - aria-busy for a screen reader, a busy cursor for a pointer - rather than
-            // going on looking like a toggle that answers.
+            // header says as much - a spinner, aria-busy and a busy cursor - rather than going on looking like a
+            // toggle that answers.
             await RenderTheBusyState();
 
             try

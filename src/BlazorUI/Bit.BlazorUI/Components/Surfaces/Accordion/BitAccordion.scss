@@ -18,9 +18,9 @@
 //   --bit-Accordion-title-font-size           size of the title                             (default: per Size, $tg-fs-*)
 //   --bit-Accordion-title-font-weight         weight of the title                           (default: $tg-fw-semibold)
 //   --bit-Accordion-description-color         color of the description                      (default: $clr-fg-sec)
-//   --bit-Accordion-icon-size                 size of the icon and of the expander icon     (default: per Size, $siz-icon-*)
+//   --bit-Accordion-icon-size                 size of the icon, the expander and the spinner (default: per Size, $siz-icon-*)
 //   --bit-Accordion-icon-color                color of the icon at the start of the header  (default: inherited)
-//   --bit-Accordion-expander-color            color of the expander                         (default: inherited)
+//   --bit-Accordion-expander-color            color of the expander and of the spinner      (default: inherited)
 //   --bit-Accordion-content-padding           padding of the panel                          (default: per Size)
 //   --bit-Accordion-content-background        fill of the panel                             (default: transparent, the accordion's fill)
 //   --bit-Accordion-divider-color             rule between the header and the open panel    (default: transparent)
@@ -343,6 +343,31 @@
     font-size: var(--bit-Accordion-icon-size, var(--bit-acd-icn-fontsize));
 }
 
+// The spinner of a busy header takes the expander's slot and its size, and is drawn in the expander's color, so
+// the wait reads the same wherever the expander sits and whatever color a theme gives it.
+.bit-acd-spn {
+    border-radius: 50%;
+    box-sizing: border-box;
+    margin: 0 spacing(0.625);
+    border-color: $clr-brd-sec;
+    border-style: $shp-border-style;
+    border-width: $siz-spinner-stroke;
+    border-top-color: currentColor;
+    width: var(--bit-Accordion-icon-size, var(--bit-acd-icn-fontsize));
+    height: var(--bit-Accordion-icon-size, var(--bit-acd-icn-fontsize));
+    animation: bit-acd-spin $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-acd-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .bit-acd-wrp {
     flex-grow: 1;
     display: flex;
@@ -473,6 +498,12 @@
         .bit-acd-eiw {
             color: GrayText;
         }
+    }
+
+    // Every border would otherwise be forced to the same color, leaving a ring that turns without showing it.
+    .bit-acd-spn {
+        border-color: GrayText;
+        border-top-color: CanvasText;
     }
 }
 
