@@ -91,20 +91,11 @@ public static class BlazorUIMarkdown
         builder.AppendLine(component.Description ?? component.Summary).AppendLine();
 
         // A family documented on one page answers with its abstract base, which is not a tag anyone can write:
-        // the tags are the concrete components deriving from it, read off the assembly rather than listed here.
-        if (component.ComponentType is { IsAbstract: true } family && component.Category != "Base")
+        // the tags are the concrete components deriving from it, read off the assembly when the catalog is built.
+        if (component.FamilyMembers.Count > 0)
         {
-            var members = family.Assembly.GetExportedTypes()
-                                .Where(t => t.IsAbstract is false && family.IsAssignableFrom(t))
-                                .Select(t => $"`{t.Name}`")
-                                .Order(StringComparer.Ordinal)
-                                .ToArray();
-
-            if (members.Length > 0)
-            {
-                builder.AppendLine($"A family of {members.Length} components sharing the API below - write one of them as the tag: {string.Join(", ", members)}.")
-                       .AppendLine();
-            }
+            builder.AppendLine($"A family of {component.FamilyMembers.Count} components sharing the API below - write one of them as the tag: {string.Join(", ", component.FamilyMembers.Select(m => $"`{m}`"))}.")
+                   .AppendLine();
         }
 
         // The note nearly every Extras component carries says to install the package, which the

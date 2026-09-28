@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Bit.BlazorUI;
@@ -18,9 +19,14 @@ public abstract class BitLoadingBase : BitComponentBase
     // a Color or a Size that was written on the loader by hand.
     private readonly HashSet<string> _assignedLoadingParameters = [];
 
-    // The parameters a cascade filled in on the previous pass. Nothing else would ever take them back out:
-    // a parameter that was never written on the loader is absent from every ParameterView, so a value the
-    // cascade has since dropped - or a cascade that is gone altogether - would otherwise stay on the loader.
+    // How to put back each parameter a cascade has filled in, keyed by its name: the value it held before the
+    // cascade first wrote it, captured then. Nothing else would ever take a cascaded value back out: a parameter
+    // that was never written on the loader is absent from every ParameterView, so a value the cascade has since
+    // dropped - or a cascade that is gone altogether - would otherwise stay on the loader.
+    private readonly Dictionary<string, Action> _cascadeRestorers = [];
+
+    // The parameters the cascade filled in on the current pass; any other entry of _cascadeRestorers is one it
+    // has dropped since, and is put back once the cascade has been applied.
     private readonly HashSet<string> _cascadedLoadingParameters = [];
 
 
@@ -35,6 +41,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <see cref="LabelTemplate"/> gives the component one, so the same wait is never announced twice.
     /// </remarks>
     internal const string DefaultLoadingText = "Loading";
+
+    private const string ObsoleteGeometryMessage = "The loaders are drawn in CSS units now: write an offset as calc(N * var(--bit-ldn-unit)), an 80th of the size, instead of rescaling it in C#.";
 
     /// <summary>
     /// Whether the component is still inside its <see cref="Delay"/> window, and therefore holds its content
@@ -139,7 +147,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// element of a loader is a span, so it is valid markup inside a paragraph or a button either way.
     /// <br />
     /// Unless <see cref="Size"/> or <see cref="CustomSize"/> says otherwise, it is drawn at the size of the
-    /// surrounding text (1em) and its label takes the text size too, so it fits the line it sits in.
+    /// surrounding text (1em) and its label takes the text size too, so it fits the line it sits in. A Size or a
+    /// CustomSize handed down by a <see cref="BitParams"/> cascade is not applied to a loader that sets Inline itself.
     /// </remarks>
     [Parameter, ResetClassBuilder] public bool Inline { get; set; }
 
@@ -258,8 +267,6 @@ public abstract class BitLoadingBase : BitComponentBase
     public override Task SetParametersAsync(ParameterView parameters)
     {
         _assignedLoadingParameters.Clear();
-
-        ClearCascadedLoadingParameters();
 
         // A cascade that no longer reaches the loader is absent from the ParameterView rather than passed as null.
         CascadingParameters = null;
@@ -406,10 +413,31 @@ public abstract class BitLoadingBase : BitComponentBase
     internal bool HasNotBeenSetOnLoading(string name) => _assignedLoadingParameters.Contains(name) is false;
 
     /// <summary>
-    /// Records that a <see cref="BitLoadingParams"/> cascade filled in the named parameter, so that the next
-    /// parameter pass puts it back to its default before the cascade, as it then stands, is applied again.
+    /// Fills in the named parameter from a <see cref="BitLoadingParams"/> cascade, and records the value it held
+    /// before the cascade first wrote it, which is what it is put back to once the cascade stops setting it.
     /// </summary>
-    internal void SetByCascade(string name) => _cascadedLoadingParameters.Add(name);
+    /// <remarks>
+    /// The class and style builders are only reset when the value actually changes, so a loader under a cascade
+    /// that re-renders with the same parameters rebuilds neither string. The accessors are taken as static
+    /// lambdas, so that applying a cascade on every render allocates nothing past the first pass.
+    /// </remarks>
+    internal void Cascade<T>(string name,
+                             T value,
+                             Func<BitLoadingBase, T> get,
+                             Action<BitLoadingBase, T> set,
+                             bool resetClass = false,
+                             bool resetStyle = false)
+    {
+        _cascadedLoadingParameters.Add(name);
+
+        if (_cascadeRestorers.ContainsKey(name) is false)
+        {
+            var preCascade = get(this);
+            _cascadeRestorers[name] = () => Assign(preCascade, get, set, resetClass, resetStyle);
+        }
+
+        Assign(value, get, set, resetClass, resetStyle);
+    }
 
     /// <summary>
     /// The role the root element ends up with: the parameter where it was given one, then a plain 'role'
@@ -483,36 +511,37 @@ public abstract class BitLoadingBase : BitComponentBase
         return HtmlAttributes.TryGetValue(attribute, out var value) ? value?.ToString() : null;
     }
 
-    private void ClearCascadedLoadingParameters()
+    private void Assign<T>(T value, Func<BitLoadingBase, T> get, Action<BitLoadingBase, T> set, bool resetClass, bool resetStyle)
     {
-        if (_cascadedLoadingParameters.Count == 0) return;
+        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
 
-        foreach (var name in _cascadedLoadingParameters)
-        {
-            switch (name)
-            {
-                case nameof(AriaLive): AriaLive = null; break;
-                case nameof(Classes): Classes = null; break;
-                case nameof(Color): Color = null; break;
-                case nameof(CustomColor): CustomColor = null; break;
-                case nameof(CustomSize): CustomSize = null; break;
-                case nameof(Delay): Delay = 0; break;
-                case nameof(Inline): Inline = false; break;
-                case nameof(Label): Label = null; break;
-                case nameof(LabelPosition): LabelPosition = null; break;
-                case nameof(Paused): Paused = false; break;
-                case nameof(Role): Role = null; break;
-                case nameof(Size): Size = null; break;
-                case nameof(Speed): Speed = null; break;
-                case nameof(Styles): Styles = null; break;
-                case nameof(Thickness): Thickness = null; break;
-            }
-        }
+        set(this, value);
 
+        if (resetClass) ClassBuilder.Reset();
+        if (resetStyle) StyleBuilder.Reset();
+    }
+
+    private void ApplyCascadingParameters()
+    {
         _cascadedLoadingParameters.Clear();
 
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
+        CascadingParameters?.UpdateParameters(this);
+
+        // Every parameter the cascade filled in on this pass has a restorer, so equal counts mean it dropped none.
+        if (_cascadeRestorers.Count == _cascadedLoadingParameters.Count) return;
+
+        foreach (var name in _cascadeRestorers.Keys.ToArray())
+        {
+            if (_cascadedLoadingParameters.Contains(name)) continue;
+
+            // One now written on the loader itself already holds the value it was given, which is the one to keep.
+            if (HasNotBeenSetOnLoading(name))
+            {
+                _cascadeRestorers[name]();
+            }
+
+            _cascadeRestorers.Remove(name);
+        }
     }
 
 
@@ -522,7 +551,7 @@ public abstract class BitLoadingBase : BitComponentBase
     {
         // Applied before anything below reads the parameters, so that a Delay handed down by a cascade opens
         // its window exactly as one written on the loader does.
-        CascadingParameters?.UpdateParameters(this);
+        ApplyCascadingParameters();
 
         base.OnParametersSet();
 
@@ -559,13 +588,13 @@ public abstract class BitLoadingBase : BitComponentBase
         ClassBuilder.Register(() => Paused ? "bit-ldn-pau" : string.Empty);
 
         // A custom size takes no class: the drawing is sized by the inline variable, and the label scales from it.
-        // Nor does an unsized inline loader, which the bit-ldn-inl class sizes to the text around it.
+        // An unsized inline loader is drawn at the size of the text around it rather than the medium default.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-ldn-sm",
             BitSize.Medium => "bit-ldn-md",
             BitSize.Large => "bit-ldn-lg",
-            _ => CustomSize > 0 || Inline ? string.Empty : "bit-ldn-md"
+            _ => CustomSize > 0 ? string.Empty : Inline ? "bit-ldn-em" : "bit-ldn-md"
         });
 
         ClassBuilder.Register(() => LabelPosition switch
@@ -626,6 +655,38 @@ public abstract class BitLoadingBase : BitComponentBase
         StyleBuilder.Register(() => Speed > 0 ? $"--bit-ldn-spd:{Speed.Value.ToString(CultureInfo.InvariantCulture)}" : null);
 
         StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    /// <summary>
+    /// The size, in pixels, the drawing of this loader was authored at.
+    /// </summary>
+    [Obsolete(ObsoleteGeometryMessage)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    protected virtual int OriginalSize => 80;
+
+    /// <summary>
+    /// Rescales one of the drawing's authored offsets, measured against <see cref="OriginalSize"/>, to the pixel
+    /// size <see cref="Size"/> or <see cref="CustomSize"/> gives, and formats it for a CSS custom property.
+    /// </summary>
+    /// <remarks>
+    /// Kept for loaders derived outside this library. It cannot follow a size set in CSS - the --bit-Loading-size
+    /// variable, or the 1em of an unsized inline loader - which a calc() against --bit-ldn-unit does.
+    /// </remarks>
+    [Obsolete(ObsoleteGeometryMessage)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    protected string Convert(double value)
+    {
+        var size = Size switch
+        {
+            BitSize.Small => 40,
+            BitSize.Medium => 64,
+            BitSize.Large => 88,
+            _ => CustomSize > 0 ? CustomSize.Value : 64
+        };
+
+#pragma warning disable CS0618 // The obsolete pair is kept together.
+        return Math.Round(value * size / OriginalSize, 4).ToString(CultureInfo.InvariantCulture);
+#pragma warning restore CS0618
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

@@ -106,6 +106,13 @@ public sealed record BlazorUIComponent
     /// </summary>
     public IReadOnlyList<ComponentSubType> SharedTypes { get; init; } = [];
 
+    /// <summary>
+    /// The concrete components of a family documented on one page - the eighteen loaders on Loading -
+    /// whose <see cref="ComponentType"/> is their abstract base, which is not a tag anyone can write.
+    /// Read off the assembly once, while the catalog is built, and empty for every other component.
+    /// </summary>
+    public IReadOnlyList<string> FamilyMembers { get; init; } = [];
+
     public IReadOnlyList<DemoExampleSource> Examples { get; init; } = [];
 }
 
@@ -252,9 +259,24 @@ public static class BlazorUIComponentCatalog
                 CascadingParams = CascadingParamsOf(componentType),
                 OwnTypes = own,
                 SharedTypes = shared,
+                FamilyMembers = FamilyMembersOf(componentType),
                 Examples = demo?.Examples ?? []
             };
         })];
+    }
+
+    /// <summary>
+    /// The concrete components deriving from an abstract component type - see
+    /// <see cref="BlazorUIComponent.FamilyMembers"/> - in ordinal order.
+    /// </summary>
+    private static string[] FamilyMembersOf(Type? componentType)
+    {
+        if (componentType is not { IsAbstract: true } family) return [];
+
+        return [.. family.Assembly.GetExportedTypes()
+                                  .Where(t => t.IsAbstract is false && family.IsAssignableFrom(t))
+                                  .Select(t => t.Name)
+                                  .Order(StringComparer.Ordinal)];
     }
 
     /// <summary>

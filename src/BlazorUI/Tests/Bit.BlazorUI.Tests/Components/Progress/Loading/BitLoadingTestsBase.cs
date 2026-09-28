@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -587,8 +587,9 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Inline, true);
         });
 
-        // No size class, so the bit-ldn-inl class draws it at 1em rather than the 64px of the medium default.
+        // The bit-ldn-em class draws it at 1em rather than the 64px of the medium default.
         var root = component.Find(".bit-ldn");
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-em"));
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-md"));
         StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
 
@@ -597,7 +598,9 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Size, BitSize.Small);
         });
 
-        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-sm"));
+        root = component.Find(".bit-ldn");
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-em"));
 
         component.Render(parameters =>
         {
@@ -605,7 +608,9 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.CustomSize, 20);
         });
 
+        // Without the 1em class, so the label follows the custom size the way it does on any other loader.
         StringAssert.Contains(StyleOf(component), "--bit-ldn-sz:20px");
+        Assert.IsFalse(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-em"));
     }
 
     [TestMethod]
@@ -1128,5 +1133,88 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         root = component.Find(".bit-ldn");
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-sm"));
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-md"));
+    }
+
+    [TestMethod]
+    public void ShouldPutACascadedValueBackToWhatTheLoadingHeldBeforeIt()
+    {
+        static RenderFragment Loader(string ariaLabel, bool writeSpeed) => builder =>
+        {
+            builder.OpenComponent<TLoading>(0);
+            builder.AddAttribute(1, nameof(BitLoadingBase.AriaLabel), ariaLabel);
+            if (writeSpeed) builder.AddAttribute(2, nameof(BitLoadingBase.Speed), (double?)3);
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams() });
+            parameters.Add(p => p.ChildContent, Loader("first", writeSpeed: true));
+        });
+
+        Assert.IsTrue((component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-spd:3"));
+
+        // A parameter that stops being written keeps its last value, as it does on any Blazor component, and that
+        // value - not a default - is what the loader holds when a cascade fills the parameter in.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams { Speed = 2 } });
+            parameters.Add(p => p.ChildContent, Loader("second", writeSpeed: false));
+        });
+
+        Assert.IsTrue((component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-spd:2"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams() });
+            parameters.Add(p => p.ChildContent, Loader("third", writeSpeed: false));
+        });
+
+        Assert.IsTrue((component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-spd:3"));
+    }
+
+    [TestMethod]
+    public void ShouldKeepTheLoadingsOwnInlineAgainstACascadedSize()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams { Size = BitSize.Large, CustomSize = 48 } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<TLoading>(0);
+                builder.AddAttribute(1, nameof(BitLoadingBase.Inline), true);
+                builder.CloseComponent();
+                builder.OpenComponent<TLoading>(2);
+                builder.CloseComponent();
+            });
+        });
+
+        // Inline is a sizing choice of the loader's own - the size of its text - so the cascade leaves it alone,
+        // while a loader under the same cascade that made no such choice still takes the cascaded size.
+        var roots = component.FindAll(".bit-ldn");
+        Assert.IsTrue(roots[0].ClassList.Contains("bit-ldn-em"));
+        Assert.IsFalse(roots[0].ClassList.Contains("bit-ldn-lg"));
+        Assert.IsFalse((roots[0].GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-sz"));
+        Assert.IsTrue(roots[1].ClassList.Contains("bit-ldn-lg"));
+    }
+
+    [TestMethod]
+    public void ShouldSizeALoadingMadeInlineByACascade()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams { Inline = true, Size = BitSize.Small } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<TLoading>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        // Both come from the same cascade, whose author asked for the pair, so the size applies.
+        var root = component.Find(".bit-ldn");
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-inl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-em"));
     }
 }

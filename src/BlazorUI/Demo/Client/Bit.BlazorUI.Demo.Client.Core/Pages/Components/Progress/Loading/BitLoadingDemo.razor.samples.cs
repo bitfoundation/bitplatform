@@ -120,7 +120,7 @@ private async Task StartWork()
 </BitText>
 
 <BitButton IsEnabled=""false"">
-    <BitRingLoading Inline CustomColor=""currentColor"" Label=""Saving"" />
+    <BitRingLoading Inline Label=""Saving"" />
 </BitButton>";
 
     private readonly string example7RazorCode = @"
@@ -140,7 +140,7 @@ private async Task StartWork()
 
 <div class=""orders"" aria-busy=""@(isRefreshing ? ""true"" : ""false"")"">
     <BitOverlay IsOpen=""isRefreshing"" AbsolutePosition ModeFull Style=""align-items:center;justify-content:center;color:white"">
-        <BitRingLoading Label=""Refreshing orders..."" LabelPosition=""BitLabelPosition.End"" CustomColor=""currentColor"" />
+        <BitRingLoading Label=""Refreshing orders..."" LabelPosition=""BitLabelPosition.End"" />
     </BitOverlay>
     <div>Order #1024 - Shipped</div>
     <div>Order #1025 - Processing</div>

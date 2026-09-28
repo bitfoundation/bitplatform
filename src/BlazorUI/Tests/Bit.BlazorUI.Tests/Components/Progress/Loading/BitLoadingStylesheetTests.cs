@@ -97,12 +97,20 @@ public class BitLoadingStylesheetTests
     {
         var @base = ReadStylesheets().Single(s => s.Name == "BitLoading.scss").Content;
 
-        var inline = @base.IndexOf("\n.bit-ldn-inl {\n    --bit-ldn-sz: 1em;\n    --bit-ldn-lfs: 1em;\n}", StringComparison.Ordinal);
+        var unsized = @base.IndexOf("\n.bit-ldn-em {\n    --bit-ldn-sz: 1em;\n    --bit-ldn-lfs: 1em;\n}", StringComparison.Ordinal);
 
-        // At equal specificity the later rule wins, so the 1em has to come after the root's own label size and
-        // before every size class, or an explicit Size on an inline loader would be overridden by it.
-        Assert.IsGreaterThan(@base.IndexOf("\n.bit-ldn {", StringComparison.Ordinal), inline);
-        Assert.IsLessThan(@base.IndexOf("\n.bit-ldn-sm {", StringComparison.Ordinal), inline);
+        // At equal specificity the later rule wins, so the 1em has to come after the root's own label size. It
+        // is a class of its own, which a sized inline loader does not carry, so bit-ldn-inl must not set either.
+        Assert.IsGreaterThan(@base.IndexOf("\n.bit-ldn {", StringComparison.Ordinal), unsized);
+        StringAssert.DoesNotMatch(@base, new Regex(@"\.bit-ldn-inl \{[^}]*--bit-ldn-(sz|lfs)"));
+    }
+
+    [TestMethod]
+    public void BitLoadingShouldSetTheLabelOfAnInlineLoaderInTheFontOfItsText()
+    {
+        var @base = ReadStylesheets().Single(s => s.Name == "BitLoading.scss").Content;
+
+        StringAssert.Contains(@base, ".bit-ldn-inl > .bit-ldn-lbl {\n    font-family: inherit;\n}");
     }
 
     [TestMethod]

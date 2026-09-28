@@ -152,121 +152,90 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLoading);
 
+        // Each value goes through BitLoadingBase.Cascade, which remembers what the loader held before the cascade
+        // wrote it - so a value the cascade later drops is put back without a list of defaults kept here - and
+        // only resets the class or style builder when the value really changes.
+
         if (AriaLive.HasValue() && bitLoading.HasNotBeenSetOnLoading(nameof(AriaLive)))
         {
-            bitLoading.AriaLive = AriaLive;
-            bitLoading.SetByCascade(nameof(AriaLive));
+            bitLoading.Cascade(nameof(AriaLive), AriaLive, static l => l.AriaLive, static (l, v) => l.AriaLive = v);
         }
 
         if (Classes is not null && bitLoading.HasNotBeenSetOnLoading(nameof(Classes)))
         {
-            bitLoading.Classes = Classes;
-            bitLoading.SetByCascade(nameof(Classes));
-
-            bitLoading.ClassBuilder.Reset();
+            bitLoading.Cascade(nameof(Classes), Classes, static l => l.Classes, static (l, v) => l.Classes = v, resetClass: true);
         }
 
         // A theme role outranks a custom color, so a cascaded one would silently override the CustomColor written on
         // the loader itself - which is the loader's own choice, and so the one that has to win.
         if (Color.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Color)) && bitLoading.HasNotBeenSetOnLoading(nameof(CustomColor)))
         {
-            bitLoading.Color = Color.Value;
-            bitLoading.SetByCascade(nameof(Color));
-
-            bitLoading.StyleBuilder.Reset();
+            bitLoading.Cascade(nameof(Color), Color, static l => l.Color, static (l, v) => l.Color = v, resetStyle: true);
         }
 
         if (CustomColor.HasValue() && bitLoading.HasNotBeenSetOnLoading(nameof(CustomColor)))
         {
-            bitLoading.CustomColor = CustomColor;
-            bitLoading.SetByCascade(nameof(CustomColor));
-
-            bitLoading.StyleBuilder.Reset();
+            bitLoading.Cascade(nameof(CustomColor), CustomColor, static l => l.CustomColor, static (l, v) => l.CustomColor = v, resetStyle: true);
         }
 
-        if (CustomSize.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(CustomSize)))
-        {
-            bitLoading.CustomSize = CustomSize.Value;
-            bitLoading.SetByCascade(nameof(CustomSize));
+        // Inline is a sizing choice as well - an unsized inline loader is drawn at the size of its text - so a loader
+        // that asked for it itself keeps it against a cascaded size, the way its own CustomColor is kept above.
+        var ownInline = bitLoading.Inline && bitLoading.HasNotBeenSetOnLoading(nameof(Inline)) is false;
 
-            bitLoading.ClassBuilder.Reset();
-            bitLoading.StyleBuilder.Reset();
+        if (CustomSize.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(CustomSize)) && ownInline is false)
+        {
+            bitLoading.Cascade(nameof(CustomSize), CustomSize, static l => l.CustomSize, static (l, v) => l.CustomSize = v, resetClass: true, resetStyle: true);
         }
 
         if (Delay.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Delay)))
         {
-            bitLoading.Delay = Delay.Value;
-            bitLoading.SetByCascade(nameof(Delay));
+            bitLoading.Cascade(nameof(Delay), Delay.Value, static l => l.Delay, static (l, v) => l.Delay = v);
         }
 
         if (Inline.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Inline)))
         {
-            bitLoading.Inline = Inline.Value;
-            bitLoading.SetByCascade(nameof(Inline));
-
-            bitLoading.ClassBuilder.Reset();
+            bitLoading.Cascade(nameof(Inline), Inline.Value, static l => l.Inline, static (l, v) => l.Inline = v, resetClass: true);
         }
 
         if (Label.HasValue() && bitLoading.HasNotBeenSetOnLoading(nameof(Label)))
         {
-            bitLoading.Label = Label;
-            bitLoading.SetByCascade(nameof(Label));
+            bitLoading.Cascade(nameof(Label), Label, static l => l.Label, static (l, v) => l.Label = v);
         }
 
         if (LabelPosition.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(LabelPosition)))
         {
-            bitLoading.LabelPosition = LabelPosition.Value;
-            bitLoading.SetByCascade(nameof(LabelPosition));
-
-            bitLoading.ClassBuilder.Reset();
+            bitLoading.Cascade(nameof(LabelPosition), LabelPosition, static l => l.LabelPosition, static (l, v) => l.LabelPosition = v, resetClass: true);
         }
 
         if (Paused.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Paused)))
         {
-            bitLoading.Paused = Paused.Value;
-            bitLoading.SetByCascade(nameof(Paused));
-
-            bitLoading.ClassBuilder.Reset();
+            bitLoading.Cascade(nameof(Paused), Paused.Value, static l => l.Paused, static (l, v) => l.Paused = v, resetClass: true);
         }
 
         if (Role.HasValue() && bitLoading.HasNotBeenSetOnLoading(nameof(Role)))
         {
-            bitLoading.Role = Role;
-            bitLoading.SetByCascade(nameof(Role));
+            bitLoading.Cascade(nameof(Role), Role, static l => l.Role, static (l, v) => l.Role = v);
         }
 
-        // The same holds between a cascaded Size and the CustomSize written on the loader itself.
-        if (Size.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Size)) && bitLoading.HasNotBeenSetOnLoading(nameof(CustomSize)))
+        // The same holds between a cascaded Size and the CustomSize or the Inline written on the loader itself.
+        if (Size.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Size)) && bitLoading.HasNotBeenSetOnLoading(nameof(CustomSize)) && ownInline is false)
         {
-            bitLoading.Size = Size.Value;
-            bitLoading.SetByCascade(nameof(Size));
-
-            bitLoading.ClassBuilder.Reset();
-            bitLoading.StyleBuilder.Reset();
+            bitLoading.Cascade(nameof(Size), Size, static l => l.Size, static (l, v) => l.Size = v, resetClass: true, resetStyle: true);
         }
 
         if (Speed.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Speed)))
         {
-            bitLoading.Speed = Speed.Value;
-            bitLoading.SetByCascade(nameof(Speed));
-
-            bitLoading.StyleBuilder.Reset();
+            bitLoading.Cascade(nameof(Speed), Speed, static l => l.Speed, static (l, v) => l.Speed = v, resetStyle: true);
         }
 
         if (Styles is not null && bitLoading.HasNotBeenSetOnLoading(nameof(Styles)))
         {
-            bitLoading.Styles = Styles;
-            bitLoading.SetByCascade(nameof(Styles));
-
-            bitLoading.StyleBuilder.Reset();
+            bitLoading.Cascade(nameof(Styles), Styles, static l => l.Styles, static (l, v) => l.Styles = v, resetStyle: true);
         }
 
         if (Thickness.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Thickness)))
         {
-            bitLoading.Thickness = Thickness.Value;
-            bitLoading.SetByCascade(nameof(Thickness));
-
-            bitLoading.StyleBuilder.Reset();
+            bitLoading.Cascade(nameof(Thickness), Thickness, static l => l.Thickness, static (l, v) => l.Thickness = v, resetStyle: true);
         }
     }
 }

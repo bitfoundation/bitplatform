@@ -234,7 +234,7 @@
             <div>
                 <b>Inline</b> puts the loader on the current line of a paragraph, a heading, a button or a table cell,
                 drawn at the size of the text unless a size is given, with its label on the same line.
-                <code>CustomColor="currentColor"</code> takes the text color too. Every element of a loader is a span, so it is valid markup anywhere text is.
+                Every element of a loader is a span, so it is valid markup anywhere text is.
             </div>
             <br />
             <p>
@@ -247,7 +247,7 @@
             </BitText>
             <br />
             <BitButton IsEnabled="false">
-                <BitRingLoading Inline CustomColor="currentColor" Label="Saving" />
+                <BitRingLoading Inline Label="Saving" />
             </BitButton>
         </DemoExample>
 
@@ -262,7 +262,7 @@
             <br /><br />
             <div class="orders" aria-busy="@(isRefreshing ? "true" : "false")">
                 <BitOverlay IsOpen="isRefreshing" AbsolutePosition ModeFull Style="align-items:center;justify-content:center;color:white">
-                    <BitRingLoading Label="Refreshing orders..." LabelPosition="BitLabelPosition.End" CustomColor="currentColor" />
+                    <BitRingLoading Label="Refreshing orders..." LabelPosition="BitLabelPosition.End" />
                 </BitOverlay>
                 <div>Order #1024 - Shipped</div>
                 <div>Order #1025 - Processing</div>
@@ -329,8 +329,8 @@
         <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
             <div>
                 <b>Color</b> paints the drawing with a theme role, so it follows the theme and the color scheme.
-                <b>CustomColor</b> takes any CSS color, <code>currentColor</code> included, and applies only while
-                <b>Color</b> is unset.
+                <b>CustomColor</b> takes any CSS color, <code>currentColor</code> included - which is what lets an inline
+                loader, or one on an overlay, take the color of the text around it - and applies only while <b>Color</b> is unset.
             </div>
             <br />
             <div><b>Theme colors</b>:</div><br />

@@ -5,7 +5,7 @@
 //   --bit-Loading-track-color         full circle under the moving arcs of the Ring,
 //                                     DualRing and Xbox loaders                    (default: transparent)
 //   --bit-Loading-size                width and height of the drawing, any length   (default: per Size / CustomSize, 64px,
-//                                                                                   1em when Inline)
+//                                                                                   1em when Inline and unsized)
 //   --bit-Loading-thickness           stroke width of the stroked loaders           (default: Thickness, or the authored width)
 //   --bit-Loading-speed               multiplier of the animation speed             (default: Speed, or 1)
 //   --bit-Loading-gap                 room between the drawing and the label        (default: spacing(1))
@@ -69,8 +69,9 @@
 
 // An inline loader with no size of its own is drawn at the size of the text it sits in, and its label is that
 // text size too. The 1em is only resolved where the drawing and the label use it, so it follows the font of the
-// loader's surroundings. Written before the size classes so that an explicit Size still wins at equal specificity.
-.bit-ldn-inl {
+// loader's surroundings. A class of its own rather than part of bit-ldn-inl, which an inline loader keeps when it
+// is given a Size or a CustomSize - and then the label has to follow that size, as it does on any other loader.
+.bit-ldn-em {
     --bit-ldn-sz: 1em;
     --bit-ldn-lfs: 1em;
 }
@@ -116,6 +117,12 @@
     color: var(--bit-Loading-label-color, currentColor);
     font-size: var(--bit-Loading-label-font-size, var(--bit-ldn-lfs));
     font-weight: var(--bit-Loading-label-font-weight, #{$tg-fw-regular});
+}
+
+// An inline loader is part of the sentence it sits in, so its label is set in that sentence's font rather than
+// the theme's: a label in the body font next to a heading set in another would read as a separate element.
+.bit-ldn-inl > .bit-ldn-lbl {
+    font-family: inherit;
 }
 
 // The text a labelless loader announces. Taken out of the flow rather than merely hidden, so that it
