@@ -703,8 +703,9 @@ public class BitProgressTests : BunitTestContext
         var svg = component.Find(".bit-prb-cir");
         Assert.AreEqual("24px", svg.GetAttribute("width"));
         Assert.AreEqual("24px", svg.GetAttribute("height"));
-        // The token is pinned too, otherwise the stylesheet's per-size floor would win over the ask.
-        Assert.Contains("--bit-prb-diameter: 24px", svg.GetAttribute("style")!);
+        // The token is pinned too, otherwise the stylesheet's per-size floor would win over the ask. It is
+        // pinned on the root, where the readout in the middle of the ring reads it as well.
+        Assert.Contains("--bit-prb-diameter: 24px", component.Find(".bit-prb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -716,6 +717,18 @@ public class BitProgressTests : BunitTestContext
         });
 
         Assert.IsNull(component.Find(".bit-prb-cir").GetAttribute("style"));
+        Assert.IsNull(component.Find(".bit-prb").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitProgressDiameterShouldNotReachALinearBar()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Diameter, 24);
+        });
+
+        Assert.IsNull(component.Find(".bit-prb").GetAttribute("style"));
     }
 
     [TestMethod]
@@ -1511,6 +1524,37 @@ public class BitProgressTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitProgressAnnouncementShouldCarryTheAriaLabelOfABarWithoutAVisibleOne()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceProgress, true);
+            parameters.Add(p => p.AriaLabel, "Uploading");
+            parameters.Add(p => p.Percent, 0);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Percent, 50));
+
+        Assert.AreEqual("Uploading: 50 %", component.Find(".bit-prb-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitProgressAnnouncementShouldUseTheNameTheAriaLabelGivesOverTheVisibleLabel()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceProgress, true);
+            parameters.Add(p => p.Label, "Import");
+            parameters.Add(p => p.AriaLabel, "Importing customer rows");
+            parameters.Add(p => p.Percent, 0);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Percent, 25));
+
+        Assert.AreEqual("Importing customer rows: 25 %", component.Find(".bit-prb-lvr").TextContent);
+    }
+
+    [TestMethod]
     public void BitProgressAnnouncementShouldCarryTheLabelAndTheValueText()
     {
         var component = RenderComponent<BitProgress>(parameters =>
@@ -1785,37 +1829,12 @@ public class BitProgressTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitSize.Small, "bit-prb-sm"),
-        DataRow(BitSize.Medium, "bit-prb-md"),
-        DataRow(BitSize.Large, "bit-prb-lg")
-    ]
-    public void BitProgressSizeTest(BitSize size, string expectedClass)
-    {
-        var component = RenderComponent<BitProgress>(parameters =>
-        {
-            parameters.Add(p => p.Size, size);
-        });
-
-        Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains(expectedClass));
-    }
-
-    [TestMethod]
-    public void BitProgressWithoutSizeShouldCarryNoSizeClass()
-    {
-        var component = RenderComponent<BitProgress>();
-
-        var classList = component.Find(".bit-prb").ClassList;
-        Assert.IsFalse(classList.Contains("bit-prb-sm"));
-        Assert.IsFalse(classList.Contains("bit-prb-md"));
-        Assert.IsFalse(classList.Contains("bit-prb-lg"));
-    }
-
-    [TestMethod,
+        DataRow(null, 2),
         DataRow(BitSize.Small, 2),
         DataRow(BitSize.Medium, 4),
         DataRow(BitSize.Large, 8)
     ]
-    public void BitProgressCircularThicknessShouldFollowTheSize(BitSize size, int expected)
+    public void BitProgressCircularThicknessShouldFollowTheSizeUnlessTheVariableSaysOtherwise(BitSize? size, int expected)
     {
         var component = RenderComponent<BitProgress>(parameters =>
         {
@@ -1823,7 +1842,10 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.Size, size);
         });
 
-        Assert.Contains($"stroke-width: {expected}px", component.Find(".bit-prb-cbr").GetAttribute("style")!);
+        // The per-size stroke is only the fallback of the public variable, so a --bit-Progress-thickness set on an
+        // ancestor reaches the ring as it does the bar.
+        Assert.Contains($"stroke-width: var(--bit-Progress-thickness, {expected}px)", component.Find(".bit-prb-cbr").GetAttribute("style")!);
+        Assert.Contains($"stroke-width: var(--bit-Progress-thickness, {expected}px)", component.Find(".bit-prb-crt").GetAttribute("style")!);
     }
 
 

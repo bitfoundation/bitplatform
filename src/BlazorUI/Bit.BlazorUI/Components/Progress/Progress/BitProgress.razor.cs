@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 
 namespace Bit.BlazorUI;
@@ -13,6 +14,19 @@ public partial class BitProgress : BitComponentBase
     private double? _lastAnnouncedStep;
     private string? _announcement;
     private int _announcementGeneration;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the progress component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple progress components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitProgressParams.ParamName)]
+    public BitProgressParams? CascadingParameters { get; set; }
 
 
 
@@ -337,8 +351,11 @@ public partial class BitProgress : BitComponentBase
         return base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitProgressParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         UpdateAnnouncement();
 
         base.OnParametersSet();
@@ -437,7 +454,7 @@ public partial class BitProgress : BitComponentBase
     {
         get
         {
-            var prefix = _SegmentStyle + _GapStyle + _ColorStyle;
+            var prefix = _SegmentStyle + _GapStyle + _DiameterStyle + _ColorStyle;
 
             return prefix.HasNoValue() ? StyleBuilder.Value : prefix + StyleBuilder.Value;
         }
@@ -534,7 +551,12 @@ public partial class BitProgress : BitComponentBase
 
         var value = AriaValueText.HasValue() ? AriaValueText! : FormatPercent(milestone);
 
-        _announcement = Label.HasValue() ? $"{Label}: {value}" : value;
+        // The announcement is prefixed with the name the bar is known by, which is the AriaLabel when there is
+        // one - it wins over the visible label for the name too - so a bar without a visible label still says
+        // what it is that advanced.
+        var name = AriaLabel.HasValue() ? AriaLabel : Label;
+
+        _announcement = name.HasValue() ? $"{name}: {value}" : value;
 
         // A progress that was reset and climbed back reaches the same milestone with the same words,
         // and a live region that ends up holding the text it already held is a change of nothing. The
@@ -571,18 +593,19 @@ public partial class BitProgress : BitComponentBase
     // diameter token of the current size.
     private int GetDiameter() => Diameter.HasValue ? Math.Max(0, Diameter.Value) : GetThickness() * Math.Max(0, Radius);
 
-    private string? GetCircleStyle()
-    {
-        // Pinning the token to the explicit diameter turns the stylesheet's floor into an exact size,
-        // so a Diameter smaller than the size default still shrinks the ring.
-        return Diameter.HasValue ? $"--bit-prb-diameter: {GetDiameter()}px;" : null;
-    }
+    // Pinning the token to the explicit diameter turns the stylesheet's floor into an exact size, so a
+    // Diameter smaller than the size default still shrinks the ring. It is declared on the root rather
+    // than on the svg, because the readout in the middle of the ring - a sibling of the svg - scales its
+    // type from the same token.
+    private string? _DiameterStyle => Circular && Diameter.HasValue ? $"--bit-prb-diameter: {GetDiameter()}px;" : null;
 
     // What "thick" means depends on which way the bar runs: the height of a horizontal one, the stroke
     // of a ring, and - for a vertical one - the width, which the container already carries for all
-    // three of its children.
+    // three of its children. A ring is not drawn from the track tokens: a design system sizes its spinner
+    // stroke apart from its bar track (Fluent 2 has 1px tracks and 3px spinners), so an unset Thickness
+    // keeps the per-size stroke as the fallback of the public variable.
     private string _ThicknessDeclaration => Circular
-        ? $"stroke-width: {GetThickness()}px;"
+        ? (Thickness is null ? $"stroke-width: var(--bit-Progress-thickness, {GetThickness()}px);" : $"stroke-width: {GetThickness()}px;")
         : _IsVertical ? string.Empty : $"height: {GetThicknessStyleValue()};";
 
     // ... and so does the axis the value is drawn along.
