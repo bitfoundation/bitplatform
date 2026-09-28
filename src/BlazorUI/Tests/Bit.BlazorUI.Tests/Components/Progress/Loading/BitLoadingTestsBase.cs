@@ -1077,4 +1077,56 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         StringAssert.Contains(style, "--bit-ldn-clr:hotpink");
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-lg"));
     }
+
+    [TestMethod]
+    public void ShouldDropWhatACascadeNoLongerSupplies()
+    {
+        // The loader is only handed its parameters again when something written on it changes, so each pass
+        // re-renders it with a new AriaLabel to put the cascade, as it then stands, in front of it.
+        static RenderFragment Loader(string ariaLabel) => builder =>
+        {
+            builder.OpenComponent<TLoading>(0);
+            builder.AddAttribute(1, nameof(BitLoadingBase.AriaLabel), ariaLabel);
+            builder.AddAttribute(2, nameof(BitLoadingBase.Paused), false);
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitLoadingParams { Color = BitColor.Error, Size = BitSize.Large, Label = "Cascaded", Paused = true }
+            });
+            parameters.Add(p => p.ChildContent, Loader("first"));
+        });
+
+        var root = component.Find(".bit-ldn");
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-lg"));
+        Assert.AreEqual("Cascaded", component.Find(".bit-ldn-lbl").TextContent.Trim());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitLoadingParams { Size = BitSize.Small } });
+            parameters.Add(p => p.ChildContent, Loader("second"));
+        });
+
+        // A value the cascade no longer carries goes back to the default instead of staying on the loader.
+        root = component.Find(".bit-ldn");
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-clr"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-lg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-pau"));
+        Assert.IsEmpty(component.FindAll(".bit-ldn-lbl"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>());
+            parameters.Add(p => p.ChildContent, Loader("third"));
+        });
+
+        // And so does everything once the cascade is gone altogether.
+        root = component.Find(".bit-ldn");
+        Assert.IsFalse(root.ClassList.Contains("bit-ldn-sm"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-md"));
+    }
 }

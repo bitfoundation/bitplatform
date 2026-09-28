@@ -155,11 +155,13 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (AriaLive.HasValue() && bitLoading.HasNotBeenSetOnLoading(nameof(AriaLive)))
         {
             bitLoading.AriaLive = AriaLive;
+            bitLoading.SetByCascade(nameof(AriaLive));
         }
 
         if (Classes is not null && bitLoading.HasNotBeenSetOnLoading(nameof(Classes)))
         {
             bitLoading.Classes = Classes;
+            bitLoading.SetByCascade(nameof(Classes));
 
             bitLoading.ClassBuilder.Reset();
         }
@@ -169,6 +171,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (Color.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Color)) && bitLoading.HasNotBeenSetOnLoading(nameof(CustomColor)))
         {
             bitLoading.Color = Color.Value;
+            bitLoading.SetByCascade(nameof(Color));
 
             bitLoading.StyleBuilder.Reset();
         }
@@ -176,6 +179,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (CustomColor.HasValue() && bitLoading.HasNotBeenSetOnLoading(nameof(CustomColor)))
         {
             bitLoading.CustomColor = CustomColor;
+            bitLoading.SetByCascade(nameof(CustomColor));
 
             bitLoading.StyleBuilder.Reset();
         }
@@ -183,6 +187,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (CustomSize.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(CustomSize)))
         {
             bitLoading.CustomSize = CustomSize.Value;
+            bitLoading.SetByCascade(nameof(CustomSize));
 
             bitLoading.ClassBuilder.Reset();
             bitLoading.StyleBuilder.Reset();
@@ -191,11 +196,13 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (Delay.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Delay)))
         {
             bitLoading.Delay = Delay.Value;
+            bitLoading.SetByCascade(nameof(Delay));
         }
 
         if (Inline.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Inline)))
         {
             bitLoading.Inline = Inline.Value;
+            bitLoading.SetByCascade(nameof(Inline));
 
             bitLoading.ClassBuilder.Reset();
         }
@@ -203,11 +210,13 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (Label.HasValue() && bitLoading.HasNotBeenSetOnLoading(nameof(Label)))
         {
             bitLoading.Label = Label;
+            bitLoading.SetByCascade(nameof(Label));
         }
 
         if (LabelPosition.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(LabelPosition)))
         {
             bitLoading.LabelPosition = LabelPosition.Value;
+            bitLoading.SetByCascade(nameof(LabelPosition));
 
             bitLoading.ClassBuilder.Reset();
         }
@@ -215,6 +224,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (Paused.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Paused)))
         {
             bitLoading.Paused = Paused.Value;
+            bitLoading.SetByCascade(nameof(Paused));
 
             bitLoading.ClassBuilder.Reset();
         }
@@ -222,12 +232,14 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (Role.HasValue() && bitLoading.HasNotBeenSetOnLoading(nameof(Role)))
         {
             bitLoading.Role = Role;
+            bitLoading.SetByCascade(nameof(Role));
         }
 
         // The same holds between a cascaded Size and the CustomSize written on the loader itself.
         if (Size.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Size)) && bitLoading.HasNotBeenSetOnLoading(nameof(CustomSize)))
         {
             bitLoading.Size = Size.Value;
+            bitLoading.SetByCascade(nameof(Size));
 
             bitLoading.ClassBuilder.Reset();
             bitLoading.StyleBuilder.Reset();
@@ -236,6 +248,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (Speed.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Speed)))
         {
             bitLoading.Speed = Speed.Value;
+            bitLoading.SetByCascade(nameof(Speed));
 
             bitLoading.StyleBuilder.Reset();
         }
@@ -243,6 +256,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (Styles is not null && bitLoading.HasNotBeenSetOnLoading(nameof(Styles)))
         {
             bitLoading.Styles = Styles;
+            bitLoading.SetByCascade(nameof(Styles));
 
             bitLoading.StyleBuilder.Reset();
         }
@@ -250,6 +264,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         if (Thickness.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Thickness)))
         {
             bitLoading.Thickness = Thickness.Value;
+            bitLoading.SetByCascade(nameof(Thickness));
 
             bitLoading.StyleBuilder.Reset();
         }

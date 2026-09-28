@@ -18,6 +18,11 @@ public abstract class BitLoadingBase : BitComponentBase
     // a Color or a Size that was written on the loader by hand.
     private readonly HashSet<string> _assignedLoadingParameters = [];
 
+    // The parameters a cascade filled in on the previous pass. Nothing else would ever take them back out:
+    // a parameter that was never written on the loader is absent from every ParameterView, so a value the
+    // cascade has since dropped - or a cascade that is gone altogether - would otherwise stay on the loader.
+    private readonly HashSet<string> _cascadedLoadingParameters = [];
+
 
 
     /// <summary>
@@ -254,6 +259,11 @@ public abstract class BitLoadingBase : BitComponentBase
     {
         _assignedLoadingParameters.Clear();
 
+        ClearCascadedLoadingParameters();
+
+        // A cascade that no longer reaches the loader is absent from the ParameterView rather than passed as null.
+        CascadingParameters = null;
+
         var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
 
         foreach (var parameter in parametersDictionary!)
@@ -396,6 +406,12 @@ public abstract class BitLoadingBase : BitComponentBase
     internal bool HasNotBeenSetOnLoading(string name) => _assignedLoadingParameters.Contains(name) is false;
 
     /// <summary>
+    /// Records that a <see cref="BitLoadingParams"/> cascade filled in the named parameter, so that the next
+    /// parameter pass puts it back to its default before the cascade, as it then stands, is applied again.
+    /// </summary>
+    internal void SetByCascade(string name) => _cascadedLoadingParameters.Add(name);
+
+    /// <summary>
     /// The role the root element ends up with: the parameter where it was given one, then a plain 'role'
     /// HTML attribute passed through the splat, and the "status" default when neither was supplied.
     /// </summary>
@@ -465,6 +481,38 @@ public abstract class BitLoadingBase : BitComponentBase
     private string? PassedThrough(string attribute)
     {
         return HtmlAttributes.TryGetValue(attribute, out var value) ? value?.ToString() : null;
+    }
+
+    private void ClearCascadedLoadingParameters()
+    {
+        if (_cascadedLoadingParameters.Count == 0) return;
+
+        foreach (var name in _cascadedLoadingParameters)
+        {
+            switch (name)
+            {
+                case nameof(AriaLive): AriaLive = null; break;
+                case nameof(Classes): Classes = null; break;
+                case nameof(Color): Color = null; break;
+                case nameof(CustomColor): CustomColor = null; break;
+                case nameof(CustomSize): CustomSize = null; break;
+                case nameof(Delay): Delay = 0; break;
+                case nameof(Inline): Inline = false; break;
+                case nameof(Label): Label = null; break;
+                case nameof(LabelPosition): LabelPosition = null; break;
+                case nameof(Paused): Paused = false; break;
+                case nameof(Role): Role = null; break;
+                case nameof(Size): Size = null; break;
+                case nameof(Speed): Speed = null; break;
+                case nameof(Styles): Styles = null; break;
+                case nameof(Thickness): Thickness = null; break;
+            }
+        }
+
+        _cascadedLoadingParameters.Clear();
+
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
     }
 
 
