@@ -36,19 +36,28 @@
     @foreach (var item in _items)
     {
         @* The id is on the element for the swipe script to read, and only on the items a swipe is allowed to take
-           away, so a persistent one does not even follow the pointer. *@
+           away, so a persistent one does not even follow the pointer.
+           The hover hold follows pointer events rather than mouse events: a tap on a touch screen raises a
+           compatibility mouseenter with no mouseleave to match it, which would hold the countdown of a tapped item
+           for good, while a touch pointer leaves as soon as the finger is lifted.
+           The pointerdown notes that the next thing to happen in the item is the pointer's doing, so an item closed
+           by a click does not move the focus the way one closed from the keyboard does. *@
         <div @key="item.Id"
-             role="@GetItemRole(item)"
+             role="@GetRenderedRole(item)"
              data-bit-snb-id="@(IsDismissible(item) ? item.Id.ToString() : null)"
              aria-live="off"
+             aria-labelledby="@GetItemLabelledBy(item)"
+             aria-describedby="@GetItemDescribedBy(item)"
+             aria-busy="@(item.IsLoading ? "true" : null)"
              tabindex="@(IsClickable(item) ? "0" : null)"
              style="@JoinStyles(Styles?.Container, item.CssStyle)"
              class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass"
              @onclick="() => HandleItemClick(item)"
              @onkeydown="e => HandleItemKeyDown(e, item)"
              @onkeyup="e => HandleItemKeyUp(e, item)"
-             @onmouseenter="() => HandleHoverStart(item)"
-             @onmouseleave="() => HandleHoverEnd(item)"
+             @onpointerdown="() => HandlePointerDown(item)"
+             @onpointerenter="() => HandleHoverStart(item)"
+             @onpointerleave="() => HandleHoverEnd(item)"
              @onfocusin="() => HandleFocusStart(item)"
              @onfocusout="() => HandleFocusEnd(item)">
 
@@ -62,7 +71,15 @@
                    so a screen reader reads the notification before it reaches the button that throws it away,
                    and the Tab order does the same. *@
                 <div style="@Styles?.Header" class="bit-snb-hdr @Classes?.Header">
-                    @if (ShowIcon && item.HideIcon is false)
+                    @if (item.IsLoading)
+                    {
+                        @* The spinner stands in for the icon whatever ShowIcon says: it is the one thing on screen
+                           that tells a notification still waiting on something from one that has its answer. *@
+                        <div style="@Styles?.IconContainer" class="bit-snb-ict @Classes?.IconContainer" aria-hidden="true">
+                            <span style="@Styles?.Spinner" class="bit-snb-spn @Classes?.Spinner"></span>
+                        </div>
+                    }
+                    else if (ShowIcon && item.HideIcon is false)
                     {
                         <div style="@Styles?.IconContainer" class="bit-snb-ict @Classes?.IconContainer" aria-hidden="true">
                             <i style="@Styles?.Icon" class="bit-snb-ico @GetIcon(item)?.GetCssClasses() @Classes?.Icon" />
@@ -78,7 +95,8 @@
                         @* The tooltip is what a title cut off with an ellipsis is read in full from, so it is only
                            there while the title really is being cut off - on a wrapping title it would be a
                            duplicate of text that is already all on screen. *@
-                        <div title="@(Multiline ? null : item.Title)"
+                        <div id="@GetTitleId(item)"
+                             title="@(Multiline ? null : item.Title)"
                              style="@Styles?.Title"
                              class="bit-snb-ttl @(Multiline ? "" : "bit-snb-elp") @Classes?.Title">
                             @item.Title
@@ -110,7 +128,8 @@
                 {
                     @* Same reasoning as the title: a body kept to one line keeps the rest of its text in a tooltip
                        so it is still reachable, and a wrapping one has nothing left to put there. *@
-                    <div title="@(Multiline ? null : item.Body)"
+                    <div id="@GetBodyId(item)"
+                         title="@(Multiline ? null : item.Body)"
                          style="@Styles?.Body"
                          class="bit-snb-bdy @(Multiline ? "" : "bit-snb-elp") @Classes?.Body">
                         @item.Body
