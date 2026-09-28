@@ -475,4 +475,29 @@ public class ComponentCatalogTests : McpTestBase
         StringAssert.Contains(answer, ":root", "The answer does not say a variable can be set app-wide.");
         StringAssert.Contains(answer, "`Style`", "The answer does not say a variable can be set on one instance.");
     }
+
+    /// <summary>
+    /// The eighteen loaders are documented on one page, Loading, whose name belongs to the shell they all render
+    /// through - a plain ComponentBase taking a <c>This</c> nobody writes. The family's API is its abstract base, and
+    /// the answer has to say which tags that API is written on.
+    /// </summary>
+    [TestMethod]
+    public async Task A_family_of_components_answers_with_its_shared_base_and_its_tags()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "Loading" });
+
+        var parameters = TableRows(answer, "## Parameters").Skip(1).Select(row => row[0].Trim('`')).ToArray();
+
+        using var scope = Assert.Scope();
+
+        CollectionAssert.Contains(parameters, "Label");
+        CollectionAssert.Contains(parameters, "Delay");
+        CollectionAssert.DoesNotContain(parameters, "This", "The answer documents the internal shell rather than the family.");
+        CollectionAssert.DoesNotContain(parameters, "ChildContent", "The answer documents the internal shell rather than the family.");
+
+        StringAssert.Contains(answer, "`BitComponentBase`", "The family's inherited parameters are not named.");
+        StringAssert.Contains(answer, "BitLoadingParams", "The family's BitParams cascade is not named.");
+        StringAssert.Contains(answer, "`BitRingLoading`", "The answer does not name the tags the family is written with.");
+        StringAssert.Contains(answer, "`BitXboxLoading`", "The answer does not name the tags the family is written with.");
+    }
 }
