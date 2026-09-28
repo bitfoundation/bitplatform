@@ -11,7 +11,7 @@ $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 
 # The last one to finish, so a re-run counts; with --status success the API is not newest first.
-$run = gh run list --repo $Repository --workflow prerelease.nuget.org.yml --limit 20 --json databaseId,headBranch,headSha,url,conclusion,updatedAt |
+$run = gh run list --repo $Repository --workflow prerelease.nuget.org.yml --limit 100 --json databaseId,headBranch,headSha,url,conclusion,updatedAt |
     ConvertFrom-Json |
     Where-Object conclusion -eq 'success' |
     Sort-Object { [datetimeoffset]$_.updatedAt } -Descending |
@@ -52,6 +52,14 @@ $packages = foreach ($nupkg in Get-ChildItem $PackagesFolder -Filter *.nupkg) {
     finally {
         $zip.Dispose()
     }
+}
+
+$versions = @($packages | Where-Object Id -like 'Bit.*' | ForEach-Object Version | Sort-Object -Unique)
+$checkoutVersion = ([xml](Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'src' 'Bit.Build.props') -Raw)).Project.PropertyGroup.ReleaseVersion | Where-Object { $_ } | Select-Object -First 1
+
+# Checked before anything changes: the restore would fail anyway, with far less to go on.
+if ($versions -notcontains $checkoutVersion) {
+    throw "$($run.url) ($($run.headBranch)) built Bit.* $($versions -join ', '), but this checkout is on $checkoutVersion (src/Bit.Build.props). Run Prerelease nuget packages on a branch at $checkoutVersion."
 }
 
 # A nuget.org copy of the same version in the global packages folder would be used as is.
@@ -105,6 +113,16 @@ if (-not $mapping) {
     }
 }
 
+# A Bit pattern of another source would win (a longer one) or share (the same one).
+foreach ($pattern in @($mapping.SelectNodes('packageSource/package')) | Where-Object { $_.GetAttribute('pattern') -like 'Bit.*' }) {
+    $owner = $pattern.ParentNode
+    $owner.RemoveChild($pattern) | Out-Null
+
+    if ($owner.SelectNodes('package').Count -eq 0) {
+        $mapping.RemoveChild($owner) | Out-Null
+    }
+}
+
 # The longest pattern wins: Bit.* comes only from here.
 $bit = $mapping.AppendChild($config.CreateElement('packageSource'))
 $bit.SetAttribute('key', 'bit-prerelease')
@@ -112,8 +130,7 @@ $bit.AppendChild($config.CreateElement('package')).SetAttribute('pattern', 'Bit.
 
 $config.Save($configFile.FullName)
 
-$versions = ($packages | Where-Object Id -like 'Bit.*' | ForEach-Object Version | Sort-Object -Unique) -join ', '
-$message = "Bit.* $versions from prerelease run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))"
+$message = "Bit.* $($versions -join ', ') from prerelease run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))"
 
 Write-Host "::notice title=Bit packages::$message"
 
