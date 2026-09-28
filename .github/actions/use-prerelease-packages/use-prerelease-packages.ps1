@@ -1,30 +1,16 @@
 #Requires -Version 7.4
-<#
-.SYNOPSIS
-    Makes a project restore every Bit.* package from the nupkg-files artifact of the latest successful run of
-    prerelease.nuget.org.yml instead of nuget.org. See action.yml next to this file.
-
-.DESCRIPTION
-    The artifact carries the version in the branch's Bit.Build.props, which is what the projects of that branch pin,
-    so nothing else has to change. nuget.org has the same id and version though, so the artifact is made the only
-    source of Bit.* packages through package source mapping; NuGet does not prefer one source over another.
-#>
+# Makes a project restore every Bit.* package from the nupkg-files artifact of the latest successful
+# prerelease.nuget.org.yml run. See action.yml.
 param(
-    # Folder of the nuget.config the project restores with. The file is created when it is not there.
-    [Parameter(Mandatory)] [string] $ProjectFolder,
-
-    # owner/name of the repository the prerelease runs belong to.
+    [Parameter(Mandatory)] [string] $ProjectFolder, # Of the nuget.config to use; created when missing.
     [Parameter(Mandatory)] [string] $Repository,
-
-    # Where the artifact is downloaded to. It becomes the package source.
     [Parameter(Mandatory)] [string] $PackagesFolder
 )
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 
-# The successful run that finished last, so a re-run of an older one counts as the latest. Sorted here: with
-# --status success the API does not keep its newest first order.
+# The last one to finish, so a re-run counts; with --status success the API is not newest first.
 $run = gh run list --repo $Repository --workflow prerelease.nuget.org.yml --limit 20 --json databaseId,headBranch,headSha,url,conclusion,updatedAt |
     ConvertFrom-Json |
     Where-Object conclusion -eq 'success' |
@@ -46,7 +32,7 @@ catch {
 
 $PackagesFolder = (Resolve-Path $PackagesFolder).Path
 
-# Id and version as the nuspec inside each package states them; a file name alone cannot tell where the id ends.
+# From each nuspec: a file name alone cannot tell where the id ends.
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $packages = foreach ($nupkg in Get-ChildItem $PackagesFolder -Filter *.nupkg) {
     $zip = [IO.Compression.ZipFile]::OpenRead($nupkg.FullName)
@@ -68,7 +54,7 @@ $packages = foreach ($nupkg in Get-ChildItem $PackagesFolder -Filter *.nupkg) {
     }
 }
 
-# A copy of the same id and version that nuget.org already put in the global packages folder would be used as is.
+# A nuget.org copy of the same version in the global packages folder would be used as is.
 $globalPackagesFolder = $env:NUGET_PACKAGES ? $env:NUGET_PACKAGES : (Join-Path $HOME '.nuget' 'packages')
 
 foreach ($package in $packages) {
@@ -94,8 +80,7 @@ if (-not $configFile) {
 $config = [xml](Get-Content $configFile.FullName -Raw)
 $configuration = $config.DocumentElement
 
-# By name rather than by path: the Boilerplate template renames "Boilerplate" wherever it appears in a file it
-# emits, paths included. NuGet expands the variable, which the steps after this one get through GITHUB_ENV.
+# A variable, not a path: the template renames "Boilerplate" in what it emits, paths included.
 $env:BIT_PRERELEASE_PACKAGES = $PackagesFolder
 
 if ($env:GITHUB_ENV) {
@@ -110,7 +95,7 @@ $source.SetAttribute('value', '%BIT_PRERELEASE_PACKAGES%')
 $mapping = $configuration.SelectSingleNode('packageSourceMapping')
 
 if (-not $mapping) {
-    # Without a mapping every other source keeps serving everything, Bit.* included.
+    # Without a mapping any source may serve Bit.* too.
     $mapping = $configuration.AppendChild($config.CreateElement('packageSourceMapping'))
 
     foreach ($key in $sources.SelectNodes('add').key | Where-Object { $_ -ne 'bit-prerelease' }) {
@@ -120,7 +105,7 @@ if (-not $mapping) {
     }
 }
 
-# The longest matching pattern wins, so Bit.* comes from here and nowhere else.
+# The longest pattern wins: Bit.* comes only from here.
 $bit = $mapping.AppendChild($config.CreateElement('packageSource'))
 $bit.SetAttribute('key', 'bit-prerelease')
 $bit.AppendChild($config.CreateElement('package')).SetAttribute('pattern', 'Bit.*')

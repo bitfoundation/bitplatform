@@ -62,7 +62,6 @@ on:
 
 permissions:
   contents: read
-  # The prerelease_packages option downloads the artifact of another run.
   actions: read
 
 jobs:
