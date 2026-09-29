@@ -55,3 +55,33 @@
         }
     }
 }
+
+// Three dots fading one after another, staggered by AnimationDelay.
+.wave {
+    gap: 0.25rem;
+    display: flex;
+}
+
+// One row per color role: the three variants and a disabled fill, then the role's name.
+.color-grid {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.color-row {
+    gap: 1rem;
+    display: flex;
+    padding: 0.25rem 0.5rem;
+    align-items: center;
+
+    span {
+        font-size: 0.75rem;
+    }
+}
+
+// The background roles are the page's own surface colors, so they are shown on a dark panel to be seen at all.
+.on-dark {
+    color: var(--bit-clr-bg-sec);
+    background-color: var(--bit-clr-fg-sec);
+}
