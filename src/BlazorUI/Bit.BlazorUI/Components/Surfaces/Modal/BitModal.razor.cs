@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Modals are temporary pop-ups that take focus from the page or app and require people to interact with them.
@@ -41,6 +43,7 @@ public partial class BitModal : BitComponentBase
     private bool _hasBeenOpened;
     private bool _contentFocused;
     private string _containerId = default!;
+    private string _titleId = default!;
 
     // The room the scroller gave back when its overflow was toggled off, which an absolutely positioned Modal
     // is pushed down by so that it stays where the eye left it rather than jumping to the top of the scroller.
@@ -96,6 +99,21 @@ public partial class BitModal : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the Modal component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple Modal components through
+    /// the <see cref="BitParams"/> component. The values are defaults: a parameter the Modal is given itself wins, and
+    /// so does one the <see cref="BitModalService"/> gives a Modal it shows.
+    /// </remarks>
+    [CascadingParameter(Name = BitModalParams.ParamName)]
+    public BitModalParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// When true, the Modal is positioned absolute instead of fixed, so that it covers the element it was
     /// declared inside of rather than the screen.
     /// </summary>
@@ -146,6 +164,19 @@ public partial class BitModal : BitComponentBase
     /// <see cref="Header"/> or a <see cref="Footer"/> uses to keep the three of them side by side.
     /// </remarks>
     [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
+    /// Asked whether the Modal may close whenever the user dismisses it - by the close button, a click on the
+    /// overlay or the Escape key. Answering <c>false</c> keeps the Modal open.
+    /// </summary>
+    /// <remarks>
+    /// This is the guard for the Modals that have something to lose by closing - a half-filled form, an upload still
+    /// running. It is put to the dismissal before the Modal is taken off the screen, so a refusal keeps the content
+    /// exactly as it was, and it is answered with the same short pulse a <see cref="Blocking"/> Modal answers a
+    /// click on its overlay with. <see cref="Close"/> and a change of <see cref="IsOpen"/> made by the consumer are
+    /// the application closing the Modal on its own terms, and are not asked.
+    /// </remarks>
+    [Parameter] public Func<Task<bool>>? CanClose { get; set; }
 
     /// <summary>
     /// The content of the Modal, it can be any custom tag or text.
@@ -620,6 +651,7 @@ public partial class BitModal : BitComponentBase
     protected override void OnInitialized()
     {
         _containerId = $"BitModal-{UniqueId}-container";
+        _titleId = $"BitModal-{UniqueId}-title";
 
         // The uncontrolled starting state, which only applies while the consumer is not driving IsOpen
         // itself. It is read once here rather than every time the parameters are set, so that closing an
@@ -656,8 +688,11 @@ public partial class BitModal : BitComponentBase
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitModalParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         var previous = _params;
 
         _params = BuildParameters();
@@ -959,6 +994,18 @@ public partial class BitModal : BitComponentBase
     private string GetRole()
     {
         return (_params.IsAlert ?? ((_params.Blocking ?? false) && IsModeless is false)) ? "alertdialog" : "dialog";
+    }
+
+    // A dialog needs a name (WCAG 4.1.2), and a Modal whose chrome shows a title already has one on the screen:
+    // that title names it unless the consumer pointed TitleAriaId somewhere else or gave it an AriaLabel of its own,
+    // which aria-labelledby would otherwise take precedence over.
+    private string? GetAriaLabelledBy()
+    {
+        if (_params.TitleAriaId is not null) return _params.TitleAriaId;
+
+        if (_params.AriaLabel.HasValue()) return null;
+
+        return HasChrome && (_params.Header is not null || _params.HeaderText.HasValue()) ? _titleId : null;
     }
 
     // Null rather than an empty string when there is nothing to render, so a Modal that was given no
@@ -1377,10 +1424,15 @@ public partial class BitModal : BitComponentBase
 
     /// <summary>
     /// Builds the effective parameters by merging this component's own parameters with the cascaded
-    /// <see cref="BitModalParameters"/>. The component's own values take precedence, preserving the
-    /// behavior previously provided by the parameters object reading back from the component.
+    /// <see cref="BitModalParameters"/> of the <see cref="BitModalService"/> and the defaults of a
+    /// <see cref="BitModalParams"/> cascaded by a <see cref="BitParams"/> ancestor.
     /// </summary>
     /// <remarks>
+    /// The precedence is: a parameter the Modal was given explicitly, then the one the service handed it for this
+    /// showing, then the <see cref="BitModalParams"/> default. The last of them is already on the property by the time
+    /// this runs (<see cref="BitModalParams.UpdateParameters"/> only ever fills a parameter that was not given), so an
+    /// own value that was not given explicitly is the cascaded default - or the built-in one - and yields to the service.
+    /// <br/>
     /// Nullable values use a simple "own value, else cascaded" precedence (<c>Own ?? p.Own</c>).
     /// Non-nullable bools cannot distinguish "not set" from "explicitly false", so they merge
     /// asymmetrically and the component param only expresses the "stronger" intent for that flag:
@@ -1411,77 +1463,92 @@ public partial class BitModal : BitComponentBase
             // caller can still assign null. Coalesce to empty dictionaries so the Concat in
             // MergeHtmlAttributes (and the snapshot copies) never NRE, mirroring BitModalParameters.Merge.
             HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes ?? [], HtmlAttributes ?? []),
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            AbsolutePosition = AbsolutePosition ? true : p.AbsolutePosition,
+            AbsolutePosition = MergeOn(nameof(AbsolutePosition), AbsolutePosition, p.AbsolutePosition),
             Dir = Dir ?? p.Dir,
             AriaLabel = AriaLabel ?? p.AriaLabel,
-            // Can only force off (default is enabled): see remarks on asymmetric merge.
-            AriaModal = AriaModal is false ? false : p.AriaModal,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            AutoToggleScroll = AutoToggleScroll ? true : p.AutoToggleScroll,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            Blocking = Blocking ? true : p.Blocking,
+            AriaModal = MergeOff(nameof(AriaModal), AriaModal, p.AriaModal),
+            AutoToggleScroll = MergeOn(nameof(AutoToggleScroll), AutoToggleScroll, p.AutoToggleScroll),
+            Blocking = MergeOn(nameof(Blocking), Blocking, p.Blocking),
             Body = Body ?? p.Body,
+            // A guard of the Modal's own is asked instead of the one the service was given, the same way a Modal
+            // shown through the service is asked its own guard instead of the container-level one.
+            CanClose = CanClose ?? p.CanClose,
             // Service-level knobs the Modal itself has no say in: carried through the merge so that the
             // effective parameters stay a faithful picture of what the Modal was shown with.
-            CanClose = p.CanClose,
             Classes = p.Classes,
-            CloseButtonTitle = CloseButtonTitle ?? p.CloseButtonTitle,
-            CloseIcon = CloseIcon ?? p.CloseIcon,
-            CloseIconName = CloseIconName ?? p.CloseIconName,
+            CloseButtonTitle = MergeRef(nameof(CloseButtonTitle), CloseButtonTitle, p.CloseButtonTitle),
+            CloseIcon = MergeRef(nameof(CloseIcon), CloseIcon, p.CloseIcon),
+            CloseIconName = MergeRef(nameof(CloseIconName), CloseIconName, p.CloseIconName),
             CloseOnNavigation = p.CloseOnNavigation,
-            DragElementSelector = DragElementSelector ?? p.DragElementSelector,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            Draggable = Draggable ? true : p.Draggable,
+            DragElementSelector = MergeRef(nameof(DragElementSelector), DragElementSelector, p.DragElementSelector),
+            Draggable = MergeOn(nameof(Draggable), Draggable, p.Draggable),
             Footer = Footer ?? p.Footer,
             FooterText = FooterText ?? p.FooterText,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            FullHeight = FullHeight ? true : p.FullHeight,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            FullSize = FullSize ? true : p.FullSize,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            FullWidth = FullWidth ? true : p.FullWidth,
+            FullHeight = MergeOn(nameof(FullHeight), FullHeight, p.FullHeight),
+            FullSize = MergeOn(nameof(FullSize), FullSize, p.FullSize),
+            FullWidth = MergeOn(nameof(FullWidth), FullWidth, p.FullWidth),
             Header = Header ?? p.Header,
             HeaderText = HeaderText ?? p.HeaderText,
-            Height = Height ?? p.Height,
-            IsAlert = IsAlert ?? p.IsAlert,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            KeepMounted = KeepMounted ? true : p.KeepMounted,
-            MaxHeight = MaxHeight ?? p.MaxHeight,
-            MaxWidth = MaxWidth ?? p.MaxWidth,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            ModeFull = ModeFull ? true : p.ModeFull,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            Modeless = Modeless ? true : p.Modeless,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            NoAutoFocus = NoAutoFocus ? true : p.NoAutoFocus,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            NoBorder = NoBorder ? true : p.NoBorder,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            NoDismissOnEscape = NoDismissOnEscape ? true : p.NoDismissOnEscape,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            NoFocusTrap = NoFocusTrap ? true : p.NoFocusTrap,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            NoRestoreFocus = NoRestoreFocus ? true : p.NoRestoreFocus,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            NoScrollLock = NoScrollLock ? true : p.NoScrollLock,
+            Height = MergeRef(nameof(Height), Height, p.Height),
+            IsAlert = MergeValue(nameof(IsAlert), IsAlert, p.IsAlert),
+            KeepMounted = MergeOn(nameof(KeepMounted), KeepMounted, p.KeepMounted),
+            MaxHeight = MergeRef(nameof(MaxHeight), MaxHeight, p.MaxHeight),
+            MaxWidth = MergeRef(nameof(MaxWidth), MaxWidth, p.MaxWidth),
+            ModeFull = MergeOn(nameof(ModeFull), ModeFull, p.ModeFull),
+            Modeless = MergeOn(nameof(Modeless), Modeless, p.Modeless),
+            NoAutoFocus = MergeOn(nameof(NoAutoFocus), NoAutoFocus, p.NoAutoFocus),
+            NoBorder = MergeOn(nameof(NoBorder), NoBorder, p.NoBorder),
+            NoDismissOnEscape = MergeOn(nameof(NoDismissOnEscape), NoDismissOnEscape, p.NoDismissOnEscape),
+            NoFocusTrap = MergeOn(nameof(NoFocusTrap), NoFocusTrap, p.NoFocusTrap),
+            NoRestoreFocus = MergeOn(nameof(NoRestoreFocus), NoRestoreFocus, p.NoRestoreFocus),
+            NoScrollLock = MergeOn(nameof(NoScrollLock), NoScrollLock, p.NoScrollLock),
             OnDismiss = _onDismiss,
             OnEscapeKeyDown = _onEscapeKeyDown,
             OnOpen = _onOpen,
             OnOverlayClick = _onOverlayClick,
-            Position = Position ?? p.Position,
+            Position = MergeValue(nameof(Position), Position, p.Position),
             ScrollerElement = ScrollerElement ?? p.ScrollerElement,
-            ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,
-            // Can only force on (default is off): see remarks on asymmetric merge.
-            ShowCloseButton = ShowCloseButton ? true : p.ShowCloseButton,
+            ScrollerSelector = MergeRef(nameof(ScrollerSelector), ScrollerSelector, p.ScrollerSelector),
+            ShowCloseButton = MergeOn(nameof(ShowCloseButton), ShowCloseButton, p.ShowCloseButton),
             Styles = p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
             // Can only force off (default is Visible): own value wins only when it is a meaningful
             // (non-default) override, otherwise the cascaded value is used.
             Visibility = Visibility != BitVisibility.Visible ? Visibility : p.Visibility,
-            Width = Width ?? p.Width,
+            Width = MergeRef(nameof(Width), Width, p.Width),
         };
+    }
+
+    // The merges below all put a value the Modal was given explicitly ahead of the service's, and the service's
+    // ahead of a value that is on the property only because a BitParams ancestor put it there (or because it is
+    // the built-in default) - which is what keeps an app-wide default from overriding what one showing of a
+    // service Modal asked for. Without a BitParams ancestor the result is the plain "own, else cascaded" merge.
+
+    private T? MergeRef<T>(string name, T? own, T? cascaded) where T : class
+    {
+        return HasNotBeenSet(name) ? (cascaded ?? own) : (own ?? cascaded);
+    }
+
+    private T? MergeValue<T>(string name, T? own, T? cascaded) where T : struct
+    {
+        return HasNotBeenSet(name) ? (cascaded ?? own) : (own ?? cascaded);
+    }
+
+    // A flag the own parameter can only force on: false says nothing, so it never masks the cascaded value.
+    private bool? MergeOn(string name, bool own, bool? cascaded)
+    {
+        if (HasNotBeenSet(name)) return cascaded ?? (own ? true : null);
+
+        return own ? true : cascaded;
+    }
+
+    // A flag the own parameter can only force off (its default is true): true says nothing.
+    private bool? MergeOff(string name, bool own, bool? cascaded)
+    {
+        if (HasNotBeenSet(name)) return cascaded ?? (own ? null : false);
+
+        return own ? cascaded : false;
     }
 
     /// <summary>
