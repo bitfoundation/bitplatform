@@ -164,13 +164,11 @@ private bool isOpenFullSize;";
 </BitModal>
 <BitModal @bind-IsOpen=""isOpenFooter"" MaxWidth=""32rem"" ShowCloseButton HeaderText=""Unsaved changes"">
     <Body>
-        <BitText>The footer stays at the bottom while the body scrolls.</BitText>
+        <BitText>The footer stays at the bottom while the body scrolls, and lays its actions out the way the theme does.</BitText>
     </Body>
     <Footer>
-        <BitStack Horizontal Gap=""0.5rem"" AutoHeight>
-            <BitButton OnClick=""() => isOpenFooter = false"">Save</BitButton>
-            <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFooter = false"">Discard</BitButton>
-        </BitStack>
+        <BitButton OnClick=""() => isOpenFooter = false"">Save</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFooter = false"">Discard</BitButton>
     </Footer>
 </BitModal>";
     private readonly string example3CsharpCode = @"
@@ -672,6 +670,11 @@ private BitModal refModal = default!;";
     <div class=""modal-content"">
         <BitText Typography=""BitTypography.H6"">Project settings</BitText>
         <BitTextField Label=""Project name"" />
+        <BitDropdown Label=""Visibility"" TItem=""BitDropdownOption<string>"" TValue=""string"" DefaultValue=""@(""private"")"">
+            <BitDropdownOption Text=""Private"" Value=""@(""private"")"" />
+            <BitDropdownOption Text=""Team"" Value=""@(""team"")"" />
+            <BitDropdownOption Text=""Public"" Value=""@(""public"")"" />
+        </BitDropdown>
         <BitStack Horizontal Gap=""0.5rem"" AutoHeight>
             <BitButton OnClick=""() => isOpenOuter = false"">Save</BitButton>
             <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.Error"" OnClick=""() => isOpenInner = true"">Delete</BitButton>

@@ -852,6 +852,18 @@ namespace BitBlazorUI {
             });
         }
 
+        // True when one of the open callouts was opened from a component inside the given element - a dropdown
+        // or a menu inside a modal, whose popup is relocated to the body and so is no longer inside it itself.
+        public static isOpenedFrom(root: Element | null): boolean {
+            if (root == null) return false;
+
+            return Callouts._stack.some(entry => {
+                const componentId = Callouts._params.get(entry.calloutId)?.componentId ?? entry.componentId;
+                const component = componentId ? document.getElementById(componentId) : null;
+                return component != null && root.contains(component);
+            });
+        }
+
         // True when the node lives inside one of the open callouts. A scroll that started in there is the
         // user reading the callout rather than the page moving out from under it.
         public static calloutContains(node: Node | null): boolean {

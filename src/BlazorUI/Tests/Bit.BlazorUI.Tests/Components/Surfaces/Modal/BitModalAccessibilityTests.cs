@@ -161,6 +161,39 @@ public class BitModalAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitModalShouldLeaveAnEscapeClaimedInsideItToThatLayer()
+    {
+        // The script reports the press as claimed: a dropdown opened from inside the Modal closed its popup with it,
+        // or an input method used it to cancel what it was composing.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isEscapeClaimed", _ => true).SetResult(true);
+
+        var escapes = 0;
+        var isOpen = true;
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
+        });
+
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // One press closes one layer: the Modal stays open, is not told about the key, and does not pulse either.
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, escapes);
+        Assert.AreEqual(1, com.FindAll(".bit-mdl-ctn").Count);
+        Assert.IsFalse(com.Find(".bit-mdl-ctn").ClassList.Contains("bit-mdl-bna"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldWatchTheEscapePressesFromItsRoot()
+    {
+        var com = RenderComponent<BitModal>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscape"].Count));
+    }
+
+    [TestMethod]
     public async Task BitModalCanCloseShouldNotBeAskedWhenTheAppClosesIt()
     {
         var asked = 0;

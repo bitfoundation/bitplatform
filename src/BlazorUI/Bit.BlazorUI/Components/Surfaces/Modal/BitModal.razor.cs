@@ -66,6 +66,15 @@ public partial class BitModal : BitComponentBase
     // taking the class off would resolve back to the entry animation and replay that instead.
     private int _bounce;
 
+    // Whether the close sequence found the Modal on the screen and is waiting for its exit animation to play
+    // before taking it out of the page (see IsLeaving for the render that comes before the close sequence).
+    private bool _leaving;
+    // Whether the container of a Modal shown through the service has been told the Modal is out of the way,
+    // which is what the container waits for to take it out of the page.
+    private bool _leftReported;
+    // Whether the closing under way is the user dismissing the Modal, as opposed to the application closing it.
+    private bool _dismissing;
+
     // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
     // BuildParameters call. These are only invoked internally (not passed to a child), so
     // re-creating them per render did not defeat change detection, but it did allocate two
@@ -238,6 +247,11 @@ public partial class BitModal : BitComponentBase
     // reference - the string is the contract between the two.
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
+
+    // Handed over by the container of a Modal shown through the service, which keeps the Modal in the page after
+    // the service closed it until it reports the exit animation played. Null for a Modal declared in markup.
+    [CascadingParameter(Name = BitModalExit.CascadingName)]
+    private BitModalExit? Exit { get; set; }
 
     // The effective parameters: this component's own parameters merged with the cascaded
     // BitModalParameters (the latter supplied by the BitModalService). The component's own
@@ -830,7 +844,15 @@ public partial class BitModal : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_internalIsOpen == IsOpen) return;
+        if (_internalIsOpen == IsOpen)
+        {
+            ReportLeft();
+            return;
+        }
+
+        // Only a Modal that was on the screen has anything to animate away; the close sequence below takes it
+        // out of the page once the animation has played.
+        _leaving = IsOpen is false && IsShown && IsDisposed is false;
 
         _internalIsOpen = IsOpen;
 
@@ -848,6 +870,8 @@ public partial class BitModal : BitComponentBase
         else
         {
             await HandleOnClosed();
+
+            await FinishLeaving(generation);
         }
     }
 
@@ -866,6 +890,9 @@ public partial class BitModal : BitComponentBase
         // The focus is recorded before anything is done with it, while it is still on whatever opened the
         // Modal: this is the element it goes back to once the Modal closes.
         await StoreFocus();
+        if (Overtaken()) return;
+
+        await WatchEscape();
         if (Overtaken()) return;
 
         await SetupFocusTrap();
@@ -911,11 +938,59 @@ public partial class BitModal : BitComponentBase
 
         await StopForwardScroll();
 
-        await RemoveDrag();
+        // The drag handlers put a dragged Modal back where it was laid out as they go, so a Modal still playing
+        // its way out keeps them until it has (FinishLeaving) rather than jumping back to the middle mid-fade.
+        if (_leaving is false)
+        {
+            await RemoveDrag();
+        }
 
         await ToggleScroll(false);
 
         await RestoreFocus();
+    }
+
+    // Takes the Modal out of the page once its exit animation has played. Everything else a close does has
+    // been done by now - the focus handed back, the page let go of - so the only thing waited for here is the
+    // movement, and a Modal opened again in the meantime (a later run) is left alone.
+    private async Task FinishLeaving(int generation)
+    {
+        if (_leaving && IsDisposed is false)
+        {
+            try
+            {
+                await _js.BitUtilsWaitForAnimations(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            if (_lifecycle != generation || IsOpen || IsDisposed) return;
+
+            await RemoveDrag();
+
+            if (_lifecycle != generation || IsOpen || IsDisposed) return;
+
+            _leaving = false;
+
+            StateHasChanged();
+
+            return;
+        }
+
+        ReportLeft();
+    }
+
+    // Tells the container of a Modal shown through the service that the Modal is out of the way, which is what it
+    // waits for before it takes the Modal out of the page: the service closed it already, and the container only
+    // kept it for the exit animation to play. Told once per closing, and never while that animation is playing.
+    private void ReportLeft()
+    {
+        if (IsOpen || IsLeaving || _leftReported) return;
+
+        if (Exit is null) return;
+
+        _leftReported = true;
+
+        Exit.Left();
     }
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
@@ -940,6 +1015,11 @@ public partial class BitModal : BitComponentBase
         if (_params.IsEnabled is false) return;
 
         if (e.Key is not "Escape") return;
+
+        // One press closes one layer: an Escape that a dropdown or a menu opened from inside the Modal closed
+        // its popup with - or that an input method used to cancel what it was composing - is not also a
+        // dismissal of the Modal the user is still working in.
+        if (await IsEscapeClaimed()) return;
 
         await _params.OnEscapeKeyDown.InvokeAsync(e);
 
@@ -974,7 +1054,16 @@ public partial class BitModal : BitComponentBase
             return false;
         }
 
-        await AssignIsOpen(false);
+        _dismissing = true;
+
+        try
+        {
+            await AssignIsOpen(false);
+        }
+        finally
+        {
+            _dismissing = false;
+        }
 
         return true;
     }
@@ -1061,22 +1150,29 @@ public partial class BitModal : BitComponentBase
     }
 
     // A kept-mounted Modal that is closed is still in the page, so it is taken out of the way of it rather
-    // than left lying over it. The builder answers null for a Modal that carries no classes at all, which
-    // this never is - the root class is one of them - but a null is still not something to splice a class
-    // list onto.
+    // than left lying over it - once the exit animation of a Modal on its way out has played. The builder
+    // answers null for a Modal that carries no classes at all, which this never is - the root class is one of
+    // them - but a null is still not something to splice a class list onto.
     private string? GetRootClasses()
     {
         if (IsOpen) return ClassBuilder.Value;
 
         var classes = ClassBuilder.Value;
+        var state = IsLeaving ? "bit-mdl-lvg" : "bit-mdl-hid";
 
-        return classes.HasNoValue() ? "bit-mdl-hid" : $"{classes} bit-mdl-hid";
+        return classes.HasNoValue() ? state : $"{classes} {state}";
     }
 
     // Whether a closed Modal is still to be rendered. Only one that has been open at least once is kept: a
     // Modal that has never opened has no state worth keeping, and rendering it up front would put the cost
     // of every Modal on the page onto that page's first render.
     private bool _keptMounted => (_params.KeepMounted ?? false) && _hasBeenOpened;
+
+    // Whether the Modal is closed but still in the page for its exit animation. A Modal closed since the last
+    // render is leaving from that render on, before the close sequence has run: the parent of a bound Modal renders
+    // it closed as soon as it hears of the change, and dropping the markup there to build it again a moment later
+    // would lose everything the page did to it - where it was dragged to, first of all.
+    private bool IsLeaving => _leaving || (IsOpen is false && _internalIsOpen && IsShown);
 
     // Two class lists are one attribute value while a single space stands between them, and an empty part
     // in the middle would otherwise leave a double space (or a trailing one) in the rendered attribute.
@@ -1093,15 +1189,23 @@ public partial class BitModal : BitComponentBase
 
     private void OnSetIsOpen()
     {
+        // A refusal leaves the content marked with the movement that answered it. Opening the Modal again
+        // starts from the entry animation instead, and closing it plays the exit one.
+        _bounce = 0;
+
         if (IsOpen)
         {
-            // A refusal leaves the content marked with the movement that answered it. Opening the Modal
-            // again starts from the entry animation instead.
-            _bounce = 0;
+            // Opened again while it was still on its way out: the same markup simply stays.
+            _leaving = false;
+            _leftReported = false;
             return;
         }
 
         if (IsRendered is false) return;
+
+        // A Modal shown through the service is closed by its service as well, which is the application closing
+        // it rather than the user dismissing it, and is not reported as a dismissal.
+        if (Exit is not null && _dismissing is false) return;
 
         // Fire-and-forget the dismiss callback, then re-render. Wrapped in a local async method
         // (instead of ContinueWith) so a throwing OnDismiss surfaces through Blazor's normal async
@@ -1239,12 +1343,42 @@ public partial class BitModal : BitComponentBase
 
         try
         {
-            // The Modal is out of the page by now, which drops the focus it was holding on the body: that
-            // is the state the restore is for. A focus that has since moved somewhere else - a close
-            // handler that placed it deliberately - belongs to whoever moved it, so it is left alone.
-            await _js.BitUtilsRestoreFocus(_containerId);
+            // The Modal is closed by now, which drops the focus it was holding on the body: that is the state
+            // the restore is for. A focus that has since moved somewhere else - a close handler that placed it
+            // deliberately - belongs to whoever moved it, so it is left alone. A Modal playing its exit
+            // animation is still in the page, inert, and the browser only moves the focus out of it at its next
+            // focus fixup, so a focus still inside it is lost as well.
+            await _js.BitUtilsRestoreFocus(_containerId, scopeId: _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // The Escape presses are watched from the root, where the Modal's own handler is, so that the ones a layer
+    // inside it answered first can be told apart from the ones meant for the Modal (Utils.watchEscape). The
+    // listener goes away with the element, so there is nothing to take back when the Modal closes.
+    private async Task WatchEscape()
+    {
+        if (IsDisposed) return;
+
+        try
+        {
+            await _js.BitUtilsWatchEscape(RootElement);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task<bool> IsEscapeClaimed()
+    {
+        if (IsDisposed) return false;
+
+        try
+        {
+            return await _js.BitUtilsIsEscapeClaimed(RootElement);
+        }
+        catch (JSDisconnectedException)
+        {
+            return false;
+        }
     }
 
     private async Task SetupFocusTrap()

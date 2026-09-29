@@ -61,6 +61,27 @@
     display: none;
 }
 
+// A Modal on its way out: it is closed already - inert, out of the reading order, the page behind it handed back -
+// and only stays in the page for as long as it takes to play the entry backwards, so that it leaves the way it came
+// rather than vanishing in one frame. The movement is shorter than the entry and accelerates away, and it collapses
+// to nothing under reduced motion, which the motion tokens take care of. The last frame is held (forwards) because
+// the Modal is taken out of the page right after it, and snapping back to full opacity first would flash it.
+.bit-mdl-lvg {
+    .bit-mdl-ctn {
+        animation-fill-mode: forwards;
+        animation-name: bit-mdl-zoom-out;
+        animation-duration: $mot-duration-short;
+        animation-timing-function: $mot-easing-accelerate;
+    }
+
+    &.bit-mdl-mfl .bit-mdl-ovl {
+        animation-fill-mode: forwards;
+        animation-name: bit-mdl-fade-out;
+        animation-duration: $mot-duration-short;
+        animation-timing-function: $mot-easing-accelerate;
+    }
+}
+
 // A Modal placed over the element it was declared inside of rather than over the screen. The z-index goes
 // with the fixed positioning: inside a stacking context of its own, a value meant to clear the page would
 // only push it past its own siblings.
@@ -351,10 +372,19 @@
     padding: var(--bit-Modal-padding, #{$spa-dialog});
 }
 
+// The footer is where a dialog's actions go, so it lays them out the way the theme lays out every dialog's
+// actions: a trailing row hugging their own content for Fluent and Material, a full-width stack for Cupertino.
+// A footer template that brings a layout of its own (a stack, which takes the whole width) keeps it.
 .bit-mdl-fcn {
     bottom: 0;
     z-index: 1;
+    display: flex;
+    gap: spacing(1);
+    flex-wrap: wrap;
     position: sticky;
+    align-items: $layout-dialog-actions-align;
+    flex-direction: $layout-dialog-actions-direction;
+    justify-content: $layout-dialog-actions-justify;
     background-color: var(--bit-Modal-background, #{$clr-bg-pri});
     padding: 0 var(--bit-Modal-padding, #{$spa-dialog}) var(--bit-Modal-padding, #{$spa-dialog});
 }
@@ -384,6 +414,29 @@
     100% {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+// The entry played backwards, for the Modal on its way out.
+@keyframes bit-mdl-zoom-out {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes bit-mdl-fade-out {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
     }
 }
 

@@ -502,6 +502,55 @@
             Utils._escapes.delete(elementId);
         }
 
+        // Watches the Escape presses that reach a surface dismissed by the key from its own Blazor handler (a
+        // modal), and records whether the last of them belonged to something inside it instead: a dropdown or a
+        // menu opened from inside the surface closes its own popup on the same key, an input method editor
+        // cancels the candidate it is composing, and a control that answered the key says so by preventing its
+        // default. One press then closes the innermost layer only, rather than that layer and the surface the
+        // user is still working in. The decision has to be taken here, at the time of the event: the listener is
+        // on the element, so it runs before Blazor's document-level delegation lets the nested component close
+        // its popup, after which the stack of open callouts would no longer say that there was one.
+        // Registering again on the same element does nothing, and the listener goes away with the element.
+        public static watchEscape(element: HTMLElement) {
+            if (!element) return;
+
+            const el = element as any;
+            if (el.__bitEscapeWatched) return;
+            el.__bitEscapeWatched = true;
+
+            element.addEventListener('keydown', (e: KeyboardEvent) => {
+                if (e.key !== 'Escape') return;
+
+                el.__bitEscapeClaimed = e.defaultPrevented || e.isComposing || Callouts.isOpenedFrom(element);
+            });
+        }
+
+        // Resolves once the exit animation of a surface has played out, so that it is only taken out of the page
+        // after it: the animations running on the element and on its direct children (an overlay, a content
+        // box), which is where a surface's own movement is. Anything deeper is the content's own business - a
+        // spinner inside it runs forever - and so is anything that repeats. `timeout` bounds the wait, so a
+        // surface is never kept in the page by an animation that does not end.
+        public static async waitForAnimations(elementId: string, timeout: number = 1000) {
+            const element = document.getElementById(elementId);
+            if (!element || typeof element.getAnimations !== 'function') return;
+
+            const animations = [element, ...Array.from(element.children)]
+                .flatMap(e => e.getAnimations())
+                .filter(a => a.effect?.getTiming().iterations !== Infinity);
+
+            if (animations.length === 0) return;
+
+            await Promise.race([
+                Promise.all(animations.map(a => a.finished.catch(() => { }))),
+                new Promise(resolve => setTimeout(resolve, timeout)),
+            ]);
+        }
+
+        // Whether the last Escape the watched element saw was claimed by something inside it (see watchEscape).
+        public static isEscapeClaimed(element: HTMLElement) {
+            return !!(element as any)?.__bitEscapeClaimed;
+        }
+
         public static disposeTabOut(elementId: string) {
             const controller = Utils._tabOuts.get(elementId);
             if (!controller) return;
@@ -654,8 +703,10 @@
         // way - a stored origin is only ever restored once. `onlyWhenLost` is the guard for the usual case:
         // the focus is only the popup's to hand back while it is still where the popup left it, which after
         // the popup is taken out of the page means nowhere (the browser drops it on the body). A focus that
-        // has since moved somewhere else belongs to whoever moved it.
-        public static restoreFocus(key: string, onlyWhenLost: boolean) {
+        // has since moved somewhere else belongs to whoever moved it. `scopeId` names a popup that is still in
+        // the page while it closes - playing its exit animation, inert already - where the browser only moves
+        // the focus out at its next focus fixup: a focus still inside it is as lost as one on the body.
+        public static restoreFocus(key: string, onlyWhenLost: boolean, scopeId?: string | null) {
             const element = Utils._focusOrigins.get(key);
             Utils._focusOrigins.delete(key);
 
@@ -664,7 +715,8 @@
             try {
                 if (onlyWhenLost) {
                     const active = document.activeElement;
-                    if (active && active !== document.body && active !== document.documentElement) return;
+                    const scope = scopeId ? document.getElementById(scopeId) : null;
+                    if (active && active !== document.body && active !== document.documentElement && !scope?.contains(active)) return;
                 }
 
                 if (!element.isConnected) return;

@@ -35,6 +35,7 @@
             <div>
                 <b>IsOpen</b> shows the Modal and is two-way bound, so Escape and a click on the overlay close it. The
                 focus moves in when it opens, Tab stays inside it, and the focus returns to the opener when it closes.
+                It animates in and out (instantly under reduced motion).
                 <b>NoBorder</b> removes the accent along the top edge.
             </div>
             <br />
@@ -164,13 +165,11 @@
             </BitModal>
             <BitModal @bind-IsOpen="isOpenFooter" MaxWidth="32rem" ShowCloseButton HeaderText="Unsaved changes">
                 <Body>
-                    <BitText>The footer stays at the bottom while the body scrolls.</BitText>
+                    <BitText>The footer stays at the bottom while the body scrolls, and lays its actions out the way the theme does.</BitText>
                 </Body>
                 <Footer>
-                    <BitStack Horizontal Gap="0.5rem" AutoHeight>
-                        <BitButton OnClick="() => isOpenFooter = false">Save</BitButton>
-                        <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenFooter = false">Discard</BitButton>
-                    </BitStack>
+                    <BitButton OnClick="() => isOpenFooter = false">Save</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenFooter = false">Discard</BitButton>
                 </Footer>
             </BitModal>
         </DemoExample>
@@ -522,8 +521,9 @@
 
         <DemoExample Title="Nested modals" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
-                A Modal declared inside another opens on top of it. Escape closes only the innermost, overlays stack,
-                the scroll holds are counted, and the focus returns to the button inside the first Modal.
+                A Modal declared inside another opens on top of it. One Escape closes one layer - the inner Modal, or
+                an open dropdown inside a Modal - overlays stack, the scroll holds are counted, and the focus returns
+                to the button inside the first Modal.
             </div>
             <br />
             <BitButton OnClick="() => isOpenOuter = true">Open Modal</BitButton>
@@ -531,6 +531,11 @@
                 <div class="modal-content">
                     <BitText Typography="BitTypography.H6">Project settings</BitText>
                     <BitTextField Label="Project name" />
+                    <BitDropdown Label="Visibility" TItem="BitDropdownOption<string>" TValue="string" DefaultValue="@("private")">
+                        <BitDropdownOption Text="Private" Value="@("private")" />
+                        <BitDropdownOption Text="Team" Value="@("team")" />
+                        <BitDropdownOption Text="Public" Value="@("public")" />
+                    </BitDropdown>
                     <BitStack Horizontal Gap="0.5rem" AutoHeight>
                         <BitButton OnClick="() => isOpenOuter = false">Save</BitButton>
                         <BitButton Variant="BitVariant.Outline" Color="BitColor.Error" OnClick="() => isOpenInner = true">Delete</BitButton>

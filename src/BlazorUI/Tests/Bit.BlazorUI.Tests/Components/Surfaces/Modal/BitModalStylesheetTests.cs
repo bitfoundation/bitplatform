@@ -133,6 +133,17 @@ public class BitModalStylesheetTests
     }
 
     [TestMethod]
+    public void BitModalFooterShouldLayOutItsActionsTheWayTheThemeDoes()
+    {
+        var rule = GetRule(GetRules(ReadStylesheet()), "fcn");
+
+        // Never a literal row / flex-end in a dialog footer: Cupertino stacks its actions full width.
+        StringAssert.Contains(rule, "flex-direction: $layout-dialog-actions-direction;");
+        StringAssert.Contains(rule, "justify-content: $layout-dialog-actions-justify;");
+        StringAssert.Contains(rule, "align-items: $layout-dialog-actions-align;");
+    }
+
+    [TestMethod]
     public void BitModalRefusalShouldStillBeAnsweredUnderReducedMotion()
     {
         var rules = GetRules(ReadStylesheet());
