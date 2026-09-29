@@ -201,6 +201,41 @@ public class BitCascadingValueAdvancedTests
     }
 
     [TestMethod]
+    public void ShouldAssignTheNewValueAndNotifyOnceWithNotifyChangedAsync()
+    {
+        var value = BitCascadingValue.Lazy<int?>(() => 1, "Count");
+        var raised = 0;
+
+        value.Changed += _ => raised++;
+
+        var task = value.NotifyChangedAsync(5);
+
+        Assert.IsTrue(task.IsCompletedSuccessfully);
+        Assert.AreEqual(5, value.Value);
+        Assert.IsTrue(value.IsValueCreated);
+        Assert.AreEqual(1, raised);
+
+        // An equal value is still pushed down, which is what the explicit call is for.
+        value.NotifyChangedAsync(5);
+
+        Assert.AreEqual(2, raised);
+    }
+
+    [TestMethod]
+    public void ShouldRejectANewValueThatDoesNotMatchTheValueTypeWithNotifyChangedAsync()
+    {
+        var value = new BitCascadingValue(1);
+        var raised = 0;
+
+        value.Changed += _ => raised++;
+
+        Assert.ThrowsExactly<ArgumentException>(() => value.NotifyChangedAsync("text"));
+        Assert.ThrowsExactly<ArgumentException>(() => value.NotifyChangedAsync(null));
+        Assert.AreEqual(1, value.Value);
+        Assert.AreEqual(0, raised);
+    }
+
+    [TestMethod]
     public void ShouldTreatANullTaskFromAnAsyncListenerAsACompletedOne()
     {
         var value = new BitCascadingValue(1);

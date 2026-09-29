@@ -133,6 +133,13 @@ public partial class BitCascadingValueProviderDemo
                 },
                 new()
                 {
+                    Name = "NotifyChangedAsync(object? newValue)",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Assigns Value and completes once every listening provider has re-rendered with it, like CascadingValueSource.NotifyChangedAsync(newValue). Notifies even when the value is unchanged.",
+                },
+                new()
+                {
                     Name = "From<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)",
                     Type = "BitCascadingValue",
                     DefaultValue = "",
@@ -289,10 +296,10 @@ public partial class BitCascadingValueProviderDemo
 
         lazyTypedUser = BitCascadingValue.Lazy(() => CreateLazyUser("Ava Smith", "Product manager"));
         lazyNamedUser = BitCascadingValue.Lazy(() => CreateLazyUser("Saleh Xafan", "CTO"), "NamedUser", enabled: false);
-        lazyValues = [lazyTypedUser, lazyNamedUser];
-
-        computedValues =
+        factoryValues =
         [
+            lazyTypedUser,
+            lazyNamedUser,
             BitCascadingValue.Computed(() => computedClicks % 2 == 0 ? "Light" : "Dark", "Theme"),
             BitCascadingValue.Computed<int?>(() => computedClicks, "NotificationCount")
         ];
@@ -384,8 +391,8 @@ public partial class BitCascadingValueProviderDemo
                 {
                     await Task.Delay(500);
 
-                    // Assigning the Value raises the Changed event on its own.
-                    jobProgressValue.Value = i;
+                    // Assigns the Value and waits until the consumers have rendered it.
+                    await jobProgressValue.NotifyChangedAsync(i);
                 }
 
                 jobStatus.Text = "Done";
@@ -435,10 +442,11 @@ public partial class BitCascadingValueProviderDemo
 
 
 
+    private int computedClicks;
     private int lazyUserFactoryCalls;
     private readonly BitCascadingValue lazyTypedUser;
     private readonly BitCascadingValue lazyNamedUser;
-    private readonly IEnumerable<BitCascadingValue> lazyValues;
+    private readonly IEnumerable<BitCascadingValue> factoryValues;
 
     private bool provideLazyNamedUser
     {
@@ -452,11 +460,6 @@ public partial class BitCascadingValueProviderDemo
 
         return new CascadingDemoUser(name, role);
     }
-
-
-
-    private int computedClicks;
-    private readonly IEnumerable<BitCascadingValue> computedValues;
 
 
 
@@ -837,8 +840,8 @@ private void RunBackgroundJob()
             {
                 await Task.Delay(500);
 
-                // Assigning the Value raises the Changed event on its own.
-                jobProgressValue.Value = i;
+                // Assigns the Value and waits until the consumers have rendered it.
+                await jobProgressValue.NotifyChangedAsync(i);
             }
 
             jobStatus.Text = ""Done"";
@@ -901,23 +904,32 @@ private void RunObservableJob()
     private readonly DemoCodeFile[] example8CodeFiles = [observableConsumerFile, observableStatusFile];
 
     private readonly string example9RazorCode = @"
-<BitToggle @bind-Value=""provideLazyNamedUser"" Text=""Provide the named user as well"" />
+<BitToggle @bind-Value=""provideLazyNamedUser"" Text=""Provide the lazy named user"" />
+<BitButton OnClick=""() => computedClicks++"">Click me (@computedClicks)</BitButton>
 
-<BitCascadingValueProvider Values=""lazyValues"">
-    <CascadingValueDemoConsumer Title=""Lazy cascading values:"" />
-    <div>Factory invocations so far: <b>@lazyUserFactoryCalls</b></div>
+<BitCascadingValueProvider Values=""factoryValues"">
+    <CascadingValueDemoConsumer Title=""Lazy and computed cascading values:"" />
+    <div>Lazy factory runs so far: <b>@lazyUserFactoryCalls</b></div>
 </BitCascadingValueProvider>";
     private readonly string example9CsharpCode = @"
+private int computedClicks;
 private int lazyUserFactoryCalls;
 private readonly BitCascadingValue lazyTypedUser;
 private readonly BitCascadingValue lazyNamedUser;
-private readonly IEnumerable<BitCascadingValue> lazyValues;
+private readonly IEnumerable<BitCascadingValue> factoryValues;
 
 public MyPage()
 {
     lazyTypedUser = BitCascadingValue.Lazy(() => CreateLazyUser(""Ava Smith"", ""Product manager""));
     lazyNamedUser = BitCascadingValue.Lazy(() => CreateLazyUser(""Saleh Xafan"", ""CTO""), ""NamedUser"", enabled: false);
-    lazyValues = [lazyTypedUser, lazyNamedUser];
+
+    factoryValues =
+    [
+        lazyTypedUser,
+        lazyNamedUser,
+        BitCascadingValue.Computed(() => computedClicks % 2 == 0 ? ""Light"" : ""Dark"", ""Theme""),
+        BitCascadingValue.Computed<int?>(() => computedClicks, ""NotificationCount"")
+    ];
 }
 
 private bool provideLazyNamedUser
@@ -934,25 +946,4 @@ private CascadingDemoUser CreateLazyUser(string name, string role)
 }";
 
     private readonly DemoCodeFile[] example9CodeFiles = [consumerFile, userFile];
-
-    private readonly string example10RazorCode = @"
-<BitButton OnClick=""() => computedClicks++"">Click me (@computedClicks)</BitButton>
-
-<BitCascadingValueProvider Values=""computedValues"">
-    <CascadingValueDemoConsumer Title=""Computed cascading values:"" />
-</BitCascadingValueProvider>";
-    private readonly string example10CsharpCode = @"
-private int computedClicks;
-private readonly IEnumerable<BitCascadingValue> computedValues;
-
-public MyPage()
-{
-    computedValues =
-    [
-        BitCascadingValue.Computed(() => computedClicks % 2 == 0 ? ""Light"" : ""Dark"", ""Theme""),
-        BitCascadingValue.Computed<int?>(() => computedClicks, ""NotificationCount"")
-    ];
-}";
-    private readonly DemoCodeFile[] example10CodeFiles = [consumerFile, userFile];
-
 }

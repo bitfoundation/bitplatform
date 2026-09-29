@@ -209,6 +209,28 @@ public partial class BitCascadingValueProviderReactivityTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task ShouldCompleteTheNotifyChangedTaskOnceTheNewValueHasBeenRendered()
+    {
+        var greeting = new BitCascadingValue("hello", "Greeting");
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.Values, new List<BitCascadingValue> { greeting });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<CascadingConsumer>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("0-hello", component.Markup);
+
+        await greeting.NotifyChangedAsync("bye");
+
+        Assert.AreEqual("0-bye", component.Markup);
+    }
+
+    [TestMethod]
     public void ShouldCascadeAValueThatIsListedMoreThanOnceExactlyOnce()
     {
         var greeting = new BitCascadingValue("hello", "Greeting");

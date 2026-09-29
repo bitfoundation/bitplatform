@@ -205,23 +205,7 @@ public class BitCascadingValue
         }
         set
         {
-            ValidateValue(value, ValueType);
-
-            bool changed;
-
-            lock (_lock)
-            {
-                changed = _valueFactory is not null || _computedFactory is not null || Equals(_value, value) is false;
-
-                _valueFactory = null;
-                _computedFactory = null;
-                _computedRead = false;
-                _value = value;
-            }
-
-            UpdateObservation();
-
-            if (changed)
+            if (StoreValue(value))
             {
                 NotifyChanged();
             }
@@ -435,6 +419,20 @@ public class BitCascadingValue
     }
 
     /// <summary>
+    /// Assigns <paramref name="newValue"/> to <see cref="Value"/> and returns a task that completes once every
+    /// listening <see cref="BitCascadingValueProvider"/> has re-rendered with it, which is the counterpart of
+    /// the NotifyChangedAsync(newValue) method of the framework's CascadingValueSource. Unlike assigning
+    /// <see cref="Value"/>, the consumers are refreshed even when the new value equals the current one.
+    /// A value that is not assignable to the <see cref="ValueType"/> throws an <see cref="ArgumentException"/>.
+    /// </summary>
+    public Task NotifyChangedAsync(object? newValue)
+    {
+        StoreValue(newValue);
+
+        return NotifyChangedAsync();
+    }
+
+    /// <summary>
     /// Awaits the handlers that did not complete synchronously and reports their failures together with the
     /// ones that already threw, so that a single failing listener neither hides the others nor is dropped.
     /// </summary>
@@ -612,6 +610,31 @@ public class BitCascadingValue
                 attachedProperties.PropertyChanged += HandleObservedPropertyChanged;
             }
         }
+    }
+
+    /// <summary>
+    /// Stores a new value in place of whatever was stored or produced by a factory, re-points the
+    /// <see cref="AutoNotify"/> subscription at it, and reports whether that changed what is cascaded.
+    /// </summary>
+    private bool StoreValue(object? value)
+    {
+        ValidateValue(value, ValueType);
+
+        bool changed;
+
+        lock (_lock)
+        {
+            changed = _valueFactory is not null || _computedFactory is not null || Equals(_value, value) is false;
+
+            _valueFactory = null;
+            _computedFactory = null;
+            _computedRead = false;
+            _value = value;
+        }
+
+        UpdateObservation();
+
+        return changed;
     }
 
     private void HandleObservedPropertyChanged(object? sender, PropertyChangedEventArgs args) => NotifyChanged();

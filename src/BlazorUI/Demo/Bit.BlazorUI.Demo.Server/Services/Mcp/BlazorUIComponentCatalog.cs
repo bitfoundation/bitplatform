@@ -251,7 +251,9 @@ public static class BlazorUIComponentCatalog
                 ComponentType = componentType,
                 SourceUrl = demo?.SourceUrl is null || componentType is null
                     ? null
-                    : $"{SourceRoot}/{BlazorUIAssemblies.Of(componentType).PackageId}/Components/{demo.SourceUrl}",
+                    // A page whose source lives outside Components (the Params utilities) points at it with
+                    // "../"; Uri resolves that segment, so the link reads as the file's own path.
+                    : new Uri($"{SourceRoot}/{BlazorUIAssemblies.Of(componentType).PackageId}/Components/{demo.SourceUrl}").AbsoluteUri,
                 Inherited = inherited,
                 Parameters = parameters,
                 PublicMembers = MergeMembers(tables?.PublicMembers, componentType, parameters),

@@ -138,9 +138,10 @@
 
     <DemoExample Title="Change notifications" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" CodeFiles="@example7CodeFiles" Id="example7">
         <div>
-            The provider listens to every <b>BitCascadingValue</b> it holds: assigning <b>Value</b> refreshes the consumers, and
-            <b>NotifyChanged()</b>, or the awaitable <b>NotifyChangedAsync()</b>, pushes an object that was mutated in place. It
-            works from any thread, with no <b>StateHasChanged</b> call on the page.
+            The provider listens to every <b>BitCascadingValue</b> it holds: assigning <b>Value</b> refreshes the consumers,
+            <b>NotifyChangedAsync(newValue)</b> does the same and waits for the render, and <b>NotifyChanged()</b> or
+            <b>NotifyChangedAsync()</b> pushes an object that was mutated in place. It works from any thread, with no
+            <b>StateHasChanged</b> call on the page.
         </div>
 
         <br /><br />
@@ -172,39 +173,25 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="Lazy values" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
+    <DemoExample Title="Lazy & computed values" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
         <div>
             <b>Lazy&lt;T&gt;</b> runs its factory once, the first time the value is provided, so a disabled or shadowed value is
-            never built. <b>IsValueCreated</b> reports whether it has run. The named user below is only built once enabled.
+            never built; <b>IsValueCreated</b> reports whether it has run. <b>Computed&lt;T&gt;</b> re-runs its factory on every
+            render, so a list built once still tracks the state it reads. Click the button: Theme and Notifications follow
+            it, the lazy factory count does not.
         </div>
 
         <br /><br />
 
-        <BitToggle @bind-Value="provideLazyNamedUser" Text="Provide the named user as well" />
-
-        <br />
-
-        <BitCascadingValueProvider Values="lazyValues">
-            <CascadingValueDemoConsumer Title="Lazy cascading values:" />
-            <br />
-            <div>Factory invocations so far: <b>@lazyUserFactoryCalls</b></div>
-        </BitCascadingValueProvider>
-    </DemoExample>
-
-    <DemoExample Title="Computed values" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" CodeFiles="@example10CodeFiles" Id="example10">
-        <div>
-            <b>Computed&lt;T&gt;</b> re-runs its factory every time the value is provided, so a list built once still tracks the
-            state it is derived from. The list below never changes; only what its factories read does.
-        </div>
-
-        <br /><br />
-
+        <BitToggle @bind-Value="provideLazyNamedUser" Text="Provide the lazy named user" />
         <BitButton OnClick="() => computedClicks++">Click me (@computedClicks)</BitButton>
 
         <br /><br />
 
-        <BitCascadingValueProvider Values="computedValues">
-            <CascadingValueDemoConsumer Title="Computed cascading values:" />
+        <BitCascadingValueProvider Values="factoryValues">
+            <CascadingValueDemoConsumer Title="Lazy and computed cascading values:" />
+            <br />
+            <div>Lazy factory runs so far: <b>@lazyUserFactoryCalls</b></div>
         </BitCascadingValueProvider>
     </DemoExample>
 </DemoPage>
