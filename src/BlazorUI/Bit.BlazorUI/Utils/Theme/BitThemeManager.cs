@@ -127,6 +127,7 @@ public class BitThemeManager : IAsyncDisposable
         var cssVariables = BitThemeMapper.MapToCssVariables(bitTheme ?? new BitTheme());
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVariables);
         BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVariables);
+        BitThemeMapper.AugmentWithSpacingReSubstitution(cssVariables);
 
         await _js.BitThemeApplyBitTheme(cssVariables, element);
     }
