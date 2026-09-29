@@ -526,6 +526,7 @@ public static partial class BitCss
             public const string FocusRing = "--bit-shd-focus-ring";
 
             public const string Card = "--bit-shd-card";
+            public const string CardHover = "--bit-shd-card-hover";
             public const string Popup = "--bit-shd-popup";
             public const string Dialog = "--bit-shd-dialog";
             public const string Sheet = "--bit-shd-sheet";
@@ -579,6 +580,13 @@ public static partial class BitCss
         {
             public const string ScalingFactor = "--bit-spa-scaling-factor";
             public const string Dialog = "--bit-spa-dialog";
+
+            public static class Card
+            {
+                public const string Sm = "--bit-spa-card-sm";
+                public const string Md = "--bit-spa-card-md";
+                public const string Lg = "--bit-spa-card-lg";
+            }
         }
 
         public static class Motion

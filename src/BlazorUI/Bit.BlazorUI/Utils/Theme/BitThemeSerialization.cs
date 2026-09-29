@@ -110,6 +110,7 @@ public static class BitThemeSerialization
         theme.Color ??= new BitThemeColors();
         theme.BoxShadow ??= new BitThemeBoxShadows();
         theme.Spacing ??= new BitThemeSpacings();
+        theme.Spacing.Card ??= new BitThemeSizeScale();
         theme.ZIndex ??= new BitThemeZIndices();
         theme.Shape ??= new BitThemeShapes();
         theme.Typography ??= new BitThemeTypography();

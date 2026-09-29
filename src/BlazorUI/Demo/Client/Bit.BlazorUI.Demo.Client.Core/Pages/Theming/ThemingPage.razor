@@ -305,6 +305,7 @@
                 <ul>
                     <li><code>--bit-spa-scaling-factor</code> - the spacing unit everything else is a multiple of</li>
                     <li><code>--bit-spa-dialog</code> - the inset padding of dialogs and message boxes: 24px</li>
+                    <li><code>--bit-spa-card-{sm,md,lg}</code> - BitCard's inset, per size: 12/16/24px; Fluent 2 8/12/16px</li>
                 </ul>
 
                 <BitText>
@@ -477,6 +478,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
 /* elevation per surface family */
 --bit-shd-card             /* &rarr; var(--bit-shd-cal) */
+--bit-shd-card-hover       /* &rarr; var(--bit-shd-cal)  the lift of a card that reacts to the pointer */
 --bit-shd-popup            /* &rarr; var(--bit-shd-cal) */
 --bit-shd-dialog           /* &rarr; var(--bit-shd-cal) */
 --bit-shd-sheet            /* &rarr; var(--bit-shd-cal)  panels and the responsive sheet form of menus/pickers */

@@ -124,24 +124,103 @@
         // are at least on the element the relationship was declared for.
         // An empty hasPopup takes the attribute away again - but only where this is the code that put it
         // there, so a trigger that names a popup of its own (a dropdown used as an anchor) keeps its own.
-        public static syncAriaPopup(anchorId: string, popupId: string, isOpen: boolean, hasPopup: string) {
+        // Reports whether the attributes landed on a trigger inside the container, which is what tells the
+        // component to stop declaring them on the container too: aria-expanded and aria-haspopup are not
+        // allowed on an element without a role, so a copy left there is invalid as well as redundant.
+        // The content of the container is the consumer's, and it can swap the trigger for another one - or
+        // for nothing focusable at all - without the popup changing state, which is the only time the
+        // component calls this again. So the container is watched for as long as it is registered, and the
+        // relationship is moved onto whatever the trigger has become, taken off the one it was on before.
+        public static syncAriaPopup(anchorId: string, popupId: string, isOpen: boolean, hasPopup: string): boolean {
             try {
                 const anchor = document.getElementById(anchorId);
-                if (!anchor) return;
+                if (!anchor) return false;
 
-                const trigger = anchor.querySelector<HTMLElement>(Utils._focusables) ?? anchor;
+                let state = Utils._ariaPopups.get(anchorId);
 
-                trigger.setAttribute('aria-controls', popupId);
-                trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-
-                if (hasPopup) {
-                    trigger.setAttribute('aria-haspopup', hasPopup);
-                    trigger.setAttribute('data-bit-haspopup', '');
-                } else if (trigger.hasAttribute('data-bit-haspopup')) {
-                    trigger.removeAttribute('aria-haspopup');
-                    trigger.removeAttribute('data-bit-haspopup');
+                // The container was rendered anew (the anchor taken away and given back), so the one the
+                // watch was on is gone.
+                if (state && state.anchor !== anchor) {
+                    state.observer?.disconnect();
+                    state = undefined;
                 }
-            } catch (e) { console.error("BitBlazorUI.Utils.syncAriaPopup:", e); }
+
+                if (!state) {
+                    state = { anchor, popupId, isOpen, hasPopup, target: null, observer: null };
+
+                    if (typeof MutationObserver !== 'undefined') {
+                        const watched = state;
+                        watched.observer = new MutationObserver(() => {
+                            if (!watched.anchor.isConnected) {
+                                Utils.disposeAriaPopup(anchorId);
+                                return;
+                            }
+
+                            Utils.applyAriaPopup(watched);
+                        });
+                        watched.observer.observe(anchor, { childList: true, subtree: true });
+                    }
+
+                    Utils._ariaPopups.set(anchorId, state);
+                }
+
+                state.popupId = popupId;
+                state.isOpen = isOpen;
+                state.hasPopup = hasPopup;
+
+                return Utils.applyAriaPopup(state) !== anchor;
+            } catch (e) { console.error("BitBlazorUI.Utils.syncAriaPopup:", e); return false; }
+        }
+
+        public static disposeAriaPopup(anchorId: string) {
+            const state = Utils._ariaPopups.get(anchorId);
+            if (!state) return;
+
+            state.observer?.disconnect();
+            Utils._ariaPopups.delete(anchorId);
+        }
+
+        private static _ariaPopups = new Map<string, {
+            anchor: HTMLElement,
+            popupId: string,
+            isOpen: boolean,
+            hasPopup: string,
+            target: HTMLElement | null,
+            observer: MutationObserver | null
+        }>();
+
+        private static applyAriaPopup(state: { anchor: HTMLElement, popupId: string, isOpen: boolean, hasPopup: string, target: HTMLElement | null }) {
+            const anchor = state.anchor;
+            const trigger = anchor.querySelector<HTMLElement>(Utils._focusables) ?? anchor;
+
+            // The element that carried the relationship before is no longer the trigger - another control took
+            // its place, or it lost the last focusable element to the container itself - so what this code put
+            // on it is taken back off, leaving one element in the container that claims the popup.
+            const previous = state.target;
+            if (previous && previous !== trigger && previous.isConnected) {
+                previous.removeAttribute('aria-controls');
+                previous.removeAttribute('aria-expanded');
+
+                if (previous.hasAttribute('data-bit-haspopup')) {
+                    previous.removeAttribute('aria-haspopup');
+                    previous.removeAttribute('data-bit-haspopup');
+                }
+            }
+
+            state.target = trigger;
+
+            trigger.setAttribute('aria-controls', state.popupId);
+            trigger.setAttribute('aria-expanded', state.isOpen ? 'true' : 'false');
+
+            if (state.hasPopup) {
+                trigger.setAttribute('aria-haspopup', state.hasPopup);
+                trigger.setAttribute('data-bit-haspopup', '');
+            } else if (trigger.hasAttribute('data-bit-haspopup')) {
+                trigger.removeAttribute('aria-haspopup');
+                trigger.removeAttribute('data-bit-haspopup');
+            }
+
+            return trigger;
         }
 
         // Mirrors the relationship a tooltip declares onto the element the reader actually lands on. The
@@ -468,7 +547,7 @@
                     if (active !== element && active !== focusables[0]) return;
 
                     e.preventDefault();
-                    trigger.focus();
+                    Utils.focusTrigger(trigger);
                     return;
                 }
 
@@ -481,7 +560,13 @@
 
                 e.preventDefault();
 
-                (Utils.findFocusableAfter(trigger, element) ?? trigger).focus();
+                const next = Utils.findFocusableAfter(trigger, element);
+
+                if (next) {
+                    next.focus();
+                } else {
+                    Utils.focusTrigger(trigger);
+                }
 
                 dotnetObj.invokeMethodAsync('OnTabOut');
             }, { signal: controller.signal });
@@ -489,8 +574,17 @@
             // The trigger's half of the same order: a Tab on it goes into the content rather than past it. The
             // trigger is looked up once, since it stays where it is for as long as the popup is open, and the
             // registration goes with the popup's.
+            // A trigger can be a container around more than one control - the anchor a callout renders around
+            // the consumer's own markup - and the content sits after the container as a whole, so only the Tab
+            // that would leave it is taken: the one from its last control. A Tab from any other moves on to the
+            // next control inside it, as it would without the popup open. A trigger with no controls inside it
+            // is a control itself, and every Tab on it is the one that leaves it.
             document.getElementById(triggerId)?.addEventListener('keydown', e => {
                 if (!isPlainTab(e) || e.shiftKey) return;
+
+                const trigger = e.currentTarget as HTMLElement;
+                const inner = Array.from(trigger.querySelectorAll<HTMLElement>(Utils._focusables)).filter(Utils.isFocusable);
+                if (inner.length > 0 && e.target !== inner[inner.length - 1]) return;
 
                 e.preventDefault();
 
@@ -557,6 +651,17 @@
             Utils._escapes.delete(elementId);
         }
 
+        // The trigger may be a plain container around the control the user actually lands on - the anchor a callout
+        // renders around the consumer's own button - which takes no focus of its own, so the first focusable element
+        // inside it is where the focus goes back to.
+        private static focusTrigger(trigger: HTMLElement) {
+            const target = trigger.matches(Utils._focusables) && Utils.isFocusable(trigger)
+                ? trigger
+                : Array.from(trigger.querySelectorAll<HTMLElement>(Utils._focusables)).find(Utils.isFocusable);
+
+            (target ?? trigger).focus();
+        }
+
         public static disposeTabOut(elementId: string) {
             const controller = Utils._tabOuts.get(elementId);
             if (!controller) return;
@@ -611,42 +716,50 @@
         // that closing the popup can hand the keyboard back to where it came from. A popup that moves the
         // focus into itself and then takes its content away leaves the focus on the body, which sends the
         // keyboard back to the top of the page - the one thing the WAI-ARIA dialog pattern asks not to happen.
-        public static captureFocusOrigin(elementId: string) {
+        // Reports whether an origin was remembered, which it is not for a focus that was on the body.
+        public static captureFocusOrigin(elementId: string): boolean {
             try {
                 const active = document.activeElement as HTMLElement | null;
 
                 // The body is not somewhere the focus can be handed back to, and neither is an element that
                 // is inside the popup itself: the focus was already there, so there is nothing to restore.
-                if (!active || active === document.body) return;
+                if (!active || active === document.body) return false;
 
                 const container = document.getElementById(elementId);
-                if (container?.contains(active)) return;
+                if (container?.contains(active)) return false;
 
                 Utils._focusOrigins.set(elementId, active);
-            } catch (e) { console.error("BitBlazorUI.Utils.captureFocusOrigin:", e); }
+
+                return true;
+            } catch (e) { console.error("BitBlazorUI.Utils.captureFocusOrigin:", e); return false; }
         }
 
         // Hands the focus back to the element captureFocusOrigin remembered, and forgets it either way, so a
         // popup that is opened again captures anew. The focus is only ours to hand back while it is still in
         // the popup - or was dropped to the body by the popup being hidden - so a focus the user has since
         // moved somewhere else of their own accord is left alone.
-        public static restoreFocusOrigin(elementId: string) {
+        // Reports whether the focus was taken care of - handed back, or left where the user put it - which it
+        // is not when there was no origin to hand it back to, or the origin has left the page: the caller then
+        // has the focus to place itself.
+        public static restoreFocusOrigin(elementId: string): boolean {
             try {
                 const origin = Utils._focusOrigins.get(elementId);
-                if (!origin) return;
+                if (!origin) return false;
 
                 Utils._focusOrigins.delete(elementId);
 
                 // The element that held the focus may have been taken off the page while the popup was open.
-                if (!origin.isConnected) return;
+                if (!origin.isConnected) return false;
 
                 const active = document.activeElement;
                 const container = document.getElementById(elementId);
                 const ours = active == null || active === document.body || (container?.contains(active) ?? false);
-                if (!ours) return;
+                if (!ours) return true;
 
                 origin.focus();
-            } catch (e) { console.error("BitBlazorUI.Utils.restoreFocusOrigin:", e); }
+
+                return true;
+            } catch (e) { console.error("BitBlazorUI.Utils.restoreFocusOrigin:", e); return false; }
         }
 
         public static disposeFocusOrigin(elementId: string) {

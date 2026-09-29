@@ -11,6 +11,13 @@
     align-items: flex-start;
 }
 
+.placement-controls {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
 ::deep {
     // The callouts are relocated to the body while they are open, so the rules that reach their content
     // have to sit in the ::deep block, which the scope attribute the relocation carries over still matches.

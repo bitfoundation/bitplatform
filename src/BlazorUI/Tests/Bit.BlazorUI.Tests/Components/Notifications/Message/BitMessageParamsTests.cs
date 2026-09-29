@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -150,13 +148,12 @@ public class BitMessageParamsTests : BunitTestContext
 
         Assert.HasCount(1, component.FindAll(".bit-msg-prb"));
 
-        var stopwatch = Stopwatch.StartNew();
-        while (stopwatch.ElapsedMilliseconds < 5000 && component.FindAll(".bit-msg").Count > 0)
-        {
-            Thread.Sleep(20);
-        }
+        // Waited for on the message's own renders rather than polled from the test thread: bUnit drops its parsed
+        // DOM before it rebuilds the markup, so a FindAll landing in between parses the old markup and keeps it
+        // cached for good - the countdown's dismissal is the last render there is to replace it.
+        var message = component.FindComponent<BitMessage>();
 
-        Assert.IsEmpty(component.FindAll(".bit-msg"));
+        message.WaitForAssertion(() => Assert.IsEmpty(message.FindAll(".bit-msg")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
