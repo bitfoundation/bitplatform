@@ -18,6 +18,17 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     private TParameters? _lastModalParameters;
     private readonly Dictionary<TReference, TParameters?> _mergedParametersCache = [];
 
+    // What each rendered modal is handed to report its exit animation played, and the modals the service has
+    // closed that are still in the page for that animation to play.
+    private readonly Dictionary<TReference, BitModalExit> _exits = [];
+    private readonly HashSet<TReference> _leaving = [];
+
+    // How long a closed modal is kept in the page at most, should it never start closing - a modal whose content
+    // threw, or one that is not going to render again. A modal that has started (BitModalExit.Closing) is the one
+    // that says when it is out of the way instead: its close sequence makes several round trips to the browser
+    // before the animation even starts, which a deadline counted from here would cut short on a slow circuit.
+    private static readonly TimeSpan _exitTimeout = TimeSpan.FromSeconds(1.5);
+
     // The path the app was on when this container last looked. A modal belongs to the page it was opened from,
     // so a change of this - and only of this, not of a query string or a fragment - closes the modals that
     // didn't ask to outlive it.
@@ -121,7 +132,26 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     /// </summary>
     internal IReadOnlyList<TReference> GetOpenModals()
     {
-        return _modalRefs;
+        // A closed modal still playing its exit animation is in the page, but it is not open.
+        return _leaving.Count == 0 ? _modalRefs : _modalRefs.Where(m => _leaving.Contains(m) is false).ToList();
+    }
+
+    /// <summary>
+    /// What the modal rendered for the given reference reports its exit animation played through; see
+    /// <see cref="BitModalExit"/>.
+    /// </summary>
+    private protected BitModalExit GetExit(TReference modalRef)
+    {
+        if (_exits.TryGetValue(modalRef, out var exit)) return exit;
+
+        exit = new BitModalExit(() => _ = InvokeAsync(() =>
+        {
+            if (_leaving.Contains(modalRef)) Remove(modalRef);
+        }));
+
+        _exits[modalRef] = exit;
+
+        return exit;
     }
 
     /// <summary>
@@ -204,9 +234,52 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
         return InvokeAsync(() =>
         {
-            _modalRefs.Remove(modalRef);
-            _mergedParametersCache.Remove(modalRef);
-            StateHasChanged();
+            // A modal that is on the screen leaves it the way it came in: it is kept in the page, closed, until it
+            // reports that its exit animation played. The service is done with it either way - its result is in and
+            // it is no longer one of the open modals. A modal that never made it onto the screen, or one that has
+            // already played its way out (the user dismissed it, and it took itself off before the service heard of
+            // it), has nothing left to play and goes at once - and so does one rendered by a container that never
+            // handed it a BitModalExit (one a consumer wrote), which has no way of hearing that it played its way out.
+            if (_modalRefs.Contains(modalRef) &&
+                modalRef.Rendered.IsCompletedSuccessfully && modalRef.Rendered.Result &&
+                _exits.TryGetValue(modalRef, out var exit) && exit.HasLeft is false)
+            {
+                if (_leaving.Add(modalRef) is false) return;
+
+                StateHasChanged();
+
+                _ = RemoveAfterTimeout(modalRef);
+
+                return;
+            }
+
+            Remove(modalRef);
+        });
+    }
+
+    private void Remove(TReference modalRef)
+    {
+        _modalRefs.Remove(modalRef);
+        _mergedParametersCache.Remove(modalRef);
+        _exits.Remove(modalRef);
+        _leaving.Remove(modalRef);
+
+        StateHasChanged();
+    }
+
+    private async Task RemoveAfterTimeout(TReference modalRef)
+    {
+        await Task.Delay(_exitTimeout);
+
+        if (_disposed) return;
+
+        await InvokeAsync(() =>
+        {
+            if (_leaving.Contains(modalRef) is false) return;
+
+            if (_exits.TryGetValue(modalRef, out var exit) && exit.IsClosing) return;
+
+            Remove(modalRef);
         });
     }
 
@@ -303,5 +376,7 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
         _modalRefs.Clear();
         _mergedParametersCache.Clear();
+        _exits.Clear();
+        _leaving.Clear();
     }
 }

@@ -69,7 +69,7 @@ public partial class BitCollapseDemo
             Name = "Duration",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The duration of the expand/collapse transition in ms. Leaving it unset keeps the duration of the motion theme. A value set here is still collapsed to nothing by the reduced motion preference, which only ForceAnimation opts out of. It is what OnExpanded, OnCollapsed, NoClip, HiddenUntilFound and UnmountOnCollapse wait for."
+            Description = "The duration of the expand/collapse transition in ms. Leaving it unset keeps the duration of the motion theme (or --bit-Collapse-duration). The reduced motion preference still collapses it unless ForceAnimation is set. OnExpanded, OnCollapsed, NoClip, HiddenUntilFound and UnmountOnCollapse wait for the transition the browser actually plays."
         },
         new()
         {
@@ -101,6 +101,13 @@ public partial class BitCollapseDemo
         },
         new()
         {
+            Name = "ExpandOnPrint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prints the collapse expanded, whatever its state on the screen. Such a collapse ignores LazyRender and UnmountOnCollapse, since the content has to be in the DOM to be printed."
+        },
+        new()
+        {
             Name = "HiddenUntilFound",
             Type = "bool",
             DefaultValue = "false",
@@ -125,7 +132,7 @@ public partial class BitCollapseDemo
             Name = "LazyRender",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the content out of the DOM until the collapse is expanded for the first time. A collapse that keeps a CollapsedSize or is searchable through HiddenUntilFound ignores it."
+            Description = "Keeps the content out of the DOM until the collapse is expanded for the first time. A collapse that keeps a CollapsedSize, is searchable through HiddenUntilFound or prints expanded through ExpandOnPrint ignores it."
         },
         new()
         {
@@ -174,7 +181,7 @@ public partial class BitCollapseDemo
             Name = "OnCollapsing",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "Callback that is called as the collapse starts closing, which is the start of the collapse transition."
+            Description = "Callback that is called as the collapse starts closing, which is the start of the collapse transition. It is the place to move the focus back to the trigger when it is inside the section, since the closed content can no longer hold it."
         },
         new()
         {
@@ -195,7 +202,7 @@ public partial class BitCollapseDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The ARIA role of the content region of the collapse, which is region by default. An empty string renders no role at all."
+            Description = "The ARIA role of the content region of the collapse, which is region by default. An empty string renders no role at all, and with it no aria-label or aria-labelledby, since ARIA prohibits naming an element with no role - as it does under none, presentation and generic, which drop the name the same way."
         },
         new()
         {
@@ -211,7 +218,7 @@ public partial class BitCollapseDemo
             Name = "UnmountOnCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Takes the content back out of the DOM once the collapse has closed, after the transition has had time to finish. A collapse that keeps a CollapsedSize or is searchable through HiddenUntilFound ignores it."
+            Description = "Takes the content back out of the DOM once the collapse has closed, after the transition has had time to finish. A collapse that keeps a CollapsedSize, is searchable through HiddenUntilFound or prints expanded through ExpandOnPrint ignores it."
         }
     ];
 
@@ -239,7 +246,7 @@ public partial class BitCollapseDemo
         {
             Name = "FocusAsync",
             Type = "ValueTask",
-            Description = "Moves the focus to the content region of the collapse, which is worth pairing with OnExpanded so the focus lands once the section has finished opening."
+            Description = "Moves the focus to the content region of the collapse, which is focusable while it is on the screen, even when a TabIndex of -1 takes it out of the tab order. Worth pairing with OnExpanded so the focus lands once the section has finished opening."
         },
         new()
         {
@@ -247,6 +254,58 @@ public partial class BitCollapseDemo
             Type = "Task",
             Description = "Flips the collapse between expanded and collapsed, reporting the change through ExpandedChanged and OnChange."
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Collapse-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the text.",
+        },
+        new()
+        {
+            Name = "--bit-Collapse-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the section. The Background parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Collapse-padding",
+            DefaultValue = "spacing(1.5) (12px)",
+            Description = "Room between the edges of the section and its content. NoPadding wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Collapse-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the text.",
+        },
+        new()
+        {
+            Name = "--bit-Collapse-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the focus ring of the content region.",
+        },
+        new()
+        {
+            Name = "--bit-Collapse-duration",
+            DefaultValue = "--bit-mot-duration-long",
+            Description = "Pace of the expand/collapse transition. Duration, ExpandDuration and CollapseDuration win over it, and reduced motion collapses it unless ForceAnimation is set.",
+        },
+        new()
+        {
+            Name = "--bit-Collapse-easing",
+            DefaultValue = "--bit-mot-easing",
+            Description = "Timing function of the transition. The Easing parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Collapse-peek-fade",
+            DefaultValue = "unset",
+            Description = "Length of the fade on the trailing edge of a closed CollapsedSize peek, which shows there is more to read. No fade by default.",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -338,49 +397,52 @@ public partial class BitCollapseDemo
     private bool expanded = true;
 
     private bool boundExpanded = true;
-    private string defaultChangeLog = string.Empty;
-    private BitCollapse? defaultCollapseRef;
-    private BitCollapse? imperativeCollapseRef;
+    private string changeLog = string.Empty;
+    private BitCollapse? collapseRef;
+    private bool collapseEnabled = true;
+
+    private bool surfaceExpanded = true;
 
     private bool horizontalExpanded = true;
 
     private bool peekExpanded;
 
     private bool transitionExpanded = true;
-    private bool paceExpanded = true;
-    private bool noFadeExpanded = true;
-    private bool noAnimationExpanded = true;
 
     private bool eventsExpanded = true;
     private BitCollapse? eventsCollapseRef;
     private readonly List<string> eventsLog = [];
 
-    private bool surfaceExpanded = true;
-
     private bool clipExpanded = true;
 
-    private bool lazyExpanded;
+    private bool renderingExpanded;
     private int lazyOpenCount;
-    private bool unmountExpanded = true;
 
     private bool findExpanded = true;
 
     private bool a11yExpanded;
     private bool focusExpanded;
+    private BitButton? focusTriggerRef;
     private BitCollapse? focusCollapseRef;
 
-    private bool expandedClass = true;
-    private bool expandedStyle = true;
+    private bool cascadingExpanded = true;
+    private readonly BitCollapseParams[] collapseParams =
+    [
+        new()
+        {
+            Background = BitColorKind.Secondary,
+            NoPadding = true,
+            Duration = 700,
+        }
+    ];
 
-    private bool expandedRtl = true;
-    private bool expandedRtlHorizontal = true;
+    private bool styleExpanded = true;
+
+    private bool rtlExpanded = true;
 
 
 
-    private void HandleDefaultChange(bool value)
-    {
-        defaultChangeLog = $"OnChange reported {value}.";
-    }
+    private void HandleChange(bool value) => changeLog = $"OnChange({value.ToString().ToLower()})";
 
     private void HandleEventsChange(bool value) => LogCollapseEvent($"OnChange({value.ToString().ToLower()})");
     private void HandleEventsExpanding() => LogCollapseEvent("OnExpanding");
@@ -403,6 +465,14 @@ public partial class BitCollapseDemo
         if (focusCollapseRef is not null)
         {
             await focusCollapseRef.FocusAsync();
+        }
+    }
+
+    private async Task HandleFocusCollapsing()
+    {
+        if (focusTriggerRef is not null)
+        {
+            await focusTriggerRef.FocusAsync();
         }
     }
 }

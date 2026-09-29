@@ -1,6 +1,27 @@
 ﻿@import "../../../Styles/functions.scss";
 @import "../../../Styles/color-role-maps.scss";
 
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
+// dialog, one set on an ancestor the dialogs inside it, and one set on the Style of an instance that one alone:
+//   --bit-Dialog-z-index                   stacking order of the dialog                   (default: $zindex-modal; not read by AbsolutePosition)
+//   --bit-Dialog-margin                    space kept between the surface and its area    (default: 0, e.g. 16px for a gutter on phones)
+//   --bit-Dialog-overlay-background        color of the overlay behind the surface        (default: $clr-bg-overlay)
+//   --bit-Dialog-overlay-backdrop-filter   filter over the page behind the overlay        (default: none, e.g. blur(4px))
+//   --bit-Dialog-background                background of the surface                      (default: $clr-bg-pri)
+//   --bit-Dialog-color                     text color of the surface and its content      (default: $clr-fg-pri)
+//   --bit-Dialog-border-width              thickness of the border of the surface         (default: 0)
+//   --bit-Dialog-border-color              color of the border of the surface             (default: transparent)
+//   --bit-Dialog-radius                    corner radius of the surface                   (default: $shp-radius-dialog)
+//   --bit-Dialog-shadow                    elevation of the surface                       (default: $box-shadow-dialog)
+//   --bit-Dialog-padding                   inset of the header, message and buttons       (default: $spa-dialog)
+//   --bit-Dialog-max-width                 width the surface stops growing at on its own  (default: $siz-dialog-max-width, read by the C# side)
+//   --bit-Dialog-text-align                alignment of the title, subtitle and message   (default: $layout-dialog-text-align)
+//   --bit-Dialog-title-color               color of the title                             (default: the surface's text color)
+//   --bit-Dialog-title-font-size           size of the title                              (default: $tg-dialog-title-font-size)
+//   --bit-Dialog-title-font-weight         weight of the title                            (default: $tg-dialog-title-font-weight)
+//   --bit-Dialog-subtitle-color            color of the subtitle                          (default: $clr-fg-sec)
+//   --bit-Dialog-message-color             color of the message                           (default: $clr-fg-sec)
+
 .bit-dlg {
     // The color of the action buttons, defaulted to the primary role and re-pointed by the role classes
     // below. They are declared on the root rather than on the buttons so a Dialog that is given a color
@@ -16,7 +37,7 @@
     height: 100%;
     position: fixed;
     font-weight: $tg-fw-regular;
-    z-index: $zindex-modal;
+    z-index: var(--bit-Dialog-z-index, #{$zindex-modal});
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
 
@@ -108,18 +129,25 @@
     display: none;
 }
 
+// An absolutely positioned Dialog stacks inside the area it is laid out in, among that area's own content, so
+// it leaves --bit-Dialog-z-index alone: a value set on :root to lift the full-screen Dialogs above the page's
+// fixed chrome would otherwise lift every one of these out of its local stacking along with them. One that
+// needs a z-index is given it through its own Class or Style.
 .bit-dlg-abs {
-    z-index: unset;
+    z-index: auto;
     position: absolute;
 }
 
 .bit-dlg-doc {
     opacity: 1;
-    width: 100%;
-    height: 100%;
     display: flex;
     position: absolute;
     background-color: transparent;
+
+    // The area the surface is laid out, sized, capped and dragged in. Insetting it is what keeps a gutter
+    // between the surface and the edges of the screen - which a Dialog capped at 100% of its area otherwise
+    // runs right up against on a phone - for every position and every size at once, the full ones included.
+    inset: var(--bit-Dialog-margin, 0);
 }
 
 .bit-dlg-ovl {
@@ -130,13 +158,22 @@
     // A press on the overlay is left its default action (see the markup), and the default of a press that
     // is dragged is a text selection - one that would start at the overlay and run through the surface.
     user-select: none;
-    background-color: $clr-bg-overlay;
+    background-color: var(--bit-Dialog-overlay-background, #{$clr-bg-overlay});
+    backdrop-filter: var(--bit-Dialog-overlay-backdrop-filter, none);
     animation: bit-dlg-overlay-animation $mot-duration-short $mot-easing-decelerate;
 }
 
 .bit-dlg-ctn {
     z-index: 1;
     display: flex;
+
+    // Resolved once here and read by the bands inside the surface - the header, the buttons and the footer
+    // each take the corners and the background along with the inset, so a surface given a radius or a color
+    // of its own is not left with square or differently painted bands in it.
+    --bit-dlg-bg: var(--bit-Dialog-background, #{$clr-bg-pri});
+    --bit-dlg-radius: var(--bit-Dialog-radius, #{$shp-radius-dialog});
+    --bit-dlg-pad: var(--bit-Dialog-padding, #{$spa-dialog});
+    --bit-dlg-text-align: var(--bit-Dialog-text-align, #{$layout-dialog-text-align});
 
     // The six sizing parameters arrive as custom properties on this element, so a Dialog that was given
     // none of them keeps the shrink-to-fit box it has always had and the ones it was given are the only
@@ -152,9 +189,11 @@
     pointer-events: auto;
     flex-direction: column;
     box-sizing: border-box;
-    box-shadow: $box-shadow-dialog;
-    border-radius: $shp-radius-dialog;
-    background-color: $clr-bg-pri;
+    color: var(--bit-Dialog-color, #{$clr-fg-pri});
+    box-shadow: var(--bit-Dialog-shadow, #{$box-shadow-dialog});
+    border-radius: var(--bit-dlg-radius);
+    background-color: var(--bit-dlg-bg);
+    border: var(--bit-Dialog-border-width, 0) $shp-border-style var(--bit-Dialog-border-color, transparent);
     animation: bit-dlg-container-animation $mot-duration $mot-easing-decelerate;
 
     // The surface is made programmatically focusable so the Escape key and the focus trap have somewhere
@@ -217,27 +256,37 @@
     flex-shrink: 0;
     align-items: flex-start;
     overflow-wrap: anywhere;
-    background-color: $clr-bg-pri;
-    border-start-start-radius: $shp-radius-dialog;
-    border-start-end-radius: $shp-radius-dialog;
-    padding: spacing(2) $spa-dialog spacing(2.5);
+    background-color: var(--bit-dlg-bg);
+    border-start-start-radius: var(--bit-dlg-radius);
+    border-start-end-radius: var(--bit-dlg-radius);
+    padding: spacing(2) var(--bit-dlg-pad) spacing(2.5);
 }
 
 // Holds the title and the subtitle as one block so the close button stays beside both of them rather
-// than beside the title alone.
+// than beside the title alone. It sets no alignment of its own: it also wraps a HeaderTemplate, whose
+// content is the consumer's to lay out.
 .bit-dlg-htc {
     flex-grow: 1;
     min-width: 0;
 }
 
+// A native h2, so every property an application's own heading rule is likely to set is set here too - the
+// alignment included, which an element rule for h2 would otherwise win over an inherited one.
 .bit-dlg-ttl {
     margin: 0;
+    padding: 0;
     width: 100%;
-    font-weight: $tg-fw-semibold;
     line-height: normal;
-    font-size: $tg-fs-xl;
+    font-style: normal;
+    font-family: inherit;
+    letter-spacing: normal;
+    text-transform: none;
+    text-decoration: none;
     min-height: spacing(2.5);
-    color: $clr-fg-pri;
+    text-align: var(--bit-dlg-text-align);
+    color: var(--bit-Dialog-title-color, inherit);
+    font-size: var(--bit-Dialog-title-font-size, #{$tg-dialog-title-font-size});
+    font-weight: var(--bit-Dialog-title-font-weight, #{$tg-dialog-title-font-weight});
 }
 
 .bit-dlg-sub {
@@ -247,7 +296,20 @@
     font-weight: $tg-fw-regular;
     font-size: $tg-fs-sm;
     padding-top: spacing(0.5);
-    color: $clr-fg-sec;
+    text-align: var(--bit-dlg-text-align);
+    color: var(--bit-Dialog-subtitle-color, #{$clr-fg-sec});
+}
+
+// Centred text is centred on the surface rather than on the room the close button leaves beside it, which
+// would put it half a button off the axis the message and the stacked actions below are centred on. The
+// title and the subtitle are given the button's width back on their start side, so the space they are
+// centred in is symmetric about the middle of the header. A style query, since it depends on what the
+// alignment resolves to; a browser without style queries centres them in the room beside the button.
+@container style(--bit-dlg-text-align: center) {
+    .bit-dlg-htc:not(:last-child) > .bit-dlg-ttl,
+    .bit-dlg-htc:not(:last-child) > .bit-dlg-sub {
+        padding-inline-start: $siz-ctrl-md;
+    }
 }
 
 .bit-dlg-scr-cnt {
@@ -268,21 +330,23 @@
     line-height: 1.5;
     font-size: $tg-fs-sm;
     overflow-wrap: break-word;
-    margin: 0 $spa-dialog $spa-dialog;
-    color: $clr-fg-sec;
+    margin: 0 var(--bit-dlg-pad) var(--bit-dlg-pad);
+    text-align: var(--bit-dlg-text-align);
+    color: var(--bit-Dialog-message-color, #{$clr-fg-sec});
 }
 
 // The message hangs under a header, which is where its top spacing normally comes from. A Dialog with
 // neither a title nor a close button has no header at all, so the message needs that spacing itself.
 .bit-dlg-scr-cnt:first-child > .bit-dlg-msg {
-    margin-top: $spa-dialog;
+    margin-top: var(--bit-dlg-pad);
 }
 
+// The actions are a band of their own under the scrolling body rather than one pinned over the end of it,
+// so nothing the body scrolls ever passes underneath them - a focused field included.
 .bit-dlg-bct {
-    bottom: 0;
     z-index: 1;
     display: flex;
-    position: sticky;
+    flex-shrink: 0;
 
     // All three come from the theme so a Cupertino preset can stack the actions full-width and
     // centred (column + center + stretch) while Fluent and Material keep the trailing row of
@@ -290,15 +354,14 @@
     align-items: $layout-dialog-actions-align;
     flex-direction: $layout-dialog-actions-direction;
     justify-content: $layout-dialog-actions-justify;
-    padding: 0 $spa-dialog $spa-dialog;
-    background-color: $clr-bg-pri;
-    margin-top: auto;
+    padding: 0 var(--bit-dlg-pad) var(--bit-dlg-pad);
+    background-color: var(--bit-dlg-bg);
 
     // The actions are the last opaque band of a Dialog without a footer, so they take the bottom corners
     // with them - an opaque band squared off inside a rounded container shows at the corners as soon as a
     // consumer gives it a background of its own. Where a footer does follow, this is simply invisible.
-    border-end-start-radius: $shp-radius-dialog;
-    border-end-end-radius: $shp-radius-dialog;
+    border-end-start-radius: var(--bit-dlg-radius);
+    border-end-end-radius: var(--bit-dlg-radius);
 
     button {
         display: flex;
@@ -339,6 +402,13 @@
             cursor: default;
             opacity: $opa-dis;
         }
+
+        // The Ok button is left focusable while its callback runs (aria-disabled rather than disabled), so the
+        // focus is not dropped onto the page underneath the Dialog the moment it is pressed. It is not dimmed
+        // either: the spinner it holds is the only sign the work is still running, and has to stay legible.
+        &[aria-busy="true"] {
+            cursor: progress;
+        }
     }
 }
 
@@ -348,13 +418,13 @@
     background-color: var(--bit-dlg-clr);
 
     @media (hover: hover) {
-        &:hover:not(:disabled) {
+        &:hover:not(:disabled):not([aria-disabled="true"]) {
             border-color: var(--bit-dlg-clr-hover);
             background-color: var(--bit-dlg-clr-hover);
         }
     }
 
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled="true"]) {
         border-color: var(--bit-dlg-clr-active);
         background-color: var(--bit-dlg-clr-active);
     }
@@ -408,9 +478,9 @@
 .bit-dlg-ftr {
     z-index: 1;
     flex-shrink: 0;
-    background-color: $clr-bg-pri;
-    border-end-start-radius: $shp-radius-dialog;
-    border-end-end-radius: $shp-radius-dialog;
+    background-color: var(--bit-dlg-bg);
+    border-end-start-radius: var(--bit-dlg-radius);
+    border-end-end-radius: var(--bit-dlg-radius);
 }
 
 .bit-dlg-cls {
@@ -430,7 +500,7 @@
     font-size: $tg-fs-sm;
     border-radius: $shp-radius-control;
     background-color: transparent;
-    color: $clr-fg-pri;
+    color: inherit;
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     span {
@@ -564,5 +634,13 @@
 
     .bit-dlg-hdr {
         border-block-end: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    // The spinner is told apart from its track only by the color of its top edge, which a forced palette
+    // paints the same as the rest - leaving a ring that turns without showing it. The arc is put back in the
+    // system highlight.
+    .bit-dlg-spn {
+        border-color: GrayText;
+        border-top-color: Highlight;
     }
 }

@@ -23,6 +23,9 @@ public class BitThemeTypography
     /// <summary>The tracking and case of the label of an interactive control (<c>--bit-tpg-ctrl-*</c>).</summary>
     public BitThemeControlTypography Control { get; set; } = new();
 
+    /// <summary>The type of a dialog's title (<c>--bit-tpg-dialog-*</c>).</summary>
+    public BitThemeDialogTypography Dialog { get; set; } = new();
+
     public BitThemeTypographyVariants H1 { get; set; } = new();
     public BitThemeTypographyVariants H2 { get; set; } = new();
     public BitThemeTypographyVariants H3 { get; set; } = new();
@@ -141,4 +144,22 @@ public class BitThemeControlTypography
 {
     public string? LetterSpacing { get; set; }
     public string? TextTransform { get; set; }
+}
+
+/// <summary>
+/// The type of a dialog's title, which every design system sets apart from its heading ramp: Fluent and
+/// Fluent 2 a 20px semibold subtitle, Material the 24px regular headline-small, Cupertino the 17px
+/// semibold alert headline.
+/// </summary>
+public class BitThemeDialogTypography
+{
+    /// <summary>
+    /// The font size of a dialog's title. Maps to <c>--bit-tpg-dialog-title-font-size</c>.
+    /// </summary>
+    public string? TitleFontSize { get; set; }
+
+    /// <summary>
+    /// The font weight of a dialog's title. Maps to <c>--bit-tpg-dialog-title-font-weight</c>.
+    /// </summary>
+    public string? TitleFontWeight { get; set; }
 }

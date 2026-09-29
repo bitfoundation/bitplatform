@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A ScrollablePane is a box that scrolls whatever is put in it, for content that does not fit in the room
@@ -18,6 +20,7 @@
 /// and styles its scrollbars is a single div with a style attribute, and the scroll listener, the observers
 /// and the round trips only appear once <see cref="AutoScroll"/>, <see cref="Fade"/>,
 /// <see cref="DragScroll"/>, <see cref="HorizontalWheel"/>, <see cref="PreserveScroll"/>,
+/// <see cref="AutoHideScrollbar"/> (with <see cref="Modern"/>),
 /// <see cref="OnScroll"/>, <see cref="OnScrollStart"/>, <see cref="OnScrollEnd"/> or one of the four edge
 /// callbacks is used.
 /// </remarks>
@@ -41,11 +44,25 @@ public partial class BitScrollablePane : BitComponentBase
 
 
     // A tabindex of the consumer's own also makes the pane focusable, so it is honored ahead of the
-    // parameter that only asks for the default one. A disabled pane is taken back out of the tab order
-    // rather than left in it as something that cannot be scrolled.
-    private string? _tabIndex => (TabIndex ?? (Focusable ? "0" : null)) is string tabIndex
+    // parameter that only asks for the default one. Focusable is there so the keyboard can scroll the pane,
+    // which a NoScroll pane does not let it do, so it adds no tab stop there. A disabled pane is taken back
+    // out of the tab order rather than left in it as something that cannot be scrolled.
+    private string? _tabIndex => (TabIndex ?? (Focusable && NoScroll is false ? "0" : null)) is string tabIndex
         ? (IsEnabled ? tabIndex : "-1")
         : null;
+
+    // The aria-label written after the splat replaces whatever the splat put there, null included, so a name
+    // passed as a plain aria-label attribute - which binds no parameter - is handed back out here.
+    private string? _ariaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+
+    // A name on a plain div is one assistive technology ignores - ARIA prohibits naming the generic role - so
+    // a pane that was given one is exposed as the region it names unless it was told to be something else.
+    // An empty Role is that something else: no role at all, rather than an empty attribute, which is not a
+    // role any more than a missing one is. The role written after the splat replaces whatever the splat put
+    // there, so a plain role attribute is handed back out the same way the aria-label is.
+    private string? _role => (Role ?? GetSplattedAttribute("role")) is string role
+        ? (role.HasValue() ? role : null)
+        : ((_ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue()) ? "region" : null);
 
     // Whether anything the browser side does is asked for. Everything else this component offers is CSS,
     // so a pane that wants none of these never sets up a listener, an observer or a .NET object reference.
@@ -70,6 +87,19 @@ public partial class BitScrollablePane : BitComponentBase
     // Whether the browser side has a scrollbar to take out of sight. Only the Modern one is ever hidden,
     // since it is the only one the library draws, so the flag on its own is nothing for JavaScript to do.
     private bool _autoHides => Modern && AutoHideScrollbar;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the scrollable pane component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple scrollable pane components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitScrollablePaneParams.ParamName)]
+    public BitScrollablePaneParams? CascadingParameters { get; set; }
 
 
 
@@ -125,15 +155,18 @@ public partial class BitScrollablePane : BitComponentBase
     public bool AutoWidth { get; set; }
 
     /// <summary>
-    /// Keeps the <see cref="Modern"/> scrollbar of the pane out of sight until the pointer is over it.
+    /// Keeps the <see cref="Modern"/> scrollbar of the pane out of sight until the pane is pointed at,
+    /// focused or scrolled.
     /// <br />
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
     /// This is the overlay behavior of a modern operating system, brought to a pane whose scrollbar the
     /// theme draws: the bar is there the moment it is wanted and takes no attention while it is not. It
-    /// only applies to the scrollbar <see cref="Modern"/> draws, and the bar comes back for a pane that
-    /// holds the focus as well as for one under the pointer, so it is never hidden from a keyboard reader.
+    /// only applies to the scrollbar <see cref="Modern"/> draws. The bar is shown while the pointer is over
+    /// the pane, while the focus is anywhere inside it - so it is never hidden from a keyboard reader,
+    /// whatever the mouse does - and for a moment after every scroll, which is what brings it up for a
+    /// touch, a flick or a move made from code.
     /// <br />
     /// A scrollbar that is not on the screen is not saying that there is more content, so it is worth
     /// pairing with <see cref="Fade"/>.
@@ -144,6 +177,20 @@ public partial class BitScrollablePane : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool AutoHideScrollbar { get; set; }
+
+    /// <summary>
+    /// How long (in milliseconds) the <see cref="AutoHideScrollbar"/> scrollbar stays on the screen after the
+    /// pane was last pointed at, focused or scrolled.
+    /// <br />
+    /// The default value is <strong>800</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The linger is what keeps the bar from blinking out the instant the pointer brushes past the edge of
+    /// the pane, and what leaves it up long enough after a flick to be grabbed. 0 hides it the moment the
+    /// pointer leaves or the focus goes; a scroll still shows it for a short moment whatever this says, so
+    /// the bar never flickers between two frames of one scroll.
+    /// </remarks>
+    [Parameter] public int AutoHideDelay { get; set; } = 800;
 
     /// <summary>
     /// Alias for the ChildContent parameter.
@@ -196,6 +243,25 @@ public partial class BitScrollablePane : BitComponentBase
     [Parameter] public bool DragMomentum { get; set; }
 
     /// <summary>
+    /// Prints the whole of the content instead of the part the pane happens to be showing.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Paper does not scroll, so a pane printed as it stands on the screen puts whatever is scrolled out of
+    /// sight nowhere at all - the rest of a document, of a log or of a table is simply left out. This lifts
+    /// the height, the height caps and the clipping of the pane for the print stylesheet only, so it prints
+    /// at the length of its content, and lets a <see cref="Horizontal"/> line wrap again. Leave it off for a
+    /// pane that is part of the layout of the app itself - a side bar, a list of results - rather than
+    /// content a reader would want on paper.
+    /// <br />
+    /// The <see cref="Fade"/> is never printed, with this or without it: a faded band on paper is only
+    /// content printed too faintly to read.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ExpandOnPrint { get; set; }
+
+    /// <summary>
     /// Fades out each edge of the pane that still has content beyond it.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -218,6 +284,9 @@ public partial class BitScrollablePane : BitComponentBase
     /// scrollbar that is not on the screen anyway - <see cref="ScrollbarWidth"/> of
     /// <see cref="BitScrollbarWidth.None"/>, or <see cref="Modern"/> with
     /// <see cref="AutoHideScrollbar"/> - which is the pairing the fade is for in the first place.
+    /// <br />
+    /// A faded band is content drawn below its contrast, so the fade is not drawn for a reader whose system
+    /// asks for more contrast (<c>prefers-contrast: more</c>) or for colors of their own (forced colors).
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Fade { get; set; }
@@ -226,7 +295,8 @@ public partial class BitScrollablePane : BitComponentBase
     /// How far the <see cref="Fade"/> reaches into the pane, as any CSS length.
     /// </summary>
     /// <remarks>
-    /// The default is 2rem, which is roughly a line and a half of body text. It applies to all four edges.
+    /// The default is 2rem, which is roughly a line and a half of body text. It applies to all four edges,
+    /// and it wins over a <c>--bit-ScrollablePane-fade-size</c> the pane inherits.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? FadeSize { get; set; }
@@ -262,10 +332,11 @@ public partial class BitScrollablePane : BitComponentBase
     /// <br />
     /// Turn it on for a pane of plain content - text, a table, an image - and leave it off for one that
     /// already holds links, buttons or fields, where it would only add a tab stop in front of them. A pane
-    /// that is put in the tab order is worth naming with <see cref="BitComponentBase.AriaLabel"/>, and
-    /// worth marking with a <see cref="Role"/> of <c>region</c> or <c>group</c> so what took the focus is
-    /// announced as something rather than as an unnamed stop. Setting
-    /// <see cref="BitComponentBase.TabIndex"/> makes the pane focusable on its own, without this.
+    /// that is put in the tab order is worth naming with <see cref="BitComponentBase.AriaLabel"/>, which
+    /// also makes it a <c>region</c> (see <see cref="Role"/>), so what took the focus is announced as
+    /// something rather than as an unnamed stop. Setting
+    /// <see cref="BitComponentBase.TabIndex"/> makes the pane focusable on its own, without this. A
+    /// <see cref="NoScroll"/> pane cannot be scrolled with the keyboard, so this adds no tab stop to it.
     /// </remarks>
     [Parameter] public bool Focusable { get; set; }
 
@@ -393,9 +464,10 @@ public partial class BitScrollablePane : BitComponentBase
     /// colors of the theme - so the scrollbar of the pane belongs to the design system rather than to the
     /// operating system, and re-skins with it.
     /// <br />
-    /// The thickness comes from the <c>--bit-scp-sbs</c> custom property and the three states of the thumb
-    /// from <c>--bit-scp-sbc</c>, <c>--bit-scp-sbch</c> and <c>--bit-scp-sbca</c>, all of which can be
-    /// retuned per pane through <see cref="BitComponentBase.Style"/>. Note that <see cref="ScrollbarWidth"/> and
+    /// The thickness, the thumb in each of its states, its corner and the track are the public
+    /// <c>--bit-ScrollablePane-scrollbar-*</c> custom properties, which can be set on <c>:root</c>, on any
+    /// ancestor or on the <see cref="BitComponentBase.Style"/> of one pane. In forced colors mode the pane
+    /// keeps the system scrollbar, drawn in the colors the reader chose. Note that <see cref="ScrollbarWidth"/> and
     /// <see cref="ScrollbarColor"/> are the standard CSS properties, which Chromium lets win over the
     /// custom rendering this draws: use one or the other on a given pane, not both.
     /// </remarks>
@@ -594,11 +666,14 @@ public partial class BitScrollablePane : BitComponentBase
     /// The ARIA role of the pane.
     /// </summary>
     /// <remarks>
-    /// A pane renders no role of its own: a scrolling box is a piece of layout, and marking every one of
-    /// them would only add noise for a screen reader. Set it to <c>region</c> or <c>group</c> - along with
-    /// <see cref="BitComponentBase.AriaLabel"/>, which is what names it - where the pane is a part of the
-    /// page in its own right, which is worth doing for a pane that <see cref="Focusable"/> puts in the tab
-    /// order.
+    /// An unnamed pane renders no role of its own: a scrolling box is a piece of layout, and marking every
+    /// one of them would only add noise for a screen reader. A pane named with
+    /// <see cref="BitComponentBase.AriaLabel"/> (or an <c>aria-labelledby</c>) is a part of the page in its
+    /// own right and defaults to <c>region</c>, since ARIA prohibits naming an element with no role and a
+    /// screen reader would ignore the name. Set this to override it - <c>group</c>, for one - which is worth
+    /// doing for a pane that <see cref="Focusable"/> puts in the tab order. Set it to an empty string to keep
+    /// a named pane out of the landmark list - a card body in a long list of them, say - which renders no
+    /// role attribute at all.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
 
@@ -852,6 +927,36 @@ public partial class BitScrollablePane : BitComponentBase
     }
 
     /// <summary>
+    /// Brings an element inside the pane into view, by scrolling the pane itself.
+    /// </summary>
+    /// <remarks>
+    /// The same move as the overload that takes an id, for an element the page already holds a reference
+    /// to through <c>@ref</c>. An element that is not inside the pane is left alone.
+    /// </remarks>
+    /// <param name="element">
+    /// A reference to an element inside the pane.
+    /// </param>
+    /// <param name="offset">
+    /// How much room to leave between the element and the edges of the pane, in pixels. Left at 0 it takes
+    /// whatever <see cref="ScrollPadding"/> asks for.
+    /// </param>
+    /// <param name="smooth">
+    /// Whether the move is animated. Leaving it unset follows the <see cref="Smooth"/> parameter of the pane.
+    /// </param>
+    /// <param name="alignment">
+    /// Where in the pane the element is left. See the overload that takes an id.
+    /// </param>
+    public ValueTask ScrollToElement(ElementReference element,
+                                     double offset = 0,
+                                     bool? smooth = null,
+                                     BitScrollAlignment alignment = BitScrollAlignment.Start)
+    {
+        if (IsRendered is false || element.Id.HasNoValue()) return ValueTask.CompletedTask;
+
+        return _js.BitScrollablePaneScrollToTarget(RootElement, element, offset, smooth ?? Smooth, _AlignmentMap[alignment]);
+    }
+
+    /// <summary>
     /// Gives the focus to the pane itself.
     /// </summary>
     /// <remarks>
@@ -1085,6 +1190,16 @@ public partial class BitScrollablePane : BitComponentBase
         });
 
         ClassBuilder.Register(() => SnapStop ? "bit-scp-sns" : string.Empty);
+
+        ClassBuilder.Register(() => ExpandOnPrint ? "bit-scp-eop" : string.Empty);
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollablePaneParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1237,6 +1352,8 @@ public partial class BitScrollablePane : BitComponentBase
         Wheel = HorizontalWheel,
         Preserve = PreserveScroll,
         AutoHide = _autoHides,
+        // Only sent while there is a bar to hide, so a change to it on a pane that hides nothing is no round trip.
+        AutoHideDelay = _autoHides ? Math.Max(0, AutoHideDelay) : 0,
         NoScroll = NoScroll,
     };
 
