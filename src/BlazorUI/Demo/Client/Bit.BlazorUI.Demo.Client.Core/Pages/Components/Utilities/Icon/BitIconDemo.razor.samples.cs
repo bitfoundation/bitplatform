@@ -159,37 +159,13 @@ private int clickCount;";
 <span><BitIcon IconName=""@BitIconName.Attach"" /> Decorative, beside its own label</span>";
 
     private readonly string example9RazorCode = @"
-<div style=""--bit-Icon-color: #0d9488; --bit-Icon-contrast-color: #f0fdfa; --bit-Icon-size: 1.5rem;
-            --bit-Icon-padding: 0.5rem; --bit-Icon-radius: 0.75rem; --bit-Icon-border-width: 2px;"">
-    <BitIcon IconName=""@BitIconName.Home"" />
-    <BitIcon IconName=""@BitIconName.Home"" Variant=""BitVariant.Outline"" />
-    <BitIcon IconName=""@BitIconName.Home"" Variant=""BitVariant.Fill"" />
-    <BitIcon IconName=""@BitIconName.Refresh"" Variant=""BitVariant.Fill"" AriaLabel=""Refresh"" OnClick=""() => clickCount++"" />
-</div>
-
-
-<div style=""--bit-Icon-color: #db2777; --bit-Icon-hover-color: #be185d; --bit-Icon-active-color: #9d174d;
-            --bit-Icon-focus-color: #f59e0b; --bit-Icon-size: 2rem; --bit-Icon-fixed-width: 3em;"">
-    <BitIcon IconName=""@BitIconName.Heart"" />
-    <BitIcon IconName=""@BitIconName.Settings"" AriaLabel=""Settings"" OnClick=""() => clickCount++"" />
-    <BitIcon IconName=""@BitIconName.Home"" FixedWidth Variant=""BitVariant.Outline"" />
-</div>
-
-
-<div style=""color: seagreen; --bit-Icon-color: currentColor;"">
-    <BitIcon IconName=""@BitIconName.Lightbulb"" /> The icon takes the color of the text it sits in.
-</div>";
-    private readonly string example9CsharpCode = @"
-private int clickCount;";
-
-    private readonly string example10RazorCode = @"
 <BitParams Parameters=""@iconParams"">
     <BitIcon IconName=""@BitIconName.Mail"" />
     <BitIcon IconName=""@BitIconName.Calendar"" />
     <BitIcon IconName=""@BitIconName.TaskManager"" />
     <BitIcon IconName=""@BitIconName.Settings"" Variant=""BitVariant.Fill"" />
 </BitParams>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private readonly BitIconParams[] iconParams =
 [
     new()
@@ -199,7 +175,7 @@ private readonly BitIconParams[] iconParams =
     }
 ];";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .on-dark {
         color: var(--bit-clr-bg-sec);
@@ -217,14 +193,14 @@ private readonly BitIconParams[] iconParams =
         <span>@color</span>
     </div>
 }";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private readonly BitColor[] colors = Enum.GetValues<BitColor>();
 
 // The background roles are the page's own surface colors, so they are shown on a dark panel to be seen at all.
 private static bool IsBackground(BitColor color) =>
     color is BitColor.PrimaryBackground or BitColor.SecondaryBackground or BitColor.TertiaryBackground;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 <link rel=""stylesheet"" href=""https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"" />
@@ -249,7 +225,7 @@ private static bool IsBackground(BitColor color) =>
 <BitIcon IconName=""heart"" IconResolver=""@faResolver"" Color=""BitColor.Error"" />
 <BitIcon IconName=""rocket"" IconResolver=""@faResolver"" Color=""BitColor.Secondary"" />
 <BitIcon IconName=""Accept"" IconResolver=""@faResolver"" Color=""BitColor.Success"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 // Every name this app writes is a FontAwesome one - except the ones FontAwesome does not have,
 // which are left to the built-in set by answering with nothing.
 private readonly Func<string, BitIconInfo?> faResolver =
@@ -258,7 +234,7 @@ private readonly Func<string, BitIconInfo?> faResolver =
 // The same resolver given to every icon of a subtree at once:
 // <BitParams Parameters=""@([new BitIconParams { IconResolver = faResolver }])"">...</BitParams>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
 <BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Accept"" />
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Accept"" />
@@ -274,7 +250,7 @@ private readonly Func<string, BitIconInfo?> faResolver =
     Sized by the text around it <BitIcon FontSize=""inherit"" IconName=""@BitIconName.FavoriteStarFill"" />
 </div>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .icon-class {
         padding: 4px;
@@ -295,7 +271,7 @@ private readonly Func<string, BitIconInfo?> faResolver =
          Variant=""BitVariant.Fill""
          Style=""--bit-Icon-color: hotpink; --bit-Icon-radius: 50% 0;"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <div dir=""rtl"">
     <BitIcon Dir=""BitDir.Rtl"" IconName=""@BitIconName.Accept"" />
     <BitIcon Dir=""BitDir.Rtl"" IconName=""@BitIconName.Bus"" Color=""BitColor.Info"" />

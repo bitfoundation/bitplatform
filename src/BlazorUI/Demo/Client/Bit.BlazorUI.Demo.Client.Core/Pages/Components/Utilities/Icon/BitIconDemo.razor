@@ -245,36 +245,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="CSS variables" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>
-            The public <b>--bit-Icon-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink> table) restyle every
-            icon at once, which is also how an icon takes a color outside the theme. They inherit, so set them on <code>:root</code> or on any
-            element around the icons. Given only <b>--bit-Icon-color</b>, a clickable icon still deepens under the pointer and while pressed;
-            <b>--bit-Icon-hover-color</b> and <b>--bit-Icon-active-color</b> pick those shades yourself. A disabled icon keeps the disabled colors.
-            <br />
-            <code>currentColor</code> makes a Text icon follow the text around it, the way a glyph of a font does. Set it around Text icons only:
-            a Fill icon draws its glyph over a box of that color, and <code>currentColor</code> there is the glyph's own color.
-        </div>
-        <br /><br />
-        <div class="example-content" style="--bit-Icon-color: #0d9488; --bit-Icon-contrast-color: #f0fdfa; --bit-Icon-size: 1.5rem; --bit-Icon-padding: 0.5rem; --bit-Icon-radius: 0.75rem; --bit-Icon-border-width: 2px;">
-            <BitIcon IconName="@BitIconName.Home" />
-            <BitIcon IconName="@BitIconName.Home" Variant="BitVariant.Outline" />
-            <BitIcon IconName="@BitIconName.Home" Variant="BitVariant.Fill" />
-            <BitIcon IconName="@BitIconName.Refresh" Variant="BitVariant.Fill" AriaLabel="Refresh" OnClick="() => clickCount++" />
-        </div>
-        <br />
-        <div class="example-content" style="--bit-Icon-color: #db2777; --bit-Icon-hover-color: #be185d; --bit-Icon-active-color: #9d174d; --bit-Icon-focus-color: #f59e0b; --bit-Icon-size: 2rem; --bit-Icon-fixed-width: 3em;">
-            <BitIcon IconName="@BitIconName.Heart" />
-            <BitIcon IconName="@BitIconName.Settings" AriaLabel="Settings" OnClick="() => clickCount++" />
-            <BitIcon IconName="@BitIconName.Home" FixedWidth Variant="BitVariant.Outline" />
-        </div>
-        <br />
-        <div style="color: seagreen; --bit-Icon-color: currentColor;">
-            <BitIcon IconName="@BitIconName.Lightbulb" /> The icon takes the color of the text it sits in.
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Cascading parameters" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>BitParams</b> hands a <b>BitIconParams</b> to every icon under it, so a toolbar or a status list sets its shared look once. It
             is a default, not an override: the last icon keeps its own <b>Variant</b>.
@@ -290,7 +261,7 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>Color</b> paints the icon in a theme role, so every preset and both schemes re-skin it. The semantic roles carry meaning; the
             background, foreground and border roles are the neutral tiers of the surface. Like every component's colors, it is the default of
@@ -311,7 +282,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             <b>Icon</b> takes a <b>BitIconInfo</b> for any other set: <b>Fa</b> (FontAwesome), <b>Bi</b> (Bootstrap Icons), <b>Mi</b>/<b>Ms</b>
             (Material Icons/Symbols, ligature-based), <b>Css</b> for any class list, or a plain string. Link the set's stylesheet yourself.
@@ -361,7 +332,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
         <div>
             <b>Size</b> picks one of the theme's three icon sizes, as the default of <b>--bit-Icon-size</b>, which wins over it. <b>FontSize</b>
             takes any CSS length, or <code>inherit</code> to match the surrounding text, and wins over both.
@@ -387,7 +358,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <b>Style</b> and <b>Class</b> land on the icon element itself - the whole component. <b>Style</b> is also where the
             <b>--bit-Icon-*</b> variables are set for one icon alone.
@@ -407,7 +378,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <div>
             Use BitIcon in right-to-left (RTL). A glyph is not mirrored by the direction alone; <b>FlipRtl</b> opts in, and follows <b>Dir</b>
             or any ancestor's <code>dir</code>.
