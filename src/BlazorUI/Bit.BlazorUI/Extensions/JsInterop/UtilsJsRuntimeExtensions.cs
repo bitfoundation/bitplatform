@@ -44,10 +44,18 @@ internal static class UtilsJsRuntimeExtensions
     // anchor of a callout is a plain container around the consumer's own trigger, and relationship
     // attributes on a container no screen reader ever lands on are attributes no screen reader ever reads.
     // An empty hasPopup takes the attribute away again, for the popups that are not one of the kinds the
-    // property can name.
-    internal static ValueTask BitUtilsSyncAriaPopup(this IJSRuntime jsRuntime, string anchorId, string popupId, bool isOpen, string? hasPopup)
+    // property can name. Returns whether the attributes landed on a trigger inside the anchor rather than
+    // on the anchor itself.
+    internal static ValueTask<bool> BitUtilsSyncAriaPopup(this IJSRuntime jsRuntime, string anchorId, string popupId, bool isOpen, string? hasPopup)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.syncAriaPopup", anchorId, popupId, isOpen, hasPopup ?? string.Empty);
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.syncAriaPopup", anchorId, popupId, isOpen, hasPopup ?? string.Empty);
+    }
+
+
+    // Stops watching the anchor BitUtilsSyncAriaPopup keeps the relationship on the current trigger of.
+    internal static ValueTask BitUtilsDisposeAriaPopup(this IJSRuntime jsRuntime, string anchorId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeAriaPopup", anchorId);
     }
 
 
@@ -135,6 +143,15 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
+    }
+
+
+    // The same hand-back, reporting whether the focus was taken care of: false when there was no origin to
+    // hand it back to (the focus was on the body when the popup opened) or the origin has left the page, which
+    // leaves the caller the focus to place itself.
+    internal static ValueTask<bool> BitUtilsTryRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
     }
 
 
