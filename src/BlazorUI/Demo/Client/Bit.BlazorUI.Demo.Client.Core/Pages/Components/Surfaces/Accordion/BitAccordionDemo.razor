@@ -121,6 +121,7 @@
         </div>
         <br />
         <BitToggle @bind-Value="lockAccordion" OnText="Locked open" OffText="Unlocked" />
+        <br />
         <BitAccordion Title="Unsaved changes"
                       Description="@(lockAccordion ? "Unlock to close this panel" : "Free to close")"
                       DefaultIsExpanded
