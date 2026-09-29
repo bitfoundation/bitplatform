@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +39,19 @@ public class BitCascadingValueAdvancedTests
         source = 9;
 
         Assert.AreEqual(9, value.Value);
+    }
+
+    [TestMethod]
+    public void ShouldCreateADisabledComputedValueWithoutRunningItsFactory()
+    {
+        var calls = 0;
+        var typed = BitCascadingValue.Computed(() => ++calls, "Count", enabled: false);
+        var untyped = BitCascadingValue.Computed(() => (object?)++calls, typeof(int), "Count", enabled: false);
+
+        Assert.IsFalse(typed.Enabled);
+        Assert.IsFalse(untyped.Enabled);
+        Assert.IsTrue(typed.IsComputed);
+        Assert.AreEqual(0, calls);
     }
 
     [TestMethod]

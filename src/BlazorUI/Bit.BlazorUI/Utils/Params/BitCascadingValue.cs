@@ -509,21 +509,22 @@ public class BitCascadingValue
     /// Creates a cascading value that is re-read from <paramref name="valueFactory"/> every time it is
     /// provided, so one long lived BitCascadingValue keeps tracking the state it is derived from without
     /// the collection of values having to be rebuilt on every render. The provider reads it once per
-    /// render, and <see cref="NotifyChanged"/> pushes a fresh reading down on demand.
+    /// render, and <see cref="NotifyChanged"/> pushes a fresh reading down on demand. The factory never
+    /// runs while the value is disabled.
     /// </summary>
-    public static BitCascadingValue Computed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false)
+    public static BitCascadingValue Computed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)
     {
         ArgumentNullException.ThrowIfNull(valueFactory);
 
-        return new(() => valueFactory(), true, typeof(T), name, isFixed, true);
+        return new(() => valueFactory(), true, typeof(T), name, isFixed, enabled);
     }
 
     /// <summary>
     /// Creates a computed cascading value with an explicit ValueType, for when the cascaded type of a value
     /// that is re-read on every render is only known at runtime.
     /// </summary>
-    public static BitCascadingValue Computed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false)
-        => new(valueFactory, true, valueType, name, isFixed, true);
+    public static BitCascadingValue Computed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)
+        => new(valueFactory, true, valueType, name, isFixed, enabled);
 
     /// <summary>
     /// Creates a cascading value with <see cref="AutoNotify"/> turned on, so a value that reports its own

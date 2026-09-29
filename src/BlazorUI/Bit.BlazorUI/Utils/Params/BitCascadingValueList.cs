@@ -1,7 +1,9 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// A helper class to ease the using of a list of the BitCascadingValue.
+/// A list of <see cref="BitCascadingValue"/> items with typed helpers for building and revising a set of
+/// cascading values. Its collection initializer takes { value, name } pairs, each cascaded as the static
+/// type it is declared with.
 /// </summary>
 public class BitCascadingValueList : List<BitCascadingValue>
 {
@@ -70,13 +72,13 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// Adds a fixed (IsFixed) typed BitCascadingValue to the list. Fixed values never subscribe their
     /// consumers for change notifications, so they are the cheapest way of cascading a value that never changes.
     /// </summary>
-    public void AddFixed<T>(T value, string? name = null) => base.Add(new BitCascadingValue(value, name, true, typeof(T)));
+    public void AddFixed<T>(T value, string? name = null, bool enabled = true) => base.Add(new BitCascadingValue(value, name, true, typeof(T), enabled));
 
     /// <summary>
     /// Adds a fixed (IsFixed) BitCascadingValue with an explicit ValueType to the list, for when the
     /// cascaded type of a value that never changes is only known at runtime.
     /// </summary>
-    public void AddFixed(object? value, Type valueType, string? name = null) => base.Add(new BitCascadingValue(value, name, true, valueType));
+    public void AddFixed(object? value, Type valueType, string? name = null, bool enabled = true) => base.Add(new BitCascadingValue(value, name, true, valueType, enabled));
 
     /// <summary>
     /// Adds a typed BitCascadingValue whose value is produced by <paramref name="valueFactory"/> the first
@@ -97,15 +99,15 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// Adds a typed BitCascadingValue that is re-read from <paramref name="valueFactory"/> on every render,
     /// so one list built once keeps tracking the state its values are derived from.
     /// </summary>
-    public void AddComputed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false)
-        => base.Add(BitCascadingValue.Computed(valueFactory, name, isFixed));
+    public void AddComputed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)
+        => base.Add(BitCascadingValue.Computed(valueFactory, name, isFixed, enabled));
 
     /// <summary>
     /// Adds a computed BitCascadingValue with an explicit ValueType to the list, for when the cascaded type
     /// of a value that is re-read on every render is only known at runtime.
     /// </summary>
-    public void AddComputed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false)
-        => base.Add(BitCascadingValue.Computed(valueFactory, valueType, name, isFixed));
+    public void AddComputed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)
+        => base.Add(BitCascadingValue.Computed(valueFactory, valueType, name, isFixed, enabled));
 
     /// <summary>
     /// Adds a typed BitCascadingValue that watches the value itself, so an object reporting its own changes

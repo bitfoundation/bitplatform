@@ -98,6 +98,19 @@ public class BitCascadingValueListTests
     }
 
     [TestMethod]
+    public void ShouldAddADisabledFixedValue()
+    {
+        var list = new BitCascadingValueList();
+        list.AddFixed("hi", "Greeting", enabled: false);
+        list.AddFixed("hello", typeof(string), "Greeting", enabled: false);
+
+        Assert.IsTrue(list[0].IsFixed);
+        Assert.IsFalse(list[0].Enabled);
+        Assert.IsTrue(list[1].IsFixed);
+        Assert.IsFalse(list[1].Enabled);
+    }
+
+    [TestMethod]
     public void ShouldSupportTheCollectionInitializerSyntax()
     {
         var list = new BitCascadingValueList
