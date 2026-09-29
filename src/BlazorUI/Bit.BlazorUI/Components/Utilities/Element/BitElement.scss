@@ -21,9 +21,11 @@
 
 // Windows High Contrast / forced-colors: the palette is reduced to the system colors, which paint a form element
 // the browser disables itself in GrayText but leave every other tag - a div, a disabled link, the legend of a
-// fieldset - in the text color of an enabled one. GrayText is what says "disabled" in that palette.
+// fieldset - in the text color of an enabled one. GrayText is what says "disabled" in that palette, and the dimming
+// is dropped, since the opacity would only wash out the system colors the mode chose for their contrast.
 @media (forced-colors: active) {
     .bit-elm.bit-dis {
         color: GrayText;
+        opacity: 1;
     }
 }
