@@ -26,7 +26,7 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// <param name="enabled">Determines that the value is provided at all.</param>
 #pragma warning disable CS0109 // Member does not hide an inherited member; new keyword is not required
     public new void Add<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)
-        => base.Add(new BitCascadingValue(value, name, isFixed, typeof(T), enabled));
+        => base.Add(new BitCascadingValue<T>(value, name, isFixed, enabled));
 #pragma warning restore CS0109 // Member does not hide an inherited member; new keyword is not required
 
     /// <summary>
@@ -53,7 +53,7 @@ public class BitCascadingValueList : List<BitCascadingValue>
     {
         if (condition is false) return;
 
-        base.Add(new BitCascadingValue(value, name, isFixed, typeof(T), enabled));
+        base.Add(new BitCascadingValue<T>(value, name, isFixed, enabled));
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// Adds a fixed (IsFixed) typed BitCascadingValue to the list. Fixed values never subscribe their
     /// consumers for change notifications, so they are the cheapest way of cascading a value that never changes.
     /// </summary>
-    public void AddFixed<T>(T value, string? name = null, bool enabled = true) => base.Add(new BitCascadingValue(value, name, true, typeof(T), enabled));
+    public void AddFixed<T>(T value, string? name = null, bool enabled = true) => base.Add(new BitCascadingValue<T>(value, name, true, enabled));
 
     /// <summary>
     /// Adds a fixed (IsFixed) BitCascadingValue with an explicit ValueType to the list, for when the
@@ -182,7 +182,7 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// </summary>
     public void Set<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)
     {
-        var created = new BitCascadingValue(value, name, isFixed, typeof(T), enabled);
+        var created = new BitCascadingValue<T>(value, name, isFixed, enabled);
         var normalized = NormalizeName(name);
         var index = FindIndex(item => item is not null
                                    && item.ValueType == typeof(T)
