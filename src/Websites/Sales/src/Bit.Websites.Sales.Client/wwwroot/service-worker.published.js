@@ -1,4 +1,4 @@
-// bit version: 10.6.2
+// bit version: 11.0.0-pre-01
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -8,7 +8,9 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-light\.css$/,
 
     // the flag image sets of Bit.BlazorUI.Assets: thousands of images, fetched as the flags are drawn
-    /_content\/Bit\.BlazorUI\.Assets\/flags/
+    /_content\/Bit\.BlazorUI\.Assets\/flags/,
+
+    /^_framework\/blazor\.webassembly\.js$/
 ];
 self.externalAssets = [
     {
@@ -18,7 +20,7 @@ self.externalAssets = [
         "url": "Bit.Websites.Sales.Client.bundle.scp.css"
     },
     {
-        url: "_framework/bit.blazor.web.es2019.js"
+        url: "_framework/blazor.web.js"
     }
 ];
 

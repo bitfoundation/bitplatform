@@ -9,7 +9,7 @@
          An executable rather than an MSBuild task: Mono.Cecil then never shares a process with the copy
          ILLink.Tasks may have loaded, and one binary serves both MSBuild flavours. net8.0 + RollForward=Major
          runs on whatever runtime the SDK doing the publish carries, whichever version of it an app is on - the
-         tools a person runs themselves (Bit.Minifier.Cli) target net10.0 instead. -->
+         tools a person runs themselves (Bit.Minifier.Cli) target net11.0 instead. -->
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>

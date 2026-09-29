@@ -1,4 +1,4 @@
-// bit version: 10.6.2
+// bit version: 11.0.0-pre-01
 
 // Published service worker of the Bswup docs site. Keep in sync with service-worker.js (the
 // development copy) - the two differ only in the commented-out resiliency knobs below.
@@ -18,7 +18,8 @@ self.mode = 'InitialPrerender';
 // line to get the faster, prerender-friendly passive behavior the preset intends.
 self.isPassive = false;
 
-self.assetsExclude = [/\.scp\.css$/];
+// blazor.webassembly.js is in the manifest but a Blazor Web App never loads it, so precaching it 404s.
+self.assetsExclude = [/\.scp\.css$/, /^_framework\/blazor\.webassembly\.js$/];
 self.caseInsensitiveUrl = true;
 
 // The MCP server (Server/Controllers/McpController.cs) and the plain HTTP mirror of its tools

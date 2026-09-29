@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <UseMonoRuntime>false</UseMonoRuntime>
         <!-- The host project owns the launch profile: this project is never run on its own,
              the host document (Server/Components/App.razor) lives on the server now. -->
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
@@ -20,7 +21,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.1.26425.128" />
     </ItemGroup>
 
     <ItemGroup>

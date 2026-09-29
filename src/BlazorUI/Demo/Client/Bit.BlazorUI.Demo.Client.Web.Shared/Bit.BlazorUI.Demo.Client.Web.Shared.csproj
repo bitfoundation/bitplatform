@@ -6,7 +6,7 @@
          MAUI and Windows clients don't pick up Bswup or other web-specific assets. -->
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,12 +14,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="10.6.2" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.2">
+        <PackageReference Include="Bit.Bswup" Version="11.0.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.2">
+        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
