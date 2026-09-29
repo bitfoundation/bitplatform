@@ -422,7 +422,7 @@
                     </div>
                 </div>
                 <div class="image-row">
-                    <BitButton OnClick="() => focusableImage!.FocusAsync()">Focus the image</BitButton>
+                    <BitButton OnClick="async () => await focusableImage!.FocusAsync()">Focus the image</BitButton>
                     <div>Gallery opened <b>@galleryOpened</b> times</div>
                 </div>
             </div>

@@ -355,7 +355,7 @@ private bool isPreviewOpen;";
           OnClick=""() => galleryOpened++""
           Src=""images/carousel/img4.jpg"" />
 
-<BitButton OnClick=""() => focusableImage!.FocusAsync()"">Focus the image</BitButton>
+<BitButton OnClick=""async () => await focusableImage!.FocusAsync()"">Focus the image</BitButton>
 <div>Gallery opened <b>@galleryOpened</b> times</div>";
     private readonly string example14CsharpCode = @"
 private BitImage? focusableImage;
