@@ -83,6 +83,7 @@ public partial class BitElementDemo
     private int doubled;
     private int toolbar;
     private int prevented;
+    private int disabledClicks;
     private int toolbarCard;
     private string? typed;
     private bool wrapped = true;

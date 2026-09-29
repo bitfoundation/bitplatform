@@ -114,7 +114,9 @@ private async Task FocusTheBox()
 <BitElement Element=""button"" IsEnabled=""false"">A disabled button</BitElement>
 <BitElement Element=""input"" IsEnabled=""false"" placeholder=""A disabled input"" AriaLabel=""A disabled input"" />
 <BitElement Element=""a"" href=""https://bitplatform.dev/"" IsEnabled=""false"">A disabled anchor</BitElement>
-<BitElement class=""demo-boxed"" TabIndex=""0"" role=""group"" IsEnabled=""false"">A disabled div, out of the tab order</BitElement>";
+<BitElement class=""demo-boxed"" TabIndex=""0"" role=""button"" IsEnabled=""false"" @onclick=""() => disabledClicks++"">A disabled div button, out of the tab order (@disabledClicks)</BitElement>";
+    private readonly string example9CsharpCode = @"
+private int disabledClicks;";
 
     private readonly string example10RazorCode = @"
 <BitToggle @bind-Value=""isVisible"" Text=""Visible"" />

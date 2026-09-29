@@ -170,6 +170,58 @@ public class BitElementTests : BunitTestContext
         Assert.IsFalse(component.FindAll(".bit-elm")[8].HasAttribute("role"));
     }
 
+    [TestMethod,
+         DataRow(0),
+         DataRow(1)
+    ]
+    public void BitElementShouldDropTheClickHandlerOfADisabledElement(int index)
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        // A screen reader activates what it announces by dispatching a click on it, which the pointer-events of the
+        // disabled class do not stop, so a disabled element must have no click handler left to run.
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.FindAll(".bit-elm")[index].Click());
+        Assert.AreEqual(0, component.Instance.Clicks);
+    }
+
+    [TestMethod]
+    public void BitElementShouldNotRunTheClickHandlerOfADisabledElementForAClickBubblingUpFromItsContent()
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.Find(".inner").Click();
+
+        Assert.AreEqual(1, component.Instance.InnerClicks);
+        Assert.AreEqual(0, component.Instance.Clicks);
+    }
+
+    [TestMethod]
+    public void BitElementShouldRunTheClickHandlerOfAnElementEnabledAfterRender()
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+        });
+
+        component.FindAll(".bit-elm")[0].Click();
+        component.FindAll(".bit-elm")[1].Click();
+        component.Find(".inner").Click();
+
+        Assert.AreEqual(3, component.Instance.Clicks);
+        Assert.AreEqual(1, component.Instance.InnerClicks);
+    }
+
     [TestMethod]
     public void BitElementShouldNotGiveTheLinkRoleToADisabledAnchorWithoutAnHref()
     {

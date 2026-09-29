@@ -143,19 +143,20 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Disabled" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Disabled" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div class="example-desc">
             <b>IsEnabled="false"</b> dims the element and blocks the pointer on any tag. Form elements get the native
             <code>disabled</code>; other tags get <code>aria-disabled</code> and <code>tabindex="-1"</code>. A disabled
             link loses its <code>href</code> but keeps <code>role="link"</code>, so it is announced as a disabled link.
-            Screen readers ignore <code>aria-disabled</code> on a generic tag, so give it a role. Content inside keeps
-            its own tab stops - use a <code>fieldset</code> to disable a whole form.
+            Any disabled tag drops its <code>@@onclick</code>, so a screen reader's click cannot run it. Screen readers
+            ignore <code>aria-disabled</code> on a generic tag, so give it a role. Content inside keeps its own tab
+            stops - use a <code>fieldset</code> to disable a whole form.
         </div>
         <div class="example-content">
             <BitElement Element="button" IsEnabled="false">A disabled button</BitElement>
             <BitElement Element="input" IsEnabled="false" placeholder="A disabled input" AriaLabel="A disabled input" />
             <BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="false">A disabled anchor</BitElement>
-            <BitElement class="demo-boxed" TabIndex="0" role="group" IsEnabled="false">A disabled div, out of the tab order</BitElement>
+            <BitElement class="demo-boxed" TabIndex="0" role="button" IsEnabled="false" @onclick="() => disabledClicks++">A disabled div button, out of the tab order (@disabledClicks)</BitElement>
         </div>
     </DemoExample>
 

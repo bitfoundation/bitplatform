@@ -21,6 +21,8 @@ namespace Bit.BlazorUI;
 /// and a tabindex of -1 everywhere else, so that a tag HTML cannot disable is at least taken out of the tab order. A disabled
 /// hyperlink ("a" or "area") also loses its "href", which is what keeps the link itself from being focused and followed, and a
 /// disabled "a" is given the "link" role back, so it is still announced as a link - a disabled one - rather than as plain text.
+/// Whatever the tag, a disabled element also drops a click handler written on it, as a form element the browser disables fires
+/// no click, so neither the click a screen reader dispatches nor one bubbling up from its content runs it.
 /// <see cref="NoWrapper"/> removes the tag altogether and leaves only the content behind, which is what turns the component into a
 /// conditional wrapper. <see cref="StopPropagation"/> and <see cref="PreventDefault"/>, and <see cref="StopPropagationEvents"/> and
 /// <see cref="PreventDefaultEvents"/> for the events other than the click, reach the event modifiers that Razor only offers on plain
@@ -278,14 +280,22 @@ public partial class BitElement : BitComponentBase
         {
             builder.AddAttribute(11, "role", GetSplattedAttribute("role") ?? "link");
         }
+        // The pointer events the disabled class turns off are only one of the ways a click reaches an element: a screen
+        // reader activates what it announces by dispatching a click on it, and a click on an enabled control inside a
+        // disabled container bubbles up to it. A form element the browser disables fires no click at all, so a disabled
+        // element of any tag drops a splatted click handler rather than run it for a state it announces as unavailable.
+        if (disabled)
+        {
+            builder.AddAttribute(12, "onclick", (object?)null);
+        }
         // The event modifiers of a plain element, which the razor compiler refuses on a component. A modifier that is
         // off writes no attribute at all, and the renderer takes the one a previous render wrote away again by not
         // finding it here, so the two of the click are asked for on every render whichever way they stand and the ones
         // of the other events only while they are named. A name in either list has the last word over the parameter of
         // the click beside it, since it is written after it and the later of two attributes of a name is the one kept.
-        builder.AddEventStopPropagationAttribute(12, "onclick", StopPropagation);
-        builder.AddEventPreventDefaultAttribute(13, "onclick", PreventDefault);
-        var seq = 14;
+        builder.AddEventStopPropagationAttribute(13, "onclick", StopPropagation);
+        builder.AddEventPreventDefaultAttribute(14, "onclick", PreventDefault);
+        var seq = 15;
         foreach (var name in StopPropagationEvents ?? [])
         {
             var @event = NormalizeEventName(name);
