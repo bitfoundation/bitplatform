@@ -6,7 +6,7 @@
 
 <DemoPage Name="Label"
           Description="BitLabel renders a native label element, so clicking it focuses the control it names and a screen reader announces that control by its text. It marks a field as required or optional, renders a group caption on any other tag, truncates or hides itself accessibly, and is restyled through its parameters, its public CSS variables or a BitParams cascade."
-          Notes="A label names a control, it does not carry its state: the control still needs its own required (or aria-required), disabled and aria-invalid attributes. A native label names one control only, so a group caption belongs on another tag through Element."
+          Notes="A label names a control, it does not carry its state: the control still needs its own required (or aria-required), disabled and aria-invalid attributes. A native label names one control only, so a group caption belongs on another tag through Element - as does a BitLabel put in another component's LabelTemplate, which is a label already (Element="span")."
           Parameters="componentParameters"
           CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
@@ -61,6 +61,7 @@
                     <BitIcon IconName="@BitIconName.Important" Color="BitColor.Error" Size="BitSize.Small" />
                 </RequiredTemplate>
             </BitLabel>
+            <BitLabel Required IsEnabled="false">A disabled Label dims its mark too</BitLabel>
             <BitLabel Optional>I'm an optional Label</BitLabel>
             <BitLabel Optional OptionalText="- if you have one">Its own optional text</BitLabel>
             <BitLabel Optional>
@@ -98,13 +99,16 @@
 
     <DemoExample Title="NoWrap & NoSelect" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            A label wraps and breaks long words. <b>NoWrap</b> keeps it on one line with an ellipsis. <b>NoSelect</b> stops a
+            A label wraps and breaks long words. <b>NoWrap</b> keeps it on one line with an ellipsis; a <b>title</b> gives
+            pointer users the cut text back (screen readers read it all anyway). <b>NoSelect</b> stops a
             double click on the caption of a checkbox from selecting its text - try both.
         </div>
         <br />
         <div class="example-content">
             <BitLabel Style="width:220px">A caption long enough to need more than one line at this width</BitLabel>
-            <BitLabel Style="width:220px" NoWrap>A caption long enough to need more than one line at this width</BitLabel>
+            <BitLabel Style="width:220px" NoWrap title="A caption long enough to need more than one line at this width">
+                A caption long enough to need more than one line at this width
+            </BitLabel>
             <BitLabel><input type="checkbox" /> Selectable caption</BitLabel>
             <BitLabel NoSelect><input type="checkbox" /> Unselectable caption</BitLabel>
         </div>

@@ -13,7 +13,7 @@
 //   --bit-Label-focus-color        focus ring color of a label given a TabIndex  (default: $clr-pri-focus)
 //
 // A parameter always wins over the variable standing for the same thing: Color over the color and Size over the
-// font size. A disabled label keeps the disabled color of the theme.
+// font size. A disabled label keeps the disabled color of the theme, and so do its indicators.
 .bit-lbl {
     margin: 0;
     display: block;
@@ -34,6 +34,13 @@
         // The label itself is never disabled - only the control it names is - so the pointer over it would still
         // promise a click that the disabled control has nothing to do with.
         cursor: default;
+
+        // The indicators dim with the caption: a mark left in the error red beside a dimmed caption reads as a
+        // problem to fix on a field nobody can fill. Inheriting also carries the GrayText of a forced-colors mode.
+        .bit-lbl-rqi,
+        .bit-lbl-opi {
+            color: inherit;
+        }
     }
 
     // A label is only focusable when a page gives it a TabIndex - the caption a form's validation moves the focus

@@ -89,6 +89,15 @@ public partial class BitLabelStylesheetTests
     }
 
     [TestMethod]
+    public void BitLabelShouldDimTheIndicatorsOfADisabledLabel()
+    {
+        var block = Block(ReadStylesheet(), "\n    &.bit-dis {");
+
+        // Inheriting rather than naming the disabled color is what also carries the GrayText of a forced-colors mode.
+        StringAssert.Contains(block, ".bit-lbl-rqi,\n        .bit-lbl-opi {\n            color: inherit;");
+    }
+
+    [TestMethod]
     public void BitLabelShouldKeepTheDisabledAndFocusedStatesInForcedColors()
     {
         var block = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");

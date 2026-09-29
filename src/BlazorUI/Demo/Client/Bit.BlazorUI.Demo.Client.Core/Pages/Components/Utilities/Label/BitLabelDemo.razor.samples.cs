@@ -25,6 +25,8 @@ public partial class BitLabelDemo
     </RequiredTemplate>
 </BitLabel>
 
+<BitLabel Required IsEnabled=""false"">A disabled Label dims its mark too</BitLabel>
+
 <BitLabel Optional>I'm an optional Label</BitLabel>
 
 <BitLabel Optional OptionalText=""- if you have one"">Its own optional text</BitLabel>
@@ -52,7 +54,9 @@ public partial class BitLabelDemo
 
     private readonly string example5RazorCode = @"
 <BitLabel Style=""width:220px"">A caption long enough to need more than one line at this width</BitLabel>
-<BitLabel Style=""width:220px"" NoWrap>A caption long enough to need more than one line at this width</BitLabel>
+<BitLabel Style=""width:220px"" NoWrap title=""A caption long enough to need more than one line at this width"">
+    A caption long enough to need more than one line at this width
+</BitLabel>
 
 <BitLabel><input type=""checkbox"" /> Selectable caption</BitLabel>
 <BitLabel NoSelect><input type=""checkbox"" /> Unselectable caption</BitLabel>";
