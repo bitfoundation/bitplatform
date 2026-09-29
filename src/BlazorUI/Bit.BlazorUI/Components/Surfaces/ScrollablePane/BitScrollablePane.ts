@@ -191,27 +191,41 @@
                 const target = element.querySelector<HTMLElement>(`#${CSS.escape(targetId)}`);
                 if (!target) return;
 
-                const m = ScrollablePane.measure(element);
-                const paneRect = element.getBoundingClientRect();
-                const rect = target.getBoundingClientRect();
-
-                // Without an offset of its own the move keeps whatever room scroll-padding asks for, which
-                // is what the browser's own scrolling honors: a pane with a sticky header of its own gets
-                // the same clearance here that a fragment navigation into it would have got.
-                const padding = offset
-                    ? { left: offset, right: offset, top: offset, bottom: offset }
-                    : ScrollablePane.scrollPadding(element);
-
-                // Where the element stands inside the content of the pane, which is where it is on the
-                // screen taken back to the top left corner of the scrolled content.
-                const x = m.x + (rect.left - paneRect.left) - element.clientLeft;
-                const y = m.y + (rect.top - paneRect.top) - element.clientTop;
-
-                ScrollablePane.apply(element,
-                    ScrollablePane.align(x, rect.width, m.x, element.clientWidth, padding.left, padding.right, alignment, m.rtl),
-                    ScrollablePane.align(y, rect.height, m.y, element.clientHeight, padding.top, padding.bottom, alignment),
-                    m, smooth);
+                ScrollablePane.bringIntoView(element, target, offset, smooth, alignment);
             } catch (e) { console.error("BitBlazorUI.ScrollablePane.scrollToElement:", e); }
+        }
+
+        // The same move for an element .NET already holds a reference to, which is what a component's @ref
+        // hands over - no id needed. An element that is not inside the pane is left alone.
+        public static scrollToTarget(element: HTMLElement, target: HTMLElement, offset: number, smooth?: boolean, alignment?: ScrollAlignment) {
+            if (!element || !target || target === element || element.contains(target) === false) return;
+
+            try {
+                ScrollablePane.bringIntoView(element, target, offset, smooth, alignment);
+            } catch (e) { console.error("BitBlazorUI.ScrollablePane.scrollToTarget:", e); }
+        }
+
+        private static bringIntoView(element: HTMLElement, target: HTMLElement, offset: number, smooth?: boolean, alignment?: ScrollAlignment) {
+            const m = ScrollablePane.measure(element);
+            const paneRect = element.getBoundingClientRect();
+            const rect = target.getBoundingClientRect();
+
+            // Without an offset of its own the move keeps whatever room scroll-padding asks for, which
+            // is what the browser's own scrolling honors: a pane with a sticky header of its own gets
+            // the same clearance here that a fragment navigation into it would have got.
+            const padding = offset
+                ? { left: offset, right: offset, top: offset, bottom: offset }
+                : ScrollablePane.scrollPadding(element);
+
+            // Where the element stands inside the content of the pane, which is where it is on the
+            // screen taken back to the top left corner of the scrolled content.
+            const x = m.x + (rect.left - paneRect.left) - element.clientLeft;
+            const y = m.y + (rect.top - paneRect.top) - element.clientTop;
+
+            ScrollablePane.apply(element,
+                ScrollablePane.align(x, rect.width, m.x, element.clientWidth, padding.left, padding.right, alignment, m.rtl),
+                ScrollablePane.align(y, rect.height, m.y, element.clientHeight, padding.top, padding.bottom, alignment),
+                m, smooth);
         }
 
         // Where the pane has to stand along one axis for an element to be left where the alignment asks
@@ -388,6 +402,15 @@
         // rather than on the pane: a pointer that is released outside the pane - or before it has travelled
         // far enough for the capture to be taken - still has to end the drag it started.
         private _draggingAbortController?: AbortController;
+
+        // What keeps the Modern scrollbar of an auto hiding pane on the screen, one flag per reason, so that
+        // one of them ending - the pointer leaving - does not hide a bar another one still wants: a keyboard
+        // reader whose focus is inside the pane keeps it whatever the mouse does. The timer is the third
+        // reason, a scroll that has just happened, which is what a touch, a flick or a move made from code
+        // shows the bar for, the way an overlay scrollbar does.
+        private _hovered = false;
+        private _focused = false;
+        private _revealTimer = 0;
 
         private _frame = 0;
         private _reportTimer = 0;
@@ -579,6 +602,9 @@
             this.cancelDrag();
             this.idle(false);
 
+            if (this._revealTimer) clearTimeout(this._revealTimer);
+            this._revealTimer = 0;
+
             this._disposed = true;
 
             this._abortController?.abort();
@@ -713,32 +739,62 @@
 
                 // enter and leave rather than over and out: the pane is one region here, and a pointer
                 // crossing from the content onto something inside it is not a pointer that left the pane.
-                this._element.addEventListener('pointerenter', () => this.idle(false), { passive: true, signal: ac.signal });
-                this._element.addEventListener('pointerleave', () => this.idle(true), { passive: true, signal: ac.signal });
+                this._element.addEventListener('pointerenter', () => { this._hovered = true; this.rest(); }, { passive: true, signal: ac.signal });
+                this._element.addEventListener('pointerleave', () => { this._hovered = false; this.rest(); }, { passive: true, signal: ac.signal });
 
                 // focusin and focusout rather than focus and blur, because what keeps the scrollbar on the
-                // screen is the focus being anywhere INSIDE the pane - and those two do not bubble.
-                this._element.addEventListener('focusin', () => this.idle(false), { passive: true, signal: ac.signal });
-                this._element.addEventListener('focusout', () => this.idle(true), { passive: true, signal: ac.signal });
+                // screen is the focus being anywhere INSIDE the pane - and those two do not bubble. A focus
+                // that moves from one element of the pane to another is still inside it, which is what the
+                // element it is moving to says.
+                this._element.addEventListener('focusin', () => { this._focused = true; this.rest(); }, { passive: true, signal: ac.signal });
+                this._element.addEventListener('focusout', e => {
+                    this._focused = this._element.contains(e.relatedTarget as Node | null);
+                    this.rest();
+                }, { passive: true, signal: ac.signal });
 
                 // A pane that is already being pointed at or typed in when the flag is turned on is one the
                 // scrollbar belongs on: the two events that would say so have already been and gone.
-                this.idle(this.used() === false);
+                this._hovered = this.hovered();
+                this._focused = this._element.contains(document.activeElement);
+                this.rest();
             } else if (this._options.autoHide === false && this._autoHideAbortController) {
                 this._autoHideAbortController.abort();
                 this._autoHideAbortController = undefined;
+
+                if (this._revealTimer) clearTimeout(this._revealTimer);
+                this._revealTimer = 0;
 
                 this.idle(false);
             }
         }
 
-        // Whether the pane is being used right now, for the one moment nothing was listening to say so.
-        private used(): boolean {
+        // Whether the pointer is over the pane right now, for the one moment nothing was listening to say so.
+        private hovered(): boolean {
             try {
-                return this._element.matches(':hover') || this._element.contains(document.activeElement);
+                return this._element.matches(':hover');
             } catch {
                 return false; // :hover is unmatchable in a browser that never had a pointer
             }
+        }
+
+        // Puts the scrollbar of an auto hiding pane away unless something still wants it on the screen.
+        private rest() {
+            if (this._disposed || this._options.autoHide === false) return;
+
+            this.idle((this._hovered || this._focused || this._revealTimer !== 0) === false);
+        }
+
+        // Shows the scrollbar of an auto hiding pane for as long as it is scrolling and a moment after, which
+        // is what brings it up for a scroll the pointer did not make over it: a touch (whose pointer leaves the
+        // pane the moment the finger is lifted, momentum and all), a move made from code, a pinned log.
+        private reveal() {
+            if (this._options.autoHide === false) return;
+
+            if (this._revealTimer) clearTimeout(this._revealTimer);
+
+            this._revealTimer = setTimeout(() => { this._revealTimer = 0; this.rest(); }, BitScrollablePane._revealDelay);
+
+            this.idle(false);
         }
 
         // Whether the Modern scrollbar of an auto hiding pane is currently painted, written onto the
@@ -809,6 +865,8 @@
         // one is a short idle after the last event.
         private scrolled() {
             this.began();
+
+            this.reveal();
 
             this.schedule();
 
@@ -1492,6 +1550,9 @@
         private static _noDragSelector = 'input,textarea,select,button,a,audio,video,[contenteditable=""],[contenteditable="true"],[draggable="true"],[data-bit-scp-nodrag]';
 
         private static _dragThreshold = 4;
+
+        // How long the scrollbar of an auto hiding pane stays on the screen after the last scroll event.
+        private static _revealDelay = 800;
 
         // How near an edge still counts as standing ON it, in pixels. A scroll offset is fractional at a
         // fractional zoom level and on a scaled display, while the maxima it is compared against are
