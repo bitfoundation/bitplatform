@@ -177,7 +177,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         var dismissed = await ModalService.Show<TestModalContent>();
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
-        container.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = container.PressEscape();
         container.WaitForAssertion(() => Assert.IsTrue(dismissed.IsClosed));
         Assert.IsTrue(dismissed.IsDismissed);
 
@@ -248,7 +248,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
 
-        container.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = container.PressEscape();
 
         // The Modal takes itself off the screen before reporting the dismissal, so a refusal has to put it
         // back: the modal the user was not allowed to leave is still there.
@@ -295,7 +295,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
         Assert.AreEqual(1, log.Count);
 
-        container.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = container.PressEscape();
 
         // The guard has had its say by now, so whatever the dismissal was going to do it has done.
         container.WaitForAssertion(() => Assert.AreEqual(1, asked));

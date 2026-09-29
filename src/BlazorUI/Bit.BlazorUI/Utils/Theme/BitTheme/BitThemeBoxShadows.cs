@@ -48,6 +48,9 @@ public class BitThemeBoxShadows
     /// <summary>The resting elevation of a card (<c>--bit-shd-card</c>).</summary>
     public string? Card { get; set; }
 
+    /// <summary>The elevation a card that reacts to the pointer lifts to while hovered (<c>--bit-shd-card-hover</c>).</summary>
+    public string? CardHover { get; set; }
+
     /// <summary>The elevation of callouts, menus and dropdown lists (<c>--bit-shd-popup</c>).</summary>
     public string? Popup { get; set; }
 
