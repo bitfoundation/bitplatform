@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Icon;
 [TestClass]
 public class BitIconTests : BunitTestContext
 {
-    private const string CLASS = "bit-ico bit-ico-pri bit-ico-md bit-ico-txt";
+    private const string CLASS = "bit-ico bit-ico-txt";
 
     // An icon with nothing to name it is decorative, so it is hidden from assistive technology and
     // carries no role. Every markup expectation that does not set a name therefore carries this.
@@ -433,10 +433,12 @@ public class BitIconTests : BunitTestContext
             BitSize.Small => "bit-ico-sm",
             BitSize.Medium => "bit-ico-md",
             BitSize.Large => "bit-ico-lg",
-            _ => "bit-ico-md"
+            _ => null
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt {sizeClass}"" {HIDDEN} id:ignore />");
+        // An icon given no Size is drawn at --bit-Icon-size, and at the medium icon size without it, so it
+        // carries no size class for that variable to lose to.
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt{(sizeClass is null ? "" : $" {sizeClass}")}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -451,7 +453,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Size, BitSize.Large);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt bit-ico-lg"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt bit-ico-lg"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -537,10 +539,12 @@ public class BitIconTests : BunitTestContext
             BitColor.PrimaryBorder => "bit-ico-pbr",
             BitColor.SecondaryBorder => "bit-ico-sbr",
             BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => "bit-ico-pri"
+            _ => null
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt {colorClass}"" {HIDDEN} id:ignore />");
+        // An icon given no Color is painted in --bit-Icon-color, and in the primary role without it, so it
+        // carries no role class for that variable to lose to.
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt{(colorClass is null ? "" : $" {colorClass}")}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -555,7 +559,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Color, BitColor.Error);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt bit-ico-err"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt bit-ico-err"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -579,7 +583,7 @@ public class BitIconTests : BunitTestContext
             _ => "bit-ico-txt"
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-md {variantClass}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico {variantClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -594,7 +598,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Variant, BitVariant.Fill);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-md bit-ico-fil"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-fil"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -1415,6 +1419,53 @@ public class BitIconTests : BunitTestContext
         Assert.IsFalse(component.Find("i").ClassList.Contains("bit-ico-dly"));
     }
 
+    [TestMethod,
+        DataRow(3, "3"),
+        DataRow(1, "1"),
+        DataRow(0, "0"),
+        DataRow(-2, "0")
+    ]
+    public void BitIconShouldRespectAnimationIterationCount(int count, string expected)
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Shake);
+            parameters.Add(p => p.AnimationIterationCount, count);
+        });
+
+        // A negative count would be dropped by the browser and leave the animation looping, so it is clamped.
+        component.MarkupMatches(@$"<i style=""--bit-ico-anm-itr:{expected}"" class=""{CLASS} bit-ico-shk bit-ico-itr"" {HIDDEN} id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconShouldLoopWithoutAnIterationCount()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Shake);
+        });
+
+        Assert.IsFalse(component.Find("i").ClassList.Contains("bit-ico-itr"));
+        Assert.IsFalse((component.Find("i").GetAttribute("style") ?? "").Contains("--bit-ico-anm-itr"));
+    }
+
+    [TestMethod]
+    public void BitIconShouldRespectAnimationIterationCountChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Bounce);
+            parameters.Add(p => p.AnimationIterationCount, 2);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AnimationIterationCount, (int?)null);
+        });
+
+        component.MarkupMatches(@$"<i class=""{CLASS} bit-ico-bnc"" {HIDDEN} id:ignore />");
+    }
+
     [TestMethod]
     public void BitIconShouldNotActivateFromTheKeyboardWhenDisabled()
     {
@@ -1445,7 +1496,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIconParamsTest>();
 
-        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s"" class=""bit-ico bit-ico-err bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s;--bit-ico-anm-itr:3"" class=""bit-ico bit-ico-err bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm bit-ico-itr"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -1453,7 +1504,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIconParamsOverrideTest>();
 
-        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s"" class=""bit-ico bit-ico-suc bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s;--bit-ico-anm-itr:3"" class=""bit-ico bit-ico-suc bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm bit-ico-itr"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]

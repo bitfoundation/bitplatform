@@ -68,6 +68,21 @@ public partial class BitIcon : BitComponentBase
     public string? AnimationDelay { get; set; }
 
     /// <summary>
+    /// How many times the <see cref="Animation"/> plays before it stops. Left unset, it loops for as
+    /// long as the icon is on the page.
+    /// </summary>
+    /// <remarks>
+    /// A spinner loops for as long as the work it stands for, but an animation that only calls for
+    /// attention - a bell that shakes, an arrow that bounces - has made its point after a few cycles,
+    /// and one that never stops is moving content a reader cannot pause (WCAG 2.2.2). The icon returns
+    /// to rest once the count is reached. <see cref="BitIconAnimation.Beat"/> and
+    /// <see cref="BitIconAnimation.Fade"/> run out and back as two iterations, so give those an even
+    /// count to end where they started.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public int? AnimationIterationCount { get; set; }
+
+    /// <summary>
     /// The content rendered inside the icon element, for an icon set that is neither a font nor a
     /// class - an inline svg, an image, a ligature of your own.
     /// </summary>
@@ -93,6 +108,11 @@ public partial class BitIcon : BitComponentBase
     /// Specifies the color theme of the icon.
     /// Default value is <see cref="BitColor.Primary"/>.
     /// </summary>
+    /// <remarks>
+    /// Left unset, the icon is painted in the <c>--bit-Icon-color</c> custom property, and in the primary
+    /// color when that is not set either - so a color given here wins over the variable, and one set on
+    /// <c>:root</c> re-colors every icon that was not given a color of its own.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -228,6 +248,10 @@ public partial class BitIcon : BitComponentBase
     /// Specifies the size of the icon.
     /// Default value is <see cref="BitSize.Medium"/>.
     /// </summary>
+    /// <remarks>
+    /// Left unset, the icon is drawn at the <c>--bit-Icon-size</c> custom property, and at the medium icon
+    /// size when that is not set either. <see cref="FontSize"/> wins over both.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -315,7 +339,7 @@ public partial class BitIcon : BitComponentBase
             BitColor.PrimaryBorder => "bit-ico-pbr",
             BitColor.SecondaryBorder => "bit-ico-sbr",
             BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => "bit-ico-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => _icon?.GetCssClasses());
@@ -325,7 +349,7 @@ public partial class BitIcon : BitComponentBase
             BitSize.Small => "bit-ico-sm",
             BitSize.Medium => "bit-ico-md",
             BitSize.Large => "bit-ico-lg",
-            _ => "bit-ico-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Variant switch
@@ -385,6 +409,8 @@ public partial class BitIcon : BitComponentBase
 
         ClassBuilder.Register(() => AnimationDelay.HasValue() ? "bit-ico-dly" : string.Empty);
 
+        ClassBuilder.Register(() => AnimationIterationCount.HasValue ? "bit-ico-itr" : string.Empty);
+
         ClassBuilder.Register(() => OnClick.HasDelegate ? "bit-ico-int" : string.Empty);
     }
 
@@ -399,6 +425,10 @@ public partial class BitIcon : BitComponentBase
         StyleBuilder.Register(() => AnimationDuration.HasValue() ? $"--bit-ico-anm-dur:{AnimationDuration}" : string.Empty);
 
         StyleBuilder.Register(() => AnimationDelay.HasValue() ? $"--bit-ico-anm-dly:{AnimationDelay}" : string.Empty);
+
+        // A negative count is not a count, and CSS drops the whole declaration for one - which would leave the
+        // animation looping, the opposite of what was asked for - so it is read as no cycle at all.
+        StyleBuilder.Register(() => AnimationIterationCount.HasValue ? $"--bit-ico-anm-itr:{Math.Max(0, AnimationIterationCount.Value).ToString(CultureInfo.InvariantCulture)}" : string.Empty);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitIconParams))]
