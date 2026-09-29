@@ -128,6 +128,8 @@
     --bit-layout-dialog-actions-direction: column;
     --bit-layout-dialog-actions-justify: center;
     --bit-layout-dialog-actions-align: stretch;
+    // An alert centres its title and message above the stacked actions.
+    --bit-layout-dialog-text-align: center;
     // UIAlertController is 270pt wide whatever it has to say, which is the narrowest alert of the three.
     --bit-siz-dialog-max-width: 16.875rem; //270px
 
@@ -156,6 +158,9 @@
     // SF tracks its text sizes slightly tight; buttons are sentence-case, never uppercase.
     --bit-tpg-ctrl-letter-spacing: -0.024em;
     --bit-tpg-ctrl-text-transform: none;
+    // An alert is titled in the 17px semibold headline: the body size, set semibold.
+    --bit-tpg-dialog-title-font-size: var(--bit-tpg-fs-md); //17px
+    --bit-tpg-dialog-title-font-weight: var(--bit-tpg-fw-semibold);
     // BitText variants mapped onto the SF text styles. Unlike the Fluent and Material ramps these
     // do NOT step down below 600px, and the absence of an lt-sm block here is the decision rather
     // than an omission: the SF text styles ARE the phone sizes - iOS renders the same 34pt large

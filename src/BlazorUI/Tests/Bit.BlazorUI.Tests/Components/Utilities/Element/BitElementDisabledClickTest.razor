@@ -1,0 +1,33 @@
+﻿@* Covers the click of a disabled element: a screen reader activates an element by dispatching a click on it and a
+   click on enabled content bubbles up to it, neither of which the pointer-events of the disabled class stop, so the
+   click handler written on a disabled element is dropped whatever its tag. *@
+
+<BitElement role="button" TabIndex="0" IsEnabled="@IsEnabled" @onclick="() => Clicks++">I'm a clickable div</BitElement>
+
+<BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="@IsEnabled" @onclick="() => Clicks++">I'm a clickable link</BitElement>
+
+<BitElement IsEnabled="@IsEnabled" @onclick="() => Clicks++">
+    <button class="inner" @onclick="() => InnerClicks++">I'm an enabled button inside</button>
+</BitElement>
+
+@* The other events an element is activated through go the same way as the click, while a hover, which activates
+   nothing, is left alone. *@
+<BitElement class="activated" role="button" TabIndex="0" IsEnabled="@IsEnabled"
+            @ondblclick="() => Activations++"
+            @oncontextmenu="() => Activations++"
+            @onmousedown="() => Activations++"
+            @onpointerdown="() => Activations++"
+            @onkeydown="() => Activations++"
+            @onmouseover="() => Hovers++">
+    <button class="inner-key" @onkeydown="() => InnerKeys++">I'm an enabled button inside</button>
+</BitElement>
+
+@code {
+    [Parameter] public bool IsEnabled { get; set; }
+
+    public int Clicks { get; private set; }
+    public int InnerClicks { get; private set; }
+    public int Activations { get; private set; }
+    public int Hovers { get; private set; }
+    public int InnerKeys { get; private set; }
+}

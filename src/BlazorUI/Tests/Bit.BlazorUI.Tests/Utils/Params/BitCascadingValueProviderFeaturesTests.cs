@@ -103,6 +103,41 @@ public partial class BitCascadingValueProviderFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void ShouldFollowAValueListThatIsRevisedInPlace()
+    {
+        var valueList = new BitCascadingValueList
+        {
+            { 1 },
+            { "hello", "Greeting" }
+        };
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.ValueList, valueList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<CascadingConsumer>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        valueList.Set(2);
+        component.Render();
+
+        Assert.AreEqual("2-hello", component.Markup);
+
+        valueList.Remove<string>("Greeting");
+        component.Render();
+
+        Assert.AreEqual("2-", component.Markup);
+
+        valueList.Add("back", "Greeting");
+        component.Render();
+
+        Assert.AreEqual("2-back", component.Markup);
+    }
+
+    [TestMethod]
     public void ShouldUpdateTheConsumerWhenACascadedValueChanges()
     {
         var number = new BitCascadingValue(1);

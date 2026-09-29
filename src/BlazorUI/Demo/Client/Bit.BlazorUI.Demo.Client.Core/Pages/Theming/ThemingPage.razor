@@ -319,6 +319,7 @@
                 <ul>
                     <li><code>--bit-layout-density-scale</code> - the density multiplier</li>
                     <li><code>--bit-layout-dialog-actions-direction</code> / <code>--bit-layout-dialog-actions-justify</code> / <code>--bit-layout-dialog-actions-align</code> - how dialog and message-box footers lay out their action buttons: <code>row</code> / <code>flex-end</code> / <code>center</code> under Fluent; Cupertino stacks them full width with <code>column</code> / <code>center</code> / <code>stretch</code></li>
+                    <li><code>--bit-layout-dialog-text-align</code> - how a dialog's title and message are aligned: <code>start</code>, or <code>center</code> under Cupertino</li>
                     <li><code>--bit-bp-{xs,sm,md,lg,xl,xxl}</code> - the breakpoints</li>
                 </ul>
             </DocSection>
@@ -335,6 +336,7 @@
                     <li><code>--bit-tpg-fs-{2xs,xs,sm,md,lg,xl,2xl,3xl,4xl}</code> - the font-size scale, 10&hellip;32px; component size classes read <code>sm&rarr;xs</code>, <code>md&rarr;sm</code>, <code>lg&rarr;md</code></li>
                     <li><code>--bit-tpg-fw-{light,regular,medium,semibold,bold}</code> - the weight scale</li>
                     <li><code>--bit-tpg-ctrl-letter-spacing</code> / <code>--bit-tpg-ctrl-text-transform</code> - the control-label pair</li>
+                    <li><code>--bit-tpg-dialog-title-font-size</code> / <code>--bit-tpg-dialog-title-font-weight</code> - a dialog's title: 20px semibold under Fluent and Fluent&nbsp;2, 24px regular under Material, 17px semibold under Cupertino</li>
                     <li>the <code>BitText</code> variants <code>h1..h6</code>, <code>body1/2</code>, <code>subtitle1/2</code>, <code>caption1/2</code>, <code>button</code>, <code>overline</code>, <code>inherit</code></li>
                 </ul>
 
@@ -491,18 +493,26 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
 /* tint per accent role - the role as a faint wash over a surface (tinted variants) */
 --bit-clr-pri-tint         /* &rarr; color-mix(in srgb, var(--bit-clr-pri) 10%, transparent) */
---bit-clr-sec-tint         /* ... and likewise for sec, ter, inf, suc, wrn, swr, err */</CodeBox>
+--bit-clr-sec-tint         /* ... and likewise for sec, ter, inf, suc, wrn, swr, err */
+
+/* the tooltip surface */
+--bit-clr-tooltip-bg       /* &rarr; var(--bit-clr-bg-sec) */
+--bit-clr-tooltip-fg       /* &rarr; var(--bit-clr-fg-pri) */</CodeBox>
 
                 <BitText>
                     Under Fluent every family points at the same primitive, so overriding <code>--bit-shp-brd-radius</code> still re-rounds everything exactly as before. The families exist for the design systems that disagree: Material rounds a button (pill), a chip (8px), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino capsules its buttons and chips over 8px fields, and separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS - exactly what the packaged Material and Cupertino presets do; see <i>Authoring your own preset</i> below. Themable from C# via <code>BitTheme.Shape.Radius.*</code> and <code>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</code>.
                 </BitText>
 
                 <BitText>
-                    The role foregrounds are the one family that is a color. A role's base color is picked to <i>fill</i> a surface - a warning amber is under 2:1 on white - so a variant that drops the fill and prints the role as text needs a different shade of it. The default mixes the role towards <code>--bit-clr-fg-pri</code>, which keeps the hue in both schemes of any palette; a design system with its own contrast target sets <code>--bit-clr-&lt;role&gt;-fg</code> in its preset block, or from C# via <code>BitTheme.Color.&lt;Role&gt;.Foreground</code>, and every component that prints the role as text follows without a single component selector. An inline override that re-values a role or the primary foreground re-declares the affected role foregrounds on the same element, exactly as for the other family aliases.
+                    The role foregrounds are the first of the color families. A role's base color is picked to <i>fill</i> a surface - a warning amber is under 2:1 on white - so a variant that drops the fill and prints the role as text needs a different shade of it. The default mixes the role towards <code>--bit-clr-fg-pri</code>, which keeps the hue in both schemes of any palette; a design system with its own contrast target sets <code>--bit-clr-&lt;role&gt;-fg</code> in its preset block, or from C# via <code>BitTheme.Color.&lt;Role&gt;.Foreground</code>, and every component that prints the role as text follows without a single component selector. An inline override that re-values a role or the primary foreground re-declares the affected role foregrounds on the same element, exactly as for the other family aliases.
                 </BitText>
 
                 <BitText>
                     The role tints are their companion: the role laid over a surface as a faint wash, the soft look of a tinted message, with the role foreground read on top. The default is translucent, so a tinted component on a card or a sidebar tints that surface rather than painting a patch of the page on it, and it is kept faint enough for every role foreground to hold 4.5:1 on it under the packaged palettes. A design system with opaque "container" colors of its own - Material's error container, say - sets <code>--bit-clr-&lt;role&gt;-tint</code> in its preset block, or from C# via <code>BitTheme.Color.&lt;Role&gt;.Tint</code>; an inline override that re-values a role re-declares that role's tint.
+                </BitText>
+
+                <BitText>
+                    The tooltip surface is the one popup whose fill design systems disagree on: Fluent lifts a light surface off the page with a shadow, Material paints its plain tooltip in the inverse surface and casts none. <code>--bit-clr-tooltip-bg</code> and <code>--bit-clr-tooltip-fg</code> carry that choice - the Material preset points them at <code>--bit-clr-fg-pri</code> / <code>--bit-clr-bg-pri</code>, Fluent 2 at the page surface - and are themable from C# via <code>BitTheme.Color.TooltipBackground</code> / <code>TooltipForeground</code>.
                 </BitText>
             </DocSection>
 
@@ -749,6 +759,8 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     --bit-tpg-fw-semibold: 500;                 /* Roboto has no 600 - labels/titles fall to medium */
     --bit-tpg-ctrl-letter-spacing: 0.00625rem;
     --bit-tpg-ctrl-text-transform: none;        /* Material 2 would say uppercase */
+    --bit-tpg-dialog-title-font-size: 1.5rem;   /* headline-small */
+    --bit-tpg-dialog-title-font-weight: 400;
 
     /* shape: 4px fields/menus, 12px cards, 28px dialogs, pill buttons, 8px chips, 2px checkbox */
     --bit-shp-radius-control: 0.25rem;
@@ -794,7 +806,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
                     <li>SF Pro at 17px (<code>--bit-tpg-fs-sm: 1.0625rem</code>), 590 semibold</li>
                     <li>44px controls</li>
                     <li>8px field corners, with capsule buttons and chips (<code>--bit-shp-radius-button: var(--bit-shp-radius-full)</code>)</li>
-                    <li>14px dialog corners</li>
+                    <li>14px dialog corners, with a centred 17px semibold title (<code>--bit-layout-dialog-text-align: center</code>)</li>
                     <li>the 51x31 UISwitch</li>
                     <li>hairline separators (<code>--bit-shp-brd-width: 0.5px</code>) with <code>--bit-shd-popup: none</code></li>
                 </ul>

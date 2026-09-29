@@ -1,7 +1,11 @@
+﻿using System.ComponentModel;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// A helper class to ease the using of a list of the BitCascadingValue.
+/// A list of <see cref="BitCascadingValue"/> items with typed helpers for building and revising a set of
+/// cascading values. Its collection initializer takes { value, name } pairs, each cascaded as the static
+/// type it is declared with.
 /// </summary>
 public class BitCascadingValueList : List<BitCascadingValue>
 {
@@ -24,7 +28,11 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// <param name="enabled">Determines that the value is provided at all.</param>
 #pragma warning disable CS0109 // Member does not hide an inherited member; new keyword is not required
     public new void Add<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)
-        => base.Add(new BitCascadingValue(value, name, isFixed, typeof(T), enabled));
+    {
+        if (TryAddCreated(value, name, isFixed, enabled)) return;
+
+        base.Add(new BitCascadingValue<T>(value, name, isFixed, enabled));
+    }
 #pragma warning restore CS0109 // Member does not hide an inherited member; new keyword is not required
 
     /// <summary>
@@ -50,8 +58,9 @@ public class BitCascadingValueList : List<BitCascadingValue>
     public void AddIf<T>(bool condition, T value, string? name = null, bool isFixed = false, bool enabled = true)
     {
         if (condition is false) return;
+        if (TryAddCreated(value, name, isFixed, enabled)) return;
 
-        base.Add(new BitCascadingValue(value, name, isFixed, typeof(T), enabled));
+        base.Add(new BitCascadingValue<T>(value, name, isFixed, enabled));
     }
 
     /// <summary>
@@ -70,13 +79,22 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// Adds a fixed (IsFixed) typed BitCascadingValue to the list. Fixed values never subscribe their
     /// consumers for change notifications, so they are the cheapest way of cascading a value that never changes.
     /// </summary>
-    public void AddFixed<T>(T value, string? name = null) => base.Add(new BitCascadingValue(value, name, true, typeof(T)));
+    public void AddFixed<T>(T value, string? name = null, bool enabled = true) => base.Add(new BitCascadingValue<T>(value, name, true, enabled));
+
+    // The 10.6 signature, kept so that the assemblies compiled against it still bind. Its parameters are
+    // all required, so a call passing both picks it over the overload above without any ambiguity.
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void AddFixed<T>(T value, string? name) => AddFixed(value, name, true);
 
     /// <summary>
     /// Adds a fixed (IsFixed) BitCascadingValue with an explicit ValueType to the list, for when the
     /// cascaded type of a value that never changes is only known at runtime.
     /// </summary>
-    public void AddFixed(object? value, Type valueType, string? name = null) => base.Add(new BitCascadingValue(value, name, true, valueType));
+    public void AddFixed(object? value, Type valueType, string? name = null, bool enabled = true) => base.Add(new BitCascadingValue(value, name, true, valueType, enabled));
+
+    // The 10.6 signature, kept so that the assemblies compiled against it still bind.
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void AddFixed(object? value, Type valueType, string? name) => AddFixed(value, valueType, name, true);
 
     /// <summary>
     /// Adds a typed BitCascadingValue whose value is produced by <paramref name="valueFactory"/> the first
@@ -97,15 +115,24 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// Adds a typed BitCascadingValue that is re-read from <paramref name="valueFactory"/> on every render,
     /// so one list built once keeps tracking the state its values are derived from.
     /// </summary>
-    public void AddComputed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false)
-        => base.Add(BitCascadingValue.Computed(valueFactory, name, isFixed));
+    public void AddComputed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)
+        => base.Add(BitCascadingValue.Computed(valueFactory, name, isFixed, enabled));
+
+    // The 10.6 signature, kept so that the assemblies compiled against it still bind.
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void AddComputed<T>(Func<T> valueFactory, string? name, bool isFixed) => AddComputed(valueFactory, name, isFixed, true);
 
     /// <summary>
     /// Adds a computed BitCascadingValue with an explicit ValueType to the list, for when the cascaded type
     /// of a value that is re-read on every render is only known at runtime.
     /// </summary>
-    public void AddComputed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false)
-        => base.Add(BitCascadingValue.Computed(valueFactory, valueType, name, isFixed));
+    public void AddComputed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)
+        => base.Add(BitCascadingValue.Computed(valueFactory, valueType, name, isFixed, enabled));
+
+    // The 10.6 signature, kept so that the assemblies compiled against it still bind.
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void AddComputed(Func<object?> valueFactory, Type valueType, string? name, bool isFixed)
+        => AddComputed(valueFactory, valueType, name, isFixed, true);
 
     /// <summary>
     /// Adds a typed BitCascadingValue that watches the value itself, so an object reporting its own changes
@@ -142,6 +169,10 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// <summary>
     /// Finds the cascading value that the static type of <typeparamref name="T"/> and the given name
     /// resolve to, which is the last entry matching both. Returns null when there is no such entry.
+    /// The entry is a <see cref="BitCascadingValue{T}"/> whenever it was created from a static type - by
+    /// the typed helpers of this list, the factories, the implicit conversions or that type's constructor -
+    /// so a type pattern reaches its typed members; one added with an explicit <see cref="Type"/> or
+    /// through the untyped constructors is a plain BitCascadingValue, so use a pattern rather than a cast.
     /// </summary>
     public BitCascadingValue? Find<T>(string? name = null) => Find(typeof(T), name);
 
@@ -180,7 +211,7 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// </summary>
     public void Set<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)
     {
-        var created = new BitCascadingValue(value, name, isFixed, typeof(T), enabled);
+        var created = new BitCascadingValue<T>(value, name, isFixed, enabled);
         var normalized = NormalizeName(name);
         var index = FindIndex(item => item is not null
                                    && item.ValueType == typeof(T)
@@ -198,6 +229,24 @@ public class BitCascadingValueList : List<BitCascadingValue>
     }
 
 
+
+    /// <summary>
+    /// Adds an already created cascading value that reached a generic overload as the entry it is. A
+    /// <see cref="BitCascadingValue{T}"/> binds <see cref="Add{T}(T, string, bool, bool)"/> rather than
+    /// <see cref="Add(BitCascadingValue)"/> - an exact match beats the conversion to the base type - so
+    /// without this it would be cascaded as a value of its own. A null one is ignored, as that overload
+    /// ignores it. Only the one-argument shape is taken over, since that is the shape of the overload
+    /// the caller meant.
+    /// </summary>
+    private bool TryAddCreated<T>(T value, string? name, bool isFixed, bool enabled)
+    {
+        if (typeof(BitCascadingValue).IsAssignableFrom(typeof(T)) is false) return false;
+        if (name is not null || isFixed || enabled is false) return false;
+
+        Add(value as BitCascadingValue);
+
+        return true;
+    }
 
     private static string? NormalizeName(string? name) => string.IsNullOrWhiteSpace(name) ? null : name;
 }
