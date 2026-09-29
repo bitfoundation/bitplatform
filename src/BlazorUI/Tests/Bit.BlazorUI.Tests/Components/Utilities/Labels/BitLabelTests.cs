@@ -260,9 +260,34 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.NoWrap, noWrap);
         });
 
-        var cssClass = noWrap ? "bit-lbl bit-lbl-nwr" : "bit-lbl";
+        var markup = noWrap
+            ? @"<label class=""bit-lbl bit-lbl-nwr"" id:ignore><span class=""bit-lbl-txt""></span></label>"
+            : @"<label class=""bit-lbl"" id:ignore></label>";
 
-        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
+        component.MarkupMatches(markup);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitLabelShouldKeepTheIndicatorOutOfTheTruncatedContent(bool required)
+    {
+        var component = RenderComponent<BitLabel>(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, true);
+            parameters.Add(p => p.Required, required);
+            parameters.Add(p => p.Optional, required is false);
+            parameters.AddChildContent("A long caption");
+        });
+
+        // The content alone takes the ellipsis: the indicator is its sibling, so the overflow never cuts it off.
+        var indicator = required
+            ? @"<span class=""bit-lbl-rqi"" aria-hidden=""true"">*</span>"
+            : @"<span class=""bit-lbl-opi"">(optional)</span>";
+        var cssClass = required ? "bit-lbl bit-lbl-req bit-lbl-nwr" : "bit-lbl bit-lbl-opt bit-lbl-nwr";
+
+        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore><span class=""bit-lbl-txt"">A long caption</span>{indicator}</label>");
     }
 
     [TestMethod,

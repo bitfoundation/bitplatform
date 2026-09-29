@@ -118,6 +118,9 @@ public partial class BitLabel : BitComponentBase
     /// a width to overflow: the label is a block element whichever tag <see cref="Element"/> renders, so it takes the
     /// width of its container, and one given a display of its own through the style needs a width of its own for the
     /// ellipsis to appear.
+    /// <br />
+    /// Only the content is truncated: it is rendered into an element of its own, so the required or optional
+    /// indicator stays whole after the ellipsis rather than being the first thing the overflow cuts off.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool NoWrap { get; set; }
@@ -305,45 +308,58 @@ public partial class BitLabel : BitComponentBase
         // and a group caption rendered through Element is pointed at by its group rather than pointing at a control.
         builder.AddAttribute(8, "for", isLabelElement ? For : null);
         builder.AddElementReferenceCapture(9, v => RootElement = v);
-        builder.AddContent(10, ChildContent);
+
+        // A truncated label cuts its content alone: the content gets an element of its own to put the ellipsis on, so
+        // the indicator after it - the one thing saying the field is required - is never what the overflow hides.
+        if (NoWrap)
+        {
+            builder.OpenElement(10, "span");
+            builder.AddAttribute(11, "class", "bit-lbl-txt");
+            builder.AddContent(12, ChildContent);
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.AddContent(13, ChildContent);
+        }
 
         // A field is either required or optional, so the two indicators are the branches of one decision rather than
         // two independent ones: a label asked for both renders the required one, which is the stronger statement.
         if (Required)
         {
-            builder.OpenElement(11, "span");
-            builder.AddAttribute(12, "style", Styles?.RequiredIndicator);
-            builder.AddAttribute(13, "class", Classes?.RequiredIndicator.HasValue() is true
+            builder.OpenElement(14, "span");
+            builder.AddAttribute(15, "style", Styles?.RequiredIndicator);
+            builder.AddAttribute(16, "class", Classes?.RequiredIndicator.HasValue() is true
                                               ? $"bit-lbl-rqi {Classes!.RequiredIndicator}"
                                               : "bit-lbl-rqi");
             // The default asterisk is a decoration - a screen reader that announces it at all announces a "star" in the
             // middle of the caption, which says nothing about the field, while the "required" attribute of the control
             // is what does. An indicator written by the page is a word put there to be read, so it is left announced.
-            builder.AddAttribute(14, "aria-hidden", RequiredTemplate is null && RequiredText.HasNoValue() ? "true" : null);
+            builder.AddAttribute(17, "aria-hidden", RequiredTemplate is null && RequiredText.HasNoValue() ? "true" : null);
             if (RequiredTemplate is not null)
             {
-                builder.AddContent(15, RequiredTemplate);
+                builder.AddContent(18, RequiredTemplate);
             }
             else
             {
-                builder.AddContent(16, RequiredText ?? "*");
+                builder.AddContent(19, RequiredText ?? "*");
             }
             builder.CloseElement();
         }
         else if (Optional)
         {
-            builder.OpenElement(17, "span");
-            builder.AddAttribute(18, "style", Styles?.OptionalIndicator);
-            builder.AddAttribute(19, "class", Classes?.OptionalIndicator.HasValue() is true
+            builder.OpenElement(20, "span");
+            builder.AddAttribute(21, "style", Styles?.OptionalIndicator);
+            builder.AddAttribute(22, "class", Classes?.OptionalIndicator.HasValue() is true
                                               ? $"bit-lbl-opi {Classes!.OptionalIndicator}"
                                               : "bit-lbl-opi");
             if (OptionalTemplate is not null)
             {
-                builder.AddContent(20, OptionalTemplate);
+                builder.AddContent(23, OptionalTemplate);
             }
             else
             {
-                builder.AddContent(21, OptionalText ?? "(optional)");
+                builder.AddContent(24, OptionalText ?? "(optional)");
             }
             builder.CloseElement();
         }

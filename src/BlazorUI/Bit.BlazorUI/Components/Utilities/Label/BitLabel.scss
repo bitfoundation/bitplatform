@@ -4,7 +4,7 @@
 // label, one set on an ancestor every label inside it, and one set on the Style of an instance that one:
 //   --bit-Label-color              text color                                    (default: inherit)
 //   --bit-Label-font-size          text size                                     (default: $tg-fs-sm)
-//   --bit-Label-font-weight        weight of the caption                         (default: $tg-fw-semibold)
+//   --bit-Label-font-weight        weight of the caption                         (default: $tg-field-label-font-weight)
 //   --bit-Label-line-height        height of a line of the caption               (default: spacing(2.5))
 //   --bit-Label-padding            room around the caption                       (default: spacing(0.625) 0)
 //   --bit-Label-indicator-gap      gap between the caption and its indicator     (default: spacing(0.625))
@@ -25,7 +25,9 @@
     // the text around it.
     color: var(--bit-Label-color, inherit);
     font-size: var(--bit-Label-font-size, #{$tg-fs-sm});
-    font-weight: var(--bit-Label-font-weight, #{$tg-fw-semibold});
+    // The weight is the theme's field-label one - the same the inputs caption themselves with - so a preset that
+    // sets its fields in a regular weight re-skins a standalone label in step with them.
+    font-weight: var(--bit-Label-font-weight, #{$tg-field-label-font-weight});
     line-height: var(--bit-Label-line-height, #{spacing(2.5)});
     padding: var(--bit-Label-padding, #{spacing(0.625) 0});
 
@@ -44,10 +46,10 @@
     }
 
     // A label is only focusable when a page gives it a TabIndex - the caption a form's validation moves the focus
-    // to, for instance - and then it shows the focus ring of the library rather than the browser's own.
+    // to, for instance - and then it shows the focus ring of the library rather than the browser's own, which also
+    // brings back a Highlight outline in a forced-colors mode, where the ring's shadow is stripped.
     &:focus-visible {
-        outline: #{$shp-focus-ring-width} solid var(--bit-Label-focus-color, #{$clr-pri-focus});
-        outline-offset: #{$shp-focus-ring-width};
+        @include focus-ring(var(--bit-Label-focus-color, #{$clr-pri-focus}));
     }
 }
 
@@ -87,9 +89,23 @@
     margin-inline-start: var(--bit-Label-indicator-gap, #{spacing(0.625)});
 }
 
+// A truncated label is a row of its content and its indicator: the content shrinks and takes the ellipsis, while
+// the indicator keeps its size, so a required mark stays in sight however long the caption.
 .bit-lbl-nwr {
-    overflow: hidden;
+    display: flex;
+    min-width: 0;
     white-space: nowrap;
+    align-items: center;
+
+    .bit-lbl-rqi,
+    .bit-lbl-opi {
+        flex-shrink: 0;
+    }
+}
+
+.bit-lbl-txt {
+    min-width: 0;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -116,14 +132,9 @@
 
 
 // A forced-colors mode repaints the text of a disabled label in the ordinary text color, which takes away the one
-// thing that says the control it names is disabled, and draws the focus ring in whatever system color the outline
-// maps to. Both are re-established in the system colors, which are the only ones such a mode keeps.
+// thing that says the control it names is disabled, so it is re-established in GrayText, the system color for it.
 @media (forced-colors: active) {
     .bit-lbl.bit-dis {
         color: GrayText;
-    }
-
-    .bit-lbl:focus-visible {
-        outline-color: Highlight;
     }
 }

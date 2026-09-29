@@ -793,6 +793,11 @@ public static partial class BitCss
                 public const string TitleFontWeight = "--bit-tpg-dialog-title-font-weight";
             }
 
+            public static class FieldLabel
+            {
+                public const string FontWeight = "--bit-tpg-field-label-font-weight";
+            }
+
             public static class H1
             {
                 public const string Margin = "--bit-tpg-h1-margin";

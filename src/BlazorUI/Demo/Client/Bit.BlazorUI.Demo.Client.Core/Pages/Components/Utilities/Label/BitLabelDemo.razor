@@ -99,14 +99,14 @@
 
     <DemoExample Title="NoWrap & NoSelect" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            A label wraps and breaks long words. <b>NoWrap</b> keeps it on one line with an ellipsis; a <b>title</b> gives
-            pointer users the cut text back (screen readers read it all anyway). <b>NoSelect</b> stops a
+            A label wraps and breaks long words. <b>NoWrap</b> keeps it on one line and truncates the caption, never its
+            required or optional mark; a <b>title</b> gives pointer users the cut text back (screen readers read it all anyway). <b>NoSelect</b> stops a
             double click on the caption of a checkbox from selecting its text - try both.
         </div>
         <br />
         <div class="example-content">
             <BitLabel Style="width:220px">A caption long enough to need more than one line at this width</BitLabel>
-            <BitLabel Style="width:220px" NoWrap title="A caption long enough to need more than one line at this width">
+            <BitLabel Style="width:220px" NoWrap Required title="A caption long enough to need more than one line at this width">
                 A caption long enough to need more than one line at this width
             </BitLabel>
             <BitLabel><input type="checkbox" /> Selectable caption</BitLabel>
@@ -137,6 +137,7 @@
         <div>
             The public <b>--bit-Label-*</b> variables inherit, so one set on <b>:root</b> or a container restyles every label
             inside it, and one set in <b>Style</b> restyles that label. <b>Color</b> and <b>Size</b> win over the variables.
+            The weight defaults to the theme's <b>--bit-tpg-field-label-font-weight</b>, which also sets the inputs' own labels.
         </div>
         <br />
         <div class="example-content">
@@ -149,6 +150,11 @@
             <BitLabel Style="--bit-Label-font-size: 1.25rem; --bit-Label-color: var(--bit-clr-sec-fg); --bit-Label-padding: 0 0 8px;">
                 Set on one label
             </BitLabel>
+            <div style="--bit-tpg-field-label-font-weight: 400;">
+                <BitLabel For="css-city">City (a BitLabel)</BitLabel>
+                <input type="text" id="css-city" />
+                <BitTextField Label="Country (a BitTextField's own label)" />
+            </div>
         </div>
     </DemoExample>
 

@@ -54,7 +54,7 @@ public partial class BitLabelDemo
 
     private readonly string example5RazorCode = @"
 <BitLabel Style=""width:220px"">A caption long enough to need more than one line at this width</BitLabel>
-<BitLabel Style=""width:220px"" NoWrap title=""A caption long enough to need more than one line at this width"">
+<BitLabel Style=""width:220px"" NoWrap Required title=""A caption long enough to need more than one line at this width"">
     A caption long enough to need more than one line at this width
 </BitLabel>
 
@@ -81,7 +81,13 @@ public partial class BitLabelDemo
 
 <BitLabel Style=""--bit-Label-font-size: 1.25rem; --bit-Label-color: var(--bit-clr-sec-fg); --bit-Label-padding: 0 0 8px;"">
     Set on one label
-</BitLabel>";
+</BitLabel>
+
+<div style=""--bit-tpg-field-label-font-weight: 400;"">
+    <BitLabel For=""css-city"">City (a BitLabel)</BitLabel>
+    <input type=""text"" id=""css-city"" />
+    <BitTextField Label=""Country (a BitTextField's own label)"" />
+</div>";
 
     private readonly string example8RazorCode = @"
 <BitParams Parameters=""labelParams"">

@@ -15,7 +15,7 @@
 //   --bit-ChoiceGroup-font-size                  text size of the items                        (default: per size, from the type ramp)
 //   --bit-ChoiceGroup-label-color                color of the group label                      (default: inherited)
 //   --bit-ChoiceGroup-label-font-size            text size of the group label                  (default: inherited)
-//   --bit-ChoiceGroup-label-font-weight          weight of the group label                     (default: $tg-fw-semibold)
+//   --bit-ChoiceGroup-label-font-weight          weight of the group label                     (default: $tg-field-label-font-weight)
 //   --bit-ChoiceGroup-required-color             color of the required asterisk                (default: $clr-req)
 //   --bit-ChoiceGroup-description-color          color of the group helper text                (default: $clr-fg-sec)
 //   --bit-ChoiceGroup-description-font-size      text size of the group helper text            (default: per size, from the type ramp)
@@ -108,7 +108,7 @@
     overflow-wrap: break-word;
     color: var(--bit-ChoiceGroup-label-color, inherit);
     font-size: var(--bit-ChoiceGroup-label-font-size, inherit);
-    font-weight: var(--bit-ChoiceGroup-label-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-ChoiceGroup-label-font-weight, #{$tg-field-label-font-weight});
 }
 
 .bit-chg-gds {

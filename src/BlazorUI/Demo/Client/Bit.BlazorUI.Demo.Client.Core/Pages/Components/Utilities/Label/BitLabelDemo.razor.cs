@@ -55,7 +55,7 @@ public partial class BitLabelDemo
             Name = "NoWrap",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the label on a single line and truncates the overflow with an ellipsis.",
+            Description = "Keeps the label on a single line and truncates its content with an ellipsis. The required or optional indicator is never cut off.",
         },
         new()
         {
@@ -143,8 +143,8 @@ public partial class BitLabelDemo
         new()
         {
             Name = "--bit-Label-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
-            Description = "Weight of the caption.",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
+            Description = "Weight of the caption. The theme token sets it for every field caption at once.",
         },
         new()
         {

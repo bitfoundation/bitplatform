@@ -152,6 +152,9 @@
     // M3 titles a dialog in headline-small: 24px regular - the 2xl step of the core ramp it keeps.
     --bit-tpg-dialog-title-font-size: var(--bit-tpg-fs-2xl); //24px
     --bit-tpg-dialog-title-font-weight: var(--bit-tpg-fw-regular);
+    // A field is captioned in the body type, regular: the medium weight belongs to the label-* styles
+    // of buttons, chips and tabs.
+    --bit-tpg-field-label-font-weight: var(--bit-tpg-fw-regular);
     // The --bit-tpg-fs-* ramp is deliberately left at the core stylesheet's values rather than
     // retuned. The three steps the size classes read are already M3's own control sizes (sm -> 12px
     // label-medium, md -> 14px label-large, lg -> 16px body-large), and above them the M3 scale has

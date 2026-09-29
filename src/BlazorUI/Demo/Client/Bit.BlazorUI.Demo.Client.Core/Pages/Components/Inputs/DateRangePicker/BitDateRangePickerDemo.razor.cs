@@ -1261,7 +1261,7 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "--bit-DateRangePicker-label-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
             Description = "Weight of the label.",
         },
         new()

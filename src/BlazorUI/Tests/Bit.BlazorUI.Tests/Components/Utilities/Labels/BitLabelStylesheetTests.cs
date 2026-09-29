@@ -58,6 +58,14 @@ public partial class BitLabelStylesheetTests
         StringAssert.Contains(ReadStylesheet(), "color: var(--bit-Label-color, inherit);");
     }
 
+    [TestMethod]
+    public void BitLabelShouldTakeItsWeightFromTheFieldLabelToken()
+    {
+        // The theme's field-label weight is what the inputs caption themselves with, so reading it keeps a standalone
+        // label in step with them under every preset rather than pinning the Fluent semibold.
+        StringAssert.Contains(ReadStylesheet(), "font-weight: var(--bit-Label-font-weight, #{$tg-field-label-font-weight});");
+    }
+
     [TestMethod,
         DataRow("sm"),
         DataRow("md"),
@@ -98,12 +106,20 @@ public partial class BitLabelStylesheetTests
     }
 
     [TestMethod]
-    public void BitLabelShouldKeepTheDisabledAndFocusedStatesInForcedColors()
+    public void BitLabelShouldKeepTheDisabledStateInForcedColors()
     {
         var block = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(block, ".bit-lbl.bit-dis {\n        color: GrayText;");
-        StringAssert.Contains(block, ".bit-lbl:focus-visible {\n        outline-color: Highlight;");
+    }
+
+    [TestMethod]
+    public void BitLabelShouldDrawTheFocusRingOfTheLibrary()
+    {
+        var block = Block(ReadStylesheet(), "\n    &:focus-visible {");
+
+        // The mixin draws the themed ring and brings a Highlight outline back in a forced-colors mode.
+        StringAssert.Contains(block, "@include focus-ring(var(--bit-Label-focus-color, #{$clr-pri-focus}));");
     }
 
     [TestMethod]
@@ -128,6 +144,23 @@ public partial class BitLabelStylesheetTests
 
             StringAssert.Contains(block, "margin-inline-start: var(--bit-Label-indicator-gap, ");
         }
+    }
+
+    [TestMethod]
+    public void BitLabelShouldTruncateTheContentAndKeepTheIndicatorWhole()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var noWrap = Block(stylesheet, "\n.bit-lbl-nwr {");
+        StringAssert.Contains(noWrap, "display: flex;");
+        StringAssert.Contains(noWrap, "white-space: nowrap;");
+        StringAssert.Contains(noWrap, ".bit-lbl-rqi,\n    .bit-lbl-opi {\n        flex-shrink: 0;");
+        Assert.IsFalse(noWrap.Contains("text-overflow"), "The ellipsis is put on the whole label, indicator included.");
+
+        var text = Block(stylesheet, "\n.bit-lbl-txt {");
+        StringAssert.Contains(text, "min-width: 0;");
+        StringAssert.Contains(text, "overflow: hidden;");
+        StringAssert.Contains(text, "text-overflow: ellipsis;");
     }
 
     private static string Block(string stylesheet, string opening)
