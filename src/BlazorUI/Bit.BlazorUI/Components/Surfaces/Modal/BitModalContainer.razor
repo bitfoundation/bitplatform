@@ -4,8 +4,10 @@
 @foreach (var modalReference in _modalRefs)
 {
     <CascadingValue @key="modalReference.Id" Value="modalReference">
-        <CascadingValue Value="GetMergedParameters(modalReference)">
-            @modalReference.Modal
+        <CascadingValue Name="@BitModalExit.CascadingName" Value="GetExit(modalReference)" IsFixed="true">
+            <CascadingValue Value="GetMergedParameters(modalReference)">
+                @modalReference.Modal
+            </CascadingValue>
         </CascadingValue>
     </CascadingValue>
 }

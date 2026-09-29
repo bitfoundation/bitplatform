@@ -185,7 +185,7 @@ public class BitModalServiceTests : BunitTestContext
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
 
-        container.Find(".bit-mdl").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+        _ = container.PressEscape();
 
         container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
 
