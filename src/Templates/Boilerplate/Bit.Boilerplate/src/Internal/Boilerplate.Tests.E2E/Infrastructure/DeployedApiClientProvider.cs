@@ -1,4 +1,3 @@
-using OtpNet;
 using Npgsql;
 using Microsoft.JSInterop;
 using Microsoft.Extensions.AI;
@@ -86,7 +85,7 @@ public static class DeployedApiClientProvider
                 Email = email,
                 Password = password,
                 RememberMe = true,
-                TwoFactorCode = new Totp(Base32Encoding.ToBytes(configuration["GlobalAdminAuthenticatorKey"]!)).ComputeTotp()
+                TwoFactorCode = GlobalAdmin.TwoFactorCode(configuration["GlobalAdminAuthenticatorKey"]!)
             }, cancellationToken);
 
             return apiClient;
@@ -282,7 +281,7 @@ public static class DeployedApiClientProvider
                 Email = email,
                 Password = password,
                 RememberMe = true,
-                TwoFactorCode = new Totp(Base32Encoding.ToBytes(authenticatorKey)).ComputeTotp() // 2fa
+                TwoFactorCode = GlobalAdmin.TwoFactorCode(authenticatorKey) // 2fa
             }, CancellationToken.None);
 
             var httpClient = sp.GetRequiredService<HttpClient>();

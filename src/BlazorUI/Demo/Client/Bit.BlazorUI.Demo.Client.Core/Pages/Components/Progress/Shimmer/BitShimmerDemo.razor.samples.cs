@@ -10,25 +10,23 @@ public partial class BitShimmerDemo
 <BitShimmer Width=""10rem"" />";
 
     private readonly string example2RazorCode = @"
-<BitShimmer Height=""2rem"" />
-
-<BitShimmer Shape=""BitShimmerShape.Square"" Height=""2rem"" />
-
-<BitShimmer Shape=""BitShimmerShape.Pill"" Height=""2rem"" Width=""8rem"" />
+<BitStack>
+    <BitShimmer Height=""2rem"" />
+    <BitShimmer Shape=""BitShimmerShape.Square"" Height=""2rem"" />
+    <BitShimmer Shape=""BitShimmerShape.Pill"" Height=""2rem"" Width=""8rem"" />
+</BitStack>
 
 <BitStack Horizontal Alignment=""BitAlignment.Center"">
     <BitShimmer Shape=""BitShimmerShape.Circle"" Height=""3rem"" />
     <BitShimmer Circle Width=""4rem"" />
+</BitStack>
+
+<BitStack>
+    <BitShimmer Height=""2rem"" Radius=""1rem"" />
+    <BitShimmer Height=""2rem"" Shape=""BitShimmerShape.Pill"" Radius=""0"" />
 </BitStack>";
 
     private readonly string example3RazorCode = @"
-<BitShimmer Height=""2rem"" Radius=""0.25rem"" />
-
-<BitShimmer Height=""2rem"" Radius=""1rem"" />
-
-<BitShimmer Height=""2rem"" Shape=""BitShimmerShape.Pill"" Radius=""0"" />";
-
-    private readonly string example4RazorCode = @"
 <BitShimmer Lines=""3"" Height=""0.75rem"" />
 
 <BitShimmer Lines=""4"" Height=""0.5rem"" Gap=""1rem"" LastLineWidth=""35%"" />
@@ -37,7 +35,7 @@ public partial class BitShimmerDemo
 
 <BitShimmer Lines=""4"" Height=""0.75rem"" LineWidths=""@([""100%"", ""88%"", ""94%"", ""52%""])"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitShimmer Height=""3rem"" />
 
 <BitStack Horizontal Alignment=""BitAlignment.Center"">
@@ -53,19 +51,36 @@ public partial class BitShimmerDemo
 
 <BitShimmer Lines=""4"" Height=""0.75rem"" Stagger=""200"" />";
 
+    private readonly string example5RazorCode = @"
+<p>
+    The plan costs <BitShimmer Inline Width=""4rem"" Height=""1em"" /> per month and renews on <BitShimmer Inline Width=""6rem"" Height=""1em"" />.
+</p>";
+
     private readonly string example6RazorCode = @"
-<BitButton OnClick=""() => SimulateLoading(300)"">Fast response (300ms)</BitButton>
-<BitButton OnClick=""() => SimulateLoading(1200)"">Just after the delay (1.2s)</BitButton>
-<BitButton OnClick=""() => SimulateLoading(3000)"">Slow response (3s)</BitButton>
+<BitShimmer Loaded=""@isDataLoaded"" Height=""1.5rem"">
+    Content loaded successfully.
+</BitShimmer>
+
+<BitToggleButton @bind-IsChecked=""@isDataLoaded"" Text=""Toggle shimmer"" />";
+    private readonly string example6CsharpCode = @"
+private bool isDataLoaded;";
+
+    private readonly string example7RazorCode = @"
+<BitStack Horizontal Wrap>
+    <BitButton OnClick=""() => SimulateLoading(300)"">Fast response (300ms)</BitButton>
+    <BitButton OnClick=""() => SimulateLoading(1200)"">Just after the delay (1.2s)</BitButton>
+    <BitButton OnClick=""() => SimulateLoading(3000)"">Slow response (3s)</BitButton>
+</BitStack>
 
 <BitShimmer Loaded=""@isDelayLoaded"" Height=""1.5rem"">The response is in.</BitShimmer>
 
 <BitShimmer Loaded=""@isDelayLoaded"" ShowDelay=""1000"" Height=""1.5rem"">The response is in.</BitShimmer>
 
 <BitShimmer Loaded=""@isDelayLoaded"" ShowDelay=""1000"" MinShowTime=""1000"" Height=""1.5rem"">The response is in.</BitShimmer>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isDelayLoaded = true;
 
+// Each click restarts the wait, so the delay of the click before it must not report the shimmer as loaded.
 private CancellationTokenSource? delayCts;
 
 private async Task SimulateLoading(int duration)
@@ -86,24 +101,12 @@ private async Task SimulateLoading(int duration)
         return;
     }
 
+    if (ReferenceEquals(cts, delayCts) is false) return;
+
     isDelayLoaded = true;
 }";
 
-    private readonly string example7RazorCode = @"
-<p>
-    The plan costs <BitShimmer Inline Width=""4rem"" Height=""1em"" /> per month and renews on <BitShimmer Inline Width=""6rem"" Height=""1em"" />.
-</p>";
-
     private readonly string example8RazorCode = @"
-<BitShimmer Loaded=""@isDataLoaded"" Height=""1.5rem"">
-    Content loaded successfully.
-</BitShimmer>
-
-<BitToggleButton @bind-IsChecked=""@isDataLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example8CsharpCode = @"
-private bool isDataLoaded;";
-
-    private readonly string example9RazorCode = @"
 <BitShimmer Overlay Loaded=""@isOverlayLoaded"" Radius=""0.5rem"">
     <BitCard Style=""width:18rem"">
         <BitText Typography=""BitTypography.H6"">Monthly revenue</BitText>
@@ -121,10 +124,10 @@ private bool isDataLoaded;";
 </BitShimmer>
 
 <BitToggleButton @bind-IsChecked=""@isOverlayLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isOverlayLoaded;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitShimmer Loaded=""@isContentLoaded"" Width=""15rem"">
     <Content>
         <BitImage Height=""8rem"" Alt=""bit logo""
@@ -150,10 +153,10 @@ private bool isOverlayLoaded;";
 </BitShimmer>
 
 <BitToggleButton @bind-IsChecked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isContentLoaded;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitShimmer Loaded=""@isAccessibleLoaded""
             Label=""Loading your profile""
             LoadedLabel=""Profile loaded""
@@ -164,48 +167,98 @@ private bool isContentLoaded;";
 </BitShimmer>
 
 <BitToggleButton @bind-IsChecked=""@isAccessibleLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isAccessibleLoaded;";
 
+    private readonly string example11RazorCode = @"
+<BitParams Parameters=""shimmerParams"">
+    <BitShimmer Lines=""3"" />
+
+    <BitShimmer Lines=""3"" Animation=""BitShimmerAnimation.Wave"" Height=""1.25rem"" />
+</BitParams>
+
+<BitShimmer Lines=""3"" />";
+    private readonly string example11CsharpCode = @"
+private readonly BitShimmerParams[] shimmerParams =
+[
+    new()
+    {
+        Animation = BitShimmerAnimation.Pulse,
+        Height = ""0.75rem"",
+        LastLineWidth = ""40%"",
+        Stagger = 150,
+    }
+];";
+
     private readonly string example12RazorCode = @"
-<BitShimmer Height=""2rem"" Background=""BitColor.Primary"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.Secondary"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.Tertiary"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.Info"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.Success"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.Warning"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.SevereWarning"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.Error"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.PrimaryBackground"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.SecondaryBackground"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.TertiaryBackground"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.PrimaryForeground"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.SecondaryForeground"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.TertiaryForeground"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.PrimaryBorder"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.SecondaryBorder"" />
-<BitShimmer Height=""2rem"" Background=""BitColor.TertiaryBorder"" />";
+<style>
+    .color-grid {
+        gap: 0.5rem 1rem;
+        display: grid;
+        align-items: center;
+        grid-template-columns: auto 1fr 1fr;
+    }
+</style>
+
+
+<div class=""color-grid"">
+    <div></div>
+    <b>Color</b>
+    <b>Background</b>
+    <div>Primary</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.Primary"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.Primary"" />
+    <div>Secondary</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.Secondary"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.Secondary"" />
+    <div>Tertiary</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.Tertiary"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.Tertiary"" />
+    <div>Info</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.Info"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.Info"" />
+    <div>Success</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.Success"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.Success"" />
+    <div>Warning</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.Warning"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.Warning"" />
+    <div>SevereWarning</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.SevereWarning"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.SevereWarning"" />
+    <div>Error</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.Error"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.Error"" />
+    <div>PrimaryBackground</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.PrimaryBackground"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.PrimaryBackground"" />
+    <div>SecondaryBackground (default Background)</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.SecondaryBackground"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.SecondaryBackground"" />
+    <div>TertiaryBackground (default Color)</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.TertiaryBackground"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.TertiaryBackground"" />
+    <div>PrimaryForeground</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.PrimaryForeground"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.PrimaryForeground"" />
+    <div>SecondaryForeground</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.SecondaryForeground"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.SecondaryForeground"" />
+    <div>TertiaryForeground</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.TertiaryForeground"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.TertiaryForeground"" />
+    <div>PrimaryBorder</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.PrimaryBorder"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.PrimaryBorder"" />
+    <div>SecondaryBorder</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.SecondaryBorder"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.SecondaryBorder"" />
+    <div>TertiaryBorder</div>
+    <BitShimmer Height=""1.5rem"" Color=""BitColor.TertiaryBorder"" />
+    <BitShimmer Height=""1.5rem"" Background=""BitColor.TertiaryBorder"" />
+</div>";
 
     private readonly string example13RazorCode = @"
-<BitShimmer Height=""1rem"" Color=""BitColor.Primary"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.Secondary"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.Tertiary"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.Info"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.Success"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.Warning"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.SevereWarning"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.Error"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.PrimaryBackground"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.SecondaryBackground"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.TertiaryBackground"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.PrimaryForeground"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.SecondaryForeground"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.TertiaryForeground"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.PrimaryBorder"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.SecondaryBorder"" />
-<BitShimmer Height=""1rem"" Color=""BitColor.TertiaryBorder"" />";
-
-    private readonly string example14RazorCode = @"
 <BitStack Horizontal Alignment=""BitAlignment.Center"">
     <BitShimmer Circle Size=""BitSize.Small"" />
     <BitShimmer Size=""BitSize.Small"" />
@@ -221,7 +274,7 @@ private bool isAccessibleLoaded;";
     <BitShimmer Size=""BitSize.Large"" />
 </BitStack>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         box-shadow: aqua 0 0 1rem 0.5rem;
@@ -245,13 +298,22 @@ private bool isAccessibleLoaded;";
 <BitShimmer Height=""2.7rem"" Style=""border:2px solid gray"" />
 <BitShimmer Height=""2.7rem"" Class=""custom-class"" />
 
-<BitShimmer Height=""2.7rem"" Styles=""@(new() { Root = ""--bit-smr-bg-clr: goldenrod"",
-                                                ShimmerWrapper = ""background-color: saddlebrown"" })"" />
+<BitShimmer Height=""2.7rem"" Styles=""@(new() { ShimmerWrapper = ""background-color: saddlebrown"",
+                                              Shimmer = ""background: linear-gradient(90deg, transparent, goldenrod, transparent)"" })"" />
 <BitShimmer Height=""2.7rem"" Lines=""2"" Classes=""@(new() { Root = ""custom-root"",
-                                                          Shimmer=""custom-shimmer"",
-                                                          ShimmerWrapper = ""custom-wrapper"" })"" />";
+                                                         Shimmer = ""custom-shimmer"",
+                                                         ShimmerWrapper = ""custom-wrapper"" })"" />
 
-    private readonly string example16RazorCode = @"
+<BitShimmer Lines=""3"" Style=""--bit-Shimmer-background: color-mix(in srgb, var(--bit-clr-pri) 12%, transparent); --bit-Shimmer-color: color-mix(in srgb, var(--bit-clr-pri) 30%, transparent); --bit-Shimmer-height: 0.625rem; --bit-Shimmer-gap: 0.75rem; --bit-Shimmer-radius: 999px; --bit-Shimmer-animation-duration: 3s;"" />
+
+<div style=""--bit-Shimmer-circle-size: 4rem; --bit-Shimmer-height: 0.75rem; --bit-Shimmer-last-line-width: 40%; --bit-Shimmer-animation-delay: 0s;"">
+    <BitStack Horizontal Alignment=""BitAlignment.Center"">
+        <BitShimmer Circle />
+        <BitShimmer Lines=""2"" />
+    </BitStack>
+</div>";
+
+    private readonly string example15RazorCode = @"
 <BitShimmer Dir=""BitDir.Rtl"" Lines=""3"" Height=""1rem"" />
 
 <BitStack Horizontal Alignment=""BitAlignment.Center"" Dir=""BitDir.Rtl"">

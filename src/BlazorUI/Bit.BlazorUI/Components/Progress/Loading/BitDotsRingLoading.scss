@@ -8,82 +8,82 @@
 .bit-ldn-dor-chl {
     position: absolute;
     border-radius: 50%;
-    width: var(--bit-ldn-dor-6);
-    height: var(--bit-ldn-dor-6);
+    width: calc(6 * var(--bit-ldn-unit));
+    height: calc(6 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
     animation: bit-ldn-dor-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) linear infinite;
 }
 
 .bit-ldn-dor-ch1 {
     animation-delay: calc(0s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-37);
-    left: var(--bit-ldn-dor-66);
+    top: calc(37 * var(--bit-ldn-unit));
+    left: calc(66 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch2 {
     animation-delay: calc(-0.1s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-22);
-    left: var(--bit-ldn-dor-62);
+    top: calc(22 * var(--bit-ldn-unit));
+    left: calc(62 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch3 {
     animation-delay: calc(-0.2s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-11);
-    left: var(--bit-ldn-dor-52);
+    top: calc(11 * var(--bit-ldn-unit));
+    left: calc(52 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch4 {
     animation-delay: calc(-0.3s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-7);
-    left: var(--bit-ldn-dor-37);
+    top: calc(7 * var(--bit-ldn-unit));
+    left: calc(37 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch5 {
     animation-delay: calc(-0.4s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-11);
-    left: var(--bit-ldn-dor-22);
+    top: calc(11 * var(--bit-ldn-unit));
+    left: calc(22 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch6 {
     animation-delay: calc(-0.5s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-22);
-    left: var(--bit-ldn-dor-11);
+    top: calc(22 * var(--bit-ldn-unit));
+    left: calc(11 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch7 {
     animation-delay: calc(-0.6s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-37);
-    left: var(--bit-ldn-dor-7);
+    top: calc(37 * var(--bit-ldn-unit));
+    left: calc(7 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch8 {
     animation-delay: calc(-0.7s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-52);
-    left: var(--bit-ldn-dor-11);
+    top: calc(52 * var(--bit-ldn-unit));
+    left: calc(11 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch9 {
     animation-delay: calc(-0.8s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-62);
-    left: var(--bit-ldn-dor-22);
+    top: calc(62 * var(--bit-ldn-unit));
+    left: calc(22 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch10 {
     animation-delay: calc(-0.9s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-66);
-    left: var(--bit-ldn-dor-37);
+    top: calc(66 * var(--bit-ldn-unit));
+    left: calc(37 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch11 {
     animation-delay: calc(-1s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-62);
-    left: var(--bit-ldn-dor-52);
+    top: calc(62 * var(--bit-ldn-unit));
+    left: calc(52 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-dor-ch12 {
     animation-delay: calc(-1.1s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-dor-52);
-    left: var(--bit-ldn-dor-62);
+    top: calc(52 * var(--bit-ldn-unit));
+    left: calc(62 * var(--bit-ldn-unit));
 }
 
 @keyframes bit-ldn-dor-anm {

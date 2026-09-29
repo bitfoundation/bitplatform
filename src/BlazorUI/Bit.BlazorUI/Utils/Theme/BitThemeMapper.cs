@@ -769,6 +769,9 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.BadgeDot.Sm, bitTheme.Size.BadgeDot.Sm);
         addCssVar(BitCss.Var.Size.BadgeDot.Md, bitTheme.Size.BadgeDot.Md);
         addCssVar(BitCss.Var.Size.BadgeDot.Lg, bitTheme.Size.BadgeDot.Lg);
+        addCssVar(BitCss.Var.Size.Chip.Sm, bitTheme.Size.Chip.Sm);
+        addCssVar(BitCss.Var.Size.Chip.Md, bitTheme.Size.Chip.Md);
+        addCssVar(BitCss.Var.Size.Chip.Lg, bitTheme.Size.Chip.Lg);
         addCssVar(BitCss.Var.Size.SpinnerStroke, bitTheme.Size.SpinnerStroke);
         addCssVar(BitCss.Var.Size.PopupMaxHeight, bitTheme.Size.PopupMaxHeight);
         addCssVar(BitCss.Var.Size.DialogMaxWidth, bitTheme.Size.DialogMaxWidth);
@@ -992,6 +995,7 @@ internal static class BitThemeMapper
             SliderThumb = src.SliderThumb ?? new(),
             Badge = src.Badge ?? new(),
             BadgeDot = src.BadgeDot ?? new(),
+            Chip = src.Chip ?? new(),
             SpinnerStroke = src.SpinnerStroke,
             PopupMaxHeight = src.PopupMaxHeight,
             DialogMaxWidth = src.DialogMaxWidth,
@@ -1582,6 +1586,9 @@ internal static class BitThemeMapper
         result.Size.BadgeDot.Sm = bitTheme.Size.BadgeDot.Sm ?? other.Size.BadgeDot.Sm;
         result.Size.BadgeDot.Md = bitTheme.Size.BadgeDot.Md ?? other.Size.BadgeDot.Md;
         result.Size.BadgeDot.Lg = bitTheme.Size.BadgeDot.Lg ?? other.Size.BadgeDot.Lg;
+        result.Size.Chip.Sm = bitTheme.Size.Chip.Sm ?? other.Size.Chip.Sm;
+        result.Size.Chip.Md = bitTheme.Size.Chip.Md ?? other.Size.Chip.Md;
+        result.Size.Chip.Lg = bitTheme.Size.Chip.Lg ?? other.Size.Chip.Lg;
         result.Size.SpinnerStroke = bitTheme.Size.SpinnerStroke ?? other.Size.SpinnerStroke;
         result.Size.PopupMaxHeight = bitTheme.Size.PopupMaxHeight ?? other.Size.PopupMaxHeight;
         result.Size.DialogMaxWidth = bitTheme.Size.DialogMaxWidth ?? other.Size.DialogMaxWidth;

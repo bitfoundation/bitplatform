@@ -8,6 +8,4 @@ public class BitBouncingDotsLoadingTests : BitLoadingTestsBase<BitBouncingDotsLo
     protected override string RootClass => "bit-ldn-bnd";
 
     protected override int ChildCount => 3;
-
-    protected override string[] ScaledVariables => ["--bit-ldn-bnd-6", "--bit-ldn-bnd-15"];
 }
