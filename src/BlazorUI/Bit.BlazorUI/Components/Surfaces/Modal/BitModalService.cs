@@ -44,7 +44,9 @@ public class BitModalService : BitModalServiceBase<BitModalReference, BitModalPa
             var seq = 0;
             builder.OpenComponent<BitModal>(seq++);
             builder.SetKey(modalReference.Id);
-            builder.AddComponentParameter(seq++, nameof(BitModal.IsOpen), true);
+            // Open until the service closes it, after which the container keeps it in the page, closed, for as
+            // long as its exit animation takes (BitModalExit).
+            builder.AddComponentParameter(seq++, nameof(BitModal.IsOpen), modalReference.IsClosed is false);
             // Dismissal is wired through IsOpenChanged rather than OnOverlayClick so that the
             // Blocking parameter is honored. IsOpenChanged only fires after BitModal's own
             // AssignIsOpen succeeds, and BitModal short-circuits (without calling AssignIsOpen)

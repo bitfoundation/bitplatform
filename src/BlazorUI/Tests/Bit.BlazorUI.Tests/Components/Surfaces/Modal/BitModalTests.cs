@@ -372,7 +372,7 @@ public class BitModalTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsFalse(isOpen);
         Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
@@ -388,7 +388,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.NoDismissOnEscape, true);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
@@ -421,7 +421,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.Blocking, true);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsFalse(isOpen);
     }
@@ -437,7 +437,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         com.WaitForAssertion(() => Assert.AreEqual(1, dismissCount));
     }
@@ -453,7 +453,7 @@ public class BitModalTests : BunitTestContext
         });
 
         com.Find(".bit-mdl-ovl").Click();
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
@@ -488,7 +488,7 @@ public class BitModalTests : BunitTestContext
         });
 
         com.Find(".bit-mdl-ovl").Click();
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
     }
@@ -803,7 +803,7 @@ public class BitModalTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsTrue(isOpen);
     }
@@ -1436,7 +1436,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.AreEqual(1, escapes);
         Assert.IsTrue(isOpen);
@@ -1454,7 +1454,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.AreEqual(1, escapes);
         Assert.IsFalse(isOpen);
@@ -1494,7 +1494,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => ownEscape++));
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         com.WaitForAssertion(() =>
         {
@@ -1537,7 +1537,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.NoDismissOnEscape, true);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsTrue(com.Find(".bit-mdl-ctn").ClassList.Contains("bit-mdl-bna"));
     }
@@ -1907,7 +1907,7 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(1, com.FindAll(".inner-modal").Count);
         Assert.AreEqual(1, com.FindAll(".outer-modal").Count);
 
-        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape(".inner-modal");
 
         Assert.AreEqual(0, com.FindAll(".inner-modal").Count);
         Assert.AreEqual(1, com.FindAll(".outer-modal").Count);
@@ -1931,7 +1931,7 @@ public class BitModalTests : BunitTestContext
         var secondKey = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][1].Arguments[0];
         Assert.AreNotEqual(firstKey, secondKey);
 
-        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape(".inner-modal");
 
         com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count));
         Assert.AreEqual(secondKey, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1].Arguments[0]);

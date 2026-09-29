@@ -23,11 +23,11 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     // (foreground-tinted expressions) and the snackbar elevation (a literal `none`) do not match,
     // which is exactly the set the C# table leaves out: there is nothing to re-substitute for them.
     private static readonly Regex FamilyDeclaration = new(
-        @"(--bit-(?:shp-radius|shd)-[a-z0-9-]+)\s*:\s*var\((--bit-[a-z0-9-]+)\)\s*;",
+        @"(--bit-(?:shp-radius|shd|clr-tooltip)-[a-z0-9-]+)\s*:\s*var\((--bit-[a-z0-9-]+)\)\s*;",
         RegexOptions.Compiled);
 
     private static readonly Regex ReDeclaredAlias = new(
-        @"--bit-(?:shp-radius|shd)-[a-z0-9-]+:var\(--bit-[a-z0-9-]+\)",
+        @"--bit-(?:shp-radius|shd|clr-tooltip)-[a-z0-9-]+:var\(--bit-[a-z0-9-]+\)",
         RegexOptions.Compiled);
 
     private static (string Alias, string Target)[] ScssAliasPairs()
@@ -96,13 +96,16 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     [TestMethod]
     public void ReSubstitutionCoversExactlyTheScssFamilyVocabulary()
     {
-        // Overriding the two roots of the family tier (the global radius and the callout shadow)
-        // must re-declare every plain var() alias family-tokens.scss defines - each pair present (an
-        // alias the C# table forgot, or one ordered ahead of the alias it chains from, fails here)
-        // and none extra (an alias the scss no longer declares fails the count).
+        // Overriding the roots of the family tier (the global radius, the callout shadow and the two
+        // palette colors the tooltip surface reads) must re-declare every plain var() alias
+        // family-tokens.scss defines - each pair present (an alias the C# table forgot, or one ordered
+        // ahead of the alias it chains from, fails here) and none extra (an alias the scss no longer
+        // declares fails the count).
         var theme = new BitTheme();
         theme.Shape.BorderRadius = "1rem";
         theme.BoxShadow.Callout = "0 2px 4px #0003";
+        theme.Color.Background.Secondary = "#EEEEEE";
+        theme.Color.Foreground.Primary = "#111111";
 
         var style = RenderProviderStyle(theme);
         var scssPairs = ScssAliasPairs();
@@ -281,5 +284,47 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         StringAssert.Contains(style, "--bit-shp-radius-surface:2rem");
         Assert.IsFalse(style.Contains("--bit-shp-radius-surface:var(", StringComparison.Ordinal),
             $"An explicitly-set family alias must not be replaced by the re-substitution. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void OverridingTheSecondaryBackgroundReFillsTheTooltip()
+    {
+        var theme = new BitTheme();
+        theme.Color.Background.Secondary = "#EEEEEE";
+
+        var style = RenderProviderStyle(theme);
+
+        // The text is re-declared along with the fill: a preset that remaps the pair (Material's inverse
+        // surface) would otherwise keep its own text color over the default fill.
+        StringAssert.Contains(style, "--bit-clr-tooltip-bg:var(--bit-clr-bg-sec)");
+        StringAssert.Contains(style, "--bit-clr-tooltip-fg:var(--bit-clr-fg-pri)");
+    }
+
+    [TestMethod]
+    public void OverridingThePrimaryForegroundReDeclaresTheWholeTooltipPair()
+    {
+        var theme = new BitTheme();
+        theme.Color.Foreground.Primary = "#111111";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-tooltip-fg:var(--bit-clr-fg-pri)");
+        StringAssert.Contains(style, "--bit-clr-tooltip-bg:var(--bit-clr-bg-sec)");
+    }
+
+    [TestMethod]
+    public void ExplicitTooltipColorsWinOverReSubstitution()
+    {
+        var theme = new BitTheme();
+        theme.Color.Background.Secondary = "#EEEEEE";
+        theme.Color.TooltipBackground = "#222222";
+        theme.Color.TooltipForeground = "#FAFAFA";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-tooltip-bg:#222222");
+        StringAssert.Contains(style, "--bit-clr-tooltip-fg:#FAFAFA");
+        Assert.IsFalse(style.Contains("--bit-clr-tooltip-bg:var(", StringComparison.Ordinal),
+            $"An explicitly-set tooltip color must not be replaced by the re-substitution. Actual: {style}");
     }
 }
