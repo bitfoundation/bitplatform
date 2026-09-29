@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Arguments for the OnToggling callback of BitAccordion.
@@ -27,8 +27,8 @@ public class BitAccordionToggleArgs
     public bool IsExpanding { get; }
 
     /// <summary>
-    /// What made the accordion expand or collapse: a click on its header, or a call to one of its
-    /// Expand, Collapse and Toggle methods.
+    /// What made the accordion expand or collapse: a click on its header, a call to one of its
+    /// Expand, Collapse and Toggle methods, or a find-in-page match the browser revealed.
     /// </summary>
     public BitAccordionToggleReason Reason { get; }
 

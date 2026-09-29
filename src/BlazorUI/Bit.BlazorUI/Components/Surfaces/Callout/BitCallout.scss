@@ -1,6 +1,41 @@
 ﻿@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
+// callout and one set on the Style of an instance re-skins that one alone.
+// The callout, its arrow and its overlay are rendered outside the root element (and relocated to the body while
+// the callout is open), so the component copies the --bit-Callout-* declarations of Style and Styles.Root onto
+// all three of them by hand - see GetPublicCssVariables. An ancestor of the root is not an ancestor of what has
+// been relocated, so a value meant for a group of callouts goes on :root, on their Style, or through BitParams.
+//
+//   --bit-Callout-background          background of the callout and its arrow   (default: $clr-bg-pri)
+//   --bit-Callout-color               text of the callout                       (default: $clr-fg-pri)
+//   --bit-Callout-border-width        border of the callout and its arrow,
+//                                     none unless it is set or Border is        (default: 0, $shp-border-width with Border)
+//   --bit-Callout-border-color        color of that border                      (default: $clr-brd-pri)
+//   --bit-Callout-radius              corner radius                             (default: $shp-radius-popup)
+//   --bit-Callout-shadow              elevation                                 (default: $box-shadow-popup)
+//   --bit-Callout-padding             room inside the callout, and inside each
+//                                     of its header, body and footer            (default: 0)
+//   --bit-Callout-arrow-size          side of the square the arrow is cut out of (default: spacing(1.5))
+//   --bit-Callout-divider-color       the hairline under the header and above
+//                                     the footer                                (default: $clr-brd-sec)
+//   --bit-Callout-focus-color         focus ring of the callout itself          (default: $clr-pri-focus)
+//   --bit-Callout-overlay-background  the backdrop of a Modal callout           (default: $clr-bg-overlay)
+//
+// The parameters an instance is given win over a value inherited from :root: Background and Border repaint the
+// private variables below on the same element, and NoShadow and ArrowSize are declared on it as well.
+
+
+// The one place the public variables meet their defaults. It is included on the callout and on its arrow, which
+// are siblings and inherit nothing from each other, so the beak is always painted like the surface it points
+// out of.
+@mixin clo-surface-vars {
+    --bit-clo-bg: var(--bit-Callout-background, #{$clr-bg-pri});
+    --bit-clo-brd-w: var(--bit-Callout-border-width, 0px);
+    --bit-clo-brd-c: var(--bit-Callout-border-color, #{$clr-brd-pri});
+}
+
 .bit-clo {
     box-sizing: border-box;
 
@@ -52,7 +87,7 @@
 // The dimmed backdrop of a modal callout. It is painted rather than left transparent, so the callout reads
 // as the only thing in play, and it fades in with the callout instead of appearing under it in one frame.
 .bit-clo-ovm {
-    background-color: $clr-bg-overlay;
+    background-color: var(--bit-Callout-overlay-background, #{$clr-bg-overlay});
     animation-fill-mode: both;
     animation-name: bit-fade-show;
     animation-duration: $mot-duration-short;
@@ -72,6 +107,8 @@
     // the screen is the one the direction of the callout gives it.
     --bit-clo-transform-factor: 1;
 
+    @include clo-surface-vars;
+
     display: none;
     outline: transparent;
     position: fixed;
@@ -87,9 +124,12 @@
     max-width: var(--bit-clo-mxw, none);
     opacity: var(--bit-clo-opa);
     transform: var(--bit-clo-tra);
-    background-color: $clr-bg-pri;
-    border-radius: $shp-radius-popup;
-    box-shadow: $box-shadow-popup;
+    color: var(--bit-Callout-color, #{$clr-fg-pri});
+    padding: var(--bit-Callout-padding, 0);
+    background-color: var(--bit-clo-bg);
+    border: var(--bit-clo-brd-w) $shp-border-style var(--bit-clo-brd-c);
+    border-radius: var(--bit-Callout-radius, #{$shp-radius-popup});
+    box-shadow: var(--bit-Callout-shadow, #{$box-shadow-popup});
     transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
 
     // The callout is programmatically focusable, and the focus lands on it when the content holds nothing
@@ -97,8 +137,12 @@
     // is drawn inside the callout rather than through the shared focus-ring mixin, whose box-shadow would
     // take the place of the elevation the callout is drawn with.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri-focus;
+        outline: $shp-focus-ring-width solid var(--bit-Callout-focus-color, #{$clr-pri-focus});
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+        @media (forced-colors: active) {
+            outline-color: Highlight;
+        }
     }
 
     &[data-bit-cal-pos="above"] {
@@ -170,6 +214,7 @@
     // footer be scrolled away too.
     // Declared after the caps above so it wins over them at the same specificity.
     &.bit-clo-sec {
+        padding: 0;
         overflow: hidden;
     }
 
@@ -180,14 +225,16 @@
 
 // The parts that stay put while the body between them scrolls. They carry the hairline that marks where
 // the scrolling starts and stops - without it the header is read as the first line of a list that has
-// simply stopped moving - and nothing else: the padding of the content is the consumer's to decide, here
-// as everywhere else in the callout.
+// simply stopped moving. The padding a callout is given goes inside each of the three parts rather than
+// around all of them, so the hairlines still run from edge to edge.
 .bit-clo-hdr {
-    border-block-end: $siz-divider $shp-border-style $clr-brd-sec;
+    padding: var(--bit-Callout-padding, 0);
+    border-block-end: $siz-divider $shp-border-style var(--bit-Callout-divider-color, #{$clr-brd-sec});
 }
 
 .bit-clo-ftr {
-    border-block-start: $siz-divider $shp-border-style $clr-brd-sec;
+    padding: var(--bit-Callout-padding, 0);
+    border-block-start: $siz-divider $shp-border-style var(--bit-Callout-divider-color, #{$clr-brd-sec});
 }
 
 // The body between the header and the footer is what gives way when the callout is capped to the room the
@@ -195,6 +242,7 @@
 // content the user can still reach rather than content that is simply cut off.
 .bit-clo-bdy {
     overflow: hidden auto;
+    padding: var(--bit-Callout-padding, 0);
 }
 
 // The beak that points at the anchor. It is a square rotated onto its corner and centred on the point the
@@ -203,19 +251,23 @@
 // It is a sibling of the callout rather than a child of it, so a callout that scrolls its own content
 // never clips it.
 .bit-clo-arw {
+    @include clo-surface-vars;
+
     top: 0;
     left: 0;
 
-    // The size the consumer asked for, defaulted to the beak the theme's own rhythm gives. The square is
-    // centred on the point the positioning code puts it at, so its size is the only thing that changes.
-    width: var(--bit-clo-arw-siz, #{spacing(1.5)});
-    height: var(--bit-clo-arw-siz, #{spacing(1.5)});
+    // The size the consumer asked for (ArrowSize, written inline), then the one a theme asked for, defaulted to
+    // the beak the theme's own rhythm gives. The square is centred on the point the positioning code puts it
+    // at, which measures it, so its size is the only thing that changes.
+    width: var(--bit-clo-arw-siz, var(--bit-Callout-arrow-size, #{spacing(1.5)}));
+    height: var(--bit-clo-arw-siz, var(--bit-Callout-arrow-size, #{spacing(1.5)}));
     display: none;
     position: fixed;
     box-sizing: border-box;
     pointer-events: none;
     z-index: calc(#{$zindex-callout} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-clo-bg);
+    border: var(--bit-clo-brd-w) $shp-border-style var(--bit-clo-brd-c);
     transform: translate(-50%, -50%) rotate(45deg);
 }
 
@@ -279,41 +331,42 @@
 }
 
 // The surface colors, shared by the callout and by the beak that points out of it so the two are always
-// painted alike. They are declared after both, so they win over the default look each of them declares.
+// painted alike. They repaint the private variables the two of them read, and are declared after both, so a
+// color the instance asked for wins over one inherited from a --bit-Callout-* variable.
 .bit-clo-bpg {
-    background-color: $clr-bg-pri;
+    --bit-clo-bg: #{$clr-bg-pri};
 }
 
 .bit-clo-bsg {
-    background-color: $clr-bg-sec;
+    --bit-clo-bg: #{$clr-bg-sec};
 }
 
 .bit-clo-btg {
-    background-color: $clr-bg-ter;
+    --bit-clo-bg: #{$clr-bg-ter};
 }
 
 .bit-clo-brg {
-    background-color: transparent;
+    --bit-clo-bg: transparent;
 }
 
+// A Border draws one at the width a theme set, or at the library's own when none did.
 .bit-clo-brd {
-    border-width: $shp-border-width;
-    border-style: $shp-border-style;
+    --bit-clo-brd-w: var(--bit-Callout-border-width, #{$shp-border-width});
 
     &.bit-clo-bpr {
-        border-color: $clr-brd-pri;
+        --bit-clo-brd-c: #{$clr-brd-pri};
     }
 
     &.bit-clo-bsr {
-        border-color: $clr-brd-sec;
+        --bit-clo-brd-c: #{$clr-brd-sec};
     }
 
     &.bit-clo-btr {
-        border-color: $clr-brd-ter;
+        --bit-clo-brd-c: #{$clr-brd-ter};
     }
 
     &.bit-clo-brr {
-        border-color: transparent;
+        --bit-clo-brd-c: transparent;
     }
 }
 
@@ -322,7 +375,7 @@
 // are follows the side of the anchor the callout was placed on: after the 45deg rotation the top edge of
 // the square faces up-right, the right edge down-right, the bottom edge down-left and the left edge
 // up-left, so each placement keeps the pair whose faces point away from the callout.
-.bit-clo-arw.bit-clo-brd {
+.bit-clo-arw {
     &[data-bit-cal-pos="below"] {
         border-right: none;
         border-bottom: none;
@@ -341,5 +394,16 @@
     &[data-bit-cal-pos="right"] {
         border-top: none;
         border-right: none;
+    }
+}
+
+// Forced colors strip the elevation the callout is told apart from the page with, which would leave a
+// callout without a border of its own as text floating over the page; a hairline in the system's text color
+// takes its place, on the beak as well.
+@media (forced-colors: active) {
+    .bit-clo-cal,
+    .bit-clo-arw {
+        border-color: CanvasText;
+        border-width: max(var(--bit-clo-brd-w), 1px);
     }
 }
