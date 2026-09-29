@@ -1,5 +1,23 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a Modal inherits down to whatever reads it:
+//   --bit-Modal-z-index              stacking order of a Modal fixed to the screen  (default: $zindex-modal)
+//   --bit-Modal-offset               room kept between the Modal and the edges      (default: 0px)
+//   --bit-Modal-max-width            widest the Modal grows                         (default: 100%; the MaxWidth parameter wins)
+//   --bit-Modal-max-height           tallest the Modal grows                        (default: 100%; the MaxHeight parameter wins)
+//   --bit-Modal-background           fill of the surface                            (default: $clr-bg-pri)
+//   --bit-Modal-color                text color of the surface                      (default: $clr-fg-pri)
+//   --bit-Modal-radius               corner radius of the surface                   (default: $shp-radius-dialog)
+//   --bit-Modal-shadow               elevation of the surface                       (default: $box-shadow-dialog)
+//   --bit-Modal-border-color         color of the accent along the top edge         (default: $clr-pri)
+//   --bit-Modal-border-width         thickness of the accent along the top edge     (default: spacing(0.5))
+//   --bit-Modal-overlay-background   fill of the overlay in ModeFull                (default: $clr-bg-overlay)
+//   --bit-Modal-overlay-backdrop-filter  filter over the page behind the overlay    (default: none; e.g. blur(4px))
+//   --bit-Modal-padding              inner padding of the header, body and footer   (default: $spa-dialog)
+//   --bit-Modal-header-font-size     text size of the header                        (default: $tg-fs-xl)
+//   --bit-Modal-header-font-weight   weight of the header                           (default: $tg-fw-semibold)
+
 .bit-mdl {
     inset: 0;
     opacity: 1;
@@ -10,11 +28,16 @@
     font-weight: $tg-fw-regular;
     align-items: center;
     pointer-events: none;
-    z-index: $zindex-modal;
     justify-content: center;
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     background-color: transparent;
+    z-index: var(--bit-Modal-z-index, #{$zindex-modal});
+
+    // The offset is room inside the layer rather than a margin on the surface: the surface is aligned in what the
+    // padding leaves, and a drag that measures the surface against the layer still lands where the pointer is.
+    box-sizing: border-box;
+    padding: var(--bit-Modal-offset, 0px);
 
     // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
     // Modal to leave the focus.
@@ -38,6 +61,27 @@
     display: none;
 }
 
+// A Modal on its way out: it is closed already - inert, out of the reading order, the page behind it handed back -
+// and only stays in the page for as long as it takes to play the entry backwards, so that it leaves the way it came
+// rather than vanishing in one frame. The movement is shorter than the entry and accelerates away, and it collapses
+// to nothing under reduced motion, which the motion tokens take care of. The last frame is held (forwards) because
+// the Modal is taken out of the page right after it, and snapping back to full opacity first would flash it.
+.bit-mdl-lvg {
+    .bit-mdl-ctn {
+        animation-fill-mode: forwards;
+        animation-name: bit-mdl-zoom-out;
+        animation-duration: $mot-duration-short;
+        animation-timing-function: $mot-easing-accelerate;
+    }
+
+    &.bit-mdl-mfl .bit-mdl-ovl {
+        animation-fill-mode: forwards;
+        animation-name: bit-mdl-fade-out;
+        animation-duration: $mot-duration-short;
+        animation-timing-function: $mot-easing-accelerate;
+    }
+}
+
 // A Modal placed over the element it was declared inside of rather than over the screen. The z-index goes
 // with the fixed positioning: inside a stacking context of its own, a value meant to clear the page would
 // only push it past its own siblings.
@@ -58,6 +102,7 @@
     // is dragged is a text selection - one that would start at the overlay and run through the content.
     user-select: none;
     background-color: transparent;
+    backdrop-filter: var(--bit-Modal-overlay-backdrop-filter, none);
 }
 
 // ModeFull: the overlay dims the page as well as covering it, for the Modals that are meant to be the only
@@ -66,7 +111,7 @@
 // motion, which the motion tokens take care of.
 .bit-mdl-mfl {
     .bit-mdl-ovl {
-        background-color: $clr-bg-overlay;
+        background-color: var(--bit-Modal-overlay-background, #{$clr-bg-overlay});
 
         animation-fill-mode: both;
         animation-name: bit-fade-show;
@@ -76,13 +121,13 @@
 }
 
 .bit-mdl-ctn {
-    max-width: 100%;
-
-    // A Modal taller than the screen would otherwise run off both ends of it, where nothing can reach it:
-    // the root is fixed to the viewport, so the page's own scrolling never brings it back. Capping the
-    // content to the room the root has - the viewport, or whatever the root was placed inside of - and
-    // letting it scroll inside itself is what keeps all of it reachable.
-    max-height: 100%;
+    // A Modal taller or wider than the screen would otherwise run off it, where nothing can reach it: the root
+    // is fixed to the viewport, so the page's own scrolling never brings it back. Capping the content to the
+    // room the root has - the viewport less the offset, or whatever the root was placed inside of - and letting
+    // it scroll inside itself is what keeps all of it reachable. A cap of the consumer's own only ever narrows
+    // that room, so a global max-width meant for a desktop still leaves a phone with a Modal that fits.
+    max-width: min(var(--bit-Modal-max-width, 100%), calc(100% - 2 * var(--bit-Modal-offset, 0px)));
+    max-height: min(var(--bit-Modal-max-height, 100%), calc(100% - 2 * var(--bit-Modal-offset, 0px)));
     overflow: auto;
 
     // The scroll stops here rather than carrying on into the page behind the Modal once the content is
@@ -96,10 +141,10 @@
     // a foreground of its own - a card wearing a color role, a section on a dark band - would otherwise take
     // that foreground onto the page background it paints for itself, which is the one pairing nothing
     // guarantees is legible.
-    color: $clr-fg-pri;
-    background-color: $clr-bg-pri;
-    box-shadow: $box-shadow-dialog;
-    border-radius: $shp-radius-dialog;
+    color: var(--bit-Modal-color, #{$clr-fg-pri});
+    background-color: var(--bit-Modal-background, #{$clr-bg-pri});
+    box-shadow: var(--bit-Modal-shadow, #{$box-shadow-dialog});
+    border-radius: var(--bit-Modal-radius, #{$shp-radius-dialog});
 
     // The content is made programmatically focusable (tabindex="-1") so the focus has somewhere to land in
     // a Modal that holds nothing focusable.
@@ -120,12 +165,24 @@
 .bit-mdl-chr {
     display: flex;
     flex-direction: column;
+
+    // The header and the footer stay in view over the body as it scrolls, so an element the keyboard moves to in
+    // the body would otherwise be scrolled to just under one of them and be focused out of sight (WCAG 2.4.11).
+    // The room they take is kept clear of what the focus scrolls into view: a padding and a control's height,
+    // which is what each of them is made of, with the width of a focus ring to spare.
+    &:has(> .bit-mdl-hcn) {
+        scroll-padding-block-start: calc(var(--bit-Modal-padding, #{$spa-dialog}) + #{$siz-ctrl-md} + #{spacing(0.5)});
+    }
+
+    &:has(> .bit-mdl-fcn) {
+        scroll-padding-block-end: calc(var(--bit-Modal-padding, #{$spa-dialog}) + #{$siz-ctrl-md} + #{spacing(0.5)});
+    }
 }
 
 // The accent the Modal wears along its top edge, which NoBorder takes away.
 .bit-mdl-bdr {
     .bit-mdl-ctn {
-        border-top: spacing(0.5) $shp-border-style $clr-pri;
+        border-top: var(--bit-Modal-border-width, #{spacing(0.5)}) $shp-border-style var(--bit-Modal-border-color, #{$clr-pri});
     }
 }
 
@@ -150,23 +207,44 @@
     animation-name: bit-mdl-refuse-b;
 }
 
+// The pulse is the whole of what tells the user a dismissal was refused rather than missed, and under reduced
+// motion its duration collapses to nothing - which would leave the gesture unanswered for exactly the readers
+// least able to guess why. The surface flashes a ring instead, which says the same without moving anything: a
+// change of color is not the motion the preference asks to be spared, so it runs on the untouched duration.
+// A Modal asked to animate regardless (ForceAnimation, or inside a subtree that is) keeps its pulse.
+@media (prefers-reduced-motion: reduce) {
+    .bit-mdl-bna:not(.bit-fam *),
+    .bit-mdl-bnb:not(.bit-fam *) {
+        animation-duration: var(--bit-mot-duration-long-full, #{$mot-duration-long});
+        animation-timing-function: steps(1, end);
+    }
+
+    .bit-mdl-bna:not(.bit-fam *) {
+        animation-name: bit-mdl-refuse-ring-a;
+    }
+
+    .bit-mdl-bnb:not(.bit-fam *) {
+        animation-name: bit-mdl-refuse-ring-b;
+    }
+}
+
 .bit-mdl-fhe {
     .bit-mdl-ctn {
-        height: 100%;
+        height: calc(100% - 2 * var(--bit-Modal-offset, 0px));
     }
 }
 
 .bit-mdl-fwi {
     .bit-mdl-ctn {
-        width: 100%;
+        width: calc(100% - 2 * var(--bit-Modal-offset, 0px));
     }
 }
 
-// Position utilities map 1:1 to the BitPosition enum. The "start/end" (st/en)
-// variants are the logical/RTL-aware counterparts of the physical "left/right"
-// (lf/rg) variants, so they intentionally share the same LTR rules below while
-// remaining distinct public class names.
-.bit-mdl-tlf {
+// Position utilities map 1:1 to the BitPosition enum. The "start/end" (st/en) variants are the logical
+// counterparts of the physical "left/right" (lf/rg) ones: they share the same rules here, and the physical
+// ones are pinned back to their own side in a right-to-left layout below.
+.bit-mdl-tlf,
+.bit-mdl-tst {
     align-items: flex-start;
     justify-content: flex-start;
 }
@@ -176,24 +254,14 @@
     justify-content: center;
 }
 
-.bit-mdl-trg {
-    align-items: flex-start;
-    justify-content: flex-end;
-}
-
-// logical equivalent of .bit-mdl-tlf (TopStart)
-.bit-mdl-tst {
-    align-items: flex-start;
-    justify-content: flex-start;
-}
-
-// logical equivalent of .bit-mdl-trg (TopEnd)
+.bit-mdl-trg,
 .bit-mdl-ten {
     align-items: flex-start;
     justify-content: flex-end;
 }
 
-.bit-mdl-clf {
+.bit-mdl-clf,
+.bit-mdl-cst {
     align-items: center;
     justify-content: flex-start;
 }
@@ -203,24 +271,14 @@
     justify-content: center;
 }
 
-.bit-mdl-crg {
-    align-items: center;
-    justify-content: flex-end;
-}
-
-// logical equivalent of .bit-mdl-clf (CenterStart)
-.bit-mdl-cst {
-    align-items: center;
-    justify-content: flex-start;
-}
-
-// logical equivalent of .bit-mdl-crg (CenterEnd)
+.bit-mdl-crg,
 .bit-mdl-cen {
     align-items: center;
     justify-content: flex-end;
 }
 
-.bit-mdl-blf {
+.bit-mdl-blf,
+.bit-mdl-bst {
     align-items: flex-end;
     justify-content: flex-start;
 }
@@ -230,21 +288,25 @@
     justify-content: center;
 }
 
-.bit-mdl-brg {
-    align-items: flex-end;
-    justify-content: flex-end;
-}
-
-// logical equivalent of .bit-mdl-blf (BottomStart)
-.bit-mdl-bst {
-    align-items: flex-end;
-    justify-content: flex-start;
-}
-
-// logical equivalent of .bit-mdl-brg (BottomEnd)
+.bit-mdl-brg,
 .bit-mdl-ben {
     align-items: flex-end;
     justify-content: flex-end;
+}
+
+// flex-start and flex-end follow the inline direction, which a right-to-left layout reverses - so Left would
+// come out on the right. The physical positions are put back onto their own side here, whether the direction
+// is the Modal's own (Dir) or the page's, leaving the start/end ones as the only ones that follow it.
+.bit-mdl-tlf:dir(rtl),
+.bit-mdl-clf:dir(rtl),
+.bit-mdl-blf:dir(rtl) {
+    justify-content: flex-end;
+}
+
+.bit-mdl-trg:dir(rtl),
+.bit-mdl-crg:dir(rtl),
+.bit-mdl-brg:dir(rtl) {
+    justify-content: flex-start;
 }
 
 // The header stays in view while the body scrolls under it, which is what keeps the title - and the close
@@ -253,57 +315,104 @@
     top: 0;
     z-index: 1;
     display: flex;
+    gap: spacing(1);
     position: sticky;
-    font-weight: $tg-fw-semibold;
-    color: $clr-fg-pri;
+    align-items: flex-start;
     overflow-wrap: anywhere;
-    background-color: $clr-bg-pri;
-    padding: $spa-dialog $spa-dialog 0;
+    color: var(--bit-Modal-color, #{$clr-fg-pri});
+    background-color: var(--bit-Modal-background, #{$clr-bg-pri});
+    font-weight: var(--bit-Modal-header-font-weight, #{$tg-fw-semibold});
+    padding: var(--bit-Modal-padding, #{$spa-dialog}) var(--bit-Modal-padding, #{$spa-dialog}) 0;
 }
 
 .bit-mdl-hdr {
     flex-grow: 1;
     display: flex;
+    align-self: center;
     align-items: center;
-    font-size: $tg-fs-xl;
+    font-size: var(--bit-Modal-header-font-size, #{$tg-fs-xl});
 }
 
+// The close button is a square of a control's height, so the whole of it is the target rather than the glyph
+// alone (WCAG 2.5.8), and it takes the surface's own text color so it reads on whatever fill the Modal was given.
+// It keeps to the end of the header even when there is no title beside it to push it there.
 .bit-mdl-cls {
+    border: none;
+    padding: 0;
+    margin: 0;
+    margin-inline-start: auto;
     display: flex;
+    flex-shrink: 0;
     cursor: pointer;
+    color: inherit;
     width: $siz-ctrl-md;
     height: $siz-ctrl-md;
     align-items: center;
     justify-content: center;
-    font-size: $tg-fs-sm;
-    border-radius: $shp-radius-control;
+    font-size: $siz-icon-md;
+    font-family: inherit;
+    border-radius: $shp-radius-button;
     background-color: transparent;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
-        &:hover {
+        &:hover:not(:disabled) {
             color: $clr-fg-pri-hover;
             background-color: $clr-bg-pri-hover;
         }
     }
 
-    &:active {
+    &:active:not(:disabled) {
         color: $clr-fg-pri-active;
         background-color: $clr-bg-pri-active;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    // A disabled Modal does not close, so its close button says as much rather than taking a press it ignores.
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
     }
 }
 
 .bit-mdl-bdy {
     flex-grow: 1;
     overflow-y: auto;
-    padding: $spa-dialog;
+    padding: var(--bit-Modal-padding, #{$spa-dialog});
 }
 
+// The footer is where a dialog's actions go, so it lays them out the way the theme lays out every dialog's
+// actions: a trailing row hugging their own content for Fluent and Material, a full-width stack for Cupertino.
+// A footer template that brings a layout of its own (a stack, which takes the whole width) keeps it.
 .bit-mdl-fcn {
     bottom: 0;
     z-index: 1;
+    display: flex;
+    gap: spacing(1);
+    flex-wrap: wrap;
     position: sticky;
-    background-color: $clr-bg-pri;
-    padding: 0 $spa-dialog $spa-dialog $spa-dialog;
+    align-items: $layout-dialog-actions-align;
+    flex-direction: $layout-dialog-actions-direction;
+    justify-content: $layout-dialog-actions-justify;
+    background-color: var(--bit-Modal-background, #{$clr-bg-pri});
+    padding: 0 var(--bit-Modal-padding, #{$spa-dialog}) var(--bit-Modal-padding, #{$spa-dialog});
+}
+
+// A forced-colors mode throws away the shadow the surface casts and the tint of the overlay, which between
+// them are the whole of what tells a Modal apart from the page underneath it - leaving a floating block of text
+// with no edge. A rule in the system text color is restored so the Modal still reads as a surface, and the close
+// button keeps an outline for its focus since the ring is a box-shadow too.
+@media (forced-colors: active) {
+    .bit-mdl-ctn {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    .bit-mdl-cls:focus-visible {
+        outline: $shp-focus-ring-width solid Highlight;
+    }
 }
 
 // The Modal grows into place out of the middle rather than appearing in one frame, which is the movement
@@ -317,6 +426,29 @@
     100% {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+// The entry played backwards, for the Modal on its way out.
+@keyframes bit-mdl-zoom-out {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes bit-mdl-fade-out {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
     }
 }
 
@@ -339,5 +471,28 @@
 
     50% {
         transform: scale(1.02);
+    }
+}
+
+// The reduced-motion counterpart of the pulse: the surface is ringed for a moment and then let go.
+@keyframes bit-mdl-refuse-ring-a {
+    0% {
+        outline: $shp-border-width-thick $shp-border-style $clr-pri;
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
+
+    100% {
+        outline: none;
+    }
+}
+
+@keyframes bit-mdl-refuse-ring-b {
+    0% {
+        outline: $shp-border-width-thick $shp-border-style $clr-pri;
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
+
+    100% {
+        outline: none;
     }
 }

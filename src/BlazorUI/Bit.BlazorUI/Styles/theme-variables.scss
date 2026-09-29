@@ -276,6 +276,13 @@ $clr-wrn-tint: var(--bit-clr-wrn-tint);
 $clr-swr-tint: var(--bit-clr-swr-tint);
 $clr-err-tint: var(--bit-clr-err-tint);
 
+//tooltip - the fill and the text of the tooltip surface, the one popup whose colors design systems disagree on
+//(Fluent lifts a light surface with a shadow, Material paints its plain tooltip in the inverse surface with none).
+//The palette-agnostic default lives once in family-tokens.scss; a preset (in its own :root[bit-theme="..."]
+//block) or BitTheme.Color.TooltipBackground / TooltipForeground retunes it without selecting any component class.
+$clr-tooltip-bg: var(--bit-clr-tooltip-bg);
+$clr-tooltip-fg: var(--bit-clr-tooltip-fg);
+
 //focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
 $clr-pri-focus: var(--bit-clr-pri-focus);
 $clr-sec-focus: var(--bit-clr-sec-focus);
@@ -330,6 +337,8 @@ $box-shadow-callout2: var(--bit-shd-cal2);
 //or wants hairlines instead of shadows (Cupertino) retunes one token per family. Components consume
 //these instead of the callout primitive.
 $box-shadow-card: var(--bit-shd-card);
+//the elevation a card that reacts to the pointer lifts to while it is hovered.
+$box-shadow-card-hover: var(--bit-shd-card-hover);
 $box-shadow-popup: var(--bit-shd-popup);
 $box-shadow-dialog: var(--bit-shd-dialog);
 $box-shadow-sheet: var(--bit-shd-sheet);
@@ -377,6 +386,10 @@ $box-shadow-24: var(--bit-shd-24);
 $spacing-scaling-factor: var(--bit-spa-scaling-factor);
 //the base inset of a dialog surface (header/body/footer padding).
 $spa-dialog: var(--bit-spa-dialog);
+//the inset of a card and of each of its parts, per size class (Fluent 2 8/12/16px, Material 16dp).
+$spa-card-sm: var(--bit-spa-card-sm);
+$spa-card-md: var(--bit-spa-card-md);
+$spa-card-lg: var(--bit-spa-card-lg);
 
 //layout
 //density is a unitless multiplier over the spacing unit; the fallback of 1 keeps the base rhythm
@@ -389,6 +402,9 @@ $layout-dialog-actions-justify: var(--bit-layout-dialog-actions-justify);
 //how those buttons are aligned across the footer: centered under Fluent and Material, stretched
 //under Cupertino - which is what runs the stacked alert actions full width.
 $layout-dialog-actions-align: var(--bit-layout-dialog-actions-align);
+//how a dialog's title and message sit across it: start-aligned under Fluent and Material, centred
+//under Cupertino, whose alerts centre their text above the stacked actions.
+$layout-dialog-text-align: var(--bit-layout-dialog-text-align);
 
 //z-index
 $zindex-snackbar: var(--bit-zin-snackbar);
@@ -597,6 +613,12 @@ $tg-fw-bold: var(--bit-tpg-fw-bold);
 // nav item). Fluent leaves both alone; Material 2 upper-cases buttons and tracks labels at 0.1px.
 $tg-ctrl-letter-spacing: var(--bit-tpg-ctrl-letter-spacing);
 $tg-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
+
+// dialog typography - the title of a dialog, which every design system sizes apart from its heading
+// ramp (Fluent and Fluent 2: 20px semibold; Material: headline-small 24px regular; Cupertino: the 17px
+// semibold alert headline).
+$tg-dialog-title-font-size: var(--bit-tpg-dialog-title-font-size);
+$tg-dialog-title-font-weight: var(--bit-tpg-dialog-title-font-weight);
 
 // h1
 $tg-h1-margin: var(--bit-tpg-h1-margin);
