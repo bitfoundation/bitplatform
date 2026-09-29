@@ -161,6 +161,63 @@ public class BitModalAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitModalCanCloseShouldBeAskedOnceWhileItIsStillAnswering()
+    {
+        var asked = 0;
+        var isOpen = true;
+        var answer = new TaskCompletionSource<bool>();
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.CanClose, () => { asked++; return answer.Task; });
+        });
+
+        // The guard is waiting on a confirmation of its own; the dismissals made in the meantime wait on it too
+        // rather than putting the same question to the user again.
+        com.Find(".bit-mdl-cls").Click();
+        com.Find(".bit-mdl-ovl").Click();
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, asked);
+        Assert.IsTrue(isOpen);
+
+        com.InvokeAsync(() => answer.SetResult(true));
+
+        com.WaitForAssertion(() => Assert.IsFalse(isOpen));
+
+        Assert.AreEqual(1, asked);
+    }
+
+    [TestMethod]
+    public void BitModalCanCloseShouldNotDismissAModalTheAppClosedWhileItWasAnswering()
+    {
+        var dismissed = 0;
+        var answer = new TaskCompletionSource<bool>();
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.CanClose, () => answer.Task);
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++));
+        });
+
+        com.Find(".bit-mdl-ovl").Click();
+
+        // The application closes the Modal on its own terms while the guard is still out.
+        com.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        var dismissedByTheApp = dismissed;
+
+        com.InvokeAsync(() => answer.SetResult(true));
+
+        // The late answer finds nothing left to dismiss, so nothing more is reported.
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-mdl-ctn").Count));
+        Assert.AreEqual(dismissedByTheApp, dismissed);
+    }
+
+    [TestMethod]
     public void BitModalShouldLeaveAnEscapeClaimedInsideItToThatLayer()
     {
         // The script reports the press as claimed: a dropdown opened from inside the Modal closed its popup with it,

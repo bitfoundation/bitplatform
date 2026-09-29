@@ -115,6 +115,90 @@ public class BitModalParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalServiceParametersShouldWinOverTheCascadedBaseDefaults()
+    {
+        Services.AddSingleton<BitModalService>();
+
+        var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitModalParams.ParamName);
+            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, AriaLabel = "App-wide name", IsEnabled = false });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitModalContainer>(0);
+                builder.CloseComponent();
+            }));
+        });
+
+        var modalService = Services.GetRequiredService<BitModalService>();
+
+        await modalService.Show(builder => builder.AddContent(0, "shown"), new BitModalParameters
+        {
+            Dir = BitDir.Ltr,
+            AriaLabel = "Shown name",
+            IsEnabled = true,
+        });
+
+        // The parameters declared on the base component follow the same precedence as the Modal's own: what one
+        // showing asks for beats the app-wide default a BitParams ancestor put on the Modal.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("ltr", component.Find(".bit-mdl").GetAttribute("dir"));
+            Assert.AreEqual("Shown name", component.Find(".bit-mdl-ctn").GetAttribute("aria-label"));
+        });
+
+        component.Find(".bit-mdl-ovl").Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-mdl").Count));
+    }
+
+    [TestMethod]
+    public async Task BitModalShouldMarkItsRootOffTheEffectiveBaseParameters()
+    {
+        Services.AddSingleton<BitModalService>();
+
+        var component = RenderComponent<BitModalContainer>();
+
+        var modalService = Services.GetRequiredService<BitModalService>();
+
+        await modalService.Show(builder => builder.AddContent(0, "shown"), new BitModalParameters
+        {
+            Dir = BitDir.Rtl,
+            IsEnabled = false,
+        });
+
+        // The markers the base component puts on the root off its own parameters are put there for the values a
+        // showing asks for as well.
+        component.WaitForAssertion(() =>
+        {
+            var root = component.Find(".bit-mdl");
+            Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+            Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+            Assert.AreEqual(1, root.ClassList.Count(c => c == "bit-dis"));
+        });
+    }
+
+    [TestMethod]
+    public void BitModalShouldTakeCascadedBaseDefaultsItDidNotSetItself()
+    {
+        var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitModalParams.ParamName);
+            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, AriaLabel = "App-wide name" });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitModal>(0);
+                builder.AddComponentParameter(1, nameof(BitModal.IsOpen), true);
+                builder.AddComponentParameter(2, nameof(BitModal.AriaLabel), "Own name");
+                builder.CloseComponent();
+            }));
+        });
+
+        Assert.AreEqual("rtl", component.Find(".bit-mdl").GetAttribute("dir"));
+        Assert.AreEqual("Own name", component.Find(".bit-mdl-ctn").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitModalParamsShouldCarryEveryPlainParameterOfTheComponent()
     {
         // A parameter added to the component without its counterpart here is one a BitParams cascade silently

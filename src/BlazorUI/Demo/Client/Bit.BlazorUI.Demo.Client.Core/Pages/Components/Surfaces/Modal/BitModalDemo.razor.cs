@@ -75,6 +75,8 @@ public partial class BitModalDemo
             Type = "BitIconInfo?",
             DefaultValue = "null",
             Description = "The icon of the close button from an external icon library. Takes precedence over CloseIconName.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
         },
         new()
         {
@@ -82,6 +84,8 @@ public partial class BitModalDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the close button icon from the built-in Fluent UI icons. Defaults to Cancel.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -214,7 +218,7 @@ public partial class BitModalDemo
             Name = "NoAutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the focus where it was when the Modal opens. By default it moves to the element marked data-autofocus, the first focusable element, or the content itself.",
+            Description = "Keeps the focus where it was when the Modal opens. By default it moves to the element marked data-autofocus (or autofocus), the first focusable element, or the content itself.",
         },
         new()
         {
@@ -255,7 +259,7 @@ public partial class BitModalDemo
         {
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Invoked when the Modal is dismissed.",
+            Description = "Invoked whenever the Modal closes, whether the user dismissed it or the app closed it. Not invoked for a dismissal CanClose turns down.",
         },
         new()
         {
@@ -431,6 +435,35 @@ public partial class BitModalDemo
                    Description = "Custom CSS classes/styles for the footer of the BitModal."
                }
             ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
         }
     ];
 
@@ -545,13 +578,13 @@ public partial class BitModalDemo
         new()
         {
             Name = "--bit-Modal-header-font-size",
-            DefaultValue = "--bit-tg-fs-xl",
+            DefaultValue = "--bit-tpg-fs-xl",
             Description = "Text size of the header.",
         },
         new()
         {
             Name = "--bit-Modal-header-font-weight",
-            DefaultValue = "--bit-tg-fw-semibold",
+            DefaultValue = "--bit-tpg-fw-semibold",
             Description = "Weight of the header.",
         },
     ];

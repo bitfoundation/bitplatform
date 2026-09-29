@@ -7,7 +7,7 @@
 
 <DemoPage Name="Modal"
           SecondaryNames="@(["Dialog", "Popup"])"
-          Description="Modal is a temporary surface that covers the page until it is dealt with. It behaves the way a dialog is expected to - the focus moves into it and stays there, the page behind it stops scrolling, Escape and a click on the overlay dismiss it, and the focus goes back to whatever opened it - and each of those can be turned off on its own. It hosts any content, optionally inside a header, body and footer chrome of its own, and can be sized, positioned, dragged, left modeless or kept mounted while closed."
+          Description="Modal is a temporary surface that covers the page until it is dealt with. It behaves like a dialog out of the box - the focus moves in and stays, the page stops scrolling, Escape and the overlay dismiss it, the focus returns to the opener - and each behavior can be turned off. It hosts any content, optionally in a header, body and footer chrome, and can be sized, positioned, dragged, made modeless or kept mounted."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -213,7 +213,7 @@
 
         <DemoExample Title="Focus management" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
-                The focus lands on the first focusable element, or on the one marked <b>data-autofocus</b>.
+                The focus lands on the first focusable element, or on the one marked <b>data-autofocus</b> (or <b>autofocus</b>).
                 <b>NoAutoFocus</b> leaves it where it was, <b>NoFocusTrap</b> lets Tab leave the Modal, and
                 <b>NoRestoreFocus</b> leaves it where it ended up when the Modal closes.
             </div>

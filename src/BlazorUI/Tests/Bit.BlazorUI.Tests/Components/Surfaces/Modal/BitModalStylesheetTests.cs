@@ -133,6 +133,18 @@ public class BitModalStylesheetTests
     }
 
     [TestMethod]
+    public void BitModalStickyChromeShouldNotHideTheFocus()
+    {
+        var rule = GetRule(GetRules(ReadStylesheet()), "chr");
+
+        // The header and the footer stay over the scrolling body, so the room they take is kept clear of what the
+        // focus scrolls into view (WCAG 2.4.11), and only where each of them is actually rendered.
+        StringAssert.Contains(rule, "&:has(> .bit-mdl-hcn) {\n        scroll-padding-block-start:");
+        StringAssert.Contains(rule, "&:has(> .bit-mdl-fcn) {\n        scroll-padding-block-end:");
+        StringAssert.Contains(rule, "var(--bit-Modal-padding, #{$spa-dialog}) + #{$siz-ctrl-md}");
+    }
+
+    [TestMethod]
     public void BitModalFooterShouldLayOutItsActionsTheWayTheThemeDoes()
     {
         var rule = GetRule(GetRules(ReadStylesheet()), "fcn");

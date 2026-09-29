@@ -74,6 +74,8 @@ public partial class BitModal : BitComponentBase
     private bool _leftReported;
     // Whether the closing under way is the user dismissing the Modal, as opposed to the application closing it.
     private bool _dismissing;
+    // Whether the close guard (CanClose) has been asked and has not answered yet.
+    private bool _guardPending;
 
     // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
     // BuildParameters call. These are only invoked internally (not passed to a child), so
@@ -412,9 +414,9 @@ public partial class BitModal : BitComponentBase
     /// <remarks>
     /// By default the focus moves to the first focusable element of the content, or to the content itself
     /// when it holds none, so the keyboard is where the Modal is. An element inside the content marked with
-    /// the <c>data-autofocus</c> attribute takes the focus instead of the first one, which is how a Modal
-    /// whose first focusable element is not the one worth starting at (a close button ahead of the field the
-    /// Modal was opened to fill in) names the one that is.
+    /// the <c>data-autofocus</c> attribute (or the standard <c>autofocus</c> one) takes the focus instead of the
+    /// first one, which is how a Modal whose first focusable element is not the one worth starting at (a close
+    /// button ahead of the field the Modal was opened to fill in) names the one that is.
     /// <br/>
     /// Setting this leaves the focus wherever it was, which is only worth doing when the consumer places it
     /// itself: the focus trap and the Escape dismissal both work off the keys pressed inside the Modal, so
@@ -479,6 +481,11 @@ public partial class BitModal : BitComponentBase
     /// <summary>
     /// A callback function for when the Modal is dismissed.
     /// </summary>
+    /// <remarks>
+    /// Invoked whenever a Modal that was on the page closes - dismissed by the user or closed by the application
+    /// (<see cref="Close"/>, <see cref="IsOpen"/>) - so it is the one place to react to a Modal going away. A dismissal
+    /// that <see cref="CanClose"/> turns down is not a close, and does not invoke it.
+    /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
@@ -618,6 +625,12 @@ public partial class BitModal : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => _params.Classes?.Root);
 
+        // The base builder marks the root disabled and right-to-left off the component's own IsEnabled and Dir,
+        // which are blind to the ones the service cascades; these read the effective values, so both ways of
+        // asking for either reach the rendered classes - once, since each only adds what the base one did not.
+        ClassBuilder.Register(() => IsEnabled && _params.IsEnabled is false ? "bit-dis" : string.Empty);
+        ClassBuilder.Register(() => Dir != BitDir.Rtl && _params.Dir == BitDir.Rtl ? "bit-rtl" : string.Empty);
+
         ClassBuilder.Register(() => IsFullHeight ? "bit-mdl-fhe" : string.Empty);
         ClassBuilder.Register(() => IsFullWidth ? "bit-mdl-fwi" : string.Empty);
         ClassBuilder.Register(() => (_params.ModeFull ?? false) ? "bit-mdl-mfl" : string.Empty);
@@ -720,7 +733,9 @@ public partial class BitModal : BitComponentBase
         // is detected, regardless of whether the instance reference changed.
         var classesRoot = Classes?.Root;
         var paramsClassesRoot = _params.Classes?.Root;
-        if (previous.FullHeight != _params.FullHeight ||
+        if (previous.IsEnabled != _params.IsEnabled ||
+            previous.Dir != _params.Dir ||
+            previous.FullHeight != _params.FullHeight ||
             previous.FullWidth != _params.FullWidth ||
             previous.FullSize != _params.FullSize ||
             previous.ModeFull != _params.ModeFull ||
@@ -1046,12 +1061,37 @@ public partial class BitModal : BitComponentBase
     // dismissal that went through, and knows not to put the same guard to the user a second time.
     private async Task<bool> TryDismiss()
     {
+        // A guard still making up its mind - the confirmation it put up is waiting on the user - is the answer
+        // every dismissal made in the meantime is waiting on too: a second Escape or a click on the overlay would
+        // otherwise put the same question to the user a second time, on top of the first.
+        if (_guardPending) return false;
+
         var canClose = _params.CanClose;
 
-        if (canClose is not null && await canClose() is false)
+        if (canClose is not null)
         {
-            Bounce();
-            return false;
+            bool allowed;
+
+            _guardPending = true;
+
+            try
+            {
+                allowed = await canClose();
+            }
+            finally
+            {
+                _guardPending = false;
+            }
+
+            if (allowed is false)
+            {
+                Bounce();
+                return false;
+            }
+
+            // The Modal may have been closed by the application while the guard was being asked, in which case
+            // there is nothing left to dismiss - and nothing to report as a dismissal.
+            if (IsOpen is false) return false;
         }
 
         _dismissing = true;
@@ -1592,14 +1632,14 @@ public partial class BitModal : BitComponentBase
         return new BitModalParameters
         {
             // Can only force off (default is enabled): see remarks on asymmetric merge.
-            IsEnabled = IsEnabled is false ? false : p.IsEnabled,
+            IsEnabled = MergeBaseOff(nameof(IsEnabled), IsEnabled, p.IsEnabled),
             // HtmlAttributes on both sources are externally settable (non-nullable) properties, so a
             // caller can still assign null. Coalesce to empty dictionaries so the Concat in
             // MergeHtmlAttributes (and the snapshot copies) never NRE, mirroring BitModalParameters.Merge.
             HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes ?? [], HtmlAttributes ?? []),
             AbsolutePosition = MergeOn(nameof(AbsolutePosition), AbsolutePosition, p.AbsolutePosition),
-            Dir = Dir ?? p.Dir,
-            AriaLabel = AriaLabel ?? p.AriaLabel,
+            Dir = BaseHasNotBeenSet(nameof(Dir)) ? (p.Dir ?? Dir) : (Dir ?? p.Dir),
+            AriaLabel = BaseHasNotBeenSet(nameof(AriaLabel)) ? (p.AriaLabel ?? AriaLabel) : (AriaLabel ?? p.AriaLabel),
             AriaModal = MergeOff(nameof(AriaModal), AriaModal, p.AriaModal),
             AutoToggleScroll = MergeOn(nameof(AutoToggleScroll), AutoToggleScroll, p.AutoToggleScroll),
             Blocking = MergeOn(nameof(Blocking), Blocking, p.Blocking),
@@ -1649,7 +1689,9 @@ public partial class BitModal : BitComponentBase
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
             // Can only force off (default is Visible): own value wins only when it is a meaningful
             // (non-default) override, otherwise the cascaded value is used.
-            Visibility = Visibility != BitVisibility.Visible ? Visibility : p.Visibility,
+            Visibility = BaseHasNotBeenSet(nameof(Visibility))
+                ? (p.Visibility ?? (Visibility != BitVisibility.Visible ? Visibility : null))
+                : (Visibility != BitVisibility.Visible ? Visibility : p.Visibility),
             Width = MergeRef(nameof(Width), Width, p.Width),
         };
     }
@@ -1684,6 +1726,21 @@ public partial class BitModal : BitComponentBase
 
         return own ? cascaded : false;
     }
+
+    // The same as MergeOff for a parameter declared on the base component, which the generated HasNotBeenSet of
+    // this one does not track (see BaseHasNotBeenSet).
+    private bool? MergeBaseOff(string name, bool own, bool? cascaded)
+    {
+        if (BaseHasNotBeenSet(name)) return cascaded ?? (own ? null : false);
+
+        return own ? cascaded : false;
+    }
+
+    // The parameters declared on BitComponentBase (Dir, AriaLabel, IsEnabled, Visibility) are tracked by the base
+    // component: the HasNotBeenSet generated for this one hides that method and only knows its own parameters, so
+    // it reports every base parameter as not set - which would let a value a BitParams ancestor put on one of them
+    // be mistaken for a value the Modal was given explicitly, or the other way round.
+    private bool BaseHasNotBeenSet(string name) => ((BitComponentBase)this).HasNotBeenSet(name);
 
     /// <summary>
     /// Merges the cascaded and own HtmlAttributes (own values win), reusing the previous result when
