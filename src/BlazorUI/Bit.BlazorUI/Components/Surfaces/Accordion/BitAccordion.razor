@@ -1,7 +1,13 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+@* A name on a plain div names nothing (the generic role cannot be named), so an AriaLabel makes the root a named
+   group - the way a screen reader tells two accordions on a page apart. The role comes ahead of the splatted
+   attributes, since the last of two attributes of the same name wins: a role the page passes itself is kept,
+   rather than replaced by this one or dropped along with the null this is without an AriaLabel. *@
+<div @ref="RootElement"
+     role="@(AriaLabel.HasValue() ? "group" : null)"
+     @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -23,6 +29,8 @@
                     style="@Styles?.Header"
                     class="bit-acd-hdr @(_IsBusy ? "bit-acd-bsy" : "") @Classes?.Header"
                     aria-label="@HeaderAriaLabel"
+                    aria-labelledby="@(_NamesByTitle ? _TitleId : null)"
+                    aria-describedby="@(_DescribesByDescription ? _DescriptionId : null)"
                     aria-expanded="@(IsExpanded ? "true" : "false")"
                     aria-controls="@_ContentId"
                     aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
@@ -56,7 +64,7 @@
                            of the description of a header that carries one without a title. *@
                         @if (TitleTemplate is not null || Title.HasValue())
                         {
-                            <div style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
+                            <div id="@_TitleId" style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
                                 @if (TitleTemplate is not null)
                                 {
                                     @TitleTemplate
@@ -69,13 +77,21 @@
                         }
                         @if (Description.HasValue())
                         {
-                            <div style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
+                            <div id="@_DescriptionId" style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
                                 @Description
                             </div>
                         }
                     </div>
 
-                    @if (HideExpanderIcon is false)
+                    @* A busy header stands the spinner in the expander's slot - even where the expander is hidden, since
+                       the cursor alone tells nothing to a touch or a keyboard user - so waiting moves nothing around it. *@
+                    @if (_IsBusy)
+                    {
+                        <span style="@Styles?.ExpanderIconWrapper" class="bit-acd-eiw @Classes?.ExpanderIconWrapper">
+                            <span aria-hidden="true" style="@Styles?.Spinner" class="bit-acd-spn @Classes?.Spinner"></span>
+                        </span>
+                    }
+                    else if (HideExpanderIcon is false)
                     {
                         <span style="@Styles?.ExpanderIconWrapper"
                               class="bit-acd-eiw @Classes?.ExpanderIconWrapper @(rotated ? "bit-ico--r180" : "")">
@@ -108,15 +124,20 @@
     <div style="@Styles?.ContentContainer" class="bit-acd-cnt @Classes?.ContentContainer">
         <div style="@Styles?.ContentWrapper" class="bit-acd-cwr @Classes?.ContentWrapper">
             @* aria-labelledby names a landmark, and on an element without the role it names nothing at all,
-               so the two are dropped together rather than leaving one behind. *@
+               so the two are dropped together rather than leaving one behind.
+               A HiddenUntilFound panel carries its bit-acd-huf class for as long as it carries the attribute, and
+               keeps the class after the browser has taken the attribute off to reveal a match: that pair is what
+               lets the stylesheet open the panel around the match at once, ahead of the render that expands it. *@
             <div id="@_ContentId"
                  role="@(NoContentRegion ? null : "region")"
-                 aria-labelledby="@(NoContentRegion ? null : _HeaderId)"
+                 aria-labelledby="@(NoContentRegion ? null : _PanelLabelledBy)"
+                 hidden="@(_IsHiddenUntilFound ? "until-found" : null)"
                  style="@Styles?.Content"
-                 class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @Classes?.Content"
+                 class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @(_IsHiddenUntilFound ? "bit-acd-huf" : null) @Classes?.Content"
                  tabindex="@(_IsContentFocusable ? "0" : null)"
                  @onfocusin="HandleOnContentFocusIn"
-                 @onfocusout="HandleOnContentFocusOut">
+                 @onfocusout="HandleOnContentFocusOut"
+                 @attributes="_ContentAttributes">
                 @if (_ShouldRenderContent)
                 {
                     @* An accordion nested in this panel takes the level below this one, unless it is given one. *@
