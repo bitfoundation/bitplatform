@@ -110,6 +110,24 @@ public class BitScrollablePaneStylesheetTests
         StringAssert.Contains(stylesheet[media..], ".bit-scp-fad {\n            mask-image: none;");
     }
 
+    [TestMethod]
+    public void BitScrollablePaneShouldNeverPrintTheFadeAndExpandOnPrint()
+    {
+        var stylesheet = ReadStylesheet();
+        var media = stylesheet.IndexOf("@media print {", System.StringComparison.Ordinal);
+
+        Assert.IsTrue(media >= 0, "The pane has no print rules.");
+
+        var print = stylesheet[media..];
+
+        // The mask it drops is declared at the same specificity, so the print block has to come after it.
+        Assert.IsTrue(media > stylesheet.IndexOf("mask-image: linear-gradient", System.StringComparison.Ordinal));
+        StringAssert.Contains(print, ".bit-scp-fad {\n        mask-image: none;");
+
+        // The sizes and the overflow are inline styles, which only !important outranks.
+        StringAssert.Contains(print, ".bit-scp-eop {\n        height: auto !important;\n        max-height: none !important;\n        overflow: visible !important;");
+    }
+
     private static string ReadStylesheet([CallerFilePath] string thisFile = "")
     {
         var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",

@@ -271,3 +271,23 @@
         }
     }
 }
+
+// Paper does not scroll. A faded band is only content printed too faintly to read, so the fade is never
+// printed; and ExpandOnPrint prints the whole of the content rather than the part the pane was showing. The
+// sizes and the overflow are written into the style attribute, so lifting them takes !important. The block
+// sits at the end of the file because the mask it drops is declared at the same specificity above.
+@media print {
+    .bit-scp-fad {
+        mask-image: none;
+    }
+
+    .bit-scp-eop {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+
+        &.bit-scp-hor {
+            white-space: normal;
+        }
+    }
+}

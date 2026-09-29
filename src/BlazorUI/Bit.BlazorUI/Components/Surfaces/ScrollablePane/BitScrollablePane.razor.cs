@@ -51,9 +51,13 @@ public partial class BitScrollablePane : BitComponentBase
         ? (IsEnabled ? tabIndex : "-1")
         : null;
 
+    // The aria-label written after the splat replaces whatever the splat put there, null included, so a name
+    // passed as a plain aria-label attribute - which binds no parameter - is handed back out here.
+    private string? _ariaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+
     // A name on a plain div is one assistive technology ignores - ARIA prohibits naming the generic role - so
     // a pane that was given one is exposed as the region it names unless it was told to be something else.
-    private string? _role => Role ?? ((AriaLabel.HasValue() || HtmlAttributes.ContainsKey("aria-labelledby")) ? "region" : null);
+    private string? _role => Role ?? ((_ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue()) ? "region" : null);
 
     // Whether anything the browser side does is asked for. Everything else this component offers is CSS,
     // so a pane that wants none of these never sets up a listener, an observer or a .NET object reference.
@@ -232,6 +236,25 @@ public partial class BitScrollablePane : BitComponentBase
     /// rest on an item its own way rather than being glided onto one.
     /// </remarks>
     [Parameter] public bool DragMomentum { get; set; }
+
+    /// <summary>
+    /// Prints the whole of the content instead of the part the pane happens to be showing.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Paper does not scroll, so a pane printed as it stands on the screen puts whatever is scrolled out of
+    /// sight nowhere at all - the rest of a document, of a log or of a table is simply left out. This lifts
+    /// the height, the height caps and the clipping of the pane for the print stylesheet only, so it prints
+    /// at the length of its content, and lets a <see cref="Horizontal"/> line wrap again. Leave it off for a
+    /// pane that is part of the layout of the app itself - a side bar, a list of results - rather than
+    /// content a reader would want on paper.
+    /// <br />
+    /// The <see cref="Fade"/> is never printed, with this or without it: a faded band on paper is only
+    /// content printed too faintly to read.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ExpandOnPrint { get; set; }
 
     /// <summary>
     /// Fades out each edge of the pane that still has content beyond it.
@@ -1160,6 +1183,8 @@ public partial class BitScrollablePane : BitComponentBase
         });
 
         ClassBuilder.Register(() => SnapStop ? "bit-scp-sns" : string.Empty);
+
+        ClassBuilder.Register(() => ExpandOnPrint ? "bit-scp-eop" : string.Empty);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollablePaneParams))]

@@ -62,11 +62,13 @@
                     take any CSS length. Leave the height unset and cap it with <b>MaxHeight</b> for a pane that grows with
                     its content and scrolls once it is full. <b>FullWidth</b> / <b>FullHeight</b> / <b>FullSize</b> (100%),
                     <b>FitWidth</b> / <b>FitHeight</b> / <b>FitSize</b> (fit-content) and <b>AutoWidth</b> /
-                    <b>AutoHeight</b> / <b>AutoSize</b> (auto) cover the common cases.
+                    <b>AutoHeight</b> / <b>AutoSize</b> (auto) cover the common cases. <b>ExpandOnPrint</b> lifts the
+                    size and the clipping when the page is printed, so the whole content goes on paper (try printing
+                    this page).
                 </div>
                 <br /><br />
-                <div>Width and Height:</div><br />
-                <BitScrollablePane Width="18rem" Height="6rem" Class="pane">
+                <div>Width and Height, with ExpandOnPrint:</div><br />
+                <BitScrollablePane Width="18rem" Height="6rem" Class="pane" ExpandOnPrint>
                     <p>
                         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                         Each word carried meaning, each pause brought understanding, and every story found its listener.
@@ -248,7 +250,8 @@
                     more; <b>FadeSize</b> sets how far it reaches (2rem). It is a mask, so it works over any background -
                     and also fades a classic scrollbar and sticky content in the band. Pair it with a scrollbar that is
                     out of sight: <b>ScrollbarWidth="None"</b>, or <b>Modern</b> with <b>AutoHideScrollbar</b>. It is not
-                    drawn under <i>prefers-contrast: more</i> or forced colors, where faded text would lose contrast.
+                    drawn under <i>prefers-contrast: more</i>, in forced colors or on paper, where faded text would lose
+                    contrast.
                 </div>
                 <br /><br />
                 <BitToggle @bind-Value="fade" Label="Fade" />
@@ -488,7 +491,8 @@
                     <b>Snap</b> makes the pane come to rest on its items - <b>Mandatory</b> always, <b>Proximity</b> when
                     near one. <b>SnapAlign</b> (Start, Center, End) sets the snap position of the pane's direct children;
                     items inside a wrapper of your own need their own <i>scroll-snap-align</i>. <b>SnapStop</b> stops at
-                    the next item however hard the flick - a carousel. Prefer Proximity for a pane that is also scrolled
+                    the next item however hard the flick - a carousel. Its arrows are <b>ScrollBy</b> one card, dimmed by
+                    <b>OnScroll</b>'s <b>AtLeft</b> / <b>AtRight</b>. Prefer Proximity for a pane that is also scrolled
                     from code.
                 </div>
                 <br /><br />
@@ -510,13 +514,22 @@
                 </BitChoiceGroup>
                 <BitToggle @bind-Value="snapStop" Label="SnapStop" />
                 <br />
-                <BitScrollablePane Horizontal Width="22rem" Class="pane" Modern
-                                   Snap="snap" SnapAlign="snapAlign" SnapStop="snapStop">
-                    @for (var i = 1; i <= 10; i++)
-                    {
-                        <div class="card">Card @i</div>
-                    }
-                </BitScrollablePane>
+                <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton IconName="@BitIconName.ChevronLeft" Variant="BitVariant.Outline" AriaLabel="Previous card"
+                               IsEnabled="@(carouselOffset?.AtLeft is false)"
+                               OnClick="() => carouselPane!.ScrollBy(-136, 0)" />
+                    <BitScrollablePane @ref="carouselPane" Horizontal Width="22rem" Class="pane" Modern
+                                       Snap="snap" SnapAlign="snapAlign" SnapStop="snapStop"
+                                       OnScroll="o => carouselOffset = o">
+                        @for (var i = 1; i <= 10; i++)
+                        {
+                            <div class="card">Card @i</div>
+                        }
+                    </BitScrollablePane>
+                    <BitButton IconName="@BitIconName.ChevronRight" Variant="BitVariant.Outline" AriaLabel="Next card"
+                               IsEnabled="@(carouselOffset?.AtRight is not true)"
+                               OnClick="() => carouselPane!.ScrollBy(136, 0)" />
+                </BitStack>
             </DemoExample>
 
             <DemoExample Title="Dragging & the wheel" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">

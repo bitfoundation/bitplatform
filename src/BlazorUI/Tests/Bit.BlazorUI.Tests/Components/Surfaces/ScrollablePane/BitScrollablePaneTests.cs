@@ -281,6 +281,18 @@ public class BitScrollablePaneTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitScrollablePaneShouldKeepAnAriaLabelPassedAsAnAttribute()
+    {
+        // A plain aria-label binds no parameter, and the one written after the splat would otherwise wipe it.
+        var component = RenderComponent<BitScrollablePaneAriaLabelTest>();
+
+        var root = component.Find(".bit-scp");
+
+        Assert.AreEqual("Release notes", root.GetAttribute("aria-label"));
+        Assert.AreEqual("region", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
     public void BitScrollablePaneRoleShouldWinOverTheDefaultOfANamedPane()
     {
         var component = RenderComponent<BitScrollablePane>(parameters =>
@@ -592,6 +604,18 @@ public class BitScrollablePaneTests : BunitTestContext
         });
 
         Assert.IsTrue(StyleOf(component).Contains("scroll-padding:3rem"));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldRespectExpandOnPrint()
+    {
+        var component = RenderComponent<BitScrollablePane>();
+
+        Assert.IsFalse(component.Find(".bit-scp").ClassList.Contains("bit-scp-eop"));
+
+        component.Render(parameters => parameters.Add(p => p.ExpandOnPrint, true));
+
+        Assert.IsTrue(component.Find(".bit-scp").ClassList.Contains("bit-scp-eop"));
     }
 
     [TestMethod]
@@ -1775,6 +1799,7 @@ public class BitScrollablePaneTests : BunitTestContext
             Snap = BitScrollSnap.Proximity,
             SnapAlign = BitScrollSnapAlign.Center,
             SnapStop = true,
+            ExpandOnPrint = true,
             Modern = true,
             AutoHideScrollbar = true,
             Smooth = true,
@@ -1794,7 +1819,7 @@ public class BitScrollablePaneTests : BunitTestContext
         StringAssert.Contains(style, "scroll-snap-type:both proximity");
         StringAssert.Contains(style, "--bit-scp-fsz:3rem");
 
-        foreach (var cls in new[] { "bit-scp-hor", "bit-scp-sna-cnt", "bit-scp-sns", "bit-scp-mod", "bit-scp-ahs", "bit-scp-smt", "cascaded" })
+        foreach (var cls in new[] { "bit-scp-hor", "bit-scp-sna-cnt", "bit-scp-sns", "bit-scp-eop", "bit-scp-mod", "bit-scp-ahs", "bit-scp-smt", "cascaded" })
         {
             Assert.IsTrue(root.ClassList.Contains(cls), cls);
         }

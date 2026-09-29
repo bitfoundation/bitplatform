@@ -67,6 +67,11 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
     public bool? DragMomentum { get; set; }
 
     /// <summary>
+    /// Prints the whole of the content instead of the part the pane happens to be showing.
+    /// </summary>
+    public bool? ExpandOnPrint { get; set; }
+
+    /// <summary>
     /// Fades out each edge of the pane that still has content beyond it.
     /// </summary>
     public bool? Fade { get; set; }
@@ -324,6 +329,13 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
         if (DragMomentum.HasValue && bitScrollablePane.HasNotBeenSet(nameof(DragMomentum)))
         {
             bitScrollablePane.DragMomentum = DragMomentum.Value;
+        }
+
+        if (ExpandOnPrint.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ExpandOnPrint)))
+        {
+            bitScrollablePane.ExpandOnPrint = ExpandOnPrint.Value;
+
+            bitScrollablePane.ClassBuilder.Reset();
         }
 
         if (Fade.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Fade)))

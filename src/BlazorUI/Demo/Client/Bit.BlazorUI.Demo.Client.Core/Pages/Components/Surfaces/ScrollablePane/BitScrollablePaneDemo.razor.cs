@@ -76,6 +76,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "ExpandOnPrint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prints the whole of the content instead of the part the pane is showing: the height, the height caps and the clipping are lifted for the print stylesheet only.",
+        },
+        new()
+        {
             Name = "DragScroll",
             Type = "bool",
             DefaultValue = "false",
@@ -1050,6 +1057,8 @@ public partial class BitScrollablePaneDemo
     private bool snapStop = true;
     private BitScrollSnap snap = BitScrollSnap.Mandatory;
     private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;
+    private BitScrollablePane? carouselPane;
+    private BitScrollOffset? carouselOffset;
 
     private bool dragScroll = true;
     private bool dragMomentum = true;

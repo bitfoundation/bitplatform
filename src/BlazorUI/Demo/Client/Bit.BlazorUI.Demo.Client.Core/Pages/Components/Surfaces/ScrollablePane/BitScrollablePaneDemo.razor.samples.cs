@@ -44,7 +44,7 @@ public partial class BitScrollablePaneDemo
     }
 </style>
 
-<BitScrollablePane Width=""18rem"" Height=""6rem"" Class=""pane"">
+<BitScrollablePane Width=""18rem"" Height=""6rem"" Class=""pane"" ExpandOnPrint>
     <p>
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
         Each word carried meaning, each pause brought understanding, and every story found its listener.
@@ -729,17 +729,28 @@ private async Task LoadOlderMessages()
 
 <BitToggle @bind-Value=""snapStop"" Label=""SnapStop"" />
 
-<BitScrollablePane Horizontal Width=""22rem"" Class=""pane"" Modern
-                   Snap=""snap"" SnapAlign=""snapAlign"" SnapStop=""snapStop"">
-    @for (var i = 1; i <= 10; i++)
-    {
-        <div class=""card"">Card @i</div>
-    }
-</BitScrollablePane>";
+<BitStack Horizontal Gap=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
+    <BitButton IconName=""@BitIconName.ChevronLeft"" Variant=""BitVariant.Outline"" AriaLabel=""Previous card""
+               IsEnabled=""@(carouselOffset?.AtLeft is false)""
+               OnClick=""() => carouselPane!.ScrollBy(-136, 0)"" />
+    <BitScrollablePane @ref=""carouselPane"" Horizontal Width=""22rem"" Class=""pane"" Modern
+                       Snap=""snap"" SnapAlign=""snapAlign"" SnapStop=""snapStop""
+                       OnScroll=""o => carouselOffset = o"">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class=""card"">Card @i</div>
+        }
+    </BitScrollablePane>
+    <BitButton IconName=""@BitIconName.ChevronRight"" Variant=""BitVariant.Outline"" AriaLabel=""Next card""
+               IsEnabled=""@(carouselOffset?.AtRight is not true)""
+               OnClick=""() => carouselPane!.ScrollBy(136, 0)"" />
+</BitStack>";
     private readonly string example14CsharpCode = @"
 private bool snapStop = true;
 private BitScrollSnap snap = BitScrollSnap.Mandatory;
-private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;";
+private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;
+private BitScrollablePane? carouselPane;
+private BitScrollOffset? carouselOffset;";
 
     private readonly string example15RazorCode = @"
 <style>
