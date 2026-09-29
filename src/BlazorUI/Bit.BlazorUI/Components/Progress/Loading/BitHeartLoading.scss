@@ -4,15 +4,15 @@
     transform: rotate(45deg);
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
-    transform-origin: var(--bit-ldn-hrt-40) var(--bit-ldn-hrt-40);
+    transform-origin: calc(40 * var(--bit-ldn-unit)) calc(40 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-hrt-chl {
     position: absolute;
-    top: var(--bit-ldn-hrt-28);
-    left: var(--bit-ldn-hrt-28);
-    width: var(--bit-ldn-hrt-32);
-    height: var(--bit-ldn-hrt-32);
+    top: calc(28 * var(--bit-ldn-unit));
+    left: calc(28 * var(--bit-ldn-unit));
+    width: calc(32 * var(--bit-ldn-unit));
+    height: calc(32 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
     animation: bit-ldn-hrt-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) infinite cubic-bezier(0.215, 0.61, 0.355, 1);
 }
@@ -22,19 +22,19 @@
     content: " ";
     display: block;
     position: absolute;
-    width: var(--bit-ldn-hrt-32);
-    height: var(--bit-ldn-hrt-32);
+    width: calc(32 * var(--bit-ldn-unit));
+    height: calc(32 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
 }
 
 .bit-ldn-hrt-chl::before {
     border-radius: 50% 0 0 50%;
-    left: calc(-1 * var(--bit-ldn-hrt-24));
+    left: calc(-1 * calc(24 * var(--bit-ldn-unit)));
 }
 
 .bit-ldn-hrt-chl::after {
     border-radius: 50% 50% 0 0;
-    top: calc(-1 * var(--bit-ldn-hrt-24));
+    top: calc(-1 * calc(24 * var(--bit-ldn-unit)));
 }
 
 @keyframes bit-ldn-hrt-anm {

@@ -35,6 +35,10 @@ on:
         description: iOS app
         type: boolean
         default: true
+      prerelease_packages:
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       server:
@@ -52,9 +56,13 @@ on:
       ios:
         type: boolean
         default: true
+      prerelease_packages:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
 
@@ -74,6 +82,12 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
     - name: Create project from Boilerplate
       run: |
@@ -224,6 +238,12 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Create project from Boilerplate
       run: |
        cd src/Templates/Boilerplate && dotnet build -c Release
@@ -287,6 +307,12 @@ jobs:
       with:
         node-version: 24
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Create project from Boilerplate
       run: |
         cd src\Templates\Boilerplate && dotnet build -c Release
@@ -348,6 +374,12 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
     - name: Create project from Boilerplate
       run: |
@@ -444,6 +476,12 @@ jobs:
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
     - name: Create project from Boilerplate
       run: |

@@ -3,6 +3,94 @@ namespace BitBlazorUI {
         private static _isInitialized = false;
         private static _hotkeys: Map<string, string[]> = new Map();
         private static _swipes: Map<string, BitSnackBarSwipe> = new Map();
+        // The hosts the focus jumped to and has not yet left. The element it came from is kept by the shared focus
+        // store of Utils under the host's id; this only says which hosts are on such a detour.
+        private static _detours: Set<string> = new Set();
+
+        /**
+         * Moves the focus to a snack bar host, remembering where it came from.
+         * Jumping to the notifications is a detour, not a move: once the user is done with them (the last item
+         * leaves, or Escape is pressed on the region itself) the focus goes back to what they were working on,
+         * the same way Sonner hands it back after its hotkey.
+         */
+        public static focus(id: string) {
+            const element = document.getElementById(id);
+            if (!element) return;
+
+            const active = document.activeElement;
+
+            // A second jump from inside the region keeps the first place the user came from, and a jump from
+            // nowhere keeps whatever an earlier one recorded.
+            if (active && active !== document.body && active !== document.documentElement && !element.contains(active)) {
+                Utils.storeFocus(id);
+                SnackBars._detours.add(id);
+            }
+
+            element.focus();
+
+            SnackBars.init();
+        }
+
+        /**
+         * Hands the focus to another item after the one that held it has left.
+         * Falls back to restoreFocus when that item's element is gone or cannot take the focus.
+         */
+        public static passFocus(id: string, target: HTMLElement | null) {
+            const element = document.getElementById(id);
+            if (!element) return;
+
+            if (!SnackBars.ownsFocus(element)) return;
+
+            if (target && target.isConnected) {
+                target.focus();
+                if (document.activeElement === target) return;
+            }
+
+            SnackBars.restoreFocus(id);
+        }
+
+        /**
+         * Hands the focus back after the item that held it has left: to where the user was before they jumped
+         * to the notifications, or, when that is gone (or they never jumped), to the region itself, so the
+         * next Tab carries on from the notifications instead of starting over from the top of the page.
+         */
+        public static restoreFocus(id: string) {
+            const onDetour = SnackBars._detours.delete(id);
+            const element = document.getElementById(id);
+
+            if (!element || !SnackBars.ownsFocus(element)) {
+                Utils.forgetFocus(id);
+                return;
+            }
+
+            if (onDetour) {
+                // The focus is already known to be the host's to move, which is the only check the shared
+                // restore would make.
+                Utils.restoreFocus(id, false);
+
+                if (!SnackBars.ownsFocus(element)) return;
+            }
+
+            element.focus();
+        }
+
+        public static dispose(id: string) {
+            SnackBars._detours.delete(id);
+            Utils.forgetFocus(id);
+            SnackBars.unregisterHotkey(id);
+            SnackBars.unregisterSwipe(id);
+        }
+
+        /**
+         * Whether the focus is still the host's to move: on nothing (the element that had it was taken out of the
+         * page, which drops it on the body) or still inside the host. A focus the user has since put somewhere
+         * else belongs to them, whatever the host believes about the item it last saw it in.
+         */
+        private static ownsFocus(element: HTMLElement) {
+            const active = document.activeElement;
+
+            return !active || active === document.body || active === document.documentElement || element.contains(active);
+        }
 
         /**
          * Registers the keyboard shortcut that moves the focus to a snack bar host.
@@ -148,18 +236,46 @@ namespace BitBlazorUI {
             // One listener for every host on the page: the map is what tells them apart, so a page with several
             // snack bar hosts does not add a document listener per host.
             document.addEventListener('keydown', (e: KeyboardEvent) => {
+                // Escape on the region itself (not on an item, which dismisses that item) ends the detour the
+                // hotkey started and hands the focus back to where it came from.
+                if (e.key === 'Escape') {
+                    const active = document.activeElement as HTMLElement | null;
+                    if (active && active.id && SnackBars._detours.has(active.id)) {
+                        e.preventDefault();
+                        SnackBars.restoreFocus(active.id);
+                    }
+                    return;
+                }
+
                 if (SnackBars._hotkeys.size === 0) return;
 
                 for (const [id, keys] of SnackBars._hotkeys) {
                     if (!SnackBars.matches(e, keys)) continue;
 
-                    const element = document.getElementById(id);
-                    if (!element) continue;
+                    if (!document.getElementById(id)) continue;
 
                     e.preventDefault();
-                    element.focus();
+                    SnackBars.focus(id);
 
                     return;
+                }
+            });
+
+            // A detour ends when the user takes the focus out of the region themselves - a Tab past the last item,
+            // a click on a field of the page - so a later restore does not send them back to a place they left long
+            // ago. An element taken out of the page reports no focus arriving anywhere, which is why this listens
+            // for the focus arriving rather than for it leaving.
+            document.addEventListener('focusin', (e: FocusEvent) => {
+                if (SnackBars._detours.size === 0) return;
+
+                const target = e.target as Node | null;
+
+                for (const id of Array.from(SnackBars._detours)) {
+                    const element = document.getElementById(id);
+                    if (element && target && element.contains(target)) continue;
+
+                    SnackBars._detours.delete(id);
+                    Utils.forgetFocus(id);
                 }
             });
         }
