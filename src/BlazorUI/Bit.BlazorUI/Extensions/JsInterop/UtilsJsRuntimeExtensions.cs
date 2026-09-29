@@ -101,6 +101,22 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Answers an Escape pressed inside a surface through the OnEscape callback, only when nothing inside it took
+    // the key first (an IME composition, a control, a component whose own popup is open, a surface nested inside
+    // it); see Utils.setupSurfaceEscape.
+    internal static ValueTask BitUtilsSetupSurfaceEscape<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupSurfaceEscape", elementId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeSurfaceEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeSurfaceEscape", elementId);
+    }
+
+
     // Hands the keyboard back to the page around the trigger when Tab leaves either end of a popup that is
     // relocated to the body, and reports it through the OnTabOut callback; see Utils.setupTabOut.
     internal static ValueTask BitUtilsSetupTabOut<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(

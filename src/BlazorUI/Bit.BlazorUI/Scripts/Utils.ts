@@ -452,6 +452,61 @@
             Utils._focusTraps.delete(elementId);
         }
 
+        private static _surfaceEscapes = new Map<string, AbortController>();
+
+        // Answers an Escape pressed inside a surface (a dialog) through the OnEscape callback - but only when the
+        // key is the surface's own. Four things own it first: an IME composition, which Escape cancels; a
+        // control that has taken it (defaultPrevented); a component inside the surface whose own popup is open -
+        // a combo box, a search box's suggestions, a date picker - which closes that popup on the key and has its
+        // keydown bubble on up through the surface; and a surface nested inside this one (a dialog opened from
+        // inside it), which has answered the key before it got here.
+        // The popups are read as the key is pressed: this listener is on the element, so it runs before Blazor's
+        // document-level delegation lets the component close its popup, while the stack of open callouts is still
+        // the one the key was pressed against. Whether a control took the key is read once the whole dispatch is
+        // over instead, since a Blazor handler's @onkeydown:preventDefault is applied by that same delegation,
+        // after this listener has run. The decision is made here, in the browser, so the surface is only called
+        // when it is to act - there is no round trip to ask whether it should.
+        // Registering again on the same element replaces the previous registration.
+        public static setupSurfaceEscape(elementId: string, dotnetObj: DotNetObject) {
+            Utils.disposeSurfaceEscape(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                // The nearest surface owns the key whatever it goes on to do with it, so an outer one never
+                // answers an Escape an inner one has already seen.
+                const event = e as KeyboardEvent & { __bitSurfaceEscape?: boolean };
+                if (event.__bitSurfaceEscape) return;
+                event.__bitSurfaceEscape = true;
+
+                if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
+
+                if (Callouts.componentContains(e.target as Node | null, element)) return;
+
+                setTimeout(() => {
+                    if (e.defaultPrevented || signal.aborted) return;
+
+                    dotnetObj.invokeMethodAsync('OnEscape');
+                });
+            }, { signal });
+
+            Utils._surfaceEscapes.set(elementId, controller);
+        }
+
+        public static disposeSurfaceEscape(elementId: string) {
+            const controller = Utils._surfaceEscapes.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._surfaceEscapes.delete(elementId);
+        }
+
         private static _tabOuts = new Map<string, AbortController>();
 
         // Hands the keyboard back to the page around the trigger of a popup that does not trap it. The popup is

@@ -605,6 +605,8 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Typography.Control.LetterSpacing, bitTheme.Typography.Control.LetterSpacing);
         addCssVar(BitCss.Var.Typography.Control.TextTransform, bitTheme.Typography.Control.TextTransform);
+        addCssVar(BitCss.Var.Typography.Dialog.TitleFontSize, bitTheme.Typography.Dialog.TitleFontSize);
+        addCssVar(BitCss.Var.Typography.Dialog.TitleFontWeight, bitTheme.Typography.Dialog.TitleFontWeight);
 
         addCssVar(BitCss.Var.Typography.Body1.Margin, bitTheme.Typography.Body1.Margin);
         addCssVar(BitCss.Var.Typography.Body1.FontWeight, bitTheme.Typography.Body1.FontWeight);
@@ -717,6 +719,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Layout.DialogActionsDirection, bitTheme.Layout.DialogActionsDirection);
         addCssVar(BitCss.Var.Layout.DialogActionsJustify, bitTheme.Layout.DialogActionsJustify);
         addCssVar(BitCss.Var.Layout.DialogActionsAlign, bitTheme.Layout.DialogActionsAlign);
+        addCssVar(BitCss.Var.Layout.DialogTextAlign, bitTheme.Layout.DialogTextAlign);
 
         addCssVar(BitCss.Var.Layout.Breakpoints.Xs, bitTheme.Layout.Breakpoints.Xs);
         addCssVar(BitCss.Var.Layout.Breakpoints.Sm, bitTheme.Layout.Breakpoints.Sm);
@@ -927,6 +930,7 @@ internal static class BitThemeMapper
             FontSize = src.FontSize ?? new(),
             FontWeights = src.FontWeights ?? new(),
             Control = src.Control ?? new(),
+            Dialog = src.Dialog ?? new(),
             H1 = src.H1 ?? new(),
             H2 = src.H2 ?? new(),
             H3 = src.H3 ?? new(),
@@ -1024,6 +1028,7 @@ internal static class BitThemeMapper
             DialogActionsDirection = src.DialogActionsDirection,
             DialogActionsJustify = src.DialogActionsJustify,
             DialogActionsAlign = src.DialogActionsAlign,
+            DialogTextAlign = src.DialogTextAlign,
             Breakpoints = src.Breakpoints ?? new(),
         };
     }
@@ -1423,6 +1428,8 @@ internal static class BitThemeMapper
 
         result.Typography.Control.LetterSpacing = bitTheme.Typography.Control.LetterSpacing ?? other.Typography.Control.LetterSpacing;
         result.Typography.Control.TextTransform = bitTheme.Typography.Control.TextTransform ?? other.Typography.Control.TextTransform;
+        result.Typography.Dialog.TitleFontSize = bitTheme.Typography.Dialog.TitleFontSize ?? other.Typography.Dialog.TitleFontSize;
+        result.Typography.Dialog.TitleFontWeight = bitTheme.Typography.Dialog.TitleFontWeight ?? other.Typography.Dialog.TitleFontWeight;
 
         result.Typography.Body1.Margin = bitTheme.Typography.Body1.Margin ?? other.Typography.Body1.Margin;
         result.Typography.Body1.FontWeight = bitTheme.Typography.Body1.FontWeight ?? other.Typography.Body1.FontWeight;
@@ -1535,6 +1542,7 @@ internal static class BitThemeMapper
         result.Layout.DialogActionsDirection = bitTheme.Layout.DialogActionsDirection ?? other.Layout.DialogActionsDirection;
         result.Layout.DialogActionsJustify = bitTheme.Layout.DialogActionsJustify ?? other.Layout.DialogActionsJustify;
         result.Layout.DialogActionsAlign = bitTheme.Layout.DialogActionsAlign ?? other.Layout.DialogActionsAlign;
+        result.Layout.DialogTextAlign = bitTheme.Layout.DialogTextAlign ?? other.Layout.DialogTextAlign;
         result.Layout.Breakpoints.Xs = bitTheme.Layout.Breakpoints.Xs ?? other.Layout.Breakpoints.Xs;
         result.Layout.Breakpoints.Sm = bitTheme.Layout.Breakpoints.Sm ?? other.Layout.Breakpoints.Sm;
         result.Layout.Breakpoints.Md = bitTheme.Layout.Breakpoints.Md ?? other.Layout.Breakpoints.Md;

@@ -849,12 +849,17 @@
         // SearchBox input that owns the suggestion callout). Used so that a scroll/resize while that input
         // is focused - typically caused by the on-screen keyboard moving the page - re-anchors the callout
         // to the component's new position instead of dismissing it.
-        public static componentContains(node: Node | null): boolean {
+        // `scope` narrows it to the components inside that element, for a surface that asks whether a popup
+        // of its own content owns the key rather than one of a component the surface itself sits inside.
+        public static componentContains(node: Node | null, scope?: Node | null): boolean {
             if (node == null) return false;
 
             return Callouts._stack.some(entry => {
                 const componentId = Callouts._params.get(entry.calloutId)?.componentId;
-                return componentId ? (document.getElementById(componentId)?.contains(node) ?? false) : false;
+                const component = componentId ? document.getElementById(componentId) : null;
+                if (component == null || (scope != null && scope.contains(component) === false)) return false;
+
+                return component.contains(node);
             });
         }
 

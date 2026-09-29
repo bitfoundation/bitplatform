@@ -608,6 +608,7 @@ public static partial class BitCss
             public const string DialogActionsDirection = "--bit-layout-dialog-actions-direction";
             public const string DialogActionsJustify = "--bit-layout-dialog-actions-justify";
             public const string DialogActionsAlign = "--bit-layout-dialog-actions-align";
+            public const string DialogTextAlign = "--bit-layout-dialog-text-align";
 
             public static class Breakpoints
             {
@@ -784,6 +785,12 @@ public static partial class BitCss
             {
                 public const string LetterSpacing = "--bit-tpg-ctrl-letter-spacing";
                 public const string TextTransform = "--bit-tpg-ctrl-text-transform";
+            }
+
+            public static class Dialog
+            {
+                public const string TitleFontSize = "--bit-tpg-dialog-title-font-size";
+                public const string TitleFontWeight = "--bit-tpg-dialog-title-font-weight";
             }
 
             public static class H1
