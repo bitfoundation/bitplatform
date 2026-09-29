@@ -642,7 +642,7 @@ private async Task HandleOnEscapeKeyDown()
 
 <BitButton OnClick=""() => refModal.Open()"">Open</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => refModal.Toggle()"">Toggle</BitButton>
-<BitModal @ref=""refModal"">
+<BitModal @ref=""refModal"" Modeless>
     <div class=""modal-content"">
         <BitText Typography=""BitTypography.H6"">Driven by methods</BitText>
         <BitText>This Modal has no IsOpen: it is opened and closed through its reference.</BitText>
