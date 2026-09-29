@@ -56,7 +56,8 @@ public partial class BitImageStylesheetTests
         DataRow(".bit-img-rnd", "--bit-Image-radius"),
         DataRow(".bit-img-brd", "--bit-Image-border-width"),
         DataRow(".bit-img-brd", "--bit-Image-border-color"),
-        DataRow(".bit-img-shd", "--bit-Image-shadow")]
+        DataRow(".bit-img-shd", "--bit-Image-shadow"),
+        DataRow(".bit-img-shd", "--bit-Image-hover-shadow")]
     public void BitImageShouldReadTheShapeVariablesOnlyWhereTheParameterAsksForTheFeature(string selector, string variable)
     {
         // A global value restyles the rounded, bordered or raised images without rounding, bordering or raising
@@ -67,6 +68,32 @@ public partial class BitImageStylesheetTests
 
         StringAssert.Contains(block, $"var({variable}, ");
         Assert.AreEqual(1, Regex.Matches(RulesOf(stylesheet), $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read outside {selector}.");
+    }
+
+    [TestMethod,
+        DataRow("--bit-Image-hover-overlay"),
+        DataRow("--bit-Image-active-overlay")]
+    public void BitImageShouldTintOnlyAClickableImage(string variable)
+    {
+        // The tint is the feedback of a control, so it is laid over the frame of an image with a click handler and
+        // nowhere else - read once, by a rule of the clickable frame's own pseudo-element.
+        var rules = RulesOf(ReadStylesheet());
+
+        Assert.AreEqual(1, Regex.Matches(rules, $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read more than once.");
+        Assert.IsTrue(Regex.IsMatch(rules, $@"(\.bit-img-clk|&)[^{{}}]*::after \{{\s*background-color: var\({Regex.Escape(variable)}, "),
+                      $"{variable} is not read by the clickable frame's tint.");
+    }
+
+    [TestMethod]
+    public void BitImageShouldCrossFadeThePlaceholderAtThePaceOfTheImage()
+    {
+        // The placeholder of an image that fades in fades out over the same private duration, so a reduced motion
+        // preference collapses both halves of the cross-fade together.
+        var block = RuleOf(ReadStylesheet(), ".bit-img-plc");
+
+        StringAssert.Contains(block, "&.bit-img-pfo {");
+        StringAssert.Contains(block, "animation-name: bit-img-fade-out;");
+        StringAssert.Contains(block, "animation-duration: var(--bit-img-fade-duration);");
     }
 
     [TestMethod]
@@ -106,7 +133,26 @@ public partial class BitImageStylesheetTests
     [TestMethod]
     public void BitImageShouldDrawTheFocusRingInTheFocusColor()
     {
-        StringAssert.Contains(ReadStylesheet(), "&:has(.bit-img-img:focus-visible) {\n        @include focus-ring(var(--bit-Image-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(ReadStylesheet(), "&:has(.bit-img-img:focus-visible) {\n        outline: $shp-focus-ring-width solid var(--bit-Image-focus-color, #{$clr-pri-focus});");
+    }
+
+    [TestMethod]
+    public void BitImageShouldKeepTheFocusRingOffTheElevation()
+    {
+        // The box-shadow of the frame is its elevation, which a Shadow and the hover lift of a clickable image both
+        // write; a ring drawn with it would take the lift away from a focused image, and be taken away itself by
+        // the hover rule, whose selector is the heavier one. So the ring is an outline, which the forced-colors
+        // palette keeps.
+        var stylesheet = ReadStylesheet();
+        var focus = stylesheet[stylesheet.IndexOf("&:has(.bit-img-img:focus-visible) {", System.StringComparison.Ordinal)..];
+        focus = focus[..focus.IndexOf("\n    }", System.StringComparison.Ordinal)];
+
+        Assert.IsFalse(focus.Contains("box-shadow"), "The focus ring is drawn with the box-shadow the elevation uses.");
+        Assert.IsFalse(focus.Contains("focus-ring("), "The focus ring is drawn with the box-shadow the elevation uses.");
+        StringAssert.Contains(focus, "@media (forced-colors: active) {\n            outline-color: Highlight;");
+
+        // The native ring of the image is dropped only where the frame can draw its own.
+        StringAssert.Contains(stylesheet, "@supports selector(:has(a)) {\n        .bit-img-img:focus-visible {\n            outline: none;");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

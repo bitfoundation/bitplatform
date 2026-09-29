@@ -30,7 +30,8 @@
 
     @*  The low quality placeholder, which stands in the frame while the real image is still on its
         way. It is decorative by definition - the image it stands for carries the meaning - so it is
-        hidden from assistive technologies rather than given an alt of its own. *@
+        hidden from assistive technologies rather than given an alt of its own. Under a FadeIn it outlives
+        the load by the length of the fade, fading out as the image fades in. *@
     @if (_placeholderSrc.HasValue())
     {
         <img alt=""
@@ -38,7 +39,7 @@
              src="@_placeholderSrc"
              draggable="false"
              style="@GetPlaceholderStyles()"
-             class="bit-img-plc@(Classes?.Placeholder.HasValue() is true ? $" {Classes!.Placeholder}" : null)" />
+             class="@GetPlaceholderClasses()" />
     }
 
     @if (_hasSources)

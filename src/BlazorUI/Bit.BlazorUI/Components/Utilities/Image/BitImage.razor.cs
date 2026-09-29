@@ -86,9 +86,13 @@ public partial class BitImage : BitComponentBase
 
     // The placeholder stands in for an image that is not on screen, which is as true of one that has
     // failed as of one still on its way: it is taken away by the image arriving rather than by time.
-    private string? _placeholderSrc => _loadingState is not BitImageState.Loaded && PlaceholderSrc.HasValue()
+    // An image that fades in keeps it through the fade, fading it out as the image fades in over it -
+    // taken away at once, the frame would drop to its background for the length of the fade.
+    private string? _placeholderSrc => PlaceholderSrc.HasValue() && (_loadingState is not BitImageState.Loaded || FadeIn)
                                         ? PlaceholderSrc
                                         : null;
+
+    private bool _isPlaceholderLeaving => _loadingState is BitImageState.Loaded && FadeIn;
 
     // Whether the img element is on screen, which is also whether its alt is in the accessibility tree.
     private bool _isImageVisible => _loadingState is BitImageState.Loaded ||
@@ -264,7 +268,8 @@ public partial class BitImage : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The fade runs at the moment the image becomes visible rather than when the component is
-    /// rendered, so it is the arrival of the image that is animated. It collapses to nothing under
+    /// rendered, so it is the arrival of the image that is animated. A <see cref="PlaceholderSrc"/>
+    /// fades out over the same time, so the two cross-fade. It collapses to nothing under
     /// prefers-reduced-motion unless
     /// <see cref="BitComponentBase.ForceAnimation"/> says otherwise.
     /// </remarks>
@@ -385,6 +390,9 @@ public partial class BitImage : BitComponentBase
     /// Assigning it makes the image a button: it becomes focusable, is announced as a button with the
     /// <see cref="Alt"/> as its name, and answers the Enter and the Space keys as well as the pointer.
     /// A disabled image answers neither.
+    /// <br />
+    /// The frame shades under the pointer and under the press with a tint of the text color, so the
+    /// image reads as a control even without a <see cref="Shadow"/> to lift.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -457,7 +465,9 @@ public partial class BitImage : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The shadow is the theme's card elevation, so it is the same lift every other raised surface of
-    /// the library has rather than a value written here.
+    /// the library has rather than a value written here. A clickable image (one with an
+    /// <see cref="OnClick"/>) lifts further to the card's hover elevation under the pointer, and settles
+    /// back while pressed, the way a clickable card does.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Shadow { get; set; }
@@ -866,6 +876,13 @@ public partial class BitImage : BitComponentBase
 
             attributes[name] = value!;
         }
+    }
+
+    private string GetPlaceholderClasses()
+    {
+        var className = _isPlaceholderLeaving ? "bit-img-plc bit-img-pfo" : "bit-img-plc";
+
+        return Classes?.Placeholder.HasValue() is true ? $"{className} {Classes.Placeholder}" : className;
     }
 
     private string? GetPlaceholderStyles()

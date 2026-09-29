@@ -7,13 +7,18 @@
 //   --bit-Image-border-width        border width of a Bordered frame                    (default: $shp-border-width)
 //   --bit-Image-border-color        border color of a Bordered frame                    (default: $clr-brd-sec)
 //   --bit-Image-shadow              elevation of a Shadow frame                         (default: $box-shadow-card)
+//   --bit-Image-hover-shadow        elevation of a clickable Shadow frame under the
+//                                   pointer                                             (default: $box-shadow-card-hover)
+//   --bit-Image-hover-overlay       tint laid over a clickable image under the pointer  (default: the text color at 5%)
+//   --bit-Image-active-overlay      tint laid over a clickable image while pressed      (default: the text color at 10%)
 //   --bit-Image-focus-color         color of the keyboard focus ring                    (default: $clr-pri-focus)
 //   --bit-Image-placeholder-blur    blur radius of the PlaceholderSrc                   (default: 0.5rem)
 //   --bit-Image-fade-duration       pace of the FadeIn                                  (default: $mot-duration-long)
 //   --bit-Image-fade-easing         timing function of the FadeIn                       (default: $mot-easing)
 //
 // The shape and the elevation variables only take effect where the parameter asks for the feature (Rounded,
-// Bordered, Shadow), so a global value restyles those images without rounding or raising every other one. The
+// Bordered, Shadow), and the hover and press ones where OnClick makes the image a control, so a global value
+// restyles those images without rounding, raising or tinting every other one. The
 // reduced motion preference collapses the fade, whatever pace it was given, unless ForceAnimation opts out.
 
 // The frame. Everything inside it is positioned against it, which is what lets a centered fit and an
@@ -41,12 +46,33 @@
     }
 
     // The ring is drawn on the frame rather than on the focused image: an element clips its
-    // descendants with overflow, never its own box-shadow, so a ring on the image itself would be cut
+    // descendants with overflow, never its own outline, so a ring on the image itself would be cut
     // off by the very frame that makes the shapes work. It is not tied to the clickable class either -
     // an image made focusable by a TabIndex alone is reached by the same keyboard and needs the same
     // indicator.
+    //
+    // It is an outline rather than the shared box-shadow ring because the box-shadow of the frame is
+    // already its elevation - the Shadow, and the lift of a clickable one under the pointer - and one
+    // property cannot carry both: a focused raised image would lose its lift, or worse, a hovered one
+    // its ring. The outline follows the rounded and circular corners, and sits off the frame by the
+    // theme's ring offset, the gap the shared ring paints in the page background.
     &:has(.bit-img-img:focus-visible) {
-        @include focus-ring(var(--bit-Image-focus-color, #{$clr-pri-focus}));
+        outline: $shp-focus-ring-width solid var(--bit-Image-focus-color, #{$clr-pri-focus});
+        outline-offset: $shp-focus-ring-offset;
+
+        // Forced colors keep the outline but not an author color, so the ring takes the system's own.
+        @media (forced-colors: active) {
+            outline-color: Highlight;
+        }
+    }
+
+    // The browser's own ring on the focused image is dropped in favor of the frame's, which it would
+    // otherwise double from inside, cut off by the clipping. Only where the frame can draw its own: a
+    // browser that cannot read :has keeps the native one, the only indicator it would have.
+    @supports selector(:has(a)) {
+        .bit-img-img:focus-visible {
+            outline: none;
+        }
     }
 }
 
@@ -83,13 +109,23 @@
     clip-path: inset(50%);
 }
 
-@keyframes image-opacity-anim {
+@keyframes bit-img-fade-in {
     0% {
         opacity: 0;
     }
 
     100% {
         opacity: 1;
+    }
+}
+
+@keyframes bit-img-fade-out {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
     }
 }
 
@@ -113,6 +149,16 @@
     user-select: none;
     pointer-events: none;
     -webkit-user-drag: none;
+
+    // The placeholder of an image that fades in is kept through the fade and fades out as the image fades in
+    // under it, at the same pace, so the two cross-fade instead of dropping to the background of the frame
+    // in between. It is laid over the image, being positioned, and lets the pointer through to it meanwhile.
+    &.bit-img-pfo {
+        animation-fill-mode: both;
+        animation-name: bit-img-fade-out;
+        animation-duration: var(--bit-img-fade-duration);
+        animation-timing-function: var(--bit-Image-fade-easing, #{$mot-easing});
+    }
 }
 
 // What stands in for the image while it loads or after it has failed. It is left in the normal flow
@@ -142,9 +188,38 @@
     display: contents;
 }
 
+// A clickable image is a control, so it answers the pointer the way the other controls of the library do:
+// a tint of the text color laid over the whole frame under the pointer and deeper under the press - which
+// reads on a photograph and on a transparent logo alike, and in both schemes, without a token per surface.
+// The tint follows the image itself rather than the frame: content laid over the image through ChildContent
+// takes the pointer where it is interactive, and hovering or pressing that is not hovering or pressing the
+// image. The child combinators keep an image nested in that content from tinting its host.
 .bit-img-clk {
+    transition: box-shadow $mot-duration-short $mot-easing;
+
     .bit-img-img {
         cursor: pointer;
+    }
+
+    &::after {
+        inset: 0;
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        background-color: transparent;
+        transition: background-color $mot-duration-short $mot-easing;
+    }
+
+    &:has(> .bit-img-img:active, > .bit-img-pic > .bit-img-img:active)::after {
+        background-color: var(--bit-Image-active-overlay, color-mix(in srgb, currentcolor 10%, transparent));
+    }
+}
+
+// Only where hovering is a thing the input device does at all: a touch screen would otherwise leave the
+// tint behind on whatever was tapped last.
+@media (hover: hover) {
+    .bit-img-clk:has(> .bit-img-img:hover, > .bit-img-pic > .bit-img-img:hover):not(:has(> .bit-img-img:active, > .bit-img-pic > .bit-img-img:active))::after {
+        background-color: var(--bit-Image-hover-overlay, color-mix(in srgb, currentcolor 5%, transparent));
     }
 }
 
@@ -164,9 +239,16 @@
 }
 
 // An element clips its descendants with overflow, never its own box-shadow, so the shadow of the frame
-// survives the very clipping that makes the shapes work.
+// survives the very clipping that makes the shapes work. A clickable one lifts further under the pointer and
+// settles back to where it rests under the press, like a clickable card.
 .bit-img-shd {
     box-shadow: var(--bit-Image-shadow, #{$box-shadow-card});
+
+    @media (hover: hover) {
+        &.bit-img-clk:has(> .bit-img-img:hover, > .bit-img-pic > .bit-img-img:hover):not(:has(> .bit-img-img:active, > .bit-img-pic > .bit-img-img:active)) {
+            box-shadow: var(--bit-Image-hover-shadow, #{$box-shadow-card-hover});
+        }
+    }
 }
 
 // A fluid frame is never wider than its container, and the image in it is scaled down with it rather than
@@ -211,7 +293,7 @@
 // image arrives rather than when the component was first rendered.
 .bit-img-img.bit-img-vis.bit-img-fde {
     animation-fill-mode: both;
-    animation-name: image-opacity-anim;
+    animation-name: bit-img-fade-in;
     animation-duration: var(--bit-img-fade-duration);
     animation-timing-function: var(--bit-Image-fade-easing, #{$mot-easing});
 }

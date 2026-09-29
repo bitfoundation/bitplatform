@@ -94,7 +94,7 @@ public partial class BitImageDemo
             Name = "FadeIn",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, fades the image in when it becomes visible."
+            Description = "If true, fades the image in when it becomes visible, cross-fading it with a PlaceholderSrc."
         },
         new()
         {
@@ -177,7 +177,7 @@ public partial class BitImageDemo
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
-            Description = "Callback for when the image is clicked. Assigning it makes the image a focusable button that also answers the Enter and Space keys."
+            Description = "Callback for when the image is clicked. Assigning it makes the image a focusable button that also answers the Enter and Space keys, and tints it under the pointer."
         },
         new()
         {
@@ -230,7 +230,7 @@ public partial class BitImageDemo
             Name = "Shadow",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a shadow under the frame of the image, lifting it off the surface it sits on."
+            Description = "Renders a shadow under the frame of the image, lifting it off the surface it sits on. A clickable one lifts further under the pointer."
         },
         new()
         {
@@ -729,6 +729,24 @@ public partial class BitImageDemo
             Name = "--bit-Image-shadow",
             DefaultValue = "--bit-shd-card",
             Description = "Elevation of a Shadow frame.",
+        },
+        new()
+        {
+            Name = "--bit-Image-hover-shadow",
+            DefaultValue = "--bit-shd-card-hover",
+            Description = "Elevation of a clickable Shadow frame under the pointer; a press settles it back to --bit-Image-shadow.",
+        },
+        new()
+        {
+            Name = "--bit-Image-hover-overlay",
+            DefaultValue = "color-mix(in srgb, currentcolor 5%, transparent)",
+            Description = "Tint laid over a clickable image under the pointer.",
+        },
+        new()
+        {
+            Name = "--bit-Image-active-overlay",
+            DefaultValue = "color-mix(in srgb, currentcolor 10%, transparent)",
+            Description = "Tint laid over a clickable image while pressed.",
         },
         new()
         {

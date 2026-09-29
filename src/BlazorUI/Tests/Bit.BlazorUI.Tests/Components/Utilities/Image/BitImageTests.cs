@@ -1461,6 +1461,33 @@ public class BitImageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitImageShouldCrossFadeThePlaceholderOfAnImageThatFadesIn()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "placeholder.png");
+        });
+
+        Assert.IsFalse(component.Find(".bit-img-plc").ClassList.Contains("bit-img-pfo"));
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        // Taken away at once, the placeholder would leave the frame at its background for the length of the fade;
+        // kept and faded out, it cross-fades with the image arriving over it.
+        var placeholder = component.Find(".bit-img-plc");
+
+        Assert.IsTrue(placeholder.ClassList.Contains("bit-img-pfo"));
+        Assert.AreEqual("true", placeholder.GetAttribute("aria-hidden"));
+
+        // A new source brings it back as the stand-in it was.
+        component.Render(parameters => parameters.Add(p => p.Src, "other.png"));
+
+        Assert.IsFalse(component.Find(".bit-img-plc").ClassList.Contains("bit-img-pfo"));
+    }
+
+    [TestMethod]
     public void BitImageShouldNotRenderThePlaceholderWithoutASource()
     {
         var component = RenderComponent<BitImage>(parameters =>
