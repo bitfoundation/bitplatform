@@ -24,7 +24,8 @@ public class BitMessageTests : BunitTestContext
     private static readonly PointerEventArgs _touchPointer = new() { PointerType = "touch" };
 
     // The auto-dismiss callback fires off the render loop, so there is no render for WaitForAssertion to
-    // hang its re-check on. The condition is polled from the test thread instead.
+    // hang its re-check on. The condition is polled from the test thread instead - which is only safe for a
+    // flag the test owns: a FindAll polled from here can race bUnit rebuilding the markup and cache a stale DOM.
     private static void WaitUntil(Func<bool> condition, int timeoutMilliseconds = 5000)
     {
         var stopwatch = Stopwatch.StartNew();
@@ -1405,9 +1406,9 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100));
         });
 
-        WaitUntil(() => component.FindAll(".bit-msg").Count == 0);
-
-        Assert.IsEmpty(component.FindAll(".bit-msg"));
+        // Not WaitUntil: a FindAll polled from the test thread can land while bUnit rebuilds the markup, parse the
+        // old one and keep it cached for good. The dismissal renders the message, which is what this re-checks on.
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-msg")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
