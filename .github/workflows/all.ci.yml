@@ -11,10 +11,13 @@ on:
         description: Boilerplate tests with PostgreSQL
         type: boolean
         default: true
+      # Off by default on .NET 11: MySql.EntityFrameworkCore has no EF 11 build, and the EF 10 one throws
+      # "Method not found: RelationalTypeMapping.Clone" the moment the DbContext is created. Turn it back
+      # on with the provider, not before - see the note next to the reference in Directory.Packages.props.
       boilerplate_mysql:
         description: Boilerplate tests with MySQL
         type: boolean
-        default: true
+        default: false
       boilerplate_mssql:
         description: Boilerplate tests with SQL Server
         type: boolean
@@ -95,7 +98,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10
+    - name: Setup .NET 11
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -138,7 +141,7 @@ jobs:
       working-directory: TestPostgreSQL/src/Tests
       run: |
         dotnet build
-        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+        pwsh bin/Debug/net11.0/playwright.ps1 install --with-deps
 
     - name: Run tests (Blazor Server)
       id: test-postgresql-blazorserver
@@ -204,7 +207,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10
+    - name: Setup .NET 11
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -247,7 +250,7 @@ jobs:
       working-directory: TestMySql/src/Tests
       run: |
         dotnet build
-        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+        pwsh bin/Debug/net11.0/playwright.ps1 install --with-deps
 
     - name: Run tests (Blazor Server)
       id: test-mysql-blazorserver
@@ -313,7 +316,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10
+    - name: Setup .NET 11
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -360,7 +363,7 @@ jobs:
       working-directory: TestSqlServer/src/Tests
       run: |
         dotnet build
-        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+        pwsh bin/Debug/net11.0/playwright.ps1 install --with-deps
 
     - name: Run tests (Blazor Server)
       id: test-mssql-blazorserver
@@ -417,7 +420,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10
+    - name: Setup .NET 11
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -486,7 +489,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10
+    - name: Setup .NET 11
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -576,7 +579,7 @@ jobs:
         dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output ./packages --configuration Release
 
     - name: Generate CSS/JS files BlazorUI
-      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net11.0 -c Release
 
     - name: Build and pack BlazorUI
       run: |
@@ -584,7 +587,7 @@ jobs:
         dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output ./packages --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Extras
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:BeforeBuildTasks --no-restore -f:net11.0 -c Release
 
     - name: Build and pack BlazorUI.Extras
       run: |
@@ -592,7 +595,7 @@ jobs:
         dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output ./packages --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Legacy
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -t:BeforeBuildTasks --no-restore -f:net11.0 -c Release
 
     - name: Build and pack BlazorUI.Legacy
       run: |
@@ -600,7 +603,7 @@ jobs:
         dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output ./packages --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Assets
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net11.0 -c Release
 
     - name: Build and pack BlazorUI.Assets
       run: |
@@ -608,7 +611,7 @@ jobs:
         dotnet pack src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj --output ./packages --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Icons
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:BeforeBuildTasks --no-restore -f:net11.0 -c Release
 
     - name: Build and pack BlazorUI.Icons
       run: |

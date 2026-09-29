@@ -14,10 +14,10 @@ public static class E2EEnvironment
     public static string Host { get; } = HarnessHostKinds.Validate(Read("BUTIL_E2E_HOST") ?? HarnessHostKinds.Standalone);
 
     /// <summary>
-    /// <c>BUTIL_E2E_FRAMEWORK</c>: the target framework the web harness host runs on (net10.0, net9.0 or
-    /// net8.0). Defaults to net10.0. The standalone sample and the hybrid host are net10.0 only.
+    /// <c>BUTIL_E2E_FRAMEWORK</c>: the target framework the web harness host runs on (net11.0, net10.0, net9.0 or
+    /// net8.0). Defaults to net11.0. The standalone sample and the hybrid host are net11.0 only.
     /// </summary>
-    public static string Framework { get; } = Read("BUTIL_E2E_FRAMEWORK") ?? "net10.0";
+    public static string Framework { get; } = Read("BUTIL_E2E_FRAMEWORK") ?? "net11.0";
 
     /// <summary>
     /// <c>BUTIL_E2E_CONFIGURATION</c>: the build configuration of the harness hosts. Defaults to the

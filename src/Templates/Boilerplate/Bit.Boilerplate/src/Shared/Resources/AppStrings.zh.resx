@@ -2210,4 +2210,13 @@
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>我们已将验证码发送至 {0} 和 {1}。</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>自助终端模式</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>此应用已锁定在屏幕上：Windows 键、Alt+Tab、任务管理器和关闭窗口均已被阻止。请使用按钮退出。</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>退出应用</value>
+  </data>
 </root>
