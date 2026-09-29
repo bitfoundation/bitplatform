@@ -152,17 +152,25 @@ public class BitSplitterStylesheetTests
     }
 
     [TestMethod]
-    public void BitSplitterPanelLimitsShouldCostNoSpecificity()
+    public void BitSplitterPanelLimitsShouldCostTheSpecificityOfASingleClass()
     {
-        // A min or max size set through Classes, in any unit, is one the drag honours, so it has to beat the defaults
-        // in both orientations wherever the app's stylesheet is loaded.
+        // A min or max size set through Classes, in any unit, is one the drag honours, so the root in front of the part
+        // adds nothing and an app's class ties with the defaults in both orientations. No specificity at all would hand
+        // them to any element rule too - a reset's `div { min-height: auto }` would stop the panels shrinking.
         var stylesheet = ReadStylesheet();
 
-        foreach (var selector in new[] { ":where(.bit-spl > .bit-spl-fpn) {", ":where(.bit-spl > .bit-spl-spn) {",
-                                         ":where(.bit-spl-vrt > .bit-spl-fpn) {", ":where(.bit-spl-vrt > .bit-spl-spn) {" })
+        foreach (var selector in new[] { "\n:where(.bit-spl) > .bit-spl-pnl {", "\n:where(.bit-spl) > .bit-spl-fpn {", "\n:where(.bit-spl) > .bit-spl-spn {",
+                                         "\n:where(.bit-spl-vrt) > .bit-spl-pnl {", "\n:where(.bit-spl-vrt) > .bit-spl-fpn {", "\n:where(.bit-spl-vrt) > .bit-spl-spn {" })
         {
             StringAssert.Contains(stylesheet, selector);
         }
+
+        // The column ties with the row, so it has to come after it to swap the axes.
+        Assert.IsTrue(stylesheet.IndexOf("\n:where(.bit-spl-vrt) > .bit-spl-pnl {", StringComparison.Ordinal)
+                    > stylesheet.IndexOf("\n:where(.bit-spl) > .bit-spl-spn {", StringComparison.Ordinal));
+
+        Assert.IsFalse(stylesheet.Contains(":where(.bit-spl > ", StringComparison.Ordinal), "A panel limit costs no specificity at all again.");
+        Assert.IsFalse(stylesheet.Contains(":where(.bit-spl-vrt > ", StringComparison.Ordinal), "A panel limit costs no specificity at all again.");
 
         foreach (var selector in new[] { "\n.bit-spl-fpn {", "\n.bit-spl-spn {", "\n.bit-spl-pnl {" })
         {
@@ -191,9 +199,36 @@ public class BitSplitterStylesheetTests
     [TestMethod]
     public void BitSplitterShouldMirrorTheDefaultChevronByTheDirectionItIsLaidOutIn()
     {
-        // :dir() reads the direction from the html element as much as from a Dir parameter - the same direction the
-        // drag and the keys go by - and a stacked splitter is left alone.
-        StringAssert.Contains(ReadStylesheet(), ".bit-spl:not(.bit-spl-vrt):dir(rtl) > .bit-spl-gtr > .bit-spl-cbt > .bit-spl-cbd {\n    scale: -1 1;");
+        // :dir() reads the direction a splitter inherits from the html element - the same direction the drag and the
+        // keys go by - and a stacked splitter is left alone. One whose Dir parameter says so is already turned in the
+        // markup, which every browser draws, so it is left out here rather than turned back again.
+        var stylesheet = ReadStylesheet();
+        var rule = ".bit-spl:not(.bit-spl-vrt):not([dir=\"rtl\"]):dir(rtl) > .bit-spl-gtr > .bit-spl-cbt > .bit-spl-cbd {\n    scale: -1 1;";
+
+        StringAssert.Contains(stylesheet, rule);
+
+        // A browser without :dir() drops every selector of a list that holds it, so the rule stands on its own.
+        var start = stylesheet.IndexOf(rule, StringComparison.Ordinal);
+        var lineStart = stylesheet.LastIndexOf('\n', start - 1) + 1;
+
+        Assert.AreEqual(start, lineStart, "The :dir() rule shares its selector list with another one.");
+    }
+
+    [TestMethod]
+    public void BitSplitterStatesShouldMoveTheVariablesRatherThanPaintOverAnAppsClass()
+    {
+        // A gutter or a collapse button an app paints through Classes keeps that paint under the pointer and through a
+        // drag: the states only move the private variables the one rule at rest paints from.
+        var stylesheet = ReadStylesheet();
+
+        foreach (var selector in new[] { "    :where(.bit-spl:not(.bit-spl-rdo, .bit-dis, .bit-spl-col:not(.bit-spl-cpb))) > .bit-spl-gtr:hover {",
+                                         "\n.bit-spl-drg > .bit-spl-gtr {", "        &:hover {" })
+        {
+            var block = GetBlock(stylesheet, selector, "}");
+
+            Assert.IsFalse(Regex.IsMatch(block, @"^\s*(background-color|background|color|border-color)\s*:", RegexOptions.Multiline),
+                           $"{selector.Trim()} paints the part directly.");
+        }
     }
 
     [TestMethod]

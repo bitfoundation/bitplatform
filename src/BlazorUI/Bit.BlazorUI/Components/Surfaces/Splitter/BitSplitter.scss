@@ -81,40 +81,43 @@
 }
 
 /*
- * The limits of the panels cost no specificity. A minimum or a maximum set through Classes - in a percentage,
- * in rem, in anything the parameters cannot say - is one the drag measures and honours, and it has to win over
- * these defaults whichever way the splitter is turned and wherever the app's stylesheet is loaded. What the
+ * The limits of the panels cost the specificity of a single class. A minimum or a maximum set through Classes -
+ * in a percentage, in rem, in anything the parameters cannot say - is one the drag measures and honours, so the
+ * root in front of the part is wrapped in :where() and adds nothing: a class of the app's ties with these and wins
+ * from the stylesheet loaded after the library's, and anything more specific wins wherever it is loaded, in both
+ * orientations. They are not taken down to no specificity at all, which would hand them to any element rule as
+ * well - a reset's `div { min-height: auto }` would stop the panels shrinking below their content. What the
  * parameters set still arrives through the variables, and a fold still lets go of all of it (further down).
  */
-:where(.bit-spl > .bit-spl-pnl) {
+:where(.bit-spl) > .bit-spl-pnl {
     min-width: 0;
     min-height: 0;
 }
 
-:where(.bit-spl > .bit-spl-fpn) {
+:where(.bit-spl) > .bit-spl-fpn {
     max-width: var(--bit-spl-fpn-max, none);
     min-width: var(--bit-spl-fpn-min, 0);
 }
 
-:where(.bit-spl > .bit-spl-spn) {
+:where(.bit-spl) > .bit-spl-spn {
     max-width: var(--bit-spl-spn-max, none);
     min-width: var(--bit-spl-spn-min, 0);
 }
 
 // The constraints swap axes with the layout: what was a width on a row is a height on a column, and the width
 // the panel is no longer measured on has to be let go of, or it would keep clamping the panel across the
-// splitter instead of along it.
-:where(.bit-spl-vrt > .bit-spl-pnl) {
+// splitter instead of along it. These tie with the rules above, so they come after them.
+:where(.bit-spl-vrt) > .bit-spl-pnl {
     max-width: none;
     min-width: 0;
 }
 
-:where(.bit-spl-vrt > .bit-spl-fpn) {
+:where(.bit-spl-vrt) > .bit-spl-fpn {
     max-height: var(--bit-spl-fpn-max, none);
     min-height: var(--bit-spl-fpn-min, 0);
 }
 
-:where(.bit-spl-vrt > .bit-spl-spn) {
+:where(.bit-spl-vrt) > .bit-spl-spn {
     max-height: var(--bit-spl-spn-max, none);
     min-height: var(--bit-spl-spn-min, 0);
 }
@@ -146,9 +149,13 @@
 // can hover: a finger lifting off the gutter would otherwise leave it painted in its hover color until the next
 // tap elsewhere. The conditions cost no specificity, so the drag further down still wins while the pointer is on
 // the gutter it is dragging.
+//
+// The states change the variable the gutter is painted from rather than its background, so the one rule that
+// declares the background is the one at rest: a gutter the app paints through Classes keeps that paint under the
+// pointer and through a drag, instead of losing it to a state that outranks the app's class.
 @media (hover: hover) {
     :where(.bit-spl:not(.bit-spl-rdo, .bit-dis, .bit-spl-col:not(.bit-spl-cpb))) > .bit-spl-gtr:hover {
-        background-color: var(--bit-spl-gtr-hvr-bg);
+        --bit-spl-gtr-bg: var(--bit-spl-gtr-hvr-bg);
     }
 }
 
@@ -200,19 +207,24 @@
     justify-content: center;
     width: spacing(1.75);
     height: spacing(4.5);
-    color: var(--bit-Splitter-collapse-button-color, #{$clr-fg-sec});
+    color: var(--bit-spl-cbt-clr);
     border-radius: var(--bit-Splitter-collapse-button-radius, #{$shp-radius-full});
-    border: $siz-divider solid var(--bit-Splitter-collapse-button-border-color, #{$clr-brd-pri});
-    background-color: var(--bit-Splitter-collapse-button-background, #{$clr-bg-pri});
+    border: $siz-divider solid var(--bit-spl-cbt-brd);
+    background-color: var(--bit-spl-cbt-bg);
     transform: translate(-50%, -50%);
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+    --bit-spl-cbt-clr: var(--bit-Splitter-collapse-button-color, #{$clr-fg-sec});
+    --bit-spl-cbt-brd: var(--bit-Splitter-collapse-button-border-color, #{$clr-brd-pri});
+    --bit-spl-cbt-bg: var(--bit-Splitter-collapse-button-background, #{$clr-bg-pri});
     --bit-spl-cbt-hvr-bg: var(--bit-Splitter-collapse-button-hover-background, #{$clr-pri});
 
+    // Like the gutter's, the hover moves the variables rather than the colors, so a button the app paints through
+    // Classes keeps that paint under the pointer.
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-Splitter-collapse-button-hover-color, #{$clr-pri-text});
-            border-color: var(--bit-spl-cbt-hvr-bg);
-            background-color: var(--bit-spl-cbt-hvr-bg);
+            --bit-spl-cbt-clr: var(--bit-Splitter-collapse-button-hover-color, #{$clr-pri-text});
+            --bit-spl-cbt-brd: var(--bit-spl-cbt-hvr-bg);
+            --bit-spl-cbt-bg: var(--bit-spl-cbt-hvr-bg);
         }
     }
 
@@ -234,11 +246,13 @@
     line-height: 1;
 }
 
-// The default chevron is chosen for a row written left to right; one written right to left puts the first panel
-// on the right, so it is mirrored here. :dir() is the direction the element is actually laid out in - from its
-// own dir attribute or from any ancestor's, the html element's included - which is the one the drag and the keys
-// already go by. A stacked splitter is untouched: the writing direction says nothing about which way is down.
-.bit-spl:not(.bit-spl-vrt):dir(rtl) > .bit-spl-gtr > .bit-spl-cbt > .bit-spl-cbd {
+// A row written right to left puts the first panel on the right. The component already turns the default chevron
+// of a splitter whose Dir parameter says so - which every browser draws - so what is left here is the one that is
+// right to left only by inheriting it, from the html element or any other ancestor. :dir() reads the direction
+// the element is actually laid out in, the one the drag and the keys already go by; a browser without it drops
+// this rule and is left with what the parameter gave it. A stacked splitter is untouched: the writing direction
+// says nothing about which way is down.
+.bit-spl:not(.bit-spl-vrt):not([dir="rtl"]):dir(rtl) > .bit-spl-gtr > .bit-spl-cbt > .bit-spl-cbd {
     scale: -1 1;
 }
 
@@ -297,7 +311,7 @@
 }
 
 .bit-spl-drg > .bit-spl-gtr {
-    background-color: var(--bit-Splitter-gutter-active-background, var(--bit-spl-gtr-hvr-bg));
+    --bit-spl-gtr-bg: var(--bit-Splitter-gutter-active-background, var(--bit-spl-gtr-hvr-bg));
 }
 
 .bit-spl-vrt {
@@ -416,12 +430,9 @@ body.bit-spl-drg-bdy {
 // Forced colors replaces every background with the canvas, which would leave the gutter the same color as
 // the panels on either side of it and the grip the same color as the gutter.
 @media (forced-colors: active) {
-    // Every state of the gutter is painted the same way here: the hover and the drag are both more specific
-    // than the plain selector, so a rule for that one alone would be given up again the moment the pointer
-    // reached the gutter.
-    .bit-spl-gtr,
-    :where(.bit-spl:not(.bit-spl-rdo, .bit-dis, .bit-spl-col:not(.bit-spl-cpb))) > .bit-spl-gtr:hover,
-    .bit-spl-drg > .bit-spl-gtr {
+    // Every state of the gutter is painted the same way here, and the plain selector is enough to do it: the
+    // hover and the drag only move the variable the background is read from, which this no longer reads.
+    .bit-spl-gtr {
         background-color: CanvasText;
     }
 
@@ -439,8 +450,7 @@ body.bit-spl-drg-bdy {
 
     // The control is drawn on top of a gutter that has just become the canvas text colour, so it has to
     // paint its own ground back in or it would disappear into the line it sits on.
-    .bit-spl-cbt,
-    .bit-spl-cbt:hover {
+    .bit-spl-cbt {
         color: CanvasText;
         border-color: CanvasText;
         background-color: Canvas;

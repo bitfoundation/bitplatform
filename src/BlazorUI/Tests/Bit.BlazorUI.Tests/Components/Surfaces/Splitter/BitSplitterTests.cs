@@ -1414,16 +1414,18 @@ public class BitSplitterTests : BunitTestContext
     [DataTestMethod,
      DataRow(false, false, false, "bit-icon--ChevronRight bit-ico-r180"),
      DataRow(false, true, false, "bit-icon--ChevronRight"),
-     DataRow(false, false, true, "bit-icon--ChevronRight bit-ico-r180"),
-     DataRow(false, true, true, "bit-icon--ChevronRight"),
+     DataRow(false, false, true, "bit-icon--ChevronRight"),
+     DataRow(false, true, true, "bit-icon--ChevronRight bit-ico-r180"),
      DataRow(true, false, false, "bit-icon--ChevronRight bit-ico--r90"),
-     DataRow(true, true, false, "bit-icon--ChevronRight bit-ico-r90")]
+     DataRow(true, true, false, "bit-icon--ChevronRight bit-ico-r90"),
+     DataRow(true, false, true, "bit-icon--ChevronRight bit-ico--r90"),
+     DataRow(true, true, true, "bit-icon--ChevronRight bit-ico-r90")]
     public void BitSplitterTheCollapseControlShouldPointAtWhatThePressWillDo(bool vertical, bool collapsed, bool rtl, string expected)
     {
         // The chevron makes the same turn the drag does: at the panel while it is there to be folded away, and
-        // at the room it is about to come back into once it is gone. Across a row written right to left it is the
-        // stylesheet that turns it around (:dir(rtl) on .bit-spl-cbd), so the markup is the same in both directions
-        // and a page that is right to left from its html element, with no Dir of its own, is turned around too.
+        // at the room it is about to come back into once it is gone. A row the Dir parameter writes right to left
+        // is turned here, in the markup, which every browser draws; one that is right to left only by inheriting it
+        // is left to the stylesheet (:dir(rtl) on .bit-spl-cbd). A stacked splitter is the same in both directions.
         var component = RenderComponent<BitSplitter>(parameters =>
         {
             parameters.Add(p => p.Collapsible, true);
@@ -1436,7 +1438,7 @@ public class BitSplitterTests : BunitTestContext
         var icon = component.Find(".bit-spl-cbi");
 
         Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
-        Assert.IsTrue(icon.ClassList.Contains("bit-spl-cbd"), "The default chevron is the one the stylesheet mirrors for a row written right to left.");
+        Assert.IsTrue(icon.ClassList.Contains("bit-spl-cbd"), "The default chevron is the one the stylesheet mirrors for a row that inherits right to left.");
 
         foreach (var expectedClass in expected.Split(' '))
         {
@@ -1695,6 +1697,52 @@ public class BitSplitterTests : BunitTestContext
         var sync = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Splitter.sync");
 
         Assert.IsNull(sync.Arguments[1]);
+
+        // The drag wrote over the very properties the style attribute declares the parameters in, so they are handed
+        // over too - a render producing the same attribute again would not put them back.
+        CollectionAssert.AreEqual(new string?[] { "150px", "0", null, null }, (string?[])sync.Arguments[2]!);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterResetSizeShouldHandTheJavaScriptSideTheDefaultPercentEvenWhenPercentWasNeverSet()
+    {
+        Context.JSInterop.Setup<string>("BitBlazorUI.Splitter.setup", _ => true).SetResult("spl-1");
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.DefaultPercent, 30d);
+            parameters.Add(p => p.SecondPanelSize, 200);
+        });
+
+        // Nothing has been dragged into Percent, so the style attribute a double-click renders is the one already
+        // there - the declared split has to reach the JavaScript side through the sync itself.
+        await component.InvokeAsync(() => component.Instance.ResetSize());
+
+        var sync = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Splitter.sync");
+
+        Assert.IsNull(sync.Arguments[1]);
+        CollectionAssert.AreEqual(new string?[] { "30%", "0", null, null }, (string?[])sync.Arguments[2]!);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterExpandingShouldHandTheJavaScriptSideTheDeclaredSizes()
+    {
+        Context.JSInterop.Setup<string>("BitBlazorUI.Splitter.setup", _ => true).SetResult("spl-1");
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.FirstPanelSize, 120);
+            parameters.Add(p => p.SecondPanelSize, 200);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Collapse());
+        await component.InvokeAsync(() => component.Instance.Expand());
+
+        var sync = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Splitter.sync");
+
+        Assert.IsNull(sync.Arguments[1]);
+        CollectionAssert.AreEqual(new string?[] { "120px", "0", "200px", "1" }, (string?[])sync.Arguments[2]!);
     }
 
     [TestMethod]
@@ -1788,7 +1836,8 @@ public class BitSplitterTests : BunitTestContext
     [DataTestMethod,
      DataRow(false, false, false, "bit-icon--ChevronRight"),
      DataRow(false, true, false, "bit-icon--ChevronRight bit-ico-r180"),
-     DataRow(false, false, true, "bit-icon--ChevronRight"),
+     DataRow(false, false, true, "bit-icon--ChevronRight bit-ico-r180"),
+     DataRow(false, true, true, "bit-icon--ChevronRight"),
      DataRow(true, false, false, "bit-icon--ChevronRight bit-ico-r90"),
      DataRow(true, true, false, "bit-icon--ChevronRight bit-ico--r90")]
     public void BitSplitterTheCollapseControlShouldPointAtTheSecondPanelWhenThatIsTheOneThatFolds(bool vertical, bool collapsed, bool rtl, string expected)

@@ -189,7 +189,12 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     /// <remarks>
     /// Only properties that have a value set and have not already been set on the <paramref name="bitSplitter"/> will be updated.
-    /// This method does not overwrite existing values on <paramref name="bitSplitter"/>.
+    /// This method does not overwrite existing values on <paramref name="bitSplitter"/>. What it supplies is recorded on
+    /// the component, which puts back the value it replaced once this object stops supplying one.
+    /// <br />
+    /// <see cref="DefaultPercent"/>, <see cref="FirstPanelSize"/> and <see cref="SecondPanelSize"/> are supplied together or
+    /// not at all: a splitter that sets any of the three for itself has decided where its split starts, and a cascaded
+    /// one taken beside it would outrank it rather than fill a gap.
     /// </remarks>
     /// <param name="bitSplitter">
     /// The <see cref="BitSplitter"/> instance whose properties will be updated. Cannot be null.
@@ -198,190 +203,220 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitSplitter is null) return;
 
-        UpdateBaseParameters(bitSplitter);
-
-        if (Classes is not null && bitSplitter.HasNotBeenSet(nameof(Classes)))
+        // The inherited parameters go through the same bookkeeping as the splitter's own rather than through
+        // UpdateBaseParameters, which cannot take a value back: an AriaLabel or a Class the cascade stops giving
+        // would otherwise stay on the splitter for good.
+        if (AriaLabel.HasValue())
         {
-            bitSplitter.Classes = Classes;
-
-            bitSplitter.ClassBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(AriaLabel), AriaLabel, static s => s.AriaLabel, static (s, v) => s.AriaLabel = v);
         }
 
-        if (CollapseIcon is not null && bitSplitter.HasNotBeenSet(nameof(CollapseIcon)))
+        if (Class.HasValue())
         {
-            bitSplitter.CollapseIcon = CollapseIcon;
+            bitSplitter.TakeFromCascade(nameof(Class), Class, static s => s.Class, static (s, v) => s.Class = v);
         }
 
-        if (CollapseIconName.HasValue() && bitSplitter.HasNotBeenSet(nameof(CollapseIconName)))
+        if (Dir.HasValue)
         {
-            bitSplitter.CollapseIconName = CollapseIconName;
+            // Dir reads through to the cascading direction while it has no value of its own, so it goes back to no
+            // value rather than to the direction it happened to read, which would pin that direction in its place.
+            bitSplitter.TakeFromCascade(nameof(Dir), Dir, static s => s.Dir, static (s, v) => s.Dir = v, original: null);
         }
 
-        if (CollapsedSize.HasValue && bitSplitter.HasNotBeenSet(nameof(CollapsedSize)))
+        if (ForceAnimation.HasValue)
         {
-            bitSplitter.CollapsedSize = CollapsedSize.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(ForceAnimation), ForceAnimation.Value, static s => s.ForceAnimation, static (s, v) => s.ForceAnimation = v);
         }
 
-        if (Collapsible.HasValue && bitSplitter.HasNotBeenSet(nameof(Collapsible)))
+        // The attributes are gathered again from the markup on every render, so what the cascade adds to them is
+        // gone the moment it stops adding it; there is nothing to take back.
+        if (HtmlAttributes is not null)
         {
-            bitSplitter.Collapsible = Collapsible.Value;
-
-            bitSplitter.ClassBuilder.Reset();
+            foreach (var attr in HtmlAttributes)
+            {
+                bitSplitter.HtmlAttributes.TryAdd(attr.Key, attr.Value);
+            }
         }
 
-        if (CollapseSecondPanel.HasValue && bitSplitter.HasNotBeenSet(nameof(CollapseSecondPanel)))
+        if (Id.HasValue())
         {
-            bitSplitter.CollapseSecondPanel = CollapseSecondPanel.Value;
-
-            bitSplitter.ClassBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(Id), Id, static s => s.Id, static (s, v) => s.Id = v);
         }
 
-        if (DefaultPercent.HasValue && bitSplitter.HasNotBeenSet(nameof(DefaultPercent)))
+        if (IsEnabled.HasValue)
         {
-            bitSplitter.DefaultPercent = DefaultPercent.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(IsEnabled), IsEnabled.Value, static s => s.IsEnabled, static (s, v) => s.IsEnabled = v);
         }
 
-        if (DragStep.HasValue && bitSplitter.HasNotBeenSet(nameof(DragStep)))
+        if (Style.HasValue())
         {
-            bitSplitter.DragStep = DragStep.Value;
+            bitSplitter.TakeFromCascade(nameof(Style), Style, static s => s.Style, static (s, v) => s.Style = v);
         }
 
-        if (ExpandIcon is not null && bitSplitter.HasNotBeenSet(nameof(ExpandIcon)))
+        if (TabIndex.HasValue())
         {
-            bitSplitter.ExpandIcon = ExpandIcon;
+            bitSplitter.TakeFromCascade(nameof(TabIndex), TabIndex, static s => s.TabIndex, static (s, v) => s.TabIndex = v);
         }
 
-        if (ExpandIconName.HasValue() && bitSplitter.HasNotBeenSet(nameof(ExpandIconName)))
+        if (Visibility.HasValue)
         {
-            bitSplitter.ExpandIconName = ExpandIconName;
+            bitSplitter.TakeFromCascade(nameof(Visibility), Visibility.Value, static s => s.Visibility, static (s, v) => s.Visibility = v);
         }
 
-        if (FirstPanelMaxSize.HasValue && bitSplitter.HasNotBeenSet(nameof(FirstPanelMaxSize)))
+        if (Classes is not null)
         {
-            bitSplitter.FirstPanelMaxSize = FirstPanelMaxSize.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
-        if (FirstPanelMinSize.HasValue && bitSplitter.HasNotBeenSet(nameof(FirstPanelMinSize)))
+        if (CollapseIcon is not null)
         {
-            bitSplitter.FirstPanelMinSize = FirstPanelMinSize.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(CollapseIcon), CollapseIcon, static s => s.CollapseIcon, static (s, v) => s.CollapseIcon = v);
         }
 
-        if (FirstPanelSize.HasValue && bitSplitter.HasNotBeenSet(nameof(FirstPanelSize)))
+        if (CollapseIconName.HasValue())
         {
-            bitSplitter.FirstPanelSize = FirstPanelSize.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(CollapseIconName), CollapseIconName, static s => s.CollapseIconName, static (s, v) => s.CollapseIconName = v);
         }
 
-        if (GutterHitSize.HasValue && bitSplitter.HasNotBeenSet(nameof(GutterHitSize)))
+        if (CollapsedSize.HasValue)
         {
-            bitSplitter.GutterHitSize = GutterHitSize.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(CollapsedSize), CollapsedSize.Value, static s => s.CollapsedSize, static (s, v) => s.CollapsedSize = v);
         }
 
-        if (GutterIcon is not null && bitSplitter.HasNotBeenSet(nameof(GutterIcon)))
+        if (Collapsible.HasValue)
         {
-            bitSplitter.GutterIcon = GutterIcon;
+            bitSplitter.TakeFromCascade(nameof(Collapsible), Collapsible.Value, static s => s.Collapsible, static (s, v) => s.Collapsible = v);
         }
 
-        if (GutterIconName.HasValue() && bitSplitter.HasNotBeenSet(nameof(GutterIconName)))
+        if (CollapseSecondPanel.HasValue)
         {
-            bitSplitter.GutterIconName = GutterIconName;
+            bitSplitter.TakeFromCascade(nameof(CollapseSecondPanel), CollapseSecondPanel.Value, static s => s.CollapseSecondPanel, static (s, v) => s.CollapseSecondPanel = v);
         }
 
-        if (GutterSize.HasValue && bitSplitter.HasNotBeenSet(nameof(GutterSize)))
+        // Where the split starts is one decision across the three sizes, and DefaultPercent and FirstPanelSize outrank
+        // SecondPanelSize: a cascaded one taken beside one the splitter set itself would override it rather than fill a
+        // gap, so a splitter that sizes its panels at all is left to do it alone.
+        if (bitSplitter.SizesItsOwnPanels is false)
         {
-            bitSplitter.GutterSize = GutterSize.Value;
+            if (DefaultPercent.HasValue)
+            {
+                bitSplitter.TakeFromCascade(nameof(DefaultPercent), DefaultPercent, static s => s.DefaultPercent, static (s, v) => s.DefaultPercent = v);
+            }
 
-            bitSplitter.StyleBuilder.Reset();
+            if (FirstPanelSize.HasValue)
+            {
+                bitSplitter.TakeFromCascade(nameof(FirstPanelSize), FirstPanelSize, static s => s.FirstPanelSize, static (s, v) => s.FirstPanelSize = v);
+            }
+
+            if (SecondPanelSize.HasValue)
+            {
+                bitSplitter.TakeFromCascade(nameof(SecondPanelSize), SecondPanelSize, static s => s.SecondPanelSize, static (s, v) => s.SecondPanelSize = v);
+            }
         }
 
-        if (GutterTemplate is not null && bitSplitter.HasNotBeenSet(nameof(GutterTemplate)))
+        if (DragStep.HasValue)
         {
-            bitSplitter.GutterTemplate = GutterTemplate;
+            bitSplitter.TakeFromCascade(nameof(DragStep), DragStep.Value, static s => s.DragStep, static (s, v) => s.DragStep = v);
         }
 
-        if (KeyboardStep.HasValue && bitSplitter.HasNotBeenSet(nameof(KeyboardStep)))
+        if (ExpandIcon is not null)
         {
-            bitSplitter.KeyboardStep = KeyboardStep.Value;
+            bitSplitter.TakeFromCascade(nameof(ExpandIcon), ExpandIcon, static s => s.ExpandIcon, static (s, v) => s.ExpandIcon = v);
         }
 
-        if (LazyResize.HasValue && bitSplitter.HasNotBeenSet(nameof(LazyResize)))
+        if (ExpandIconName.HasValue())
         {
-            bitSplitter.LazyResize = LazyResize.Value;
+            bitSplitter.TakeFromCascade(nameof(ExpandIconName), ExpandIconName, static s => s.ExpandIconName, static (s, v) => s.ExpandIconName = v);
         }
 
-        if (NoResetOnDoubleClick.HasValue && bitSplitter.HasNotBeenSet(nameof(NoResetOnDoubleClick)))
+        if (FirstPanelMaxSize.HasValue)
         {
-            bitSplitter.NoResetOnDoubleClick = NoResetOnDoubleClick.Value;
+            bitSplitter.TakeFromCascade(nameof(FirstPanelMaxSize), FirstPanelMaxSize, static s => s.FirstPanelMaxSize, static (s, v) => s.FirstPanelMaxSize = v);
         }
 
-        if (PersistInSessionStorage.HasValue && bitSplitter.HasNotBeenSet(nameof(PersistInSessionStorage)))
+        if (FirstPanelMinSize.HasValue)
         {
-            bitSplitter.PersistInSessionStorage = PersistInSessionStorage.Value;
+            bitSplitter.TakeFromCascade(nameof(FirstPanelMinSize), FirstPanelMinSize, static s => s.FirstPanelMinSize, static (s, v) => s.FirstPanelMinSize = v);
         }
 
-        if (ReadOnly.HasValue && bitSplitter.HasNotBeenSet(nameof(ReadOnly)))
+        if (GutterHitSize.HasValue)
         {
-            bitSplitter.ReadOnly = ReadOnly.Value;
-
-            bitSplitter.ClassBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(GutterHitSize), GutterHitSize, static s => s.GutterHitSize, static (s, v) => s.GutterHitSize = v);
         }
 
-        if (SecondPanelMaxSize.HasValue && bitSplitter.HasNotBeenSet(nameof(SecondPanelMaxSize)))
+        if (GutterIcon is not null)
         {
-            bitSplitter.SecondPanelMaxSize = SecondPanelMaxSize.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(GutterIcon), GutterIcon, static s => s.GutterIcon, static (s, v) => s.GutterIcon = v);
         }
 
-        if (SecondPanelMinSize.HasValue && bitSplitter.HasNotBeenSet(nameof(SecondPanelMinSize)))
+        if (GutterIconName.HasValue())
         {
-            bitSplitter.SecondPanelMinSize = SecondPanelMinSize.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(GutterIconName), GutterIconName, static s => s.GutterIconName, static (s, v) => s.GutterIconName = v);
         }
 
-        if (SecondPanelSize.HasValue && bitSplitter.HasNotBeenSet(nameof(SecondPanelSize)))
+        if (GutterSize.HasValue)
         {
-            bitSplitter.SecondPanelSize = SecondPanelSize.Value;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(GutterSize), GutterSize, static s => s.GutterSize, static (s, v) => s.GutterSize = v);
         }
 
-        if (ShowCollapseButton.HasValue && bitSplitter.HasNotBeenSet(nameof(ShowCollapseButton)))
+        if (GutterTemplate is not null)
         {
-            bitSplitter.ShowCollapseButton = ShowCollapseButton.Value;
-
-            bitSplitter.ClassBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(GutterTemplate), GutterTemplate, static s => s.GutterTemplate, static (s, v) => s.GutterTemplate = v);
         }
 
-        if (SnapSize.HasValue && bitSplitter.HasNotBeenSet(nameof(SnapSize)))
+        if (KeyboardStep.HasValue)
         {
-            bitSplitter.SnapSize = SnapSize.Value;
+            bitSplitter.TakeFromCascade(nameof(KeyboardStep), KeyboardStep.Value, static s => s.KeyboardStep, static (s, v) => s.KeyboardStep = v);
         }
 
-        if (Styles is not null && bitSplitter.HasNotBeenSet(nameof(Styles)))
+        if (LazyResize.HasValue)
         {
-            bitSplitter.Styles = Styles;
-
-            bitSplitter.StyleBuilder.Reset();
+            bitSplitter.TakeFromCascade(nameof(LazyResize), LazyResize.Value, static s => s.LazyResize, static (s, v) => s.LazyResize = v);
         }
 
-        if (Vertical.HasValue && bitSplitter.HasNotBeenSet(nameof(Vertical)))
+        if (NoResetOnDoubleClick.HasValue)
         {
-            bitSplitter.Vertical = Vertical.Value;
+            bitSplitter.TakeFromCascade(nameof(NoResetOnDoubleClick), NoResetOnDoubleClick.Value, static s => s.NoResetOnDoubleClick, static (s, v) => s.NoResetOnDoubleClick = v);
+        }
 
-            bitSplitter.ClassBuilder.Reset();
+        if (PersistInSessionStorage.HasValue)
+        {
+            bitSplitter.TakeFromCascade(nameof(PersistInSessionStorage), PersistInSessionStorage.Value, static s => s.PersistInSessionStorage, static (s, v) => s.PersistInSessionStorage = v);
+        }
+
+        if (ReadOnly.HasValue)
+        {
+            bitSplitter.TakeFromCascade(nameof(ReadOnly), ReadOnly.Value, static s => s.ReadOnly, static (s, v) => s.ReadOnly = v);
+        }
+
+        if (SecondPanelMaxSize.HasValue)
+        {
+            bitSplitter.TakeFromCascade(nameof(SecondPanelMaxSize), SecondPanelMaxSize, static s => s.SecondPanelMaxSize, static (s, v) => s.SecondPanelMaxSize = v);
+        }
+
+        if (SecondPanelMinSize.HasValue)
+        {
+            bitSplitter.TakeFromCascade(nameof(SecondPanelMinSize), SecondPanelMinSize, static s => s.SecondPanelMinSize, static (s, v) => s.SecondPanelMinSize = v);
+        }
+
+        if (ShowCollapseButton.HasValue)
+        {
+            bitSplitter.TakeFromCascade(nameof(ShowCollapseButton), ShowCollapseButton.Value, static s => s.ShowCollapseButton, static (s, v) => s.ShowCollapseButton = v);
+        }
+
+        if (SnapSize.HasValue)
+        {
+            bitSplitter.TakeFromCascade(nameof(SnapSize), SnapSize.Value, static s => s.SnapSize, static (s, v) => s.SnapSize = v);
+        }
+
+        if (Styles is not null)
+        {
+            bitSplitter.TakeFromCascade(nameof(Styles), Styles, static s => s.Styles, static (s, v) => s.Styles = v);
+        }
+
+        if (Vertical.HasValue)
+        {
+            bitSplitter.TakeFromCascade(nameof(Vertical), Vertical.Value, static s => s.Vertical, static (s, v) => s.Vertical = v);
         }
     }
 }

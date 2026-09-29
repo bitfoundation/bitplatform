@@ -223,6 +223,125 @@ public class BitSplitterParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSplitterShouldKeepTheSizesItSetsItselfOverCascadedOnesThatOutrankThem()
+    {
+        // DefaultPercent and FirstPanelSize outrank FirstPanelSize and SecondPanelSize, so a cascaded one taken beside a
+        // size the splitter set itself would override it: a splitter that sizes its panels at all takes no size from
+        // the cascade.
+        var percent = RenderWithParams(new BitSplitterParams { DefaultPercent = 30 }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitSplitter.FirstPanelSize), (int?)200);
+        });
+
+        var style = percent.Find(".bit-spl").GetAttribute("style")!;
+
+        Assert.Contains("--bit-spl-fpn-size:200px", style);
+        Assert.DoesNotContain("30%", style);
+        Assert.IsNull(percent.FindComponent<BitSplitter>().Instance.DefaultPercent);
+
+        var pinned = RenderWithParams(new BitSplitterParams { FirstPanelSize = 160 }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitSplitter.SecondPanelSize), (int?)150);
+        });
+
+        style = pinned.Find(".bit-spl").GetAttribute("style")!;
+
+        Assert.DoesNotContain("--bit-spl-fpn-size", style);
+        Assert.Contains("--bit-spl-spn-size:150px;--bit-spl-spn-grow:0", style);
+
+        // A limit is not a size, so it still comes from the cascade beside one of the splitter's own.
+        var limited = RenderWithParams(new BitSplitterParams { FirstPanelSize = 160, FirstPanelMinSize = 60 }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitSplitter.DefaultPercent), (double?)40);
+        });
+
+        style = limited.Find(".bit-spl").GetAttribute("style")!;
+
+        Assert.Contains("--bit-spl-fpn-size:40%", style);
+        Assert.Contains("--bit-spl-fpn-min:60px", style);
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldTakeBackWhatTheCascadeStopsSupplying()
+    {
+        var component = RenderWithParams(new BitSplitterParams
+        {
+            Vertical = true,
+            Collapsible = true,
+            DefaultPercent = 30,
+            KeyboardStep = 25,
+            Class = "cascaded-class",
+            IsEnabled = false,
+        }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitSplitter.GutterSize), (int?)4);
+        });
+
+        var root = component.Find(".bit-spl");
+        var splitter = component.FindComponent<BitSplitter>().Instance;
+
+        Assert.IsTrue(root.ClassList.Contains("bit-spl-vrt"));
+        Assert.IsTrue(root.ClassList.Contains("bit-spl-cpb"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.Contains("--bit-spl-fpn-size:30%", root.GetAttribute("style")!);
+
+        // BitParams cascades its values as fixed, so the splitter only reads the new ones when it renders for a reason
+        // of its own - here a new GutterSize.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitSplitterParams { Collapsible = true } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSplitter>(0);
+                builder.AddAttribute(1, nameof(BitSplitter.GutterSize), (int?)6);
+                builder.CloseComponent();
+            });
+        });
+
+        root = component.Find(".bit-spl");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-spl-vrt"));
+        Assert.IsFalse(root.ClassList.Contains("cascaded-class"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(root.ClassList.Contains("bit-spl-cpb"), "what the cascade still supplies stays");
+        Assert.DoesNotContain("--bit-spl-fpn-size", root.GetAttribute("style")!);
+        Assert.IsNull(splitter.DefaultPercent);
+        Assert.AreEqual(new BitSplitter().KeyboardStep, splitter.KeyboardStep);
+        Assert.Contains("--bit-spl-gtr-size:6px", root.GetAttribute("style")!);
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldNotRebuildItsClassesWhenTheCascadeGivesTheSameAgain()
+    {
+        var splitterParams = new BitSplitterParams { Vertical = true, Collapsible = true, Class = "c", GutterSize = 12 };
+
+        var component = RenderWithParams(splitterParams, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitSplitter.KeyboardStep), 5);
+        });
+
+        var splitter = component.FindComponent<BitSplitter>().Instance;
+        var classes = splitter.ClassBuilder.Value;
+        var styles = splitter.StyleBuilder.Value;
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { splitterParams });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSplitter>(0);
+                builder.AddAttribute(1, nameof(BitSplitter.KeyboardStep), 6);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual(6, splitter.KeyboardStep);
+        Assert.AreSame(classes, splitter.ClassBuilder.Value);
+        Assert.AreSame(styles, splitter.StyleBuilder.Value);
+    }
+
+    [TestMethod]
     public void BitSplitterShouldIgnoreParamsOfAnotherComponent()
     {
         var component = RenderComponent<BitParams>(parameters =>

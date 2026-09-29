@@ -61,6 +61,14 @@ namespace BitBlazorUI {
         // sits on, and the two presses that make it up are not a double-click on the gutter either.
         private static readonly COLLAPSE_BUTTON_SELECTOR = '.bit-spl-cbt';
 
+        // What can take the focus that a folded panel drops, where the gutter cannot (see rescueFocus).
+        private static readonly FOCUSABLE_SELECTOR =
+            'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), ' +
+            'input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), ' +
+            'textarea:not([disabled]):not([tabindex="-1"]), ' +
+            '[contenteditable]:not([contenteditable="false"]):not([tabindex="-1"]), ' +
+            '[tabindex]:not([tabindex="-1"])';
+
         // Dragging the first panel below this share of its own minimum snaps it shut instead of leaving it
         // as a sliver nobody can read. It only applies to a splitter that was made collapsible; every other
         // one simply stops at the minimum.
@@ -546,12 +554,12 @@ namespace BitBlazorUI {
 
             // A panel folded down to nothing is made inert, and the browser drops the focus of whatever inside it
             // had it - onto the body, the start of the page for the keyboard. That happens when the page is next
-            // drawn, while this runs as soon as the attribute lands, so the focus is still there to be handed to
-            // the gutter: the control that brings the panel back, and the place a reader who folded it from a
-            // button inside it would look for it next.
+            // drawn, while this runs as soon as the attribute lands, so the focus is still there to be handed on
+            // (see rescueFocus) - and a splitter nobody may move can have its panel folded by the page just the
+            // same, so it is handed on there too.
             if (typeof MutationObserver !== 'undefined') {
                 entry.inertObserver = new MutationObserver(records => {
-                    if (signal.aborted || entry.options.disabled) return;
+                    if (signal.aborted) return;
 
                     const active = document.activeElement;
                     if (!active) return;
@@ -560,7 +568,7 @@ namespace BitBlazorUI {
                         const panel = record.target as HTMLElement;
 
                         if (panel.hasAttribute('inert') && panel.contains(active)) {
-                            entry.gutter.focus({ preventScroll: true });
+                            Splitter.rescueFocus(entry, panel);
                             return;
                         }
                     }
@@ -611,18 +619,24 @@ namespace BitBlazorUI {
         }
 
         /// Puts the panels where .NET says they belong: at the given share of the splitter, or back on the
-        /// sizes its parameters declare when there is no share to hold them at.
-        public static sync(id: string, percent: number | null): void {
+        /// sizes its parameters declare when there is no share to hold them at. Those arrive as the values of
+        /// SIZE_PROPERTIES, in that order, with null for one the parameters leave out: they are the same
+        /// properties the style attribute declares, so taking the drag's values off would take them away too,
+        /// and a render that produces the same attribute again does not put them back.
+        public static sync(id: string, percent: number | null, declared: (string | null)[] | null): void {
             const entry = Splitter._entries[id];
             if (!entry) return;
 
             if (percent === null || percent === undefined) {
-                Splitter.clearSize(entry);
-            } else {
-                // The range the separator reports does not depend on where it stands, so measuring it ahead of
-                // the layout the new share is about to cause is measuring the right thing.
-                Splitter.applyPercent(entry, percent, Splitter.getBounds(entry));
+                Splitter.declareSize(entry, declared ?? []);
+                return;
             }
+
+            // The share asked for is not necessarily where the panels end up - the limits of either of them can
+            // hold the first one short of it - so the separator reports what is measured once it has been
+            // written, rather than the request, and never a range stretched to take in a position it cannot have.
+            Splitter.writePercent(entry, Splitter.clamp(percent, 0, 100));
+            Splitter.reportPosition(entry);
         }
 
         /// Measures the share of the splitter the first panel takes up at this moment. It is the one thing
@@ -764,17 +778,21 @@ namespace BitBlazorUI {
         private static applyPercent(entry: SplitterEntry, percent: number, bounds: SplitterBounds | null): number {
             const value = Splitter.clamp(percent, 0, 100);
 
-            // The split is written as a share rather than as a length, so it survives the container being
-            // resized, and the second panel is released at the same time: two pinned panels and a gutter
-            // between them cannot add up to the splitter at every width, one pinned panel and a filler can.
-            entry.root.style.setProperty('--bit-spl-fpn-size', value + '%');
-            entry.root.style.setProperty('--bit-spl-fpn-grow', '0');
-            entry.root.style.setProperty('--bit-spl-spn-size', '0px');
-            entry.root.style.setProperty('--bit-spl-spn-grow', '1');
+            Splitter.writePercent(entry, value);
 
             Splitter.setPositionAttributes(entry, value, bounds);
 
             return value;
+        }
+
+        // The split is written as a share rather than as a length, so it survives the container being resized,
+        // and the second panel is released at the same time: two pinned panels and a gutter between them cannot
+        // add up to the splitter at every width, one pinned panel and a filler can.
+        private static writePercent(entry: SplitterEntry, value: number): void {
+            entry.root.style.setProperty('--bit-spl-fpn-size', value + '%');
+            entry.root.style.setProperty('--bit-spl-fpn-grow', '0');
+            entry.root.style.setProperty('--bit-spl-spn-size', '0px');
+            entry.root.style.setProperty('--bit-spl-spn-grow', '1');
         }
 
         // The line a lazy drag moves instead of the panels. It is placed where the gutter would end up, in
@@ -822,8 +840,8 @@ namespace BitBlazorUI {
             return Splitter.toPercent(size, bounds === null ? 0 : bounds.total);
         }
 
-        private static clearSize(entry: SplitterEntry): void {
-            Splitter.SIZE_PROPERTIES.forEach(name => entry.root.style.removeProperty(name));
+        private static declareSize(entry: SplitterEntry, declared: (string | null)[]): void {
+            Splitter.restoreProperties(entry, declared);
 
             // The panels fall back to what the parameters make of them, which is only known after the layout
             // has been redone.
@@ -836,7 +854,7 @@ namespace BitBlazorUI {
             return Splitter.SIZE_PROPERTIES.map(name => entry.root.style.getPropertyValue(name));
         }
 
-        private static restoreProperties(entry: SplitterEntry, snapshot: string[]): void {
+        private static restoreProperties(entry: SplitterEntry, snapshot: (string | null)[]): void {
             Splitter.SIZE_PROPERTIES.forEach((name, index) => {
                 const value = snapshot[index];
 
@@ -931,6 +949,39 @@ namespace BitBlazorUI {
 
             body.classList.remove('bit-spl-drg-bdy');
             body.classList.remove('bit-spl-drg-vrt');
+        }
+
+        // Where the focus goes when the panel holding it is folded away. The gutter is the control that brings
+        // the panel back, and the place a reader who folded it from a button inside it would look for it next.
+        // A gutter nobody may move is not focusable, though, so the focus goes on to the first thing in the
+        // panel left standing that can hold it and, failing that, to the splitter itself, made focusable from
+        // code only - somewhere next to what the reader was doing rather than the start of the page.
+        private static rescueFocus(entry: SplitterEntry, folded: HTMLElement): void {
+            // Read off the gutter rather than off the options: the render that folds the panel can be the one that
+            // takes the splitter out of use as well, and the options only catch up once it is over.
+            if (entry.gutter.hasAttribute('tabindex')) {
+                entry.gutter.focus({ preventScroll: true });
+                return;
+            }
+
+            const standing = folded === entry.first ? entry.second : entry.first;
+
+            const target = Array.from(standing.querySelectorAll<HTMLElement>(Splitter.FOCUSABLE_SELECTOR))
+                                .find(el => el.closest('[inert]') === null
+                                         && (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0));
+
+            if (target) {
+                target.focus({ preventScroll: true });
+                return;
+            }
+
+            // A tab stop only code can reach, so the splitter can hold the focus without becoming one more stop for
+            // everyone tabbing through the page. One that was given a tabindex of its own is left as it is.
+            if (entry.root.hasAttribute('tabindex') === false) {
+                entry.root.setAttribute('tabindex', '-1');
+            }
+
+            entry.root.focus({ preventScroll: true });
         }
 
         // A press that lands on the control folding the panel away is that control's, not the gutter's,
