@@ -1684,6 +1684,68 @@ public class BitTooltipTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTooltipOpenedByAClickShouldStayWhenItsOwnTextIsPressed()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Mouse());
+
+        // Pressing the text of the tooltip takes the focus off the anchor to the body, with the pointer
+        // still on the component: that is not a click elsewhere.
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+    }
+
+    [TestMethod]
+    public void BitTooltipOpenedByAClickShouldBeDismissedByAPressOutside()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Mouse());
+
+        // Only a tooltip a press opened is marked for the JS side to watch the presses outside it.
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+
+        // Safari leaves a pressed button unfocused, so no focusout comes: the press outside is what the JS
+        // side reports instead.
+        component.InvokeAsync(() => component.Instance._OnOutsidePress());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+    }
+
+    [TestMethod]
+    public void BitTooltipPressOutsideShouldLeaveAHoverTooltipAlone()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+
+        component.InvokeAsync(() => component.Instance._OnOutsidePress());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
     public void BitTooltipEscapeShouldNotBeUndoneByTheFocusLeavingAfterAClick()
     {
         var component = RenderComponent<BitTooltip>(parameters =>

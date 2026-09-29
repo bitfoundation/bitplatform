@@ -199,7 +199,7 @@ public partial class BitTooltipDemo
             Name = "ShowOnClick",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Makes a press of the anchor (pointer, Enter or Space) toggle the tooltip. Escape and the focus leaving also hide it."
+            Description = "Makes a press of the anchor (pointer, Enter or Space) toggle the tooltip. Escape, a press outside and Tab also hide it."
         },
         new()
         {
@@ -304,80 +304,80 @@ public partial class BitTooltipDemo
         {
             Id = "tooltip-position-enum",
             Name = "BitTooltipPosition",
-            Description = "",
+            Description = "Where the tooltip is placed around its anchor. The sides are screen sides; MirrorInRtl swaps left and right in RTL.",
             Items =
             [
                 new()
                 {
                     Name = "Top",
                     Value = "0",
-                    Description = "The position of tooltip top of its anchor"
+                    Description = "Above the anchor, centered on it."
                 },
                 new()
                 {
                     Name = "TopLeft",
                     Value = "1",
-                    Description = "The position of tooltip top left of its anchor"
+                    Description = "Above the anchor, off its left corner."
                 },
                 new()
                 {
                     Name = "TopRight",
                     Value = "2",
-                    Description = "The position of tooltip top right of its anchor"
+                    Description = "Above the anchor, off its right corner."
                 },
                 new()
                 {
                     Name = "RightTop",
                     Value = "3",
-                    Description = "The position of tooltip right top of its anchor"
+                    Description = "Right of the anchor, off its top corner."
                 },
                 new()
                 {
                     Name = "Right",
                     Value = "4",
-                    Description = "The position of tooltip right of its anchor"
+                    Description = "Right of the anchor, centered on it."
                 },
                 new()
                 {
                     Name = "RightBottom",
                     Value = "5",
-                    Description = "The position of tooltip right bottom of its anchor"
+                    Description = "Right of the anchor, off its bottom corner."
                 },
                 new()
                 {
                     Name = "BottomRight",
                     Value = "6",
-                    Description = "The position of tooltip bottom right of its anchor"
+                    Description = "Below the anchor, off its right corner."
                 },
                 new()
                 {
                     Name = "Bottom",
                     Value = "7",
-                    Description = "The position of tooltip bottom of its anchor"
+                    Description = "Below the anchor, centered on it."
                 },
                 new()
                 {
                     Name = "BottomLeft",
                     Value = "8",
-                    Description = "The position of tooltip bottom left of its anchor"
+                    Description = "Below the anchor, off its left corner."
                 },
                 new()
                 {
                     Name = "LeftBottom",
                     Value = "9",
-                    Description = "The position of tooltip left bottom of its anchor"
+                    Description = "Left of the anchor, off its bottom corner."
                 },
                 new()
                 {
                     Name = "Left",
                     Value = "10",
-                    Description = "The position of tooltip left of its anchor"
+                    Description = "Left of the anchor, centered on it."
                 },
                 new()
                 {
                     Name = "LeftTop",
                     Value = "11",
-                    Description = "The position of tooltip left top of its anchor"
+                    Description = "Left of the anchor, off its top corner."
                 }
             ]
         },
@@ -588,7 +588,7 @@ public partial class BitTooltipDemo
         {
             Name = "--bit-Tooltip-shadow",
             DefaultValue = "--bit-shd-tooltip",
-            Description = "Elevation of the surface.",
+            Description = "Elevation of the surface and the arrow.",
         },
         new()
         {

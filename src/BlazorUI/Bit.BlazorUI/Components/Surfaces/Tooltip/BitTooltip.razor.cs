@@ -14,7 +14,8 @@ namespace Bit.BlazorUI;
 /// <see cref="Relationship"/>, and a row of them wrapped in a <see cref="BitTooltipGroup"/> shares its
 /// delays and shows one tooltip at a time. It is laid out purely in CSS, next to the anchor inside the
 /// flow of the page, so it needs no positioning pass and nothing of JavaScript beyond copying the
-/// relationship onto the anchor and taking the Escape key; a surface that has to escape an overflow, flip to the side with room, or
+/// relationship onto the anchor, taking the Escape key and noticing a press outside a tooltip a click
+/// opened; a surface that has to escape an overflow, flip to the side with room, or
 /// hold interactive content of its own is what BitCallout is for.
 /// </remarks>
 public partial class BitTooltip : BitComponentBase
@@ -318,8 +319,9 @@ public partial class BitTooltip : BitComponentBase
     /// <remarks>
     /// Enter and Space are a press of the anchor as much as the pointer is, so a tooltip only the click
     /// shows can still be opened from the keyboard. What dismisses it, besides a second press, is the
-    /// Escape key and the focus leaving the anchor - which a click elsewhere on the page and a Tab away
-    /// from it both come down to. It takes the press over from <see cref="HideOnClick"/>.
+    /// Escape key, a press anywhere outside the component and a Tab away from the anchor; a press on the
+    /// tooltip itself - to select its text - leaves it open. It takes the press over from
+    /// <see cref="HideOnClick"/>.
     /// </remarks>
     [Parameter] public bool ShowOnClick { get; set; }
 
@@ -573,6 +575,23 @@ public partial class BitTooltip : BitComponentBase
         await DismissByEscape();
     }
 
+    /// <summary>
+    /// A press the JS side saw land outside the component while a press of the anchor held the tooltip open.
+    /// Safari and every touch browser leave a pressed button unfocused, so the focus leaving it - which is what
+    /// dismisses such a tooltip elsewhere - never arrives there, and neither does it for an anchor that is not
+    /// focusable at all.
+    /// </summary>
+    [JSInvokable("OnOutsidePress")]
+    public async Task _OnOutsidePress()
+    {
+        if (IsControlledExternally) return;
+        if (_isShownByClick is false || IsShown is false) return;
+
+        _isPointerOver = false;
+
+        await HideAfterDelay(0);
+    }
+
     // The root element carries the relationship the tooltip declares, but the element the reader actually
     // lands on is the control the consumer put inside it, so the relationship is copied onto that one as
     // well - a describedby or a labelledby on a container that is neither focusable nor interactive is one
@@ -802,19 +821,18 @@ public partial class BitTooltip : BitComponentBase
         _isFocusFromPointer = false;
 
         // A tooltip a press of the anchor opened is held by nothing that can end on its own, so what
-        // dismisses it is the next thing the user does elsewhere: a click somewhere else on the page and a
-        // Tab away from the anchor both take the focus off it, which is the one signal both leave behind.
-        // A pointer still resting on the anchor is asking for the tooltip in its own right, so it stays.
+        // dismisses it is the next thing the user does elsewhere: a Tab away from the anchor takes the focus
+        // off it, and so does a click elsewhere in the browsers that focus what is clicked (the JS side
+        // answers the press itself in the ones that do not). A focus lost while the pointer is still on the
+        // component is not that: it is a press on the anchor again, or on the text of the tooltip - which
+        // is no focusable thing and so takes the focus to the body - and the tooltip stays opened by it.
         if (wasShownByClick)
         {
-            _isShownByClick = false;
+            if (_isPointerOver) return;
 
-            if (IsHeldByHover is false)
-            {
-                await HideAfterDelay(0);
+            await HideAfterDelay(0);
 
-                return;
-            }
+            return;
         }
 
         if (wasHeldByFocus is false) return;

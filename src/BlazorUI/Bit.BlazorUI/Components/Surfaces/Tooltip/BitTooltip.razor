@@ -39,10 +39,12 @@
            focuses the anchor.
 
            data-bit-ttp-esc marks a tooltip Escape may dismiss, which the JS side reads to decide on the spot -
-           before the key travels on - whether the key is this tooltip's to take. *@
+           before the key travels on - whether the key is this tooltip's to take. data-bit-ttp-clk marks one a
+           press of the anchor opened, which a press anywhere outside the component dismisses. *@
         <div style="@Styles?.TooltipWrapper"
              class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper"
              data-bit-ttp-esc="@(NoDismissOnEscape is false && IsControlledExternally is false)"
+             data-bit-ttp-clk="@(_isShownByClick && IsShown)"
              @onpointerup="@SwallowPointerEvent"
              @onpointerup:stopPropagation="true"
              @onpointerdown="@SwallowPointerEvent"

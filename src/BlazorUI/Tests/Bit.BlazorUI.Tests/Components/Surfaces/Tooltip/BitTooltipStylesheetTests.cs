@@ -114,6 +114,23 @@ public class BitTooltipStylesheetTests
         }
     }
 
+    [TestMethod]
+    public void BitTooltipArrowShouldShareTheElevationOfTheSurfaceWithoutASeam()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var arrow = stylesheet[stylesheet.IndexOf("\n.bit-ttp-arw {\n    position: absolute;", System.StringComparison.Ordinal)..];
+        arrow = arrow[..arrow.IndexOf("\n}", System.StringComparison.Ordinal)];
+
+        // The arrow casts the shadow of the surface (none in Material, the outline of a dark theme), and is drawn
+        // above the surface so that outline is not painted across its base - cut to its outer half, so it is not
+        // painted over the content either.
+        StringAssert.Contains(arrow, "box-shadow: var(--bit-Tooltip-shadow, #{$box-shadow-tooltip});");
+        StringAssert.Contains(arrow, "z-index: calc(var(--bit-ttp-zindex) + 1);");
+
+        Assert.AreEqual(12, Regex.Matches(stylesheet, @"clip-path: \$arrow-clip-(br|tl|tr|bl);").Count);
+    }
+
     private static string ReadStylesheet() => ReadFile("Bit.BlazorUI", "Components", "Surfaces", "Tooltip", "BitTooltip.scss");
 
     private static string ReadFile(params string[] segments) => ReadFileFrom(segments);

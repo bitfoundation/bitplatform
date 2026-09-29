@@ -191,6 +191,7 @@
         // it, so a dialog or a callout the tooltip sits in is not dismissed by the same press, and a second
         // Escape reaches them as usual. Whether a tooltip takes it is read off the DOM on the spot - shown
         // (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot wait for a round trip.
+        // It also tells a tooltip a click opened about the press outside it that dismisses it.
         public static setupTooltip(rootId: string, tooltipId: string, attribute: string, dotnetObj: DotNetObject) {
             Utils.disposeTooltip(rootId);
 
@@ -229,6 +230,19 @@
                 if (!root.matches(':hover')) return;
 
                 dismiss(e);
+            }, { signal: controller.signal, capture: true });
+
+            // A tooltip a press of the anchor opened (data-bit-ttp-clk) is dismissed by the next press elsewhere.
+            // The focus leaving the anchor says as much in some browsers, but Safari and the touch browsers never
+            // focus a pressed button, and an anchor that is not focusable is never focused at all. Nothing is
+            // prevented: the press goes on to do whatever it was aimed at.
+            document.addEventListener('pointerdown', e => {
+                if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-clk]')) return;
+
+                const target = e.target as Node | null;
+                if (target && root.contains(target)) return;
+
+                dotnetObj.invokeMethodAsync('OnOutsidePress');
             }, { signal: controller.signal, capture: true });
 
             Utils._tooltips.set(rootId, controller);
