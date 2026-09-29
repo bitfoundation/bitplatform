@@ -8,7 +8,7 @@
 //   --bit-Splitter-gutter-background                the gutter at rest                         (default: $clr-brd-sec)
 //   --bit-Splitter-gutter-hover-background          the gutter under the pointer               (default: $clr-brd-pri)
 //   --bit-Splitter-gutter-active-background         the gutter while it is being dragged       (default: the hover background)
-//   --bit-Splitter-gutter-indicator-color           the default grip drawn on the gutter       (default: $clr-brd-pri)
+//   --bit-Splitter-gutter-indicator-color           the default grip drawn on the gutter       (default: $clr-fg-sec)
 //   --bit-Splitter-gutter-icon-color                the icon drawn on the gutter               (default: $clr-fg-sec)
 //   --bit-Splitter-gutter-icon-size                 size of the icon drawn on the gutter       (default: $tg-fs-xs)
 //   --bit-Splitter-preview-background               the line a lazy drag moves                 (default: $clr-pri)
@@ -124,11 +124,14 @@
     touch-action: none;
 }
 
+// The gutter at rest is drawn in the decorative stroke tier, which is tuned for definition rather than to a
+// contrast floor - so the grip is what has to carry the 3:1 that tells a reader there is a control here at all
+// (SC 1.4.11), and it is painted in the secondary foreground, which keeps it over the gutter in both schemes.
 .bit-spl-gti {
     width: spacing(0.25);
     height: spacing(2);
     border-radius: $shp-radius-full;
-    background-color: var(--bit-Splitter-gutter-indicator-color, #{$clr-brd-pri});
+    background-color: var(--bit-Splitter-gutter-indicator-color, #{$clr-fg-sec});
 }
 
 /*

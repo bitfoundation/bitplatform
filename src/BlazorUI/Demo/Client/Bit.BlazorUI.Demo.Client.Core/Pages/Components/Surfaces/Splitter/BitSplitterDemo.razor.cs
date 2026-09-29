@@ -347,7 +347,7 @@ public partial class BitSplitterDemo
         {
             Name = "ResetSize",
             Type = "Task",
-            Description = "Clears Percent and hands the layout back to FirstPanelSize and SecondPanelSize - which is what a double-click on the gutter does.",
+            Description = "Clears Percent and hands the layout back to DefaultPercent, FirstPanelSize and SecondPanelSize - which is what a double-click on the gutter does. A Percent the page binds one way is not reset.",
         },
         new()
         {
@@ -570,8 +570,8 @@ public partial class BitSplitterDemo
         new()
         {
             Name = "--bit-Splitter-gutter-indicator-color",
-            DefaultValue = "--bit-clr-brd-pri",
-            Description = "The default grip drawn on the gutter.",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The default grip drawn on the gutter - what keeps a gutter at rest at 3:1 against its surroundings.",
         },
         new()
         {
@@ -635,6 +635,8 @@ public partial class BitSplitterDemo
     private double PercentValue { get => percent ?? 50; set => percent = value; }
     private bool isCollapsed;
     private double dragStep = 50;
+    private bool lazyResize;
+    private double? a11yPercent = 30;
     private double gutterSize = 10;
     private bool allowCollapse = true;
     private string resizeLog = "No resize yet.";

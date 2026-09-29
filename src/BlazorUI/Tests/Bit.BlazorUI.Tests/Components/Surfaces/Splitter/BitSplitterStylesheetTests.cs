@@ -96,6 +96,16 @@ public class BitSplitterStylesheetTests
         StringAssert.Contains(button, "calc((spacing(1.75) - spacing(3)) / 2)");
     }
 
+    [TestMethod]
+    public void BitSplitterGripShouldBeDrawnInAColorWithAContrastFloor()
+    {
+        // The gutter at rest is the decorative stroke tier, so the grip is what keeps the control at 3:1 (SC 1.4.11):
+        // the secondary foreground has that floor over the gutter, the primary stroke does not.
+        var grip = GetBlock(ReadStylesheet(), "\n.bit-spl-gti {");
+
+        StringAssert.Contains(grip, "var(--bit-Splitter-gutter-indicator-color, #{$clr-fg-sec})");
+    }
+
     private static string GetBlock(string stylesheet, string selector, string terminator = "\n}")
     {
         var start = stylesheet.IndexOf(selector, StringComparison.Ordinal);

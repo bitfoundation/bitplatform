@@ -619,7 +619,9 @@ namespace BitBlazorUI {
             if (percent === null || percent === undefined) {
                 Splitter.clearSize(entry);
             } else {
-                Splitter.applyPercent(entry, percent);
+                // The range the separator reports does not depend on where it stands, so measuring it ahead of
+                // the layout the new share is about to cause is measuring the right thing.
+                Splitter.applyPercent(entry, percent, Splitter.getBounds(entry));
             }
         }
 
@@ -756,10 +758,10 @@ namespace BitBlazorUI {
         private static applySize(entry: SplitterEntry, size: number, bounds: SplitterBounds | null): number | null {
             if (bounds === null || bounds.total <= 0) return null;
 
-            return Splitter.applyPercent(entry, Splitter.toPercent(size, bounds.total));
+            return Splitter.applyPercent(entry, Splitter.toPercent(size, bounds.total), bounds);
         }
 
-        private static applyPercent(entry: SplitterEntry, percent: number): number {
+        private static applyPercent(entry: SplitterEntry, percent: number, bounds: SplitterBounds | null): number {
             const value = Splitter.clamp(percent, 0, 100);
 
             // The split is written as a share rather than as a length, so it survives the container being
@@ -770,7 +772,7 @@ namespace BitBlazorUI {
             entry.root.style.setProperty('--bit-spl-spn-size', '0px');
             entry.root.style.setProperty('--bit-spl-spn-grow', '1');
 
-            Splitter.setPositionAttributes(entry, value);
+            Splitter.setPositionAttributes(entry, value, bounds);
 
             return value;
         }
@@ -850,25 +852,60 @@ namespace BitBlazorUI {
             const bounds = Splitter.getBounds(entry);
             if (bounds === null) return;
 
-            Splitter.setPositionAttributes(entry, Splitter.toPercent(bounds.current, bounds.total));
+            Splitter.setPositionAttributes(entry, Splitter.toPercent(bounds.current, bounds.total), bounds);
         }
 
-        private static setPositionAttributes(entry: SplitterEntry, percent: number): void {
+        private static setPositionAttributes(entry: SplitterEntry, percent: number, bounds: SplitterBounds | null): void {
             // A separator that cannot be moved is not the widget form of the role, and the position of a
             // widget is not something the plain rule is allowed to report - including the one it was left
             // wearing from back when it could still be dragged.
             if (entry.options.disabled) {
                 entry.gutter.removeAttribute('aria-valuenow');
                 entry.gutter.removeAttribute('aria-valuetext');
+                entry.gutter.removeAttribute('aria-valuemin');
+                entry.gutter.removeAttribute('aria-valuemax');
                 return;
             }
 
-            // Rounded the same way .NET rounds the value it renders, so the two of them cannot disagree
-            // over the position the separator reports.
-            const rounded = (Math.round(percent * 100) / 100).toString();
+            const rounded = Splitter.toAriaValue(percent);
 
             entry.gutter.setAttribute('aria-valuenow', rounded);
             entry.gutter.setAttribute('aria-valuetext', rounded + '%');
+
+            // The window splitter pattern reports the range the separator can actually move through rather than
+            // the whole of the splitter, so a reader told the gutter stands at 20% also learns that 20% is as far
+            // as it goes. What .NET renders before anything is measured is the whole splitter, 0 to 100.
+            if (bounds === null || bounds.total <= 0) return;
+
+            let min = bounds.min;
+            let max = bounds.max;
+
+            // A panel that folds reaches past its minimum, down to the size it is folded to - a position Enter
+            // puts the separator at, so one the range has to include.
+            if (entry.options.collapsible) {
+                const folded = Splitter.clamp(entry.options.collapsedSize, 0, bounds.space);
+
+                if (entry.options.collapseSecond) {
+                    max = Math.max(max, bounds.space - folded);
+                } else {
+                    min = Math.min(min, folded);
+                }
+            }
+
+            // And never a range the position it reports falls outside of, which is not a value a separator can
+            // hold: a fold, or constraints that cannot all be met, can leave the panel off the range for a while.
+            const current = (percent * bounds.total) / 100;
+            min = Math.min(min, current);
+            max = Math.max(max, current);
+
+            entry.gutter.setAttribute('aria-valuemin', Splitter.toAriaValue(Splitter.toPercent(min, bounds.total)));
+            entry.gutter.setAttribute('aria-valuemax', Splitter.toAriaValue(Splitter.toPercent(max, bounds.total)));
+        }
+
+        // Rounded the same way .NET rounds the value it renders, so the two of them cannot disagree over the
+        // position the separator reports.
+        private static toAriaValue(percent: number): string {
+            return (Math.round(percent * 100) / 100).toString();
         }
 
         // The drag is dressed on the body rather than on the splitter: the pointer is captured, so it spends

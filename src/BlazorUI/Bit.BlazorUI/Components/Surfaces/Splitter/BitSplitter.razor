@@ -9,9 +9,10 @@
        differ only in the look - both take the resize away. *@
     var interactive = _IsInteractive;
 
-    @* The separator reports where it stands as a percentage of the splitter, which is the range APG asks for.
-       It is only rendered from here once the value is known; until then the setup call measures the panels and
-       writes it onto the element itself, so a splitter that was never sized is not left claiming a position. *@
+    @* The separator reports where it stands as a percentage of the splitter. It is only rendered from here once
+       the value is known; until then the setup call measures the panels and writes it onto the element itself, so
+       a splitter that was never sized is not left claiming a position. The range is rendered as the whole
+       splitter, and narrowed by the same measurement to what the limits of the panels leave, as APG asks. *@
     var valueNow = _ValueNow;
 
     @* The pointer's way to fold the panel away. It is only ever offered where the reader is allowed to fold

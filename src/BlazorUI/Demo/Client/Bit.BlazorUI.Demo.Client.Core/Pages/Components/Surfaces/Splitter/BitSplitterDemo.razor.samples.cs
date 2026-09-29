@@ -77,30 +77,22 @@ private double PercentValue { get => percent ?? 50; set => percent = value; }";
 
     private readonly string example5RazorCode = @"
 <BitSlider Label=""@($""Drag step: {dragStep:F0}px"")"" @bind-Value=""dragStep"" Max=""100"" Step=""10"" />
+<BitToggle Label=""LazyResize"" @bind-Value=""lazyResize"" />
 
-<BitSplitter DragStep=""@((int)dragStep)"" Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
+<BitSplitter DragStep=""@((int)dragStep)"" LazyResize=""lazyResize"" FirstPanelMinSize=""80"" SecondPanelMinSize=""80""
+             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
     <FirstPanel>
         <div style=""padding:0.5rem"">Stops every @dragStep pixels</div>
     </FirstPanel>
     <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
+        <div style=""padding:0.5rem"">@(lazyResize ? ""A line moves first; the panels follow when you let go."" : ""The panels follow the pointer."")</div>
     </SecondPanel>
 </BitSplitter>";
     private readonly string example5CsharpCode = @"
-private double dragStep = 50;";
+private double dragStep = 50;
+private bool lazyResize;";
 
     private readonly string example6RazorCode = @"
-<BitSplitter LazyResize FirstPanelMinSize=""80"" SecondPanelMinSize=""80""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">The line moves first; the panels follow when you let go.</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example7RazorCode = @"
 <BitSlider Label=""@($""Gutter size: {gutterSize:F0}px"")"" @bind-Value=""gutterSize"" Max=""50"" />
 
 <BitSplitter GutterSize=""@((int)gutterSize)"" Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
@@ -146,10 +138,10 @@ private double dragStep = 50;";
         <div style=""padding:0.5rem"">Second panel</div>
     </SecondPanel>
 </BitSplitter>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private double gutterSize = 10;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitSplitter Collapsible CollapsedSize=""8"" @bind-Collapsed=""isCollapsed"" FirstPanelSize=""180"" FirstPanelMinSize=""120""
              Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
     <FirstPanel>
@@ -179,10 +171,10 @@ private double gutterSize = 10;";
         <div style=""padding:0.5rem"">An inspector that folds to the end</div>
     </SecondPanel>
 </BitSplitter>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isCollapsed;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitSplitter Collapsible ShowCollapseButton CollapsedSize=""8"" FirstPanelSize=""180"" FirstPanelMinSize=""120""
              Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
     <FirstPanel>
@@ -214,7 +206,7 @@ private bool isCollapsed;";
     </SecondPanel>
 </BitSplitter>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitToggle Label=""Allow the panel to be folded away"" @bind-Value=""allowCollapse"" />
 
 <BitSplitter Collapsible ShowCollapseButton CollapsedSize=""8"" FirstPanelSize=""180"" FirstPanelMinSize=""120""
@@ -230,11 +222,11 @@ private bool isCollapsed;";
 </BitSplitter>
 
 <div>@collapseLog</div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool allowCollapse = true;
 private string collapseLog = ""Nothing has been folded yet."";";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitSplitter FirstPanelMinSize=""60"" SecondPanelMinSize=""60"" Collapsible CollapsedSize=""8""
              OnResizeStart=""@(p => resizeLog = $""Started at {p:F1}%"")""
              OnResize=""@(p => resizeLog = $""Resizing: {p:F1}%"")""
@@ -262,11 +254,11 @@ private string collapseLog = ""Nothing has been folded yet."";";
         <div style=""padding:0.5rem"">to split evenly.</div>
     </SecondPanel>
 </BitSplitter>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string resizeLog = ""No resize yet."";
 private double? evenPercent;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitStack Horizontal Wrap Gap=""0.5rem"">
     <BitButton OnClick=""@(() => splitterRef.SetPercent(25))"">25%</BitButton>
     <BitButton OnClick=""@(() => splitterRef.SetPercent(50))"">50%</BitButton>
@@ -288,11 +280,11 @@ private double? evenPercent;";
 </BitSplitter>
 
 <div>@(measured is null ? ""Nothing has been measured yet."" : $""The first panel takes up {measured:F1}% of the splitter."")</div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private double? measured;
 private BitSplitter splitterRef = default!;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitSplitter PersistKey=""demo-splitter"" Collapsible CollapsedSize=""8"" FirstPanelSize=""150""
              Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
     <FirstPanel>
@@ -303,7 +295,7 @@ private BitSplitter splitterRef = default!;";
     </SecondPanel>
 </BitSplitter>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitSplitter ReadOnly FirstPanelSize=""150"" Style=""height:120px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
     <FirstPanel>
         <div style=""padding:0.5rem"">Read-only</div>
@@ -322,7 +314,7 @@ private BitSplitter splitterRef = default!;";
     </SecondPanel>
 </BitSplitter>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitSplitter FirstPanelSize=""160"" Style=""height:250px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the sidebar"">
     <FirstPanel>
         <div style=""padding:0.5rem"">Sidebar</div>
@@ -339,8 +331,13 @@ private BitSplitter splitterRef = default!;";
     </SecondPanel>
 </BitSplitter>";
 
-    private readonly string example16RazorCode = @"
-<BitSplitter Collapsible KeyboardStep=""50"" FirstPanelMinSize=""120"" SecondPanelMinSize=""80""
+    private readonly string example15RazorCode = @"
+<BitStack Horizontal Wrap Gap=""0.5rem"">
+    <BitButton OnClick=""@(() => a11yPercent = Math.Clamp((a11yPercent ?? 50) - 10, 0, 100))"">Narrower</BitButton>
+    <BitButton OnClick=""@(() => a11yPercent = Math.Clamp((a11yPercent ?? 50) + 10, 0, 100))"">Wider</BitButton>
+</BitStack>
+
+<BitSplitter Collapsible KeyboardStep=""50"" FirstPanelMinSize=""120"" SecondPanelMinSize=""80"" @bind-Percent=""a11yPercent""
              Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the navigation"">
     <FirstPanel>
         <div style=""padding:0.5rem"">
@@ -351,8 +348,10 @@ private BitSplitter splitterRef = default!;";
         <div style=""padding:0.5rem"">One arrow key moves the gutter 50px.</div>
     </SecondPanel>
 </BitSplitter>";
+    private readonly string example15CsharpCode = @"
+private double? a11yPercent = 30;";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitParams Parameters=""@splitterParams"">
     <BitSplitter Style=""height:120px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
         <FirstPanel>
@@ -381,7 +380,7 @@ private BitSplitter splitterRef = default!;";
         <div style=""padding:0.5rem"">Second panel</div>
     </SecondPanel>
 </BitSplitter>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private readonly BitSplitterParams[] splitterParams =
 [
     new()
@@ -394,7 +393,7 @@ private readonly BitSplitterParams[] splitterParams =
     }
 ];";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitSplitter GutterSize=""16"" GutterIcon=""@(""fa-solid fa-arrows-left-right"")""
@@ -449,7 +448,7 @@ private readonly BitSplitterParams[] splitterParams =
     </SecondPanel>
 </BitSplitter>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-splitter {
         height: 120px;
@@ -563,7 +562,7 @@ private readonly BitSplitterParams[] splitterParams =
     </BitSplitter>
 </div>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitSplitter Dir=""BitDir.Rtl"" FirstPanelSize=""150"" Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""تغییر اندازه پنل‌ها"">
     <FirstPanel>
         <div style=""padding:0.5rem"">پنل اول</div>
