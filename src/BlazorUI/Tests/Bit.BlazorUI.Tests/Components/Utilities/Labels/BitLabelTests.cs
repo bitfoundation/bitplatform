@@ -261,7 +261,7 @@ public class BitLabelTests : BunitTestContext
         });
 
         var markup = noWrap
-            ? @"<label class=""bit-lbl bit-lbl-nwr"" id:ignore><span class=""bit-lbl-txt""></span></label>"
+            ? @"<label class=""bit-lbl bit-lbl-nwr"" id:ignore><span class=""bit-lbl-row""><span class=""bit-lbl-txt""></span></span></label>"
             : @"<label class=""bit-lbl"" id:ignore></label>";
 
         component.MarkupMatches(markup);
@@ -281,13 +281,13 @@ public class BitLabelTests : BunitTestContext
             parameters.AddChildContent("A long caption");
         });
 
-        // The content alone takes the ellipsis: the indicator is its sibling, so the overflow never cuts it off.
+        // The content alone takes the ellipsis: the indicator is its sibling in the row, so the overflow never cuts it off.
         var indicator = required
             ? @"<span class=""bit-lbl-rqi"" aria-hidden=""true"">*</span>"
             : @"<span class=""bit-lbl-opi"">(optional)</span>";
         var cssClass = required ? "bit-lbl bit-lbl-req bit-lbl-nwr" : "bit-lbl bit-lbl-opt bit-lbl-nwr";
 
-        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore><span class=""bit-lbl-txt"">A long caption</span>{indicator}</label>");
+        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore><span class=""bit-lbl-row""><span class=""bit-lbl-txt"">A long caption</span>{indicator}</span></label>");
     }
 
     [TestMethod,

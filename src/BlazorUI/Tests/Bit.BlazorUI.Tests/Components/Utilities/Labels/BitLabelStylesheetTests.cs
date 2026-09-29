@@ -127,10 +127,12 @@ public partial class BitLabelStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        // The clipping is only applied while nothing inside the label has the focus, so a control it wraps is never
-        // focused out of sight.
-        StringAssert.Contains(stylesheet, ".bit-lbl-vhd:not(:focus-within) {");
+        // The clipping is only lifted while a control inside the label has the focus, so a control it wraps is never
+        // focused out of sight, while a label focused itself stays hidden. The condition is inside :where(), so the
+        // rule keeps the weight of its one class and a Class of the page still overrides it.
+        StringAssert.Contains(stylesheet, ".bit-lbl-vhd:where(:not(:focus-within), :focus) {");
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"\.bit-lbl-vhd\s*\{"), "The visually hidden label is clipped regardless of the focus.");
+        Assert.IsFalse(stylesheet.Contains(".bit-lbl-vhd:not("), "The focus condition raises the specificity of the rule.");
     }
 
     [TestMethod]
@@ -151,11 +153,21 @@ public partial class BitLabelStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
+        // The label keeps its own display, so its text-align still positions the content and a display set through
+        // the style still truncates; it clips whatever overflows it.
         var noWrap = Block(stylesheet, "\n.bit-lbl-nwr {");
-        StringAssert.Contains(noWrap, "display: flex;");
+        Assert.IsFalse(noWrap.Contains("display:"), "The label is turned into a flex container, which ignores its text-align.");
+        StringAssert.Contains(noWrap, "overflow: hidden;");
         StringAssert.Contains(noWrap, "white-space: nowrap;");
         StringAssert.Contains(noWrap, ".bit-lbl-rqi,\n    .bit-lbl-opi {\n        flex-shrink: 0;");
         Assert.IsFalse(noWrap.Contains("text-overflow"), "The ellipsis is put on the whole label, indicator included.");
+
+        // The content and its indicator are an inline row no wider than the label, lined up on their text baseline
+        // as the wrapping label lines them up.
+        var row = Block(stylesheet, "\n.bit-lbl-row {");
+        StringAssert.Contains(row, "display: inline-flex;");
+        StringAssert.Contains(row, "max-width: 100%;");
+        StringAssert.Contains(row, "align-items: baseline;");
 
         var text = Block(stylesheet, "\n.bit-lbl-txt {");
         StringAssert.Contains(text, "min-width: 0;");

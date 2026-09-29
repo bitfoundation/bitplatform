@@ -89,18 +89,27 @@
     margin-inline-start: var(--bit-Label-indicator-gap, #{spacing(0.625)});
 }
 
-// A truncated label is a row of its content and its indicator: the content shrinks and takes the ellipsis, while
-// the indicator keeps its size, so a required mark stays in sight however long the caption.
+// A truncated label keeps the display of a label - a block its text-align lays out, or whatever display its style
+// gives it - and clips what overflows it. Inside it, the content and its indicator are an inline row no wider than
+// the label: the content shrinks and takes the ellipsis, while the indicator keeps its size, so a required mark
+// stays in sight however long the caption. The row lines its items up on their text baseline, as the label lays
+// them out when it wraps, so an indicator in a size or a glyph of its own sits where it did before NoWrap.
 .bit-lbl-nwr {
-    display: flex;
     min-width: 0;
+    overflow: hidden;
     white-space: nowrap;
-    align-items: center;
 
     .bit-lbl-rqi,
     .bit-lbl-opi {
         flex-shrink: 0;
     }
+}
+
+.bit-lbl-row {
+    max-width: 100%;
+    display: inline-flex;
+    vertical-align: top;
+    align-items: baseline;
 }
 
 .bit-lbl-txt {
@@ -117,8 +126,10 @@
 // Out of the page but still in the accessibility tree: a zero-sized box would be dropped from it by some screen
 // readers, so the label keeps a pixel of its own and is clipped away from it. A label that wraps its own control
 // comes back while the focus is inside it, since a control nobody can see taking the focus fails the focus
-// visibility the keyboard relies on.
-.bit-lbl-vhd:not(:focus-within) {
+// visibility the keyboard relies on - but not while the focus is on the label itself, a caption given a TabIndex
+// that is read out rather than seen. The condition is inside :where() so the rule weighs no more than its one
+// class, and a Class or Classes.Root rule of the page still overrides it on source order.
+.bit-lbl-vhd:where(:not(:focus-within), :focus) {
     padding: 0;
     width: 1px;
     height: 1px;
@@ -129,7 +140,6 @@
     clip-path: inset(50%);
     clip: rect(0 0 0 0);
 }
-
 
 // A forced-colors mode repaints the text of a disabled label in the ordinary text color, which takes away the one
 // thing that says the control it names is disabled, so it is re-established in GrayText, the system color for it.
