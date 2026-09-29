@@ -141,7 +141,7 @@ public static class Services
 
         services.AddSwaggerGen();
 
-        services.AddHealthChecks(env, configuration);
+        services.AddHealthChecks(configuration);
     }
 
     /// <summary>
