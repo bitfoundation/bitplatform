@@ -152,6 +152,10 @@ private int clickCount;";
 
 <BitIcon IconName=""@BitIconName.ErrorBadge"" Title=""Failed on the last run"" />
 
+<BitTooltip Text=""Failed runs are retried three times, a minute apart."">
+    <BitIcon IconName=""@BitIconName.Info"" AriaLabel=""Retry policy"" TabIndex=""0"" />
+</BitTooltip>
+
 <span><BitIcon IconName=""@BitIconName.Attach"" /> Decorative, beside its own label</span>";
 
     private readonly string example9RazorCode = @"
@@ -199,6 +203,7 @@ private readonly BitIconParams[] iconParams =
     private readonly string example11RazorCode = @"
 <style>
     .on-dark {
+        color: var(--bit-clr-bg-sec);
         background-color: var(--bit-clr-fg-sec);
     }
 </style>

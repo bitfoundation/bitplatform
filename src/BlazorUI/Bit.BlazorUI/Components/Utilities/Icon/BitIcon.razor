@@ -1,4 +1,5 @@
 ﻿@namespace Bit.BlazorUI
+@using System.Globalization
 @inherits BitComponentBase
 
 @{
@@ -28,7 +29,18 @@
        components of this library render inline is hidden. An aria-hidden or a role of the app's own is
        left exactly as it was given. *@
     var named = label.HasValue() || title.HasValue() || HtmlAttributes.ContainsKey("aria-labelledby");
-    var hidden = interactive is false && named is false && HtmlAttributes.ContainsKey("aria-hidden") is false;
+
+    @* An icon with a handler is a tab stop; a disabled one leaves the tab order but stays in the
+       document, so whatever pointed at it still has something to point at. Everywhere else the tab
+       index is whatever was asked for and nothing more - an icon is not focusable by itself. *@
+    var tabIndex = TabIndex ?? splattedTabIndex;
+    var rootTabIndex = interactive ? (IsEnabled ? (tabIndex ?? "0") : "-1") : tabIndex;
+
+    @* An icon the keyboard lands on is never hidden, handler or not: an aria-hidden element that takes
+       the focus hands a screen reader a stop it has been told does not exist (axe: aria-hidden-focus).
+       A negative tab index is not a tab stop, so an icon given one is hidden as before. *@
+    var tabStop = interactive || (int.TryParse(rootTabIndex, NumberStyles.Integer, CultureInfo.InvariantCulture, out var ti) && ti >= 0);
+    var hidden = tabStop is false && named is false && HtmlAttributes.ContainsKey("aria-hidden") is false;
     var ariaHidden = hidden ? "true" : splattedHidden;
 
     @* A ligature set names its glyph with the element's own text, which a page translator reads as a
@@ -40,27 +52,21 @@
     @* An icon given the button role and nothing else is a control a screen reader stops at and
        announces as "button", with nothing to say what it does. The name is the author's to write - an
        AriaLabel or a Title saying the action - and the icon's own name is what it falls back to when
-       they did not, since "delete, button" is worth more than "button" on its own. Only a name is
-       fallen back to and never the class list a set like FontAwesome carries instead of one, so an
-       icon with nothing worth reading out - one drawn from the child content alone among them - is
-       left unnamed, and naming it stays the author's. *@
-    var fallbackName = interactive && named is false ? FallbackName : null;
+       they did not, since "delete, button" is worth more than "button" on its own. The same holds for
+       any tab stop, handler or not: the focus lands on it, so it has to have something to say. Only a
+       name is fallen back to and never the class list a set like FontAwesome carries instead of one,
+       so an icon with nothing worth reading out - one drawn from the child content alone among them -
+       is left unnamed, and naming it stays the author's. *@
+    var fallbackName = tabStop && named is false ? FallbackName : null;
     var ariaLabel = label ?? fallbackName;
 
-    @* The role and the name arrive together for an interactive icon too: "button" with nothing to read
-       out is the same dead stop as an img with no name, so the button role is written only once the
-       icon has a name to announce with it - one the author wrote, or the one it falls back to above. An
-       icon with a handler and neither is left with the role it already had, so a reader passes over it
-       rather than stopping at an unnamed control. *@
-    var role = splattedRole ?? (interactive
-        ? (named || fallbackName.HasValue() ? "button" : null)
-        : (named ? "img" : null));
-
-    @* An icon with a handler is a tab stop; a disabled one leaves the tab order but stays in the
-       document, so whatever pointed at it still has something to point at. Everywhere else the tab
-       index is whatever was asked for and nothing more - an icon is not focusable by itself. *@
-    var tabIndex = TabIndex ?? splattedTabIndex;
-    var rootTabIndex = interactive ? (IsEnabled ? (tabIndex ?? "0") : "-1") : tabIndex;
+    @* The role and the name arrive together, for a picture as for a control: "button" or an img with
+       nothing to read out is a dead stop, so the role is written only once the icon has a name to
+       announce with it - one the author wrote, or the one it falls back to above. An icon with neither
+       is left with the role it already had, so a reader passes over it rather than stopping at it. *@
+    var role = splattedRole ?? (named || fallbackName.HasValue()
+        ? (interactive ? "button" : "img")
+        : null);
 
     @* Nothing is listening on an icon that does nothing: an empty handler still costs a round trip to
        the server on every click and every keystroke of a Blazor Server app. *@

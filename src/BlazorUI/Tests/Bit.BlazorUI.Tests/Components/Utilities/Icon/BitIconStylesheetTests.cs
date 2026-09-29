@@ -94,6 +94,29 @@ public partial class BitIconStylesheetTests
         StringAssert.Contains(root, "border-width: var(--bit-Icon-border-width, #{$shp-border-width});");
     }
 
+    [TestMethod]
+    public void BitIconShouldDrawTheThemedFocusRingOnEveryFocusableIcon()
+    {
+        // A TabIndex makes an icon without a handler focusable too - the anchor of a tooltip - so the ring is drawn on
+        // the root rather than only on the clickable one.
+        var root = Block(ReadStylesheet(), ".bit-ico");
+
+        StringAssert.Contains(root, "&:focus-visible {");
+        StringAssert.Contains(root, "@include focus-ring($ico-clr-focus);");
+        StringAssert.DoesNotMatch(Block(ReadStylesheet(), ".bit-ico-int"), new Regex("focus-ring"));
+    }
+
+    [TestMethod]
+    public void BitIconShouldKeepTheFixedWidthForTheGlyphUnderABorderBoxReset()
+    {
+        // Under the `* { box-sizing: border-box }` of most resets, the padding and border of a Fill or an Outline
+        // icon would otherwise be taken out of the fixed width and the glyph would spill out of its box.
+        var fixedWidth = Block(ReadStylesheet(), ".bit-ico-fxw");
+
+        StringAssert.Contains(fixedWidth, "width: var(--bit-Icon-fixed-width, 1.25em);");
+        StringAssert.Contains(fixedWidth, "box-sizing: content-box;");
+    }
+
     [TestMethod,
         DataRow("sm"),
         DataRow("md"),

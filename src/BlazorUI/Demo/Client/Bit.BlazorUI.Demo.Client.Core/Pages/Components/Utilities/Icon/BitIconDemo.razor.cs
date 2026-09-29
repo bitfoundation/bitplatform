@@ -127,7 +127,7 @@ public partial class BitIconDemo
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies the name of the icon from the built-in Fluent UI icon library. This property is ignored when Icon names a glyph.",
+            Description = "The name of a glyph in the built-in Fabric MDL2 set (or in another set, through IconResolver). Ignored when Icon names a glyph.",
             LinkType = LinkType.Link,
             Href = "/iconography",
         },
@@ -571,7 +571,7 @@ public partial class BitIconDemo
         {
             Name = "--bit-Icon-focus-color",
             DefaultValue = "the focus color of the icon's role",
-            Description = "Color of the keyboard focus ring of a clickable icon. It wins over the Color of the icon, so every ring can share one color.",
+            Description = "Color of the keyboard focus ring of a clickable or otherwise focusable icon. It wins over the Color of the icon, so every ring can share one color.",
         },
         new()
         {

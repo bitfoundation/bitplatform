@@ -941,7 +941,46 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.TabIndex, "3");
         });
 
-        component.MarkupMatches(@$"<i tabindex=""3"" class=""{CLASS}"" {HIDDEN} id:ignore />");
+        // A tab stop is never hidden: aria-hidden on an element the focus lands on is a stop the screen reader
+        // has been told does not exist.
+        component.MarkupMatches(@$"<i tabindex=""3"" class=""{CLASS}"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconWithANegativeTabIndexShouldStayHidden()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "-1");
+        });
+
+        component.MarkupMatches(@$"<i tabindex=""-1"" class=""{CLASS}"" {HIDDEN} id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldFallBackToTheIconNameAsAPicture()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Info");
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        // Focusable without a handler, it is a picture rather than a control, named the way an unnamed button is.
+        component.MarkupMatches(@$"<i role=""img"" tabindex=""0"" aria-label=""Info"" class=""{CLASS} bit-icon bit-icon--Info"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldKeepItsOwnName()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Info");
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.Title, "More about this field");
+        });
+
+        component.MarkupMatches(@$"<i role=""img"" title=""More about this field"" tabindex=""0"" class=""{CLASS} bit-icon bit-icon--Info"" id:ignore />");
     }
 
     [TestMethod]

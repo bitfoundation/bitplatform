@@ -227,16 +227,19 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example8RazorCode" Id="example8">
         <div>
-            An unnamed icon is decorative: <code>aria-hidden</code>, no role, skipped by screen readers - right for an icon beside a label
-            that says the same. <b>AriaLabel</b>, <b>Title</b> (also a native tooltip) or an <code>aria-labelledby</code> of your own names it and
-            gives it the <code>img</code> role. A native tooltip never shows for keyboard or touch users; use a
-            <BitLink Href="/components/tooltip">BitTooltip</BitLink> for text meant to be seen. A ligature icon is marked
-            <code>translate="no"</code>, and forced-colors mode keeps the variants and the disabled state visible.
+            An unnamed icon is decorative: <code>aria-hidden</code>, skipped by screen readers - right beside a label that says the same.
+            <b>AriaLabel</b>, <b>Title</b> (also a native tooltip) or your own <code>aria-labelledby</code> names it with the <code>img</code> role.
+            A native tooltip never shows for keyboard or touch users: for text meant to be read, give the icon a <b>TabIndex</b> and wrap it in a
+            <BitLink Href="/components/tooltip">BitTooltip</BitLink>. A focusable icon is never hidden and gets the themed focus ring.
+            Ligature icons are marked <code>translate="no"</code>; forced-colors mode keeps variants and the disabled state visible.
         </div>
         <br /><br />
         <div class="example-content">
             <BitIcon IconName="@BitIconName.CompletedSolid" AriaLabel="Succeeded" />
             <BitIcon IconName="@BitIconName.ErrorBadge" Title="Failed on the last run" />
+            <BitTooltip Text="Failed runs are retried three times, a minute apart.">
+                <BitIcon IconName="@BitIconName.Info" AriaLabel="Retry policy" TabIndex="0" />
+            </BitTooltip>
             <span><BitIcon IconName="@BitIconName.Attach" /> Decorative, beside its own label</span>
         </div>
     </DemoExample>

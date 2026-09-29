@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// A component for displaying icons that enhance visual communication and user experience.
-/// Supports both built-in Fluent UI icons and external icon libraries.
+/// Supports the built-in Fabric MDL2 icon set and any external icon library.
 /// </summary>
 public partial class BitIcon : BitComponentBase
 {
@@ -165,13 +165,13 @@ public partial class BitIcon : BitComponentBase
     /// <remarks>
     /// Use this property for external icon libraries such as FontAwesome, Bootstrap Icons, Material
     /// Icons or Material Symbols.
-    /// For built-in Fluent UI icons, use the <see cref="IconName"/> property instead.
+    /// For a glyph of the built-in Fabric MDL2 set, use the <see cref="IconName"/> property instead.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitIconInfo? Icon { get; set; }
 
     /// <summary>
-    /// Specifies the name of the icon from the built-in Fluent UI icon library.
+    /// Specifies the name of the icon in the built-in Fabric MDL2 icon set.
     /// This property is ignored when <see cref="Icon"/> is set.
     /// </summary>
     /// <remarks>
@@ -279,7 +279,7 @@ public partial class BitIcon : BitComponentBase
 
     protected override string RootElementClass => "bit-ico";
 
-    // The name an unnamed interactive icon falls back to is meant to be read out, so only a name a
+    // The name an unnamed icon the focus lands on falls back to is meant to be read out, so only a name a
     // reader would recognize is used: the name the author wrote, the ligature a ligature-based set
     // names its glyph with, or the icon's own name when its set writes the name and the classes apart.
     // BitIconInfo.Css and BitIconInfo.Fa put the whole class list in Name - "fa-solid fa-heart" is a
