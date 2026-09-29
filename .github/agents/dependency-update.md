@@ -8,6 +8,29 @@ description: Sweep every version-pinned surface in the bitplatform repo (NuGet, 
 Update every version pin in the repo in one pass, then hand back a report the maintainer can review
 without opening the diff.
 
+## First, check the checkout is up to date
+
+The sweep reads its pins from the working tree, so a checkout that is behind `develop` sweeps stale
+pins: it proposes bumps that already landed upstream and misses packages added since the last pull.
+Before reading a single pin, fetch and count:
+
+```bash
+up=$(git remote -v | awk '$2 ~ /bitfoundation\/bitplatform(\.git)?$/ && $3 == "(fetch)" { print $1; exit }')
+git fetch "$up" develop
+git rev-list --count HEAD.."$up"/develop   # commits the checkout is missing
+```
+
+`$up` is the remote that points at `bitfoundation/bitplatform`: `upstream` when `origin` is your
+fork, `origin` in a plain clone. If the count is not 0:
+
+- On `develop` with a clean tree, fast-forward it: `git merge --ff-only "$up"/develop`.
+- Anywhere else (another branch, local changes, commits of its own), leave the checkout alone and run
+  the whole sweep, scan included, in a worktree on the latest `develop`
+  (`git worktree add --detach ../bitplatform-sweep "$up"/develop`). Once the issue exists, name the
+  branch there with `git switch -c <n>` instead of adding the worktree in Ship it step 2.
+
+Open the report with the commit the sweep read.
+
 ## Ordering
 
 Work the surfaces in this order. Each is independent; batch the network lookups.
