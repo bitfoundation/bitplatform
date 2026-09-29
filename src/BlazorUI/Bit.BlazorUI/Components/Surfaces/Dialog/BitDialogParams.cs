@@ -117,7 +117,7 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Keeps the dialog from being light dismissed by the overlay or the Escape key.
     /// </summary>
-    public bool? IsBlocking { get; set; }
+    public bool? Blocking { get; set; }
 
     /// <summary>
     /// Lets the dialog be dragged around by its header.
@@ -127,7 +127,7 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Renders the dialog without an overlay, leaving the page behind it usable.
     /// </summary>
-    public bool? IsModeless { get; set; }
+    public bool? Modeless { get; set; }
 
     /// <summary>
     /// Keeps the dialog in the DOM while it is closed, hidden, instead of removing it.
@@ -326,9 +326,9 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.Height = Height;
         }
 
-        if (IsBlocking.HasValue && bitDialog.HasNotBeenSet(nameof(IsBlocking)))
+        if (Blocking.HasValue && bitDialog.HasNotBeenSet(nameof(Blocking)))
         {
-            bitDialog.IsBlocking = IsBlocking.Value;
+            bitDialog.Blocking = Blocking.Value;
         }
 
         if (IsDraggable.HasValue && bitDialog.HasNotBeenSet(nameof(IsDraggable)))
@@ -336,9 +336,9 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.IsDraggable = IsDraggable.Value;
         }
 
-        if (IsModeless.HasValue && bitDialog.HasNotBeenSet(nameof(IsModeless)))
+        if (Modeless.HasValue && bitDialog.HasNotBeenSet(nameof(Modeless)))
         {
-            bitDialog.IsModeless = IsModeless.Value;
+            bitDialog.Modeless = Modeless.Value;
 
             bitDialog.ClassBuilder.Reset();
         }

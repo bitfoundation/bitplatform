@@ -29,7 +29,7 @@
          inert="@(IsOpen is false)"
          aria-hidden="@(IsOpen ? null : "true")">
 
-        @if (IsModeless is false)
+        @if (Modeless is false)
         {
             @* The press on the overlay is left its default action: it is what blurs the input the user
                was typing into, and an input only commits what was typed once it loses the focus - before

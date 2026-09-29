@@ -58,7 +58,7 @@ public class BitDialogParamsTests : BunitTestContext
         {
             Color = BitColor.Error,
             AbsolutePosition = true,
-            IsModeless = true,
+            Modeless = true,
             FullWidth = true,
             FullHeight = true,
             Position = BitDialogPosition.TopEnd,
@@ -196,9 +196,9 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogCascadedIsBlockingShouldRefuseTheOverlayAndPromoteTheRole()
+    public void BitDialogCascadedBlockingShouldRefuseTheOverlayAndPromoteTheRole()
     {
-        var @params = new BitDialogParams { IsBlocking = true };
+        var @params = new BitDialogParams { Blocking = true };
 
         var component = RenderWithParams(@params, RenderDialog());
 

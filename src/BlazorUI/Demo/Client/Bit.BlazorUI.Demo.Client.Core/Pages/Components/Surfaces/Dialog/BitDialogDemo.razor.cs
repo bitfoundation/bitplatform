@@ -180,11 +180,11 @@ public partial class BitDialogDemo
             Name = "IsAlert",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless."
+            Description = "Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless."
         },
         new()
         {
-            Name = "IsBlocking",
+            Name = "Blocking",
             Type = "bool",
             DefaultValue = "false",
             Description = "Prevents the Dialog from being dismissed by a click on the overlay or by the Escape key, leaving its buttons as the only way out."
@@ -205,10 +205,10 @@ public partial class BitDialogDemo
         },
         new()
         {
-            Name = "IsModeless",
+            Name = "Modeless",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, IsBlocking is ignored, there will be no overlay, and the focus is not trapped - though the Dialog still takes it when it opens unless AutoFocus is turned off."
+            Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, Blocking is ignored, there will be no overlay, and the focus is not trapped - though the Dialog still takes it when it opens unless AutoFocus is turned off."
         },
         new()
         {
@@ -322,7 +322,7 @@ public partial class BitDialogDemo
             Name = "OnDismissPrevented",
             Type = "EventCallback<BitDialogDismissReason>",
             DefaultValue = "null",
-            Description = "A callback function for when a dismissal was refused: the Escape key or a click on the overlay the Dialog does not take (CloseOnEscape, CloseOnOverlayClick, IsBlocking), or a closing OnDismissing turned down. The Dialog shakes on its own; this is for saying why.",
+            Description = "A callback function for when a dismissal was refused: the Escape key or a click on the overlay the Dialog does not take (CloseOnEscape, CloseOnOverlayClick, Blocking), or a closing OnDismissing turned down. The Dialog shakes on its own; this is for saying why.",
             LinkType = LinkType.Link,
             Href = "#component-dismiss-reason-enum",
         },

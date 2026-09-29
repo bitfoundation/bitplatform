@@ -210,7 +210,7 @@ public partial class BitDialog : BitComponentBase
     /// The default value is <strong>true</strong>.
     /// </summary>
     /// <remarks>
-    /// A blocking Dialog (<see cref="IsBlocking"/>) ignores the Escape key whatever this is set to, since
+    /// A blocking Dialog (<see cref="Blocking"/>) ignores the Escape key whatever this is set to, since
     /// the point of a blocking Dialog is that it can only be answered with one of its buttons.
     /// <br />
     /// The key is listened for on the Dialog itself rather than on the document, which is what keeps a
@@ -236,7 +236,7 @@ public partial class BitDialog : BitComponentBase
     /// The counterpart of <see cref="CloseOnEscape"/>: turn it off for a Dialog holding work a stray click
     /// outside would throw away, while the Escape key - a deliberate gesture - still closes it. A click it
     /// refuses is answered the way every refused dismissal is (a shake and <see cref="OnDismissPrevented"/>).
-    /// <see cref="IsBlocking"/> refuses the click whatever this is set to, and a modeless Dialog has no
+    /// <see cref="Blocking"/> refuses the click whatever this is set to, and a modeless Dialog has no
     /// overlay to click.
     /// </remarks>
     [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
@@ -318,7 +318,7 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public string? Height { get; set; }
 
     /// <summary>
-    /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
+    /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
     /// </summary>
     [Parameter] public bool? IsAlert { get; set; }
 
@@ -329,7 +329,7 @@ public partial class BitDialog : BitComponentBase
     /// A blocking Dialog also ignores the Escape key, so the only ways out of it are its own buttons and
     /// the parent closing it.
     /// </remarks>
-    [Parameter] public bool IsBlocking { get; set; }
+    [Parameter] public bool Blocking { get; set; }
 
     /// <summary>
     /// Whether the Cancel button of the Dialog can be pressed.
@@ -354,14 +354,14 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public bool IsDraggable { get; set; }
 
     /// <summary>
-    /// Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). if true: IsBlocking is ignored, there will be no overlay.
+    /// Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). if true: Blocking is ignored, there will be no overlay.
     /// </summary>
     /// <remarks>
     /// A modeless Dialog leaves the page behind it clickable and does not trap the focus, so it is
     /// announced with <c>aria-modal="false"</c>.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public bool IsModeless { get; set; }
+    public bool Modeless { get; set; }
 
     /// <summary>
     /// Whether the Ok button of the Dialog can be pressed.
@@ -501,7 +501,7 @@ public partial class BitDialog : BitComponentBase
     /// <summary>
     /// A callback function for when a dismissal was refused: the Escape key on a Dialog that does not take
     /// it, a click on the overlay of one that does not take that (<see cref="CloseOnOverlayClick"/>,
-    /// <see cref="IsBlocking"/>), or a closing <see cref="OnDismissing"/> turned down.
+    /// <see cref="Blocking"/>), or a closing <see cref="OnDismissing"/> turned down.
     /// </summary>
     /// <remarks>
     /// The Dialog answers a refused dismissal on its own by shaking, so the gesture is not simply swallowed.
@@ -764,7 +764,7 @@ public partial class BitDialog : BitComponentBase
         });
 
         ClassBuilder.Register(() => AbsolutePosition ? "bit-dlg-abs" : string.Empty);
-        ClassBuilder.Register(() => IsModeless ? "bit-dlg-mls" : string.Empty);
+        ClassBuilder.Register(() => Modeless ? "bit-dlg-mls" : string.Empty);
         ClassBuilder.Register(() => (FullWidth || FullSize) ? "bit-dlg-fwi" : string.Empty);
         ClassBuilder.Register(() => (FullHeight || FullSize) ? "bit-dlg-fhe" : string.Empty);
     }
@@ -1094,7 +1094,7 @@ public partial class BitDialog : BitComponentBase
 
     // A modal Dialog traps by default and a modeless one does not, since the page behind a modeless
     // Dialog is meant to stay usable - by the keyboard as much as by the pointer.
-    private bool ShouldTrapFocus => TrapFocus ?? (IsModeless is false);
+    private bool ShouldTrapFocus => TrapFocus ?? (Modeless is false);
 
     private async Task InvokeJs(ValueTask task)
     {
@@ -1243,7 +1243,7 @@ public partial class BitDialog : BitComponentBase
         // is the same story: an OnDismissing that is still deciding has not finished either.
         if (_isLoading || _isDismissing) return;
 
-        if (IsBlocking || CloseOnOverlayClick is false)
+        if (Blocking || CloseOnOverlayClick is false)
         {
             await PreventDismiss(BitDialogDismissReason.OverlayClick);
             return;
@@ -1266,7 +1266,7 @@ public partial class BitDialog : BitComponentBase
 
         // A blocking Dialog can only be answered with its buttons, which is as true of the keyboard as
         // it is of a click on the overlay.
-        if (CloseOnEscape is false || IsBlocking)
+        if (CloseOnEscape is false || Blocking)
         {
             await PreventDismiss(BitDialogDismissReason.Escape);
             return;
@@ -1364,9 +1364,9 @@ public partial class BitDialog : BitComponentBase
         _ => null
     };
 
-    private string GetRole() => (IsAlert ?? (IsBlocking && IsModeless is false)) ? "alertdialog" : "dialog";
+    private string GetRole() => (IsAlert ?? (Blocking && Modeless is false)) ? "alertdialog" : "dialog";
 
-    private string GetAriaModal() => (IsModeless is false).ToString().ToLowerInvariant();
+    private string GetAriaModal() => (Modeless is false).ToString().ToLowerInvariant();
 
     private string? GetLabelledBy()
     {

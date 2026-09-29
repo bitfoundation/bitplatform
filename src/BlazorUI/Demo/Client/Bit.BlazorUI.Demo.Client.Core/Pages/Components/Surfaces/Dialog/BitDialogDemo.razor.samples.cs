@@ -233,13 +233,13 @@ private async Task HandleSlowOk()
 </style>
 
 <div class=""btn-container"">
-    <BitButton OnClick=""@(() => isOpenBlocking = true)"">IsBlocking</BitButton>
+    <BitButton OnClick=""@(() => isOpenBlocking = true)"">Blocking</BitButton>
     <BitButton OnClick=""@(() => isOpenNoOverlayClick = true)"">CloseOnOverlayClick=""false""</BitButton>
     <BitButton OnClick=""@(() => isOpenNoEscape = true)"">CloseOnEscape=""false""</BitButton>
-    <BitButton OnClick=""@(() => isOpenModeless = true)"">IsModeless</BitButton>
+    <BitButton OnClick=""@(() => isOpenModeless = true)"">Modeless</BitButton>
 </div>
 
-<BitDialog IsBlocking
+<BitDialog Blocking
            @bind-IsOpen=""isOpenBlocking""
            Title=""Two-factor code""
            Subtitle=""@preventedHint""
@@ -259,7 +259,7 @@ private async Task HandleSlowOk()
            Title=""Missing subject""
            Message=""The Escape key is refused, but a click outside still closes it."" />
 
-<BitDialog IsModeless
+<BitDialog Modeless
            @bind-IsOpen=""isOpenModeless""
            Title=""Modeless""
            Message=""There is no overlay, so the page behind this one is still usable."" />";
@@ -605,6 +605,7 @@ private bool isOpenUnmounted;";
 </div>
 
 <BitDialog @ref=""programmaticDialogRef""
+           Modeless
            Title=""Driven by methods""
            Message=""This Dialog has no IsOpen binding: it is opened and closed through its reference.""
            ShowOkButton=""false""

@@ -189,7 +189,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsModeless, true);
+            parameters.Add(p => p.Modeless, true);
         });
 
         Assert.IsEmpty(component.FindAll(".bit-dlg-ovl"));
@@ -478,8 +478,8 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsBlocking, true);
-            parameters.Add(p => p.IsModeless, false);
+            parameters.Add(p => p.Blocking, true);
+            parameters.Add(p => p.Modeless, false);
 
             if (isAlert.HasValue)
             {
@@ -513,7 +513,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsModeless, isModeless);
+            parameters.Add(p => p.Modeless, isModeless);
         });
 
         Assert.AreEqual(expected, component.Find(".bit-dlg-ctn").GetAttribute("aria-modal"));
@@ -694,7 +694,7 @@ public class BitDialogTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitDialogOverlayClickRespectsIsBlocking(bool isBlocking)
+    public void BitDialogOverlayClickRespectsBlocking(bool isBlocking)
     {
         var isOpen = true;
         var dismissedCount = 0;
@@ -702,7 +702,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, isBlocking);
+            parameters.Add(p => p.Blocking, isBlocking);
             parameters.Add(p => p.OnDismiss, () => dismissedCount++);
         });
 
@@ -826,7 +826,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
         });
 
         PressEscape(component);
@@ -924,7 +924,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.OnOverlayClick, () => overlayClicks++);
         });
 
@@ -945,7 +945,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, isBlocking);
+            parameters.Add(p => p.Blocking, isBlocking);
             parameters.Add(p => p.CloseOnEscape, closeOnEscape);
             parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
         });
@@ -968,7 +968,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
         });
 
         PressEscape(component);
@@ -999,7 +999,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
         });
 
         PressEscape(component);
@@ -1025,7 +1025,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
         });
 
         PressEscape(component);
@@ -1055,7 +1055,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.KeepMounted, true);
         });
 
@@ -1071,14 +1071,14 @@ public class BitDialogTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, false);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.KeepMounted, true);
         });
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.KeepMounted, true);
         });
 
@@ -1096,7 +1096,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
         });
 
@@ -1875,7 +1875,7 @@ public class BitDialogTests : BunitTestContext
         RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsModeless, true);
+            parameters.Add(p => p.Modeless, true);
         });
 
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
@@ -1887,7 +1887,7 @@ public class BitDialogTests : BunitTestContext
         RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsModeless, true);
+            parameters.Add(p => p.Modeless, true);
             parameters.Add(p => p.TrapFocus, true);
         });
 
@@ -2037,7 +2037,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
         });
 
         component.Find(".bit-dlg-ovl").Click();
@@ -3035,7 +3035,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.NoDismissPreventedAnimation, true);
             parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
         });
@@ -3115,7 +3115,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.OnDismissing, (BitDialogDismissArgs _) => dismissingCount++);
             parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
         });

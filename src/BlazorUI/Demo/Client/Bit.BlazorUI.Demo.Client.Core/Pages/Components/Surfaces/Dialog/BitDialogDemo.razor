@@ -191,19 +191,19 @@
         <DemoExample Title="Dismiss behavior" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 The overlay and the Escape key both dismiss by default. <b>CloseOnOverlayClick</b> and <b>CloseOnEscape</b> each turn
-                one off; <b>IsBlocking</b> turns off both and makes the role <b>alertdialog</b> (<b>IsAlert</b> sets the role by hand).
-                <b>IsModeless</b> drops the overlay so the page stays usable. A refused gesture shakes the surface - a ring under
+                one off; <b>Blocking</b> turns off both and makes the role <b>alertdialog</b> (<b>IsAlert</b> sets the role by hand).
+                <b>Modeless</b> drops the overlay so the page stays usable. A refused gesture shakes the surface - a ring under
                 reduced motion - and raises <b>OnDismissPrevented</b>, so the Dialog can say why.
             </div>
             <br />
             <div class="btn-container">
-                <BitButton OnClick="@(() => isOpenBlocking = true)">IsBlocking</BitButton>
+                <BitButton OnClick="@(() => isOpenBlocking = true)">Blocking</BitButton>
                 <BitButton OnClick="@(() => isOpenNoOverlayClick = true)">CloseOnOverlayClick="false"</BitButton>
                 <BitButton OnClick="@(() => isOpenNoEscape = true)">CloseOnEscape="false"</BitButton>
-                <BitButton OnClick="@(() => isOpenModeless = true)">IsModeless</BitButton>
+                <BitButton OnClick="@(() => isOpenModeless = true)">Modeless</BitButton>
             </div>
 
-            <BitDialog IsBlocking
+            <BitDialog Blocking
                        @bind-IsOpen="isOpenBlocking"
                        Title="Two-factor code"
                        Subtitle="@preventedHint"
@@ -223,7 +223,7 @@
                        Title="Missing subject"
                        Message="The Escape key is refused, but a click outside still closes it." />
 
-            <BitDialog IsModeless
+            <BitDialog Modeless
                        @bind-IsOpen="isOpenModeless"
                        Title="Modeless"
                        Message="There is no overlay, so the page behind this one is still usable." />
@@ -237,6 +237,7 @@
             </div>
             <br />
             <BitToggle Label="The note has unsaved changes" @bind-Value="hasUnsavedChanges" />
+            <br />
             <BitButton OnClick="@(() => isOpenGuarded = true)">Open Dialog</BitButton>
             <div>Last refused: @refusedGesture</div>
 
@@ -374,6 +375,7 @@
             </div>
             <br />
             <BitToggle Label="IsDraggable" @bind-Value="isDraggable" />
+            <br />
             <div class="btn-container">
                 <BitButton OnClick="@(() => isOpenDraggable = true)">Header handle</BitButton>
                 <BitButton OnClick="@(() => isOpenDragHandle = true)">DragElementSelector</BitButton>
@@ -474,6 +476,7 @@
             </div>
 
             <BitDialog @ref="programmaticDialogRef"
+                       Modeless
                        Title="Driven by methods"
                        Message="This Dialog has no IsOpen binding: it is opened and closed through its reference."
                        ShowOkButton="false"
