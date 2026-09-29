@@ -10,6 +10,15 @@ public partial class BitElementDemo
 <BitElement Element=""not a tag name"">An invalid tag name falls back to a div.</BitElement>";
 
     private readonly string example2RazorCode = @"
+<BitElement Element=""a"" href=""https://bitplatform.dev/"" target=""_blank"" rel=""noopener"">An anchor to bitplatform.dev</BitElement>
+<BitElement Element=""button"" data-demo=""counter"" @onclick=""() => counter++"">Clicked @counter times</BitElement>
+<BitElement Element=""input"" AriaLabel=""Your text"" placeholder=""Type something"" aria-describedby=""typed-output"" @oninput=""e => typed = e.Value?.ToString()"" />
+<BitElement id=""typed-output"" role=""status"">You typed: @typed</BitElement>";
+    private readonly string example2CsharpCode = @"
+private int counter;
+private string? typed;";
+
+    private readonly string example3RazorCode = @"
 <BitElement Element=""svg"" width=""160"" height=""48"" viewBox=""0 0 160 48"" role=""img"" AriaLabel=""A gradient bar"">
     <BitElement Element=""defs"">
         <BitElement Element=""linearGradient"" id=""demo-gradient"" x1=""0"" y1=""0"" x2=""1"" y2=""0"">
@@ -21,20 +30,11 @@ public partial class BitElementDemo
 </BitElement>
 <BitElement Element=""demo-badge"">A custom element (demo-badge)</BitElement>";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitElement Element=""input"" placeholder=""An input"" AriaLabel=""An input"" />
 <BitElement Element=""hr"" />
 <BitElement Element=""img"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" alt=""bit logo"" width=""64"" />
 <BitElement Element=""br"">Not rendered: a br holds no content.</BitElement>";
-
-    private readonly string example4RazorCode = @"
-<BitElement Element=""a"" href=""https://bitplatform.dev/"" target=""_blank"" rel=""noopener"">An anchor to bitplatform.dev</BitElement>
-<BitElement Element=""button"" data-demo=""counter"" @onclick=""() => counter++"">Clicked @counter times</BitElement>
-<BitElement Element=""input"" placeholder=""Type something"" aria-describedby=""typed-output"" @oninput=""e => typed = e.Value?.ToString()"" />
-<BitElement id=""typed-output"" role=""status"">You typed: @typed</BitElement>";
-    private readonly string example4CsharpCode = @"
-private int counter;
-private string? typed;";
 
     private readonly string example5RazorCode = @"
 <div class=""demo-card"" @onclick=""() => card++"">

@@ -108,7 +108,9 @@ public class BitElementTests : BunitTestContext
         var el = component.Find(element);
 
         Assert.IsTrue(el.HasAttribute("disabled"));
-        Assert.AreEqual("true", el.GetAttribute("aria-disabled"));
+        // The disabled attribute is what announces the state on these tags, and ARIA in HTML recommends against
+        // repeating it through aria-disabled.
+        Assert.IsFalse(el.HasAttribute("aria-disabled"));
         // The browser takes an element it disables itself out of the tab order, so nothing has to be forced here.
         Assert.IsFalse(el.HasAttribute("tabindex"));
     }
@@ -166,6 +168,33 @@ public class BitElementTests : BunitTestContext
         // An enabled anchor is a link of itself and needs no role, and an area without an href may carry none.
         Assert.IsFalse(component.FindAll(".bit-elm")[5].HasAttribute("role"));
         Assert.IsFalse(component.FindAll(".bit-elm")[8].HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldNotGiveTheLinkRoleToADisabledAnchorWithoutAnHref()
+    {
+        // An anchor written without an href is a placeholder rather than a link, so disabling it makes it no link either.
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, "a");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var element = component.Find("a");
+
+        Assert.IsFalse(element.HasAttribute("role"));
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepASplattedAriaDisabledOfANativelyDisabledElement()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[13];
+
+        Assert.IsTrue(element.HasAttribute("disabled"));
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
     }
 
     [TestMethod]

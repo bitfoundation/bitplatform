@@ -56,6 +56,15 @@ public class BitElementStylesheetTests
         StringAssert.Contains(stylesheet, "pointer-events: none;");
     }
 
+    [TestMethod]
+    public void BitElementShouldPaintADisabledElementInGrayTextUnderForcedColors()
+    {
+        var stylesheet = StripComments(ReadStylesheet());
+
+        // Forced colors paint only the form elements the browser disables itself in GrayText.
+        StringAssert.Matches(stylesheet, new Regex(@"@media \(forced-colors: active\) \{\s*\.bit-elm\.bit-dis \{\s*color: GrayText;"));
+    }
+
     private static string StripComments(string stylesheet)
     {
         return Regex.Replace(stylesheet, @"//[^\n]*", string.Empty);

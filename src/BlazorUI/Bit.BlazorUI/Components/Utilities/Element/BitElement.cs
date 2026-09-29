@@ -260,15 +260,21 @@ public partial class BitElement : BitComponentBase
         {
             builder.AddAttribute(8, "disabled", true);
         }
-        // What keeps a disabled element announced as disabled rather than as missing, whichever tag it renders.
-        builder.AddAttribute(9, "aria-disabled", disabled ? "true" : GetSplattedAttribute("aria-disabled"));
+        // What keeps a disabled element announced as disabled rather than as missing, whichever tag it renders. A tag the
+        // disabled attribute applies to is announced as disabled through that attribute already, and ARIA in HTML
+        // recommends against repeating the state beside it, so there only a splatted value is kept.
+        builder.AddAttribute(9, "aria-disabled", disabled && nativelyDisabled is false
+                                                 ? "true"
+                                                 : GetSplattedAttribute("aria-disabled"));
         // Written over the splatted href of a disabled hyperlink, which is what takes the link out of the tab order the
         // browser builds of itself and leaves nothing for the enter key to follow; every other tag has no href to lose.
-        builder.AddAttribute(10, "href", disabledLink ? null : GetSplattedAttribute("href"));
+        var href = GetSplattedAttribute("href");
+        builder.AddAttribute(10, "href", disabledLink ? null : href);
         // An anchor without an href is no longer a link to assistive technologies but a generic element, which the
         // aria-disabled above means nothing on, so the role is given back to keep it announced as a disabled link.
+        // Only an anchor that was a link gets it: one written without an href is a placeholder, and stays generic.
         // The area gets none, since ARIA allows no role on an area without an href.
-        if (disabledLink && string.Equals(element, "a", StringComparison.OrdinalIgnoreCase))
+        if (disabledLink && href is not null && string.Equals(element, "a", StringComparison.OrdinalIgnoreCase))
         {
             builder.AddAttribute(11, "role", GetSplattedAttribute("role") ?? "link");
         }

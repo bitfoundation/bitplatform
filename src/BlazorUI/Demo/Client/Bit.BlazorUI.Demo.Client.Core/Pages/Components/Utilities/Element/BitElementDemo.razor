@@ -5,7 +5,7 @@
             Description="Renders any HTML tag - an anchor, a button, an input, an SVG shape or a custom element - with the styling, attribute, direction and state parameters of the bit BlazorUI." />
 
 <DemoPage Name="Element"
-          Description="BitElement renders whatever tag the Element parameter names - a div by default, or an anchor, a button, an input, an SVG shape, a custom element - with the parameters every bit BlazorUI component takes. Anything that is not a parameter is splatted onto the tag, void elements hold no content, disabling follows what the tag supports, NoWrapper drops the tag and keeps the content, and the stopPropagation / preventDefault modifiers Razor only allows on plain elements are parameters here."
+          Description="BitElement renders any tag - a div by default, or an anchor, a button, an input, an SVG shape, a custom element - with the parameters every bit BlazorUI component takes. Other attributes and events are splatted onto the tag, disabling follows what the tag supports, NoWrapper makes it a conditional wrapper, and the stopPropagation / preventDefault modifiers Razor only allows on plain elements are parameters."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           CssVariables="componentCssVariables"
@@ -26,7 +26,22 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="SVG & custom elements" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Attributes & events" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div class="example-desc">
+            Anything that is not a parameter - <code>href</code>, <code>placeholder</code>, <code>role</code>,
+            <code>aria-*</code>, <code>data-*</code>, <code>@@onclick</code>, <code>@@oninput</code>, ... - is splatted
+            onto the rendered tag. The shared parameters (<b>Id</b>, <b>AriaLabel</b>, <b>TabIndex</b>, ...) win over
+            the attribute of the same name.
+        </div>
+        <div class="example-content">
+            <BitElement Element="a" href="https://bitplatform.dev/" target="_blank" rel="noopener">An anchor to bitplatform.dev</BitElement>
+            <BitElement Element="button" data-demo="counter" @onclick="() => counter++">Clicked @counter times</BitElement>
+            <BitElement Element="input" AriaLabel="Your text" placeholder="Type something" aria-describedby="typed-output" @oninput="e => typed = e.Value?.ToString()" />
+            <BitElement id="typed-output" role="status">You typed: @typed</BitElement>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="SVG & custom elements" RazorCode="@example3RazorCode" Id="example3">
         <div class="example-desc">
             The tag's case is kept, so case-sensitive SVG names (<code>linearGradient</code>, <code>clipPath</code>) work
             inside an <code>svg</code>. A custom element (any name with a dash) passes through untouched.
@@ -45,7 +60,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Void elements" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Void elements" RazorCode="@example4RazorCode" Id="example4">
         <div class="example-desc">
             Void elements (<code>input</code>, <code>img</code>, <code>hr</code>, <code>br</code>, ...) render without a
             closing tag, and their <b>ChildContent</b> is left out rather than emitted as invalid markup.
@@ -55,20 +70,6 @@
             <BitElement Element="hr" />
             <BitElement Element="img" src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" alt="bit logo" width="64" />
             <BitElement Element="br">Not rendered: a br holds no content.</BitElement>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Attributes & events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div class="example-desc">
-            Anything that is not a parameter - <code>href</code>, <code>placeholder</code>, <code>role</code>,
-            <code>aria-*</code>, <code>data-*</code>, <code>@@onclick</code>, <code>@@oninput</code>, ... - is splatted
-            onto the rendered tag.
-        </div>
-        <div class="example-content">
-            <BitElement Element="a" href="https://bitplatform.dev/" target="_blank" rel="noopener">An anchor to bitplatform.dev</BitElement>
-            <BitElement Element="button" data-demo="counter" @onclick="() => counter++">Clicked @counter times</BitElement>
-            <BitElement Element="input" placeholder="Type something" aria-describedby="typed-output" @oninput="e => typed = e.Value?.ToString()" />
-            <BitElement id="typed-output" role="status">You typed: @typed</BitElement>
         </div>
     </DemoExample>
 
@@ -144,11 +145,11 @@
 
     <DemoExample Title="Disabled" RazorCode="@example9RazorCode" Id="example9">
         <div class="example-desc">
-            <b>IsEnabled="false"</b> dims the element and blocks the pointer on any tag, and sets <code>aria-disabled</code>.
-            Form elements also get the native <code>disabled</code>; other tags get <code>tabindex="-1"</code>. A disabled
-            anchor loses its <code>href</code> and keeps <code>role="link"</code>, so it is still announced as a
-            (disabled) link. Screen readers only announce <code>aria-disabled</code> on an element with a role, so give
-            a generic tag one. Content inside keeps its own tab stops.
+            <b>IsEnabled="false"</b> dims the element and blocks the pointer on any tag. Form elements get the native
+            <code>disabled</code>; other tags get <code>aria-disabled</code> and <code>tabindex="-1"</code>. A disabled
+            link loses its <code>href</code> but keeps <code>role="link"</code>, so it is announced as a disabled link.
+            Screen readers ignore <code>aria-disabled</code> on a generic tag, so give it a role. Content inside keeps
+            its own tab stops - use a <code>fieldset</code> to disable a whole form.
         </div>
         <div class="example-content">
             <BitElement Element="button" IsEnabled="false">A disabled button</BitElement>

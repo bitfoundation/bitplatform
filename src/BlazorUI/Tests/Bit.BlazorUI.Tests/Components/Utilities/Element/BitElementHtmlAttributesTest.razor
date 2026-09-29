@@ -53,6 +53,9 @@
 
 <BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="@LinkEnabled">I'm a link enabled by the test</BitElement>
 
+@* A form element disabled natively carries no aria-disabled of its own, but one the page wrote is kept. *@
+<BitElement Element="button" aria-disabled="true" IsEnabled="false">I'm a disabled button with its own aria-disabled</BitElement>
+
 @code {
     [Parameter] public bool LinkEnabled { get; set; }
 }
