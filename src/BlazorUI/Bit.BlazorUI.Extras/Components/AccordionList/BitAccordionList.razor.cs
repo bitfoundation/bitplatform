@@ -1339,8 +1339,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             _togglingKey = key;
 
             // Nothing toggles the list while the callback is running, so the header of the item it was
-            // asked about says as much - aria-busy for a screen reader, a busy cursor for a pointer -
-            // rather than going on looking like a toggle that answers at once.
+            // asked about says as much - a spinner, aria-busy and a busy cursor - rather than going on
+            // looking like a toggle that answers at once.
             await RefreshAndRender();
 
             try

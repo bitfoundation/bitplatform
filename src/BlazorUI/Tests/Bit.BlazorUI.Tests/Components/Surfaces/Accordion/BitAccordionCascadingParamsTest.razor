@@ -1,0 +1,45 @@
+﻿@* Covers BitAccordionParams: the cascaded values fill in the parameters the accordion did not set itself, and never
+   overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitAccordionParams[]
+                         {
+                             new()
+                             {
+                                 Background = BitColorKind.Tertiary,
+                                 Border = BitColorKind.Secondary,
+                                 ExpanderIconName = "Add",
+                                 ExpandedExpanderIconName = "Remove",
+                                 ExpanderIconPosition = BitIconPosition.Start,
+                                 ExpandOnPrint = true,
+                                 HeadingLevel = 2,
+                                 HiddenUntilFound = true,
+                                 MaxHeight = "10rem",
+                                 NoBorder = true,
+                                 NoContentRegion = true,
+                                 Size = BitSize.Large,
+                                 TransitionDuration = 150,
+                                 Class = "cascaded",
+                                 Classes = new() { Title = "cascaded-title" },
+                                 Styles = new() { Root = "margin:1px" },
+                             }
+                         })">
+    <BitAccordion Title="Cascaded">
+        <BitAccordion Title="Nested" />
+    </BitAccordion>
+    <BitAccordion Title="Own"
+                  Background="BitColorKind.Primary"
+                  Size="BitSize.Small"
+                  HeadingLevel="4"
+                  HiddenUntilFound="false"
+                  NoContentRegion="false"
+                  ExpanderIconName="ChevronDown"
+                  Class="own" />
+</BitParams>
+
+<BitParams Parameters="@(new BitAccordionParams[] { new() { LazyContent = true } })">
+    <BitAccordion Title="Lazy"><span class="lazy-body">Body</span></BitAccordion>
+</BitParams>
+
+<BitParams Parameters="@(new BitAccordionParams[] { new() { UnmountOnCollapse = true, HideExpanderIcon = true, NoExpanderRotation = true } })">
+    <BitAccordion Title="Unmounted" DefaultIsExpanded="true"><span class="unmounted-body">Body</span></BitAccordion>
+</BitParams>

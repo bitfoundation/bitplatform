@@ -305,6 +305,7 @@
                 <ul>
                     <li><code>--bit-spa-scaling-factor</code> - the spacing unit everything else is a multiple of</li>
                     <li><code>--bit-spa-dialog</code> - the inset padding of dialogs and message boxes: 24px</li>
+                    <li><code>--bit-spa-card-{sm,md,lg}</code> - BitCard's inset, per size: 12/16/24px; Fluent 2 8/12/16px</li>
                 </ul>
 
                 <BitText>
@@ -318,6 +319,7 @@
                 <ul>
                     <li><code>--bit-layout-density-scale</code> - the density multiplier</li>
                     <li><code>--bit-layout-dialog-actions-direction</code> / <code>--bit-layout-dialog-actions-justify</code> / <code>--bit-layout-dialog-actions-align</code> - how dialog and message-box footers lay out their action buttons: <code>row</code> / <code>flex-end</code> / <code>center</code> under Fluent; Cupertino stacks them full width with <code>column</code> / <code>center</code> / <code>stretch</code></li>
+                    <li><code>--bit-layout-dialog-text-align</code> - how a dialog's title and message are aligned: <code>start</code>, or <code>center</code> under Cupertino</li>
                     <li><code>--bit-bp-{xs,sm,md,lg,xl,xxl}</code> - the breakpoints</li>
                 </ul>
             </DocSection>
@@ -334,6 +336,7 @@
                     <li><code>--bit-tpg-fs-{2xs,xs,sm,md,lg,xl,2xl,3xl,4xl}</code> - the font-size scale, 10&hellip;32px; component size classes read <code>sm&rarr;xs</code>, <code>md&rarr;sm</code>, <code>lg&rarr;md</code></li>
                     <li><code>--bit-tpg-fw-{light,regular,medium,semibold,bold}</code> - the weight scale</li>
                     <li><code>--bit-tpg-ctrl-letter-spacing</code> / <code>--bit-tpg-ctrl-text-transform</code> - the control-label pair</li>
+                    <li><code>--bit-tpg-dialog-title-font-size</code> / <code>--bit-tpg-dialog-title-font-weight</code> - a dialog's title: 20px semibold under Fluent and Fluent&nbsp;2, 24px regular under Material, 17px semibold under Cupertino</li>
                     <li>the <code>BitText</code> variants <code>h1..h6</code>, <code>body1/2</code>, <code>subtitle1/2</code>, <code>caption1/2</code>, <code>button</code>, <code>overline</code>, <code>inherit</code></li>
                 </ul>
 
@@ -475,6 +478,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
 /* elevation per surface family */
 --bit-shd-card             /* &rarr; var(--bit-shd-cal) */
+--bit-shd-card-hover       /* &rarr; var(--bit-shd-cal)  the lift of a card that reacts to the pointer */
 --bit-shd-popup            /* &rarr; var(--bit-shd-cal) */
 --bit-shd-dialog           /* &rarr; var(--bit-shd-cal) */
 --bit-shd-sheet            /* &rarr; var(--bit-shd-cal)  panels and the responsive sheet form of menus/pickers */
@@ -747,6 +751,8 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     --bit-tpg-fw-semibold: 500;                 /* Roboto has no 600 - labels/titles fall to medium */
     --bit-tpg-ctrl-letter-spacing: 0.00625rem;
     --bit-tpg-ctrl-text-transform: none;        /* Material 2 would say uppercase */
+    --bit-tpg-dialog-title-font-size: 1.5rem;   /* headline-small */
+    --bit-tpg-dialog-title-font-weight: 400;
 
     /* shape: 4px fields/menus, 12px cards, 28px dialogs, pill buttons, 8px chips, 2px checkbox */
     --bit-shp-radius-control: 0.25rem;
@@ -792,7 +798,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
                     <li>SF Pro at 17px (<code>--bit-tpg-fs-sm: 1.0625rem</code>), 590 semibold</li>
                     <li>44px controls</li>
                     <li>8px field corners, with capsule buttons and chips (<code>--bit-shp-radius-button: var(--bit-shp-radius-full)</code>)</li>
-                    <li>14px dialog corners</li>
+                    <li>14px dialog corners, with a centred 17px semibold title (<code>--bit-layout-dialog-text-align: center</code>)</li>
                     <li>the 51x31 UISwitch</li>
                     <li>hairline separators (<code>--bit-shp-brd-width: 0.5px</code>) with <code>--bit-shd-popup: none</code></li>
                 </ul>
