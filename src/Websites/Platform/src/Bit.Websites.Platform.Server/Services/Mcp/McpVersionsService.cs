@@ -72,12 +72,16 @@ public partial class McpVersionsService : BackgroundService
         }
     }
 
-    /// <returns>Whether every release found is now being served.</returns>
+    /// <returns>Whether the clone is up to date and every release found in it is now being served.</returns>
     private async Task<bool> Prepare(McpSettings settings, CancellationToken cancellationToken)
     {
         var clonePath = Path.Combine(settings.SourcesDirectoryPath!, "repository");
 
-        if (await EnsureClone(settings, clonePath, cancellationToken) is false) return false;
+        var upToDate = await EnsureClone(settings, clonePath, cancellationToken);
+
+        // A failed fetch still leaves the tags an earlier one brought, so those are served meanwhile and the fetch is
+        // retried with the next attempt. Two processes of an overlapping recycle fetching at once is enough to fail it.
+        if (upToDate is false && Directory.Exists(Path.Combine(clonePath, ".git")) is false) return false;
 
         // Three parts, since a configured 10.6 would otherwise carry a -1 build that no tag can match.
         var minimum = Version.TryParse(settings.MinimumVersion, out var parsed) ? new(parsed.Major, parsed.Minor, Math.Max(parsed.Build, 0)) : new Version(10, 6, 0);
@@ -103,7 +107,7 @@ public partial class McpVersionsService : BackgroundService
             Publish();
         }
 
-        return complete;
+        return complete && upToDate;
     }
 
     private async Task<bool> EnsureClone(McpSettings settings, string clonePath, CancellationToken cancellationToken)
