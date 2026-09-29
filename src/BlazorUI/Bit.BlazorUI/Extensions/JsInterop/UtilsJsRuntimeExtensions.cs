@@ -124,18 +124,13 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    // Records, as each Escape goes down inside the element, whether it belongs to something in there - an
-    // open popup of a component in its content - rather than to the surface itself.
-    internal static ValueTask BitUtilsSetupEscapeGuard(this IJSRuntime jsRuntime, string elementId)
+    // Reports, through the OnEscapeVerdict callback, as each Escape goes down inside the element, whether it
+    // belongs to something in there - an open popup of a component in its content, an IME composition, a
+    // surface nested inside it - rather than to the surface itself; see Utils.setupEscapeGuard.
+    internal static ValueTask BitUtilsSetupEscapeGuard<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupEscapeGuard", elementId);
-    }
-
-
-    // Reads back, once, whether the last Escape inside the element belonged to something in there.
-    internal static ValueTask<bool> BitUtilsTakeForeignEscape(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.takeForeignEscape", elementId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupEscapeGuard", elementId, dotnetObj);
     }
 
 

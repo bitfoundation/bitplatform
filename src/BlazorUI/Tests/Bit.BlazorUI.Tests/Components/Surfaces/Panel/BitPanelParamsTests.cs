@@ -256,19 +256,42 @@ public class BitPanelParamsTests : BunitTestContext
 
         foreach (var inset in insets.Split(','))
         {
-            StringAssert.Contains(rule, $"env(safe-area-inset-{inset}, 0px)", $"{edge} does not make room for the {inset} inset.");
-        }
+            StringAssert.Contains(rule, $"var(--bit-pnl-sa-{inset})", $"{edge} does not make room for the {inset} inset.");
 
-        // A panel laid out inside a box of the page touches no device edge.
-        StringAssert.Contains(stylesheet, "    > .bit-pnl-cnt {\n        padding: 0;\n    }");
+            StringAssert.Contains(stylesheet, $"    --bit-pnl-sa-{inset}: env(safe-area-inset-{inset}, 0px);");
+
+            // A panel laid out inside a box of the page touches no device edge.
+            StringAssert.Contains(RuleOf(stylesheet, ".bit-pnl-abs"), $"    --bit-pnl-sa-{inset}: 0px;");
+        }
     }
 
-    // The direction is read off the layout rather than off the class Dir renders, so a panel given no
-    // direction of its own on a right-to-left page still slides out towards the edge it came from.
+    // The inset is taken away through the variables rather than by a padding on the container, which would
+    // outrank one the consumer gives the container through Classes.
+    [TestMethod]
+    public void BitPanelLaidOutInABoxShouldLeaveThePaddingOfTheContainerToTheConsumer()
+    {
+        StringAssert.DoesNotMatch(ReadStylesheet(), new Regex(@"\.bit-pnl-cnt\s*\{\s*padding"));
+    }
+
+    // The direction is read off the layout as well as off the class Dir renders: the one so a panel given no
+    // direction of its own on a right-to-left page still slides out towards the edge it came from, the other
+    // so an explicit right-to-left still does on an engine without :dir(), each in a rule of its own.
     [TestMethod]
     public void BitPanelShouldSlideTheWayThePageItIsInReads()
     {
-        StringAssert.Contains(ReadStylesheet(), "    &:dir(rtl) {\n        --bit-pnl-transform-factor: -1;\n    }");
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(stylesheet, "    &:dir(rtl) {\n        --bit-pnl-transform-factor: -1;\n    }");
+        StringAssert.Contains(stylesheet, "    &.bit-rtl {\n        --bit-pnl-transform-factor: -1;\n    }");
+    }
+
+    private static string RuleOf(string stylesheet, string selector)
+    {
+        var start = stylesheet.IndexOf($"\n{selector} {{", StringComparison.Ordinal);
+
+        Assert.IsTrue(start >= 0, $"Missing {selector}.");
+
+        return stylesheet[start..stylesheet.IndexOf("\n}", start + 1, StringComparison.Ordinal)];
     }
 
     private static string ReadStylesheet([CallerFilePath] string thisFile = "")

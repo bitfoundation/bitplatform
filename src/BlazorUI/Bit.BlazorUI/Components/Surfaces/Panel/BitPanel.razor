@@ -3,10 +3,11 @@
 
 @* The Escape key is handled on the root rather than on the container so that it is caught wherever the
    keyboard actually is while the panel is open - inside the content, or on the overlay that took the click.
-   The key stops here for as long as the panel is open, whether or not the panel acts on it: a panel opened
-   from inside another one sits in that one's content, where an Escape left to carry on up would dismiss the
-   panel the keyboard is still working inside of along with the one it was meant for - and an Escape the
-   inner panel refused would dismiss the outer one out from under it, taking the inner panel with it. *@
+   The keys stop here when the panel acts on Escape: a panel opened from inside another one sits in that
+   one's content, where an Escape left to carry on up would dismiss the panel the keyboard is still working
+   inside of along with the one it was meant for. A panel that refuses the key lets every key through, so the
+   keyboard shortcuts of the page around it keep working while it is open; that an Escape it refused does not
+   dismiss a panel it was opened from, taking it along, is the escape guard's to see to (Utils.setupEscapeGuard). *@
 @* tabindex="-1" makes the root programmatically focusable so that a press on the overlay lands the focus
    inside the panel rather than on the body. The root only catches it: the focus trap passes it straight on
    into the container below, where the dialog role is (Utils.setupFocusTrap has the whole of it). It is
@@ -17,7 +18,7 @@
 <div @ref="RootElement"
      tabindex="@(TabIndex ?? "-1")"
      @attributes="HtmlAttributes"
-     @onkeydown="HandleOnKeyDown" @onkeydown:stopPropagation="IsOpen"
+     @onkeydown="HandleOnKeyDown" @onkeydown:stopPropagation="DismissesOnEscape"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -29,10 +30,13 @@
        way of the clicks the page is meant to keep while the panel is closed.
        The press on it is left its default action: it is what blurs the input the user was typing into, and
        an input only commits what was typed once it loses the focus - before the click the press turns into
-       runs any dismissal handler. Where that focus lands is the tabindex of the root above. *@
+       runs any dismissal handler. Where that focus lands is the tabindex of the root above.
+       data-no-swipe keeps a drag on it from swiping a panel this one was opened from: nested in that one's
+       content, the overlay sits inside the surface the outer panel is swiped by. *@
     @if (Modeless is false)
     {
         <div @onclick="HandleOnOverlayClick"
+             data-no-swipe
              aria-hidden="true"
              style="@Styles?.Overlay"
              class="@GetOverlayCssClasses()" />

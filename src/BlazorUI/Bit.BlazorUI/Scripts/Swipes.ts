@@ -30,7 +30,7 @@
             let originalTransform: string;
             let orientation = BitSwipeOrientation.None;
             // Which way Start and End face. A direction the component was given is taken as it is; one it was
-            // not given is the one the element is laid out in - inherited from the page or from whatever box
+            // not given (or left to its content to decide) is the one the element is laid out in - inherited from the page or from whatever box
             // it sits in - read when the gesture starts, so a page whose direction changes is followed.
             let rtl = isRtl ?? false;
             // How far the surface has to be dragged is a fraction of how big it is, so the box is measured

@@ -476,6 +476,8 @@
             }, { signal: controller.signal });
 
             if (triggerId) {
+                Utils._escapesFromAnywhere.add(elementId);
+
                 // In the capture phase, for the same reason the listener above is on the element: the stack of
                 // open callouts is read before Blazor's document-level delegation lets a popup the key belongs to
                 // (a dropdown list relocated to the body, holding the focus in its search box) close itself.
@@ -495,6 +497,8 @@
         }
 
         public static disposeEscape(elementId: string) {
+            Utils._escapesFromAnywhere.delete(elementId);
+
             const controller = Utils._escapes.get(elementId);
             if (!controller) return;
 
@@ -502,19 +506,31 @@
             Utils._escapes.delete(elementId);
         }
 
-        private static _escapeGuards = new Map<string, AbortController>();
-        private static _foreignEscapes = new Map<string, boolean>();
+        // The callouts that answer an Escape pressed anywhere in the page (setupEscape with a trigger), not only
+        // one pressed inside them or on their trigger.
+        private static _escapesFromAnywhere = new Set<string>();
 
-        // Records, for a surface that dismisses itself on Escape through a Blazor keydown handler, whether the
-        // Escape it is about to hear belongs to something inside it instead: an open popup of a component in
-        // its content (a dropdown whose list is open while the focus is still on its field) closes itself on
-        // the same key, and the keydown goes on bubbling from it up through the surface - one press would take
-        // away the panel the user was filling in along with the list they meant to close. A handler that
-        // already prevented the key's default has claimed it as well. The answer has to be taken while the key
-        // is still going down: this listener is on the element, so it runs before Blazor's document-level
-        // delegation lets the nested component close its popup, which by the time the surface's handler asks
-        // would no longer be open. The surface reads it back once through takeForeignEscape.
-        public static setupEscapeGuard(elementId: string) {
+        private static _escapeGuards = new Map<string, AbortController>();
+
+        // The Escapes a guarded surface nested inside another one has already spoken for, so the surfaces it
+        // sits in leave them alone.
+        private static _claimedEscapes = new WeakSet<Event>();
+
+        // Tells a surface that dismisses itself on Escape through a Blazor keydown handler, through its
+        // OnEscapeVerdict callback, whether the Escape it is about to hear belongs to something inside it
+        // instead:
+        // - an open popup the key closes (a dropdown whose list is open while the focus is still on its field),
+        //   since the keydown goes on bubbling from it up through the surface and one press would take away
+        //   the panel the user was filling in along with the list they meant to close;
+        // - a handler that already prevented the key's default;
+        // - an IME composition the key cancels;
+        // - a guarded surface nested inside this one, which answers the key itself (or refuses it).
+        // The answer has to be taken while the key is still going down: this listener is on the element, so it
+        // runs before Blazor's document-level delegation lets the nested component close its popup. It is sent
+        // for every Escape rather than read back later, so each keydown carries its own answer: the callback is
+        // queued ahead of the keydown Blazor dispatches right after it, and one Escape can never be answered
+        // with what was recorded for the next - however slow the connection.
+        public static setupEscapeGuard(elementId: string, dotnetObj: DotNetObject) {
             Utils.disposeEscapeGuard(elementId);
 
             const element = document.getElementById(elementId);
@@ -525,22 +541,24 @@
             element.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
 
-                Utils._foreignEscapes.set(elementId, e.defaultPrevented || Utils.hasOpenCalloutInside(element));
+                const foreign = Utils._claimedEscapes.has(e)
+                    || e.defaultPrevented
+                    || e.isComposing || e.keyCode === 229 // the engines that predate isComposing report 229
+                    || Utils.isEscapeOfOpenCallout(e.target);
+
+                // A closed surface is inert, so an Escape reaches it only while it is open - and from then on the
+                // key is this surface's to answer or to refuse, never the one's it was opened from.
+                if (element.hasAttribute('inert') === false) {
+                    Utils._claimedEscapes.add(e);
+                }
+
+                dotnetObj.invokeMethodAsync('OnEscapeVerdict', foreign);
             }, { signal: controller.signal });
 
             Utils._escapeGuards.set(elementId, controller);
         }
 
-        public static takeForeignEscape(elementId: string) {
-            const foreign = Utils._foreignEscapes.get(elementId) ?? false;
-            Utils._foreignEscapes.delete(elementId);
-
-            return foreign;
-        }
-
         public static disposeEscapeGuard(elementId: string) {
-            Utils._foreignEscapes.delete(elementId);
-
             const controller = Utils._escapeGuards.get(elementId);
             if (!controller) return;
 
@@ -548,18 +566,24 @@
             Utils._escapeGuards.delete(elementId);
         }
 
-        // Whether the innermost open callout was opened from inside the element: its trigger is in there, or
-        // the callout itself is, where it was not moved to the body.
-        private static hasOpenCalloutInside(element: HTMLElement) {
+        // Whether the innermost open callout is the one the key closes: it was pressed inside the callout or on
+        // the component that opened it, or the callout answers an Escape from anywhere (one opened by hovering).
+        // A callout that is only left open - one the focus has moved away from - does not close on an Escape
+        // pressed somewhere else, so it does not take that Escape away from the surface either.
+        private static isEscapeOfOpenCallout(target: EventTarget | null) {
             const current = Callouts.current;
             if (!current.calloutId) return false;
 
+            if (Utils._escapesFromAnywhere.has(current.calloutId)) return true;
+
+            if (!(target instanceof Node)) return false;
+
             const callout = document.getElementById(current.calloutId);
-            if (callout && element.contains(callout)) return true;
+            if (callout?.contains(target)) return true;
 
             const trigger = current.componentId ? document.getElementById(current.componentId) : null;
 
-            return !!trigger && element.contains(trigger);
+            return !!trigger?.contains(target);
         }
 
         public static disposeTabOut(elementId: string) {

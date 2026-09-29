@@ -31,9 +31,23 @@
     // The layer of the panel itself once --bit-Panel-z-index lifts its overlay: one above it. While that
     // variable is set nowhere this is invalid, and the container falls back to the layer of the library.
     --bit-pnl-zin-pub: calc(var(--bit-Panel-z-index) + 1);
+    // The safe area of the device edges the four edges below make room for. Named here, rather than read
+    // there, so a panel laid out inside a box of the page can take it away without a rule on the container
+    // that would outrank a padding the consumer gives it.
+    --bit-pnl-sa-top: env(safe-area-inset-top, 0px);
+    --bit-pnl-sa-bottom: env(safe-area-inset-bottom, 0px);
+    --bit-pnl-sa-left: env(safe-area-inset-left, 0px);
+    --bit-pnl-sa-right: env(safe-area-inset-right, 0px);
 
-    // :dir() rather than the class Dir renders, so a panel given no direction of its own still slides out
-    // towards the edge it came from on a page (or in a box) that reads right to left.
+    // The class Dir renders, for the engines without :dir() (older WebViews among them), where an explicit
+    // right-to-left still has to slide out towards the edge it came from.
+    &.bit-rtl {
+        --bit-pnl-transform-factor: -1;
+    }
+
+    // :dir() as well, so a panel given no direction of its own (or Auto) still slides out towards the edge it
+    // came from on a page (or in a box, or with a content) that reads right to left. Kept in its own rule, so
+    // a browser without :dir() drops only this one.
     &:dir(rtl) {
         --bit-pnl-transform-factor: -1;
     }
@@ -53,17 +67,17 @@
     inset: 0;
     position: absolute;
     pointer-events: none;
+    // Laid out inside a box of the page, so there is no device edge beside it and no safe area to make
+    // room for (see the four edges below).
+    --bit-pnl-sa-top: 0px;
+    --bit-pnl-sa-bottom: 0px;
+    --bit-pnl-sa-left: 0px;
+    --bit-pnl-sa-right: 0px;
 
     > .bit-pnl-ovl,
     > .bit-pnl-cnt {
         position: absolute;
         pointer-events: auto;
-    }
-
-    // Laid out inside a box of the page, so there is no device edge beside it and no safe area to make
-    // room for (see the four edges below).
-    > .bit-pnl-cnt {
-        padding: 0;
     }
 }
 
@@ -141,9 +155,9 @@
     inset-block: 0;
     max-height: 100%;
     inset-inline-start: 0;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-inline-start: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+    padding-top: var(--bit-pnl-sa-top);
+    padding-bottom: var(--bit-pnl-sa-bottom);
+    padding-inline-start: max(var(--bit-pnl-sa-left), var(--bit-pnl-sa-right));
     width: var(--bit-Panel-size, fit-content);
     max-width: var(--bit-pnl-max, 85%);
     border-inline-end: var(--bit-pnl-edge);
@@ -157,9 +171,9 @@
     inset-block: 0;
     max-height: 100%;
     inset-inline-end: 0;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-inline-end: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+    padding-top: var(--bit-pnl-sa-top);
+    padding-bottom: var(--bit-pnl-sa-bottom);
+    padding-inline-end: max(var(--bit-pnl-sa-left), var(--bit-pnl-sa-right));
     width: var(--bit-Panel-size, fit-content);
     max-width: var(--bit-pnl-max, 85%);
     border-inline-start: var(--bit-pnl-edge);
@@ -173,9 +187,9 @@
     width: 100%;
     max-width: 100%;
     inset-inline: 0;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
+    padding-top: var(--bit-pnl-sa-top);
+    padding-left: var(--bit-pnl-sa-left);
+    padding-right: var(--bit-pnl-sa-right);
     height: var(--bit-Panel-size, fit-content);
     max-height: var(--bit-pnl-max, 85%);
     border-block-end: var(--bit-pnl-edge);
@@ -190,9 +204,9 @@
     width: 100%;
     max-width: 100%;
     inset-inline: 0;
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: var(--bit-pnl-sa-left);
+    padding-right: var(--bit-pnl-sa-right);
+    padding-bottom: var(--bit-pnl-sa-bottom);
     height: var(--bit-Panel-size, fit-content);
     max-height: var(--bit-pnl-max, 85%);
     border-block-start: var(--bit-pnl-edge);
@@ -211,7 +225,7 @@
     max-width: 100%;
     max-height: 100%;
     border-radius: 0;
-    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    padding: var(--bit-pnl-sa-top) var(--bit-pnl-sa-right) var(--bit-pnl-sa-bottom) var(--bit-pnl-sa-left);
 }
 
 // A panel that was given a header, a footer or a close button lays them out around a body of its own. The

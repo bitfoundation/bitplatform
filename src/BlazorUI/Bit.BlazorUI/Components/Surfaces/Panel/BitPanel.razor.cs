@@ -49,6 +49,9 @@ public partial class BitPanel : BitComponentBase
     private MouseEventArgs? _dismissArgs;
     private DotNetObjectReference<BitPanel>? _dotnetObj;
     private DotNetObjectReference<BitPanel>? _swipesDotnetObj;
+    // What the escape guard answered for the Escape Blazor is about to hand the key handler (see
+    // _OnEscapeVerdict), taken by the handler as it starts.
+    private bool _foreignEscape;
 
 
 
@@ -611,6 +614,16 @@ public partial class BitPanel : BitComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
+    // Sent by the escape guard as each Escape goes down inside the panel, ahead of the keydown Blazor then
+    // dispatches, so the key handler that runs next reads the answer that was taken for its own key. It is
+    // written for every Escape, so one that never reaches the handler - a component in between stopped it -
+    // leaves nothing behind that the next one could be mistaken for.
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        _foreignEscape = foreign;
+    }
+
 
 
     protected override string RootElementClass => "bit-pnl";
@@ -866,13 +879,19 @@ public partial class BitPanel : BitComponentBase
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsOpen is false || IsEnabled is false) return;
-
         if (e.Key is not "Escape") return;
 
+        // Taken before anything is awaited, and whether or not the panel goes on to act, so the answer that
+        // was sent for this key is the one read and is gone before the next one's comes in.
+        var foreign = _foreignEscape;
+        _foreignEscape = false;
+
+        if (IsOpen is false || IsEnabled is false) return;
+
         // An Escape that closes an open popup of the content - a dropdown's list, a date picker's calendar -
-        // is that popup's, not the panel's, and neither is one a handler inside already claimed.
-        if (await IsEscapeForeign()) return;
+        // is that popup's, not the panel's, and neither is one a handler inside already claimed, one that
+        // cancels an IME composition, or one a panel nested inside this one answered or refused.
+        if (foreign) return;
 
         // Reported before the dismissal is attempted, and reported whether or not there is going to be one,
         // so that a panel which refuses the key still hears it.
@@ -885,17 +904,11 @@ public partial class BitPanel : BitComponentBase
         StateHasChanged();
     }
 
-    // Whether the last Escape was recorded, as it went down, as belonging to something inside the panel. The
-    // record is taken on the key itself (Utils.setupEscapeGuard), since a popup that owned it has closed by
-    // the time this handler could look.
-    private async Task<bool> IsEscapeForeign()
-    {
-        try
-        {
-            return await _js.BitUtilsTakeForeignEscape(_Id);
-        }
-        catch (JSDisconnectedException) { return false; } // we can ignore this exception here
-    }
+    // Whether the Escape key is the panel's to act on, which is also whether it stops at the panel rather
+    // than carrying on up to whatever the panel was opened from. A panel that refuses the key lets every key
+    // through to the handlers of the page around it; one opened from inside another panel still keeps an
+    // Escape it refuses from that one, which the escape guard tells to leave it alone.
+    private bool DismissesOnEscape => IsOpen && IsEnabled && NoDismissOnEscape is false;
 
     // The scroller the panel holds while it is open, as an element where one is to be had. A selector the
     // consumer named beats the shell's scroller, since a panel inside a shell that names a region of its own
@@ -1108,9 +1121,10 @@ public partial class BitPanel : BitComponentBase
                 id: _containerId,
                 trigger: GetSwipeTrigger(),
                 position: position,
-                // A panel given no direction slides the way the page it is in reads, so the script reads that
-                // off the layout rather than being told a left-to-right it may not be.
-                isRtl: Dir is null ? null : Dir is BitDir.Rtl,
+                // A panel given no direction slides the way the page it is in reads, and one given Auto the
+                // way its content resolves it to, so for both the script reads that off the layout rather
+                // than being told a left-to-right it may not be.
+                isRtl: Dir switch { BitDir.Rtl => true, BitDir.Ltr => false, _ => null },
                 // The axis the panel is swiped away along is the one it slid in on, and the lock is what takes
                 // that axis from the page: a top or bottom panel dragged with the wrong lock follows the finger
                 // while the page scrolls out from under it at the same time.
@@ -1154,11 +1168,11 @@ public partial class BitPanel : BitComponentBase
 
     private async Task SetupEscapeGuard()
     {
-        if (IsDisposed) return;
+        if (IsDisposed || _dotnetObj is null) return;
 
         try
         {
-            await _js.BitUtilsSetupEscapeGuard(_Id);
+            await _js.BitUtilsSetupEscapeGuard(_Id, _dotnetObj);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
