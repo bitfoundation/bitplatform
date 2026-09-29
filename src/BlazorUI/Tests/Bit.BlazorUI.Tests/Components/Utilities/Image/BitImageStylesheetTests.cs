@@ -87,25 +87,38 @@ public partial class BitImageStylesheetTests
     [TestMethod]
     public void BitImageShouldCrossFadeThePlaceholderAtThePaceOfTheImage()
     {
-        // The placeholder of an image that fades in fades out over the same private duration, so a reduced motion
+        // The placeholder of an image that fades in fades out over the same duration, so a reduced motion
         // preference collapses both halves of the cross-fade together.
         var block = RuleOf(ReadStylesheet(), ".bit-img-plc");
 
         StringAssert.Contains(block, "&.bit-img-pfo {");
         StringAssert.Contains(block, "animation-name: bit-img-fade-out;");
-        StringAssert.Contains(block, "animation-duration: var(--bit-img-fade-duration);");
+        StringAssert.Contains(block, FadeDuration);
     }
 
     [TestMethod]
-    public void BitImageShouldCollapseTheFadeUnderReducedMotionUnlessAnimationIsForced()
+    public void BitImageShouldLeaveReducedMotionToTheMotionTokens()
     {
+        // The fade reads the theme's motion token like every other component, so the library-wide mechanism -
+        // the tokens collapsing under the preference, .bit-fam and an app's :root restoring them - is the only
+        // one: the image keeps no reduced motion query, and no ForceAnimation restore, of its own.
         var stylesheet = ReadStylesheet();
 
-        // The fade reads a private token rather than the public variable, so the preference still wins over a
-        // pace set through the variable - and ForceAnimation is the only way back out of it.
-        StringAssert.Contains(stylesheet, "animation-duration: var(--bit-img-fade-duration);");
-        StringAssert.Contains(stylesheet, "@media (prefers-reduced-motion: reduce) {\n    .bit-img {\n        --bit-img-fade-duration: 0.01ms;");
-        StringAssert.Contains(stylesheet, ".bit-img.bit-fam,\n.bit-fam .bit-img {");
+        Assert.AreEqual(2, Regex.Matches(stylesheet, Regex.Escape(FadeDuration)).Count);
+        Assert.IsFalse(stylesheet.Contains("prefers-reduced-motion"), "The image collapses its own motion.");
+        Assert.IsFalse(stylesheet.Contains("bit-fam"), "The image restores its own motion.");
+        Assert.IsFalse(stylesheet.Contains("--bit-img-fade-duration"), "The fade reads a private token of its own.");
+    }
+
+    [TestMethod]
+    public void BitImageShouldGiveTheFrameBackgroundNoSpecificity()
+    {
+        // A page's own single-class rule on the frame wins over the default background wherever the two
+        // stylesheets are linked, the way it did before the frame had a background of its own.
+        var block = RuleOf(ReadStylesheet(), ":where(.bit-img)");
+
+        StringAssert.Contains(block, "background-color: var(--bit-Image-background, transparent);");
+        Assert.AreEqual(1, Regex.Matches(RulesOf(ReadStylesheet()), @"var\(--bit-Image-background[,)]").Count);
     }
 
     [TestMethod]
@@ -124,18 +137,22 @@ public partial class BitImageStylesheetTests
     [TestMethod]
     public void BitImageShouldKeepAFluidFrameInsideItsContainer()
     {
-        var block = RuleOf(ReadStylesheet(), ".bit-img-flu");
+        var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(block, "max-width: 100%;");
-        StringAssert.Contains(block, ".bit-img-img {\n        max-width: 100%;");
+        StringAssert.Contains(RuleOf(stylesheet, ".bit-img-flu"), "max-width: 100%;");
+
+        // The image is scaled with the frame only where it is left to its default fit - the class is never
+        // rendered beside an explicit ImageFit, whose own rules set neither max-width nor, for the centered
+        // fits, object-fit, and so could not undo it.
+        var image = RuleOf(stylesheet, ".bit-img-img.bit-img-fli");
+
+        StringAssert.Contains(image, "max-width: 100%;");
 
         // A width clamped under a fixed Height would otherwise squeeze the image out of its shape.
-        StringAssert.Contains(block, "object-fit: contain;");
+        StringAssert.Contains(image, "object-fit: contain;");
 
-        // The fits and the maximized frame's cover come later, so an explicit choice still wins over it.
-        var stylesheet = ReadStylesheet();
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-img-flu {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-img-max {", System.StringComparison.Ordinal));
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-img-flu {", System.StringComparison.Ordinal) < stylesheet.IndexOf("&.bit-img-cvr {", System.StringComparison.Ordinal));
+        // The maximized frame's cover comes later with the same specificity, so it still wins over it.
+        Assert.IsTrue(stylesheet.IndexOf("\n.bit-img-img.bit-img-fli {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-img-max {", System.StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -186,6 +203,8 @@ public partial class BitImageStylesheetTests
         // The native ring of the image is dropped only where the frame can draw its own.
         StringAssert.Contains(stylesheet, "@supports selector(:has(a)) {\n        .bit-img-img:focus-visible {\n            outline: none;");
     }
+
+    private const string FadeDuration = "animation-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});";
 
     private static string[] DocumentedVariables(string stylesheet)
     {

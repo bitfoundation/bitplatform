@@ -1488,6 +1488,38 @@ public class BitImageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitImageShouldRemoveThePlaceholderOnceItHasFadedOut()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "placeholder.png");
+        });
+
+        // Its fade ending before the image has arrived is not the end of its job.
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new EventArgs());
+        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new EventArgs());
+
+        // Left in place it would stay laid over the image, invisible, for the life of the component.
+        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+
+        // Loading again - a srcset candidate swapped in on a resize - is not a new arrival to fade over.
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+
+        // A new source is: the placeholder stands in for it, and cross-fades with it once more.
+        component.Render(parameters => parameters.Add(p => p.Src, "other.png"));
+        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+        Assert.IsTrue(component.Find(".bit-img-plc").ClassList.Contains("bit-img-pfo"));
+    }
+
+    [TestMethod]
     public void BitImageShouldNotRenderThePlaceholderWithoutASource()
     {
         var component = RenderComponent<BitImage>(parameters =>
@@ -1755,6 +1787,31 @@ public class BitImageTests : BunitTestContext
         });
 
         Assert.AreEqual(fluid, component.Find(".bit-img").ClassList.Contains("bit-img-flu"));
+        Assert.AreEqual(fluid, component.Find(".bit-img-img").ClassList.Contains("bit-img-fli"));
+    }
+
+    /// <summary>
+    /// An explicit fit is a decision about the image that the width of a fluid frame must not undo, so the image
+    /// is scaled with the frame only while it is left to its default fit.
+    /// </summary>
+    [TestMethod,
+        DataRow(BitImageFit.None),
+        DataRow(BitImageFit.Center),
+        DataRow(BitImageFit.CenterCover),
+        DataRow(BitImageFit.CenterContain),
+        DataRow(BitImageFit.Cover)
+    ]
+    public void BitImageShouldLeaveAnExplicitFitToItselfInAFluidFrame(BitImageFit fit)
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.Fluid, true);
+            parameters.Add(p => p.ImageFit, fit);
+        });
+
+        Assert.IsTrue(component.Find(".bit-img").ClassList.Contains("bit-img-flu"));
+        Assert.IsFalse(component.Find(".bit-img-img").ClassList.Contains("bit-img-fli"));
     }
 
 
@@ -1762,11 +1819,11 @@ public class BitImageTests : BunitTestContext
     // ---- an image with nothing to load ------------------------------------------------------------
 
     /// <summary>
-    /// The browser fires neither a load nor an error event for an img without a source, so the component
-    /// settles the error state itself rather than waiting for one forever.
+    /// A source not given yet is most often one still on its way, so an image without one waits in the loading
+    /// state - with its LoadingTemplate - rather than reporting an error for an image that never failed.
     /// </summary>
     [TestMethod]
-    public void BitImageShouldReachTheErrorStateWithoutAnySource()
+    public void BitImageShouldWaitInTheLoadingStateForASource()
     {
         List<BitImageState> states = [];
 
@@ -1777,84 +1834,42 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.ErrorTemplate, (RenderFragment)(builder => builder.AddContent(0, "no image")));
         });
 
-        Assert.AreEqual(BitImageState.Error, component.Instance.LoadingState);
-        CollectionAssert.AreEqual(new[] { BitImageState.Error }, states);
-        StringAssert.Contains(component.Markup, "no image");
-        Assert.IsFalse(component.Markup.Contains("loading..."));
-    }
+        Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
+        StringAssert.Contains(component.Markup, "loading...");
+        Assert.IsFalse(component.Markup.Contains("no image"));
 
-    [TestMethod]
-    public void BitImageShouldStartLoadingOnceASourceArrives()
-    {
-        List<BitImageState> states = [];
-
-        var component = RenderComponent<BitImage>(parameters =>
-        {
-            parameters.Add(p => p.OnLoadingStateChange, s => states.Add(s));
-        });
-
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.Src, "image.png");
-        });
+        // The source arriving is the load it was waiting for, not a return from an error.
+        component.Render(parameters => parameters.Add(p => p.Src, "image.png"));
 
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
-        CollectionAssert.AreEqual(new[] { BitImageState.Error, BitImageState.Loading }, states);
+        Assert.AreEqual(0, states.Count);
 
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.Src, (string?)null);
-        });
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
-        // Losing the source again is the error state again, reported once rather than as loading first.
-        Assert.AreEqual(BitImageState.Error, component.Instance.LoadingState);
-        CollectionAssert.AreEqual(new[] { BitImageState.Error, BitImageState.Loading, BitImageState.Error }, states);
+        CollectionAssert.AreEqual(new[] { BitImageState.Loaded }, states);
     }
 
+    /// <summary>
+    /// A src put in ImageAttributes is rendered and loaded like any other, so a later render of the parent must
+    /// not hide the image it has loaded again.
+    /// </summary>
     [TestMethod]
-    public void BitImageShouldStartLoadingOnceSourcesArrive()
-    {
-        var component = RenderComponent<BitImage>();
-
-        Assert.AreEqual(BitImageState.Error, component.Instance.LoadingState);
-
-        // The sources do not reset a loading image the way a new Src does, but they do end the wait for one.
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.Sources, new BitImageSource[] { new() { Srcset = "image.avif", Type = "image/avif" } });
-        });
-
-        Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
-    }
-
-    [TestMethod,
-        DataRow("srcset"),
-        DataRow("sources"),
-        DataRow("fallback")
-    ]
-    public void BitImageShouldLoadWithAnyKindOfSource(string kind)
+    public void BitImageShouldKeepAnImageLoadedFromImageAttributes()
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            switch (kind)
-            {
-                case "srcset": parameters.Add(p => p.Srcset, "image-480.png 480w"); break;
-                case "sources": parameters.Add(p => p.Sources, new BitImageSource[] { new() { Srcset = "image.avif" } }); break;
-                case "fallback": parameters.Add(p => p.FallbackSrc, "fallback.png"); break;
-            }
+            parameters.Add(p => p.ImageAttributes, new() { { "src", "image.png" } });
         });
 
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
-    }
+        Assert.AreEqual("image.png", component.Find(".bit-img-img").GetAttribute("src"));
 
-    [TestMethod]
-    public async Task BitImageShouldStayInTheErrorStateWhenReloadedWithoutAnySource()
-    {
-        var component = RenderComponent<BitImage>();
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
-        await component.InvokeAsync(() => component.Instance.ReloadAsync());
+        component.Render(parameters => parameters.Add(p => p.ImageAttributes, new() { { "src", "image.png" } }));
 
-        Assert.AreEqual(BitImageState.Error, component.Instance.LoadingState);
+        Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState);
+        Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-vis"));
     }
 
 
@@ -1912,6 +1927,28 @@ public class BitImageTests : BunitTestContext
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-img-alt").Count);
+    }
+
+    /// <summary>
+    /// An alt or an aria-label put in ImageAttributes is rendered on the img like the parameters are, so it is
+    /// what the stand-in announces while the image is hidden - with the parameter first, as on the img.
+    /// </summary>
+    [TestMethod,
+        DataRow("alt", null, "A lighthouse"),
+        DataRow("ALT", null, "A lighthouse"),
+        DataRow("aria-label", null, "A lighthouse"),
+        DataRow("alt", "The parameter", "The parameter")
+    ]
+    public void BitImageShouldAnnounceATextAlternativeFromImageAttributes(string name, string? alt, string expected)
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.Alt, alt);
+            parameters.Add(p => p.ImageAttributes, new() { { name, "A lighthouse" } });
+        });
+
+        Assert.AreEqual(expected, component.Find(".bit-img-alt").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -2061,6 +2098,56 @@ public class BitImageTests : BunitTestContext
         // An image's own fallback wins over the cascaded one.
         images[2].Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
         Assert.AreEqual("own.png", images[2].Find(".bit-img-img").GetAttribute("src"));
+    }
+
+    /// <summary>
+    /// A change to a cascaded FallbackSrc that is the source on screen is a new image, the way a change to the
+    /// parameter is: the state returns to loading and says so, rather than the source swapping silently under an
+    /// image still showing its error - or still marked as loaded.
+    /// </summary>
+    [TestMethod,
+        DataRow(BitImageState.Error),
+        DataRow(BitImageState.Loaded)
+    ]
+    public void BitImageShouldReloadWhenACascadedFallbackSrcChanges(BitImageState reached)
+    {
+        List<BitImageState> states = [];
+
+        // The title changes with every render so the image is handed its parameters again, the way a real parent
+        // that re-renders for its own reasons hands them.
+        var renders = 0;
+
+        RenderFragment Images() => builder =>
+        {
+            builder.OpenComponent<BitImage>(0);
+            builder.AddAttribute(1, nameof(BitImage.Title), $"render {++renders}");
+            builder.AddAttribute(2, nameof(BitImage.OnLoadingStateChange), EventCallback.Factory.Create<BitImageState>(this, s => states.Add(s)));
+            builder.CloseComponent();
+        };
+
+        // The cascaded values are fixed, so it is the same parameters object that changes, read again by the
+        // image the next time its parent renders it.
+        var imageParams = new BitImageParams { FallbackSrc = "a.png" };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { imageParams });
+            parameters.Add(p => p.ChildContent, Images());
+        });
+
+        var image = component.FindComponent<BitImage>();
+
+        image.Find(".bit-img-img").TriggerEvent(reached is BitImageState.Error ? "onerror" : "onload",
+                                                reached is BitImageState.Error ? new ErrorEventArgs() : new ProgressEventArgs());
+        Assert.AreEqual(reached, image.Instance.LoadingState);
+
+        imageParams.FallbackSrc = "b.png";
+
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Images()));
+
+        Assert.AreEqual("b.png", image.Find(".bit-img-img").GetAttribute("src"));
+        Assert.AreEqual(BitImageState.Loading, image.Instance.LoadingState);
+        CollectionAssert.AreEqual(new[] { reached, BitImageState.Loading }, states);
     }
 
     [TestMethod]

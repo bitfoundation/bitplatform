@@ -18,20 +18,16 @@
 //
 // The shape and the elevation variables only take effect where the parameter asks for the feature (Rounded,
 // Bordered, Shadow), and the hover and press ones where OnClick makes the image a control, so a global value
-// restyles those images without rounding, raising or tinting every other one. The
-// reduced motion preference collapses the fade, whatever pace it was given, unless ForceAnimation opts out.
+// restyles those images without rounding, raising or tinting every other one. The fade's default pace is
+// the theme's long motion token, which the reduced motion preference collapses (unless ForceAnimation opts
+// out) the way it collapses every other component's; a pace set through the variable is the page's own.
 
 // The frame. Everything inside it is positioned against it, which is what lets a centered fit and an
 // overlay be placed without either of them knowing what is around the component; and it clips, which
 // is what makes the rounded and circular shapes crop the image rather than just round its own corners.
 .bit-img {
-    // The pace of the fade, derived here rather than read where the animation is so the reduced motion
-    // query below can still collapse a pace that was set through the public variable.
-    --bit-img-fade-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});
-
     overflow: hidden;
     position: relative;
-    background-color: var(--bit-Image-background, transparent);
 
     // The placeholder dims with the image it stands in for: it is the same picture, and one of the two
     // at full strength would be brighter while it loads than once it is there.
@@ -76,20 +72,11 @@
     }
 }
 
-// 0.01ms rather than 0ms, following motion.fluent.scss: the animation still runs, so the image still ends
-// at full opacity through its fill mode, only without anything to watch.
-@media (prefers-reduced-motion: reduce) {
-    .bit-img {
-        --bit-img-fade-duration: 0.01ms;
-    }
-}
-
-// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens, so the
-// image's own token is restored here, both for an image that sets ForceAnimation itself and for one sitting
-// inside an opted-out subtree.
-.bit-img.bit-fam,
-.bit-fam .bit-img {
-    --bit-img-fade-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});
+// The background of the frame is the one declaration the frame makes with nothing asked of it, so it carries
+// no specificity: a page's own class on the frame (Class, Classes.Root) wins over it wherever the two
+// stylesheets are linked, as it did before the frame had a background of its own.
+:where(.bit-img) {
+    background-color: var(--bit-Image-background, transparent);
 }
 
 // The text alternative of an image that is not on screen. A hidden image - still loading, lazily waiting
@@ -155,7 +142,7 @@
     &.bit-img-pfo {
         animation-fill-mode: both;
         animation-name: bit-img-fade-out;
-        animation-duration: var(--bit-img-fade-duration);
+        animation-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});
         animation-timing-function: var(--bit-Image-fade-easing, #{$mot-easing});
     }
 }
@@ -259,14 +246,17 @@
 // cropped by it: without this, a picture larger than a narrow column is clipped by the frame that holds it.
 // The height follows the width, so the image keeps its shape at every width - and where it cannot follow,
 // under a Height the page fixed, the image is contained in the narrower box rather than squeezed into it.
-// An explicit fit, and a maximized frame's cover, are written later and still have the last word.
 .bit-img-flu {
     max-width: 100%;
+}
 
-    .bit-img-img {
-        max-width: 100%;
-        object-fit: contain;
-    }
+// Only an image left to its default fit is scaled with the fluid frame: the class is not rendered beside an
+// explicit ImageFit, which is a decision about the image the frame's width must not undo - a Center that
+// crops at the natural size, a CenterCover that covers. A maximized frame's cover is written later, with the
+// same specificity, and still has the last word.
+.bit-img-img.bit-img-fli {
+    max-width: 100%;
+    object-fit: contain;
 }
 
 .bit-img-ihh {
@@ -297,7 +287,7 @@
 .bit-img-img.bit-img-vis.bit-img-fde {
     animation-fill-mode: both;
     animation-name: bit-img-fade-in;
-    animation-duration: var(--bit-img-fade-duration);
+    animation-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});
     animation-timing-function: var(--bit-Image-fade-easing, #{$mot-easing});
 }
 

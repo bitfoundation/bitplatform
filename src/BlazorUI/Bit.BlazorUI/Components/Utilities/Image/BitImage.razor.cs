@@ -60,10 +60,10 @@ public partial class BitImage : BitComponentBase
     private bool _stateChangePending;
 
     /// <summary>
-    /// Whether the error state was reached because there is nothing to load at all, rather than because
-    /// the browser reported a failure - which is what lets a source arriving later start a load again.
+    /// Whether the placeholder of an image that fades in has finished fading out, which is what takes it
+    /// out of the DOM rather than leaving it laid over the image, invisible, for the life of the component.
     /// </summary>
-    private bool _sourceless;
+    private bool _placeholderFaded;
 
     /// <summary>
     /// The key of the img element. Changing it replaces the element rather than patching it, which is
@@ -87,12 +87,13 @@ public partial class BitImage : BitComponentBase
     // The placeholder stands in for an image that is not on screen, which is as true of one that has
     // failed as of one still on its way: it is taken away by the image arriving rather than by time.
     // An image that fades in keeps it through the fade, fading it out as the image fades in over it -
-    // taken away at once, the frame would drop to its background for the length of the fade.
-    private string? _placeholderSrc => PlaceholderSrc.HasValue() && (_loadingState is not BitImageState.Loaded || FadeIn)
+    // taken away at once, the frame would drop to its background for the length of the fade - and lets it
+    // go once that fade has ended.
+    private string? _placeholderSrc => PlaceholderSrc.HasValue() && (_loadingState is not BitImageState.Loaded || _isPlaceholderLeaving)
                                         ? PlaceholderSrc
                                         : null;
 
-    private bool _isPlaceholderLeaving => _loadingState is BitImageState.Loaded && FadeIn;
+    private bool _isPlaceholderLeaving => _loadingState is BitImageState.Loaded && FadeIn && _placeholderFaded is false;
 
     // Whether the img element is on screen, which is also whether its alt is in the accessibility tree.
     private bool _isImageVisible => _loadingState is BitImageState.Loaded ||
@@ -103,14 +104,12 @@ public partial class BitImage : BitComponentBase
     private bool _isErrorTemplateShown => _loadingState is BitImageState.Error && ErrorTemplate is not null;
 
     // The text alternative announced in place of an image that is not on screen; see the .bit-img-alt rule.
-    // A template on screen speaks for itself, and a decorative image has nothing to announce.
+    // A template on screen speaks for itself, and a decorative image has nothing to announce. It is read
+    // the way GetImageAttributes writes the img: a parameter first, then the attribute of the same name a
+    // page put in ImageAttributes.
     private string? _hiddenImageName => _isImageVisible || _isLoadingTemplateShown || _isErrorTemplateShown
                                             ? null
-                                            : (AriaLabel.HasValue() ? AriaLabel : (Alt.HasValue() ? Alt : null));
-
-    // An img with neither a src nor a srcset nor a picture around it is never fetched, and the browser
-    // fires neither a load nor an error event for it, so the state has to be settled without waiting.
-    private bool _hasAnySource => _src.HasValue() || Srcset.HasValue() || _hasSources;
+                                            : FirstValue(AriaLabel, GetImageAttribute("aria-label"), Alt, GetImageAttribute("alt"));
 
     private bool _hasSources
     {
@@ -255,10 +254,6 @@ public partial class BitImage : BitComponentBase
     /// Rendered once the image has failed - and, where a <see cref="FallbackSrc"/> is provided, once
     /// that one has failed as well. The image itself is hidden in that state, so this is all there is
     /// to see; a <see cref="FallbackSrc"/> is the other way to answer the same case.
-    /// <br />
-    /// It is also what is shown when there is nothing to load at all - no <see cref="Src"/>, no
-    /// <see cref="FallbackSrc"/>, no <see cref="Srcset"/> and no <see cref="Sources"/> - since the browser
-    /// reports nothing for an image without a source, and the component would otherwise wait for it forever.
     /// </remarks>
     [Parameter] public RenderFragment? ErrorTemplate { get; set; }
 
@@ -270,9 +265,10 @@ public partial class BitImage : BitComponentBase
     /// <remarks>
     /// The fade runs at the moment the image becomes visible rather than when the component is
     /// rendered, so it is the arrival of the image that is animated. A <see cref="PlaceholderSrc"/>
-    /// fades out over the same time, so the two cross-fade. It collapses to nothing under
-    /// prefers-reduced-motion unless
-    /// <see cref="BitComponentBase.ForceAnimation"/> says otherwise.
+    /// fades out over the same time, so the two cross-fade, and is removed once it has. At the theme's
+    /// pace the fade collapses to nothing under prefers-reduced-motion unless
+    /// <see cref="BitComponentBase.ForceAnimation"/> says otherwise; a pace a page sets through the
+    /// --bit-Image-fade-duration variable is the page's own.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool FadeIn { get; set; }
@@ -505,6 +501,10 @@ public partial class BitImage : BitComponentBase
     /// <remarks>
     /// Changing it returns the component to the <see cref="BitImageState.Loading"/> state and drops any
     /// <see cref="FallbackSrc"/> that a previous failure had swapped in.
+    /// <br />
+    /// An image with nothing to load at all stays in the <see cref="BitImageState.Loading"/> state, since a
+    /// source not given yet is most often one still on its way - a URL the page is fetching - rather than
+    /// one that will never come. A picture that may be missing for good is what <see cref="FallbackSrc"/> is for.
     /// </remarks>
     [Parameter, CallOnSet(nameof(OnSetSrc))]
     public string? Src { get; set; }
@@ -619,9 +619,8 @@ public partial class BitImage : BitComponentBase
         _reloadKey++;
         _fallbackApplied = false;
         _src = Src.HasValue() ? Src : FallbackSrc;
-        _sourceless = _hasAnySource is false;
 
-        return SetLoadingStateAsync(_sourceless ? BitImageState.Error : BitImageState.Loading, forceRender: true);
+        return SetLoadingStateAsync(BitImageState.Loading, forceRender: true);
     }
 
 
@@ -670,13 +669,15 @@ public partial class BitImage : BitComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         // A FallbackSrc that arrived through the cascade was assigned without the OnSetSrc a parameter gets,
-        // so an image that has no Src of its own takes it up here.
-        if (_fallbackApplied is false && Src.HasNoValue())
-        {
-            _src = FallbackSrc;
-        }
+        // so a change to it is noticed here instead: wherever the fallback is the source on screen - there is
+        // no Src of its own, or the Src has already failed over to it - a new one is a new image, with the
+        // same return to the loading state, and the same report of it, that a new FallbackSrc parameter has.
+        var expectedSrc = _fallbackApplied || Src.HasNoValue() ? FallbackSrc : Src;
 
-        SyncSourcelessState();
+        if (string.Equals(_src, expectedSrc, StringComparison.Ordinal) is false)
+        {
+            OnSetSrc();
+        }
 
         // The source change that put the component back into the loading state is reported here rather
         // than where it is noticed: that happens while the parameters are still being assigned, so the
@@ -746,32 +747,30 @@ public partial class BitImage : BitComponentBase
     }
 
     /// <summary>
-    /// Settles the state of an image that has nothing to load, which the browser never reports on: it goes
-    /// straight to the error state, and back to loading once a source turns up. It runs once all of the
-    /// parameters are in, since the sources are spread over four of them.
+    /// The value of an attribute a page put in <see cref="ImageAttributes"/>, found by its name the way
+    /// HTML finds it, regardless of case.
     /// </summary>
-    private void SyncSourcelessState()
+    private string? GetImageAttribute(string name)
     {
-        if (_hasAnySource is false)
+        foreach (var attribute in ImageAttributes)
         {
-            _sourceless = true;
-
-            if (_loadingState == BitImageState.Error) return;
-
-            _loadingState = BitImageState.Error;
-            _stateChangePending = true;
-
-            return;
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase))
+            {
+                return attribute.Value?.ToString();
+            }
         }
 
-        if (_sourceless is false) return;
+        return null;
+    }
 
-        _sourceless = false;
+    private static string? FirstValue(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (value.HasValue()) return value;
+        }
 
-        if (_loadingState != BitImageState.Error) return;
-
-        _loadingState = BitImageState.Loading;
-        _stateChangePending = true;
+        return null;
     }
 
     /// <summary>
@@ -940,6 +939,13 @@ public partial class BitImage : BitComponentBase
             _ => null
         });
 
+        // A fluid frame scales an image left to its default fit down with it rather than cropping it. An
+        // explicit fit is a decision about this image, so it is left to that fit alone.
+        if (ImageFit.HasValue is false && Fluid)
+        {
+            className.Append(" bit-img-fli");
+        }
+
         if (ImageFit.HasValue is false && (Width.HasValue() ^ Height.HasValue()))
         {
             if (Width.HasValue())
@@ -1044,6 +1050,16 @@ public partial class BitImage : BitComponentBase
         await SetLoadingStateAsync(BitImageState.Error);
     }
 
+    // The placeholder of an image that fades in is laid over it, fading out, and would otherwise stay there
+    // at no opacity - with its blur and its scale still on it - for as long as the component lives, so it
+    // is let go the moment its fade has ended.
+    private void HandleOnPlaceholderAnimationEnd()
+    {
+        if (_isPlaceholderLeaving is false) return;
+
+        _placeholderFaded = true;
+    }
+
     private async Task HandleOnLoad()
     {
         await OnLoad.InvokeAsync();
@@ -1056,6 +1072,13 @@ public partial class BitImage : BitComponentBase
         var changed = _loadingState != state;
 
         _loadingState = state;
+
+        // Arriving again is a new fade, and so a placeholder to fade out again. Only an arrival counts: a
+        // srcset that swaps in another candidate on a resize loads again without ever having left.
+        if (changed && state is BitImageState.Loaded)
+        {
+            _placeholderFaded = false;
+        }
 
         // A state set from outside a DOM event - the fallback swap, ReloadAsync - has nothing rendering
         // it, and the callback below reaches the page rather than this component, so the render is asked

@@ -87,7 +87,7 @@ public partial class BitImageDemo
             Name = "ErrorTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template used to show the error state of the image, which is also reached at once when there is nothing to load (no Src, FallbackSrc, Srcset or Sources). It fills a sized frame.",
+            Description = "The custom template used to show the error state of the image. It fills a sized frame.",
         },
         new()
         {
@@ -764,7 +764,7 @@ public partial class BitImageDemo
         {
             Name = "--bit-Image-fade-duration",
             DefaultValue = "--bit-mot-duration-long",
-            Description = "Pace of the FadeIn. Reduced motion collapses it unless ForceAnimation is set.",
+            Description = "Pace of the FadeIn. Reduced motion collapses the default (the theme's motion token) unless ForceAnimation is set; a pace set here is the page's own.",
         },
         new()
         {
@@ -794,8 +794,6 @@ public partial class BitImageDemo
             await brokenImage.ReloadAsync();
         }
     }
-
-    private readonly string? missingAvatarUrl = null;
 
     private int progressiveKey;
 

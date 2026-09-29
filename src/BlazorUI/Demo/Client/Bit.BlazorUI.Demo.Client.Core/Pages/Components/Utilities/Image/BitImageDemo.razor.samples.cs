@@ -13,6 +13,7 @@ public partial class BitImageDemo
     private readonly string example2RazorCode = @"
 <style>
     .framed {
+        width: fit-content;
         background-color: #00ffff17;
     }
 
@@ -23,16 +24,24 @@ public partial class BitImageDemo
 </style>
 
 <div>Width=""9rem""</div>
-<BitImage Width=""9rem"" Class=""framed"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+<div class=""framed"">
+    <BitImage Width=""9rem"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+</div>
 
 <div>Height=""80""</div>
-<BitImage Height=""80"" Class=""framed"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+<div class=""framed"">
+    <BitImage Height=""80"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+</div>
 
 <div>Width=""256px"" Height=""128px""</div>
-<BitImage Width=""256px"" Height=""128px"" Class=""framed"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+<div class=""framed"">
+    <BitImage Width=""256px"" Height=""128px"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+</div>
 
 <div>Width=""16rem"" AspectRatio=""1""</div>
-<BitImage Width=""16rem"" AspectRatio=""1"" Class=""framed"" Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />
+<div class=""framed"">
+    <BitImage Width=""16rem"" AspectRatio=""1"" Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />
+</div>
 
 <div>Fluid, in a 12rem column</div>
 <div class=""narrow-column"">
@@ -42,6 +51,7 @@ public partial class BitImageDemo
     private readonly string example3RazorCode = @"
 <style>
     .framed {
+        width: fit-content;
         background-color: #00ffff17;
     }
 </style>
@@ -50,15 +60,21 @@ public partial class BitImageDemo
 {
     <div>
         <div>@fit</div>
-        <BitImage Width=""160"" Height=""96"" ImageFit=""fit"" Cover=""BitImageCover.Landscape"" Class=""framed"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+        <div class=""framed"">
+            <BitImage Width=""160"" Height=""96"" ImageFit=""fit"" Cover=""BitImageCover.Landscape"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+        </div>
     </div>
 }
 
 <div>CenterCover, Landscape (tall frame)</div>
-<BitImage Width=""96"" Height=""144"" ImageFit=""BitImageFit.CenterCover"" Cover=""BitImageCover.Landscape"" Class=""framed"" Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />
+<div class=""framed"">
+    <BitImage Width=""96"" Height=""144"" ImageFit=""BitImageFit.CenterCover"" Cover=""BitImageCover.Landscape"" Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />
+</div>
 
 <div>CenterCover, Portrait (wide frame)</div>
-<BitImage Width=""240"" Height=""48"" ImageFit=""BitImageFit.CenterCover"" Cover=""BitImageCover.Portrait"" Class=""framed"" Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />";
+<div class=""framed"">
+    <BitImage Width=""240"" Height=""48"" ImageFit=""BitImageFit.CenterCover"" Cover=""BitImageCover.Portrait"" Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />
+</div>";
 
     private readonly string example4RazorCode = @"
 @foreach (var position in new[] { ""top"", ""center"", ""bottom"" })
@@ -176,20 +192,6 @@ private async Task ReloadImages()
 }";
 
     private readonly string example8RazorCode = @"
-<style>
-    .avatar-initials {
-        width: 9rem;
-        height: 9rem;
-        display: flex;
-        font-size: 2rem;
-        border-radius: 50%;
-        align-items: center;
-        justify-content: center;
-        color: var(--bit-clr-pri-text);
-        background-color: var(--bit-clr-pri);
-    }
-</style>
-
 <div>A broken Src</div>
 <BitImage Width=""9rem""
           Alt=""The bit platform logo""
@@ -199,16 +201,7 @@ private async Task ReloadImages()
 <div>No Src</div>
 <BitImage Width=""9rem""
           Alt=""The bit platform logo""
-          FallbackSrc=""images/bit-logo-blue.png"" />
-
-<div>No source at all</div>
-<BitImage Width=""9rem"" Alt=""A user's avatar"" Src=""@missingAvatarUrl"">
-    <ErrorTemplate>
-        <div class=""avatar-initials"">JD</div>
-    </ErrorTemplate>
-</BitImage>";
-    private readonly string example8CsharpCode = @"
-private readonly string? missingAvatarUrl = null;";
+          FallbackSrc=""images/bit-logo-blue.png"" />";
 
     private readonly string example9RazorCode = @"
 <BitButton OnClick=""() => progressiveKey++"">Load again</BitButton>
@@ -287,6 +280,13 @@ private const string placeholderDataUri = ""data:image/svg+xml,%3Csvg xmlns='htt
                      })"" />";
 
     private readonly string example12RazorCode = @"
+<style>
+    .preview-body {
+        padding: 1rem;
+        max-width: min(48rem, 90vw);
+    }
+</style>
+
 <BitImage Rounded
           Width=""8rem""
           AspectRatio=""1""
@@ -307,7 +307,7 @@ private const string placeholderDataUri = ""data:image/svg+xml,%3Csvg xmlns='htt
           Src=""images/carousel/img3.jpg"" />
 
 <BitModal @bind-IsOpen=""isPreviewOpen"" HeaderText=""A landscape photograph"" ShowCloseButton>
-    <div style=""padding:1rem;max-width:min(48rem, 90vw)"">
+    <div class=""preview-body"">
         <BitImage Fluid Alt=""A landscape photograph"" Src=""images/carousel/img3.jpg"" />
     </div>
 </BitModal>";

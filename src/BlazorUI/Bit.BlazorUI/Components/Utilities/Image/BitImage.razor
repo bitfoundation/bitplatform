@@ -31,7 +31,9 @@
     @*  The low quality placeholder, which stands in the frame while the real image is still on its
         way. It is decorative by definition - the image it stands for carries the meaning - so it is
         hidden from assistive technologies rather than given an alt of its own. Under a FadeIn it outlives
-        the load by the length of the fade, fading out as the image fades in. *@
+        the load by the length of the fade, fading out as the image fades in, and is removed once that fade
+        has ended. Blazor has no directive for animationend, so the handler is the attribute's value itself,
+        which the renderer wires up as a listener for the event the attribute is named after. *@
     @if (_placeholderSrc.HasValue())
     {
         <img alt=""
@@ -39,7 +41,8 @@
              src="@_placeholderSrc"
              draggable="false"
              style="@GetPlaceholderStyles()"
-             class="@GetPlaceholderClasses()" />
+             class="@GetPlaceholderClasses()"
+             onanimationend="@EventCallback.Factory.Create(this, HandleOnPlaceholderAnimationEnd)" />
     }
 
     @if (_hasSources)

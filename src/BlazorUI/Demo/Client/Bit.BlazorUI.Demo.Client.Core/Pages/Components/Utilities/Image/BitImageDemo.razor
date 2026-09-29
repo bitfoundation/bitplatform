@@ -41,17 +41,25 @@
                 <b>Width</b> and <b>Height</b> size the frame: a bare number is pixels, anything else any CSS length. One
                 of them scales the image along the other. <b>AspectRatio</b> reserves the frame's room before the image
                 arrives, so nothing below it shifts. <b>Fluid</b> keeps the frame within its container and scales the
-                image down rather than cropping it. The tint shows the frame.
+                image down rather than cropping it. The tint behind each image shows its frame.
             </div>
             <div class="example-content">
                 <div>Width="9rem"</div>
-                <BitImage Width="9rem" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                <div class="framed">
+                    <BitImage Width="9rem" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                </div>
                 <div>Height="80"</div>
-                <BitImage Height="80" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                <div class="framed">
+                    <BitImage Height="80" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                </div>
                 <div>Width="256px" Height="128px"</div>
-                <BitImage Width="256px" Height="128px" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                <div class="framed">
+                    <BitImage Width="256px" Height="128px" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                </div>
                 <div>Width="16rem" AspectRatio="1"</div>
-                <BitImage Width="16rem" AspectRatio="1" Class="framed" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <div class="framed">
+                    <BitImage Width="16rem" AspectRatio="1" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </div>
                 <div>Fluid, in a 12rem column</div>
                 <div class="narrow-column">
                     <BitImage Fluid Alt="A landscape photograph, scaled down to its column" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
@@ -74,18 +82,24 @@
                     {
                         <div>
                             <div>@fit</div>
-                            <BitImage Width="160" Height="96" ImageFit="fit" Cover="BitImageCover.Landscape" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                            <div class="framed">
+                                <BitImage Width="160" Height="96" ImageFit="fit" Cover="BitImageCover.Landscape" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                            </div>
                         </div>
                     }
                 </div>
                 <div class="image-row">
                     <div>
                         <div>CenterCover, Landscape (tall frame)</div>
-                        <BitImage Width="96" Height="144" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Landscape" Class="framed" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                        <div class="framed">
+                            <BitImage Width="96" Height="144" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Landscape" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                        </div>
                     </div>
                     <div>
                         <div>CenterCover, Portrait (wide frame)</div>
-                        <BitImage Width="240" Height="48" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Portrait" Class="framed" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                        <div class="framed">
+                            <BitImage Width="240" Height="48" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Portrait" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -198,10 +212,11 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="FallbackSrc" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="FallbackSrc" RazorCode="@example8RazorCode" Id="example8">
             <div class="example-desc">
                 <b>FallbackSrc</b> is tried once when <b>Src</b> fails, and shown at once when there is no <b>Src</b>. Keep
-                it local or inline. With nothing to load at all, the image goes straight to the error state.
+                it local or inline. An image with nothing to load at all stays in the loading state, since its source may
+                still be on its way, so give one that may have none - an avatar - a FallbackSrc.
             </div>
             <div class="example-content">
                 <div class="image-row">
@@ -217,14 +232,6 @@
                         <BitImage Width="9rem"
                                   Alt="The bit platform logo"
                                   FallbackSrc="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                    </div>
-                    <div>
-                        <div>No source at all</div>
-                        <BitImage Width="9rem" Alt="A user's avatar" Src="@missingAvatarUrl">
-                            <ErrorTemplate>
-                                <div class="avatar-initials">JD</div>
-                            </ErrorTemplate>
-                        </BitImage>
                     </div>
                 </div>
             </div>
