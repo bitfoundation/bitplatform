@@ -13,6 +13,20 @@
 
 <section>
     <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="root-stack">
+        @if (IsKiosk)
+        {
+            <BitMessage Multiline Color="BitColor.Warning" Title="@Localizer[nameof(AppStrings.KioskTitle)]">
+                <Content>
+                    @Localizer[nameof(AppStrings.KioskMessage)]
+                </Content>
+                <Actions>
+                    <BitButton Color="BitColor.PrimaryBackground" OnClick="WrapHandled(ExitApp)">
+                        @Localizer[nameof(AppStrings.KioskExitApp)]
+                    </BitButton>
+                </Actions>
+            </BitMessage>
+        }
+
         <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomePanelTitle)]
             <br />

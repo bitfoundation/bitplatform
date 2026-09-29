@@ -2210,4 +2210,13 @@
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>أرسلنا رمزًا إلى {0} و{1}.</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>وضع الكشك</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>هذا التطبيق مثبَّت على الشاشة: مفتاح Windows و Alt+Tab و إدارة المهام وإغلاق النافذة كلها محظورة. استخدم الزر للخروج.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>الخروج من التطبيق</value>
+  </data>
 </root>

@@ -5,7 +5,7 @@
 You will be working with the following key technologies:
 
 *   **C# 14.0**
-*   **ASP.NET Core 10.0**
+*   **ASP.NET Core 11.0**
 *   **Blazor**: Component-based web UI framework
 *   **.NET MAUI Blazor Hybrid**: Cross-platform app development
 *   **ASP.NET Core Identity**: Authentication and authorization

@@ -2210,4 +2210,13 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>Wir haben einen Code an {0} und {1} gesendet.</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Kioskmodus</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Diese App ist auf dem Bildschirm gesperrt: Windows-Taste, Alt+Tab, Task-Manager und das Schließen des Fensters sind alle blockiert. Verwenden Sie die Schaltfläche, um sie zu verlassen.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>App beenden</value>
+  </data>
 </root>
