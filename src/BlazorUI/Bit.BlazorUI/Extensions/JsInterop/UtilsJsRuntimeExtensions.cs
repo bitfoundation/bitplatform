@@ -61,6 +61,21 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Registers the Escape a shown tooltip takes for itself - pressed inside it, or anywhere on the page while the
+    // pointer rests on it - and mirrors its relationship onto the anchor in the same call; see Utils.setupTooltip.
+    internal static ValueTask BitUtilsSetupTooltip<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string rootId, string tooltipId, string attribute, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupTooltip", rootId, tooltipId, attribute, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeTooltip(this IJSRuntime jsRuntime, string rootId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeTooltip", rootId);
+    }
+
+
     internal static ValueTask<bool> BitUtilsContainsActiveElement(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.containsActiveElement", elementId);

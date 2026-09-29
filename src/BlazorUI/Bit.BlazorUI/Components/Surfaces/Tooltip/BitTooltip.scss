@@ -1,5 +1,22 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a tooltip inherits down to the tooltip that reads it:
+//   --bit-Tooltip-background   fill of the surface and the arrow          (default: $clr-tooltip-bg)
+//   --bit-Tooltip-color        text color                                 (default: $clr-tooltip-fg)
+//   --bit-Tooltip-padding      room around the content                    (default: spacing(1.25))
+//   --bit-Tooltip-font-size    size of the text                           (default: $tg-fs-xs)
+//   --bit-Tooltip-font-weight  weight of the text                         (default: $tg-fw-medium)
+//   --bit-Tooltip-text-align   alignment of a text that wraps             (default: start)
+//   --bit-Tooltip-radius       corner of the surface                      (default: $shp-radius-popup)
+//   --bit-Tooltip-shadow       elevation of the surface                   (default: $box-shadow-tooltip)
+//   --bit-Tooltip-max-width    width a text wraps at                      (default: 320px in rem)
+//   --bit-Tooltip-offset       distance from the anchor                   (default: spacing(1.25))
+//   --bit-Tooltip-arrow-size   side of the square the arrow is drawn from (default: spacing(1.5))
+//   --bit-Tooltip-z-index      stacking order of the surface              (default: $zindex-callout)
+// A parameter written on the tooltip itself (Color, Size, MaxWidth, Offset, ArrowSize, ZIndex) wins over its
+// variable: the parameters publish the private properties below from later rules or inline on this same root.
+
 .bit-ttp {
     position: relative;
     display: inline-flex;
@@ -8,9 +25,9 @@
     // from C# as an inline custom property on this same element - in one place.
     //
     // The distance the tooltip is held off its anchor, which is also the room the arrow is drawn in.
-    --bit-ttp-offset: #{spacing(1.25)};
+    --bit-ttp-offset: var(--bit-Tooltip-offset, #{spacing(1.25)});
     // The side of the square the arrow is rotated out of.
-    --bit-ttp-arrow-size: #{spacing(1.5)};
+    --bit-ttp-arrow-size: var(--bit-Tooltip-arrow-size, #{spacing(1.5)});
     // Half the diagonal of that square once it is rotated: how far the arrow reaches out of the edge of
     // the surface it is centred on, and so the smallest gap that has the room to draw it in.
     --bit-ttp-arrow-reach: calc(var(--bit-ttp-arrow-size) * 0.7071);
@@ -30,11 +47,12 @@
     --bit-ttp-bridge: calc(-1 * (var(--bit-ttp-gap) + 2px));
     --bit-ttp-arrow-shadow-color: #{translucent($clr-fg-pri, 10%)};
     // The width a text wraps at instead of the tooltip growing on across the screen.
-    --bit-ttp-max-width: #{rem2(320px)};
-    --bit-ttp-padding: #{spacing(1.25)};
-    --bit-ttp-fontsize: #{$tg-fs-xs};
-    --bit-ttp-clr-bg: #{$clr-bg-sec};
-    --bit-ttp-clr-fg: #{$clr-fg-pri};
+    --bit-ttp-max-width: var(--bit-Tooltip-max-width, #{rem2(320px)});
+    --bit-ttp-zindex: var(--bit-Tooltip-z-index, #{$zindex-callout});
+    --bit-ttp-padding: var(--bit-Tooltip-padding, #{spacing(1.25)});
+    --bit-ttp-fontsize: var(--bit-Tooltip-font-size, #{$tg-fs-xs});
+    --bit-ttp-clr-bg: var(--bit-Tooltip-background, #{$clr-tooltip-bg});
+    --bit-ttp-clr-fg: var(--bit-Tooltip-color, #{$clr-tooltip-fg});
 
     &.bit-dis {
         --bit-ttp-clr-fg: #{$clr-fg-dis};
@@ -72,7 +90,9 @@
 
 .bit-ttp-ctn {
     position: absolute;
-    text-align: center;
+    // A single line is exactly as wide as its text, so the alignment only tells once a text wraps - where a
+    // ragged centre is harder to read back along than the edge a line starts at.
+    text-align: var(--bit-Tooltip-text-align, start);
     width: max-content;
     height: max-content;
     max-width: var(--bit-ttp-max-width);
@@ -81,10 +101,10 @@
     overflow-wrap: break-word;
     padding: var(--bit-ttp-padding);
     font-size: var(--bit-ttp-fontsize);
-    font-weight: $tg-fw-medium;
-    border-radius: $shp-radius-popup;
-    box-shadow: $box-shadow-tooltip;
-    z-index: var(--bit-ttp-zindex, #{$zindex-callout});
+    font-weight: var(--bit-Tooltip-font-weight, #{$tg-fw-medium});
+    border-radius: var(--bit-Tooltip-radius, #{$shp-radius-popup});
+    box-shadow: var(--bit-Tooltip-shadow, #{$box-shadow-tooltip});
+    z-index: var(--bit-ttp-zindex);
     color: var(--bit-ttp-clr-fg);
     background-color: var(--bit-ttp-clr-bg);
 }
@@ -103,6 +123,27 @@
         opacity: 0;
         visibility: hidden;
     }
+
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        translate: none;
+        transition: translate $mot-duration $mot-easing-decelerate;
+
+        @starting-style {
+            translate: var(--bit-ttp-slide);
+        }
+    }
+}
+
+// The surface and its arrow travel the last few pixels out from the anchor as they fade in, and back
+// toward it as they fade out, so the tooltip reads as coming from what it belongs to. The distance is
+// set per placement family below; the motion tokens collapse it for a reader who asked for less motion.
+// It is the independent translate property rather than the wrapper's transform: a transform on the
+// wrapper would make it a stacking context of its own and trap the z-index the surface is lifted by.
+.bit-ttp-ctn,
+.bit-ttp-arw {
+    translate: var(--bit-ttp-slide);
+    transition: translate $mot-duration $mot-easing-accelerate;
 }
 
 // The arrow is a square rotated about its own centre, and every placement below centres it ON the edge
@@ -113,7 +154,7 @@
     position: absolute;
     width: var(--bit-ttp-arrow-size);
     height: var(--bit-ttp-arrow-size);
-    z-index: calc(var(--bit-ttp-zindex, #{$zindex-callout}) - 1);
+    z-index: calc(var(--bit-ttp-zindex) - 1);
     color: var(--bit-ttp-clr-fg);
     background-color: var(--bit-ttp-clr-bg);
 }
@@ -147,29 +188,41 @@
 .bit-ttp-tlf,
 .bit-ttp-trg {
     --bit-ttp-bridge-inset: 0 0 var(--bit-ttp-bridge) 0;
+    --bit-ttp-slide: 0 #{spacing(0.5)};
 }
 
 .bit-ttp-btm,
 .bit-ttp-blf,
 .bit-ttp-brg {
     --bit-ttp-bridge-inset: var(--bit-ttp-bridge) 0 0 0;
+    --bit-ttp-slide: 0 calc(-1 * #{spacing(0.5)});
 }
 
 .bit-ttp-rgt,
 .bit-ttp-rtp,
 .bit-ttp-rbm {
     --bit-ttp-bridge-inset: 0 0 0 var(--bit-ttp-bridge);
+    --bit-ttp-slide: calc(-1 * #{spacing(0.5)}) 0;
 }
 
 .bit-ttp-lft,
 .bit-ttp-ltp,
 .bit-ttp-lbm {
     --bit-ttp-bridge-inset: 0 var(--bit-ttp-bridge) 0 0;
+    --bit-ttp-slide: #{spacing(0.5)} 0;
 }
 
+// Written after the shown state, which it has to beat at the same specificity.
 .bit-ttp-nan {
-    .bit-ttp-wrp {
+    .bit-ttp-wrp,
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
         transition: none;
+    }
+
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        translate: none;
     }
 }
 

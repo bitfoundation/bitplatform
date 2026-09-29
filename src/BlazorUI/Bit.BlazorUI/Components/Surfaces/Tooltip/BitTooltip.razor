@@ -36,9 +36,13 @@
         @* A pointer pressed or released inside the tooltip is not a press on the anchor, so neither of them
            is let through to the root: an interactive tooltip would otherwise close itself the moment
            anything inside it was clicked, and selecting the text of one would be taken for the press that
-           focuses the anchor. *@
+           focuses the anchor.
+
+           data-bit-ttp-esc marks a tooltip Escape may dismiss, which the JS side reads to decide on the spot -
+           before the key travels on - whether the key is this tooltip's to take. *@
         <div style="@Styles?.TooltipWrapper"
              class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper"
+             data-bit-ttp-esc="@(NoDismissOnEscape is false && IsControlledExternally is false)"
              @onpointerup="@SwallowPointerEvent"
              @onpointerup:stopPropagation="true"
              @onpointerdown="@SwallowPointerEvent"

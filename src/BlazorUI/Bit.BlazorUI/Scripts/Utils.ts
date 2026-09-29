@@ -182,6 +182,66 @@
             } catch (e) { console.error("BitBlazorUI.Utils.syncAriaDescription:", e); }
         }
 
+        private static _tooltips = new Map<string, AbortController>();
+
+        // Lets Escape dismiss a shown tooltip (WCAG 1.4.13 "dismissible") from the two places it can come from:
+        // the keyboard inside the tooltip - on its anchor - and anywhere on the page while the pointer rests on
+        // the tooltip, since a tooltip shown on hover is shown while the focus is wherever the user left it.
+        // Either way the key is the tooltip's alone: it is taken before Blazor's document-level delegation sees
+        // it, so a dialog or a callout the tooltip sits in is not dismissed by the same press, and a second
+        // Escape reaches them as usual. Whether a tooltip takes it is read off the DOM on the spot - shown
+        // (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot wait for a round trip.
+        public static setupTooltip(rootId: string, tooltipId: string, attribute: string, dotnetObj: DotNetObject) {
+            Utils.disposeTooltip(rootId);
+
+            Utils.syncAriaDescription(rootId, tooltipId, attribute);
+
+            const root = document.getElementById(rootId);
+            if (!root) return;
+
+            const controller = new AbortController();
+
+            const takes = () => root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]') !== null;
+
+            const dismiss = (e: KeyboardEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                dotnetObj.invokeMethodAsync('OnEscape');
+            };
+
+            // A component inside the anchor that answered the key natively itself (and said so) keeps it.
+            root.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || e.defaultPrevented || !takes()) return;
+
+                dismiss(e);
+            }, { signal: controller.signal });
+
+            // In the capture phase, so the key is taken before whatever holds the focus acts on it. No
+            // defaultPrevented check here: nothing but another tooltip under the same pointer - a nested one -
+            // can have run before this, and both of them are dismissed.
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || !takes()) return;
+
+                const target = e.target as Node | null;
+                if (target && root.contains(target)) return; // the listener above answers it
+
+                if (!root.matches(':hover')) return;
+
+                dismiss(e);
+            }, { signal: controller.signal, capture: true });
+
+            Utils._tooltips.set(rootId, controller);
+        }
+
+        public static disposeTooltip(rootId: string) {
+            const controller = Utils._tooltips.get(rootId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._tooltips.delete(rootId);
+        }
+
         // True when the focus currently sits inside the given container. The popup components ask before
         // they close, since handing the focus back to the element that opened them is only correct when
         // the focus was theirs to hand back - moving it out of wherever the user put it otherwise.

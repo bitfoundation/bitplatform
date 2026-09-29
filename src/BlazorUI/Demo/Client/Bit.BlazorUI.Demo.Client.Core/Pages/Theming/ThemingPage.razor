@@ -489,18 +489,26 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
 /* tint per accent role - the role as a faint wash over a surface (tinted variants) */
 --bit-clr-pri-tint         /* &rarr; color-mix(in srgb, var(--bit-clr-pri) 10%, transparent) */
---bit-clr-sec-tint         /* ... and likewise for sec, ter, inf, suc, wrn, swr, err */</CodeBox>
+--bit-clr-sec-tint         /* ... and likewise for sec, ter, inf, suc, wrn, swr, err */
+
+/* the tooltip surface */
+--bit-clr-tooltip-bg       /* &rarr; var(--bit-clr-bg-sec) */
+--bit-clr-tooltip-fg       /* &rarr; var(--bit-clr-fg-pri) */</CodeBox>
 
                 <BitText>
                     Under Fluent every family points at the same primitive, so overriding <code>--bit-shp-brd-radius</code> still re-rounds everything exactly as before. The families exist for the design systems that disagree: Material rounds a button (pill), a chip (8px), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino capsules its buttons and chips over 8px fields, and separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS - exactly what the packaged Material and Cupertino presets do; see <i>Authoring your own preset</i> below. Themable from C# via <code>BitTheme.Shape.Radius.*</code> and <code>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</code>.
                 </BitText>
 
                 <BitText>
-                    The role foregrounds are the one family that is a color. A role's base color is picked to <i>fill</i> a surface - a warning amber is under 2:1 on white - so a variant that drops the fill and prints the role as text needs a different shade of it. The default mixes the role towards <code>--bit-clr-fg-pri</code>, which keeps the hue in both schemes of any palette; a design system with its own contrast target sets <code>--bit-clr-&lt;role&gt;-fg</code> in its preset block, or from C# via <code>BitTheme.Color.&lt;Role&gt;.Foreground</code>, and every component that prints the role as text follows without a single component selector. An inline override that re-values a role or the primary foreground re-declares the affected role foregrounds on the same element, exactly as for the other family aliases.
+                    The role foregrounds are the first of the color families. A role's base color is picked to <i>fill</i> a surface - a warning amber is under 2:1 on white - so a variant that drops the fill and prints the role as text needs a different shade of it. The default mixes the role towards <code>--bit-clr-fg-pri</code>, which keeps the hue in both schemes of any palette; a design system with its own contrast target sets <code>--bit-clr-&lt;role&gt;-fg</code> in its preset block, or from C# via <code>BitTheme.Color.&lt;Role&gt;.Foreground</code>, and every component that prints the role as text follows without a single component selector. An inline override that re-values a role or the primary foreground re-declares the affected role foregrounds on the same element, exactly as for the other family aliases.
                 </BitText>
 
                 <BitText>
                     The role tints are their companion: the role laid over a surface as a faint wash, the soft look of a tinted message, with the role foreground read on top. The default is translucent, so a tinted component on a card or a sidebar tints that surface rather than painting a patch of the page on it, and it is kept faint enough for every role foreground to hold 4.5:1 on it under the packaged palettes. A design system with opaque "container" colors of its own - Material's error container, say - sets <code>--bit-clr-&lt;role&gt;-tint</code> in its preset block, or from C# via <code>BitTheme.Color.&lt;Role&gt;.Tint</code>; an inline override that re-values a role re-declares that role's tint.
+                </BitText>
+
+                <BitText>
+                    The tooltip surface is the one popup whose fill design systems disagree on: Fluent lifts a light surface off the page with a shadow, Material paints its plain tooltip in the inverse surface and casts none. <code>--bit-clr-tooltip-bg</code> and <code>--bit-clr-tooltip-fg</code> carry that choice - the Material preset points them at <code>--bit-clr-fg-pri</code> / <code>--bit-clr-bg-pri</code>, Fluent 2 at the page surface - and are themable from C# via <code>BitTheme.Color.TooltipBackground</code> / <code>TooltipForeground</code>.
                 </BitText>
             </DocSection>
 

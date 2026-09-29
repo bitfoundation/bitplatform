@@ -137,6 +137,11 @@
     // Disabled, which is what the $clr-*-dis tokens already carry. The one token is the fallback for
     // an element that keeps its own colors (an image, a color swatch), where Fluent 2 has no opinion.
 
+    /*---- Surface colors ----*/
+    // A Fluent 2 tooltip (its "normal" appearance) is colorNeutralBackground1 with colorNeutralForeground1
+    // text: the page's own surface, lifted off it by shadow8.
+    --bit-clr-tooltip-bg: var(--bit-clr-bg-pri);
+
     /*---- Spacing / layout ----*/
     // Fluent 2's dialog inset is 24px and its actions run in a row hugging the trailing edge, which
     // is what the core Fluent tokens already say; they are re-declared rather than inherited so a
