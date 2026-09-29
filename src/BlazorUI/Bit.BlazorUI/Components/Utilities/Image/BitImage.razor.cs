@@ -214,11 +214,12 @@ public partial class BitImage : BitComponentBase
     public BitImageClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Specifies the cover style to be used for this image.
+    /// How the shape of the image compares to the shape of its frame.
     /// </summary>
     /// <remarks>
-    /// Only <see cref="BitImageFit.CenterCover"/> and <see cref="BitImageFit.CenterContain"/> read it;
-    /// see <see cref="BitImageCover"/>. The default is <see cref="BitImageCover.Portrait"/>.
+    /// Only <see cref="BitImageFit.CenterCover"/> and <see cref="BitImageFit.CenterContain"/> read it, to
+    /// know which axis to scale along: <see cref="BitImageCover.Landscape"/> for an image proportionally
+    /// wider than its frame, <see cref="BitImageCover.Portrait"/> - the default - for a taller one.
     /// </remarks>
     [Parameter] public BitImageCover? Cover { get; set; }
 
@@ -302,6 +303,8 @@ public partial class BitImage : BitComponentBase
     /// photograph from a content feed does on a phone. The frame keeps its <see cref="Width"/> and
     /// <see cref="AspectRatio"/> up to the width of the container and shrinks below it, and the image is
     /// never enlarged past its natural size - the responsive image of a stylesheet's img { max-width: 100% }.
+    /// A frame given a <see cref="Height"/> keeps it, and the image is contained in the narrower frame
+    /// rather than squeezed out of its shape; an explicit <see cref="ImageFit"/> still decides otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Fluid { get; set; }
@@ -368,6 +371,10 @@ public partial class BitImage : BitComponentBase
     /// <remarks>
     /// Rendered while the image is on its way, and only while <see cref="StartVisible"/> is false -
     /// with the image visible from the start there is nothing for it to stand in for.
+    /// <br />
+    /// In a frame that has a size of its own - a <see cref="Height"/>, an <see cref="AspectRatio"/>, a
+    /// <see cref="MaximizeFrame"/> - it fills that size, so a skeleton given a height of 100% holds exactly
+    /// the room the image will take. So does the <see cref="ErrorTemplate"/>.
     /// </remarks>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 

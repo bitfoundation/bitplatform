@@ -5,7 +5,7 @@
             Description="An image in a frame that sizes, shapes and crops it, follows its loading and error states, and reaches the browser's own responsive, lazy and priority loading." />
 
 <DemoPage Name="Image"
-          Description="BitImage is an img inside a frame. The frame takes the size and the shape and clips what falls outside it; ImageFit and ImagePosition decide what the image does inside it. The component follows the load and error events, holds the frame with a placeholder or a template until the image arrives, falls back to another source, and keeps the browser's own lazy, priority and responsive loading within reach."
+          Description="An img inside a frame that takes the size and the shape and clips the rest, while ImageFit and ImagePosition place the image in it. It follows the load and error states - covered by a placeholder, templates and a fallback source - and exposes the browser's lazy, priority and responsive loading."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -64,8 +64,9 @@
                 <b>ImageFit</b> settles an image and a frame of different shapes: <b>None</b> and <b>Center</b> crop it at
                 its natural size, <b>Contain</b> fits it inside, <b>Cover</b> fills the frame and crops, <b>Fill</b>
                 stretches it, and <b>ScaleDown</b> is Contain that never enlarges. <b>CenterContain</b> and
-                <b>CenterCover</b> scale along the axis <b>Cover</b> names: Landscape for a wide frame, Portrait (the
-                default) for a tall one.
+                <b>CenterCover</b> never enlarge either, and need <b>Cover</b> to say how the two shapes compare:
+                Landscape for an image proportionally wider than its frame (this 2:1 logo in a 5:3 frame), Portrait
+                (the default) for a taller one.
             </div>
             <div class="example-content">
                 <div class="image-row">
@@ -73,18 +74,18 @@
                     {
                         <div>
                             <div>@fit</div>
-                            <BitImage Width="160" Height="96" ImageFit="fit" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                            <BitImage Width="160" Height="96" ImageFit="fit" Cover="BitImageCover.Landscape" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
                         </div>
                     }
                 </div>
                 <div class="image-row">
                     <div>
-                        <div>CenterCover, Cover="Landscape"</div>
-                        <BitImage Height="96" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Landscape" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                        <div>CenterCover, Landscape (tall frame)</div>
+                        <BitImage Width="96" Height="144" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Landscape" Class="framed" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     </div>
                     <div>
-                        <div>CenterCover, Cover="Portrait"</div>
-                        <BitImage Width="96" Height="144" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Portrait" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                        <div>CenterCover, Portrait (wide frame)</div>
+                        <BitImage Width="240" Height="48" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Portrait" Class="framed" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     </div>
                 </div>
             </div>
@@ -147,8 +148,9 @@
         <DemoExample Title="Loading & error states" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div class="example-desc">
                 The image stays hidden until it loads. <b>LoadingTemplate</b> and <b>ErrorTemplate</b> stand in for it
-                meanwhile; <b>OnLoadingStateChange</b> reports each <b>BitImageState</b>, also readable as
-                <b>LoadingState</b>. <b>ReloadAsync</b> fetches the image again, even a source the browser already has.
+                meanwhile, filling a sized frame - here a <b>BitShimmer</b> skeleton holds the image's exact room.
+                <b>OnLoadingStateChange</b> reports each <b>BitImageState</b>, also readable as <b>LoadingState</b>.
+                <b>ReloadAsync</b> fetches the image again, even a source the browser already has.
             </div>
             <div class="example-content">
                 <div class="image-row">
@@ -157,33 +159,42 @@
                     <BitButton Variant="BitVariant.Outline" OnClick="ReloadImages">Reload both</BitButton>
                     <div>State: <b>@slowImageState</b></div>
                 </div>
-                @if (loadSlow)
-                {
-                    <BitImage @ref="slowImage"
-                              Width="200px"
-                              Alt="An image served with a delay"
-                              Src="/api/Image/GetImage"
-                              OnLoadingStateChange="s => slowImageState = s">
-                        <LoadingTemplate>
-                            <div class="image-row">
-                                <BitSpinnerLoading CustomSize="24" />
-                                <span>loading...</span>
-                            </div>
-                        </LoadingTemplate>
-                    </BitImage>
-                }
-                @if (loadBroken)
-                {
-                    <BitImage @ref="brokenImage"
-                              Width="200px"
-                              Alt="An image whose source fails"
-                              Src="/api/Image/GetImageError">
-                        <LoadingTemplate><span>loading...</span></LoadingTemplate>
-                        <ErrorTemplate>
-                            <BitMessage Color="BitColor.Error">The image could not be loaded.</BitMessage>
-                        </ErrorTemplate>
-                    </BitImage>
-                }
+                <div class="image-row">
+                    @if (loadSlow)
+                    {
+                        <BitImage @ref="slowImage"
+                                  Rounded
+                                  Width="14rem"
+                                  AspectRatio="3/2"
+                                  ImageFit="BitImageFit.Cover"
+                                  Alt="An image served with a delay"
+                                  Src="/api/Image/GetImage"
+                                  OnLoadingStateChange="s => slowImageState = s">
+                            <LoadingTemplate>
+                                <BitShimmer Width="100%" Height="100%" Background="BitColor.TertiaryBackground" />
+                            </LoadingTemplate>
+                        </BitImage>
+                    }
+                    @if (loadBroken)
+                    {
+                        <BitImage @ref="brokenImage"
+                                  Rounded
+                                  Width="14rem"
+                                  AspectRatio="3/2"
+                                  Alt="An image whose source fails"
+                                  Src="/api/Image/GetImageError">
+                            <LoadingTemplate>
+                                <BitShimmer Width="100%" Height="100%" Background="BitColor.TertiaryBackground" />
+                            </LoadingTemplate>
+                            <ErrorTemplate>
+                                <div class="image-error">
+                                    <BitIcon IconName="@BitIconName.PhotoError" />
+                                    <span>The image could not be loaded.</span>
+                                </div>
+                            </ErrorTemplate>
+                        </BitImage>
+                    }
+                </div>
             </div>
         </DemoExample>
 

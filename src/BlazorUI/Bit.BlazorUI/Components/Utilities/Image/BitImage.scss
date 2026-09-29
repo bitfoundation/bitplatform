@@ -130,7 +130,6 @@
 }
 
 .bit-img-img {
-    opacity: 0;
     display: block;
 }
 
@@ -163,9 +162,14 @@
 
 // What stands in for the image while it loads or after it has failed. It is left in the normal flow
 // rather than laid over the frame, since the frame of an image that is not there has no size of its
-// own unless the page gave it one.
+// own unless the page gave it one - but where the page did (a Height, an AspectRatio, a MaximizeFrame)
+// it fills that size, so a skeleton or an error panel covers exactly the room the image will take. In a
+// frame sized by its content the percentages resolve to nothing and the template keeps its own height.
 .bit-img-tpl {
+    width: 100%;
+    height: 100%;
     position: relative;
+    box-sizing: border-box;
 }
 
 // The content laid over the image - a caption, a badge, a scrim. It fills the frame, and it lets the
@@ -253,12 +257,15 @@
 
 // A fluid frame is never wider than its container, and the image in it is scaled down with it rather than
 // cropped by it: without this, a picture larger than a narrow column is clipped by the frame that holds it.
-// The height follows the width, so the image keeps its shape at every width.
+// The height follows the width, so the image keeps its shape at every width - and where it cannot follow,
+// under a Height the page fixed, the image is contained in the narrower box rather than squeezed into it.
+// An explicit fit, and a maximized frame's cover, are written later and still have the last word.
 .bit-img-flu {
     max-width: 100%;
 
     .bit-img-img {
         max-width: 100%;
+        object-fit: contain;
     }
 }
 
@@ -270,10 +277,6 @@
 .bit-img-ihw {
     width: 100%;
     height: auto;
-}
-
-.bit-img-vis {
-    opacity: 1;
 }
 
 .bit-img-hid {
@@ -315,35 +318,30 @@
 // filling the parent.
 .bit-img-img {
     &.bit-img-non {
-        opacity: 1;
         width: auto;
         height: auto;
         object-fit: none;
     }
 
     &.bit-img-cnt {
-        opacity: 1;
         width: 100%;
         height: 100%;
         object-fit: contain;
     }
 
     &.bit-img-cvr {
-        opacity: 1;
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
     &.bit-img-fil {
-        opacity: 1;
         width: 100%;
         height: 100%;
         object-fit: fill;
     }
 
     &.bit-img-scd {
-        opacity: 1;
         width: 100%;
         height: 100%;
         object-fit: scale-down;
@@ -353,7 +351,6 @@
     // the overflow of the frame that crops it around its middle. Nothing shrinks it either: a centered
     // fit that scaled the image to a narrow frame would be Contain rather than Center.
     &.bit-img-ctr {
-        opacity: 1;
         width: auto;
         height: auto;
         flex-shrink: 0;
@@ -370,24 +367,20 @@
 
 .bit-img-lan {
     &.bit-img-ccv {
-        opacity: 1;
         max-height: 100%;
     }
 
     &.bit-img-cct {
-        opacity: 1;
         max-width: 100%;
     }
 }
 
 .bit-img-por {
     &.bit-img-ccv {
-        opacity: 1;
         max-width: 100%;
     }
 
     &.bit-img-cct {
-        opacity: 1;
         max-height: 100%;
     }
 }

@@ -35,6 +35,22 @@
     border: 1px solid gray;
 }
 
+// The panel a failed image shows through the ErrorTemplate. The template fills the sized frame, so the
+// panel takes that whole room and centers its message in it.
+.image-error {
+    gap: 0.5rem;
+    height: 100%;
+    display: flex;
+    padding: 1rem;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    box-sizing: border-box;
+    justify-content: center;
+    color: var(--bit-clr-err);
+    background-color: var(--bit-clr-bg-ter);
+}
+
 // What an avatar with no picture at all shows through the ErrorTemplate.
 .avatar-initials {
     width: 9rem;

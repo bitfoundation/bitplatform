@@ -53,7 +53,7 @@ public partial class BitImageDemo
             Name = "Cover",
             Type = "BitImageCover?",
             DefaultValue = "null",
-            Description = "Specifies the cover style to be used for this image. Only the CenterCover and CenterContain fits read it.",
+            Description = "How the shape of the image compares to its frame, which the CenterCover and CenterContain fits scale by. No other fit reads it.",
             LinkType = LinkType.Link,
             Href = "#image-cover-style"
         },
@@ -87,7 +87,7 @@ public partial class BitImageDemo
             Name = "ErrorTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template used to show the error state of the image, which is also reached at once when there is nothing to load (no Src, FallbackSrc, Srcset or Sources).",
+            Description = "The custom template used to show the error state of the image, which is also reached at once when there is nothing to load (no Src, FallbackSrc, Srcset or Sources). It fills a sized frame.",
         },
         new()
         {
@@ -163,7 +163,7 @@ public partial class BitImageDemo
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template used to show the loading state of the image.",
+            Description = "The custom template used to show the loading state of the image. It fills a sized frame, so a skeleton with a 100% height holds the image's exact room.",
         },
         new()
         {
@@ -458,13 +458,13 @@ public partial class BitImageDemo
                 new()
                 {
                     Name= "CenterContain",
-                    Description="The image will be centered horizontally and vertically within the frame and maintains its aspect ratio, scaled down where needed so that all of it fits inside the frame.",
+                    Description="The image is centered and keeps its aspect ratio: one larger than the frame is scaled down until all of it fits, one smaller keeps its natural size. Scales along the axis Cover names.",
                     Value="2",
                 },
                 new()
                 {
                     Name= "CenterCover",
-                    Description="The image will be centered horizontally and vertically within the frame and maintains its aspect ratio, scaled up where needed so that it covers the frame and the overflow is cropped.",
+                    Description="The image is centered and keeps its aspect ratio: one larger than the frame is scaled down until it just covers it, the overflow cropped; one smaller keeps its natural size. Scales along the axis Cover names.",
                     Value="3",
                 },
                 new()
@@ -497,19 +497,19 @@ public partial class BitImageDemo
         {
             Id = "image-cover-style",
             Name = "BitImageCover",
-            Description = "",
+            Description = "The shape of the image relative to its frame: the two shapes compared, not the shape of either one.",
             Items =
             [
                 new()
                 {
                     Name= "Landscape",
-                    Description="The image will be shown at 100% height of container and the width will be scaled accordingly.",
+                    Description="The image is proportionally wider than its frame: CenterCover fits its height and crops the sides, CenterContain fits its width.",
                     Value="0",
                 },
                 new()
                 {
                     Name= "Portrait",
-                    Description="The image will be shown at 100% width of container and the height will be scaled accordingly.",
+                    Description="The image is proportionally taller than its frame (the default): CenterCover fits its width and crops the top and bottom, CenterContain fits its height.",
                     Value="1",
                 }
             ]

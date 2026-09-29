@@ -50,15 +50,15 @@ public partial class BitImageDemo
 {
     <div>
         <div>@fit</div>
-        <BitImage Width=""160"" Height=""96"" ImageFit=""fit"" Class=""framed"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+        <BitImage Width=""160"" Height=""96"" ImageFit=""fit"" Cover=""BitImageCover.Landscape"" Class=""framed"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
     </div>
 }
 
-<div>CenterCover, Cover=""Landscape""</div>
-<BitImage Height=""96"" ImageFit=""BitImageFit.CenterCover"" Cover=""BitImageCover.Landscape"" Class=""framed"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />
+<div>CenterCover, Landscape (tall frame)</div>
+<BitImage Width=""96"" Height=""144"" ImageFit=""BitImageFit.CenterCover"" Cover=""BitImageCover.Landscape"" Class=""framed"" Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />
 
-<div>CenterCover, Cover=""Portrait""</div>
-<BitImage Width=""96"" Height=""144"" ImageFit=""BitImageFit.CenterCover"" Cover=""BitImageCover.Portrait"" Class=""framed"" Alt=""The bit platform logo"" Src=""images/bit-logo-blue.png"" />";
+<div>CenterCover, Portrait (wide frame)</div>
+<BitImage Width=""240"" Height=""48"" ImageFit=""BitImageFit.CenterCover"" Cover=""BitImageCover.Portrait"" Class=""framed"" Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />";
 
     private readonly string example4RazorCode = @"
 @foreach (var position in new[] { ""top"", ""center"", ""bottom"" })
@@ -99,6 +99,22 @@ public partial class BitImageDemo
 <BitImage Shadow Rounded Width=""8rem"" AspectRatio=""1"" ImageFit=""BitImageFit.Cover"" Alt=""Raised and rounded"" Src=""images/carousel/img4.jpg"" />";
 
     private readonly string example7RazorCode = @"
+<style>
+    .image-error {
+        gap: 0.5rem;
+        height: 100%;
+        display: flex;
+        padding: 1rem;
+        text-align: center;
+        align-items: center;
+        flex-direction: column;
+        box-sizing: border-box;
+        justify-content: center;
+        color: var(--bit-clr-err);
+        background-color: var(--bit-clr-bg-ter);
+    }
+</style>
+
 <BitButton OnClick=""() => loadSlow = true"">Load a slow image</BitButton>
 <BitButton OnClick=""() => loadBroken = true"">Load a broken image</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ReloadImages"">Reload both</BitButton>
@@ -107,15 +123,15 @@ public partial class BitImageDemo
 @if (loadSlow)
 {
     <BitImage @ref=""slowImage""
-              Width=""200px""
+              Rounded
+              Width=""14rem""
+              AspectRatio=""3/2""
+              ImageFit=""BitImageFit.Cover""
               Alt=""An image served with a delay""
               Src=""/api/Image/GetImage""
               OnLoadingStateChange=""s => slowImageState = s"">
         <LoadingTemplate>
-            <div style=""display:flex;align-items:center;gap:0.5rem"">
-                <BitSpinnerLoading CustomSize=""24"" />
-                <span>loading...</span>
-            </div>
+            <BitShimmer Width=""100%"" Height=""100%"" Background=""BitColor.TertiaryBackground"" />
         </LoadingTemplate>
     </BitImage>
 }
@@ -123,12 +139,19 @@ public partial class BitImageDemo
 @if (loadBroken)
 {
     <BitImage @ref=""brokenImage""
-              Width=""200px""
+              Rounded
+              Width=""14rem""
+              AspectRatio=""3/2""
               Alt=""An image whose source fails""
               Src=""/api/Image/GetImageError"">
-        <LoadingTemplate><span>loading...</span></LoadingTemplate>
+        <LoadingTemplate>
+            <BitShimmer Width=""100%"" Height=""100%"" Background=""BitColor.TertiaryBackground"" />
+        </LoadingTemplate>
         <ErrorTemplate>
-            <BitMessage Color=""BitColor.Error"">The image could not be loaded.</BitMessage>
+            <div class=""image-error"">
+                <BitIcon IconName=""@BitIconName.PhotoError"" />
+                <span>The image could not be loaded.</span>
+            </div>
         </ErrorTemplate>
     </BitImage>
 }";

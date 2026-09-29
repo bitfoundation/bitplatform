@@ -128,6 +128,38 @@ public partial class BitImageStylesheetTests
 
         StringAssert.Contains(block, "max-width: 100%;");
         StringAssert.Contains(block, ".bit-img-img {\n        max-width: 100%;");
+
+        // A width clamped under a fixed Height would otherwise squeeze the image out of its shape.
+        StringAssert.Contains(block, "object-fit: contain;");
+
+        // The fits and the maximized frame's cover come later, so an explicit choice still wins over it.
+        var stylesheet = ReadStylesheet();
+        Assert.IsTrue(stylesheet.IndexOf("\n.bit-img-flu {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-img-max {", System.StringComparison.Ordinal));
+        Assert.IsTrue(stylesheet.IndexOf("\n.bit-img-flu {", System.StringComparison.Ordinal) < stylesheet.IndexOf("&.bit-img-cvr {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitImageShouldFillASizedFrameWithItsTemplates()
+    {
+        // A skeleton given a 100% height holds exactly the room the image will take only if the wrapper around
+        // it takes the frame's; in a frame sized by its content the percentages resolve to nothing.
+        var block = RuleOf(ReadStylesheet(), ".bit-img-tpl");
+
+        StringAssert.Contains(block, "width: 100%;");
+        StringAssert.Contains(block, "height: 100%;");
+        StringAssert.Contains(block, "box-sizing: border-box;");
+    }
+
+    [TestMethod]
+    public void BitImageShouldHideAnImageByItsStateAlone()
+    {
+        // Whether the image is on screen is the hidden class's call (display, or visibility for a lazy one) and
+        // the fade's; an opacity on the image or on a fit would be a second switch for a custom class to trip.
+        var stylesheet = ReadStylesheet();
+        var rules = RulesOf(stylesheet[..stylesheet.IndexOf("@keyframes", System.StringComparison.Ordinal)]) +
+                    RulesOf(stylesheet[(stylesheet.IndexOf(".bit-img-img {", System.StringComparison.Ordinal))..]);
+
+        Assert.IsFalse(Regex.IsMatch(rules, @"^\s*opacity: [01];", RegexOptions.Multiline), "An opacity decides whether the image is visible.");
     }
 
     [TestMethod]

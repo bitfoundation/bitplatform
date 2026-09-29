@@ -49,7 +49,7 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
     public BitImageClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Gets or sets the cover style to be used for the image.
+    /// Gets or sets how the shape of the image compares to the shape of its frame.
     /// </summary>
     public BitImageCover? Cover { get; set; }
 
