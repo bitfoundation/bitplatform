@@ -1,5 +1,24 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a splitter inherits down to whatever reads it. A parameter that says the same thing
+// (GutterSize, GutterHitSize) still wins over the variable:
+//   --bit-Splitter-gutter-size                      thickness of the gutter                    (default: spacing(1.25))
+//   --bit-Splitter-gutter-hit-size                  smallest strip a press takes the gutter in (default: spacing(3), spacing(5.5) for a coarse pointer)
+//   --bit-Splitter-gutter-background                the gutter at rest                         (default: $clr-brd-sec)
+//   --bit-Splitter-gutter-hover-background          the gutter under the pointer               (default: $clr-brd-pri)
+//   --bit-Splitter-gutter-active-background         the gutter while it is being dragged       (default: the hover background)
+//   --bit-Splitter-gutter-indicator-color           the default grip drawn on the gutter       (default: $clr-brd-pri)
+//   --bit-Splitter-gutter-icon-color                the icon drawn on the gutter               (default: $clr-fg-sec)
+//   --bit-Splitter-gutter-icon-size                 size of the icon drawn on the gutter       (default: $tg-fs-xs)
+//   --bit-Splitter-preview-background               the line a lazy drag moves                 (default: $clr-pri)
+//   --bit-Splitter-collapse-button-color            the chevron of the collapse button         (default: $clr-fg-sec)
+//   --bit-Splitter-collapse-button-background       the collapse button at rest                (default: $clr-bg-pri)
+//   --bit-Splitter-collapse-button-border-color     the outline of the collapse button         (default: $clr-brd-pri)
+//   --bit-Splitter-collapse-button-hover-color      the chevron under the pointer              (default: $clr-pri-text)
+//   --bit-Splitter-collapse-button-hover-background the collapse button under the pointer      (default: $clr-pri)
+//   --bit-Splitter-collapse-button-radius           corner radius of the collapse button       (default: $shp-radius-full)
+
 .bit-spl {
     height: 100%;
     display: flex;
@@ -7,11 +26,26 @@
     // happens to be positioned above it.
     position: relative;
     box-sizing: border-box;
-    --gutter-size: #{spacing(1.25)};
+    --bit-spl-gtr-size: var(--bit-Splitter-gutter-size, #{spacing(1.25)});
     // The smallest strip a pointer has to land in to take hold of the gutter. It is a floor rather than a
     // size: it is the drawn gutter that takes room in the layout, and this only widens what answers a press
     // when the drawn one is thinner than a pointer can be expected to hit.
-    --gutter-hit-size: #{spacing(3)};
+    --bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(3)});
+    --bit-spl-gtr-bg: var(--bit-Splitter-gutter-background, #{$clr-brd-sec});
+    --bit-spl-gtr-hvr-bg: var(--bit-Splitter-gutter-hover-background, #{$clr-brd-pri});
+    // The sizes of the panels are custom properties like any other, so they inherit: a splitter nested in the
+    // panel of another would otherwise pick up the split, the minimums and the maximums of the one around it
+    // wherever it declares none of its own. Every splitter starts from nothing; the component's own style
+    // attribute, and the one a drag writes, still win over these.
+    --bit-spl-fpn-size: initial;
+    --bit-spl-fpn-grow: initial;
+    --bit-spl-fpn-max: initial;
+    --bit-spl-fpn-min: initial;
+    --bit-spl-spn-size: initial;
+    --bit-spl-spn-grow: initial;
+    --bit-spl-spn-max: initial;
+    --bit-spl-spn-min: initial;
+    --bit-spl-col-size: initial;
 }
 
 /*
@@ -35,17 +69,17 @@
 }
 
 .bit-spl-fpn {
-    flex-grow: var(--first-panel-grow, 1);
-    flex-basis: var(--first-panel, 0);
-    max-width: var(--first-panel-max, none);
-    min-width: var(--first-panel-min, 0);
+    flex-grow: var(--bit-spl-fpn-grow, 1);
+    flex-basis: var(--bit-spl-fpn-size, 0);
+    max-width: var(--bit-spl-fpn-max, none);
+    min-width: var(--bit-spl-fpn-min, 0);
 }
 
 .bit-spl-spn {
-    flex-grow: var(--second-panel-grow, 1);
-    flex-basis: var(--second-panel, 0);
-    max-width: var(--second-panel-max, none);
-    min-width: var(--second-panel-min, 0);
+    flex-grow: var(--bit-spl-spn-grow, 1);
+    flex-basis: var(--bit-spl-spn-size, 0);
+    max-width: var(--bit-spl-spn-max, none);
+    min-width: var(--bit-spl-spn-min, 0);
 }
 
 .bit-spl-gtr {
@@ -57,8 +91,8 @@
     touch-action: none;
     align-items: center;
     justify-content: center;
-    width: var(--gutter-size);
-    background-color: $clr-brd-sec;
+    width: var(--bit-spl-gtr-size);
+    background-color: var(--bit-spl-gtr-bg);
     transition: background-color $mot-duration-short $mot-easing;
     // Over both panels rather than only the one it is painted after, so that the strip answering a press
     // reaches equally far into each of them - and so that the focus ring is not cut in half by whichever
@@ -66,7 +100,7 @@
     z-index: 1;
 
     &:hover {
-        background-color: $clr-brd-pri;
+        background-color: var(--bit-spl-gtr-hvr-bg);
     }
 
     &:focus-visible {
@@ -84,7 +118,7 @@
     content: '';
     position: absolute;
     inset-block: 0;
-    inset-inline: min(0px, calc((var(--gutter-size) - var(--gutter-hit-size)) / 2));
+    inset-inline: min(0px, calc((var(--bit-spl-gtr-size) - var(--bit-spl-hit-size)) / 2));
     // The strip answers the press, so the browser must not take the same touch for a scroll of the page
     // behind it - the gutter says as much for itself, and touch-action is not inherited.
     touch-action: none;
@@ -94,7 +128,7 @@
     width: spacing(0.25);
     height: spacing(2);
     border-radius: $shp-radius-full;
-    background-color: $clr-brd-pri;
+    background-color: var(--bit-Splitter-gutter-indicator-color, #{$clr-brd-pri});
 }
 
 /*
@@ -117,19 +151,30 @@
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    color: $clr-fg-sec;
     width: spacing(1.75);
     height: spacing(4.5);
-    border-radius: $shp-radius-full;
-    border: $siz-divider solid $clr-brd-pri;
-    background-color: $clr-bg-pri;
+    color: var(--bit-Splitter-collapse-button-color, #{$clr-fg-sec});
+    border-radius: var(--bit-Splitter-collapse-button-radius, #{$shp-radius-full});
+    border: $siz-divider solid var(--bit-Splitter-collapse-button-border-color, #{$clr-brd-pri});
+    background-color: var(--bit-Splitter-collapse-button-background, #{$clr-bg-pri});
     transform: translate(-50%, -50%);
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+    --bit-spl-cbt-hvr-bg: var(--bit-Splitter-collapse-button-hover-background, #{$clr-pri});
 
     &:hover {
-        color: $clr-pri-text;
-        border-color: $clr-pri;
-        background-color: $clr-pri;
+        color: var(--bit-Splitter-collapse-button-hover-color, #{$clr-pri-text});
+        border-color: var(--bit-spl-cbt-hvr-bg);
+        background-color: var(--bit-spl-cbt-hvr-bg);
+    }
+
+    // Drawn narrower than a pointer can be expected to hit, so the part that answers a press reaches past it
+    // across the gutter - evenly on both sides, and to the target size WCAG asks for.
+    &::before {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        left: calc((spacing(1.75) - spacing(3)) / 2);
+        right: calc((spacing(1.75) - spacing(3)) / 2);
     }
 }
 
@@ -144,6 +189,12 @@
 .bit-spl-vrt .bit-spl-cbt {
     width: spacing(4.5);
     height: spacing(1.75);
+
+    &::before {
+        inset-inline: 0;
+        top: calc((spacing(1.75) - spacing(3)) / 2);
+        bottom: calc((spacing(1.75) - spacing(3)) / 2);
+    }
 }
 
 /*
@@ -156,8 +207,8 @@
     position: absolute;
     z-index: 2;
     inset-block: 0;
-    width: var(--gutter-size);
-    background-color: $clr-pri;
+    width: var(--bit-spl-gtr-size);
+    background-color: var(--bit-Splitter-preview-background, #{$clr-pri});
     // The pointer is captured by the gutter for the whole drag, and the line must not be in its way when
     // the drag is over either.
     pointer-events: none;
@@ -171,12 +222,12 @@
     inset-block: auto;
     inset-inline: 0;
     width: auto;
-    height: var(--gutter-size);
+    height: var(--bit-spl-gtr-size);
 }
 
 .bit-spl-gic {
-    font-size: $tg-fs-xs;
-    color: $clr-fg-sec;
+    font-size: var(--bit-Splitter-gutter-icon-size, #{$tg-fs-xs});
+    color: var(--bit-Splitter-gutter-icon-color, #{$clr-fg-sec});
 }
 
 // While a drag is running the pointer spends most of its time off the gutter, so the resize cursor and the
@@ -188,7 +239,7 @@
     overscroll-behavior: none;
 
     .bit-spl-gtr {
-        background-color: $clr-brd-pri;
+        background-color: var(--bit-Splitter-gutter-active-background, var(--bit-spl-gtr-hvr-bg));
     }
 }
 
@@ -201,12 +252,12 @@
 
     .bit-spl-gtr {
         width: 100%;
-        height: var(--gutter-size);
+        height: var(--bit-spl-gtr-size);
         cursor: row-resize;
 
         &::before {
             inset-inline: 0;
-            inset-block: min(0px, calc((var(--gutter-size) - var(--gutter-hit-size)) / 2));
+            inset-block: min(0px, calc((var(--bit-spl-gtr-size) - var(--bit-spl-hit-size)) / 2));
         }
     }
 
@@ -224,13 +275,13 @@
     }
 
     .bit-spl-fpn {
-        max-height: var(--first-panel-max, none);
-        min-height: var(--first-panel-min, 0);
+        max-height: var(--bit-spl-fpn-max, none);
+        min-height: var(--bit-spl-fpn-min, 0);
     }
 
     .bit-spl-spn {
-        max-height: var(--second-panel-max, none);
-        min-height: var(--second-panel-min, 0);
+        max-height: var(--bit-spl-spn-max, none);
+        min-height: var(--bit-spl-spn-min, 0);
     }
 }
 
@@ -246,7 +297,7 @@
     overflow: hidden;
     max-width: none;
     min-width: 0;
-    flex-basis: var(--collapsed-size, 0px);
+    flex-basis: var(--bit-spl-col-size, 0px);
 }
 
 /*
@@ -288,7 +339,7 @@
         cursor: default;
 
         &:hover {
-            background-color: $clr-brd-sec;
+            background-color: var(--bit-spl-gtr-bg);
         }
     }
 }
@@ -325,7 +376,7 @@ body.bit-spl-drg-bdy {
 // strip that answers a press is widened again, still without moving anything in the layout.
 @media (pointer: coarse) {
     .bit-spl {
-        --gutter-hit-size: #{spacing(5.5)};
+        --bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(5.5)});
     }
 }
 

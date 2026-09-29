@@ -20,6 +20,13 @@
     var collapseIcon = collapseButton ? BitIconInfo.From(Collapsed ? ExpandIcon : CollapseIcon,
                                                          (Collapsed ? ExpandIconName : CollapseIconName) ?? _DefaultCollapseIconName)
                                       : null;
+
+    @* A panel folded down to nothing is nothing the reader can see, so what it holds is taken out of the tab order
+       and out of the accessibility tree with it: the keyboard would otherwise walk into controls that are not on
+       the screen. One folded to a size of its own is still showing something - an icon rail, a strip of tools -
+       and stays usable. *@
+    var firstInert = _IsFoldedAway && CollapseSecondPanel is false;
+    var secondInert = _IsFoldedAway && CollapseSecondPanel;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -29,6 +36,7 @@
      dir="@Dir?.ToString().ToLower()">
     <div id="@_FirstPanelId"
          @ref="_firstPanelRef"
+         inert="@firstInert"
          style="@Styles?.FirstPanel"
          class="bit-spl-pnl bit-spl-fpn @Classes?.FirstPanel">
         @FirstPanel
@@ -84,6 +92,7 @@
 
     <div id="@_SecondPanelId"
          @ref="_secondPanelRef"
+         inert="@secondInert"
          style="@Styles?.SecondPanel"
          class="bit-spl-pnl bit-spl-spn @Classes?.SecondPanel">
         @SecondPanel

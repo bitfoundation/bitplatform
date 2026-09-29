@@ -29,6 +29,7 @@ namespace BitBlazorUI {
         controller: AbortController;
         dotnetObj: DotNetObject;
         observer: ResizeObserver | null;
+        inertObserver: MutationObserver | null;
         cancelDrag: () => void;
     }
 
@@ -54,7 +55,7 @@ namespace BitBlazorUI {
 
         // The custom properties a drag writes onto the root. They are listed once so that taking a snapshot
         // of them, restoring it and clearing it cannot fall out of step with each other.
-        private static readonly SIZE_PROPERTIES = ['--first-panel', '--first-panel-grow', '--second-panel', '--second-panel-grow'];
+        private static readonly SIZE_PROPERTIES = ['--bit-spl-fpn-size', '--bit-spl-fpn-grow', '--bit-spl-spn-size', '--bit-spl-spn-grow'];
 
         // The control on the gutter that folds the panel away. A press on it is not a drag of the gutter it
         // sits on, and the two presses that make it up are not a double-click on the gutter either.
@@ -105,6 +106,7 @@ namespace BitBlazorUI {
                 dotnetObj,
                 controller: new AbortController(),
                 observer: null,
+                inertObserver: null,
                 cancelDrag: () => { },
                 options
             };
@@ -542,6 +544,32 @@ namespace BitBlazorUI {
                 entry.observer.observe(entry.root);
             }
 
+            // A panel folded down to nothing is made inert, and the browser drops the focus of whatever inside it
+            // had it - onto the body, the start of the page for the keyboard. That happens when the page is next
+            // drawn, while this runs as soon as the attribute lands, so the focus is still there to be handed to
+            // the gutter: the control that brings the panel back, and the place a reader who folded it from a
+            // button inside it would look for it next.
+            if (typeof MutationObserver !== 'undefined') {
+                entry.inertObserver = new MutationObserver(records => {
+                    if (signal.aborted || entry.options.disabled) return;
+
+                    const active = document.activeElement;
+                    if (!active) return;
+
+                    for (const record of records) {
+                        const panel = record.target as HTMLElement;
+
+                        if (panel.hasAttribute('inert') && panel.contains(active)) {
+                            entry.gutter.focus({ preventScroll: true });
+                            return;
+                        }
+                    }
+                });
+
+                entry.inertObserver.observe(first, { attributes: true, attributeFilter: ['inert'] });
+                entry.inertObserver.observe(second, { attributes: true, attributeFilter: ['inert'] });
+            }
+
             // Where the splitter was left the last time is only worth restoring once everything else is
             // wired up, and it is .NET that applies it: the position belongs to the component, which may
             // have a page holding it one way and refuse the restore outright.
@@ -620,6 +648,7 @@ namespace BitBlazorUI {
             }
 
             entry.observer?.disconnect();
+            entry.inertObserver?.disconnect();
             entry.controller.abort();
             entry.dotnetObj?.dispose();
 
@@ -736,10 +765,10 @@ namespace BitBlazorUI {
             // The split is written as a share rather than as a length, so it survives the container being
             // resized, and the second panel is released at the same time: two pinned panels and a gutter
             // between them cannot add up to the splitter at every width, one pinned panel and a filler can.
-            entry.root.style.setProperty('--first-panel', value + '%');
-            entry.root.style.setProperty('--first-panel-grow', '0');
-            entry.root.style.setProperty('--second-panel', '0px');
-            entry.root.style.setProperty('--second-panel-grow', '1');
+            entry.root.style.setProperty('--bit-spl-fpn-size', value + '%');
+            entry.root.style.setProperty('--bit-spl-fpn-grow', '0');
+            entry.root.style.setProperty('--bit-spl-spn-size', '0px');
+            entry.root.style.setProperty('--bit-spl-spn-grow', '1');
 
             Splitter.setPositionAttributes(entry, value);
 
