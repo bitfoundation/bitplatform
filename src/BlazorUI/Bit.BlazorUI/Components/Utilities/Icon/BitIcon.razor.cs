@@ -109,11 +109,13 @@ public partial class BitIcon : BitComponentBase
     /// Default value is <see cref="BitColor.Primary"/>.
     /// </summary>
     /// <remarks>
-    /// Left unset, the icon is painted in the <c>--bit-Icon-color</c> custom property, and in the primary
-    /// color when that is not set either - so a color given here wins over the variable, and one set on
-    /// <c>:root</c> re-colors every icon that was not given a color of its own. Set to <c>currentColor</c>, the
-    /// variable makes a <see cref="BitVariant.Text"/> icon follow the color of the text it sits in, the way
-    /// a glyph of a font does.
+    /// The role supplies the defaults of the <c>--bit-Icon-*</c> color variables, which win over it as the
+    /// public variables of every other component win over its Color: one set on <c>:root</c> re-colors every
+    /// icon, and one set on the <see cref="BitComponentBase.Style"/> of an icon re-colors that icon alone. Set
+    /// to <c>currentColor</c>, <c>--bit-Icon-color</c> makes a <see cref="BitVariant.Text"/> icon follow the
+    /// color of the text it sits in, the way a glyph of a font does - a Text icon only, since a
+    /// <see cref="BitVariant.Fill"/> one would paint its box in its own glyph color and show as a blank square,
+    /// so scope that value to the Text icons rather than to an ancestor holding icons of every variant.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -251,8 +253,9 @@ public partial class BitIcon : BitComponentBase
     /// Default value is <see cref="BitSize.Medium"/>.
     /// </summary>
     /// <remarks>
-    /// Left unset, the icon is drawn at the <c>--bit-Icon-size</c> custom property, and at the medium icon
-    /// size when that is not set either. <see cref="FontSize"/> wins over both.
+    /// The size supplies the default of the <c>--bit-Icon-size</c> custom property, which wins over it as the
+    /// public variables of every other component win over its Size. <see cref="FontSize"/>, an inline size
+    /// of the instance's own, wins over both.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -265,6 +268,13 @@ public partial class BitIcon : BitComponentBase
     /// rather than skipped. Prefer <see cref="BitComponentBase.AriaLabel"/> when the name is meant to
     /// be read but not shown, and a <see cref="BitTooltip"/> when the text is meant to be seen - a
     /// native tooltip never appears for a keyboard or a touch user.
+    /// <br />
+    /// An icon given a <see cref="BitComponentBase.TabIndex"/> of zero or more is a tab stop, so it is never
+    /// hidden, and it needs a name to be announced by. Given none, it falls back to the name of its glyph
+    /// where there is one - an <see cref="IconName"/>, a ligature, a set that writes the name apart from its
+    /// classes - but a glyph named by a class list alone (<see cref="BitIconInfo.Css"/>,
+    /// <see cref="BitIconInfo.Fa"/>) or drawn from <see cref="ChildContent"/> has none, and is a stop with
+    /// nothing to read out until it is given a Title or an <see cref="BitComponentBase.AriaLabel"/>.
     /// </remarks>
     [Parameter] public string? Title { get; set; }
 
@@ -341,7 +351,7 @@ public partial class BitIcon : BitComponentBase
             BitColor.PrimaryBorder => "bit-ico-pbr",
             BitColor.SecondaryBorder => "bit-ico-sbr",
             BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => string.Empty
+            _ => "bit-ico-pri"
         });
 
         ClassBuilder.Register(() => _icon?.GetCssClasses());
@@ -351,7 +361,7 @@ public partial class BitIcon : BitComponentBase
             BitSize.Small => "bit-ico-sm",
             BitSize.Medium => "bit-ico-md",
             BitSize.Large => "bit-ico-lg",
-            _ => string.Empty
+            _ => "bit-ico-md"
         });
 
         ClassBuilder.Register(() => Variant switch

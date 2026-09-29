@@ -79,7 +79,7 @@ public partial class BitIconDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "Specifies the color theme of the icon. Unset, the icon is painted in --bit-Icon-color, then in BitColor.Primary.",
+            Description = "Specifies the color theme of the icon, BitColor.Primary when unset. It supplies the defaults of the --bit-Icon-* color variables, which win over it.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -173,7 +173,7 @@ public partial class BitIconDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Specifies the size of the icon. Unset, the icon is drawn at --bit-Icon-size, then at BitSize.Medium.",
+            Description = "Specifies the size of the icon, BitSize.Medium when unset. It supplies the default of --bit-Icon-size, which wins over it; FontSize wins over both.",
             LinkType = LinkType.Link,
             Href = "#icon-size-enum",
         },
@@ -546,38 +546,38 @@ public partial class BitIconDemo
         new()
         {
             Name = "--bit-Icon-color",
-            DefaultValue = "--bit-clr-pri",
-            Description = "The icon's color: the glyph of a Text or an Outline icon, the box of a Fill one. currentColor makes a Text icon follow the text around it. A Color on the icon wins over it.",
+            DefaultValue = "the main color of the icon's Color role",
+            Description = "The icon's color: the glyph of a Text or an Outline icon, the box of a Fill one. It wins over the Color of the icon. currentColor makes a Text icon follow the text around it - set it around Text icons only, since a Fill icon would paint its box in its own glyph color.",
         },
         new()
         {
             Name = "--bit-Icon-contrast-color",
-            DefaultValue = "--bit-clr-pri-text",
-            Description = "The glyph drawn over the box of a Fill icon, and of a clickable Outline icon under the pointer. A Color on the icon wins over it.",
+            DefaultValue = "the text color of the icon's Color role",
+            Description = "The glyph drawn over the box of a Fill icon, and of a clickable Outline icon under the pointer. It wins over the Color of the icon.",
         },
         new()
         {
             Name = "--bit-Icon-hover-color",
-            DefaultValue = "--bit-Icon-color, then --bit-clr-pri-hover",
-            Description = "The color of a clickable icon under the pointer. A Color on the icon wins over it.",
+            DefaultValue = "a shade of --bit-Icon-color when it is set, otherwise the hover color of the icon's Color role",
+            Description = "The color of a clickable icon under the pointer. It wins over the Color of the icon.",
         },
         new()
         {
             Name = "--bit-Icon-active-color",
-            DefaultValue = "--bit-Icon-hover-color, then --bit-clr-pri-active",
-            Description = "The color of a clickable icon while pressed. A Color on the icon wins over it.",
+            DefaultValue = "a shade of the hover color when either variable above is set, otherwise the active color of the icon's Color role",
+            Description = "The color of a clickable icon while pressed. It wins over the Color of the icon.",
         },
         new()
         {
             Name = "--bit-Icon-focus-color",
             DefaultValue = "the focus color of the icon's role",
-            Description = "Color of the keyboard focus ring of a clickable or otherwise focusable icon. It wins over the Color of the icon, so every ring can share one color.",
+            Description = "Color of the keyboard focus ring of a clickable or otherwise focusable icon. It wins over the Color of the icon.",
         },
         new()
         {
             Name = "--bit-Icon-size",
-            DefaultValue = "--bit-siz-icon-md",
-            Description = "Font size, which is the size of the glyph. Size and FontSize win over it.",
+            DefaultValue = "per Size, --bit-siz-icon-sm/md/lg",
+            Description = "Font size, which is the size of the glyph. It wins over the Size of the icon; FontSize wins over it.",
         },
         new()
         {

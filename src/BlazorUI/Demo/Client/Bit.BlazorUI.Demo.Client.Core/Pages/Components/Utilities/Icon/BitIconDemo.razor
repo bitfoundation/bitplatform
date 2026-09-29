@@ -230,7 +230,8 @@
             An unnamed icon is decorative: <code>aria-hidden</code>, skipped by screen readers - right beside a label that says the same.
             <b>AriaLabel</b>, <b>Title</b> (also a native tooltip) or your own <code>aria-labelledby</code> names it with the <code>img</code> role.
             A native tooltip never shows for keyboard or touch users: for text meant to be read, give the icon a <b>TabIndex</b> and wrap it in a
-            <BitLink Href="/components/tooltip">BitTooltip</BitLink>. A focusable icon is never hidden and gets the themed focus ring.
+            <BitLink Href="/components/tooltip">BitTooltip</BitLink>. A focusable icon is never hidden and gets the themed focus ring - so
+            name it too: only a glyph with a name of its own (an <b>IconName</b>, a ligature) falls back to that name.
             Ligature icons are marked <code>translate="no"</code>; forced-colors mode keeps variants and the disabled state visible.
         </div>
         <br /><br />
@@ -247,24 +248,25 @@
     <DemoExample Title="CSS variables" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             The public <b>--bit-Icon-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink> table) restyle every
-            icon at once. They inherit, so set them on <code>:root</code>, on any ancestor, or on one icon's <b>Style</b> - which is also how an
-            icon takes a color outside the theme. <code>currentColor</code> makes a Text icon follow the text around it, the way a glyph of
-            a font does. A parameter set on the icon (<b>Color</b>, <b>Size</b>, <b>FontSize</b>, <b>Circular</b>) still wins, and a disabled
-            icon keeps the disabled colors.
+            icon at once, which is also how an icon takes a color outside the theme. They inherit, so set them on <code>:root</code> or on any
+            element around the icons. Given only <b>--bit-Icon-color</b>, a clickable icon still deepens under the pointer and while pressed;
+            <b>--bit-Icon-hover-color</b> and <b>--bit-Icon-active-color</b> pick those shades yourself. A disabled icon keeps the disabled colors.
+            <br />
+            <code>currentColor</code> makes a Text icon follow the text around it, the way a glyph of a font does. Set it around Text icons only:
+            a Fill icon draws its glyph over a box of that color, and <code>currentColor</code> there is the glyph's own color.
         </div>
         <br /><br />
-        <div class="example-content" style="--bit-Icon-color: #0d9488; --bit-Icon-contrast-color: #f0fdfa; --bit-Icon-hover-color: #0f766e; --bit-Icon-active-color: #115e59; --bit-Icon-size: 1.5rem; --bit-Icon-padding: 0.5rem; --bit-Icon-radius: 0.75rem; --bit-Icon-border-width: 2px;">
+        <div class="example-content" style="--bit-Icon-color: #0d9488; --bit-Icon-contrast-color: #f0fdfa; --bit-Icon-size: 1.5rem; --bit-Icon-padding: 0.5rem; --bit-Icon-radius: 0.75rem; --bit-Icon-border-width: 2px;">
             <BitIcon IconName="@BitIconName.Home" />
             <BitIcon IconName="@BitIconName.Home" Variant="BitVariant.Outline" />
             <BitIcon IconName="@BitIconName.Home" Variant="BitVariant.Fill" />
             <BitIcon IconName="@BitIconName.Refresh" Variant="BitVariant.Fill" AriaLabel="Refresh" OnClick="() => clickCount++" />
         </div>
         <br />
-        <div class="example-content">
-            <BitIcon IconName="@BitIconName.Heart" Style="--bit-Icon-color: hotpink;" />
-            <BitIcon IconName="@BitIconName.Settings" AriaLabel="Settings" OnClick="() => clickCount++"
-                     Style="--bit-Icon-focus-color: #f59e0b; --bit-Icon-size: 2rem;" />
-            <BitIcon IconName="@BitIconName.Home" FixedWidth Variant="BitVariant.Outline" Style="--bit-Icon-fixed-width: 3em;" />
+        <div class="example-content" style="--bit-Icon-color: #db2777; --bit-Icon-hover-color: #be185d; --bit-Icon-active-color: #9d174d; --bit-Icon-focus-color: #f59e0b; --bit-Icon-size: 2rem; --bit-Icon-fixed-width: 3em;">
+            <BitIcon IconName="@BitIconName.Heart" />
+            <BitIcon IconName="@BitIconName.Settings" AriaLabel="Settings" OnClick="() => clickCount++" />
+            <BitIcon IconName="@BitIconName.Home" FixedWidth Variant="BitVariant.Outline" />
         </div>
         <br />
         <div style="color: seagreen; --bit-Icon-color: currentColor;">
@@ -274,8 +276,8 @@
 
     <DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            <b>BitParams</b> hands a <b>BitIconParams</b> to every icon under it, so a toolbar or a status list sets its shared look once -
-            including an <b>IconResolver</b> for a whole app. It is a default, not an override: the last icon keeps its own <b>Variant</b>.
+            <b>BitParams</b> hands a <b>BitIconParams</b> to every icon under it, so a toolbar or a status list sets its shared look once. It
+            is a default, not an override: the last icon keeps its own <b>Variant</b>.
         </div>
         <br /><br />
         <BitParams Parameters="@iconParams">
@@ -291,7 +293,8 @@
     <DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             <b>Color</b> paints the icon in a theme role, so every preset and both schemes re-skin it. The semantic roles carry meaning; the
-            background, foreground and border roles are the neutral tiers of the surface.
+            background, foreground and border roles are the neutral tiers of the surface. Like every component's colors, it is the default of
+            the <b>--bit-Icon-*</b> color variables, so one of those set around the icon wins over it.
         </div>
         <br /><br />
         <div class="color-grid">
@@ -360,8 +363,8 @@
 
     <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
         <div>
-            <b>Size</b> picks one of the theme's three icon sizes. <b>FontSize</b> takes any CSS length, or <code>inherit</code> to match the
-            surrounding text, and wins over <b>Size</b>.
+            <b>Size</b> picks one of the theme's three icon sizes, as the default of <b>--bit-Icon-size</b>, which wins over it. <b>FontSize</b>
+            takes any CSS length, or <code>inherit</code> to match the surrounding text, and wins over both.
         </div>
         <br /><br />
         <div class="example-content">
@@ -385,7 +388,10 @@
     </DemoExample>
 
     <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
-        <div><b>Style</b> and <b>Class</b> land on the icon element itself - the whole component.</div>
+        <div>
+            <b>Style</b> and <b>Class</b> land on the icon element itself - the whole component. <b>Style</b> is also where the
+            <b>--bit-Icon-*</b> variables are set for one icon alone.
+        </div>
         <br /><br />
         <div class="example-content">
             <BitIcon Size="BitSize.Large"
@@ -394,6 +400,10 @@
 
             <BitIcon Class="icon-class"
                      IconName="@BitIconName.Accept" />
+
+            <BitIcon IconName="@BitIconName.Heart"
+                     Variant="BitVariant.Fill"
+                     Style="--bit-Icon-color: hotpink; --bit-Icon-radius: 50% 0;" />
         </div>
     </DemoExample>
 

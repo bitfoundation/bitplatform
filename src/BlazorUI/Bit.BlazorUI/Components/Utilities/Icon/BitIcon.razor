@@ -53,10 +53,13 @@
        announces as "button", with nothing to say what it does. The name is the author's to write - an
        AriaLabel or a Title saying the action - and the icon's own name is what it falls back to when
        they did not, since "delete, button" is worth more than "button" on its own. The same holds for
-       any tab stop, handler or not: the focus lands on it, so it has to have something to say. Only a
+       any tab stop, handler or not: the focus lands on it, so it ought to have something to say. Only a
        name is fallen back to and never the class list a set like FontAwesome carries instead of one,
        so an icon with nothing worth reading out - one drawn from the child content alone among them -
-       is left unnamed, and naming it stays the author's. *@
+       is left unnamed, and naming it stays the author's. Such an icon given a tab stop is still one:
+       hiding it would be the worse of the two (a focus landing on a node the reader was told is not
+       there), and dropping the tab index would take away the tooltip anchor it was given for - so the
+       Title docs are where the author is told to name it. *@
     var fallbackName = tabStop && named is false ? FallbackName : null;
     var ariaLabel = label ?? fallbackName;
 

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Icon;
 [TestClass]
 public class BitIconTests : BunitTestContext
 {
-    private const string CLASS = "bit-ico bit-ico-txt";
+    private const string CLASS = "bit-ico bit-ico-pri bit-ico-md bit-ico-txt";
 
     // An icon with nothing to name it is decorative, so it is hidden from assistive technology and
     // carries no role. Every markup expectation that does not set a name therefore carries this.
@@ -433,12 +433,10 @@ public class BitIconTests : BunitTestContext
             BitSize.Small => "bit-ico-sm",
             BitSize.Medium => "bit-ico-md",
             BitSize.Large => "bit-ico-lg",
-            _ => null
+            _ => "bit-ico-md"
         };
 
-        // An icon given no Size is drawn at --bit-Icon-size, and at the medium icon size without it, so it
-        // carries no size class for that variable to lose to.
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt{(sizeClass is null ? "" : $" {sizeClass}")}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt {sizeClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -453,7 +451,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Size, BitSize.Large);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt bit-ico-lg"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt bit-ico-lg"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -539,12 +537,10 @@ public class BitIconTests : BunitTestContext
             BitColor.PrimaryBorder => "bit-ico-pbr",
             BitColor.SecondaryBorder => "bit-ico-sbr",
             BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => null
+            _ => "bit-ico-pri"
         };
 
-        // An icon given no Color is painted in --bit-Icon-color, and in the primary role without it, so it
-        // carries no role class for that variable to lose to.
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt{(colorClass is null ? "" : $" {colorClass}")}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt {colorClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -559,7 +555,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Color, BitColor.Error);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt bit-ico-err"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt bit-ico-err"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -583,7 +579,7 @@ public class BitIconTests : BunitTestContext
             _ => "bit-ico-txt"
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico {variantClass}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-md {variantClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -598,7 +594,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Variant, BitVariant.Fill);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-fil"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-md bit-ico-fil"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -942,8 +938,43 @@ public class BitIconTests : BunitTestContext
         });
 
         // A tab stop is never hidden: aria-hidden on an element the focus lands on is a stop the screen reader
-        // has been told does not exist.
+        // has been told does not exist. With no glyph to fall back to it has no name either, which the Title
+        // docs tell the author to give it.
         component.MarkupMatches(@$"<i tabindex=""3"" class=""{CLASS}"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldNotFallBackToAClassList()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("fa-solid fa-circle-info"));
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        // "fa-solid fa-circle-info" is a class list and not a name, so it is never read out.
+        var icon = component.Find("i");
+
+        Assert.IsFalse(icon.HasAttribute("aria-label"));
+        Assert.IsFalse(icon.HasAttribute("role"));
+        Assert.IsFalse(icon.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldBeNamedByItsTitleWhateverItDraws()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("fa-solid fa-circle-info"));
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.Title, "More about this field");
+        });
+
+        var icon = component.Find("i");
+
+        Assert.AreEqual("img", icon.GetAttribute("role"));
+        Assert.AreEqual("More about this field", icon.GetAttribute("title"));
+        Assert.IsFalse(icon.HasAttribute("aria-hidden"));
     }
 
     [TestMethod]

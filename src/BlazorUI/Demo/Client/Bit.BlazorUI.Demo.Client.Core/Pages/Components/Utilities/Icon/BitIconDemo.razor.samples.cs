@@ -159,9 +159,8 @@ private int clickCount;";
 <span><BitIcon IconName=""@BitIconName.Attach"" /> Decorative, beside its own label</span>";
 
     private readonly string example9RazorCode = @"
-<div style=""--bit-Icon-color: #0d9488; --bit-Icon-contrast-color: #f0fdfa; --bit-Icon-hover-color: #0f766e;
-            --bit-Icon-active-color: #115e59; --bit-Icon-size: 1.5rem; --bit-Icon-padding: 0.5rem;
-            --bit-Icon-radius: 0.75rem; --bit-Icon-border-width: 2px;"">
+<div style=""--bit-Icon-color: #0d9488; --bit-Icon-contrast-color: #f0fdfa; --bit-Icon-size: 1.5rem;
+            --bit-Icon-padding: 0.5rem; --bit-Icon-radius: 0.75rem; --bit-Icon-border-width: 2px;"">
     <BitIcon IconName=""@BitIconName.Home"" />
     <BitIcon IconName=""@BitIconName.Home"" Variant=""BitVariant.Outline"" />
     <BitIcon IconName=""@BitIconName.Home"" Variant=""BitVariant.Fill"" />
@@ -169,12 +168,12 @@ private int clickCount;";
 </div>
 
 
-<BitIcon IconName=""@BitIconName.Heart"" Style=""--bit-Icon-color: hotpink;"" />
-
-<BitIcon IconName=""@BitIconName.Settings"" AriaLabel=""Settings"" OnClick=""() => clickCount++""
-         Style=""--bit-Icon-focus-color: #f59e0b; --bit-Icon-size: 2rem;"" />
-
-<BitIcon IconName=""@BitIconName.Home"" FixedWidth Variant=""BitVariant.Outline"" Style=""--bit-Icon-fixed-width: 3em;"" />
+<div style=""--bit-Icon-color: #db2777; --bit-Icon-hover-color: #be185d; --bit-Icon-active-color: #9d174d;
+            --bit-Icon-focus-color: #f59e0b; --bit-Icon-size: 2rem; --bit-Icon-fixed-width: 3em;"">
+    <BitIcon IconName=""@BitIconName.Heart"" />
+    <BitIcon IconName=""@BitIconName.Settings"" AriaLabel=""Settings"" OnClick=""() => clickCount++"" />
+    <BitIcon IconName=""@BitIconName.Home"" FixedWidth Variant=""BitVariant.Outline"" />
+</div>
 
 
 <div style=""color: seagreen; --bit-Icon-color: currentColor;"">
@@ -290,7 +289,11 @@ private readonly Func<string, BitIconInfo?> faResolver =
          Style=""color: white; background-color: brown; border-radius: 4px"" />
 
 <BitIcon Class=""icon-class""
-         IconName=""@BitIconName.Accept"" />";
+         IconName=""@BitIconName.Accept"" />
+
+<BitIcon IconName=""@BitIconName.Heart""
+         Variant=""BitVariant.Fill""
+         Style=""--bit-Icon-color: hotpink; --bit-Icon-radius: 50% 0;"" />";
 
     private readonly string example15RazorCode = @"
 <div dir=""rtl"">
