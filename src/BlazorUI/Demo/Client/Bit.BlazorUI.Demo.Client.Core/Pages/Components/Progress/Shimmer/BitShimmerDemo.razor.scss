@@ -16,3 +16,10 @@
         background: linear-gradient(90deg, transparent, darkred, transparent);
     }
 }
+
+.color-grid {
+    gap: 0.5rem 1rem;
+    display: grid;
+    align-items: center;
+    grid-template-columns: auto 1fr 1fr;
+}
