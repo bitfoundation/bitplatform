@@ -1,5 +1,24 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a splitter inherits down to whatever reads it. A parameter that says the same thing
+// (GutterSize, GutterHitSize) still wins over the variable:
+//   --bit-Splitter-gutter-size                      thickness of the gutter                    (default: spacing(1.25))
+//   --bit-Splitter-gutter-hit-size                  smallest strip a press takes the gutter in (default: spacing(3), spacing(5.5) for a coarse pointer)
+//   --bit-Splitter-gutter-background                the gutter at rest                         (default: $clr-brd-sec)
+//   --bit-Splitter-gutter-hover-background          the gutter under the pointer               (default: $clr-brd-pri)
+//   --bit-Splitter-gutter-active-background         the gutter while it is being dragged       (default: the hover background)
+//   --bit-Splitter-gutter-indicator-color           the default grip drawn on the gutter       (default: $clr-fg-sec)
+//   --bit-Splitter-gutter-icon-color                the icon drawn on the gutter               (default: $clr-fg-sec)
+//   --bit-Splitter-gutter-icon-size                 size of the icon drawn on the gutter       (default: $tg-fs-xs)
+//   --bit-Splitter-preview-background               the line a lazy drag moves                 (default: $clr-pri)
+//   --bit-Splitter-collapse-button-color            the chevron of the collapse button         (default: $clr-fg-sec)
+//   --bit-Splitter-collapse-button-background       the collapse button at rest                (default: $clr-bg-pri)
+//   --bit-Splitter-collapse-button-border-color     the outline of the collapse button         (default: $clr-brd-pri)
+//   --bit-Splitter-collapse-button-hover-color      the chevron under the pointer              (default: $clr-pri-text)
+//   --bit-Splitter-collapse-button-hover-background the collapse button under the pointer      (default: $clr-pri)
+//   --bit-Splitter-collapse-button-radius           corner radius of the collapse button       (default: $shp-radius-full)
+
 .bit-spl {
     height: 100%;
     display: flex;
@@ -7,11 +26,26 @@
     // happens to be positioned above it.
     position: relative;
     box-sizing: border-box;
-    --gutter-size: #{spacing(1.25)};
+    --bit-spl-gtr-size: var(--bit-Splitter-gutter-size, #{spacing(1.25)});
     // The smallest strip a pointer has to land in to take hold of the gutter. It is a floor rather than a
     // size: it is the drawn gutter that takes room in the layout, and this only widens what answers a press
     // when the drawn one is thinner than a pointer can be expected to hit.
-    --gutter-hit-size: #{spacing(3)};
+    --bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(3)});
+    --bit-spl-gtr-bg: var(--bit-Splitter-gutter-background, #{$clr-brd-sec});
+    --bit-spl-gtr-hvr-bg: var(--bit-Splitter-gutter-hover-background, #{$clr-brd-pri});
+    // The sizes of the panels are custom properties like any other, so they inherit: a splitter nested in the
+    // panel of another would otherwise pick up the split, the minimums and the maximums of the one around it
+    // wherever it declares none of its own. Every splitter starts from nothing; the component's own style
+    // attribute, and the one a drag writes, still win over these.
+    --bit-spl-fpn-size: initial;
+    --bit-spl-fpn-grow: initial;
+    --bit-spl-fpn-max: initial;
+    --bit-spl-fpn-min: initial;
+    --bit-spl-spn-size: initial;
+    --bit-spl-spn-grow: initial;
+    --bit-spl-spn-max: initial;
+    --bit-spl-spn-min: initial;
+    --bit-spl-col-size: initial;
 }
 
 /*
@@ -23,10 +57,12 @@
  * The basis is the same property on both axes, so one pair of variables carries the width of a splitter
  * laid out in a row and the height of one laid out in a column, and a size given as a percentage keeps
  * its proportions while the container is resized.
+ *
+ * Every rule below that reaches past the root into a part does so with a child combinator. A splitter is
+ * made to be nested in the panel of another, and a descendant selector would hand the state of the outer
+ * one - its orientation, its drag, its read-only look - to every splitter inside it.
  */
 .bit-spl-pnl {
-    min-width: 0;
-    min-height: 0;
     overflow: auto;
     flex-shrink: 1;
     // The flex basis of a panel is the size the drag measured off the element, and the two of them are only
@@ -35,17 +71,55 @@
 }
 
 .bit-spl-fpn {
-    flex-grow: var(--first-panel-grow, 1);
-    flex-basis: var(--first-panel, 0);
-    max-width: var(--first-panel-max, none);
-    min-width: var(--first-panel-min, 0);
+    flex-grow: var(--bit-spl-fpn-grow, 1);
+    flex-basis: var(--bit-spl-fpn-size, 0);
 }
 
 .bit-spl-spn {
-    flex-grow: var(--second-panel-grow, 1);
-    flex-basis: var(--second-panel, 0);
-    max-width: var(--second-panel-max, none);
-    min-width: var(--second-panel-min, 0);
+    flex-grow: var(--bit-spl-spn-grow, 1);
+    flex-basis: var(--bit-spl-spn-size, 0);
+}
+
+/*
+ * The limits of the panels cost the specificity of a single class. A minimum or a maximum set through Classes -
+ * in a percentage, in rem, in anything the parameters cannot say - is one the drag measures and honours, so the
+ * root in front of the part is wrapped in :where() and adds nothing: a class of the app's ties with these and wins
+ * from the stylesheet loaded after the library's, and anything more specific wins wherever it is loaded, in both
+ * orientations. They are not taken down to no specificity at all, which would hand them to any element rule as
+ * well - a reset's `div { min-height: auto }` would stop the panels shrinking below their content. What the
+ * parameters set still arrives through the variables, and a fold still lets go of all of it (further down).
+ */
+:where(.bit-spl) > .bit-spl-pnl {
+    min-width: 0;
+    min-height: 0;
+}
+
+:where(.bit-spl) > .bit-spl-fpn {
+    max-width: var(--bit-spl-fpn-max, none);
+    min-width: var(--bit-spl-fpn-min, 0);
+}
+
+:where(.bit-spl) > .bit-spl-spn {
+    max-width: var(--bit-spl-spn-max, none);
+    min-width: var(--bit-spl-spn-min, 0);
+}
+
+// The constraints swap axes with the layout: what was a width on a row is a height on a column, and the width
+// the panel is no longer measured on has to be let go of, or it would keep clamping the panel across the
+// splitter instead of along it. These tie with the rules above, so they come after them.
+:where(.bit-spl-vrt) > .bit-spl-pnl {
+    max-width: none;
+    min-width: 0;
+}
+
+:where(.bit-spl-vrt) > .bit-spl-fpn {
+    max-height: var(--bit-spl-fpn-max, none);
+    min-height: var(--bit-spl-fpn-min, 0);
+}
+
+:where(.bit-spl-vrt) > .bit-spl-spn {
+    max-height: var(--bit-spl-spn-max, none);
+    min-height: var(--bit-spl-spn-min, 0);
 }
 
 .bit-spl-gtr {
@@ -57,20 +131,31 @@
     touch-action: none;
     align-items: center;
     justify-content: center;
-    width: var(--gutter-size);
-    background-color: $clr-brd-sec;
+    width: var(--bit-spl-gtr-size);
+    background-color: var(--bit-spl-gtr-bg);
     transition: background-color $mot-duration-short $mot-easing;
     // Over both panels rather than only the one it is painted after, so that the strip answering a press
     // reaches equally far into each of them - and so that the focus ring is not cut in half by whichever
     // panel paints last.
     z-index: 1;
 
-    &:hover {
-        background-color: $clr-brd-pri;
-    }
-
     &:focus-visible {
         @include focus-ring;
+    }
+}
+
+// Only a gutter a press can still do something with answers the pointer - not a read-only or disabled one, and
+// not one whose panel the page folded away without letting the reader open it again - and only a pointer that
+// can hover: a finger lifting off the gutter would otherwise leave it painted in its hover color until the next
+// tap elsewhere. The conditions cost no specificity, so the drag further down still wins while the pointer is on
+// the gutter it is dragging.
+//
+// The states change the variable the gutter is painted from rather than its background, so the one rule that
+// declares the background is the one at rest: a gutter the app paints through Classes keeps that paint under the
+// pointer and through a drag, instead of losing it to a state that outranks the app's class.
+@media (hover: hover) {
+    :where(.bit-spl:not(.bit-spl-rdo, .bit-dis, .bit-spl-col:not(.bit-spl-cpb))) > .bit-spl-gtr:hover {
+        --bit-spl-gtr-bg: var(--bit-spl-gtr-hvr-bg);
     }
 }
 
@@ -84,17 +169,20 @@
     content: '';
     position: absolute;
     inset-block: 0;
-    inset-inline: min(0px, calc((var(--gutter-size) - var(--gutter-hit-size)) / 2));
+    inset-inline: min(0px, calc((var(--bit-spl-gtr-size) - var(--bit-spl-hit-size)) / 2));
     // The strip answers the press, so the browser must not take the same touch for a scroll of the page
     // behind it - the gutter says as much for itself, and touch-action is not inherited.
     touch-action: none;
 }
 
+// The gutter at rest is drawn in the decorative stroke tier, which is tuned for definition rather than to a
+// contrast floor - so the grip is what has to carry the 3:1 that tells a reader there is a control here at all
+// (SC 1.4.11), and it is painted in the secondary foreground, which keeps it over the gutter in both schemes.
 .bit-spl-gti {
     width: spacing(0.25);
     height: spacing(2);
     border-radius: $shp-radius-full;
-    background-color: $clr-brd-pri;
+    background-color: var(--bit-Splitter-gutter-indicator-color, #{$clr-fg-sec});
 }
 
 /*
@@ -117,19 +205,37 @@
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    color: $clr-fg-sec;
     width: spacing(1.75);
     height: spacing(4.5);
-    border-radius: $shp-radius-full;
-    border: $siz-divider solid $clr-brd-pri;
-    background-color: $clr-bg-pri;
+    color: var(--bit-spl-cbt-clr);
+    border-radius: var(--bit-Splitter-collapse-button-radius, #{$shp-radius-full});
+    border: $siz-divider solid var(--bit-spl-cbt-brd);
+    background-color: var(--bit-spl-cbt-bg);
     transform: translate(-50%, -50%);
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+    --bit-spl-cbt-clr: var(--bit-Splitter-collapse-button-color, #{$clr-fg-sec});
+    --bit-spl-cbt-brd: var(--bit-Splitter-collapse-button-border-color, #{$clr-brd-pri});
+    --bit-spl-cbt-bg: var(--bit-Splitter-collapse-button-background, #{$clr-bg-pri});
+    --bit-spl-cbt-hvr-bg: var(--bit-Splitter-collapse-button-hover-background, #{$clr-pri});
 
-    &:hover {
-        color: $clr-pri-text;
-        border-color: $clr-pri;
-        background-color: $clr-pri;
+    // Like the gutter's, the hover moves the variables rather than the colors, so a button the app paints through
+    // Classes keeps that paint under the pointer.
+    @media (hover: hover) {
+        &:hover {
+            --bit-spl-cbt-clr: var(--bit-Splitter-collapse-button-hover-color, #{$clr-pri-text});
+            --bit-spl-cbt-brd: var(--bit-spl-cbt-hvr-bg);
+            --bit-spl-cbt-bg: var(--bit-spl-cbt-hvr-bg);
+        }
+    }
+
+    // Drawn narrower than a pointer can be expected to hit, so the part that answers a press reaches past it
+    // across the gutter - evenly on both sides, and to the target size WCAG asks for.
+    &::before {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        left: calc((spacing(1.75) - spacing(3)) / 2);
+        right: calc((spacing(1.75) - spacing(3)) / 2);
     }
 }
 
@@ -140,10 +246,26 @@
     line-height: 1;
 }
 
+// A row written right to left puts the first panel on the right. The component already turns the default chevron
+// of a splitter whose Dir parameter says so - which every browser draws - so what is left here is the one that is
+// right to left only by inheriting it, from the html element or any other ancestor. :dir() reads the direction
+// the element is actually laid out in, the one the drag and the keys already go by; a browser without it drops
+// this rule and is left with what the parameter gave it. A stacked splitter is untouched: the writing direction
+// says nothing about which way is down.
+.bit-spl:not(.bit-spl-vrt):not([dir="rtl"]):dir(rtl) > .bit-spl-gtr > .bit-spl-cbt > .bit-spl-cbd {
+    scale: -1 1;
+}
+
 // Along the splitter rather than across it: a bar lying on its side carries a control lying on its side.
-.bit-spl-vrt .bit-spl-cbt {
+.bit-spl-vrt > .bit-spl-gtr > .bit-spl-cbt {
     width: spacing(4.5);
     height: spacing(1.75);
+
+    &::before {
+        inset-inline: 0;
+        top: calc((spacing(1.75) - spacing(3)) / 2);
+        bottom: calc((spacing(1.75) - spacing(3)) / 2);
+    }
 }
 
 /*
@@ -156,8 +278,8 @@
     position: absolute;
     z-index: 2;
     inset-block: 0;
-    width: var(--gutter-size);
-    background-color: $clr-pri;
+    width: var(--bit-spl-gtr-size);
+    background-color: var(--bit-Splitter-preview-background, #{$clr-pri});
     // The pointer is captured by the gutter for the whole drag, and the line must not be in its way when
     // the drag is over either.
     pointer-events: none;
@@ -171,12 +293,12 @@
     inset-block: auto;
     inset-inline: 0;
     width: auto;
-    height: var(--gutter-size);
+    height: var(--bit-spl-gtr-size);
 }
 
 .bit-spl-gic {
-    font-size: $tg-fs-xs;
-    color: $clr-fg-sec;
+    font-size: var(--bit-Splitter-gutter-icon-size, #{$tg-fs-xs});
+    color: var(--bit-Splitter-gutter-icon-color, #{$clr-fg-sec});
 }
 
 // While a drag is running the pointer spends most of its time off the gutter, so the resize cursor and the
@@ -186,10 +308,10 @@
     cursor: col-resize;
     -webkit-user-select: none;
     overscroll-behavior: none;
+}
 
-    .bit-spl-gtr {
-        background-color: $clr-brd-pri;
-    }
+.bit-spl-drg > .bit-spl-gtr {
+    --bit-spl-gtr-bg: var(--bit-Splitter-gutter-active-background, var(--bit-spl-gtr-hvr-bg));
 }
 
 .bit-spl-vrt {
@@ -198,39 +320,21 @@
     &.bit-spl-drg {
         cursor: row-resize;
     }
+}
 
-    .bit-spl-gtr {
-        width: 100%;
-        height: var(--gutter-size);
-        cursor: row-resize;
+.bit-spl-vrt > .bit-spl-gtr {
+    width: 100%;
+    height: var(--bit-spl-gtr-size);
+    cursor: row-resize;
 
-        &::before {
-            inset-inline: 0;
-            inset-block: min(0px, calc((var(--gutter-size) - var(--gutter-hit-size)) / 2));
-        }
+    &::before {
+        inset-inline: 0;
+        inset-block: min(0px, calc((var(--bit-spl-gtr-size) - var(--bit-spl-hit-size)) / 2));
     }
 
-    .bit-spl-gti {
+    > .bit-spl-gti {
         width: spacing(2);
         height: spacing(0.25);
-    }
-
-    // The constraints swap axes with the layout: what was a width on a row is a height on a column, and the
-    // width the panel is no longer measured on has to be let go of, or it would keep clamping the panel
-    // across the splitter instead of along it.
-    .bit-spl-pnl {
-        max-width: none;
-        min-width: 0;
-    }
-
-    .bit-spl-fpn {
-        max-height: var(--first-panel-max, none);
-        min-height: var(--first-panel-min, 0);
-    }
-
-    .bit-spl-spn {
-        max-height: var(--second-panel-max, none);
-        min-height: var(--second-panel-min, 0);
     }
 }
 
@@ -246,7 +350,7 @@
     overflow: hidden;
     max-width: none;
     min-width: 0;
-    flex-basis: var(--collapsed-size, 0px);
+    flex-basis: var(--bit-spl-col-size, 0px);
 }
 
 /*
@@ -281,16 +385,10 @@
 }
 
 // Neither a disabled nor a read-only splitter is up for resizing, so the gutter stops offering to be
-// dragged in either case.
-.bit-spl-rdo,
-.bit-spl.bit-dis {
-    .bit-spl-gtr {
-        cursor: default;
-
-        &:hover {
-            background-color: $clr-brd-sec;
-        }
-    }
+// dragged in either case - and the hover above already leaves both of them alone.
+.bit-spl-rdo > .bit-spl-gtr,
+.bit-spl.bit-dis > .bit-spl-gtr {
+    cursor: default;
 }
 
 // And that is where the two part company: a read-only splitter is a split that is simply not up for
@@ -325,21 +423,16 @@ body.bit-spl-drg-bdy {
 // strip that answers a press is widened again, still without moving anything in the layout.
 @media (pointer: coarse) {
     .bit-spl {
-        --gutter-hit-size: #{spacing(5.5)};
+        --bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(5.5)});
     }
 }
 
 // Forced colors replaces every background with the canvas, which would leave the gutter the same color as
 // the panels on either side of it and the grip the same color as the gutter.
 @media (forced-colors: active) {
-    // Every state of the gutter is painted the same way here: the hover, the drag and the two that take the
-    // resize away are all more specific than the plain selector, so a rule for that one alone would be given
-    // up again the moment the pointer reached the gutter.
-    .bit-spl-gtr,
-    .bit-spl-gtr:hover,
-    .bit-spl-drg .bit-spl-gtr,
-    .bit-spl-rdo .bit-spl-gtr:hover,
-    .bit-spl.bit-dis .bit-spl-gtr:hover {
+    // Every state of the gutter is painted the same way here, and the plain selector is enough to do it: the
+    // hover and the drag only move the variable the background is read from, which this no longer reads.
+    .bit-spl-gtr {
         background-color: CanvasText;
     }
 
@@ -357,8 +450,7 @@ body.bit-spl-drg-bdy {
 
     // The control is drawn on top of a gutter that has just become the canvas text colour, so it has to
     // paint its own ground back in or it would disappear into the line it sits on.
-    .bit-spl-cbt,
-    .bit-spl-cbt:hover {
+    .bit-spl-cbt {
         color: CanvasText;
         border-color: CanvasText;
         background-color: Canvas;

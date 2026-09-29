@@ -9,17 +9,30 @@
        differ only in the look - both take the resize away. *@
     var interactive = _IsInteractive;
 
-    @* The separator reports where it stands as a percentage of the splitter, which is the range APG asks for.
-       It is only rendered from here once the value is known; until then the setup call measures the panels and
-       writes it onto the element itself, so a splitter that was never sized is not left claiming a position. *@
+    @* The separator reports where it stands as a percentage of the splitter. It is only rendered from here once
+       the value is known; until then the setup call measures the panels and writes it onto the element itself, so
+       a splitter that was never sized is not left claiming a position. The range is rendered as the whole
+       splitter, and narrowed by the same measurement to what the limits of the panels leave, as APG asks. *@
     var valueNow = _ValueNow;
 
     @* The pointer's way to fold the panel away. It is only ever offered where the reader is allowed to fold
        the panel and allowed to touch the splitter at all - everywhere else the gutter is just a rule. *@
     var collapseButton = interactive && Collapsible && ShowCollapseButton;
-    var collapseIcon = collapseButton ? BitIconInfo.From(Collapsed ? ExpandIcon : CollapseIcon,
-                                                         (Collapsed ? ExpandIconName : CollapseIconName) ?? _DefaultCollapseIconName)
-                                      : null;
+    var customCollapseIcon = collapseButton ? BitIconInfo.From(Collapsed ? ExpandIcon : CollapseIcon,
+                                                               Collapsed ? ExpandIconName : CollapseIconName)
+                                            : null;
+
+    @* Only the chevron of its own is turned around for a row written right to left: an icon the page chose is
+       drawn the way the page drew it. *@
+    var defaultCollapseIcon = collapseButton && (customCollapseIcon is null || customCollapseIcon.IsEmpty);
+    var collapseIcon = defaultCollapseIcon ? BitIconInfo.Bit(_DefaultCollapseIconName) : customCollapseIcon;
+
+    @* A panel folded down to nothing is nothing the reader can see, so what it holds is taken out of the tab order
+       and out of the accessibility tree with it: the keyboard would otherwise walk into controls that are not on
+       the screen. One folded to a size of its own is still showing something - an icon rail, a strip of tools -
+       and stays usable. *@
+    var firstInert = _IsFoldedAway && CollapseSecondPanel is false;
+    var secondInert = _IsFoldedAway && CollapseSecondPanel;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -29,6 +42,7 @@
      dir="@Dir?.ToString().ToLower()">
     <div id="@_FirstPanelId"
          @ref="_firstPanelRef"
+         inert="@firstInert"
          style="@Styles?.FirstPanel"
          class="bit-spl-pnl bit-spl-fpn @Classes?.FirstPanel">
         @FirstPanel
@@ -77,13 +91,14 @@
                  style="@Styles?.CollapseButton"
                  class="bit-spl-cbt @Classes?.CollapseButton">
                 <i style="@Styles?.CollapseButtonIcon"
-                   class="bit-spl-cbi @collapseIcon?.GetCssClasses() @Classes?.CollapseButtonIcon" />
+                   class="bit-spl-cbi@(defaultCollapseIcon ? " bit-spl-cbd" : null) @collapseIcon?.GetCssClasses() @Classes?.CollapseButtonIcon" />
             </div>
         }
     </div>
 
     <div id="@_SecondPanelId"
          @ref="_secondPanelRef"
+         inert="@secondInert"
          style="@Styles?.SecondPanel"
          class="bit-spl-pnl bit-spl-spn @Classes?.SecondPanel">
         @SecondPanel
