@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -74,8 +75,8 @@ public class BitShimmerTests : BunitTestContext
         var component = RenderComponent<BitShimmerHtmlAttributesTest>();
 
         component.MarkupMatches(@"
-<div data-val-test=""bit"" id=""test-shimmer"" class=""bit-smr bit-smr-lin bit-smr-md bit-smr-tbg"" aria-busy=""true"">
-    <div class=""bit-smr-wrp bit-smr-bsbg "" aria-hidden=""true"">
+<div data-val-test=""bit"" id=""test-shimmer"" class=""bit-smr bit-smr-lin"" aria-busy=""true"">
+    <div class=""bit-smr-wrp"" aria-hidden=""true"">
         <div style="""" class=""bit-smr-anm bit-smr-wav ""></div>
     </div>
 </div>");
@@ -234,15 +235,22 @@ public class BitShimmerTests : BunitTestContext
     [DataRow(BitSize.Small, "bit-smr-sm")]
     [DataRow(BitSize.Medium, "bit-smr-md")]
     [DataRow(BitSize.Large, "bit-smr-lg")]
-    [DataRow(null, "bit-smr-md")]
-    public void BitShimmerShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitShimmerShouldRespectSize(BitSize size, string expectedClass)
     {
-        var component = RenderComponent<BitShimmer>(parameters =>
-        {
-            if (size.HasValue) parameters.Add(p => p.Size, size.Value);
-        });
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Size, size));
 
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldPublishNoSizeOrColorClassWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitShimmer>();
+
+        // An unset Size, Color or Background is the default the public --bit-Shimmer-* variables restyle; a class
+        // carrying it would read to the stylesheet as a choice, and win over a variable set on :root.
+        CollectionAssert.AreEquivalent(new[] { "bit-smr", "bit-smr-lin" }, component.Find(".bit-smr").ClassList.ToArray());
+        CollectionAssert.AreEquivalent(new[] { "bit-smr-wrp" }, component.Find(".bit-smr-wrp").ClassList.ToArray());
     }
 
     [TestMethod]
@@ -250,7 +258,7 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>();
 
-        Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-md"));
+        Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-lg"));
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-inl"));
 
         component.Render(parameters =>
@@ -901,6 +909,114 @@ public class BitShimmerTests : BunitTestContext
     }
 
 
+    // ----------------------------------------------------------------- reveal
+
+    [TestMethod]
+    public void BitShimmerShouldNotFadeInContentThatWasLoadedFromTheStart()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Loaded, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        // Nothing was waited on, so there is no placeholder for the content to fade in from.
+        Assert.IsFalse(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldFadeInContentThatReplacesAPlaceholder()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.AddChildContent("Loaded content"));
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        Assert.IsTrue(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotFadeInContentThatBeatTheShowDelay()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 10_000);
+            parameters.Add(p => p.Overlay, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // The placeholder was never seen, and the content an overlay covers was still showing all along, so a
+        // fade would blink it out and back in.
+        Assert.IsFalse(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldFadeInContentOnceAHeldBackSwapLands()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.MinShowTime, 300);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl")),
+                                   TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotFadeInOverlayContentBeforeItsCoverHasArrived()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // With no ShowDelay the cover starts at once, but it fades in, and the covered content is held on the page
+        // until it has: a refresh that ends inside that window uncovers content that never went away.
+        Assert.IsFalse(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldFadeInOverlayContentOnceItsCoverHasArrived()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        Thread.Sleep(600);
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        Assert.IsTrue(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotFadeInOverlayContentWhoseHoldEndedBeforeItsCoverArrived()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.Add(p => p.MinShowTime, 50);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd")),
+                                   TimeSpan.FromSeconds(5));
+
+        Assert.IsFalse(component.Find(".bit-smr-cnt").ClassList.Contains("bit-smr-rvl"));
+    }
+
+
     // ----------------------------------------------------------------- inline
 
     [TestMethod]
@@ -1358,6 +1474,36 @@ public class BitShimmerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitShimmerOverlayShouldKeepTheComponentsItCoversAcrossTheSwap()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.Add(p => p.Loaded, true);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<StatefulProbe>(0);
+                builder.CloseComponent();
+            }));
+        });
+
+        var probe = component.FindComponent<StatefulProbe>().Instance;
+
+        // A refresh covers the content and uncovers it again: the components inside it are the same instances
+        // throughout, rather than being disposed and initialized - and made to load their data - once more.
+        component.Render(parameters => parameters.Add(p => p.Loaded, false));
+
+        Assert.AreSame(probe, component.FindComponent<StatefulProbe>().Instance);
+        Assert.AreEqual(1, component.FindAll(".bit-smr-cvd").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        Assert.AreSame(probe, component.FindComponent<StatefulProbe>().Instance);
+        Assert.AreEqual(1, component.FindAll(".bit-smr-cnt").Count);
+        Assert.AreEqual(1, probe.InitializedCount);
+    }
+
+    [TestMethod]
     public void BitShimmerOverlayShouldStillReportThatItIsBusy()
     {
         var component = RenderComponent<BitShimmer>(parameters =>
@@ -1407,13 +1553,9 @@ public class BitShimmerTests : BunitTestContext
     [DataRow(BitColor.PrimaryBorder, "bit-smr-pbr")]
     [DataRow(BitColor.SecondaryBorder, "bit-smr-sbr")]
     [DataRow(BitColor.TertiaryBorder, "bit-smr-tbr")]
-    [DataRow(null, "bit-smr-tbg")]
-    public void BitShimmerShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitShimmerShouldRespectColor(BitColor color, string expectedClass)
     {
-        var component = RenderComponent<BitShimmer>(parameters =>
-        {
-            if (color.HasValue) parameters.Add(p => p.Color, color.Value);
-        });
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Color, color));
 
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains(expectedClass));
     }
@@ -1436,13 +1578,9 @@ public class BitShimmerTests : BunitTestContext
     [DataRow(BitColor.PrimaryBorder, "bit-smr-bpbr")]
     [DataRow(BitColor.SecondaryBorder, "bit-smr-bsbr")]
     [DataRow(BitColor.TertiaryBorder, "bit-smr-btbr")]
-    [DataRow(null, "bit-smr-bsbg")]
-    public void BitShimmerShouldRespectBackground(BitColor? background, string expectedClass)
+    public void BitShimmerShouldRespectBackground(BitColor background, string expectedClass)
     {
-        var component = RenderComponent<BitShimmer>(parameters =>
-        {
-            if (background.HasValue) parameters.Add(p => p.Background, background.Value);
-        });
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Background, background));
 
         Assert.IsTrue(component.Find(".bit-smr-wrp").ClassList.Contains(expectedClass));
     }
@@ -1506,6 +1644,102 @@ public class BitShimmerTests : BunitTestContext
 
         // The region stays on the page across the swap, which is what makes the change announceable.
         Assert.AreEqual("Profile loaded", component.Find(".bit-smr-vhd").TextContent);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitShimmerShouldRenderTheLiveRegionOutsideTheBusyRoot(bool inline)
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Inline, inline);
+            parameters.Add(p => p.Label, "Loading your profile");
+            parameters.Add(p => p.AriaLabel, "Profile");
+        });
+
+        var root = component.Find(".bit-smr");
+        var region = component.Find(".bit-smr-vhd");
+
+        // Inside the root, a change to the region could be held back while the root is aria-busy, and the
+        // children of the progressbar the labelled root becomes are presentational - so it is the next sibling.
+        Assert.AreEqual("true", root.GetAttribute("aria-busy"));
+        Assert.AreEqual("progressbar", root.GetAttribute("role"));
+        Assert.IsNull(root.QuerySelector(".bit-smr-vhd"));
+        Assert.IsTrue(root.NextElementSibling!.ClassList.Contains("bit-smr-vhd"));
+        Assert.AreEqual("span", region.TagName.ToLower());
+    }
+
+    [TestMethod]
+    [DataRow(BitVisibility.Visible, false)]
+    [DataRow(BitVisibility.Hidden, true)]
+    [DataRow(BitVisibility.Collapsed, true)]
+    public void BitShimmerShouldSilenceTheLiveRegionOfAHiddenShimmer(BitVisibility visibility, bool expectedHidden)
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Loading your profile");
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        Assert.AreEqual(expectedHidden, component.Find(".bit-smr-vhd").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    [DataRow("aria-hidden", "true", true)]
+    [DataRow("aria-hidden", "TRUE", true)]
+    [DataRow("aria-hidden", "false", false)]
+    [DataRow("hidden", "", true)]
+    [DataRow("inert", "", true)]
+    public void BitShimmerShouldSilenceTheLiveRegionOfAShimmerHiddenByASplattedAttribute(string name, string value, bool expectedHidden)
+    {
+        // BitComponentBase takes its HTML attributes in SetParametersAsync rather than through a CaptureUnmatchedValues
+        // parameter, which the parameter builder insists on, so the shimmer is rendered from a fragment instead.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitShimmer>(0);
+            builder.AddAttribute(1, nameof(BitShimmer.Label), "Loading your profile");
+            builder.AddAttribute(2, name, value);
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual(expectedHidden, component.Find(".bit-smr-vhd").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldReadTheLiveRegionInTheLanguageAndTheDirectionOfTheRoot()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitShimmer>(0);
+            builder.AddAttribute(1, nameof(BitShimmer.Label), "Loading your profile");
+            builder.AddAttribute(2, nameof(BitShimmer.Dir), BitDir.Rtl);
+            builder.AddAttribute(3, "lang", "fa");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-smr");
+        var region = component.Find(".bit-smr-vhd");
+
+        // The region is the root's sibling, so it inherits neither from it and has to be handed both.
+        Assert.AreEqual("fa", region.GetAttribute("lang"));
+        Assert.AreEqual("rtl", region.GetAttribute("dir"));
+        Assert.AreEqual(root.GetAttribute("lang"), region.GetAttribute("lang"));
+        Assert.AreEqual(root.GetAttribute("dir"), region.GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldGiveTheLiveRegionOnlyTheDirectionTheRootCarries()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitShimmer>(0);
+            builder.AddAttribute(1, nameof(BitShimmer.Label), "Loading your profile");
+            builder.AddAttribute(2, "dir", "rtl");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual(component.Find(".bit-smr").GetAttribute("dir"), component.Find(".bit-smr-vhd").GetAttribute("dir"));
     }
 
     [TestMethod]
@@ -1733,5 +1967,142 @@ public class BitShimmerTests : BunitTestContext
 
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+    }
+
+
+
+    // ----------------------------------------------------------------- cascading parameters
+
+    [TestMethod]
+    public void BitShimmerShouldTakeWhatItDidNotSetFromTheCascadingParameters()
+    {
+        var component = RenderComponent<BitShimmerCascadingParamsTest>();
+
+        var first = component.FindAll(".bit-smr")[0];
+
+        foreach (var cls in new[] { "bit-smr-lg", "bit-smr-pri", "bit-smr-mln", "cascaded-root" })
+        {
+            Assert.IsTrue(first.ClassList.Contains(cls), cls);
+        }
+
+        var style = first.GetAttribute("style")!;
+
+        foreach (var declaration in new[] { "margin: 1px;", "width:10rem", "--bit-smr-hgt:0.5rem", "--bit-smr-gap:1rem",
+                                            "--bit-smr-llw:30%", "--bit-smr-rad:2px", "--bit-smr-dly:200ms" })
+        {
+            StringAssert.Contains(style, declaration);
+        }
+
+        var wrappers = first.QuerySelectorAll(".bit-smr-wrp");
+
+        Assert.AreEqual(3, wrappers.Length);
+        Assert.IsTrue(wrappers.All(w => w.ClassList.Contains("bit-smr-bsuc") && w.ClassList.Contains("cascaded-wrapper")));
+        Assert.AreEqual("width:90%", wrappers[0].GetAttribute("style"));
+
+        var shimmers = first.QuerySelectorAll(".bit-smr-anm");
+
+        Assert.IsTrue(shimmers.All(a => a.ClassList.Contains("bit-smr-pul")));
+        Assert.AreEqual("animation-delay:100ms;animation-duration:3000ms", shimmers[0].GetAttribute("style"));
+        Assert.AreEqual("animation-delay:150ms;animation-duration:3000ms", shimmers[1].GetAttribute("style"));
+        Assert.AreEqual("animation-delay:200ms;animation-duration:3000ms", shimmers[2].GetAttribute("style"));
+
+        var region = component.FindAll(".bit-smr-vhd")[0];
+
+        Assert.AreEqual("assertive", region.GetAttribute("aria-live"));
+        Assert.AreEqual("alert", region.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldKeepWhatItSetItselfOverTheCascadingParameters()
+    {
+        var component = RenderComponent<BitShimmerCascadingParamsTest>();
+
+        var second = component.FindAll(".bit-smr")[1];
+
+        Assert.IsTrue(second.ClassList.Contains("bit-smr-err"));
+        Assert.IsFalse(second.ClassList.Contains("bit-smr-pri"));
+        Assert.IsFalse(second.ClassList.Contains("bit-smr-mln"));
+
+        var style = second.GetAttribute("style")!;
+
+        StringAssert.Contains(style, "--bit-smr-hgt:2rem");
+        StringAssert.Contains(style, "--bit-smr-rad:0");
+        Assert.IsFalse(style.Contains("--bit-smr-hgt:0.5rem"));
+        Assert.IsFalse(style.Contains("--bit-smr-rad:2px"));
+
+        // A single line has nothing to stagger and nothing for the cascaded list of widths to reach.
+        Assert.AreEqual(1, second.QuerySelectorAll(".bit-smr-wrp").Length);
+        Assert.IsTrue(string.IsNullOrEmpty(second.QuerySelector(".bit-smr-wrp")!.GetAttribute("style")));
+
+        var shimmer = second.QuerySelector(".bit-smr-anm")!;
+
+        Assert.IsTrue(shimmer.ClassList.Contains("bit-smr-fad"));
+        Assert.AreEqual("animation-delay:100ms;animation-duration:3000ms", shimmer.GetAttribute("style"));
+
+        Assert.AreEqual("polite", component.FindAll(".bit-smr-vhd")[1].GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldTakeTheShapeAndTheLayoutFromTheCascadingParameters()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitShimmerParams { Shape = BitShimmerShape.Pill, Inline = true, Overlay = true }]);
+            parameters.AddChildContent<BitShimmer>(shimmer => shimmer.AddChildContent("Covered"));
+        });
+
+        var root = component.Find(".bit-smr");
+
+        Assert.AreEqual("span", root.TagName.ToLower());
+        Assert.IsTrue(root.ClassList.Contains("bit-smr-pil"));
+        Assert.IsTrue(root.ClassList.Contains("bit-smr-inl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-smr-ovl"));
+        Assert.AreEqual(1, component.FindAll(".bit-smr-cvd").Count);
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldTakeTheCircleAndThePulseFromTheCascadingParameters()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitShimmerParams { Circle = true, Pulse = true }]);
+            parameters.AddChildContent<BitShimmer>();
+        });
+
+        Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-crl"));
+        Assert.IsTrue(component.Find(".bit-smr-anm").ClassList.Contains("bit-smr-pul"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldHoldThePlaceholderForACascadedMinShowTime()
+    {
+        var cascade = new BitShimmerParams[] { new() { MinShowTime = 1000 } };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, cascade);
+            parameters.AddChildContent<BitShimmer>(shimmer => shimmer.Add(p => p.Loaded, false).AddChildContent("Loaded content"));
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, cascade);
+            parameters.AddChildContent<BitShimmer>(shimmer => shimmer.Add(p => p.Loaded, true).AddChildContent("Loaded content"));
+        });
+
+        // The cascaded value is in place before the swap is decided, so a response that lands at once is held back.
+        Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd")),
+                                   TimeSpan.FromSeconds(5));
+    }
+
+
+    // A component with state of its own, standing for anything an overlay covers that must survive a refresh.
+    private class StatefulProbe : ComponentBase
+    {
+        public int InitializedCount { get; private set; }
+
+        protected override void OnInitialized() => InitializedCount++;
     }
 }

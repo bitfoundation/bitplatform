@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Defines per-part CSS class/style values for <see cref="BitShimmer"/>.
+/// </summary>
 public class BitShimmerClassStyles
 {
     /// <summary>
@@ -19,6 +22,14 @@ public class BitShimmerClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the live region of the BitShimmer that carries its Label and LoadedLabel.
     /// </summary>
+    /// <remarks>
+    /// The region is rendered right after the root rather than inside it, so a selector that reaches it through
+    /// the root does not apply, and one that counts or pairs the root's siblings sees it as well.
+    /// <br />
+    /// It follows the root's <c>Visibility</c>, <c>hidden</c>, <c>inert</c> and <c>aria-hidden</c>, but not a
+    /// stylesheet: a shimmer hidden with a <c>display:none</c> in its style or behind a class hides the region
+    /// through these as well, or the region still announces its text.
+    /// </remarks>
     public string? Label { get; set; }
 
     /// <summary>

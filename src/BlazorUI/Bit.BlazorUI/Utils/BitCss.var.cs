@@ -713,6 +713,13 @@ public static partial class BitCss
                 public const string Lg = "--bit-siz-badge-dot-lg";
             }
 
+            public static class Chip
+            {
+                public const string Sm = "--bit-siz-chip-sm";
+                public const string Md = "--bit-siz-chip-md";
+                public const string Lg = "--bit-siz-chip-lg";
+            }
+
             public const string SpinnerStroke = "--bit-siz-spinner-stroke";
             public const string PopupMaxHeight = "--bit-siz-popup-max-height";
             public const string DialogMaxWidth = "--bit-siz-dialog-max-width";

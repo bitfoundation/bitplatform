@@ -511,6 +511,10 @@ $siz-badge-lg: var(--bit-siz-badge-lg);
 $siz-badge-dot-sm: var(--bit-siz-badge-dot-sm);
 $siz-badge-dot-md: var(--bit-siz-badge-dot-md);
 $siz-badge-dot-lg: var(--bit-siz-badge-dot-lg);
+//the height of a chip (BitTag) per size class, inside its rule (Fluent 2's 20/24/32px tags, Material's 32dp chip).
+$siz-chip-sm: var(--bit-siz-chip-sm);
+$siz-chip-md: var(--bit-siz-chip-md);
+$siz-chip-lg: var(--bit-siz-chip-lg);
 $siz-spinner-stroke: var(--bit-siz-spinner-stroke);
 $siz-popup-max-height: var(--bit-siz-popup-max-height);
 $siz-dialog-max-width: var(--bit-siz-dialog-max-width);

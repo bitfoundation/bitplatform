@@ -554,11 +554,15 @@ public class ChatbotVoiceCallTests
             return sent;
         }
 
-        /// <summary>Bounded, so an unanswered tool fails instead of hanging.</summary>
+        /// <summary>
+        /// Bounded, so an unanswered tool fails instead of hanging. A minute, as each round of calls reads the session's
+        /// connection from the database first (See VoiceCallRunner.UseCurrentSignalRConnection): a read allowed 30 seconds,
+        /// which has taken over 10 on a loaded CI runner.
+        /// </summary>
         public async Task<JsonObject> NextSent(CancellationToken cancellationToken)
         {
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeout.CancelAfter(TimeSpan.FromSeconds(10));
+            timeout.CancelAfter(TimeSpan.FromMinutes(1));
 
             return await clientEvents.Reader.ReadAsync(timeout.Token);
         }

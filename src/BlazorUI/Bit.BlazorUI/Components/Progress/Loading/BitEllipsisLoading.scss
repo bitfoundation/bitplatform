@@ -8,29 +8,29 @@
 .bit-ldn-elp-chl {
     position: absolute;
     border-radius: 50%;
-    top: var(--bit-ldn-elp-33);
-    width: var(--bit-ldn-elp-13);
-    height: var(--bit-ldn-elp-13);
+    top: calc(33 * var(--bit-ldn-unit));
+    width: calc(13 * var(--bit-ldn-unit));
+    height: calc(13 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
 }
 
 .bit-ldn-elp-ch1 {
-    left: var(--bit-ldn-elp-8);
+    left: calc(8 * var(--bit-ldn-unit));
     animation: bit-ldn-elp-anm1 calc(0.6s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 1, 1, 0) infinite;
 }
 
 .bit-ldn-elp-ch2 {
-    left: var(--bit-ldn-elp-8);
+    left: calc(8 * var(--bit-ldn-unit));
     animation: bit-ldn-elp-anm2 calc(0.6s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 1, 1, 0) infinite;
 }
 
 .bit-ldn-elp-ch3 {
-    left: var(--bit-ldn-elp-32);
+    left: calc(32 * var(--bit-ldn-unit));
     animation: bit-ldn-elp-anm2 calc(0.6s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 1, 1, 0) infinite;
 }
 
 .bit-ldn-elp-ch4 {
-    left: var(--bit-ldn-elp-56);
+    left: calc(56 * var(--bit-ldn-unit));
     animation: bit-ldn-elp-anm3 calc(0.6s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 1, 1, 0) infinite;
 }
 
@@ -50,7 +50,7 @@
     }
 
     100% {
-        transform: translate(var(--bit-ldn-elp-24), 0);
+        transform: translate(calc(24 * var(--bit-ldn-unit)), 0);
     }
 }
 
@@ -68,5 +68,11 @@
 // with the reading direction the way an indeterminate progress bar does. Mirroring the whole box is what
 // does it: the drawing is symmetrical, so nothing but the direction of the travel changes.
 .bit-rtl .bit-ldn-elp-ccn {
+    transform: scaleX(-1);
+}
+
+// The same for a loader that inherits a right-to-left direction from the page rather than being given one. Kept
+// in its own rule so a browser without :dir() drops only this.
+.bit-ldn-elp-ccn:dir(rtl) {
     transform: scaleX(-1);
 }
