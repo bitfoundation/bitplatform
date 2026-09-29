@@ -57,7 +57,12 @@ public partial class BitScrollablePane : BitComponentBase
 
     // A name on a plain div is one assistive technology ignores - ARIA prohibits naming the generic role - so
     // a pane that was given one is exposed as the region it names unless it was told to be something else.
-    private string? _role => Role ?? ((_ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue()) ? "region" : null);
+    // An empty Role is that something else: no role at all, rather than an empty attribute, which is not a
+    // role any more than a missing one is. The role written after the splat replaces whatever the splat put
+    // there, so a plain role attribute is handed back out the same way the aria-label is.
+    private string? _role => (Role ?? GetSplattedAttribute("role")) is string role
+        ? (role.HasValue() ? role : null)
+        : ((_ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue()) ? "region" : null);
 
     // Whether anything the browser side does is asked for. Everything else this component offers is CSS,
     // so a pane that wants none of these never sets up a listener, an observer or a .NET object reference.
@@ -666,7 +671,9 @@ public partial class BitScrollablePane : BitComponentBase
     /// <see cref="BitComponentBase.AriaLabel"/> (or an <c>aria-labelledby</c>) is a part of the page in its
     /// own right and defaults to <c>region</c>, since ARIA prohibits naming an element with no role and a
     /// screen reader would ignore the name. Set this to override it - <c>group</c>, for one - which is worth
-    /// doing for a pane that <see cref="Focusable"/> puts in the tab order.
+    /// doing for a pane that <see cref="Focusable"/> puts in the tab order. Set it to an empty string to keep
+    /// a named pane out of the landmark list - a card body in a long list of them, say - which renders no
+    /// role attribute at all.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
 

@@ -44,7 +44,7 @@ public partial class BitScrollablePaneDemo
             Name = "AutoHideScrollbar",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the Modern scrollbar of the pane out of sight until the pane is pointed at, holds the focus, or has just been scrolled.",
+            Description = "Keeps the Modern scrollbar of the pane out of sight until the pane is pointed at, holds a focus the keyboard gave it, or has just been scrolled.",
         },
         new()
         {
@@ -358,7 +358,7 @@ public partial class BitScrollablePaneDemo
             Name = "Role",
             Type = "string?",
             DefaultValue= "null",
-            Description = "The ARIA role of the pane. An unnamed pane has none; a pane named with AriaLabel or aria-labelledby defaults to region.",
+            Description = "The ARIA role of the pane. An unnamed pane has none; a pane named with AriaLabel or aria-labelledby defaults to region. An empty string renders no role at all, keeping a named pane out of the landmarks.",
         },
         new()
         {
@@ -478,8 +478,8 @@ public partial class BitScrollablePaneDemo
         new()
         {
             Name = "--bit-ScrollablePane-focus-color",
-            DefaultValue = "--bit-clr-pri-focus",
-            Description = "Focus ring of a pane put in the tab order by Focusable or TabIndex.",
+            DefaultValue = "--bit-shd-focus-ring",
+            Description = "Focus ring color of a pane put in the tab order by Focusable or TabIndex. Unset, the pane draws the library's own --bit-shd-focus-ring.",
         },
     ];
 

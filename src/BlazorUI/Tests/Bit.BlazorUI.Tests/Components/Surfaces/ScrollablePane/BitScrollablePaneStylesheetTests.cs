@@ -30,10 +30,28 @@ public class BitScrollablePaneStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        foreach (var variable in PublicVariables)
+        // The focus color is the one read without a fallback, on purpose: its absence is what hands the ring over to
+        // the global --bit-shd-focus-ring (see BitScrollablePaneFocusRingShouldBeTheGlobalOneUnlessAColorIsSet).
+        foreach (var variable in PublicVariables.Where(v => v != "--bit-ScrollablePane-focus-color"))
         {
             StringAssert.Contains(stylesheet, $"var({variable}, ", $"{variable} is not read with a fallback.");
         }
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneFocusRingShouldBeTheGlobalOneUnlessAColorIsSet()
+    {
+        var stylesheet = ReadStylesheet();
+        var start = stylesheet.IndexOf("&:focus-visible {\n        @include focus-ring;", System.StringComparison.Ordinal);
+
+        Assert.IsTrue(start >= 0, "The focus ring is not the default one of the library.");
+
+        var ring = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
+
+        // An unset focus color leaves --bit-scp-fcr invalid, which is what makes box-shadow fall back to the global
+        // composite - so an app that re-shapes --bit-shd-focus-ring re-shapes this ring too.
+        StringAssert.Contains(ring, "var(--bit-ScrollablePane-focus-color);");
+        StringAssert.Contains(ring, "box-shadow: var(--bit-scp-fcr, var(--bit-shd-focus-ring,");
     }
 
     [TestMethod]
@@ -72,19 +90,26 @@ public class BitScrollablePaneStylesheetTests
     }
 
     [TestMethod]
-    public void BitScrollablePaneModernScrollbarShouldStayOutOfForcedColors()
+    public void BitScrollablePaneModernScrollbarShouldBeRepaintedInForcedColors()
     {
         var stylesheet = ReadStylesheet();
-        var media = stylesheet.IndexOf("@media not all and (forced-colors: active) {", System.StringComparison.Ordinal);
 
-        Assert.IsTrue(media >= 0, "The Modern rendering is not guarded against forced colors.");
+        // A negated guard is false in every engine that does not know the feature, which would drop the Modern bar
+        // from all of them; the forced colors rules are an override that follows the rendering instead.
+        Assert.IsFalse(stylesheet.Contains("not all and (forced-colors", System.StringComparison.Ordinal), "The Modern rendering is behind a negated forced-colors query.");
 
-        // Every custom scrollbar part, and the standard properties Firefox draws the bar with, sit inside the guard,
-        // so forced colors keeps the system bar.
-        foreach (Match part in Regex.Matches(stylesheet, "::-webkit-scrollbar|scrollbar-width: thin"))
-        {
-            Assert.IsTrue(part.Index > media, $"'{part.Value}' at {part.Index} is outside the forced-colors guard.");
-        }
+        var media = stylesheet.IndexOf("@media (forced-colors: active) {\n    .bit-scp-mod,", System.StringComparison.Ordinal);
+
+        Assert.IsTrue(media >= 0, "The Modern rendering has no forced-colors override.");
+        Assert.IsTrue(media > stylesheet.IndexOf("scrollbar-color: transparent transparent;", System.StringComparison.Ordinal),
+                      "The forced-colors override does not come after the rendering it overrides.");
+
+        var forced = stylesheet[media..stylesheet.IndexOf("\n}", media, System.StringComparison.Ordinal)];
+
+        // The idle state is matched at its own specificity, so an auto hiding bar is repainted and never hidden.
+        StringAssert.Contains(forced, ".bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {");
+        StringAssert.Contains(forced, "background: Canvas;");
+        StringAssert.Contains(forced, "background-color: CanvasText;");
     }
 
     [TestMethod]

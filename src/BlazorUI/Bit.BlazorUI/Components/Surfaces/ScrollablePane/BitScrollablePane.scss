@@ -11,7 +11,7 @@
 //   --bit-ScrollablePane-scrollbar-thumb-radius        corner of the Modern thumb                (default: $shp-radius-full)
 //   --bit-ScrollablePane-scrollbar-track-color         Modern track                              (default: transparent)
 //   --bit-ScrollablePane-fade-size                     how far the Fade reaches into the pane    (default: spacing(4), 2rem; FadeSize wins)
-//   --bit-ScrollablePane-focus-color                   focus ring of a focusable pane            (default: $clr-pri-focus)
+//   --bit-ScrollablePane-focus-color                   focus ring of a focusable pane            (default: the global --bit-shd-focus-ring)
 //
 // Firefox has no scrollbar pseudo-elements, so there the Modern bar is the standard thin one: it takes the
 // thumb and track colors, but not the size, the radius or the hover and active colors.
@@ -41,8 +41,23 @@
     // A pane is only ever focused because Focusable (or a TabIndex) put it in the tab order, and a tab stop
     // with nothing to show for itself is one a keyboard reader loses. focus-visible rather than focus, so a
     // pane clicked with the pointer is not ringed.
+    //
+    // The default ring is the library's own - the global --bit-shd-focus-ring, so an app that re-shapes that
+    // one re-shapes this one too. Only a pane given a --bit-ScrollablePane-focus-color composes a ring of its
+    // own in that color, which has to be written out here: the composite substitutes its var()s where it is
+    // declared, on :root, and nothing set further down could reach it. Which of the two applies is decided
+    // without a fallback on purpose: a custom property that reads an unset variable with none is invalid,
+    // and an invalid --bit-scp-fcr is what hands box-shadow over to the global ring.
     &:focus-visible {
-        @include focus-ring(var(--bit-ScrollablePane-focus-color, #{$clr-pri-focus}));
+        @include focus-ring;
+
+        --bit-scp-fcr:
+            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
+            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) var(--bit-ScrollablePane-focus-color);
+
+        box-shadow: var(--bit-scp-fcr, var(--bit-shd-focus-ring,
+            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
+            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus}));
     }
 }
 
@@ -107,109 +122,134 @@
     }
 }
 
-// The Modern scrollbar is left out of forced colors mode altogether: the system bar is drawn in the colors the
-// reader chose, where a thumb painted in the theme's colors could vanish into the track or be hidden by
-// AutoHideScrollbar while they rely on it.
-@media not all and (forced-colors: active) {
+.bit-scp-mod {
+    // scrollbar-color is an inherited property, and Chromium 121 and later let any non-auto standard
+    // value win over the pseudo-elements below - so a page that themes its own scrollbar on html or body
+    // hands that value down to every pane inside it and takes this whole rendering off the screen, the
+    // auto-hiding with it. Putting the property back to auto on the pane keeps the Modern scrollbar the
+    // pane's own decision. It is guarded, because in an engine with no pseudo-elements to fall back on -
+    // Firefox - auto is the plain operating system bar and the standard properties further down are the
+    // rendering. The ScrollbarColor parameter is unaffected: it writes an inline style, which outranks
+    // this.
+    @supports selector(::-webkit-scrollbar-thumb) {
+        scrollbar-color: auto;
+    }
+
+    &::-webkit-scrollbar {
+        width: var(--bit-scp-sbs);
+        height: var(--bit-scp-sbs);
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--bit-scp-sbt);
+    }
+
+    // Where the two scrollbars meet. Left unpainted it is a square of the UA's own track color sitting in
+    // the corner of a pane whose scrollbars are otherwise invisible.
+    &::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: var(--bit-scp-sbr);
+        background-color: var(--bit-scp-sbc);
+
+        &:hover {
+            background-color: var(--bit-scp-sbch);
+        }
+
+        &:active {
+            background-color: var(--bit-scp-sbca);
+        }
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+}
+
+// The overlay behavior of a modern operating system, for the scrollbar the theme draws: the thumb is
+// only painted while the pointer is over the pane, while the keyboard has put the focus inside it or on the
+// pane itself, and for a moment after each scroll - so it is never hidden from a reader who is
+// scrolling it with the keyboard, a touch or a flick. Only the color goes away: the bar keeps its room,
+// so nothing in the pane moves as it comes and goes.
+//
+// Which of those the pane is in is written onto the element by the browser side rather than matched here
+// with :hover and :focus-within, because Chromium does not repaint a ::-webkit-scrollbar pseudo-element
+// when the state of the element it belongs to changes: the thumb would keep whatever it was last painted
+// in until something else forced a repaint of the pane - a bar that does not appear when the pointer
+// arrives, and then does not go away when it leaves. Writing an attribute invalidates the element, and
+// its scrollbars with it. It also decides the rule the safe way round: a pane whose JavaScript never ran
+// carries no attribute and keeps its scrollbar, rather than hiding one that nothing can bring back.
+//
+// A drag is left out of it: the pointer leaves the pane the moment a drag of it captures the pointer,
+// and a bar that vanished under the hand dragging the pane is the one place it must not go.
+.bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+
+        // The pointer can arrive on the scrollbar itself without ever crossing the content - a pane at the
+        // edge of the window, a thumb grabbed in one movement - and that is a pointer the bar is wanted by.
+        &:hover {
+            background-color: var(--bit-scp-sbch);
+        }
+
+        &:active {
+            background-color: var(--bit-scp-sbca);
+        }
+    }
+}
+
+// Firefox has no ::-webkit-scrollbar pseudo-elements, so the two standard properties are the only way to
+// reach its scrollbar at all. They are kept away from the engines that DO support the pseudo-elements,
+// because Chromium 121 and later let any non-auto standard value win over them - which would take the
+// rendering above off the screen everywhere it actually works.
+//
+// The thumb, and not the bare ::-webkit-scrollbar, is what the two guards ask about: Gecko parses that
+// one name for compatibility and answers the query with a yes it does not mean, and only that one - so
+// asking about a part it never took on is what tells an engine that PAINTS these from one that merely
+// reads them without complaining.
+@supports not selector(::-webkit-scrollbar-thumb) {
     .bit-scp-mod {
-        // scrollbar-color is an inherited property, and Chromium 121 and later let any non-auto standard
-        // value win over the pseudo-elements below - so a page that themes its own scrollbar on html or body
-        // hands that value down to every pane inside it and takes this whole rendering off the screen, the
-        // auto-hiding with it. Putting the property back to auto on the pane keeps the Modern scrollbar the
-        // pane's own decision. It is guarded, because in an engine with no pseudo-elements to fall back on -
-        // Firefox - auto is the plain operating system bar and the standard properties further down are the
-        // rendering. The ScrollbarColor parameter is unaffected: it writes an inline style, which outranks
-        // this.
-        @supports selector(::-webkit-scrollbar-thumb) {
-            scrollbar-color: auto;
-        }
-
-        &::-webkit-scrollbar {
-            width: var(--bit-scp-sbs);
-            height: var(--bit-scp-sbs);
-        }
-
-        &::-webkit-scrollbar-track {
-            background: var(--bit-scp-sbt);
-        }
-
-        // Where the two scrollbars meet. Left unpainted it is a square of the UA's own track color sitting in
-        // the corner of a pane whose scrollbars are otherwise invisible.
-        &::-webkit-scrollbar-corner {
-            background: transparent;
-        }
-
-        &::-webkit-scrollbar-thumb {
-            border-radius: var(--bit-scp-sbr);
-            background-color: var(--bit-scp-sbc);
-
-            &:hover {
-                background-color: var(--bit-scp-sbch);
-            }
-
-            &:active {
-                background-color: var(--bit-scp-sbca);
-            }
-        }
-
-        &::-webkit-scrollbar-button {
-            display: none;
-        }
+        scrollbar-width: thin;
+        scrollbar-color: var(--bit-scp-sbc) var(--bit-scp-sbt);
     }
 
-    // The overlay behavior of a modern operating system, for the scrollbar the theme draws: the thumb is
-    // only painted while the pointer is over the pane, while something inside it holds the focus, while the
-    // pane itself does, and for a moment after each scroll - so it is never hidden from a reader who is
-    // scrolling it with the keyboard, a touch or a flick. Only the color goes away: the bar keeps its room,
-    // so nothing in the pane moves as it comes and goes.
-    //
-    // Which of those the pane is in is written onto the element by the browser side rather than matched here
-    // with :hover and :focus-within, because Chromium does not repaint a ::-webkit-scrollbar pseudo-element
-    // when the state of the element it belongs to changes: the thumb would keep whatever it was last painted
-    // in until something else forced a repaint of the pane - a bar that does not appear when the pointer
-    // arrives, and then does not go away when it leaves. Writing an attribute invalidates the element, and
-    // its scrollbars with it. It also decides the rule the safe way round: a pane whose JavaScript never ran
-    // carries no attribute and keeps its scrollbar, rather than hiding one that nothing can bring back.
-    //
-    // A drag is left out of it: the pointer leaves the pane the moment a drag of it captures the pointer,
-    // and a bar that vanished under the hand dragging the pane is the one place it must not go.
     .bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
+        scrollbar-color: transparent transparent;
+    }
+}
+
+// Forced colors mode: a thumb painted in the theme's colors could vanish into the track, or be hidden by
+// AutoHideScrollbar from a reader who relies on it, so the Modern bar is drawn in the reader's own system
+// colors and never hidden. It is an override that comes after the rendering rather than a guard around it,
+// because a guard has to be negated - `not all and (forced-colors: active)` - and an engine that does not
+// know the feature evaluates the whole of that query to false, which would take the Modern bar away from
+// every browser too old to have forced colors at all. A matched ::-webkit-scrollbar rule cannot be taken
+// back to the system bar, so the parts are repainted, with the forcing lifted off them alone. The second
+// selector matches the auto hiding rule's specificity, so the idle state paints the same bar.
+@media (forced-colors: active) {
+    .bit-scp-mod,
+    .bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
+        scrollbar-color: auto;
+
         &::-webkit-scrollbar-track {
-            background: transparent;
+            forced-color-adjust: none;
+            background: Canvas;
         }
 
         &::-webkit-scrollbar-thumb {
-            background-color: transparent;
+            forced-color-adjust: none;
+            background-color: CanvasText;
 
-            // The pointer can arrive on the scrollbar itself without ever crossing the content - a pane at the
-            // edge of the window, a thumb grabbed in one movement - and that is a pointer the bar is wanted by.
-            &:hover {
-                background-color: var(--bit-scp-sbch);
-            }
-
+            &:hover,
             &:active {
-                background-color: var(--bit-scp-sbca);
+                background-color: Highlight;
             }
-        }
-    }
-
-    // Firefox has no ::-webkit-scrollbar pseudo-elements, so the two standard properties are the only way to
-    // reach its scrollbar at all. They are kept away from the engines that DO support the pseudo-elements,
-    // because Chromium 121 and later let any non-auto standard value win over them - which would take the
-    // rendering above off the screen everywhere it actually works.
-    //
-    // The thumb, and not the bare ::-webkit-scrollbar, is what the two guards ask about: Gecko parses that
-    // one name for compatibility and answers the query with a yes it does not mean, and only that one - so
-    // asking about a part it never took on is what tells an engine that PAINTS these from one that merely
-    // reads them without complaining.
-    @supports not selector(::-webkit-scrollbar-thumb) {
-        .bit-scp-mod {
-            scrollbar-width: thin;
-            scrollbar-color: var(--bit-scp-sbc) var(--bit-scp-sbt);
-        }
-
-        .bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
-            scrollbar-color: transparent transparent;
         }
     }
 }

@@ -304,6 +304,31 @@ public class BitScrollablePaneTests : BunitTestContext
         Assert.AreEqual("group", component.Find(".bit-scp").GetAttribute("role"));
     }
 
+    [TestMethod]
+    public void BitScrollablePaneEmptyRoleShouldKeepANamedPaneOutOfTheLandmarks()
+    {
+        // An empty role attribute is not a role; the way out of the region default renders none at all.
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Role, "");
+            parameters.Add(p => p.AriaLabel, "Release notes");
+        });
+
+        var root = component.Find(".bit-scp");
+
+        Assert.IsFalse(root.HasAttribute("role"));
+        Assert.AreEqual("Release notes", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldKeepARolePassedAsAnAttribute()
+    {
+        // A plain role binds no parameter, and the one written after the splat would otherwise replace it.
+        var component = RenderComponent<BitScrollablePaneRoleTest>();
+
+        Assert.AreEqual("list", component.Find(".bit-scp").GetAttribute("role"));
+    }
+
     #endregion
 
 

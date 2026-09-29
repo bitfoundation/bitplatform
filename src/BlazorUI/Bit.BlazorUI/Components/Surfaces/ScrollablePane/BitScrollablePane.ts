@@ -410,9 +410,17 @@
         // reason, a scroll that has just happened, which is what a touch, a flick or a move made from code
         // shows the bar for, the way an overlay scrollbar does - and the linger after the pointer or the
         // focus has gone, so the bar does not blink out the instant one of them leaves.
+        //
+        // The timer is armed once and moved on lazily: every scroll event only pushes _holdUntil further out,
+        // and the timer, when it fires, arms itself again for whatever is left of it - so a scroll costs no
+        // timer and no DOM write per frame. _idle mirrors the attribute idle() writes, so neither the timer
+        // nor linger() has to read the element to know whether the bar is up.
         private _hovered = false;
         private _focused = false;
         private _revealTimer = 0;
+        private _holdUntil = 0;
+        private _focusTimer = 0;
+        private _idle = false;
 
         private _frame = 0;
         private _reportTimer = 0;
@@ -604,8 +612,7 @@
             this.cancelDrag();
             this.idle(false);
 
-            if (this._revealTimer) clearTimeout(this._revealTimer);
-            this._revealTimer = 0;
+            this.release();
 
             this._disposed = true;
 
@@ -745,28 +752,79 @@
                 this._element.addEventListener('pointerleave', () => { this._hovered = false; this.linger(); }, { passive: true, signal: ac.signal });
 
                 // focusin and focusout rather than focus and blur, because what keeps the scrollbar on the
-                // screen is the focus being anywhere INSIDE the pane - and those two do not bubble. A focus
-                // that moves from one element of the pane to another is still inside it, which is what the
-                // element it is moving to says.
-                this._element.addEventListener('focusin', () => { this._focused = true; this.rest(); }, { passive: true, signal: ac.signal });
-                this._element.addEventListener('focusout', e => {
-                    this._focused = this._element.contains(e.relatedTarget as Node | null);
-                    this.linger();
+                // screen is the focus being anywhere INSIDE the pane - and those two do not bubble. Only a
+                // focus the keyboard is driving counts (see keyboardFocus): a button clicked with the mouse
+                // takes the focus too, and a bar held up by it would stay on the screen long after the
+                // pointer had gone, until the reader happened to click somewhere else.
+                this._element.addEventListener('focusin', () => { this._focused = this.keyboardFocus(this._focused); this.rest(); }, { passive: true, signal: ac.signal });
+                this._element.addEventListener('focusout', e => this.blurred(e), { passive: true, signal: ac.signal });
+
+                // A focus the pointer gave is one the keyboard can take over without moving it - a button
+                // clicked and then worked with the keys - and no focusin says so when it does.
+                this._element.addEventListener('keydown', () => {
+                    if (this._focused || this._element.contains(document.activeElement) === false) return;
+
+                    this._focused = true;
+                    this.rest();
                 }, { passive: true, signal: ac.signal });
 
                 // A pane that is already being pointed at or typed in when the flag is turned on is one the
-                // scrollbar belongs on: the two events that would say so have already been and gone.
+                // scrollbar belongs on: the two events that would say so have already been and gone. A focus
+                // this side cannot see into counts, since nothing says the keyboard did not put it there.
                 this._hovered = this.hovered();
-                this._focused = this._element.contains(document.activeElement);
+                this._focused = this.keyboardFocus(true);
                 this.rest();
             } else if (this._options.autoHide === false && this._autoHideAbortController) {
                 this._autoHideAbortController.abort();
                 this._autoHideAbortController = undefined;
 
-                if (this._revealTimer) clearTimeout(this._revealTimer);
-                this._revealTimer = 0;
+                this.release();
 
                 this.idle(false);
+            }
+        }
+
+        // A focus leaving an element of the pane. When it names where it is going, that alone decides it: a
+        // move to another element of the pane is followed by a focusin that says the rest. When it does not -
+        // the focus went into a frame inside the pane, or the window itself lost it - where it ended up is
+        // only known once this move is over, which is a task away: a microtask would still run in the middle
+        // of it, before the document has taken in the new active element.
+        private blurred(e: FocusEvent) {
+            if (this._focusTimer) clearTimeout(this._focusTimer);
+            this._focusTimer = 0;
+
+            const to = e.relatedTarget as Node | null;
+
+            if (to) {
+                if (this._element.contains(to)) return;
+
+                this._focused = false;
+                this.linger();
+                return;
+            }
+
+            this._focusTimer = setTimeout(() => {
+                this._focusTimer = 0;
+                this._focused = this.keyboardFocus(this._focused);
+                this.linger();
+            }, 0);
+        }
+
+        // Whether the focus is inside the pane and the keyboard is what put it there - which is what
+        // :focus-visible says of the element holding it. A frame is the one element that cannot say: the
+        // focus is in a document of its own, beyond the reach of this one, so a frame keeps whatever the focus
+        // that moved into it was - a keyboard reader who tabbed into a video in the pane is still one.
+        private keyboardFocus(previous: boolean): boolean {
+            const active = document.activeElement;
+
+            if (active === null || this._element.contains(active) === false) return false;
+
+            if (/^(IFRAME|FRAME|OBJECT|EMBED)$/.test(active.tagName)) return previous;
+
+            try {
+                return active.matches(':focus-visible');
+            } catch {
+                return true; // no :focus-visible to ask: keep the bar for every focus rather than for none
             }
         }
 
@@ -802,19 +860,47 @@
         private linger() {
             if (this._disposed || this._options.autoHide === false) return;
 
-            if (this._options.autoHideDelay > 0 && this._element.hasAttribute('data-bit-scp-idle') === false) {
+            if (this._options.autoHideDelay > 0 && this._idle === false) {
                 this.hold(this._options.autoHideDelay);
             } else {
                 this.rest();
             }
         }
 
+        // Keeps the bar up for at least another `delay` milliseconds. A hold never shortens one already under
+        // way - a pointer leaving in the middle of a long scroll does not cut the scroll's own moment short -
+        // and the timer is only armed when none is running: the one that is re-arms itself on firing for
+        // whatever is left, which is what makes the ~60 calls a second of a scroll cost a clock read each.
         private hold(delay: number) {
-            if (this._revealTimer) clearTimeout(this._revealTimer);
+            this._holdUntil = Math.max(this._holdUntil, performance.now() + delay);
 
-            this._revealTimer = setTimeout(() => { this._revealTimer = 0; this.rest(); }, delay);
+            if (this._revealTimer === 0) {
+                this._revealTimer = setTimeout(() => this.held(), delay);
+            }
 
             this.idle(false);
+        }
+
+        private held() {
+            const left = this._holdUntil - performance.now();
+
+            if (left > 0) {
+                this._revealTimer = setTimeout(() => this.held(), left);
+                return;
+            }
+
+            this._revealTimer = 0;
+            this.rest();
+        }
+
+        // Drops every timer of the auto hiding, for a pane that stops auto hiding or goes away.
+        private release() {
+            if (this._revealTimer) clearTimeout(this._revealTimer);
+            if (this._focusTimer) clearTimeout(this._focusTimer);
+
+            this._revealTimer = 0;
+            this._focusTimer = 0;
+            this._holdUntil = 0;
         }
 
         // Whether the Modern scrollbar of an auto hiding pane is currently painted, written onto the
@@ -828,6 +914,10 @@
         // An attribute, and not a class or an inline custom property, for the reason the fade uses one:
         // Blazor rewrites both of those whole on every render and would wipe whatever this side added.
         private idle(idle: boolean) {
+            if (idle === this._idle) return;
+
+            this._idle = idle;
+
             if (idle) {
                 this._element.setAttribute('data-bit-scp-idle', '');
             } else {
