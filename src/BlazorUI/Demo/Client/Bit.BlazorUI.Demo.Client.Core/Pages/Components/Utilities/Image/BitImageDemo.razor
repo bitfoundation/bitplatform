@@ -5,631 +5,495 @@
             Description="An image in a frame that sizes, shapes and crops it, follows its loading and error states, and reaches the browser's own responsive, lazy and priority loading." />
 
 <DemoPage Name="Image"
-          Description="BitImage is an img inside a frame, and nearly everything it offers is about the relationship between the two. The frame takes the size (Width, Height, AspectRatio, MaximizeFrame) and the shape (Rounded, Circular, Bordered) and clips what falls outside it, while ImageFit and ImagePosition decide what the image does inside it when the two are different shapes. The other half is what happens before the image is there: the component follows the browser's load and error events, hides the image until it has arrived, fades it in, holds the frame with a blurred placeholder or a loading template, and tries a fallback source before it gives up. What the browser itself decides stays the browser's: lazy loading, decoding, fetch priority and the srcset/sizes responsive picture are all reachable as parameters."
+          Description="BitImage is an img inside a frame. The frame takes the size and the shape and clips what falls outside it; ImageFit and ImagePosition decide what the image does inside it. The component follows the load and error events, holds the frame with a placeholder or a template until the image arrives, falls back to another source, and keeps the browser's own lazy, priority and responsive loading within reach."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
           GitHubUrl="Utilities/Image/BitImage.razor"
           GitHubDemoUrl="Utilities/Image/BitImageDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div class="example-desc">
-            An image needs a <b>Src</b> and an <b>Alt</b>: the source is the file, and the alternate text is what the
-            image says to anyone who cannot see it. The attribute is always rendered, so an image given no text at all
-            is announced as decorative rather than read out as a file name - which means a decorative image is one whose
-            <b>Alt</b> is deliberately left empty, not one that forgot it. With nothing else set, the frame takes the
-            natural size of the image, and the image stays hidden until it has loaded. <b>Title</b> is the tooltip a
-            mouse gets on hover - an aside rather than a place for anything the image cannot do without, since a touch
-            screen never shows it.
-            <br /><br />
-            A disabled image keeps its colors and dims, and stops answering the pointer.
-        </div>
-        <div class="example-content">
-            <BitImage Alt="The bit platform logo"
-                      Title="The bit platform logo"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Disabled</div>
-            <BitImage Alt="The bit platform logo" IsEnabled="false" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-        </div>
-    </DemoExample>
+    <NotesTemplate>
+        <BitText>
+            FadeIn honors the reduced motion preference of the OS/browser (prefers-reduced-motion) and shows the image at
+            once. If nothing on this page fades, turn that setting off, or use the ForceAnimation parameter or the
+            ForceAnimation toggle at the top of this page.
+        </BitText>
+    </NotesTemplate>
 
-    <DemoExample Title="Width & Height" RazorCode="@example2RazorCode" Id="example2">
-        <div class="example-desc">
-            <b>Width</b> and <b>Height</b> size the frame. A bare number is read as a pixel count and anything else is
-            used as written, so any CSS length works - <code>9rem</code>, <code>50%</code>,
-            <code>calc(100vw - 2rem)</code>. Given only one of the two, the image scales along the other one and keeps
-            its aspect ratio; given both, the frame is exactly that size and the image is left to overflow it unless an
-            <b>ImageFit</b> says what to do instead. The backgrounds below are there to show the frame itself.
-        </div>
-        <div class="example-content">
-            <div>Width</div>
-            <BitImage Width="9rem"
-                      Alt="The bit platform logo"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Height</div>
-            <BitImage Height="5rem"
-                      Alt="The bit platform logo"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Width & Height</div>
-            <BitImage Width="256px"
-                      Height="128px"
-                      Alt="The bit platform logo"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-        </div>
-    </DemoExample>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div class="example-desc">
+                <b>Src</b> is the file and <b>Alt</b> what it says to anyone who cannot see it. <b>Title</b> is a
+                mouse-only tooltip. A disabled image dims and stops answering the pointer.
+            </div>
+            <div class="example-content">
+                <BitImage Alt="The bit platform logo"
+                          Title="The bit platform logo"
+                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                <div>Disabled</div>
+                <BitImage Alt="The bit platform logo" IsEnabled="false" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="AspectRatio" RazorCode="@example3RazorCode" Id="example3">
-        <div class="example-desc">
-            <b>AspectRatio</b> gives the frame a shape instead of a second measurement: a width and a ratio are enough,
-            and the height follows. It is what reserves the room the image will need <i>before</i> it has arrived, so
-            the content below it is not pushed down the moment it does - the layout shift a page is measured by. It
-            pairs with <b>ImageFit</b>, which decides what the image does inside a frame whose shape is not its own.
-        </div>
-        <div class="example-content">
-            <BitStack Horizontal Wrap Gap="1rem" AutoHeight>
-                <div>
-                    <div>16/9</div>
-                    <BitImage Width="16rem"
+        <DemoExample Title="Size" RazorCode="@example2RazorCode" Id="example2">
+            <div class="example-desc">
+                <b>Width</b> and <b>Height</b> size the frame: a bare number is pixels, anything else any CSS length. One
+                of them scales the image along the other. <b>AspectRatio</b> reserves the frame's room before the image
+                arrives, so nothing below it shifts. <b>Fluid</b> keeps the frame within its container and scales the
+                image down rather than cropping it. The tint shows the frame.
+            </div>
+            <div class="example-content">
+                <div>Width="9rem"</div>
+                <BitImage Width="9rem" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                <div>Height="80"</div>
+                <BitImage Height="80" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                <div>Width="256px" Height="128px"</div>
+                <BitImage Width="256px" Height="128px" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                <div>Width="16rem" AspectRatio="1"</div>
+                <BitImage Width="16rem" AspectRatio="1" Class="framed" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <div>Fluid, in a 12rem column</div>
+                <div class="narrow-column">
+                    <BitImage Fluid Alt="A landscape photograph, scaled down to its column" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="ImageFit" RazorCode="@example3RazorCode" Id="example3">
+            <div class="example-desc">
+                <b>ImageFit</b> settles an image and a frame of different shapes: <b>None</b> and <b>Center</b> crop it at
+                its natural size, <b>Contain</b> fits it inside, <b>Cover</b> fills the frame and crops, <b>Fill</b>
+                stretches it, and <b>ScaleDown</b> is Contain that never enlarges. <b>CenterContain</b> and
+                <b>CenterCover</b> scale along the axis <b>Cover</b> names: Landscape for a wide frame, Portrait (the
+                default) for a tall one.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    @foreach (var fit in Enum.GetValues<BitImageFit>())
+                    {
+                        <div>
+                            <div>@fit</div>
+                            <BitImage Width="160" Height="96" ImageFit="fit" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                        </div>
+                    }
+                </div>
+                <div class="image-row">
+                    <div>
+                        <div>CenterCover, Cover="Landscape"</div>
+                        <BitImage Height="96" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Landscape" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                    <div>
+                        <div>CenterCover, Cover="Portrait"</div>
+                        <BitImage Width="96" Height="144" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Portrait" Class="framed" Alt="The bit platform logo" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="ImagePosition" RazorCode="@example4RazorCode" Id="example4">
+            <div class="example-desc">
+                A fit that crops keeps the middle by default. <b>ImagePosition</b> (CSS <code>object-position</code>)
+                moves the crop to the part that matters.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    @foreach (var position in new[] { "top", "center", "bottom" })
+                    {
+                        <div>
+                            <div>@position</div>
+                            <BitImage Width="10rem"
+                                      AspectRatio="1"
+                                      ImagePosition="@position"
+                                      ImageFit="BitImageFit.Cover"
+                                      Alt="@($"A landscape photograph cropped to its {position}")"
+                                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="MaximizeFrame" RazorCode="@example5RazorCode" Id="example5">
+            <div class="example-desc">
+                <b>MaximizeFrame</b> fills the parent and covers it with the image; an explicit <b>ImageFit</b> still wins.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <div class="max-frame-host">
+                        <BitImage MaximizeFrame Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    </div>
+                    <div class="max-frame-host">
+                        <BitImage MaximizeFrame ImageFit="BitImageFit.Contain" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    </div>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Shape & shadow" RazorCode="@example6RazorCode" Id="example6">
+            <div class="example-desc">
+                The frame clips, so <b>Rounded</b> and <b>Circular</b> crop the image. <b>Circular</b> needs a square frame.
+                <b>Bordered</b> and <b>Shadow</b> add the theme's border and card elevation.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <BitImage Rounded Width="8rem" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Rounded" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <BitImage Circular Width="8rem" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Circular" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <BitImage Bordered Rounded Width="8rem" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Bordered and rounded" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <BitImage Shadow Rounded Width="8rem" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Raised and rounded" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Loading & error states" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div class="example-desc">
+                The image stays hidden until it loads. <b>LoadingTemplate</b> and <b>ErrorTemplate</b> stand in for it
+                meanwhile; <b>OnLoadingStateChange</b> reports each <b>BitImageState</b>, also readable as
+                <b>LoadingState</b>. <b>ReloadAsync</b> fetches the image again, even a source the browser already has.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <BitButton OnClick="() => loadSlow = true">Load a slow image</BitButton>
+                    <BitButton OnClick="() => loadBroken = true">Load a broken image</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="ReloadImages">Reload both</BitButton>
+                    <div>State: <b>@slowImageState</b></div>
+                </div>
+                @if (loadSlow)
+                {
+                    <BitImage @ref="slowImage"
+                              Width="200px"
+                              Alt="An image served with a delay"
+                              Src="/api/Image/GetImage"
+                              OnLoadingStateChange="s => slowImageState = s">
+                        <LoadingTemplate>
+                            <div class="image-row">
+                                <BitSpinnerLoading CustomSize="24" />
+                                <span>loading...</span>
+                            </div>
+                        </LoadingTemplate>
+                    </BitImage>
+                }
+                @if (loadBroken)
+                {
+                    <BitImage @ref="brokenImage"
+                              Width="200px"
+                              Alt="An image whose source fails"
+                              Src="/api/Image/GetImageError">
+                        <LoadingTemplate><span>loading...</span></LoadingTemplate>
+                        <ErrorTemplate>
+                            <BitMessage Color="BitColor.Error">The image could not be loaded.</BitMessage>
+                        </ErrorTemplate>
+                    </BitImage>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="FallbackSrc" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div class="example-desc">
+                <b>FallbackSrc</b> is tried once when <b>Src</b> fails, and shown at once when there is no <b>Src</b>. Keep
+                it local or inline. With nothing to load at all, the image goes straight to the error state.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <div>
+                        <div>A broken Src</div>
+                        <BitImage Width="9rem"
+                                  Alt="The bit platform logo"
+                                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/no-such-image.png"
+                                  FallbackSrc="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                    <div>
+                        <div>No Src</div>
+                        <BitImage Width="9rem"
+                                  Alt="The bit platform logo"
+                                  FallbackSrc="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                    <div>
+                        <div>No source at all</div>
+                        <BitImage Width="9rem" Alt="A user's avatar" Src="@missingAvatarUrl">
+                            <ErrorTemplate>
+                                <div class="avatar-initials">JD</div>
+                            </ErrorTemplate>
+                        </BitImage>
+                    </div>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Progressive loading" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div class="example-desc">
+                <b>FadeIn</b> animates the moment the image appears. <b>StartVisible</b> shows it while it is still
+                drawing and hides it only on failure. <b>PlaceholderSrc</b> - a tiny blurred copy, usually a data URI -
+                fills a sized frame until the image arrives.
+            </div>
+            <div class="example-content">
+                <BitButton OnClick="() => progressiveKey++">Load again</BitButton>
+                <div class="image-row">
+                    <div>
+                        <div>FadeIn</div>
+                        <BitImage @key="@($"fade-{progressiveKey}")"
+                                  FadeIn
+                                  Width="200px"
+                                  Alt="An image served with a delay"
+                                  Src="@($"/api/Image/GetImage?v={progressiveKey}")" />
+                    </div>
+                    <div>
+                        <div>StartVisible</div>
+                        <BitImage @key="@($"start-{progressiveKey}")"
+                                  StartVisible
+                                  Width="200px"
+                                  Alt="An image served with a delay"
+                                  Src="@($"/api/Image/GetImage?v={progressiveKey}")" />
+                    </div>
+                    <div>
+                        <div>PlaceholderSrc + FadeIn</div>
+                        <BitImage @key="@($"placeholder-{progressiveKey}")"
+                                  FadeIn
+                                  Rounded
+                                  Width="16rem"
+                                  AspectRatio="16/9"
+                                  ImageFit="BitImageFit.Cover"
+                                  Alt="An image served with a delay"
+                                  Src="@($"/api/Image/GetImage?v={progressiveKey}")"
+                                  PlaceholderSrc="@placeholderDataUri" />
+                    </div>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Native loading attributes" RazorCode="@example10RazorCode" Id="example10">
+            <div class="example-desc">
+                <b>Loading</b>, <b>Decoding</b>, <b>FetchPriority</b>, <b>CrossOrigin</b> and <b>ReferrerPolicy</b> are the
+                img attributes of the same names. A Lazy image needs a sized frame and never belongs on the first screen;
+                High priority is for the largest image there. <b>ImageAttributes</b> passes anything else to the img,
+                merged with what the parameters set.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <BitImage Width="12rem"
                               AspectRatio="16/9"
                               ImageFit="BitImageFit.Cover"
-                              Alt="A landscape photograph"
-                              Class="framed"
+                              Loading="BitImageLoading.Lazy"
+                              Decoding="BitImageDecoding.Async"
+                              FetchPriority="BitImageFetchPriority.Low"
+                              Alt="A landscape photograph, loaded lazily"
                               Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
-                </div>
-                <div>
-                    <div>1/1</div>
-                    <BitImage Width="10rem"
-                              AspectRatio="1"
+                    <BitImage Width="12rem"
+                              AspectRatio="16/9"
                               ImageFit="BitImageFit.Cover"
-                              Alt="A landscape photograph"
-                              Class="framed"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
-                </div>
-                <div>
-                    <div>3/4</div>
-                    <BitImage Width="8rem"
-                              AspectRatio="3/4"
-                              ImageFit="BitImageFit.Cover"
-                              Alt="A landscape photograph"
-                              Class="framed"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
-                </div>
-            </BitStack>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="ImageFit" RazorCode="@example4RazorCode" Id="example4">
-        <div class="example-desc">
-            <b>ImageFit</b> settles what happens once the image and the frame turn out to be different shapes.
-            <b>None</b> leaves both alone and crops whatever does not fit from the right and the bottom; <b>Center</b>
-            does the same but crops around the middle. <b>Contain</b> fits all of the image inside the frame and leaves
-            the rest of the frame empty, <b>Cover</b> fills the frame and crops the overflow, <b>Fill</b> stretches the
-            image to the frame exactly and distorts it, and <b>ScaleDown</b> is <b>Contain</b> that never enlarges a
-            small image. <b>CenterContain</b> and <b>CenterCover</b> are the two centered variants that scale along the
-            one axis <b>Cover</b> (the parameter) names.
-        </div>
-        <div class="example-content">
-            <div>None</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      ImageFit="BitImageFit.None"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Center</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      ImageFit="BitImageFit.Center"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Contain</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      ImageFit="BitImageFit.Contain"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Cover</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      ImageFit="BitImageFit.Cover"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Fill</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      ImageFit="BitImageFit.Fill"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>ScaleDown</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      ImageFit="BitImageFit.ScaleDown"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>CenterContain</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      ImageFit="BitImageFit.CenterContain"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>CenterCover</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      ImageFit="BitImageFit.CenterCover"
-                      Class="framed"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="ImagePosition" RazorCode="@example5RazorCode" Id="example5">
-        <div class="example-desc">
-            A fit that crops has to crop somewhere, and by default that is around the middle of the image - which is the
-            wrong half of a photograph whose subject is not there. <b>ImagePosition</b> is the CSS
-            <code>object-position</code> of the image: a keyword pair (<code>top</code>, <code>bottom right</code>) or
-            two lengths or percentages. It only has an effect where something is actually cropped, so it goes with
-            <b>Cover</b> and with a frame narrower or shorter than the image.
-        </div>
-        <div class="example-content">
-            <BitStack Horizontal Wrap Gap="1rem" AutoHeight>
-                <div>
-                    <div>top</div>
-                    <BitImage Width="10rem"
-                              AspectRatio="1"
-                              ImagePosition="top"
-                              ImageFit="BitImageFit.Cover"
-                              Alt="A landscape photograph cropped to its top edge"
-                              Class="framed"
+                              FetchPriority="BitImageFetchPriority.High"
+                              ReferrerPolicy="BitImageReferrerPolicy.NoReferrer"
+                              ImageAttributes="@(new() { { "elementtiming", "hero" } })"
+                              Alt="A landscape photograph, fetched first"
                               Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                 </div>
-                <div>
-                    <div>center (default)</div>
-                    <BitImage Width="10rem"
-                              AspectRatio="1"
-                              ImageFit="BitImageFit.Cover"
-                              Alt="A landscape photograph cropped around its middle"
-                              Class="framed"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                </div>
-                <div>
-                    <div>bottom</div>
-                    <BitImage Width="10rem"
-                              AspectRatio="1"
-                              ImagePosition="bottom"
-                              ImageFit="BitImageFit.Cover"
-                              Alt="A landscape photograph cropped to its bottom edge"
-                              Class="framed"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                </div>
-            </BitStack>
-        </div>
-    </DemoExample>
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="Cover" RazorCode="@example6RazorCode" Id="example6">
-        <div class="example-desc">
-            <b>Cover</b> is read by the two centered fits alone, and it names the axis they scale along. It describes the
-            shape of the <i>frame</i> rather than of the image: <b>Landscape</b> for a wide frame, where the image is
-            shown at the full height and the width follows, and <b>Portrait</b> - the default - for a tall one, where it
-            is the width that is filled. The other fits are expressed with <code>object-fit</code>, which reads both
-            shapes on its own and needs no such hint.
-        </div>
-        <div class="example-content">
-            <div>ImageFit: CenterCover</div>
-            <div>Landscape</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      Class="framed"
-                      ImageFit="BitImageFit.CenterCover"
-                      Cover="BitImageCover.Landscape"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <div>Portrait</div>
-            <BitImage Height="144"
-                      Width="96"
-                      Alt="The bit platform logo"
-                      Class="framed"
-                      ImageFit="BitImageFit.CenterCover"
-                      Cover="BitImageCover.Portrait"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>ImageFit: CenterContain</div>
-            <div>Landscape</div>
-            <BitImage Height="96"
-                      Alt="The bit platform logo"
-                      Class="framed"
-                      ImageFit="BitImageFit.CenterContain"
-                      Cover="BitImageCover.Landscape"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <div>Portrait</div>
-            <BitImage Height="144"
-                      Width="96"
-                      Alt="The bit platform logo"
-                      Class="framed"
-                      ImageFit="BitImageFit.CenterContain"
-                      Cover="BitImageCover.Portrait"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="MaximizeFrame" RazorCode="@example7RazorCode" Id="example7">
-        <div class="example-desc">
-            <b>MaximizeFrame</b> hands the sizing over to whatever is around the component: the frame takes the full
-            width and height of its parent, and the image covers it. An explicit <b>ImageFit</b> still has the last word
-            over that cover, so the same maximized frame can just as well contain the image instead of cropping it.
-        </div>
-        <div class="example-content">
-            <BitStack Horizontal Wrap Gap="1rem" AutoHeight>
-                <div class="max-frame-host">
-                    <BitImage Alt="A landscape photograph"
-                              MaximizeFrame
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                </div>
-                <div class="max-frame-host">
-                    <BitImage Alt="A landscape photograph"
-                              MaximizeFrame
-                              ImageFit="BitImageFit.Contain"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                </div>
-            </BitStack>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Shape & shadow" RazorCode="@example8RazorCode" Id="example8">
-        <div class="example-desc">
-            The frame is what carries the shape, and it clips - so <b>Rounded</b> and <b>Circular</b> crop the image
-            rather than merely rounding a box drawn around it. <b>Rounded</b> takes the theme's surface radius, which
-            makes it follow the design system rather than a number written here; <b>Circular</b> is only a circle while
-            the frame is a square, so it goes with an <b>AspectRatio</b> of 1 and a <b>Cover</b> fit. <b>Bordered</b>
-            draws the theme's border around it, inside the frame's own size, and <b>Shadow</b> lifts it off the surface
-            with the same elevation every other raised surface of the library has. All four read the theme, so they
-            follow a design system rather than a number written on the page.
-        </div>
-        <div class="example-content">
-            <BitStack Horizontal Wrap Gap="1rem" AutoHeight VerticalAlign="BitAlignment.Center">
+        <DemoExample Title="Responsive sources" RazorCode="@example11RazorCode" Id="example11">
+            <div class="example-desc">
+                <b>Srcset</b> lists the same picture at several widths or densities and <b>Sizes</b> tells the browser how
+                wide it will be laid out, so it fetches no more than it needs. <b>Sources</b> add what a srcset cannot: a
+                different crop per viewport, or a modern format by <b>Type</b>. The first match wins; <b>Src</b> is the
+                answer every browser understands.
+            </div>
+            <div class="example-content">
+                <div>Srcset & Sizes</div>
                 <BitImage Rounded
-                          Width="10rem"
-                          AspectRatio="1"
-                          ImageFit="BitImageFit.Cover"
-                          Alt="A landscape photograph in a rounded frame"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                <BitImage Circular
-                          Width="10rem"
-                          AspectRatio="1"
-                          ImageFit="BitImageFit.Cover"
-                          Alt="A landscape photograph in a circular frame"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                <BitImage Bordered
-                          Rounded
-                          Width="10rem"
-                          AspectRatio="1"
-                          ImageFit="BitImageFit.Cover"
-                          Alt="A landscape photograph in a bordered, rounded frame"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                <BitImage Shadow
-                          Rounded
-                          Width="10rem"
-                          AspectRatio="1"
-                          ImageFit="BitImageFit.Cover"
-                          Alt="A landscape photograph in a raised, rounded frame"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-            </BitStack>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Loading & error states" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div class="example-desc">
-            The component follows the browser's own load and error events, and the resulting <b>BitImageState</b> decides
-            what is on screen: <b>LoadingTemplate</b> stands in the frame while the image is on its way and
-            <b>ErrorTemplate</b> once it has failed, and <b>OnLoadingStateChange</b> reports every transition - including
-            the return to <b>Loading</b> when the source changes. <b>LoadingState</b> is the same value read off the
-            component, and <b>ReloadAsync</b> asks for the image again from the beginning, which is the answer to a
-            failure that was the network's rather than the image's: it replaces the img element instead of patching it,
-            so the browser really does fetch a source it already holds an answer for.
-        </div>
-        <div class="example-content">
-            <BitStack Horizontal Wrap Gap="1rem" AutoHeight VerticalAlign="BitAlignment.Center">
-                <BitButton OnClick="() => loadLoading = true">Load a slow image</BitButton>
-                <BitButton OnClick="() => loadError = true">Load a broken image</BitButton>
-                <BitButton Variant="BitVariant.Outline" OnClick="ReloadImages">Reload both</BitButton>
-                <div>State: <b>@loadingStateText</b></div>
-            </BitStack>
-            <br />
-            @if (loadLoading)
-            {
-                <BitImage @ref="slowImage"
-                          Width="200px"
-                          Alt="An image served with a delay"
-                          Src="/api/Image/GetImage"
-                          OnLoadingStateChange="s => loadingStateText = s.ToString()">
-                    <LoadingTemplate>
-                        <BitStack Horizontal Gap="0.5rem" AutoHeight VerticalAlign="BitAlignment.Center">
-                            <BitSpinnerLoading CustomSize="24" />
-                            <span>loading...</span>
-                        </BitStack>
-                    </LoadingTemplate>
-                </BitImage>
-            }
-            <br />
-            @if (loadError)
-            {
-                <BitImage @ref="brokenImage"
-                          Width="200px"
-                          Alt="An image whose source fails"
-                          Src="/api/Image/GetImageError">
-                    <LoadingTemplate><span>loading...</span></LoadingTemplate>
-                    <ErrorTemplate>
-                        <BitMessage Color="BitColor.Error">The image could not be loaded.</BitMessage>
-                    </ErrorTemplate>
-                </BitImage>
-            }
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="FallbackSrc" RazorCode="@example10RazorCode" Id="example10">
-        <div class="example-desc">
-            <b>FallbackSrc</b> is the other answer to a failure: instead of a template, another image. It is tried
-            exactly once - a fallback that fails as well leaves the component in the error state rather than asking for
-            it again - and it is also what is shown when no <b>Src</b> is given at all, which makes a missing avatar and
-            a broken one look the same. A fallback belongs to the page rather than to the network: something already
-            cached or inlined as a data URI, since whatever kept the first image away may well keep this one away too.
-        </div>
-        <div class="example-content">
-            <div>A source that does not exist, answered by the fallback</div>
-            <BitImage Width="9rem"
-                      Alt="The bit platform logo, shown in place of a missing image"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/no-such-image.png"
-                      FallbackSrc="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>No source at all, answered by the same fallback</div>
-            <BitImage Width="9rem"
-                      Alt="The bit platform logo, shown in place of a missing image"
-                      FallbackSrc="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="PlaceholderSrc" RazorCode="@example11RazorCode" Id="example11">
-        <div class="example-desc">
-            <b>PlaceholderSrc</b> is the blur-up placeholder: a tiny, heavily compressed stand-in - normally the same
-            picture at a few dozen pixels, inlined as a data URI so it costs no request - which fills the frame from the
-            first frame and is taken away the moment the real image arrives. It fills the frame, so it needs a frame with
-            a size: a <b>Width</b> and a <b>Height</b>, an <b>AspectRatio</b>, or a <b>MaximizeFrame</b>. Paired with
-            <b>FadeIn</b> it is the whole of the progressive-image effect, with no layout shift at either end.
-        </div>
-        <div class="example-content">
-            <BitButton OnClick="() => loadPlaceholder = !loadPlaceholder">@(loadPlaceholder ? "Reset" : "Load the image")</BitButton>
-            @if (loadPlaceholder)
-            {
-                <BitImage FadeIn
-                          Rounded
-                          Width="16rem"
+                          Width="100%"
                           AspectRatio="16/9"
                           ImageFit="BitImageFit.Cover"
-                          Alt="An image served with a delay"
-                          Src="/api/Image/GetImage"
-                          PlaceholderSrc="@placeholderDataUri" />
-            }
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="FadeIn & StartVisible" RazorCode="@example12RazorCode" Id="example12">
-        <div class="example-desc">
-            The image is hidden until it has loaded, which keeps a half-drawn or broken one off the page at the cost of
-            the frame collapsing while it waits. <b>StartVisible</b> is the other trade: the image is shown from the
-            start - the browser's own progressive rendering - and hidden only if it fails. <b>FadeIn</b> animates the
-            moment the image becomes visible rather than the mounting of the component, so it is the arrival that is
-            animated; it collapses to nothing under <code>prefers-reduced-motion</code> unless <b>ForceAnimation</b> says
-            otherwise.
-        </div>
-        <div class="example-content">
-            <BitButton OnClick="() => fadeKey++">Load again</BitButton>
-            <br />
-            <div>FadeIn</div>
-            <BitImage @key="@($"fade-{fadeKey}")"
-                      FadeIn
-                      Width="200px"
-                      Alt="An image served with a delay"
-                      Src="@($"/api/Image/GetImage?v={fadeKey}")" />
-            <br />
-            <div>StartVisible</div>
-            <BitImage @key="@($"start-{fadeKey}")"
-                      StartVisible
-                      Width="200px"
-                      Alt="An image served with a delay"
-                      Src="@($"/api/Image/GetImage?v={fadeKey}")" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Native loading attributes" RazorCode="@example13RazorCode" Id="example13">
-        <div class="example-desc">
-            What the browser decides for itself stays the browser's. <b>Loading</b> is the <code>loading</code>
-            attribute: a <b>Lazy</b> image is only fetched once the browser expects it to be needed, so it keeps the room
-            it will take up while it waits - give it a <b>Height</b> or an <b>AspectRatio</b> so that room is the right
-            size - and it is never right for what is already on the first screen. <b>FetchPriority</b> reorders one image
-            against everything else being fetched, which is worth setting on exactly two kinds: the largest thing on the
-            first screen, and the decorative ones far below that should not compete with it. <b>Decoding</b> hints at
-            whether the pixels may be produced off the critical path. <b>CrossOrigin</b> and <b>ReferrerPolicy</b> cover
-            the two things a cross-origin image needs to settle - whether its pixels may be read back, and how much of
-            the current address is handed to whoever serves it - and anything else an <code>img</code> accepts goes
-            through <b>ImageAttributes</b>, which is merged with what the parameters set rather than replaced by it.
-        </div>
-        <div class="example-content">
-            <BitImage Alt="A landscape photograph"
-                      Width="12rem"
-                      AspectRatio="16/9"
-                      ImageFit="BitImageFit.Cover"
-                      Loading="BitImageLoading.Lazy"
-                      Decoding="BitImageDecoding.Async"
-                      FetchPriority="BitImageFetchPriority.Low"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
-            <br />
-            <BitImage Alt="A landscape photograph"
-                      Width="12rem"
-                      AspectRatio="16/9"
-                      ImageFit="BitImageFit.Cover"
-                      FetchPriority="BitImageFetchPriority.High"
-                      ImageAttributes="@(new() { { "elementtiming", "hero" } })"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Srcset & Sizes" RazorCode="@example14RazorCode" Id="example14">
-        <div class="example-desc">
-            <b>Srcset</b> hands the browser a list of the same picture at different sizes, each tagged with its width
-            (<code>480w</code>) or its pixel density (<code>2x</code>), and lets it choose - a decision the page cannot
-            make, since only the browser knows the screen and the network. <b>Sizes</b> is what makes a width-descriptor
-            list usable: it says how wide the image will be laid out before the layout is known, and without it the
-            browser assumes the full width of the viewport and over-fetches accordingly. <b>Src</b> stays as the answer
-            for anything that reads neither.
-        </div>
-        <div class="example-content">
-            <BitImage Rounded
-                      Width="100%"
-                      AspectRatio="16/9"
-                      ImageFit="BitImageFit.Cover"
-                      Alt="A landscape photograph served at the size the viewport needs"
-                      Sizes="(max-width: 600px) 100vw, 32rem"
-                      Srcset="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg 1200w, _content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg 600w"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Sources" RazorCode="@example15RazorCode" Id="example15">
-        <div class="example-desc">
-            <b>Srcset</b> answers "how many pixels"; <b>Sources</b> answers the two questions it cannot. The first is
-            art direction - a different <i>crop</i> of the subject at a different viewport, a wide hero on a desktop and
-            a square one on a phone - which is a decision about the composition rather than about the file size. The
-            second is format: an AVIF and a WebP offered ahead of the JPEG that every browser understands, each with its
-            <b>Type</b>, so a browser that cannot read one skips it without fetching anything. The browser walks the
-            list in order and takes the first it is satisfied by, which makes the order the priority, and <b>Src</b>
-            stays the answer that is always understood. The image is wrapped in a <code>picture</code> that lays nothing
-            out of its own, so the frame, the fit and the shape are untouched.
-        </div>
-        <div class="example-content">
-            <div>Resize the window across 600px to swap the crop</div>
-            <BitImage Rounded
-                      Width="100%"
-                      AspectRatio="16/9"
-                      ImageFit="BitImageFit.Cover"
-                      Alt="A landscape photograph, cropped differently on a narrow viewport"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"
-                      Sources="@(new BitImageSource[]
-                                 {
-                                     new() { Media = "(max-width: 600px)", Srcset = "_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" },
-                                     new() { Srcset = "_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" }
-                                 })" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="OnClick" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
-        <div class="example-desc">
-            Assigning <b>OnClick</b> makes the image a button rather than a picture: it becomes focusable, is announced
-            as a button whose name is the <b>Alt</b> - so the text says what the click does rather than what the image
-            shows - and answers the Enter and the Space keys as well as the pointer. A disabled image answers neither.
-            <b>Draggable</b> is worth setting to false on a clickable image, since a browser makes an image draggable of
-            itself and a press that was meant as a click can start a drag instead.
-        </div>
-        <div class="example-content">
-            <BitStack Horizontal Wrap Gap="1rem" AutoHeight VerticalAlign="BitAlignment.Center">
+                          Alt="A landscape photograph served at the size the viewport needs"
+                          Sizes="(max-width: 600px) 100vw, 32rem"
+                          Srcset="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg 1200w, _content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg 600w"
+                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <div>Sources: resize the window across 600px to swap the crop</div>
                 <BitImage Rounded
-                          Width="8rem"
-                          AspectRatio="1"
-                          Draggable="false"
+                          Width="100%"
+                          AspectRatio="16/9"
                           ImageFit="BitImageFit.Cover"
-                          Alt="Count this click"
-                          OnClick="() => clickCount++"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                          Alt="A landscape photograph, cropped differently on a narrow viewport"
+                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"
+                          Sources="@(new BitImageSource[]
+                                     {
+                                         new() { Media = "(max-width: 600px)", Srcset = "_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" },
+                                         new() { Srcset = "_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" }
+                                     })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="OnClick" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div class="example-desc">
+                <b>OnClick</b> makes the image a button: focusable, named by its <b>Alt</b>, and activated by Enter and
+                Space as well - here it opens a larger preview in a <b>BitModal</b>. A disabled one answers neither.
+                <b>Draggable="false"</b> keeps a press from starting a drag.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <BitImage Rounded
+                              Width="8rem"
+                              AspectRatio="1"
+                              Draggable="false"
+                              ImageFit="BitImageFit.Cover"
+                              Alt="Preview the photograph"
+                              OnClick="() => isPreviewOpen = true"
+                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <BitImage Rounded
+                              Width="8rem"
+                              AspectRatio="1"
+                              IsEnabled="false"
+                              Draggable="false"
+                              ImageFit="BitImageFit.Cover"
+                              Alt="Preview the photograph (disabled)"
+                              OnClick="() => isPreviewOpen = true"
+                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </div>
+                <BitModal @bind-IsOpen="isPreviewOpen" HeaderText="A landscape photograph" ShowCloseButton>
+                    <div class="preview-body">
+                        <BitImage Fluid Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    </div>
+                </BitModal>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="ChildContent" RazorCode="@example13RazorCode" Id="example13">
+            <div class="example-desc">
+                <b>ChildContent</b> is laid over a sized frame - a caption, a badge, a scrim - and lets clicks through to
+                the image except where the content takes them.
+            </div>
+            <div class="example-content">
                 <BitImage Rounded
-                          Width="8rem"
-                          AspectRatio="1"
-                          IsEnabled="false"
-                          Draggable="false"
+                          Width="20rem"
+                          AspectRatio="16/9"
                           ImageFit="BitImageFit.Cover"
-                          Alt="This one is disabled"
-                          OnClick="() => clickCount++"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                <div>Clicked <b>@clickCount</b> times</div>
-            </BitStack>
-        </div>
-    </DemoExample>
+                          Alt="A landscape photograph"
+                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg">
+                    <div class="image-caption">A caption laid over the image</div>
+                </BitImage>
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="ChildContent" RazorCode="@example17RazorCode" Id="example17">
-        <div class="example-desc">
-            <b>ChildContent</b> is a layer over the image, filling the frame: a caption, a badge, a gradient scrim, a
-            play button. It is laid over the whole frame, so it needs a frame with a size, and it is the last thing in
-            it, which is what puts it above the image without either of them needing a <code>z-index</code>.
-        </div>
-        <div class="example-content">
-            <BitImage Rounded
-                      Width="20rem"
-                      AspectRatio="16/9"
-                      ImageFit="BitImageFit.Cover"
-                      Alt="A landscape photograph"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg">
-                <div class="image-caption">A caption laid over the image</div>
-            </BitImage>
-        </div>
-    </DemoExample>
+        <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div class="example-desc">
+                The alt is always rendered: leave <b>Alt</b> out for a decorative image, which is then skipped. While the
+                image is hidden - loading, lazily waiting or failed - its alt is still announced. <b>AriaLabel</b>
+                names a clickable image by what it does while the alt describes the picture. <b>FocusAsync</b> focuses a
+                clickable image, which draws the focus ring on the frame.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <div>
+                        <div>Decorative</div>
+                        <BitImage Width="6rem" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                    <div>
+                        <div>Failed, still announced</div>
+                        <BitImage Width="6rem" Alt="Monthly sales chart" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/no-such-chart.png" />
+                    </div>
+                    <div>
+                        <div>AriaLabel</div>
+                        <BitImage @ref="focusableImage"
+                                  Rounded
+                                  Width="8rem"
+                                  AspectRatio="1"
+                                  ImageFit="BitImageFit.Cover"
+                                  Alt="A mountain lake at dawn"
+                                  AriaLabel="Open the photo gallery"
+                                  OnClick="() => galleryOpened++"
+                                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    </div>
+                </div>
+                <div class="image-row">
+                    <BitButton OnClick="() => focusableImage!.FocusAsync()">Focus the image</BitButton>
+                    <div>Gallery opened <b>@galleryOpened</b> times</div>
+                </div>
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
-        <div class="example-desc">
-            <b>Style</b> and <b>Class</b> reach the frame, which is the element that carries the size and the shape, and
-            <b>Styles</b> and <b>Classes</b> reach each part of the component by name - the <b>Root</b> frame, the
-            <b>Image</b> itself, the <b>Placeholder</b>, the two template wrappers and the <b>Content</b> overlay. A
-            filter, a mask or a transition belongs on the image; a shadow or a margin belongs on the frame.
-        </div>
-        <div class="example-content">
-            <div>Component's Style & Class:</div>
-            <div>Styled</div>
-            <BitImage Alt="The bit platform logo"
-                      Style="border: 2px solid goldenrod; border-radius: 5px; width: 258px;"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Classed</div>
-            <BitImage Alt="The bit platform logo"
-                      Class="custom-class"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <br />
-            <div><b>Styles</b> & <b>Classes</b>:</div>
-            <div>Styles</div>
-            <BitImage Alt="The bit platform logo"
-                      Styles="@(new() { Image = "filter: blur(5px)" })"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <div>Classes</div>
-            <BitImage Alt="The bit platform logo"
-                      Classes="@(new() { Image = "custom-image" })"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-        </div>
-    </DemoExample>
+        <DemoExample Title="CSS variables" RazorCode="@example15RazorCode" Id="example15">
+            <div class="example-desc">
+                The public <b>--bit-Image-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink>
+                table) restyle every image at once. They inherit, so set them on <code>:root</code>, on an ancestor - as
+                here - or on one image's <b>Style</b>. The shape and elevation ones apply only where <b>Rounded</b>,
+                <b>Bordered</b> or <b>Shadow</b> asks for the feature.
+            </div>
+            <div class="example-content">
+                <div class="image-row" style="--bit-Image-radius: 1.5rem; --bit-Image-border-width: 3px; --bit-Image-border-color: var(--bit-clr-pri); --bit-Image-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); --bit-Image-background: var(--bit-clr-bg-sec); --bit-Image-focus-color: var(--bit-clr-wrn);">
+                    <BitImage Rounded Bordered Width="8rem" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Rounded and bordered" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <BitImage Rounded Shadow Width="8rem" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Rounded and raised" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <BitImage Rounded Width="8rem" AspectRatio="1" ImageFit="BitImageFit.Contain" Alt="The bit platform logo on the frame background" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    <BitImage Rounded Width="8rem" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Tab here to see the amber focus ring" OnClick="() => { }" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </div>
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
-        <div class="example-desc">
-            An image has no reading direction of its own - it is a picture, not a run of text - so <b>Dir</b> changes
-            nothing about how it is drawn. What it does change is the direction the content of the component flows in:
-            a caption laid over the image, a loading or error template, and the placement of the frame within whatever
-            lays it out. The direction is also cascaded, so a <b>BitImage</b> inside an RTL container inherits it.
-        </div>
-        <div dir="rtl" class="example-content">
-            <BitImage Rounded
-                      Dir="BitDir.Rtl"
-                      Width="20rem"
-                      AspectRatio="16/9"
-                      ImageFit="BitImageFit.Cover"
-                      Alt="عکسی از یک منظره"
-                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg">
-                <div class="image-caption">نوشته‌ای روی تصویر</div>
-            </BitImage>
-        </div>
-    </DemoExample>
+        <DemoExample Title="Cascading parameters" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div class="example-desc">
+                <b>BitParams</b> with a <b>BitImageParams</b> sets defaults for every image under it - the shape, the
+                fit, a <b>FallbackSrc</b> for every broken picture; an image's own value wins (the last one turns rounding
+                off). The source, the alt, the templates and the callbacks are not cascaded.
+            </div>
+            <div class="example-content">
+                <BitParams Parameters="imageParams">
+                    <div class="image-row">
+                        <BitImage Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                        <BitImage Alt="A missing photograph, replaced by the cascaded fallback" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/no-such-image.jpg" />
+                        <BitImage Rounded="false" Alt="A landscape photograph" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    </div>
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
+            <div class="example-desc">
+                <b>Style</b> and <b>Class</b> reach the frame; <b>Styles</b> and <b>Classes</b> reach each part:
+                <b>Root</b>, <b>Image</b>, <b>Placeholder</b>, <b>LoadingTemplate</b>, <b>ErrorTemplate</b> and
+                <b>Content</b>. Filters belong on the image, margins on the frame.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <div>
+                        <div>Style</div>
+                        <BitImage Alt="The bit platform logo"
+                                  Style="border: 2px solid goldenrod; border-radius: 5px; width: 258px;"
+                                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                    <div>
+                        <div>Class</div>
+                        <BitImage Alt="The bit platform logo"
+                                  Class="custom-class"
+                                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                    <div>
+                        <div>Styles</div>
+                        <BitImage Alt="The bit platform logo"
+                                  Styles="@(new() { Image = "filter: blur(5px)" })"
+                                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                    <div>
+                        <div>Classes</div>
+                        <BitImage Alt="The bit platform logo"
+                                  Classes="@(new() { Image = "custom-image" })"
+                                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                    </div>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+            <div class="example-desc">
+                A picture has no reading direction; <b>Dir</b> changes the flow of what is laid over it and of the templates.
+            </div>
+            <div dir="rtl" class="example-content">
+                <BitImage Rounded
+                          Dir="BitDir.Rtl"
+                          Width="20rem"
+                          AspectRatio="16/9"
+                          ImageFit="BitImageFit.Cover"
+                          Alt="عکسی از یک منظره"
+                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg">
+                    <div class="image-caption">نوشته‌ای روی تصویر</div>
+                </BitImage>
+            </div>
+        </DemoExample>
+    </Examples>
 </DemoPage>

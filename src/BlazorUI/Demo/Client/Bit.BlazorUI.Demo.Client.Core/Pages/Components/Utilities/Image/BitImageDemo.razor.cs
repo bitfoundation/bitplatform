@@ -9,7 +9,7 @@ public partial class BitImageDemo
             Name = "Alt",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies an alternate text for the image. The attribute is always rendered, so an image given no text is announced as decorative (alt=\"\") rather than read out as a file name."
+            Description = "Specifies an alternate text for the image. The attribute is always rendered, so an image given no text is announced as decorative (alt=\"\") rather than read out as a file name. It is still announced while the image is hidden (loading or failed)."
         },
         new()
         {
@@ -87,7 +87,7 @@ public partial class BitImageDemo
             Name = "ErrorTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template used to show the error state of the image.",
+            Description = "The custom template used to show the error state of the image, which is also reached at once when there is nothing to load (no Src, FallbackSrc, Srcset or Sources).",
         },
         new()
         {
@@ -111,6 +111,13 @@ public partial class BitImageDemo
             Description = "Hints the browser at the priority this image is fetched with, relative to the other resources of the page.",
             LinkType = LinkType.Link,
             Href = "#image-fetch-priority"
+        },
+        new()
+        {
+            Name = "Fluid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the frame from growing wider than its container, scaling the image down with it rather than cropping it."
         },
         new()
         {
@@ -317,7 +324,7 @@ public partial class BitImageDemo
             Name = "ReloadAsync",
             Type = "Task",
             DefaultValue = "",
-            Description = "Requests the image again from the beginning, whichever state it is in: the component returns to the Loading state, forgets that a FallbackSrc has been tried, and replaces the img element rather than patching it - which is what makes the browser fetch a source it already holds an answer for."
+            Description = "Requests the image again from the beginning, whichever state it is in: the component returns to the Loading state, forgets that a FallbackSrc has been tried, and replaces the img element so the browser fetches even a source it already holds an answer for."
         }
     ];
 
@@ -342,7 +349,7 @@ public partial class BitImageDemo
                     Name = "Placeholder",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the placeholder image element, which is only rendered while a PlaceholderSrc is provided and the image itself has not loaded yet.",
+                    Description = "Custom CSS classes/styles for the placeholder image element, rendered while a PlaceholderSrc is provided and the image itself is not on screen.",
                 },
                 new()
                 {
@@ -691,18 +698,71 @@ public partial class BitImageDemo
 
 
 
-    private bool loadLoading;
-    private bool loadError;
-    private bool loadPlaceholder;
-    private int fadeKey;
-    private int clickCount;
-    private string loadingStateText = "Loading";
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Image-background",
+            DefaultValue = "transparent",
+            Description = "Background of the frame, seen behind a contained image and in a sized frame while the image loads.",
+        },
+        new()
+        {
+            Name = "--bit-Image-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of a Rounded frame.",
+        },
+        new()
+        {
+            Name = "--bit-Image-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Border width of a Bordered frame.",
+        },
+        new()
+        {
+            Name = "--bit-Image-border-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Border color of a Bordered frame.",
+        },
+        new()
+        {
+            Name = "--bit-Image-shadow",
+            DefaultValue = "--bit-shd-card",
+            Description = "Elevation of a Shadow frame.",
+        },
+        new()
+        {
+            Name = "--bit-Image-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the focus ring drawn around the frame of a focused image.",
+        },
+        new()
+        {
+            Name = "--bit-Image-placeholder-blur",
+            DefaultValue = "0.5rem",
+            Description = "Blur radius of the PlaceholderSrc.",
+        },
+        new()
+        {
+            Name = "--bit-Image-fade-duration",
+            DefaultValue = "--bit-mot-duration-long",
+            Description = "Pace of the FadeIn. Reduced motion collapses it unless ForceAnimation is set.",
+        },
+        new()
+        {
+            Name = "--bit-Image-fade-easing",
+            DefaultValue = "--bit-mot-easing",
+            Description = "Timing function of the FadeIn.",
+        },
+    ];
+
+
+
+    private bool loadSlow;
+    private bool loadBroken;
+    private BitImageState slowImageState;
     private BitImage? slowImage;
     private BitImage? brokenImage;
-
-    // A 16x9 gradient inlined as an SVG data URI: the stand-in for the tiny, heavily compressed copy of
-    // the real photograph a page would normally generate at build time.
-    private const string placeholderDataUri = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23335c81'/%3E%3Cstop offset='1' stop-color='%23c9d6df'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='16' height='9' fill='url(%23g)'/%3E%3C/svg%3E";
 
     private async Task ReloadImages()
     {
@@ -717,422 +777,30 @@ public partial class BitImageDemo
         }
     }
 
+    private readonly string? missingAvatarUrl = null;
 
+    private int progressiveKey;
 
-    private readonly string example1RazorCode = @"
-<BitImage Alt=""The bit platform logo""
-          Title=""The bit platform logo""
-          Src=""images/bit-logo-blue.png"" />
+    // A 16x9 gradient inlined as an SVG data URI: the stand-in for the tiny, heavily compressed copy of
+    // the real photograph a page would normally generate at build time.
+    private const string placeholderDataUri = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23335c81'/%3E%3Cstop offset='1' stop-color='%23c9d6df'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='16' height='9' fill='url(%23g)'/%3E%3C/svg%3E";
 
-<BitImage Alt=""The bit platform logo"" IsEnabled=""false"" Src=""images/bit-logo-blue.png"" />";
+    private bool isPreviewOpen;
 
-    private readonly string example2RazorCode = @"
-<BitImage Width=""9rem""
-          Alt=""The bit platform logo""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
+    private BitImage? focusableImage;
+    private int galleryOpened;
 
-<BitImage Height=""5rem""
-          Alt=""The bit platform logo""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Width=""256px""
-          Height=""128px""
-          Alt=""The bit platform logo""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />";
-
-    private readonly string example3RazorCode = @"
-<BitImage Width=""16rem""
-          AspectRatio=""16/9""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph""
-          Class=""framed""
-          Src=""images/carousel/img1.jpg"" />
-
-<BitImage Width=""10rem""
-          AspectRatio=""1""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph""
-          Class=""framed""
-          Src=""images/carousel/img1.jpg"" />
-
-<BitImage Width=""8rem""
-          AspectRatio=""3/4""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph""
-          Class=""framed""
-          Src=""images/carousel/img1.jpg"" />";
-
-    private readonly string example4RazorCode = @"
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          ImageFit=""BitImageFit.None""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          ImageFit=""BitImageFit.Center""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          ImageFit=""BitImageFit.Contain""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          ImageFit=""BitImageFit.Cover""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          ImageFit=""BitImageFit.Fill""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          ImageFit=""BitImageFit.ScaleDown""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          ImageFit=""BitImageFit.CenterContain""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          ImageFit=""BitImageFit.CenterCover""
-          Class=""framed""
-          Src=""images/bit-logo-blue.png"" />";
-
-    private readonly string example5RazorCode = @"
-<BitImage Width=""10rem""
-          AspectRatio=""1""
-          ImagePosition=""top""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph cropped to its top edge""
-          Class=""framed""
-          Src=""images/carousel/img2.jpg"" />
-
-<BitImage Width=""10rem""
-          AspectRatio=""1""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph cropped around its middle""
-          Class=""framed""
-          Src=""images/carousel/img2.jpg"" />
-
-<BitImage Width=""10rem""
-          AspectRatio=""1""
-          ImagePosition=""bottom""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph cropped to its bottom edge""
-          Class=""framed""
-          Src=""images/carousel/img2.jpg"" />";
-
-    private readonly string example6RazorCode = @"
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          Class=""framed""
-          ImageFit=""BitImageFit.CenterCover""
-          Cover=""BitImageCover.Landscape""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""144""
-          Width=""96""
-          Alt=""The bit platform logo""
-          Class=""framed""
-          ImageFit=""BitImageFit.CenterCover""
-          Cover=""BitImageCover.Portrait""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""96""
-          Alt=""The bit platform logo""
-          Class=""framed""
-          ImageFit=""BitImageFit.CenterContain""
-          Cover=""BitImageCover.Landscape""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Height=""144""
-          Width=""96""
-          Alt=""The bit platform logo""
-          Class=""framed""
-          ImageFit=""BitImageFit.CenterContain""
-          Cover=""BitImageCover.Portrait""
-          Src=""images/bit-logo-blue.png"" />";
-
-    private readonly string example7RazorCode = @"
-<div class=""max-frame-host"">
-    <BitImage Alt=""A landscape photograph""
-              MaximizeFrame
-              Src=""images/carousel/img3.jpg"" />
-</div>
-
-<div class=""max-frame-host"">
-    <BitImage Alt=""A landscape photograph""
-              MaximizeFrame
-              ImageFit=""BitImageFit.Contain""
-              Src=""images/carousel/img3.jpg"" />
-</div>";
-
-    private readonly string example8RazorCode = @"
-<BitImage Rounded
-          Width=""10rem""
-          AspectRatio=""1""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph in a rounded frame""
-          Src=""images/carousel/img4.jpg"" />
-
-<BitImage Circular
-          Width=""10rem""
-          AspectRatio=""1""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph in a circular frame""
-          Src=""images/carousel/img4.jpg"" />
-
-<BitImage Bordered
-          Rounded
-          Width=""10rem""
-          AspectRatio=""1""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph in a bordered, rounded frame""
-          Src=""images/carousel/img4.jpg"" />
-
-<BitImage Shadow
-          Rounded
-          Width=""10rem""
-          AspectRatio=""1""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph in a raised, rounded frame""
-          Src=""images/carousel/img4.jpg"" />";
-
-    private readonly string example9RazorCode = @"
-<BitButton OnClick=""() => loadLoading = true"">Load a slow image</BitButton>
-<BitButton OnClick=""() => loadError = true"">Load a broken image</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""ReloadImages"">Reload both</BitButton>
-<div>State: <b>@loadingStateText</b></div>
-
-@if (loadLoading)
-{
-    <BitImage @ref=""slowImage""
-              Width=""200px""
-              Alt=""An image served with a delay""
-              Src=""/api/Image/GetImage""
-              OnLoadingStateChange=""s => loadingStateText = s.ToString()"">
-        <LoadingTemplate>
-            <BitSpinnerLoading CustomSize=""24"" />
-            <span>loading...</span>
-        </LoadingTemplate>
-    </BitImage>
-}
-
-@if (loadError)
-{
-    <BitImage @ref=""brokenImage""
-              Width=""200px""
-              Alt=""An image whose source fails""
-              Src=""/api/Image/GetImageError"">
-        <LoadingTemplate><span>loading...</span></LoadingTemplate>
-        <ErrorTemplate>
-            <BitMessage Color=""BitColor.Error"">The image could not be loaded.</BitMessage>
-        </ErrorTemplate>
-    </BitImage>
-}";
-    private readonly string example9CsharpCode = @"
-private bool loadLoading;
-private bool loadError;
-private string loadingStateText = ""Loading"";
-private BitImage? slowImage;
-private BitImage? brokenImage;
-
-private async Task ReloadImages()
-{
-    if (slowImage is not null)
-    {
-        await slowImage.ReloadAsync();
-    }
-
-    if (brokenImage is not null)
-    {
-        await brokenImage.ReloadAsync();
-    }
-}";
-
-    private readonly string example10RazorCode = @"
-<BitImage Width=""9rem""
-          Alt=""The bit platform logo, shown in place of a missing image""
-          Src=""images/no-such-image.png""
-          FallbackSrc=""images/bit-logo-blue.png"" />
-
-<BitImage Width=""9rem""
-          Alt=""The bit platform logo, shown in place of a missing image""
-          FallbackSrc=""images/bit-logo-blue.png"" />";
-
-    private readonly string example11RazorCode = @"
-<BitButton OnClick=""() => loadPlaceholder = !loadPlaceholder"">@(loadPlaceholder ? ""Reset"" : ""Load the image"")</BitButton>
-
-@if (loadPlaceholder)
-{
-    <BitImage FadeIn
-              Rounded
-              Width=""16rem""
-              AspectRatio=""16/9""
-              ImageFit=""BitImageFit.Cover""
-              Alt=""An image served with a delay""
-              Src=""/api/Image/GetImage""
-              PlaceholderSrc=""@placeholderDataUri"" />
-}";
-
-    private readonly string example12RazorCode = @"
-<BitButton OnClick=""() => fadeKey++"">Load again</BitButton>
-
-<BitImage @key=""@($""fade-{fadeKey}"")""
-          FadeIn
-          Width=""200px""
-          Alt=""An image served with a delay""
-          Src=""@($""/api/Image/GetImage?v={fadeKey}"")"" />
-
-<BitImage @key=""@($""start-{fadeKey}"")""
-          StartVisible
-          Width=""200px""
-          Alt=""An image served with a delay""
-          Src=""@($""/api/Image/GetImage?v={fadeKey}"")"" />";
-
-    private readonly string example13RazorCode = @"
-<BitImage Alt=""A landscape photograph""
-          Width=""12rem""
-          AspectRatio=""16/9""
-          ImageFit=""BitImageFit.Cover""
-          Loading=""BitImageLoading.Lazy""
-          Decoding=""BitImageDecoding.Async""
-          FetchPriority=""BitImageFetchPriority.Low""
-          Src=""images/carousel/img1.jpg"" />
-
-<BitImage Alt=""A landscape photograph""
-          Width=""12rem""
-          AspectRatio=""16/9""
-          ImageFit=""BitImageFit.Cover""
-          FetchPriority=""BitImageFetchPriority.High""
-          ImageAttributes=""@(new() { { ""elementtiming"", ""hero"" } })""
-          Src=""images/carousel/img2.jpg"" />";
-
-    private readonly string example14RazorCode = @"
-<BitImage Rounded
-          Width=""100%""
-          AspectRatio=""16/9""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph served at the size the viewport needs""
-          Sizes=""(max-width: 600px) 100vw, 32rem""
-          Srcset=""images/carousel/img1.jpg 1200w, images/carousel/img2.jpg 600w""
-          Src=""images/carousel/img1.jpg"" />";
-
-    private readonly string example15RazorCode = @"
-<BitImage Rounded
-          Width=""100%""
-          AspectRatio=""16/9""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph, cropped differently on a narrow viewport""
-          Src=""images/carousel/img1.jpg""
-          Sources=""@(new BitImageSource[]
-                     {
-                         new() { Media = ""(max-width: 600px)"", Srcset = ""images/carousel/img4.jpg"" },
-                         new() { Srcset = ""images/carousel/img1.jpg"" }
-                     })"" />";
-
-    private readonly string example16RazorCode = @"
-<BitImage Rounded
-          Width=""8rem""
-          AspectRatio=""1""
-          Draggable=""false""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""Count this click""
-          OnClick=""() => clickCount++""
-          Src=""images/carousel/img3.jpg"" />
-
-<BitImage Rounded
-          Width=""8rem""
-          AspectRatio=""1""
-          IsEnabled=""false""
-          Draggable=""false""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""This one is disabled""
-          OnClick=""() => clickCount++""
-          Src=""images/carousel/img3.jpg"" />
-
-<div>Clicked <b>@clickCount</b> times</div>";
-    private readonly string example16CsharpCode = @"
-private int clickCount;";
-
-    private readonly string example17RazorCode = @"
-<style>
-    .image-caption {
-        left: 0;
-        right: 0;
-        bottom: 0;
-        color: white;
-        padding: 0.75rem;
-        position: absolute;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
-    }
-</style>
-
-<BitImage Rounded
-          Width=""20rem""
-          AspectRatio=""16/9""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""A landscape photograph""
-          Src=""images/carousel/img2.jpg"">
-    <div class=""image-caption"">A caption laid over the image</div>
-</BitImage>";
-
-    private readonly string example18RazorCode = @"
-<style>
-    .custom-class {
-        padding: 0.5rem;
-        filter: hue-rotate(45deg);
-        background-color: blueviolet;
-    }
-
-    .custom-image {
-        width: 16rem;
-        filter: opacity(25%);
-        border-radius: 1rem 3rem;
-    }
-</style>
-
-<BitImage Alt=""The bit platform logo""
-          Style=""border: 2px solid goldenrod; border-radius: 5px; width: 258px;""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Alt=""The bit platform logo""
-          Class=""custom-class""
-          Src=""images/bit-logo-blue.png"" />
-
-
-<BitImage Alt=""The bit platform logo""
-          Styles=""@(new() { Image = ""filter: blur(5px)"" })""
-          Src=""images/bit-logo-blue.png"" />
-
-<BitImage Alt=""The bit platform logo""
-          Classes=""@(new() { Image = ""custom-image"" })""
-          Src=""images/bit-logo-blue.png"" />";
-
-    private readonly string example19RazorCode = @"
-<BitImage Rounded
-          Dir=""BitDir.Rtl""
-          Width=""20rem""
-          AspectRatio=""16/9""
-          ImageFit=""BitImageFit.Cover""
-          Alt=""عکسی از یک منظره""
-          Src=""images/carousel/img4.jpg"">
-    <div class=""image-caption"">نوشته‌ای روی تصویر</div>
-</BitImage>";
+    private readonly BitImageParams[] imageParams =
+    [
+        new()
+        {
+            Width = "8rem",
+            AspectRatio = "1",
+            ImageFit = BitImageFit.Cover,
+            Rounded = true,
+            Shadow = true,
+            FadeIn = true,
+            FallbackSrc = "_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png",
+        }
+    ];
 }

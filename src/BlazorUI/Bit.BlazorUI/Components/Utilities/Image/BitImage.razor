@@ -66,14 +66,21 @@
         @image
     }
 
-    @if (_loadingState is BitImageState.Loading && StartVisible is false && LoadingTemplate is not null)
+    @*  The text alternative of an image that is not on screen, which leaves the accessibility tree
+        with the image it belongs to - see the .bit-img-alt rule. *@
+    @if (_hiddenImageName is not null)
+    {
+        <span role="img" aria-label="@_hiddenImageName" class="bit-img-alt"></span>
+    }
+
+    @if (_isLoadingTemplateShown)
     {
         <div style="@Styles?.LoadingTemplate"
              class="bit-img-tpl@(Classes?.LoadingTemplate.HasValue() is true ? $" {Classes!.LoadingTemplate}" : null)">
             @LoadingTemplate
         </div>
     }
-    else if (_loadingState is BitImageState.Error && ErrorTemplate is not null)
+    else if (_isErrorTemplateShown)
     {
         <div style="@Styles?.ErrorTemplate"
              class="bit-img-tpl@(Classes?.ErrorTemplate.HasValue() is true ? $" {Classes!.ErrorTemplate}" : null)">

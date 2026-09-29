@@ -1,11 +1,32 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the frame and never declared here, so a value set on :root re-skins every
+// image, one set on an ancestor every image inside it, and one set on the Style of an instance that one:
+//   --bit-Image-background          background of the frame, behind a contained image   (default: transparent)
+//   --bit-Image-radius              corner radius of a Rounded frame                    (default: $shp-radius-surface)
+//   --bit-Image-border-width        border width of a Bordered frame                    (default: $shp-border-width)
+//   --bit-Image-border-color        border color of a Bordered frame                    (default: $clr-brd-sec)
+//   --bit-Image-shadow              elevation of a Shadow frame                         (default: $box-shadow-card)
+//   --bit-Image-focus-color         color of the keyboard focus ring                    (default: $clr-pri-focus)
+//   --bit-Image-placeholder-blur    blur radius of the PlaceholderSrc                   (default: 0.5rem)
+//   --bit-Image-fade-duration       pace of the FadeIn                                  (default: $mot-duration-long)
+//   --bit-Image-fade-easing         timing function of the FadeIn                       (default: $mot-easing)
+//
+// The shape and the elevation variables only take effect where the parameter asks for the feature (Rounded,
+// Bordered, Shadow), so a global value restyles those images without rounding or raising every other one. The
+// reduced motion preference collapses the fade, whatever pace it was given, unless ForceAnimation opts out.
+
 // The frame. Everything inside it is positioned against it, which is what lets a centered fit and an
 // overlay be placed without either of them knowing what is around the component; and it clips, which
 // is what makes the rounded and circular shapes crop the image rather than just round its own corners.
 .bit-img {
+    // The pace of the fade, derived here rather than read where the animation is so the reduced motion
+    // query below can still collapse a pace that was set through the public variable.
+    --bit-img-fade-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});
+
     overflow: hidden;
     position: relative;
+    background-color: var(--bit-Image-background, transparent);
 
     // The placeholder dims with the image it stands in for: it is the same picture, and one of the two
     // at full strength would be brighter while it loads than once it is there.
@@ -25,8 +46,41 @@
     // an image made focusable by a TabIndex alone is reached by the same keyboard and needs the same
     // indicator.
     &:has(.bit-img-img:focus-visible) {
-        @include focus-ring;
+        @include focus-ring(var(--bit-Image-focus-color, #{$clr-pri-focus}));
     }
+}
+
+// 0.01ms rather than 0ms, following motion.fluent.scss: the animation still runs, so the image still ends
+// at full opacity through its fill mode, only without anything to watch.
+@media (prefers-reduced-motion: reduce) {
+    .bit-img {
+        --bit-img-fade-duration: 0.01ms;
+    }
+}
+
+// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens, so the
+// image's own token is restored here, both for an image that sets ForceAnimation itself and for one sitting
+// inside an opted-out subtree.
+.bit-img.bit-fam,
+.bit-fam .bit-img {
+    --bit-img-fade-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});
+}
+
+// The text alternative of an image that is not on screen. A hidden image - still loading, lazily waiting
+// for the browser to want it, or failed - is out of the accessibility tree along with its alt, which would
+// leave a screen reader with nothing where a sighted reader at least has the frame; this stands in for it
+// until the image itself is there to be announced. It is hidden visually rather than with display:none,
+// which would take it out of the accessibility tree as well.
+.bit-img-alt {
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 @keyframes image-opacity-anim {
@@ -54,7 +108,7 @@
     display: block;
     object-fit: cover;
     position: absolute;
-    filter: blur(0.5rem);
+    filter: blur(var(--bit-Image-placeholder-blur, 0.5rem));
     transform: scale(1.1);
     user-select: none;
     pointer-events: none;
@@ -95,7 +149,7 @@
 }
 
 .bit-img-rnd {
-    border-radius: $shp-radius-surface;
+    border-radius: var(--bit-Image-radius, #{$shp-radius-surface});
 }
 
 .bit-img-cir {
@@ -104,15 +158,26 @@
 
 .bit-img-brd {
     box-sizing: border-box;
-    border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-color: $clr-brd-sec;
+    border-width: var(--bit-Image-border-width, #{$shp-border-width});
+    border-color: var(--bit-Image-border-color, #{$clr-brd-sec});
 }
 
 // An element clips its descendants with overflow, never its own box-shadow, so the shadow of the frame
 // survives the very clipping that makes the shapes work.
 .bit-img-shd {
-    box-shadow: $box-shadow-card;
+    box-shadow: var(--bit-Image-shadow, #{$box-shadow-card});
+}
+
+// A fluid frame is never wider than its container, and the image in it is scaled down with it rather than
+// cropped by it: without this, a picture larger than a narrow column is clipped by the frame that holds it.
+// The height follows the width, so the image keeps its shape at every width.
+.bit-img-flu {
+    max-width: 100%;
+
+    .bit-img-img {
+        max-width: 100%;
+    }
 }
 
 .bit-img-ihh {
@@ -146,9 +211,9 @@
 // image arrives rather than when the component was first rendered.
 .bit-img-img.bit-img-vis.bit-img-fde {
     animation-fill-mode: both;
-    animation-duration: $mot-duration-long;
     animation-name: image-opacity-anim;
-    animation-timing-function: $mot-easing;
+    animation-duration: var(--bit-img-fade-duration);
+    animation-timing-function: var(--bit-Image-fade-easing, #{$mot-easing});
 }
 
 .bit-img-max {

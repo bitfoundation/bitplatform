@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// The component is an img inside a frame, and nearly everything it offers is about the relationship
 /// between the two. The frame takes the size - <see cref="Width"/>, <see cref="Height"/>,
-/// <see cref="AspectRatio"/>, <see cref="MaximizeFrame"/> - and the shape - <see cref="Rounded"/>,
+/// <see cref="AspectRatio"/>, <see cref="MaximizeFrame"/>, <see cref="Fluid"/> - and the shape - <see cref="Rounded"/>,
 /// <see cref="Circular"/>, <see cref="Bordered"/> - and clips whatever falls outside it, while
 /// <see cref="ImageFit"/> and <see cref="ImagePosition"/> decide what the image does inside it once
 /// the two turn out to be different shapes.
@@ -20,7 +20,9 @@ namespace Bit.BlazorUI;
 /// the image is hidden until it has loaded (unless <see cref="StartVisible"/> says otherwise) and
 /// fades in with <see cref="FadeIn"/>, a <see cref="PlaceholderSrc"/> holds the frame meanwhile, a
 /// <see cref="LoadingTemplate"/> and an <see cref="ErrorTemplate"/> stand in its place, and a
-/// <see cref="FallbackSrc"/> is tried once before the error state is reached at all.
+/// <see cref="FallbackSrc"/> is tried once before the error state is reached at all. While the image
+/// is hidden its <see cref="Alt"/> is still announced, so a screen reader is never left with less than
+/// the frame.
 /// <br />
 /// What the browser itself decides is reachable rather than reimplemented: <see cref="Loading"/>,
 /// <see cref="Decoding"/>, <see cref="FetchPriority"/>, <see cref="CrossOrigin"/> and
@@ -58,6 +60,12 @@ public partial class BitImage : BitComponentBase
     private bool _stateChangePending;
 
     /// <summary>
+    /// Whether the error state was reached because there is nothing to load at all, rather than because
+    /// the browser reported a failure - which is what lets a source arriving later start a load again.
+    /// </summary>
+    private bool _sourceless;
+
+    /// <summary>
     /// The key of the img element. Changing it replaces the element rather than patching it, which is
     /// the only way to make the browser fetch a source it already has an answer for - see
     /// <see cref="ReloadAsync"/>.
@@ -81,6 +89,24 @@ public partial class BitImage : BitComponentBase
     private string? _placeholderSrc => _loadingState is not BitImageState.Loaded && PlaceholderSrc.HasValue()
                                         ? PlaceholderSrc
                                         : null;
+
+    // Whether the img element is on screen, which is also whether its alt is in the accessibility tree.
+    private bool _isImageVisible => _loadingState is BitImageState.Loaded ||
+                                    (_loadingState is BitImageState.Loading && StartVisible);
+
+    private bool _isLoadingTemplateShown => _loadingState is BitImageState.Loading && StartVisible is false && LoadingTemplate is not null;
+
+    private bool _isErrorTemplateShown => _loadingState is BitImageState.Error && ErrorTemplate is not null;
+
+    // The text alternative announced in place of an image that is not on screen; see the .bit-img-alt rule.
+    // A template on screen speaks for itself, and a decorative image has nothing to announce.
+    private string? _hiddenImageName => _isImageVisible || _isLoadingTemplateShown || _isErrorTemplateShown
+                                            ? null
+                                            : (AriaLabel.HasValue() ? AriaLabel : (Alt.HasValue() ? Alt : null));
+
+    // An img with neither a src nor a srcset nor a picture around it is never fetched, and the browser
+    // fires neither a load nor an error event for it, so the state has to be settled without waiting.
+    private bool _hasAnySource => _src.HasValue() || Srcset.HasValue() || _hasSources;
 
     private bool _hasSources
     {
@@ -224,6 +250,10 @@ public partial class BitImage : BitComponentBase
     /// Rendered once the image has failed - and, where a <see cref="FallbackSrc"/> is provided, once
     /// that one has failed as well. The image itself is hidden in that state, so this is all there is
     /// to see; a <see cref="FallbackSrc"/> is the other way to answer the same case.
+    /// <br />
+    /// It is also what is shown when there is nothing to load at all - no <see cref="Src"/>, no
+    /// <see cref="FallbackSrc"/>, no <see cref="Srcset"/> and no <see cref="Sources"/> - since the browser
+    /// reports nothing for an image without a source, and the component would otherwise wait for it forever.
     /// </remarks>
     [Parameter] public RenderFragment? ErrorTemplate { get; set; }
 
@@ -255,6 +285,21 @@ public partial class BitImage : BitComponentBase
     /// </remarks>
     [Parameter, CallOnSet(nameof(OnSetSrc))]
     public string? FallbackSrc { get; set; }
+
+    /// <summary>
+    /// Keeps the frame from growing wider than its container, scaling the image down with it rather than
+    /// cropping it.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Without it, an image larger than the column it sits in is clipped by its own frame, which is what a
+    /// photograph from a content feed does on a phone. The frame keeps its <see cref="Width"/> and
+    /// <see cref="AspectRatio"/> up to the width of the container and shrinks below it, and the image is
+    /// never enlarged past its natural size - the responsive image of a stylesheet's img { max-width: 100% }.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Fluid { get; set; }
 
     /// <summary>
     /// Hints the browser at the priority this image is fetched with, relative to the other resources of the page.
@@ -557,8 +602,9 @@ public partial class BitImage : BitComponentBase
         _reloadKey++;
         _fallbackApplied = false;
         _src = Src.HasValue() ? Src : FallbackSrc;
+        _sourceless = _hasAnySource is false;
 
-        return SetLoadingStateAsync(BitImageState.Loading, forceRender: true);
+        return SetLoadingStateAsync(_sourceless ? BitImageState.Error : BitImageState.Loading, forceRender: true);
     }
 
 
@@ -570,6 +616,8 @@ public partial class BitImage : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => MaximizeFrame ? "bit-img-max" : string.Empty);
+
+        ClassBuilder.Register(() => Fluid ? "bit-img-flu" : string.Empty);
 
         // The centered fits are placed by the frame rather than by the image: an image centered by
         // taking it out of the flow would leave the frame with nothing to take a size from, and a frame
@@ -603,6 +651,15 @@ public partial class BitImage : BitComponentBase
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // A FallbackSrc that arrived through the cascade was assigned without the OnSetSrc a parameter gets,
+        // so an image that has no Src of its own takes it up here.
+        if (_fallbackApplied is false && Src.HasNoValue())
+        {
+            _src = FallbackSrc;
+        }
+
+        SyncSourcelessState();
 
         // The source change that put the component back into the loading state is reported here rather
         // than where it is noticed: that happens while the parameters are still being assigned, so the
@@ -666,6 +723,35 @@ public partial class BitImage : BitComponentBase
         _src = Src.HasValue() ? Src : FallbackSrc;
 
         if (_loadingState == BitImageState.Loading) return;
+
+        _loadingState = BitImageState.Loading;
+        _stateChangePending = true;
+    }
+
+    /// <summary>
+    /// Settles the state of an image that has nothing to load, which the browser never reports on: it goes
+    /// straight to the error state, and back to loading once a source turns up. It runs once all of the
+    /// parameters are in, since the sources are spread over four of them.
+    /// </summary>
+    private void SyncSourcelessState()
+    {
+        if (_hasAnySource is false)
+        {
+            _sourceless = true;
+
+            if (_loadingState == BitImageState.Error) return;
+
+            _loadingState = BitImageState.Error;
+            _stateChangePending = true;
+
+            return;
+        }
+
+        if (_sourceless is false) return;
+
+        _sourceless = false;
+
+        if (_loadingState != BitImageState.Error) return;
 
         _loadingState = BitImageState.Loading;
         _stateChangePending = true;
@@ -844,7 +930,7 @@ public partial class BitImage : BitComponentBase
 
         className.Append(Cover is BitImageCover.Landscape ? " bit-img-lan" : " bit-img-por");
 
-        if (_loadingState is BitImageState.Loaded || (_loadingState is BitImageState.Loading && StartVisible))
+        if (_isImageVisible)
         {
             className.Append(" bit-img-vis");
 

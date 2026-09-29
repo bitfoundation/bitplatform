@@ -7,12 +7,45 @@
     align-items: flex-start;
 }
 
+// A row of labeled images, wrapping on a narrow screen.
+.image-row {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+// The column a Fluid image scales down to, outlined so the column's edge is visible.
+.narrow-column {
+    width: 12rem;
+    border: 1px dashed gray;
+}
+
+// The body of the preview modal, which a Fluid image scales down to on a narrow screen.
+.preview-body {
+    padding: 1rem;
+    max-width: min(48rem, 90vw);
+}
+
 // The parent a maximized frame fills, which has to have a size of its own for the frame to take it.
 .max-frame-host {
     width: 14rem;
     height: 9rem;
     border-radius: 0.25rem;
     border: 1px solid gray;
+}
+
+// What an avatar with no picture at all shows through the ErrorTemplate.
+.avatar-initials {
+    width: 9rem;
+    height: 9rem;
+    display: flex;
+    font-size: 2rem;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-clr-pri-text);
+    background-color: var(--bit-clr-pri);
 }
 
 // The caption laid over an image. It is written inside the BitImage in this page, so it carries this

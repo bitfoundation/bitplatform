@@ -5,9 +5,10 @@
 /// </summary>
 /// <remarks>
 /// What belongs here is what every image of a page or of an app agrees on - the loading and decoding
-/// hints, the shape, the fade, the fit - rather than what makes one image the image it is. The source,
-/// the alternate text and the templates are deliberately not here: they are the content of a single
-/// image, and cascading them would give every image on the page the same one.
+/// hints, the shape, the fade, the fit, and the fallback shown for a picture that cannot be had - rather
+/// than what makes one image the image it is. The source, the alternate text and the templates are
+/// deliberately not here: they are the content of a single image, and cascading them would give every
+/// image on the page the same one.
 /// </remarks>
 public class BitImageParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -73,9 +74,20 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
     public bool? FadeIn { get; set; }
 
     /// <summary>
+    /// Gets or sets the source of the image shown when the image's own source fails to load or is missing.
+    /// </summary>
+    public string? FallbackSrc { get; set; }
+
+    /// <summary>
     /// Gets or sets the hint at the priority the image is fetched with.
     /// </summary>
     public BitImageFetchPriority? FetchPriority { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the frame of the image is kept from growing wider than its container.
+    /// </summary>
+    public bool? Fluid { get; set; }
+
 
     /// <summary>
     /// Gets or sets the height of the frame of the image.
@@ -211,9 +223,21 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
             bitImage.ClassBuilder.Reset();
         }
 
+        if (FallbackSrc.HasValue() && bitImage.HasNotBeenSet(nameof(FallbackSrc)))
+        {
+            bitImage.FallbackSrc = FallbackSrc;
+        }
+
         if (FetchPriority.HasValue && bitImage.HasNotBeenSet(nameof(FetchPriority)))
         {
             bitImage.FetchPriority = FetchPriority.Value;
+        }
+
+        if (Fluid.HasValue && bitImage.HasNotBeenSet(nameof(Fluid)))
+        {
+            bitImage.Fluid = Fluid.Value;
+
+            bitImage.ClassBuilder.Reset();
         }
 
         if (Height.HasValue() && bitImage.HasNotBeenSet(nameof(Height)))
@@ -223,13 +247,24 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
             bitImage.StyleBuilder.Reset();
         }
 
-        if (ImageAttributes is not null)
+        // The cascaded attributes are merged into a copy rather than into the image's own dictionary: that one
+        // may well be an instance the page shares between several images, or keeps for itself, and writing
+        // into it would hand the cascaded attributes to every one of them - or to the page - for good.
+        if (ImageAttributes is not null && ImageAttributes.Count > 0)
         {
+            Dictionary<string, object>? merged = null;
+
             foreach (var attribute in ImageAttributes)
             {
                 if (bitImage.ImageAttributes.ContainsKey(attribute.Key)) continue;
 
-                bitImage.ImageAttributes[attribute.Key] = attribute.Value;
+                merged ??= new(bitImage.ImageAttributes, bitImage.ImageAttributes.Comparer);
+                merged[attribute.Key] = attribute.Value;
+            }
+
+            if (merged is not null)
+            {
+                bitImage.ImageAttributes = merged;
             }
         }
 
