@@ -305,7 +305,8 @@
                     e.stopImmediatePropagation();
                 }
 
-                dotnetObj.invokeMethodAsync('OnEscape');
+                dotnetObj.invokeMethodAsync('OnEscape')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
             }, { signal: controller.signal });
 
             Utils._tooltips.set(rootId, { root, dotnetObj, controller });
@@ -356,7 +357,8 @@
                     if (target && root.contains(target)) continue; // the root's own listener answers it
                     if (!root.matches(':hover')) continue;
 
-                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape');
+                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
                     taken = true;
                 }
 
@@ -376,7 +378,8 @@
                 for (const root of shown('data-bit-ttp-clk')) {
                     if (target && root.contains(target)) continue;
 
-                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnOutsidePress');
+                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnOutsidePress')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
                 }
             }, { signal: controller.signal, capture: true });
         }

@@ -1032,8 +1032,10 @@ public partial class BitTooltip : BitComponentBase
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
-
-            _dotnetObj.Dispose();
+            finally
+            {
+                _dotnetObj.Dispose();
+            }
         }
 
         await base.DisposeAsync(disposing);
