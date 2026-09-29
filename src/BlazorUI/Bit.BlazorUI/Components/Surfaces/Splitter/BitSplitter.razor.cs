@@ -480,6 +480,8 @@ public partial class BitSplitter : BitComponentBase
     /// </summary>
     public async Task SetPercent(double percent)
     {
+        if (double.IsNaN(percent)) return;
+
         if (await AssignPercent(Math.Clamp(percent, 0, 100)) is false) return;
 
         await InvokeAsync(StateHasChanged);
@@ -624,9 +626,10 @@ public partial class BitSplitter : BitComponentBase
 
     // The chevron points at what the press is about to do: at the panel while it is there to be folded away,
     // and at the room it is about to come back into once it is gone. Which way that is on the screen is the
-    // orientation of the splitter, which of the two panels folds, and - across a row - the writing direction
-    // of the page: the same turn the drag itself makes, so the two of them cannot end up pointing opposite
-    // ways.
+    // orientation of the splitter, which of the two panels folds, and - across a row - the writing direction.
+    // The direction is left to the stylesheet (see .bit-spl-cbd), which reads the one the element is actually
+    // laid out in - the same one the drag and the keys go by - rather than only the Dir parameter, which a page
+    // written right to left from its html element never sets.
     private string _DefaultCollapseIconName
     {
         get
@@ -635,9 +638,15 @@ public partial class BitSplitter : BitComponentBase
 
             return Vertical
                  ? (towardsStart ? "ChevronRight bit-ico--r90" : "ChevronRight bit-ico-r90")
-                 : (towardsStart != (Dir == BitDir.Rtl) ? "ChevronRight bit-ico-r180" : "ChevronRight");
+                 : (towardsStart ? "ChevronRight bit-ico-r180" : "ChevronRight");
         }
     }
+
+    // A share the page works out for itself can come out as NaN - a division by a container with no room in it -
+    // which is no position at all, and one the interop serializer refuses outright, taking the render that sends
+    // it down with it. It is read as no value; anything else is held to the range the stylesheet can use.
+    private double? _Percent => Sanitize(Percent);
+    private double? _DefaultPercent => Sanitize(DefaultPercent);
 
     // Folded down to nothing: there is nothing left on the screen to reach, so the panel is made inert.
     private bool _IsFoldedAway => Collapsed && CollapsedSize <= 0;
@@ -650,8 +659,8 @@ public partial class BitSplitter : BitComponentBase
     // before that the setup call measures the panels and writes it onto the element itself, so a splitter
     // that has never been sized is not left claiming a position it does not have. A folded panel is not at
     // that position either - it is at its collapsed size - so the measurement is left to speak for it.
-    private double? _ValueNow => Percent.HasValue && Collapsed is false
-                               ? Math.Round(Math.Clamp(Percent.Value, 0, 100), 2)
+    private double? _ValueNow => _Percent.HasValue && Collapsed is false
+                               ? Math.Round(_Percent.Value, 2)
                                : null;
 
 
@@ -691,10 +700,10 @@ public partial class BitSplitter : BitComponentBase
         // a splitter laid out in a row and the height of one laid out in a column, and a share given as a
         // percentage keeps its proportions while the container is resized. The matching -grow variable is
         // what takes the panel off the equal split it starts at.
-        StyleBuilder.Register(() => Percent.HasValue
-                                  ? $"--bit-spl-fpn-size:{Css(Round(Math.Clamp(Percent.Value, 0, 100)))}%;--bit-spl-fpn-grow:0"
-                                  : DefaultPercent.HasValue
-                                    ? $"--bit-spl-fpn-size:{Css(Round(Math.Clamp(DefaultPercent.Value, 0, 100)))}%;--bit-spl-fpn-grow:0"
+        StyleBuilder.Register(() => _Percent.HasValue
+                                  ? $"--bit-spl-fpn-size:{Css(Round(_Percent.Value))}%;--bit-spl-fpn-grow:0"
+                                  : _DefaultPercent.HasValue
+                                    ? $"--bit-spl-fpn-size:{Css(Round(_DefaultPercent.Value))}%;--bit-spl-fpn-grow:0"
                                     : FirstPanelSize.HasValue
                                       ? $"--bit-spl-fpn-size:{Math.Max(0, FirstPanelSize.Value)}px;--bit-spl-fpn-grow:0"
                                       : string.Empty);
@@ -706,7 +715,7 @@ public partial class BitSplitter : BitComponentBase
         // splitter however wide it is. The same goes for a splitter that has already pinned its first panel
         // to a length - the second one is where the room the two of them do not account for has to go, or a
         // container wider than both sizes together would be left showing a gap at its end.
-        StyleBuilder.Register(() => Percent.HasValue is false && DefaultPercent.HasValue is false && SecondPanelSize.HasValue
+        StyleBuilder.Register(() => _Percent.HasValue is false && _DefaultPercent.HasValue is false && SecondPanelSize.HasValue
                                   ? $"--bit-spl-spn-size:{Math.Max(0, SecondPanelSize.Value)}px;--bit-spl-spn-grow:{(FirstPanelSize.HasValue ? 1 : 0)}"
                                   : string.Empty);
         StyleBuilder.Register(() => SecondPanelMaxSize.HasValue ? $"--bit-spl-spn-max:{Math.Max(0, SecondPanelMaxSize.Value)}px" : string.Empty);
@@ -833,7 +842,7 @@ public partial class BitSplitter : BitComponentBase
                NoResetOnDoubleClick is false,
                OnResize.HasDelegate,
                OnGutterDoubleClick.HasDelegate,
-               Percent,
+               _Percent,
                PersistKey,
                PersistInSessionStorage);
 
@@ -914,11 +923,14 @@ public partial class BitSplitter : BitComponentBase
 
         try
         {
-            await _js.BitSplitterSync(_controllerId, Percent);
+            await _js.BitSplitterSync(_controllerId, _Percent);
         }
         catch (JSException) { }
         catch (JSDisconnectedException) { }
     }
+
+    private static double? Sanitize(double? percent)
+        => percent is double value && double.IsNaN(value) is false ? Math.Clamp(value, 0, 100) : null;
 
     private static string Css(double value) => value.ToString(CultureInfo.InvariantCulture);
 

@@ -41,9 +41,10 @@ public partial class BitSplitterDemo
     </SecondPanel>
 </BitSplitter>
 
-<BitSplitter SecondPanelSize=""150"" Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
+<BitSplitter SecondPanelSize=""150"" Styles=""@(new() { FirstPanel = ""min-width:30%"" })""
+             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
     <FirstPanel>
-        <div style=""padding:0.5rem"">Takes the rest.</div>
+        <div style=""padding:0.5rem"">Takes the rest, never under 30% (CSS).</div>
     </FirstPanel>
     <SecondPanel>
         <div style=""padding:0.5rem"">Starts at 150px.</div>
@@ -315,17 +316,24 @@ private BitSplitter splitterRef = default!;";
 </BitSplitter>";
 
     private readonly string example14RazorCode = @"
-<BitSplitter FirstPanelSize=""160"" Style=""height:250px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the sidebar"">
+<BitSplitter FirstPanelSize=""140"" FirstPanelMinSize=""100"" Style=""height:300px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the sidebar"">
     <FirstPanel>
         <div style=""padding:0.5rem"">Sidebar</div>
     </FirstPanel>
     <SecondPanel>
-        <BitSplitter Vertical AriaLabel=""Resize the preview"">
+        <BitSplitter Vertical SecondPanelSize=""80"" AriaLabel=""Resize the terminal"">
             <FirstPanel>
-                <div style=""padding:0.5rem"">List</div>
+                <BitSplitter SecondPanelMinSize=""100"" AriaLabel=""Resize the preview"">
+                    <FirstPanel>
+                        <div style=""padding:0.5rem"">Editor</div>
+                    </FirstPanel>
+                    <SecondPanel>
+                        <div style=""padding:0.5rem"">Preview</div>
+                    </SecondPanel>
+                </BitSplitter>
             </FirstPanel>
             <SecondPanel>
-                <div style=""padding:0.5rem"">Preview</div>
+                <div style=""padding:0.5rem"">Terminal</div>
             </SecondPanel>
         </BitSplitter>
     </SecondPanel>
@@ -563,7 +571,7 @@ private readonly BitSplitterParams[] splitterParams =
 </div>";
 
     private readonly string example19RazorCode = @"
-<BitSplitter Dir=""BitDir.Rtl"" FirstPanelSize=""150"" Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""تغییر اندازه پنل‌ها"">
+<BitSplitter Dir=""BitDir.Rtl"" Collapsible ShowCollapseButton CollapsedSize=""8"" FirstPanelSize=""150"" Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""تغییر اندازه پنل‌ها"">
     <FirstPanel>
         <div style=""padding:0.5rem"">پنل اول</div>
     </FirstPanel>

@@ -69,7 +69,8 @@
             <div>
                 <b>FirstPanelSize</b> or <b>SecondPanelSize</b> pins one panel in pixels while the other takes the rest.
                 The <b>MinSize</b> and <b>MaxSize</b> of each panel bound the gutter for the pointer, the keyboard and
-                <b>Percent</b> alike - and so does a min or max width set in CSS through <b>Classes</b>, in any unit.
+                <b>Percent</b> alike - and so does a min or max size set in CSS through <b>Styles</b> or <b>Classes</b>,
+                in any unit.
             </div>
             <br />
             <BitSplitter FirstPanelSize="200" FirstPanelMinSize="120" FirstPanelMaxSize="320" SecondPanelMinSize="100"
@@ -82,9 +83,10 @@
                 </SecondPanel>
             </BitSplitter>
             <br />
-            <BitSplitter SecondPanelSize="150" Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <BitSplitter SecondPanelSize="150" Styles="@(new() { FirstPanel = "min-width:30%" })"
+                         Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
                 <FirstPanel>
-                    <div style="padding:0.5rem">Takes the rest.</div>
+                    <div style="padding:0.5rem">Takes the rest, never under 30% (CSS).</div>
                 </FirstPanel>
                 <SecondPanel>
                     <div style="padding:0.5rem">Starts at 150px.</div>
@@ -417,20 +419,28 @@
 
         <DemoExample Title="Nested" RazorCode="@example14RazorCode" Id="example14">
             <div>
-                A splitter inside a panel of another makes a three-pane layout; each keeps its own sizes and gutter.
+                Splitters nest in either direction to build multi-pane layouts; each keeps its own sizes, limits,
+                gutter and state.
             </div>
             <br />
-            <BitSplitter FirstPanelSize="160" Style="height:250px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the sidebar">
+            <BitSplitter FirstPanelSize="140" FirstPanelMinSize="100" Style="height:300px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the sidebar">
                 <FirstPanel>
                     <div style="padding:0.5rem">Sidebar</div>
                 </FirstPanel>
                 <SecondPanel>
-                    <BitSplitter Vertical AriaLabel="Resize the preview">
+                    <BitSplitter Vertical SecondPanelSize="80" AriaLabel="Resize the terminal">
                         <FirstPanel>
-                            <div style="padding:0.5rem">List</div>
+                            <BitSplitter SecondPanelMinSize="100" AriaLabel="Resize the preview">
+                                <FirstPanel>
+                                    <div style="padding:0.5rem">Editor</div>
+                                </FirstPanel>
+                                <SecondPanel>
+                                    <div style="padding:0.5rem">Preview</div>
+                                </SecondPanel>
+                            </BitSplitter>
                         </FirstPanel>
                         <SecondPanel>
-                            <div style="padding:0.5rem">Preview</div>
+                            <div style="padding:0.5rem">Terminal</div>
                         </SecondPanel>
                     </BitSplitter>
                 </SecondPanel>
@@ -692,11 +702,12 @@
 
         <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
             <div>
-                In a right-to-left splitter the first panel is on the right; dragging the gutter left, or the arrow key
-                pointing away from the panel, makes it bigger.
+                In a right-to-left splitter - by <b>Dir</b> or by a <b>dir</b> on any ancestor - the first panel is on
+                the right; dragging the gutter left, or the arrow key pointing away from the panel, makes it bigger, and
+                the collapse chevron turns with it.
             </div>
             <br />
-            <BitSplitter Dir="BitDir.Rtl" FirstPanelSize="150" Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="تغییر اندازه پنل‌ها">
+            <BitSplitter Dir="BitDir.Rtl" Collapsible ShowCollapseButton CollapsedSize="8" FirstPanelSize="150" Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="تغییر اندازه پنل‌ها">
                 <FirstPanel>
                     <div style="padding:0.5rem">پنل اول</div>
                 </FirstPanel>

@@ -1414,15 +1414,16 @@ public class BitSplitterTests : BunitTestContext
     [DataTestMethod,
      DataRow(false, false, false, "bit-icon--ChevronRight bit-ico-r180"),
      DataRow(false, true, false, "bit-icon--ChevronRight"),
-     DataRow(false, false, true, "bit-icon--ChevronRight"),
-     DataRow(false, true, true, "bit-icon--ChevronRight bit-ico-r180"),
+     DataRow(false, false, true, "bit-icon--ChevronRight bit-ico-r180"),
+     DataRow(false, true, true, "bit-icon--ChevronRight"),
      DataRow(true, false, false, "bit-icon--ChevronRight bit-ico--r90"),
      DataRow(true, true, false, "bit-icon--ChevronRight bit-ico-r90")]
     public void BitSplitterTheCollapseControlShouldPointAtWhatThePressWillDo(bool vertical, bool collapsed, bool rtl, string expected)
     {
-        // The chevron makes the same turn the drag does: at the panel while it is there to be folded away,
-        // at the room it is about to come back into once it is gone, and the other way round across a row
-        // that is written right to left.
+        // The chevron makes the same turn the drag does: at the panel while it is there to be folded away, and
+        // at the room it is about to come back into once it is gone. Across a row written right to left it is the
+        // stylesheet that turns it around (:dir(rtl) on .bit-spl-cbd), so the markup is the same in both directions
+        // and a page that is right to left from its html element, with no Dir of its own, is turned around too.
         var component = RenderComponent<BitSplitter>(parameters =>
         {
             parameters.Add(p => p.Collapsible, true);
@@ -1435,6 +1436,7 @@ public class BitSplitterTests : BunitTestContext
         var icon = component.Find(".bit-spl-cbi");
 
         Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-spl-cbd"), "The default chevron is the one the stylesheet mirrors for a row written right to left.");
 
         foreach (var expectedClass in expected.Split(' '))
         {
@@ -1460,6 +1462,9 @@ public class BitSplitterTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-spl-cbi").ClassList.Contains($"bit-icon--{expected}"));
+
+        // An icon the page chose is drawn the way the page drew it, whichever way the row is written.
+        Assert.IsFalse(component.Find(".bit-spl-cbi").ClassList.Contains("bit-spl-cbd"));
     }
 
     [DataTestMethod,
@@ -1605,6 +1610,43 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual(true, ReadOption(options, "PersistSession"));
     }
 
+    [DataTestMethod,
+     DataRow(double.NaN, null, null),
+     DataRow(double.PositiveInfinity, 100d, "100"),
+     DataRow(double.NegativeInfinity, 0d, "0"),
+     DataRow(140d, 100d, "100")]
+    public void BitSplitterShouldReadAPercentItCannotUseAsNoneOrHoldItToTheRange(double percent, double? expected, string? valueNow)
+    {
+        // A share the page worked out for itself can be NaN - a division by a container with no room in it - and the
+        // interop serializer refuses NaN and the infinities outright, which would take the render sending them down.
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Percent, percent);
+            parameters.Add(p => p.DefaultPercent, percent);
+        });
+
+        Assert.AreEqual(expected, ReadOption(SetupOptions(), "Percent"));
+
+        var style = component.Find(".bit-spl").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(style.Contains("NaN", StringComparison.Ordinal), style);
+        Assert.IsFalse(style.Contains("Infinity", StringComparison.Ordinal), style);
+        Assert.AreEqual(valueNow, component.Find(".bit-spl-gtr").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public async Task BitSplitterSetPercentShouldIgnoreNaN()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.DefaultPercent, 40d);
+        });
+
+        await component.InvokeAsync(() => component.Instance.SetPercent(double.NaN));
+
+        Assert.IsNull(component.Instance.Percent);
+    }
+
     [TestMethod]
     public void BitSplitterShouldTellTheJavaScriptSideThatTheSplitterCannotBeResized()
     {
@@ -1746,7 +1788,7 @@ public class BitSplitterTests : BunitTestContext
     [DataTestMethod,
      DataRow(false, false, false, "bit-icon--ChevronRight"),
      DataRow(false, true, false, "bit-icon--ChevronRight bit-ico-r180"),
-     DataRow(false, false, true, "bit-icon--ChevronRight bit-ico-r180"),
+     DataRow(false, false, true, "bit-icon--ChevronRight"),
      DataRow(true, false, false, "bit-icon--ChevronRight bit-ico-r90"),
      DataRow(true, true, false, "bit-icon--ChevronRight bit-ico--r90")]
     public void BitSplitterTheCollapseControlShouldPointAtTheSecondPanelWhenThatIsTheOneThatFolds(bool vertical, bool collapsed, bool rtl, string expected)
