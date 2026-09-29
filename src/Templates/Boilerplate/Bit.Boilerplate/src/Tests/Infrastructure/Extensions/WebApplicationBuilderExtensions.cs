@@ -3,7 +3,6 @@ using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 using Hangfire;
 using Hangfire.EntityFrameworkCore;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -67,13 +66,6 @@ public static partial class WebApplicationBuilderExtensions
                 hangfireConfiguration.UseIgnoredAssemblyVersionTypeResolver();
                 hangfireConfiguration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
             });
-
-            // Every test starts a test server of its own in this one process, so nothing may keep a stopped one in memory.
-            // IHttpClientFactory's handler expiry timers hold on to the app's services well after it stops
-            // (https://github.com/dotnet/runtime/issues/113494), so a test server never recycles its handlers.
-            services.ConfigureHttpClientDefaults(http => http.SetHandlerLifetime(Timeout.InfiniteTimeSpan));
-            services.Replace(ServiceDescriptor.Singleton<TimeProvider, TestTimeProvider>());
-            services.AddTransient<IStartupFilter, RateLimiterDisposer>();
         }
     }
 }

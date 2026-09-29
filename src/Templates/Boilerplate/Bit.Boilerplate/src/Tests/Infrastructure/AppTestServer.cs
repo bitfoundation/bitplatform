@@ -4,6 +4,8 @@ using Hangfire;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -168,6 +170,11 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
                 await webApp.StopAsync();
             }
             catch (OperationCanceledException) { }
+
+            // The app creates its global rate limiter itself (See AddAppRateLimitPolicies) and nothing else disposes it,
+            // so its timer would keep running for the rest of the test run.
+            webApp.Services.GetRequiredService<IOptions<RateLimiterOptions>>().Value.GlobalLimiter?.Dispose();
+
             await webApp.DisposeAsync();
         }
     }

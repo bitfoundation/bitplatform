@@ -108,12 +108,8 @@ public static partial class Program
         services.AddSingleton<Features.Chatbot.ChatbotAnswerSigner>();
         //#endif
         services.AddDevMcp()
-            //#if (signalR == true)
-            // Chatbot tools, served on /mcp only (See DevMcpServiceCollectionExtensions). Their metadata is cached on the
-            // serializer options they are created with, and that cache holds on to the app's services, so each app gets a
-            // copy of its own: on the SDK's shared default options, every app ever stopped in the process (e.g. each test
-            // server of the tests) would stay in memory.
-            .WithToolsFromAssembly(serializerOptions: new(ModelContextProtocol.McpJsonUtilities.DefaultOptions))
+        //#if (signalR == true)
+            .WithToolsFromAssembly() // Chatbot tools, served on /mcp only (See DevMcpServiceCollectionExtensions).
         //#endif
             ;
         //#if (module == "Sales" || module == "Admin")
