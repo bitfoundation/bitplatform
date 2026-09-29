@@ -362,28 +362,12 @@ private BitImage? focusableImage;
 private int galleryOpened;";
 
     private readonly string example15RazorCode = @"
-<div style=""--bit-Image-radius: 1.5rem;
-            --bit-Image-border-width: 3px;
-            --bit-Image-border-color: var(--bit-clr-pri);
-            --bit-Image-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-            --bit-Image-hover-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
-            --bit-Image-hover-overlay: color-mix(in srgb, var(--bit-clr-pri) 25%, transparent);
-            --bit-Image-active-overlay: color-mix(in srgb, var(--bit-clr-pri) 40%, transparent);
-            --bit-Image-background: var(--bit-clr-bg-sec);
-            --bit-Image-focus-color: var(--bit-clr-wrn);"">
-    <BitImage Rounded Bordered Width=""8rem"" AspectRatio=""1"" ImageFit=""BitImageFit.Cover"" Alt=""Rounded and bordered"" Src=""images/carousel/img1.jpg"" />
-    <BitImage Rounded Width=""8rem"" AspectRatio=""1"" ImageFit=""BitImageFit.Contain"" Alt=""The bit platform logo on the frame background"" Src=""images/bit-logo-blue.png"" />
-    <BitImage Rounded Shadow Width=""8rem"" AspectRatio=""1"" ImageFit=""BitImageFit.Cover"" Alt=""Point here to see the deeper lift"" OnClick=""() => { }"" Src=""images/carousel/img2.jpg"" />
-    <BitImage Rounded Width=""8rem"" AspectRatio=""1"" ImageFit=""BitImageFit.Cover"" Alt=""Tab here to see the amber focus ring"" OnClick=""() => { }"" Src=""images/carousel/img3.jpg"" />
-</div>";
-
-    private readonly string example16RazorCode = @"
 <BitParams Parameters=""imageParams"">
     <BitImage Alt=""A landscape photograph"" Src=""images/carousel/img1.jpg"" />
     <BitImage Alt=""A missing photograph, replaced by the cascaded fallback"" Src=""images/no-such-image.jpg"" />
     <BitImage Rounded=""false"" Alt=""A landscape photograph"" Src=""images/carousel/img3.jpg"" />
 </BitParams>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private readonly BitImageParams[] imageParams =
 [
     new()
@@ -398,7 +382,7 @@ private readonly BitImageParams[] imageParams =
     }
 ];";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -433,7 +417,7 @@ private readonly BitImageParams[] imageParams =
           Classes=""@(new() { Image = ""custom-image"" })""
           Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .image-caption {
         left: 0;
