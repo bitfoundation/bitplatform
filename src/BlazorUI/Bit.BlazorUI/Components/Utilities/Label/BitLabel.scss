@@ -1,22 +1,46 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// label, one set on an ancestor every label inside it, and one set on the Style of an instance that one:
+//   --bit-Label-color              text color                                    (default: inherit)
+//   --bit-Label-font-size          text size                                     (default: $tg-fs-sm)
+//   --bit-Label-font-weight        weight of the caption                         (default: $tg-fw-semibold)
+//   --bit-Label-line-height        height of a line of the caption               (default: spacing(2.5))
+//   --bit-Label-padding            room around the caption                       (default: spacing(0.625) 0)
+//   --bit-Label-indicator-gap      gap between the caption and its indicator     (default: spacing(0.625))
+//   --bit-Label-required-color     color of the required indicator               (default: $clr-req)
+//   --bit-Label-optional-color     color of the optional indicator               (default: $clr-fg-sec)
+//   --bit-Label-focus-color        focus ring color of a label given a TabIndex  (default: $clr-pri-focus)
+//
+// A parameter always wins over the variable standing for the same thing: Color over the color and Size over the
+// font size. A disabled label keeps the disabled color of the theme.
 .bit-lbl {
     margin: 0;
     display: block;
-    font-weight: $tg-fw-semibold;
     box-shadow: none;
     box-sizing: border-box;
-    font-size: $tg-fs-sm;
-    line-height: spacing(2.5);
-    padding: spacing(0.625) 0;
     overflow-wrap: break-word;
     font-family: $tg-font-family;
+    // The label inherits the color of its container while nothing sets one, which is what keeps it in step with
+    // the text around it.
+    color: var(--bit-Label-color, inherit);
+    font-size: var(--bit-Label-font-size, #{$tg-fs-sm});
+    font-weight: var(--bit-Label-font-weight, #{$tg-fw-semibold});
+    line-height: var(--bit-Label-line-height, #{spacing(2.5)});
+    padding: var(--bit-Label-padding, #{spacing(0.625) 0});
 
     &.bit-dis {
         color: $clr-fg-dis;
         // The label itself is never disabled - only the control it names is - so the pointer over it would still
         // promise a click that the disabled control has nothing to do with.
         cursor: default;
+    }
+
+    // A label is only focusable when a page gives it a TabIndex - the caption a form's validation moves the focus
+    // to, for instance - and then it shows the focus ring of the library rather than the browser's own.
+    &:focus-visible {
+        outline: #{$shp-focus-ring-width} solid var(--bit-Label-focus-color, #{$clr-pri-focus});
+        outline-offset: #{$shp-focus-ring-width};
     }
 }
 
@@ -34,24 +58,26 @@
     font-size: $tg-fs-md;
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). A caption is read on
+// the page rather than filled behind, so it takes the role's foreground - a warning main is picked to fill a
+// surface and falls under 2:1 as text on white - which for a surface role is its main color anyway.
 @each $role, $tokens in $bit-color-roles {
     .bit-lbl-#{$role} {
-        color: role($tokens, main);
+        color: role($tokens, fg);
     }
 }
 
 // The necessity indicators. The margin is logical rather than left-handed, so the gap between the caption and its
 // mark stays after the caption in a right-to-left direction instead of jumping to the other side of it.
 .bit-lbl-rqi {
-    color: $clr-req;
-    margin-inline-start: spacing(0.625);
+    color: var(--bit-Label-required-color, #{$clr-req});
+    margin-inline-start: var(--bit-Label-indicator-gap, #{spacing(0.625)});
 }
 
 .bit-lbl-opi {
-    color: $clr-fg-sec;
     font-weight: $tg-fw-regular;
-    margin-inline-start: spacing(0.625);
+    color: var(--bit-Label-optional-color, #{$clr-fg-sec});
+    margin-inline-start: var(--bit-Label-indicator-gap, #{spacing(0.625)});
 }
 
 .bit-lbl-nwr {
@@ -66,8 +92,10 @@
 }
 
 // Out of the page but still in the accessibility tree: a zero-sized box would be dropped from it by some screen
-// readers, so the label keeps a pixel of its own and is clipped away from it.
-.bit-lbl-vhd {
+// readers, so the label keeps a pixel of its own and is clipped away from it. A label that wraps its own control
+// comes back while the focus is inside it, since a control nobody can see taking the focus fails the focus
+// visibility the keyboard relies on.
+.bit-lbl-vhd:not(:focus-within) {
     padding: 0;
     width: 1px;
     height: 1px;
@@ -77,4 +105,18 @@
     white-space: nowrap;
     clip-path: inset(50%);
     clip: rect(0 0 0 0);
+}
+
+
+// A forced-colors mode repaints the text of a disabled label in the ordinary text color, which takes away the one
+// thing that says the control it names is disabled, and draws the focus ring in whatever system color the outline
+// maps to. Both are re-established in the system colors, which are the only ones such a mode keeps.
+@media (forced-colors: active) {
+    .bit-lbl.bit-dis {
+        color: GrayText;
+    }
+
+    .bit-lbl:focus-visible {
+        outline-color: Highlight;
+    }
 }

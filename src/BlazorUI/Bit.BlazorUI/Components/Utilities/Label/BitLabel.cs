@@ -61,7 +61,8 @@ public partial class BitLabel : BitComponentBase
     /// The label inherits the color of its container while this is not set, which is what keeps it in step with the
     /// text around it. Setting it is how a caption is given a meaning of its own - an <see cref="BitColor.Error"/> one
     /// beside a field that failed its validation, a <see cref="BitColor.SecondaryForeground"/> one for a caption that
-    /// should sit back from the content it names.
+    /// should sit back from the content it names. An accent color is painted in the foreground shade of its role, the
+    /// one picked to be read as text on the page rather than to fill a surface.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -213,6 +214,9 @@ public partial class BitLabel : BitComponentBase
     /// <see cref="BitVisibility.Collapsed"/> label is. A visible caption is what most users need, so this belongs to
     /// the places where the surrounding design already says what the control is - a search box with a magnifier in it,
     /// a cell of a table whose column header names the field.
+    /// <br />
+    /// A hidden label that wraps its own control comes back on the page while the focus is inside it, since a control
+    /// taking the focus out of sight leaves a keyboard user with no idea where the focus went.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool VisuallyHidden { get; set; }
