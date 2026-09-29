@@ -16,7 +16,7 @@ Before reading a single pin, fetch and count:
 
 ```bash
 up=$(git remote -v | awk '$2 ~ /bitfoundation\/bitplatform(\.git)?$/ && $3 == "(fetch)" { print $1; exit }')
-git fetch "$up" "+refs/heads/develop:refs/remotes/$up/develop"   # a bare `develop` leaves this ref stale in single-branch clones
+git fetch "$up" "+refs/heads/develop:refs/remotes/$up/develop"
 git rev-list --count HEAD.."$up"/develop   # commits the checkout is missing
 ```
 

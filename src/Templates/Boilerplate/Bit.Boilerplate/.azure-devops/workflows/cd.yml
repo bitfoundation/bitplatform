@@ -106,8 +106,6 @@ jobs:
       enableXmlTransform: false
       jsonTargetFiles: 'appsettings.json'
 
-  # zipDeploy keeps App_Data (the SQLite database, locally stored files and the Hangfire job database) across
-  # deploys, as @4 did. @5's default, OneDeploy, cleans the site folder first and would delete it every time.
   - task: AzureRmWebAppDeployment@5
     displayName: 'Deploy to App Service'
     inputs:
