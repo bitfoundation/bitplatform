@@ -43,6 +43,11 @@
         align-items: flex-start;
     }
 
+    .no-swipe-strip {
+        padding: rem2(16px);
+        border: 1px dashed $bit-color-border-primary;
+    }
+
     .custom-container {
         border-end-start-radius: 1rem;
         border-start-start-radius: 1rem;

@@ -229,6 +229,13 @@ private string scrollMode = ""Lock"";
 private bool isScrollPanelOpen;";
 
     private readonly string example8RazorCode = @"
+<style>
+    .no-swipe-strip {
+        padding: 1rem;
+        border: 1px dashed var(--bit-clr-brd-pri);
+    }
+</style>
+
 <BitNumberField @bind-Value=""swipeTrigger"" Step=""0.05"" Min=""0.05"" Max=""1"" Mode=""BitSpinButtonMode.Inline"" Label=""SwipeTrigger"" />
 <BitToggle @bind-Value=""noSwipe"" Label=""NoSwipe"" />
 
@@ -245,6 +252,10 @@ private bool isScrollPanelOpen;";
           OnSwipeEnd=""v => swipeDiff = v"">
     <div>Start: <b>@swipeStart</b></div>
     <div>Diff: <b>@swipeDiff</b></div>
+    <br />
+    <div class=""no-swipe-strip"" data-no-swipe>
+        Dragging here does not move the panel (data-no-swipe).
+    </div>
 </BitPanel>";
     private readonly string example8CsharpCode = @"
 private double swipeTrigger = 0.25;
@@ -257,21 +268,32 @@ private bool isSwipePanelOpen;";
 <BitButton OnClick=""() => isOuterPanelOpen = true"">Open outer panel</BitButton>
 
 <BitPanel @bind-IsOpen=""isOuterPanelOpen"" Size=""360"" ModeFull HeaderText=""Outer"" ShowCloseButton>
-    <BitButton OnClick=""() => isInnerPanelOpen = true"">Open inner panel</BitButton>
+    <BitButton OnClick=""() => isInnerPanelOpen = true"">Open nested panel</BitButton>
+    <BitButton OnClick=""() => isSiblingPanelOpen = true"">Open sibling panel</BitButton>
 
     <BitPanel @bind-IsOpen=""isInnerPanelOpen""
               Size=""280""
               ModeFull
-              ZIndex=""1310""
               Position=""BitPanelPosition.Start""
-              HeaderText=""Inner""
+              HeaderText=""Nested""
               ShowCloseButton>
-        Lifted over the panel it was opened from, so its overlay covers it.
+        Declared inside the outer panel, so it covers it without a ZIndex.
     </BitPanel>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isSiblingPanelOpen""
+          Size=""280""
+          ModeFull
+          ZIndex=""1310""
+          Position=""BitPanelPosition.Start""
+          HeaderText=""Sibling""
+          ShowCloseButton>
+    Declared beside the outer panel and lifted over it by ZIndex.
 </BitPanel>";
     private readonly string example9CsharpCode = @"
 private bool isOuterPanelOpen;
-private bool isInnerPanelOpen;";
+private bool isInnerPanelOpen;
+private bool isSiblingPanelOpen;";
 
     private readonly string example10RazorCode = @"
 <style>

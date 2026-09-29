@@ -40,6 +40,8 @@
             const getY = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenY : (e as PointerEvent).screenY;
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
+                if (belongsElsewhere(e.target)) return;
+
                 startX = getX(e);
                 startY = getY(e);
 
@@ -53,6 +55,11 @@
 
             const onMove = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (startX === -1 || startY === -1) return;
+
+                // A mouse dragged across text is selecting it, which is what a mouse drag inside a surface
+                // nearly always means: the drag is given back to the selection before it can throw the
+                // surface away with the text the user was about to copy.
+                if (!isTouchDevice && isSelectingText()) return abort();
 
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
@@ -203,15 +210,36 @@
                 }
             };
 
-            const onLeave = (e: PointerEvent) => {
-                dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
-
+            // Gives up a drag that has started without ending it: the surface goes back to where it was and
+            // the consumer hears the gesture end where it began.
+            const abort = () => {
                 startX = startY = -1;
                 diffX = diffY = 0;
                 orientation = BitSwipeOrientation.None;
                 element.style.transitionDuration = '';
                 element.style.transform = originalTransform;
-            }
+
+                dotnetObj.invokeMethodAsync('OnEnd', 0, 0);
+            };
+
+            // A drag that starts on something that takes the pointer for itself is that thing's to handle:
+            // a field the caret is moved or the text selected in, a slider, an editable region, a region
+            // marked data-no-swipe (a canvas, a table that scrolls sideways) - and a surface nested inside
+            // this one, which handles its own swipe and must not drag the one it was opened from along.
+            const belongsElsewhere = (target: EventTarget | null) => {
+                if (!(target instanceof Element)) return false;
+
+                if (target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [data-no-swipe]')) return true;
+
+                return Swipes._swipes.some(s => s.element !== element && element.contains(s.element) && s.element.contains(target));
+            };
+
+            const isSelectingText = () => {
+                const selection = window.getSelection();
+                if (!selection || selection.isCollapsed || !selection.anchorNode) return false;
+
+                return element.contains(selection.anchorNode) && selection.toString().length > 0;
+            };
 
             if (isTouchDevice) {
                 if (scrollContainer) {

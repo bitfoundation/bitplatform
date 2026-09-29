@@ -332,8 +332,10 @@ public partial class BitPanel : BitComponentBase
     /// slid in from.
     /// </summary>
     /// <remarks>
-    /// It is what a panel hosting something that is itself dragged needs - a slider, a canvas, a table that
-    /// scrolls sideways - since the gesture would otherwise be taken by the panel before it reaches them.
+    /// A drag that starts on a field, a slider or an editable region is left to it, and so is a mouse drag
+    /// that selects text, so the gesture never takes those away. Anything else inside the panel that is
+    /// dragged itself - a canvas, a table that scrolls sideways - keeps its own drags when it is marked with a
+    /// <c>data-no-swipe</c> attribute; this turns the gesture off for the whole of the panel.
     /// </remarks>
     [Parameter] public bool NoSwipe { get; set; }
 
@@ -514,9 +516,11 @@ public partial class BitPanel : BitComponentBase
     /// shares. The overlay takes this value and the panel itself sits one above it.
     /// </summary>
     /// <remarks>
-    /// It is what a panel opened from inside another one needs: the two panels sit at the same layer
-    /// otherwise, where the overlay of the inner one lands underneath the panel it was opened from and a
-    /// click there reaches that panel rather than dismissing the inner one.
+    /// A panel declared inside the content of another one needs none of it: it is stacked inside the panel it
+    /// was opened from, so its overlay already covers that panel. It is what a panel that has to cover
+    /// something it is not nested in needs - another panel declared beside it, or a fixed header of the page
+    /// stacked above the layer the library shares - since the two would otherwise be layered by the order
+    /// they come in the page.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? ZIndex { get; set; }

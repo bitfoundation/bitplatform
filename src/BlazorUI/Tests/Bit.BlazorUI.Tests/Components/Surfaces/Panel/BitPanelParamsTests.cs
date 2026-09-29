@@ -230,6 +230,39 @@ public class BitPanelParamsTests : BunitTestContext
         }
     }
 
+    [TestMethod]
+    public void BitPanelOpenStateShouldCarryNoTransform()
+    {
+        var stylesheet = ReadStylesheet();
+        var start = stylesheet.IndexOf("\n.bit-pnl-opn {", StringComparison.Ordinal);
+        var open = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, StringComparison.Ordinal)];
+
+        // Any transform - an identity one included - makes the open panel the containing block of its fixed
+        // descendants, which lays a panel or a dialog opened from inside it out against the panel.
+        StringAssert.Contains(open, "transform: none;");
+    }
+
+    [TestMethod]
+    [DataRow(".bit-pnl-start", "top,bottom,left,right")]
+    [DataRow(".bit-pnl-end", "top,bottom,left,right")]
+    [DataRow(".bit-pnl-top", "top,left,right")]
+    [DataRow(".bit-pnl-bottom", "bottom,left,right")]
+    [DataRow(".bit-pnl-fsz", "top,right,bottom,left")]
+    public void BitPanelEdgesShouldMakeRoomForTheSafeAreaTheyTouch(string edge, string insets)
+    {
+        var stylesheet = ReadStylesheet();
+        var start = stylesheet.IndexOf($"\n{edge} {{", StringComparison.Ordinal);
+        var rule = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, StringComparison.Ordinal)];
+
+        foreach (var inset in insets.Split(','))
+        {
+            StringAssert.Contains(rule, $"env(safe-area-inset-{inset}, 0px)", $"{edge} does not make room for the {inset} inset.");
+        }
+
+        // A panel laid out inside a box of the page touches no device edge.
+        StringAssert.Contains(stylesheet, "    > .bit-pnl-cnt {\n        padding: 0;\n    }");
+    }
+
     private static string ReadStylesheet([CallerFilePath] string thisFile = "")
     {
         var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",

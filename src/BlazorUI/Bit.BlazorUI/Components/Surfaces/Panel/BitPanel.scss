@@ -57,6 +57,12 @@
         position: absolute;
         pointer-events: auto;
     }
+
+    // Laid out inside a box of the page, so there is no device edge beside it and no safe area to make
+    // room for (see the four edges below).
+    > .bit-pnl-cnt {
+        padding: 0;
+    }
 }
 
 // The overlay stays in the page while the panel is closed so that it fades out with the panel rather than
@@ -123,11 +129,19 @@
                 visibility 0s linear $mot-duration;
 }
 
+// Each edge makes room for the safe area of the device edges it touches - the status bar, the notch and the
+// home indicator of a phone - the way a fixed header and footer do, so the surface still runs to the edge of
+// the screen while its content stays clear of what covers it. env() resolves to the 0px fallback on any
+// device with no inset. The side insets are physical, so the one the inline edge of a side panel touches is
+// the larger of the two: a phone held in landscape reports them alike, and a direction reads neither.
 .bit-pnl-start {
     height: 100%;
     inset-block: 0;
     max-height: 100%;
     inset-inline-start: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-inline-start: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
     width: var(--bit-Panel-size, fit-content);
     max-width: var(--bit-pnl-max, 85%);
     border-inline-end: var(--bit-pnl-edge);
@@ -141,6 +155,9 @@
     inset-block: 0;
     max-height: 100%;
     inset-inline-end: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-inline-end: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
     width: var(--bit-Panel-size, fit-content);
     max-width: var(--bit-pnl-max, 85%);
     border-inline-start: var(--bit-pnl-edge);
@@ -154,6 +171,9 @@
     width: 100%;
     max-width: 100%;
     inset-inline: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
     height: var(--bit-Panel-size, fit-content);
     max-height: var(--bit-pnl-max, 85%);
     border-block-end: var(--bit-pnl-edge);
@@ -168,6 +188,9 @@
     width: 100%;
     max-width: 100%;
     inset-inline: 0;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     height: var(--bit-Panel-size, fit-content);
     max-height: var(--bit-pnl-max, 85%);
     border-block-start: var(--bit-pnl-edge);
@@ -186,6 +209,7 @@
     max-width: 100%;
     max-height: 100%;
     border-radius: 0;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
 
 // A panel that was given a header, a footer or a close button lays them out around a body of its own. The
@@ -231,7 +255,7 @@
     height: $siz-ctrl-md;
     align-items: center;
     justify-content: center;
-    font-size: $tg-fs-sm;
+    font-size: $siz-icon-md;
     margin-inline-start: auto;
     border-radius: $shp-radius-button;
     background-color: transparent;
@@ -276,11 +300,13 @@
 }
 
 // The open state, declared after the four edges so that it takes the panel back off the transform each of
-// them parks it at.
+// them parks it at. It is taken off entirely rather than set to an identity one: any transform makes the
+// panel the containing block of every fixed descendant, which would lay a panel, a dialog or a modal opened
+// from inside it out against the panel instead of against the screen.
 .bit-pnl-opn {
     opacity: 1;
     visibility: visible;
-    transform: translate3d(0, 0, 0);
+    transform: none;
     transition: transform $mot-duration $mot-easing-decelerate,
                 opacity $mot-duration-short $mot-easing-decelerate,
                 visibility 0s linear 0s;

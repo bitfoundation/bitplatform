@@ -179,7 +179,7 @@ public partial class BitPanelDemo
             Name = "NoSwipe",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns off the swipe gesture that dismisses the panel.",
+            Description = "Turns off the swipe gesture that dismisses the panel. To keep it but exempt one region (a canvas, a sideways-scrolling table), mark that region data-no-swipe instead; fields and mouse text selection are always exempt.",
         },
         new()
         {
@@ -322,7 +322,7 @@ public partial class BitPanelDemo
             Name = "ZIndex",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The layer of the overlay; the panel sits one above it. Lifts a panel opened from inside another one.",
+            Description = "The layer of the overlay; the panel sits one above it. A panel declared inside another needs none; this lifts one over a sibling panel or page chrome.",
         },
     ];
 
@@ -618,6 +618,7 @@ public partial class BitPanelDemo
 
     private bool isOuterPanelOpen;
     private bool isInnerPanelOpen;
+    private bool isSiblingPanelOpen;
 
     private bool isAbsolutePanelOpen;
 

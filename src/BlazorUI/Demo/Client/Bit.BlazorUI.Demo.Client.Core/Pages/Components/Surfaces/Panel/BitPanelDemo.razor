@@ -94,7 +94,8 @@
             <div>
                 <b>Position</b> is the edge the panel slides in from; <b>Start</b> and <b>End</b> follow the text
                 direction. <b>Size</b> is its size in pixels along that axis, capped so a strip of the page stays
-                visible, and <b>FullSize</b> takes the whole screen.
+                visible, and <b>FullSize</b> takes the whole screen. The edges touching the screen pad the device's
+                safe areas (notch, status bar, home indicator).
             </div>
             <br />
             <div class="controls">
@@ -262,8 +263,13 @@
         <DemoExample Title="Swipe to dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 Dragging the panel towards its edge dismisses it once the drag passes <b>SwipeTrigger</b>, a fraction of
-                its size (default 0.25). <b>NoSwipe</b> turns the gesture off, for content that is dragged itself.
-                <b>OnSwipeStart</b>, <b>OnSwipeMove</b> and <b>OnSwipeEnd</b> report the distance along its axis.
+                its size (default 0.25). <b>OnSwipeStart</b>, <b>OnSwipeMove</b> and <b>OnSwipeEnd</b> report the
+                distance along its axis.
+            </div>
+            <br />
+            <div>
+                Drags on fields and mouse text selection never swipe. A region marked <b>data-no-swipe</b> keeps its
+                own drags; <b>NoSwipe</b> turns the gesture off for the whole panel.
             </div>
             <br />
             <div class="controls">
@@ -284,30 +290,47 @@
                       OnSwipeEnd="v => swipeDiff = v">
                 <div>Start: <b>@swipeStart</b></div>
                 <div>Diff: <b>@swipeDiff</b></div>
+                <br />
+                <div class="no-swipe-strip" data-no-swipe>
+                    Dragging here does not move the panel (data-no-swipe).
+                </div>
             </BitPanel>
         </DemoExample>
 
         <DemoExample Title="Nested panels" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
-                A panel opened from inside another one shares its layer, so its overlay would land under the outer
-                panel. <b>ZIndex</b> lifts the inner pair: the overlay takes the value and the panel sits one above it.
-                Escape, a swipe and an overlay click close the innermost panel first.
+                A panel declared inside another one is stacked above it, and Escape, a swipe and an overlay click
+                close the innermost panel first. A panel declared elsewhere shares the outer panel's layer, so its
+                overlay would land under it; <b>ZIndex</b> lifts it - the overlay takes the value and the panel
+                sits one above it.
             </div>
             <br />
             <BitButton OnClick="() => isOuterPanelOpen = true">Open outer panel</BitButton>
 
             <BitPanel @bind-IsOpen="isOuterPanelOpen" Size="360" ModeFull HeaderText="Outer" ShowCloseButton>
-                <BitButton OnClick="() => isInnerPanelOpen = true">Open inner panel</BitButton>
+                <div class="btn-container">
+                    <BitButton OnClick="() => isInnerPanelOpen = true">Open nested panel</BitButton>
+                    <BitButton OnClick="() => isSiblingPanelOpen = true">Open sibling panel</BitButton>
+                </div>
 
                 <BitPanel @bind-IsOpen="isInnerPanelOpen"
                           Size="280"
                           ModeFull
-                          ZIndex="1310"
                           Position="BitPanelPosition.Start"
-                          HeaderText="Inner"
+                          HeaderText="Nested"
                           ShowCloseButton>
-                    Lifted over the panel it was opened from, so its overlay covers it.
+                    Declared inside the outer panel, so it covers it without a ZIndex.
                 </BitPanel>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isSiblingPanelOpen"
+                      Size="280"
+                      ModeFull
+                      ZIndex="1310"
+                      Position="BitPanelPosition.Start"
+                      HeaderText="Sibling"
+                      ShowCloseButton>
+                Declared beside the outer panel and lifted over it by ZIndex.
             </BitPanel>
         </DemoExample>
 
