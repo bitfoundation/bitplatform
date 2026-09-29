@@ -32,7 +32,9 @@
     // variable is set nowhere this is invalid, and the container falls back to the layer of the library.
     --bit-pnl-zin-pub: calc(var(--bit-Panel-z-index) + 1);
 
-    &.bit-rtl {
+    // :dir() rather than the class Dir renders, so a panel given no direction of its own still slides out
+    // towards the edge it came from on a page (or in a box) that reads right to left.
+    &:dir(rtl) {
         --bit-pnl-transform-factor: -1;
     }
 

@@ -124,6 +124,27 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Records, as each Escape goes down inside the element, whether it belongs to something in there - an
+    // open popup of a component in its content - rather than to the surface itself.
+    internal static ValueTask BitUtilsSetupEscapeGuard(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupEscapeGuard", elementId);
+    }
+
+
+    // Reads back, once, whether the last Escape inside the element belonged to something in there.
+    internal static ValueTask<bool> BitUtilsTakeForeignEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.takeForeignEscape", elementId);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeEscapeGuard(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeEscapeGuard", elementId);
+    }
+
+
     // Remembers the element the focus was on when a popup took it over, so the popup can hand the keyboard
     // back to where it came from once it closes.
     internal static ValueTask BitUtilsCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)

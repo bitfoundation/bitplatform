@@ -263,6 +263,14 @@ public class BitPanelParamsTests : BunitTestContext
         StringAssert.Contains(stylesheet, "    > .bit-pnl-cnt {\n        padding: 0;\n    }");
     }
 
+    // The direction is read off the layout rather than off the class Dir renders, so a panel given no
+    // direction of its own on a right-to-left page still slides out towards the edge it came from.
+    [TestMethod]
+    public void BitPanelShouldSlideTheWayThePageItIsInReads()
+    {
+        StringAssert.Contains(ReadStylesheet(), "    &:dir(rtl) {\n        --bit-pnl-transform-factor: -1;\n    }");
+    }
+
     private static string ReadStylesheet([CallerFilePath] string thisFile = "")
     {
         var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",

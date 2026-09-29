@@ -48,8 +48,8 @@
             </div>
             <br />
             <div>
-                The header names the panel for screen readers, and <b>CloseButtonTitle</b> names the close button
-                (default "Close").
+                The header names the panel for screen readers - a Header holding controls is better named by
+                <b>AriaLabel</b> - and <b>CloseButtonTitle</b> names the close button (default "Close").
             </div>
             <br />
             <div class="btn-container">
@@ -65,7 +65,7 @@
                 You have no new notifications.
             </BitPanel>
 
-            <BitPanel @bind-IsOpen="isTemplatePanelOpen" ShowCloseButton>
+            <BitPanel @bind-IsOpen="isTemplatePanelOpen" ShowCloseButton AriaLabel="Filters">
                 <Header>
                     <BitStack Gap="0.5rem" FillContent>
                         <div>Filters</div>
@@ -131,7 +131,8 @@
             <br />
             <div>
                 <b>OnOverlayClick</b> and <b>OnEscapeKeyDown</b> fire even when the dismissal is refused, and
-                <b>OnDismiss</b> fires for every closing.
+                <b>OnDismiss</b> fires for every closing. An Escape that closes a popup inside the panel - an open
+                dropdown list - is left to that popup.
             </div>
             <br />
             <div class="controls">
@@ -156,7 +157,13 @@
                       OnOverlayClick="() => overlayClickCount++"
                       OnEscapeKeyDown="() => escapeKeyCount++"
                       OnDismiss="() => dismissCount++">
-                Click the page behind this panel or press Escape.
+                <BitStack Gap="1rem">
+                    <div>Click the page behind this panel or press Escape.</div>
+                    <BitDropdown Label="Escape closes this list, not the panel"
+                                 Items="dismissalItems"
+                                 Placeholder="Select a letter"
+                                 TItem="BitDropdownItem<string>" TValue="string" />
+                </BitStack>
             </BitPanel>
         </DemoExample>
 
@@ -489,7 +496,7 @@
         <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
                 <b>Dir</b> turns the panel right-to-left, so <b>Start</b> slides in from the right and <b>End</b> from
-                the left, and the swipe follows.
+                the left, and the swipe follows. Without <b>Dir</b>, the panel follows the direction of the page.
             </div>
             <br />
             <div class="btn-container" dir="rtl">

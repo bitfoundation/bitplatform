@@ -502,6 +502,66 @@
             Utils._escapes.delete(elementId);
         }
 
+        private static _escapeGuards = new Map<string, AbortController>();
+        private static _foreignEscapes = new Map<string, boolean>();
+
+        // Records, for a surface that dismisses itself on Escape through a Blazor keydown handler, whether the
+        // Escape it is about to hear belongs to something inside it instead: an open popup of a component in
+        // its content (a dropdown whose list is open while the focus is still on its field) closes itself on
+        // the same key, and the keydown goes on bubbling from it up through the surface - one press would take
+        // away the panel the user was filling in along with the list they meant to close. A handler that
+        // already prevented the key's default has claimed it as well. The answer has to be taken while the key
+        // is still going down: this listener is on the element, so it runs before Blazor's document-level
+        // delegation lets the nested component close its popup, which by the time the surface's handler asks
+        // would no longer be open. The surface reads it back once through takeForeignEscape.
+        public static setupEscapeGuard(elementId: string) {
+            Utils.disposeEscapeGuard(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                Utils._foreignEscapes.set(elementId, e.defaultPrevented || Utils.hasOpenCalloutInside(element));
+            }, { signal: controller.signal });
+
+            Utils._escapeGuards.set(elementId, controller);
+        }
+
+        public static takeForeignEscape(elementId: string) {
+            const foreign = Utils._foreignEscapes.get(elementId) ?? false;
+            Utils._foreignEscapes.delete(elementId);
+
+            return foreign;
+        }
+
+        public static disposeEscapeGuard(elementId: string) {
+            Utils._foreignEscapes.delete(elementId);
+
+            const controller = Utils._escapeGuards.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._escapeGuards.delete(elementId);
+        }
+
+        // Whether the innermost open callout was opened from inside the element: its trigger is in there, or
+        // the callout itself is, where it was not moved to the body.
+        private static hasOpenCalloutInside(element: HTMLElement) {
+            const current = Callouts.current;
+            if (!current.calloutId) return false;
+
+            const callout = document.getElementById(current.calloutId);
+            if (callout && element.contains(callout)) return true;
+
+            const trigger = current.componentId ? document.getElementById(current.componentId) : null;
+
+            return !!trigger && element.contains(trigger);
+        }
+
         public static disposeTabOut(elementId: string) {
             const controller = Utils._tabOuts.get(elementId);
             if (!controller) return;

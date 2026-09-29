@@ -151,7 +151,7 @@ public partial class BitPanelDemo
             Name = "NoDismissOnEscape",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the Escape key from dismissing the panel. OnEscapeKeyDown still fires.",
+            Description = "Keeps the Escape key from dismissing the panel. OnEscapeKeyDown still fires. An Escape that closes a popup inside the panel (an open dropdown list) never reaches the panel either way.",
         },
         new()
         {
@@ -199,7 +199,7 @@ public partial class BitPanelDemo
         {
             Name = "OnEscapeKeyDown",
             Type = "EventCallback<KeyboardEventArgs>",
-            Description = "Fires for every Escape pressed inside the open panel, including the ones NoDismissOnEscape refuses.",
+            Description = "Fires for every Escape pressed inside the open panel, including the ones NoDismissOnEscape refuses - but not for one that closes a popup inside it.",
         },
         new()
         {
@@ -594,6 +594,12 @@ public partial class BitPanelDemo
     private int escapeKeyCount;
     private int dismissCount;
     private bool isOverlayPanelOpen;
+    private readonly List<BitDropdownItem<string>> dismissalItems =
+    [
+        new() { Text = "A", Value = "A" },
+        new() { Text = "B", Value = "B" },
+        new() { Text = "C", Value = "C" },
+    ];
 
     private bool guardPanel = true;
     private bool guardedRefused;

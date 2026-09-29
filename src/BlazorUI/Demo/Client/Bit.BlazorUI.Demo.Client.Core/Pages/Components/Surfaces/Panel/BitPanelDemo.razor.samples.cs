@@ -45,7 +45,7 @@ private BitPanel basicPanelRef = default!;";
     You have no new notifications.
 </BitPanel>
 
-<BitPanel @bind-IsOpen=""isTemplatePanelOpen"" ShowCloseButton>
+<BitPanel @bind-IsOpen=""isTemplatePanelOpen"" ShowCloseButton AriaLabel=""Filters"">
     <Header>
         <BitStack Gap=""0.5rem"" FillContent>
             <div>Filters</div>
@@ -118,7 +118,13 @@ private bool isPositionPanelOpen;";
           OnOverlayClick=""() => overlayClickCount++""
           OnEscapeKeyDown=""() => escapeKeyCount++""
           OnDismiss=""() => dismissCount++"">
-    Click the page behind this panel or press Escape.
+    <BitStack Gap=""1rem"">
+        <div>Click the page behind this panel or press Escape.</div>
+        <BitDropdown Label=""Escape closes this list, not the panel""
+                     Items=""dismissalItems""
+                     Placeholder=""Select a letter""
+                     TItem=""BitDropdownItem<string>"" TValue=""string"" />
+    </BitStack>
 </BitPanel>";
     private readonly string example4CsharpCode = @"
 private bool overlayModeFull;
@@ -128,7 +134,13 @@ private bool overlayModeless;
 private int overlayClickCount;
 private int escapeKeyCount;
 private int dismissCount;
-private bool isOverlayPanelOpen;";
+private bool isOverlayPanelOpen;
+private readonly List<BitDropdownItem<string>> dismissalItems =
+[
+    new() { Text = ""A"", Value = ""A"" },
+    new() { Text = ""B"", Value = ""B"" },
+    new() { Text = ""C"", Value = ""C"" },
+];";
 
     private readonly string example5RazorCode = @"
 <BitToggle @bind-Value=""guardPanel"" Label=""Refuse the overlay, Escape and swipe"" />

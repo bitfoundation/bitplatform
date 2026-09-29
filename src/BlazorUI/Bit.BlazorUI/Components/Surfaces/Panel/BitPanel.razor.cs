@@ -375,6 +375,10 @@ public partial class BitPanel : BitComponentBase
     /// <br />
     /// A dismissal the panel does perform is reported through <see cref="OnDismissing"/> - which can still
     /// refuse it - and then through <see cref="OnDismiss"/>.
+    /// <br />
+    /// An Escape that belongs to something inside the panel - it closes the open list of a dropdown in the
+    /// content, or a handler there already prevented its default - is left to it and never reaches the
+    /// panel, so one press does not take the panel away along with the list the user meant to close.
     /// </remarks>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
@@ -738,6 +742,8 @@ public partial class BitPanel : BitComponentBase
         {
             await SetupTransitionEnd();
 
+            await SetupEscapeGuard();
+
             await SetupSwipes();
         }
 
@@ -864,6 +870,10 @@ public partial class BitPanel : BitComponentBase
 
         if (e.Key is not "Escape") return;
 
+        // An Escape that closes an open popup of the content - a dropdown's list, a date picker's calendar -
+        // is that popup's, not the panel's, and neither is one a handler inside already claimed.
+        if (await IsEscapeForeign()) return;
+
         // Reported before the dismissal is attempted, and reported whether or not there is going to be one,
         // so that a panel which refuses the key still hears it.
         await OnEscapeKeyDown.InvokeAsync(e);
@@ -875,9 +885,17 @@ public partial class BitPanel : BitComponentBase
         StateHasChanged();
     }
 
-    // Whether the Escape key is the panel's to act on, which is also whether it stops at the panel rather
-    // than carrying on up to whatever the panel was opened from.
-    private bool DismissesOnEscape => IsOpen && IsEnabled && NoDismissOnEscape is false;
+    // Whether the last Escape was recorded, as it went down, as belonging to something inside the panel. The
+    // record is taken on the key itself (Utils.setupEscapeGuard), since a popup that owned it has closed by
+    // the time this handler could look.
+    private async Task<bool> IsEscapeForeign()
+    {
+        try
+        {
+            return await _js.BitUtilsTakeForeignEscape(_Id);
+        }
+        catch (JSDisconnectedException) { return false; } // we can ignore this exception here
+    }
 
     // The scroller the panel holds while it is open, as an element where one is to be had. A selector the
     // consumer named beats the shell's scroller, since a panel inside a shell that names a region of its own
@@ -1090,7 +1108,9 @@ public partial class BitPanel : BitComponentBase
                 id: _containerId,
                 trigger: GetSwipeTrigger(),
                 position: position,
-                isRtl: Dir is BitDir.Rtl,
+                // A panel given no direction slides the way the page it is in reads, so the script reads that
+                // off the layout rather than being told a left-to-right it may not be.
+                isRtl: Dir is null ? null : Dir is BitDir.Rtl,
                 // The axis the panel is swiped away along is the one it slid in on, and the lock is what takes
                 // that axis from the page: a top or bottom panel dragged with the wrong lock follows the finger
                 // while the page scrolls out from under it at the same time.
@@ -1128,6 +1148,17 @@ public partial class BitPanel : BitComponentBase
         try
         {
             await _js.BitUtilsSetupTransitionEnd(_containerId, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task SetupEscapeGuard()
+    {
+        if (IsDisposed) return;
+
+        try
+        {
+            await _js.BitUtilsSetupEscapeGuard(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1341,6 +1372,8 @@ public partial class BitPanel : BitComponentBase
         try
         {
             await _js.BitUtilsDisposeTransitionEnd(_containerId);
+
+            await _js.BitUtilsDisposeEscapeGuard(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

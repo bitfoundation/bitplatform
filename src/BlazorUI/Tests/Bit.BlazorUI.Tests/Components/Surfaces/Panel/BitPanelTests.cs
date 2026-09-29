@@ -859,7 +859,8 @@ public class BitPanelTests : BunitTestContext
 
         Assert.AreEqual(0.5m, arguments[1]);
         Assert.AreEqual(BitPanelPosition.Bottom, arguments[2]);
-        Assert.AreEqual(false, arguments[3]);
+        // Given no direction, the gesture follows the one the panel is laid out in, which the script reads.
+        Assert.IsNull(arguments[3]);
         Assert.AreEqual(BitSwipeOrientation.Vertical, arguments[4]);
     }
 
@@ -1285,6 +1286,21 @@ public class BitPanelTests : BunitTestContext
 
         // The gesture has to know the direction too, since the edge the panel slides in from is a logical one.
         Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[3]);
+    }
+
+    // A direction given explicitly is passed on as it is, so a left-to-right panel inside a right-to-left page
+    // is swiped the way it is laid out.
+    [TestMethod]
+    public void BitPanelShouldHandAnExplicitLeftToRightToTheGesture()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+
+        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[3]);
     }
 
     // A panel given none of the header, the footer or the close button is the plain surface it has always
@@ -1807,5 +1823,85 @@ public class BitPanelTests : BunitTestContext
         com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.AreEqual(0, escapes);
+    }
+
+    // An inner panel that refuses the key still keeps it: carried on up, it would dismiss the outer panel -
+    // and with it the inner one the user is still working in.
+    [TestMethod]
+    public void BitPanelShouldKeepAnEscapeItRefusesFromThePanelItIsNestedIn()
+    {
+        var outerOpen = true;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, outerOpen, v => outerOpen = v);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitPanel>(0);
+                builder.AddAttribute(1, nameof(BitPanel.IsOpen), true);
+                builder.AddAttribute(2, nameof(BitPanel.NoDismissOnEscape), true);
+                builder.AddAttribute(3, nameof(BitPanel.Class), "inner-panel");
+                builder.CloseComponent();
+            }));
+        });
+
+        com.Find(".inner-panel .bit-pnl-cnt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(outerOpen);
+    }
+
+    [TestMethod]
+    public void BitPanelShouldLetAnEscapeFromItsContentThroughToThePanelItIsNestedIn()
+    {
+        var outerOpen = true;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, outerOpen, v => outerOpen = v);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitPanel>(0);
+                builder.AddAttribute(1, nameof(BitPanel.IsOpen), false);
+                builder.AddAttribute(2, nameof(BitPanel.Class), "inner-panel");
+                builder.CloseComponent();
+            }));
+        });
+
+        // A closed inner panel is none of the key's business, so the outer one still hears it.
+        com.Find(".inner-panel").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(outerOpen);
+    }
+
+    // An Escape that closes an open popup of the content (a dropdown's list) is the popup's: one press must
+    // not take the panel away along with the list.
+    [TestMethod]
+    public void BitPanelShouldLeaveAnEscapeThatBelongsToItsContentAlone()
+    {
+        var escapes = 0;
+        var isOpen = true;
+
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.takeForeignEscape", _ => true).SetResult(true);
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, escapes);
+        Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    public void BitPanelShouldGuardTheEscapeOfItsRoot()
+    {
+        var com = RenderComponent<BitPanel>();
+
+        var root = com.Find(".bit-pnl");
+
+        Assert.AreEqual(root.Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscapeGuard"].Single().Arguments[0]);
     }
 }

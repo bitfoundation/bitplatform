@@ -6,7 +6,7 @@
             id: string,
             trigger: number,
             position: BitSwipePosition,
-            isRtl: boolean,
+            isRtl: boolean | null,
             orientationLock: BitSwipeOrientation,
             dotnetObj: DotNetObject,
             isResponsive: boolean,
@@ -29,6 +29,10 @@
             let startY = -1;
             let originalTransform: string;
             let orientation = BitSwipeOrientation.None;
+            // Which way Start and End face. A direction the component was given is taken as it is; one it was
+            // not given is the one the element is laid out in - inherited from the page or from whatever box
+            // it sits in - read when the gesture starts, so a page whose direction changes is followed.
+            let rtl = isRtl ?? false;
             // How far the surface has to be dragged is a fraction of how big it is, so the box is measured
             // when the gesture starts rather than when it is registered: a surface that is resized while it
             // is registered - a panel given a new size, a callout whose content grew - would otherwise be
@@ -41,6 +45,8 @@
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (belongsElsewhere(e.target)) return;
+
+                rtl = isRtl ?? getComputedStyle(element).direction === 'rtl';
 
                 startX = getX(e);
                 startY = getY(e);
@@ -96,7 +102,7 @@
                     cancel();
                 }
 
-                if ((!isRtl && position === BitSwipePosition.Start) || (isRtl && position === BitSwipePosition.End)) {
+                if ((!rtl && position === BitSwipePosition.Start) || (rtl && position === BitSwipePosition.End)) {
                     if (diffX < 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -104,7 +110,7 @@
                     }
                 }
 
-                if ((!isRtl && position === BitSwipePosition.End) || (isRtl && position === BitSwipePosition.Start)) {
+                if ((!rtl && position === BitSwipePosition.End) || (rtl && position === BitSwipePosition.Start)) {
                     if (diffX > 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -149,8 +155,8 @@
                     if (touchOnScrollContainer) {
                         const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
-                        if (diffX < 0 && (isRtl ? isScrollAtRight : isScrollAtLeft)) return;
-                        if (diffX > 0 && (isRtl ? isScrollAtLeft : isScrollAtRight)) return;
+                        if (diffX < 0 && (rtl ? isScrollAtRight : isScrollAtLeft)) return;
+                        if (diffX > 0 && (rtl ? isScrollAtLeft : isScrollAtRight)) return;
                     }
 
                     e.preventDefault();
@@ -166,13 +172,13 @@
                 startX = startY = -1;
                 element.style.transitionDuration = '';
                 try {
-                    if (((!isRtl && position === BitSwipePosition.Start) || (isRtl && position === BitSwipePosition.End)) && diffX < 0) {
+                    if (((!rtl && position === BitSwipePosition.Start) || (rtl && position === BitSwipePosition.End)) && diffX < 0) {
                         if ((Math.abs(diffX) / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (((!isRtl && position === BitSwipePosition.End) || (isRtl && position === BitSwipePosition.Start)) && diffX > 0) {
+                    if (((!rtl && position === BitSwipePosition.End) || (rtl && position === BitSwipePosition.Start)) && diffX > 0) {
                         if ((diffX / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
