@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Collections.Frozen;
 using Microsoft.AspNetCore.Components;
 using Bit.BlazorUI.Demo.Client.Core.Models;
@@ -138,6 +138,38 @@ public static class BlazorUIComponentCatalog
     private static readonly Type[] _baseTypes = [typeof(BitComponentBase), typeof(BitInputBase<>), typeof(BitTextInputBase<>)];
 
     private static readonly Lazy<BlazorUIComponent[]> _components = new(Build, LazyThreadSafetyMode.PublicationOnly);
+
+    /// <summary>
+    /// The link to a component's source: <paramref name="pagePath"/> is the path its demo page states,
+    /// relative to the package's Components folder. A page whose source lives outside that folder (the
+    /// Params utilities) climbs out of it with "../", which is resolved here segment by segment, so the
+    /// link reads as the file's own path. Nothing else about the path is touched - Uri would resolve the
+    /// segment too, but it would also percent-encode and normalize every other component's link - and a
+    /// "../" never climbs above the package.
+    /// </summary>
+    private static string SourceUrlOf(string packageId, string pagePath)
+    {
+        List<string> segments = [packageId, "Components"];
+
+        foreach (var segment in pagePath.Split('/'))
+        {
+            if (segment is "" or ".") continue;
+
+            if (segment is "..")
+            {
+                if (segments.Count > 1)
+                {
+                    segments.RemoveAt(segments.Count - 1);
+                }
+
+                continue;
+            }
+
+            segments.Add(segment);
+        }
+
+        return $"{SourceRoot}/{string.Join('/', segments)}";
+    }
     private static readonly Lazy<FrozenDictionary<string, BlazorUIComponent>> _byName = new(BuildIndex, LazyThreadSafetyMode.PublicationOnly);
 
     /// <summary>Every documented component, in nav order.</summary>
@@ -251,9 +283,7 @@ public static class BlazorUIComponentCatalog
                 ComponentType = componentType,
                 SourceUrl = demo?.SourceUrl is null || componentType is null
                     ? null
-                    // A page whose source lives outside Components (the Params utilities) points at it with
-                    // "../"; Uri resolves that segment, so the link reads as the file's own path.
-                    : new Uri($"{SourceRoot}/{BlazorUIAssemblies.Of(componentType).PackageId}/Components/{demo.SourceUrl}").AbsoluteUri,
+                    : SourceUrlOf(BlazorUIAssemblies.Of(componentType).PackageId, demo.SourceUrl),
                 Inherited = inherited,
                 Parameters = parameters,
                 PublicMembers = MergeMembers(tables?.PublicMembers, componentType, parameters),

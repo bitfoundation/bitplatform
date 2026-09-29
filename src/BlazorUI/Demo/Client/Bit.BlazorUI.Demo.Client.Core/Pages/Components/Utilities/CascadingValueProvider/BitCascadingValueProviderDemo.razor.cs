@@ -52,7 +52,7 @@ public partial class BitCascadingValueProviderDemo
                     Name = "Value",
                     Type = "object?",
                     DefaultValue = "null",
-                    Description = "The value to be provided. Assigning a value not assignable to ValueType throws an ArgumentException; assigning a different value raises Changed. A lazy factory runs on the first read, a computed one on every read.",
+                    Description = "The value to be provided. Assigning a value not assignable to ValueType throws an ArgumentException; assigning a different value raises Changed. A lazy factory runs on the first read, a computed one on every read; assigning replaces either factory for good, so a computed value stops tracking its source.",
                 },
                 new()
                 {
@@ -133,43 +133,36 @@ public partial class BitCascadingValueProviderDemo
                 },
                 new()
                 {
-                    Name = "NotifyChangedAsync(object? newValue)",
-                    Type = "Task",
-                    DefaultValue = "",
-                    Description = "Assigns Value and completes once every listening provider has re-rendered with it, like CascadingValueSource.NotifyChangedAsync(newValue). Notifies even when the value is unchanged.",
-                },
-                new()
-                {
                     Name = "From<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)",
-                    Type = "BitCascadingValue<T>",
+                    Type = "BitCascadingValue",
                     DefaultValue = "",
                     Description = "Creates a cascading value whose ValueType is the static type of T.",
                 },
                 new()
                 {
                     Name = "Fixed<T>(T value, string? name = null, bool enabled = true)",
-                    Type = "BitCascadingValue<T>",
+                    Type = "BitCascadingValue",
                     DefaultValue = "",
                     Description = "Creates a fixed (IsFixed) cascading value whose ValueType is the static type of T.",
                 },
                 new()
                 {
                     Name = "Lazy<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)",
-                    Type = "BitCascadingValue<T>",
+                    Type = "BitCascadingValue",
                     DefaultValue = "",
                     Description = "Creates a value whose factory runs once, the first time it is provided, so a disabled or shadowed value is never built. A failing factory is retried on the next read. An overload taking an explicit ValueType is available as well.",
                 },
                 new()
                 {
                     Name = "Computed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)",
-                    Type = "BitCascadingValue<T>",
+                    Type = "BitCascadingValue",
                     DefaultValue = "",
                     Description = "Creates a value whose factory runs every time it is provided, so one long-lived value keeps tracking the state it is derived from. An overload taking an explicit ValueType is available as well.",
                 },
                 new()
                 {
                     Name = "Observed<T>(T value, string? name = null, bool enabled = true)",
-                    Type = "BitCascadingValue<T>",
+                    Type = "BitCascadingValue",
                     DefaultValue = "",
                     Description = "Creates a value with AutoNotify turned on, so an object reporting its own mutations refreshes the consumers without any call to NotifyChanged.",
                 }
@@ -179,7 +172,7 @@ public partial class BitCascadingValueProviderDemo
         {
             Id = "cascading-value-of-t",
             Title = "BitCascadingValue<T>",
-            Description = "A BitCascadingValue whose ValueType is T, so its value is read and assigned as a T, like the framework's CascadingValueSource<T>. The From, Fixed, Lazy, Computed and Observed factories return it, and it goes anywhere a BitCascadingValue does.",
+            Description = "A BitCascadingValue whose ValueType is T, so its value is read and assigned as a T, like the framework's CascadingValueSource<T>. It goes anywhere a BitCascadingValue does. Every value created from a static type is one - the factories, the typed BitCascadingValueList helpers and the implicit conversions - so a type pattern reaches its typed members; one created with an explicit Type or an untyped constructor is not.",
             Parameters =
             [
                 new()
@@ -194,14 +187,14 @@ public partial class BitCascadingValueProviderDemo
                     Name = "Value",
                     Type = "T",
                     DefaultValue = "",
-                    Description = "The value to be provided, typed as T. Assigning a different value refreshes the consumers.",
+                    Description = "The value to be provided, typed as T. Assigning a different value refreshes the consumers. It may be null even for a non-nullable reference T, since the untyped Value accepts null.",
                 },
                 new()
                 {
                     Name = "NotifyChangedAsync(T newValue)",
                     Type = "Task",
                     DefaultValue = "",
-                    Description = "Assigns Value and completes once every listening provider has re-rendered with it. Notifies even when the value is unchanged.",
+                    Description = "Assigns Value and completes once every listening provider has re-rendered with it, like CascadingValueSource.NotifyChangedAsync(newValue). Notifies even when the value is unchanged, and like assigning Value, replaces a lazy or computed factory for good.",
                 }
             ]
         },
@@ -224,7 +217,7 @@ public partial class BitCascadingValueProviderDemo
                     Name = "Add(BitCascadingValue? value)",
                     Type = "void",
                     DefaultValue = "",
-                    Description = "Adds an already created BitCascadingValue to the list. A null item is ignored.",
+                    Description = "Adds an already created BitCascadingValue to the list. A null item is ignored. An overload taking a BitCascadingValue<T> adds it as it is too, rather than cascading the value object itself.",
                 },
                 new()
                 {
@@ -245,7 +238,7 @@ public partial class BitCascadingValueProviderDemo
                     Name = "AddIf(bool condition, BitCascadingValue? value)",
                     Type = "void",
                     DefaultValue = "",
-                    Description = "Adds an already created BitCascadingValue only when the condition is true; paired with a lazy value, the value of a skipped entry is never built.",
+                    Description = "Adds an already created BitCascadingValue only when the condition is true; paired with a lazy value, the value of a skipped entry is never built. An overload taking a BitCascadingValue<T> is available as well.",
                 },
                 new()
                 {
@@ -287,7 +280,7 @@ public partial class BitCascadingValueProviderDemo
                     Name = "Find<T>(string? name = null)",
                     Type = "BitCascadingValue?",
                     DefaultValue = "",
-                    Description = "Finds the entry the type and name resolve to: the last one matching both, since it shadows the others. An overload taking an explicit ValueType is available as well.",
+                    Description = "Finds the entry the type and name resolve to: the last one matching both, since it shadows the others. An entry created from a static type is a BitCascadingValue<T>, so match it with a type pattern rather than a cast. An overload taking an explicit ValueType is available as well.",
                 },
                 new()
                 {
@@ -318,8 +311,12 @@ public partial class BitCascadingValueProviderDemo
 
     public BitCascadingValueProviderDemo()
     {
-        jobStatusValue = BitCascadingValue.From(jobStatus);
-        jobProgressValue = BitCascadingValue.From<int?>(null, "Progress");
+        flagTheme = BitCascadingValue.Fixed("Dark", "Theme");
+        flagUser = new(new CascadingDemoUser("Ava Smith", "Product manager"));
+        flagValues = [flagTheme, BitCascadingValue.Fixed((3) as int?, "NotificationCount"), flagUser];
+
+        jobStatusValue = new(jobStatus);
+        jobProgressValue = new(null, "Progress");
         notifyingValues = [jobStatusValue, jobProgressValue];
 
         observableValues = [BitCascadingValue.Observed(observableStatus)];
@@ -385,15 +382,21 @@ public partial class BitCascadingValueProviderDemo
 
 
 
-    private bool provideTheme = true;
-    private bool provideUser = true;
+    private readonly BitCascadingValue flagTheme;
+    private readonly BitCascadingValue flagUser;
+    private readonly IEnumerable<BitCascadingValue> flagValues;
 
-    private IEnumerable<BitCascadingValue> flagValues =>
-    [
-        BitCascadingValue.Fixed("Dark", "Theme", enabled: provideTheme),
-        BitCascadingValue.Fixed((3) as int?, "NotificationCount"),
-        new(new CascadingDemoUser("Ava Smith", "Product manager")) { Enabled = provideUser }
-    ];
+    private bool provideTheme
+    {
+        get => flagTheme.Enabled;
+        set => flagTheme.Enabled = value;
+    }
+
+    private bool provideUser
+    {
+        get => flagUser.Enabled;
+        set => flagUser.Enabled = value;
+    }
 
 
 
@@ -474,8 +477,8 @@ public partial class BitCascadingValueProviderDemo
 
     private int computedClicks;
     private int lazyUserFactoryCalls;
-    private readonly BitCascadingValue<CascadingDemoUser> lazyTypedUser;
-    private readonly BitCascadingValue<CascadingDemoUser> lazyNamedUser;
+    private readonly BitCascadingValue lazyTypedUser;
+    private readonly BitCascadingValue lazyNamedUser;
     private readonly IEnumerable<BitCascadingValue> factoryValues;
 
     private bool provideLazyNamedUser
@@ -820,15 +823,29 @@ private readonly IEnumerable<BitCascadingValue> nullCountValues = [BitCascadingV
     <CascadingValueDemoConsumer Title=""Fixed and conditional cascading values:"" />
 </BitCascadingValueProvider>";
     private readonly string example6CsharpCode = @"
-private bool provideTheme = true;
-private bool provideUser = true;
+private readonly BitCascadingValue flagTheme;
+private readonly BitCascadingValue flagUser;
+private readonly IEnumerable<BitCascadingValue> flagValues;
 
-private IEnumerable<BitCascadingValue> flagValues =>
-[
-    BitCascadingValue.Fixed(""Dark"", ""Theme"", enabled: provideTheme),
-    BitCascadingValue.Fixed((3) as int?, ""NotificationCount""),
-    new(new CascadingDemoUser(""Ava Smith"", ""Product manager"")) { Enabled = provideUser }
-];";
+public MyPage()
+{
+    // Created once: a fixed value is the cheapest thing to cascade only while it is the same instance.
+    flagTheme = BitCascadingValue.Fixed(""Dark"", ""Theme"");
+    flagUser = new(new CascadingDemoUser(""Ava Smith"", ""Product manager""));
+    flagValues = [flagTheme, BitCascadingValue.Fixed((3) as int?, ""NotificationCount""), flagUser];
+}
+
+private bool provideTheme
+{
+    get => flagTheme.Enabled;
+    set => flagTheme.Enabled = value;
+}
+
+private bool provideUser
+{
+    get => flagUser.Enabled;
+    set => flagUser.Enabled = value;
+}";
 
     private readonly DemoCodeFile[] example6CodeFiles = [consumerFile, userFile];
 
@@ -847,8 +864,8 @@ private readonly IEnumerable<BitCascadingValue> notifyingValues;
 
 public MyPage()
 {
-    jobStatusValue = BitCascadingValue.From(jobStatus);
-    jobProgressValue = BitCascadingValue.From<int?>(null, ""Progress"");
+    jobStatusValue = new(jobStatus);
+    jobProgressValue = new(null, ""Progress"");
     notifyingValues = [jobStatusValue, jobProgressValue];
 }
 
@@ -944,8 +961,8 @@ private void RunObservableJob()
     private readonly string example9CsharpCode = @"
 private int computedClicks;
 private int lazyUserFactoryCalls;
-private readonly BitCascadingValue<CascadingDemoUser> lazyTypedUser;
-private readonly BitCascadingValue<CascadingDemoUser> lazyNamedUser;
+private readonly BitCascadingValue lazyTypedUser;
+private readonly BitCascadingValue lazyNamedUser;
 private readonly IEnumerable<BitCascadingValue> factoryValues;
 
 public MyPage()

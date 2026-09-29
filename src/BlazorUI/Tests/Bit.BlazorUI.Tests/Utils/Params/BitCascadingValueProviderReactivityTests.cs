@@ -211,7 +211,7 @@ public partial class BitCascadingValueProviderReactivityTests : BunitTestContext
     [TestMethod]
     public async Task ShouldCompleteTheNotifyChangedTaskOnceTheNewValueHasBeenRendered()
     {
-        var greeting = new BitCascadingValue("hello", "Greeting");
+        var greeting = new BitCascadingValue<string>("hello", "Greeting");
 
         var component = RenderComponent<BitCascadingValueProvider>(parameters =>
         {

@@ -141,8 +141,8 @@
             The provider listens to every <b>BitCascadingValue</b> it holds: assigning <b>Value</b> refreshes the consumers,
             <b>NotifyChangedAsync(newValue)</b> does the same and waits for the render, and <b>NotifyChanged()</b> or
             <b>NotifyChangedAsync()</b> pushes an object that was mutated in place. It works from any thread, with no
-            <b>StateHasChanged</b> call on the page. The factories return a <b>BitCascadingValue&lt;T&gt;</b>, whose
-            <b>Value</b> and <b>NotifyChangedAsync</b> are typed as <b>T</b>.
+            <b>StateHasChanged</b> call on the page. A <b>BitCascadingValue&lt;T&gt;</b> types its <b>Value</b> and
+            <b>NotifyChangedAsync(newValue)</b> as <b>T</b>, so a value of the wrong type does not even compile.
         </div>
 
         <br /><br />

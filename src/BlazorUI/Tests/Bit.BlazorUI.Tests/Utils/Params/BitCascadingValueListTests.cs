@@ -211,4 +211,24 @@ public class BitCascadingValueListTests
         Assert.AreEqual(0, list.Count);
         Assert.AreEqual(0, calls);
     }
+
+    [TestMethod]
+    public void ShouldAddALazyValueItselfWhenItsConditionHolds()
+    {
+        var calls = 0;
+        var lazy = BitCascadingValue.Lazy<int?>(() => { calls++; return 5; });
+
+        var list = new BitCascadingValueList();
+        list.AddIf(true, lazy);
+        list.Add(BitCascadingValue.From(7, "Seven"));
+
+        Assert.AreEqual(2, list.Count);
+        Assert.AreSame(lazy, list[0]);
+        Assert.AreEqual(typeof(int?), list[0].ValueType);
+        Assert.AreEqual(typeof(int), list[1].ValueType);
+        Assert.AreEqual(0, calls);
+
+        Assert.AreEqual(5, list[0].Value);
+        Assert.AreEqual(1, calls);
+    }
 }
