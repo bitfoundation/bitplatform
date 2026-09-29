@@ -9,6 +9,12 @@ public partial class WindowsAppUpdateService : IAppUpdateService
     [AutoInject] private ClientWindowsSettings settings = default!;
     [AutoInject] private ILogger<WindowsAppUpdateService> logger = default!;
 
+    /// <summary>
+    /// Velopack runs one update at a time and fails any other on its lock file, so a <see cref="ForceUpdate"/> during
+    /// the update Program.cs starts at launch waits for it instead. Static, since the service is scoped.
+    /// </summary>
+    private static readonly SemaphoreSlim updateLock = new(1, 1);
+
     public async Task ForceUpdate()
     {
         var windowsUpdateSettings = settings.WindowsUpdate;
@@ -27,18 +33,27 @@ public partial class WindowsAppUpdateService : IAppUpdateService
             return;
         }
 
-        var updateManager = new UpdateManager(windowsUpdateSettings.FilesUrl);
-        var updateInfo = await updateManager.CheckForUpdatesAsync();
-        if (updateInfo is null)
-        {
-            logger.LogInformation("No newer release is available at {FilesUrl}.", windowsUpdateSettings.FilesUrl);
-            return;
-        }
+        await updateLock.WaitAsync();
 
-        await updateManager.DownloadUpdatesAsync(updateInfo);
-        if (windowsUpdateSettings.AutoReload)
+        try
         {
-            updateManager.ApplyUpdatesAndRestart(updateInfo);
+            var updateManager = new UpdateManager(windowsUpdateSettings.FilesUrl);
+            var updateInfo = await updateManager.CheckForUpdatesAsync();
+            if (updateInfo is null)
+            {
+                logger.LogInformation("No newer release is available at {FilesUrl}.", windowsUpdateSettings.FilesUrl);
+                return;
+            }
+
+            await updateManager.DownloadUpdatesAsync(updateInfo);
+            if (windowsUpdateSettings.AutoReload)
+            {
+                updateManager.ApplyUpdatesAndRestart(updateInfo);
+            }
+        }
+        finally
+        {
+            updateLock.Release();
         }
     }
 }
