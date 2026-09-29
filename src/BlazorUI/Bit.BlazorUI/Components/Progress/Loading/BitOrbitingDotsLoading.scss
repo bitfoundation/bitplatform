@@ -11,8 +11,8 @@
 .bit-ldn-ord-chl {
     border-radius: 50%;
     display: inline-block;
-    width: var(--bit-ldn-ord-25);
-    height: var(--bit-ldn-ord-25);
+    width: calc(25 * var(--bit-ldn-unit));
+    height: calc(25 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
     animation: bit-ldn-ord-anm2 calc(2s * var(--bit-ldn-mot-factor, 1)) ease-in-out infinite;
 }

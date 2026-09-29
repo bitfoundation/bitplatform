@@ -14,4 +14,10 @@ public class BitThemeSpacings
     /// bodies and footers (Fluent/Material 24px, Cupertino alerts 20px). Maps to <c>--bit-spa-dialog</c>.
     /// </summary>
     public string? Dialog { get; set; }
+
+    /// <summary>
+    /// The inset of a <c>BitCard</c> and of each of its parts, per size class (Fluent 2 8/12/16px, Material 16dp).
+    /// Maps to <c>--bit-spa-card-{sm,md,lg}</c>.
+    /// </summary>
+    public BitThemeSizeScale Card { get; set; } = new();
 }

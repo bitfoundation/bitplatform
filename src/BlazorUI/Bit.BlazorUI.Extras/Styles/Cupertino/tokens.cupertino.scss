@@ -104,6 +104,10 @@
     --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
     --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.25); //10px
     --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    // The capsule of a small / medium UIButton - 28pt at the medium anchor, 34pt at the large one.
+    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.5); //28px
+    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.25); //34px
 
     /*---- Opacity ----*/
     // --bit-opa-dis is left at the core stylesheet's 0.5, which is already the platform value:
@@ -112,11 +116,20 @@
 
     /*---- Spacing / layout ----*/
     --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px - alert edge inset
+    // The 16pt inset of an inset-grouped section, with 12 and 20 either side of it.
+    --bit-spa-card-sm-steps: 1.5;
+    --bit-spa-card-md-steps: 2;
+    --bit-spa-card-lg-steps: 2.5;
+    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-sm-steps)); //12px
+    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-md-steps)); //16px
+    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-lg-steps)); //20px
     // iOS alerts stack their actions full-width and centred; the stretch is what runs them the
     // whole width of the alert, separated by the margins the actions already carry.
     --bit-layout-dialog-actions-direction: column;
     --bit-layout-dialog-actions-justify: center;
     --bit-layout-dialog-actions-align: stretch;
+    // An alert centres its title and message above the stacked actions.
+    --bit-layout-dialog-text-align: center;
     // UIAlertController is 270pt wide whatever it has to say, which is the narrowest alert of the three.
     --bit-siz-dialog-max-width: 16.875rem; //270px
 
@@ -145,6 +158,9 @@
     // SF tracks its text sizes slightly tight; buttons are sentence-case, never uppercase.
     --bit-tpg-ctrl-letter-spacing: -0.024em;
     --bit-tpg-ctrl-text-transform: none;
+    // An alert is titled in the 17px semibold headline: the body size, set semibold.
+    --bit-tpg-dialog-title-font-size: var(--bit-tpg-fs-md); //17px
+    --bit-tpg-dialog-title-font-weight: var(--bit-tpg-fw-semibold);
     // BitText variants mapped onto the SF text styles. Unlike the Fluent and Material ramps these
     // do NOT step down below 600px, and the absence of an lt-sm block here is the decision rather
     // than an omission: the SF text styles ARE the phone sizes - iOS renders the same 34pt large
@@ -231,6 +247,7 @@
     --bit-shd-cal: 0 0 10px rgba(0, 0, 0, 0.25);
     --bit-shd-cal2: 0 10px 40px rgba(0, 0, 0, 0.2);
     --bit-shd-card: none;
+    --bit-shd-card-hover: none;
     --bit-shd-popup: 0 0 10px rgba(0, 0, 0, 0.25);
     --bit-shd-dialog: 0 10px 40px rgba(0, 0, 0, 0.2);
     --bit-shd-sheet: 0 10px 40px rgba(0, 0, 0, 0.2);

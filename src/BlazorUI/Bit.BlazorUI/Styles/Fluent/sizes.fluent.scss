@@ -89,6 +89,12 @@
     --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.125); //9px
     --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
 
+    //the height of a chip (BitTag) per size class, measured inside its rule - the height its dismiss
+    //button gets, which keeps the medium one on the 24px pointer target of WCAG 2.2. Density-aware.
+    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+
     //the thickness of a linear track (BitProgress bar) per size class.
     --bit-siz-track-sm: 0.125rem; //2px
     --bit-siz-track-md: 0.25rem; //4px

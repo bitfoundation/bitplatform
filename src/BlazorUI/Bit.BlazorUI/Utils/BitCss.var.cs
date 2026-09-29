@@ -526,6 +526,7 @@ public static partial class BitCss
             public const string FocusRing = "--bit-shd-focus-ring";
 
             public const string Card = "--bit-shd-card";
+            public const string CardHover = "--bit-shd-card-hover";
             public const string Popup = "--bit-shd-popup";
             public const string Dialog = "--bit-shd-dialog";
             public const string Sheet = "--bit-shd-sheet";
@@ -579,6 +580,13 @@ public static partial class BitCss
         {
             public const string ScalingFactor = "--bit-spa-scaling-factor";
             public const string Dialog = "--bit-spa-dialog";
+
+            public static class Card
+            {
+                public const string Sm = "--bit-spa-card-sm";
+                public const string Md = "--bit-spa-card-md";
+                public const string Lg = "--bit-spa-card-lg";
+            }
         }
 
         public static class Motion
@@ -600,6 +608,7 @@ public static partial class BitCss
             public const string DialogActionsDirection = "--bit-layout-dialog-actions-direction";
             public const string DialogActionsJustify = "--bit-layout-dialog-actions-justify";
             public const string DialogActionsAlign = "--bit-layout-dialog-actions-align";
+            public const string DialogTextAlign = "--bit-layout-dialog-text-align";
 
             public static class Breakpoints
             {
@@ -712,6 +721,13 @@ public static partial class BitCss
                 public const string Lg = "--bit-siz-badge-dot-lg";
             }
 
+            public static class Chip
+            {
+                public const string Sm = "--bit-siz-chip-sm";
+                public const string Md = "--bit-siz-chip-md";
+                public const string Lg = "--bit-siz-chip-lg";
+            }
+
             public const string SpinnerStroke = "--bit-siz-spinner-stroke";
             public const string PopupMaxHeight = "--bit-siz-popup-max-height";
             public const string DialogMaxWidth = "--bit-siz-dialog-max-width";
@@ -769,6 +785,12 @@ public static partial class BitCss
             {
                 public const string LetterSpacing = "--bit-tpg-ctrl-letter-spacing";
                 public const string TextTransform = "--bit-tpg-ctrl-text-transform";
+            }
+
+            public static class Dialog
+            {
+                public const string TitleFontSize = "--bit-tpg-dialog-title-font-size";
+                public const string TitleFontWeight = "--bit-tpg-dialog-title-font-weight";
             }
 
             public static class H1
