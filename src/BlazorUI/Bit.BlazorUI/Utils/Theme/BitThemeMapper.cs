@@ -72,6 +72,8 @@ internal static class BitThemeMapper
         new(BitCss.Var.Shadow.Dialog, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Sheet, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Tooltip, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Color.Tooltip.Background, BitCss.Var.Color.Background.Secondary.Main),
+        new(BitCss.Var.Color.Tooltip.Foreground, BitCss.Var.Color.Foreground.Primary.Main),
     ];
 
     /// <summary>
@@ -92,12 +94,32 @@ internal static class BitThemeMapper
     /// </remarks>
     internal static void AugmentWithFamilyAliasReSubstitution(Dictionary<string, string> cssVariables)
     {
+        var tooltipBackground = BitCss.Var.Color.Tooltip.Background;
+        var tooltipForeground = BitCss.Var.Color.Tooltip.Foreground;
+        var tooltipColorsSet = cssVariables.ContainsKey(tooltipBackground) || cssVariables.ContainsKey(tooltipForeground);
+
         foreach (var (alias, target) in FamilyAliasTargets)
         {
             if (cssVariables.ContainsKey(alias)) continue; // explicit alias value wins
             if (cssVariables.ContainsKey(target) is false) continue; // target untouched; keep the inherited alias
 
             cssVariables[alias] = $"var({target})";
+        }
+
+        // The tooltip's fill and text are one decision, and a preset may make it differently from the default
+        // pair (Material paints the inverse surface: the fill is the page's text color and the text its
+        // background). Re-declaring only the half whose palette color the theme touched would pair the
+        // default for that half with the preset's already-substituted other half - the same color for both,
+        // in the case of Material - so once either half is re-declared, both are.
+        if (tooltipColorsSet is false &&
+            (cssVariables.ContainsKey(tooltipBackground) || cssVariables.ContainsKey(tooltipForeground)))
+        {
+            foreach (var (alias, target) in FamilyAliasTargets)
+            {
+                if (alias != tooltipBackground && alias != tooltipForeground) continue;
+
+                cssVariables[alias] = $"var({target})";
+            }
         }
 
         // The role foregrounds are the one part of the tier that is not a plain var() alias: each one
@@ -465,6 +487,9 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Border.Disabled, bitTheme.Color.Border.Disabled);
 
         addCssVar(BitCss.Var.Color.Required, bitTheme.Color.Required);
+
+        addCssVar(BitCss.Var.Color.Tooltip.Background, bitTheme.Color.TooltipBackground);
+        addCssVar(BitCss.Var.Color.Tooltip.Foreground, bitTheme.Color.TooltipForeground);
 
         addCssVar(BitCss.Var.Color.Neutral.White, bitTheme.Color.Neutral.White);
         addCssVar(BitCss.Var.Color.Neutral.Black, bitTheme.Color.Neutral.Black);
@@ -914,6 +939,8 @@ internal static class BitThemeMapper
             Neutral = src.Neutral ?? new(),
             Semantic = src.Semantic ?? new(),
             Required = src.Required,
+            TooltipBackground = src.TooltipBackground,
+            TooltipForeground = src.TooltipForeground,
         };
     }
 
@@ -1290,6 +1317,8 @@ internal static class BitThemeMapper
         result.Color.Border.Disabled = bitTheme.Color.Border.Disabled ?? other.Color.Border.Disabled;
 
         result.Color.Required = bitTheme.Color.Required ?? other.Color.Required;
+        result.Color.TooltipBackground = bitTheme.Color.TooltipBackground ?? other.Color.TooltipBackground;
+        result.Color.TooltipForeground = bitTheme.Color.TooltipForeground ?? other.Color.TooltipForeground;
 
         result.Color.Neutral.White = bitTheme.Color.Neutral.White ?? other.Color.Neutral.White;
         result.Color.Neutral.Black = bitTheme.Color.Neutral.Black ?? other.Color.Neutral.Black;

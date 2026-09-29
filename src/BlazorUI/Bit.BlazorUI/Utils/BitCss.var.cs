@@ -456,6 +456,12 @@ public static partial class BitCss
 
             public const string Required = "--bit-clr-req";
 
+            public static class Tooltip
+            {
+                public const string Background = "--bit-clr-tooltip-bg";
+                public const string Foreground = "--bit-clr-tooltip-fg";
+            }
+
             public static class Neutral
             {
                 public const string White = "--bit-clr-ntr-white";

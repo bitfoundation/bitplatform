@@ -7,9 +7,25 @@
     // The disabled attribute only exists on the form elements, so on every other tag the state would be
     // announced by aria-disabled and yet stay fully clickable. Dimming the box and taking it out of hit
     // testing is what makes "is not enabled" mean the same thing whichever tag the element renders.
+    // The one visual decision of the component, so it is the one public variable: read with a fallback and
+    // never declared, it inherits from :root or an ancestor as well as arriving on the Style of an instance -
+    // 1 keeps the tag's own look for a wrapper whose content dims itself. Inheriting is also what carries a value
+    // down to every element inside the one it is set on, so a disabled element nested in a wrapper set to 1 sets
+    // a value of its own to dim again. No cursor is set, since an element taken out of hit testing is never the
+    // one under the pointer.
     &.bit-dis {
-        cursor: default;
-        opacity: $opa-dis;
         pointer-events: none;
+        opacity: var(--bit-Element-disabled-opacity, #{$opa-dis});
+    }
+}
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system colors, which paint a form element
+// the browser disables itself in GrayText but leave every other tag - a div, a disabled link, the legend of a
+// fieldset - in the text color of an enabled one. GrayText is what says "disabled" in that palette, and the dimming
+// is dropped, since the opacity would only wash out the system colors the mode chose for their contrast.
+@media (forced-colors: active) {
+    .bit-elm.bit-dis {
+        color: GrayText;
+        opacity: 1;
     }
 }

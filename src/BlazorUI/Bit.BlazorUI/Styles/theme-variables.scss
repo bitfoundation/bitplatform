@@ -276,6 +276,13 @@ $clr-wrn-tint: var(--bit-clr-wrn-tint);
 $clr-swr-tint: var(--bit-clr-swr-tint);
 $clr-err-tint: var(--bit-clr-err-tint);
 
+//tooltip - the fill and the text of the tooltip surface, the one popup whose colors design systems disagree on
+//(Fluent lifts a light surface with a shadow, Material paints its plain tooltip in the inverse surface with none).
+//The palette-agnostic default lives once in family-tokens.scss; a preset (in its own :root[bit-theme="..."]
+//block) or BitTheme.Color.TooltipBackground / TooltipForeground retunes it without selecting any component class.
+$clr-tooltip-bg: var(--bit-clr-tooltip-bg);
+$clr-tooltip-fg: var(--bit-clr-tooltip-fg);
+
 //focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
 $clr-pri-focus: var(--bit-clr-pri-focus);
 $clr-sec-focus: var(--bit-clr-sec-focus);
