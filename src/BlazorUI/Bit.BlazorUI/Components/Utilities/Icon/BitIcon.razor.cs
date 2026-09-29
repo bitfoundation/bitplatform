@@ -111,7 +111,9 @@ public partial class BitIcon : BitComponentBase
     /// <remarks>
     /// Left unset, the icon is painted in the <c>--bit-Icon-color</c> custom property, and in the primary
     /// color when that is not set either - so a color given here wins over the variable, and one set on
-    /// <c>:root</c> re-colors every icon that was not given a color of its own.
+    /// <c>:root</c> re-colors every icon that was not given a color of its own. Set to <c>currentColor</c>, the
+    /// variable makes a <see cref="BitVariant.Text"/> icon follow the color of the text it sits in, the way
+    /// a glyph of a font does.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }

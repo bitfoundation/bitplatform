@@ -25,47 +25,47 @@ public partial class BitIconDemo
 <BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" Circular IsEnabled=""false"" />";
 
     private readonly string example3RazorCode = @"
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate90"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate180"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate270"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""45"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""-30"" />
+<BitIcon IconName=""@BitIconName.Up"" />
+<BitIcon IconName=""@BitIconName.Up"" Rotate=""BitIconRotate.Rotate90"" />
+<BitIcon IconName=""@BitIconName.Up"" Rotate=""BitIconRotate.Rotate180"" />
+<BitIcon IconName=""@BitIconName.Up"" Rotate=""BitIconRotate.Rotate270"" />
+<BitIcon IconName=""@BitIconName.Up"" RotateAngle=""45"" />
+<BitIcon IconName=""@BitIconName.Up"" RotateAngle=""-30"" />
 
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" />
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" Flip=""BitIconFlip.Horizontal"" />
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" Flip=""BitIconFlip.Vertical"" />
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" Flip=""BitIconFlip.Both"" />
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" Flip=""BitIconFlip.Horizontal"" RotateAngle=""45"" />
+<BitIcon IconName=""@BitIconName.ReplyAlt"" />
+<BitIcon IconName=""@BitIconName.ReplyAlt"" Flip=""BitIconFlip.Horizontal"" />
+<BitIcon IconName=""@BitIconName.ReplyAlt"" Flip=""BitIconFlip.Vertical"" />
+<BitIcon IconName=""@BitIconName.ReplyAlt"" Flip=""BitIconFlip.Both"" />
+<BitIcon IconName=""@BitIconName.ReplyAlt"" Flip=""BitIconFlip.Horizontal"" RotateAngle=""45"" />
 
 
 <div>
-    <BitIcon IconName=""@BitIconName.Forward"" Size=""BitSize.Large"" FlipRtl />
-    <BitIcon IconName=""@BitIconName.Back"" Size=""BitSize.Large"" FlipRtl />
-    <BitIcon IconName=""@BitIconName.Clock"" Size=""BitSize.Large"" />
+    <BitIcon IconName=""@BitIconName.Forward"" FlipRtl />
+    <BitIcon IconName=""@BitIconName.Back"" FlipRtl />
+    <BitIcon IconName=""@BitIconName.Clock"" />
 </div>
 
 <div dir=""rtl"">
-    <BitIcon IconName=""@BitIconName.Forward"" Size=""BitSize.Large"" FlipRtl />
-    <BitIcon IconName=""@BitIconName.Back"" Size=""BitSize.Large"" FlipRtl />
-    <BitIcon IconName=""@BitIconName.Clock"" Size=""BitSize.Large"" />
+    <BitIcon IconName=""@BitIconName.Forward"" FlipRtl />
+    <BitIcon IconName=""@BitIconName.Back"" FlipRtl />
+    <BitIcon IconName=""@BitIconName.Clock"" />
 </div>";
 
     private readonly string example4RazorCode = @"
-<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" />
-<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.SpinReverse"" />
-<BitIcon IconName=""@BitIconName.ProgressRingDots"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Pulse"" />
-<BitIcon IconName=""@BitIconName.Heart"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Beat"" />
-<BitIcon IconName=""@BitIconName.StatusCircleInner"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Fade"" />
-<BitIcon IconName=""@BitIconName.Ringer"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Shake"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Bounce"" />
-<BitIcon IconName=""@BitIconName.CircleFill"" Size=""BitSize.Large"" Animation=""BitIconAnimation.BeatFade"" />
+<BitIcon IconName=""@BitIconName.Sync"" Animation=""BitIconAnimation.Spin"" />
+<BitIcon IconName=""@BitIconName.Sync"" Animation=""BitIconAnimation.SpinReverse"" />
+<BitIcon IconName=""@BitIconName.ProgressRingDots"" Animation=""BitIconAnimation.Pulse"" />
+<BitIcon IconName=""@BitIconName.Heart"" Animation=""BitIconAnimation.Beat"" />
+<BitIcon IconName=""@BitIconName.StatusCircleInner"" Animation=""BitIconAnimation.Fade"" />
+<BitIcon IconName=""@BitIconName.Ringer"" Animation=""BitIconAnimation.Shake"" />
+<BitIcon IconName=""@BitIconName.Up"" Animation=""BitIconAnimation.Bounce"" />
+<BitIcon IconName=""@BitIconName.CircleFill"" Animation=""BitIconAnimation.BeatFade"" />
 
-<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" AnimationDuration=""4s"" />
-<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" AnimationDuration=""0.4s"" />
-<BitIcon IconName=""@BitIconName.Send"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Beat"" RotateAngle=""45"" />
+<BitIcon IconName=""@BitIconName.Sync"" Animation=""BitIconAnimation.Spin"" AnimationDuration=""4s"" />
+<BitIcon IconName=""@BitIconName.Sync"" Animation=""BitIconAnimation.Spin"" AnimationDuration=""0.4s"" />
+<BitIcon IconName=""@BitIconName.Send"" Animation=""BitIconAnimation.Beat"" RotateAngle=""45"" />
 
-<BitIcon @key=""replayKey"" IconName=""@BitIconName.Ringer"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Shake"" AnimationIterationCount=""3"" />
+<BitIcon @key=""replayKey"" IconName=""@BitIconName.Ringer"" Animation=""BitIconAnimation.Shake"" AnimationIterationCount=""3"" />
 <BitLink OnClick=""() => replayKey++"">Shake 3 times (replay)</BitLink>
 
 <BitIcon IconName=""@BitIconName.CircleFill"" Animation=""BitIconAnimation.Fade"" AnimationDuration=""1.2s"" />
@@ -92,19 +92,16 @@ private int replayKey;";
 
     private readonly string example6RazorCode = @"
 <BitIcon IconName=""@(isStarred ? BitIconName.FavoriteStarFill : BitIconName.FavoriteStar)""
-         Size=""BitSize.Large""
          Title=""Favorite""
          aria-pressed=""@(isStarred ? ""true"" : ""false"")""
          OnClick=""() => isStarred = !isStarred"" />
 
 <BitIcon IconName=""@BitIconName.Refresh""
-         Size=""BitSize.Large""
          Variant=""BitVariant.Outline""
          AriaLabel=""Refresh the list""
          OnClick=""() => clickCount++"" />
 
 <BitIcon IconName=""@BitIconName.Delete""
-         Size=""BitSize.Large""
          Variant=""BitVariant.Fill""
          Title=""Deleting is unavailable here""
          IsEnabled=""false""
@@ -116,7 +113,7 @@ private bool isStarred = true;
 private int clickCount;";
 
     private readonly string example7RazorCode = @"
-<BitIcon Size=""BitSize.Large"">
+<BitIcon>
     <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
         <path d=""M12 2 15.1 8.6 22 9.7l-5 4.9 1.2 7L12 18.3 5.8 21.6 7 14.6l-5-4.9 6.9-1.1z"" />
     </svg>
@@ -128,22 +125,22 @@ private int clickCount;";
     </svg>
 </BitIcon>
 
-<BitIcon Variant=""BitVariant.Fill"" Size=""BitSize.Large"">
+<BitIcon Variant=""BitVariant.Fill"">
     <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
         <path d=""M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"" />
     </svg>
 </BitIcon>
 
 
-<div style=""font-size:1.25rem"">
+<div>
     Aligned by its box
-    <BitIcon FontSize=""inherit"">
+    <BitIcon>
         <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
             <path d=""M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"" />
         </svg>
     </BitIcon>
     and dropped onto the line with Inline
-    <BitIcon FontSize=""inherit"" Inline>
+    <BitIcon Inline>
         <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
             <path d=""M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"" />
         </svg>
@@ -165,16 +162,20 @@ private int clickCount;";
     <BitIcon IconName=""@BitIconName.Home"" Variant=""BitVariant.Outline"" />
     <BitIcon IconName=""@BitIconName.Home"" Variant=""BitVariant.Fill"" />
     <BitIcon IconName=""@BitIconName.Refresh"" Variant=""BitVariant.Fill"" AriaLabel=""Refresh"" OnClick=""() => clickCount++"" />
-    <BitIcon IconName=""@BitIconName.Home"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" Size=""BitSize.Small"" />
 </div>
 
 
-<BitIcon IconName=""@BitIconName.Heart"" Size=""BitSize.Large"" Style=""--bit-Icon-color: hotpink;"" />
+<BitIcon IconName=""@BitIconName.Heart"" Style=""--bit-Icon-color: hotpink;"" />
 
 <BitIcon IconName=""@BitIconName.Settings"" AriaLabel=""Settings"" OnClick=""() => clickCount++""
          Style=""--bit-Icon-focus-color: #f59e0b; --bit-Icon-size: 2rem;"" />
 
-<BitIcon IconName=""@BitIconName.Home"" FixedWidth Variant=""BitVariant.Outline"" Style=""--bit-Icon-fixed-width: 3em;"" />";
+<BitIcon IconName=""@BitIconName.Home"" FixedWidth Variant=""BitVariant.Outline"" Style=""--bit-Icon-fixed-width: 3em;"" />
+
+
+<div style=""color: seagreen; --bit-Icon-color: currentColor;"">
+    <BitIcon IconName=""@BitIconName.Lightbulb"" /> The icon takes the color of the text it sits in.
+</div>";
     private readonly string example9CsharpCode = @"
 private int clickCount;";
 
@@ -190,8 +191,6 @@ private readonly BitIconParams[] iconParams =
 [
     new()
     {
-        Color = BitColor.Success,
-        Size = BitSize.Large,
         Variant = BitVariant.Outline,
         Circular = true,
     }
@@ -227,22 +226,22 @@ private static bool IsBackground(BitColor color) =>
 <link rel=""stylesheet"" href=""https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"" />
 
 
-<BitIcon Icon=""@(""fa-solid fa-house"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@(""fa-solid fa-house"")"" />
 <BitIcon Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Color=""BitColor.Error"" />
-<BitIcon Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" />
 <BitIcon Icon=""@BitIconInfo.Fa(""solid rocket"")"" Color=""BitColor.Secondary"" />
 
-<BitIcon Icon=""@(""bi bi-house-fill"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@(""bi bi-house-fill"")"" />
 <BitIcon Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" Color=""BitColor.Error"" />
-<BitIcon Icon=""@BitIconInfo.Bi(""github"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@BitIconInfo.Bi(""github"")"" />
 <BitIcon Icon=""@BitIconInfo.Bi(""gear-fill"")"" Color=""BitColor.Secondary"" />
 
-<BitIcon Icon=""@BitIconInfo.Ms(""home"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@BitIconInfo.Ms(""home"")"" />
 <BitIcon Icon=""@BitIconInfo.Ms(""favorite"")"" Color=""BitColor.Error"" />
-<BitIcon Icon=""@BitIconInfo.Ms(""settings"")"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" />
+<BitIcon Icon=""@BitIconInfo.Ms(""settings"")"" Animation=""BitIconAnimation.Spin"" />
 <BitIcon Icon=""@BitIconInfo.Ms(""rocket_launch"")"" Color=""BitColor.Secondary"" />
 
-<BitIcon IconName=""house"" IconResolver=""@faResolver"" Size=""BitSize.Large"" />
+<BitIcon IconName=""house"" IconResolver=""@faResolver"" />
 <BitIcon IconName=""heart"" IconResolver=""@faResolver"" Color=""BitColor.Error"" />
 <BitIcon IconName=""rocket"" IconResolver=""@faResolver"" Color=""BitColor.Secondary"" />
 <BitIcon IconName=""Accept"" IconResolver=""@faResolver"" Color=""BitColor.Success"" />";

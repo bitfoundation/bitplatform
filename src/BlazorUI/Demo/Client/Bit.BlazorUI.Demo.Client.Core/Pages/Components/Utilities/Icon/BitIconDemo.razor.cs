@@ -15,8 +15,6 @@ public partial class BitIconDemo
     [
         new()
         {
-            Color = BitColor.Success,
-            Size = BitSize.Large,
             Variant = BitVariant.Outline,
             Circular = true,
         }
@@ -549,7 +547,7 @@ public partial class BitIconDemo
         {
             Name = "--bit-Icon-color",
             DefaultValue = "--bit-clr-pri",
-            Description = "The icon's color: the glyph of a Text or an Outline icon, the box of a Fill one. A Color on the icon wins over it.",
+            Description = "The icon's color: the glyph of a Text or an Outline icon, the box of a Fill one. currentColor makes a Text icon follow the text around it. A Color on the icon wins over it.",
         },
         new()
         {

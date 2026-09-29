@@ -65,62 +65,61 @@
         </div>
         <br /><br />
         <div class="example-content">
-            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" />
-            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" Rotate="BitIconRotate.Rotate90" />
-            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" Rotate="BitIconRotate.Rotate180" />
-            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" Rotate="BitIconRotate.Rotate270" />
-            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" RotateAngle="45" />
-            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" RotateAngle="-30" />
+            <BitIcon IconName="@BitIconName.Up" />
+            <BitIcon IconName="@BitIconName.Up" Rotate="BitIconRotate.Rotate90" />
+            <BitIcon IconName="@BitIconName.Up" Rotate="BitIconRotate.Rotate180" />
+            <BitIcon IconName="@BitIconName.Up" Rotate="BitIconRotate.Rotate270" />
+            <BitIcon IconName="@BitIconName.Up" RotateAngle="45" />
+            <BitIcon IconName="@BitIconName.Up" RotateAngle="-30" />
         </div>
         <br />
         <div class="example-content">
-            <BitIcon IconName="@BitIconName.ReplyAlt" Size="BitSize.Large" />
-            <BitIcon IconName="@BitIconName.ReplyAlt" Size="BitSize.Large" Flip="BitIconFlip.Horizontal" />
-            <BitIcon IconName="@BitIconName.ReplyAlt" Size="BitSize.Large" Flip="BitIconFlip.Vertical" />
-            <BitIcon IconName="@BitIconName.ReplyAlt" Size="BitSize.Large" Flip="BitIconFlip.Both" />
-            <BitIcon IconName="@BitIconName.ReplyAlt" Size="BitSize.Large" Flip="BitIconFlip.Horizontal" RotateAngle="45" />
+            <BitIcon IconName="@BitIconName.ReplyAlt" />
+            <BitIcon IconName="@BitIconName.ReplyAlt" Flip="BitIconFlip.Horizontal" />
+            <BitIcon IconName="@BitIconName.ReplyAlt" Flip="BitIconFlip.Vertical" />
+            <BitIcon IconName="@BitIconName.ReplyAlt" Flip="BitIconFlip.Both" />
+            <BitIcon IconName="@BitIconName.ReplyAlt" Flip="BitIconFlip.Horizontal" RotateAngle="45" />
         </div>
         <br />
         <div>FlipRtl, left-to-right and then inside a <code>dir="rtl"</code> container:</div>
         <br />
         <div class="example-content">
-            <BitIcon IconName="@BitIconName.Forward" Size="BitSize.Large" FlipRtl />
-            <BitIcon IconName="@BitIconName.Back" Size="BitSize.Large" FlipRtl />
-            <BitIcon IconName="@BitIconName.Clock" Size="BitSize.Large" />
+            <BitIcon IconName="@BitIconName.Forward" FlipRtl />
+            <BitIcon IconName="@BitIconName.Back" FlipRtl />
+            <BitIcon IconName="@BitIconName.Clock" />
         </div>
         <br />
         <div class="example-content" dir="rtl">
-            <BitIcon IconName="@BitIconName.Forward" Size="BitSize.Large" FlipRtl />
-            <BitIcon IconName="@BitIconName.Back" Size="BitSize.Large" FlipRtl />
-            <BitIcon IconName="@BitIconName.Clock" Size="BitSize.Large" />
+            <BitIcon IconName="@BitIconName.Forward" FlipRtl />
+            <BitIcon IconName="@BitIconName.Back" FlipRtl />
+            <BitIcon IconName="@BitIconName.Clock" />
         </div>
     </DemoExample>
 
     <DemoExample Title="Animation" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            <b>Animation</b> loops the icon. <b>AnimationDuration</b> sets the length of one cycle, <b>AnimationDelay</b> the wait before the
-            first - staggered, it turns a row of icons into a wave - and <b>AnimationIterationCount</b> stops it after a few cycles, which an
-            attention-seeking animation should do. A turn or a flip stays under the animation. Under reduced motion every animation slows
-            down rather than stops; <b>ForceAnimation</b> restores its full speed.
+            <b>Animation</b> loops the icon; a turn or a flip stays under it. <b>AnimationDuration</b> sets one cycle, <b>AnimationDelay</b>
+            the wait before the first (staggered, a wave), <b>AnimationIterationCount</b> stops an attention-seeking one after a few cycles.
+            Reduced motion slows every animation down; <b>ForceAnimation</b> restores its speed.
         </div>
         <br /><br />
         <div class="example-content animation-row">
-            <div><BitIcon IconName="@BitIconName.Sync" Size="BitSize.Large" Animation="BitIconAnimation.Spin" /><span>Spin</span></div>
-            <div><BitIcon IconName="@BitIconName.Sync" Size="BitSize.Large" Animation="BitIconAnimation.SpinReverse" /><span>SpinReverse</span></div>
-            <div><BitIcon IconName="@BitIconName.ProgressRingDots" Size="BitSize.Large" Animation="BitIconAnimation.Pulse" /><span>Pulse</span></div>
-            <div><BitIcon IconName="@BitIconName.Heart" Size="BitSize.Large" Animation="BitIconAnimation.Beat" /><span>Beat</span></div>
-            <div><BitIcon IconName="@BitIconName.StatusCircleInner" Size="BitSize.Large" Animation="BitIconAnimation.Fade" /><span>Fade</span></div>
-            <div><BitIcon IconName="@BitIconName.Ringer" Size="BitSize.Large" Animation="BitIconAnimation.Shake" /><span>Shake</span></div>
-            <div><BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" Animation="BitIconAnimation.Bounce" /><span>Bounce</span></div>
-            <div><BitIcon IconName="@BitIconName.CircleFill" Size="BitSize.Large" Animation="BitIconAnimation.BeatFade" /><span>BeatFade</span></div>
+            <div><BitIcon IconName="@BitIconName.Sync" Animation="BitIconAnimation.Spin" /><span>Spin</span></div>
+            <div><BitIcon IconName="@BitIconName.Sync" Animation="BitIconAnimation.SpinReverse" /><span>SpinReverse</span></div>
+            <div><BitIcon IconName="@BitIconName.ProgressRingDots" Animation="BitIconAnimation.Pulse" /><span>Pulse</span></div>
+            <div><BitIcon IconName="@BitIconName.Heart" Animation="BitIconAnimation.Beat" /><span>Beat</span></div>
+            <div><BitIcon IconName="@BitIconName.StatusCircleInner" Animation="BitIconAnimation.Fade" /><span>Fade</span></div>
+            <div><BitIcon IconName="@BitIconName.Ringer" Animation="BitIconAnimation.Shake" /><span>Shake</span></div>
+            <div><BitIcon IconName="@BitIconName.Up" Animation="BitIconAnimation.Bounce" /><span>Bounce</span></div>
+            <div><BitIcon IconName="@BitIconName.CircleFill" Animation="BitIconAnimation.BeatFade" /><span>BeatFade</span></div>
         </div>
         <br />
         <div class="example-content animation-row">
-            <div><BitIcon IconName="@BitIconName.Sync" Size="BitSize.Large" Animation="BitIconAnimation.Spin" AnimationDuration="4s" /><span>Spin 4s</span></div>
-            <div><BitIcon IconName="@BitIconName.Sync" Size="BitSize.Large" Animation="BitIconAnimation.Spin" AnimationDuration="0.4s" /><span>Spin 0.4s</span></div>
-            <div><BitIcon IconName="@BitIconName.Send" Size="BitSize.Large" Animation="BitIconAnimation.Beat" RotateAngle="45" /><span>Beat, turned 45</span></div>
+            <div><BitIcon IconName="@BitIconName.Sync" Animation="BitIconAnimation.Spin" AnimationDuration="4s" /><span>Spin 4s</span></div>
+            <div><BitIcon IconName="@BitIconName.Sync" Animation="BitIconAnimation.Spin" AnimationDuration="0.4s" /><span>Spin 0.4s</span></div>
+            <div><BitIcon IconName="@BitIconName.Send" Animation="BitIconAnimation.Beat" RotateAngle="45" /><span>Beat, turned 45</span></div>
             <div>
-                <BitIcon @key="replayKey" IconName="@BitIconName.Ringer" Size="BitSize.Large" Animation="BitIconAnimation.Shake" AnimationIterationCount="3" />
+                <BitIcon @key="replayKey" IconName="@BitIconName.Ringer" Animation="BitIconAnimation.Shake" AnimationIterationCount="3" />
                 <BitLink OnClick="() => replayKey++">Shake 3 times (replay)</BitLink>
             </div>
             <div>
@@ -166,19 +165,16 @@
         <br /><br />
         <div class="example-content">
             <BitIcon IconName="@(isStarred ? BitIconName.FavoriteStarFill : BitIconName.FavoriteStar)"
-                     Size="BitSize.Large"
                      Title="Favorite"
                      aria-pressed="@(isStarred ? "true" : "false")"
                      OnClick="() => isStarred = !isStarred" />
 
             <BitIcon IconName="@BitIconName.Refresh"
-                     Size="BitSize.Large"
                      Variant="BitVariant.Outline"
                      AriaLabel="Refresh the list"
                      OnClick="() => clickCount++" />
 
             <BitIcon IconName="@BitIconName.Delete"
-                     Size="BitSize.Large"
                      Variant="BitVariant.Fill"
                      Title="Deleting is unavailable here"
                      IsEnabled="false"
@@ -196,7 +192,7 @@
         </div>
         <br /><br />
         <div class="example-content">
-            <BitIcon Size="BitSize.Large">
+            <BitIcon>
                 <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2 15.1 8.6 22 9.7l-5 4.9 1.2 7L12 18.3 5.8 21.6 7 14.6l-5-4.9 6.9-1.1z" />
                 </svg>
@@ -206,22 +202,22 @@
                     <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
                 </svg>
             </BitIcon>
-            <BitIcon Variant="BitVariant.Fill" Size="BitSize.Large">
+            <BitIcon Variant="BitVariant.Fill">
                 <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z" />
                 </svg>
             </BitIcon>
         </div>
         <br />
-        <div style="font-size:1.25rem">
+        <div>
             Aligned by its box
-            <BitIcon FontSize="inherit">
+            <BitIcon>
                 <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
                 </svg>
             </BitIcon>
             and dropped onto the line with Inline
-            <BitIcon FontSize="inherit" Inline>
+            <BitIcon Inline>
                 <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
                 </svg>
@@ -249,8 +245,9 @@
         <div>
             The public <b>--bit-Icon-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink> table) restyle every
             icon at once. They inherit, so set them on <code>:root</code>, on any ancestor, or on one icon's <b>Style</b> - which is also how an
-            icon takes a color outside the theme. A parameter set on the icon (<b>Color</b>, <b>Size</b>, <b>FontSize</b>, <b>Circular</b>)
-            still wins, and a disabled icon keeps the disabled colors.
+            icon takes a color outside the theme. <code>currentColor</code> makes a Text icon follow the text around it, the way a glyph of
+            a font does. A parameter set on the icon (<b>Color</b>, <b>Size</b>, <b>FontSize</b>, <b>Circular</b>) still wins, and a disabled
+            icon keeps the disabled colors.
         </div>
         <br /><br />
         <div class="example-content" style="--bit-Icon-color: #0d9488; --bit-Icon-contrast-color: #f0fdfa; --bit-Icon-hover-color: #0f766e; --bit-Icon-active-color: #115e59; --bit-Icon-size: 1.5rem; --bit-Icon-padding: 0.5rem; --bit-Icon-radius: 0.75rem; --bit-Icon-border-width: 2px;">
@@ -258,21 +255,24 @@
             <BitIcon IconName="@BitIconName.Home" Variant="BitVariant.Outline" />
             <BitIcon IconName="@BitIconName.Home" Variant="BitVariant.Fill" />
             <BitIcon IconName="@BitIconName.Refresh" Variant="BitVariant.Fill" AriaLabel="Refresh" OnClick="() => clickCount++" />
-            <BitIcon IconName="@BitIconName.Home" Variant="BitVariant.Fill" Color="BitColor.Error" Size="BitSize.Small" />
         </div>
         <br />
         <div class="example-content">
-            <BitIcon IconName="@BitIconName.Heart" Size="BitSize.Large" Style="--bit-Icon-color: hotpink;" />
+            <BitIcon IconName="@BitIconName.Heart" Style="--bit-Icon-color: hotpink;" />
             <BitIcon IconName="@BitIconName.Settings" AriaLabel="Settings" OnClick="() => clickCount++"
                      Style="--bit-Icon-focus-color: #f59e0b; --bit-Icon-size: 2rem;" />
             <BitIcon IconName="@BitIconName.Home" FixedWidth Variant="BitVariant.Outline" Style="--bit-Icon-fixed-width: 3em;" />
+        </div>
+        <br />
+        <div style="color: seagreen; --bit-Icon-color: currentColor;">
+            <BitIcon IconName="@BitIconName.Lightbulb" /> The icon takes the color of the text it sits in.
         </div>
     </DemoExample>
 
     <DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>BitParams</b> hands a <b>BitIconParams</b> to every icon under it, so a toolbar or a status list sets its shared look once -
-            including an <b>IconResolver</b> for a whole app. It is a default, not an override: the last icon keeps its own Variant.
+            including an <b>IconResolver</b> for a whole app. It is a default, not an override: the last icon keeps its own <b>Variant</b>.
         </div>
         <br /><br />
         <BitParams Parameters="@iconParams">
@@ -321,34 +321,34 @@
         <div>FontAwesome</div>
         <br />
         <div class="example-content">
-            <BitIcon Icon="@("fa-solid fa-house")" Size="BitSize.Large" />
+            <BitIcon Icon="@("fa-solid fa-house")" />
             <BitIcon Icon="@BitIconInfo.Css("fa-solid fa-heart")" Color="BitColor.Error" />
-            <BitIcon Icon="@BitIconInfo.Fa("fa-brands fa-github")" Size="BitSize.Large" />
+            <BitIcon Icon="@BitIconInfo.Fa("fa-brands fa-github")" />
             <BitIcon Icon="@BitIconInfo.Fa("solid rocket")" Color="BitColor.Secondary" />
         </div>
         <br />
         <div>Bootstrap Icons</div>
         <br />
         <div class="example-content">
-            <BitIcon Icon="@("bi bi-house-fill")" Size="BitSize.Large" />
+            <BitIcon Icon="@("bi bi-house-fill")" />
             <BitIcon Icon="@BitIconInfo.Css("bi bi-heart-fill")" Color="BitColor.Error" />
-            <BitIcon Icon="@BitIconInfo.Bi("github")" Size="BitSize.Large" />
+            <BitIcon Icon="@BitIconInfo.Bi("github")" />
             <BitIcon Icon="@BitIconInfo.Bi("gear-fill")" Color="BitColor.Secondary" />
         </div>
         <br />
         <div>Material Symbols</div>
         <br />
         <div class="example-content">
-            <BitIcon Icon="@BitIconInfo.Ms("home")" Size="BitSize.Large" />
+            <BitIcon Icon="@BitIconInfo.Ms("home")" />
             <BitIcon Icon="@BitIconInfo.Ms("favorite")" Color="BitColor.Error" />
-            <BitIcon Icon="@BitIconInfo.Ms("settings")" Size="BitSize.Large" Animation="BitIconAnimation.Spin" />
+            <BitIcon Icon="@BitIconInfo.Ms("settings")" Animation="BitIconAnimation.Spin" />
             <BitIcon Icon="@BitIconInfo.Ms("rocket_launch")" Color="BitColor.Secondary" />
         </div>
         <br />
         <div>IconResolver (plain names read as FontAwesome ones; Accept falls through to the built-in set)</div>
         <br />
         <div class="example-content">
-            <BitIcon IconName="house" IconResolver="@faResolver" Size="BitSize.Large" />
+            <BitIcon IconName="house" IconResolver="@faResolver" />
             <BitIcon IconName="heart" IconResolver="@faResolver" Color="BitColor.Error" />
             <BitIcon IconName="rocket" IconResolver="@faResolver" Color="BitColor.Secondary" />
             <BitIcon IconName="Accept" IconResolver="@faResolver" Color="BitColor.Success" />
