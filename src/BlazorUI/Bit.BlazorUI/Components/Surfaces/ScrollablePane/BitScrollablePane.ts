@@ -20,6 +20,7 @@
         wheel: boolean;
         preserve: boolean; // whether the reader's place is kept when content lands above what they see
         autoHide: boolean; // whether the Modern scrollbar is only painted while the pane is being used
+        autoHideDelay: number; // how long, in milliseconds, that scrollbar stays up after the pane was last used
         noScroll: boolean; // whether the pane is not to be moved by the reader at all
     }
 
@@ -407,7 +408,8 @@
         // one of them ending - the pointer leaving - does not hide a bar another one still wants: a keyboard
         // reader whose focus is inside the pane keeps it whatever the mouse does. The timer is the third
         // reason, a scroll that has just happened, which is what a touch, a flick or a move made from code
-        // shows the bar for, the way an overlay scrollbar does.
+        // shows the bar for, the way an overlay scrollbar does - and the linger after the pointer or the
+        // focus has gone, so the bar does not blink out the instant one of them leaves.
         private _hovered = false;
         private _focused = false;
         private _revealTimer = 0;
@@ -740,7 +742,7 @@
                 // enter and leave rather than over and out: the pane is one region here, and a pointer
                 // crossing from the content onto something inside it is not a pointer that left the pane.
                 this._element.addEventListener('pointerenter', () => { this._hovered = true; this.rest(); }, { passive: true, signal: ac.signal });
-                this._element.addEventListener('pointerleave', () => { this._hovered = false; this.rest(); }, { passive: true, signal: ac.signal });
+                this._element.addEventListener('pointerleave', () => { this._hovered = false; this.linger(); }, { passive: true, signal: ac.signal });
 
                 // focusin and focusout rather than focus and blur, because what keeps the scrollbar on the
                 // screen is the focus being anywhere INSIDE the pane - and those two do not bubble. A focus
@@ -749,7 +751,7 @@
                 this._element.addEventListener('focusin', () => { this._focused = true; this.rest(); }, { passive: true, signal: ac.signal });
                 this._element.addEventListener('focusout', e => {
                     this._focused = this._element.contains(e.relatedTarget as Node | null);
-                    this.rest();
+                    this.linger();
                 }, { passive: true, signal: ac.signal });
 
                 // A pane that is already being pointed at or typed in when the flag is turned on is one the
@@ -787,12 +789,30 @@
         // Shows the scrollbar of an auto hiding pane for as long as it is scrolling and a moment after, which
         // is what brings it up for a scroll the pointer did not make over it: a touch (whose pointer leaves the
         // pane the moment the finger is lifted, momentum and all), a move made from code, a pinned log.
+        // The delay is never shorter than a few frames here, whatever the pane asked for: scroll events arrive
+        // once a frame, and a timer that ran out between two of them would flicker the bar for the whole scroll.
         private reveal() {
             if (this._options.autoHide === false) return;
 
+            this.hold(Math.max(this._options.autoHideDelay, BitScrollablePane._revealFloor));
+        }
+
+        // Keeps the scrollbar of an auto hiding pane up for a moment after the pointer or the focus that was
+        // holding it there has gone, so a pointer brushing past the edge of the pane does not blink it out.
+        private linger() {
+            if (this._disposed || this._options.autoHide === false) return;
+
+            if (this._options.autoHideDelay > 0 && this._element.hasAttribute('data-bit-scp-idle') === false) {
+                this.hold(this._options.autoHideDelay);
+            } else {
+                this.rest();
+            }
+        }
+
+        private hold(delay: number) {
             if (this._revealTimer) clearTimeout(this._revealTimer);
 
-            this._revealTimer = setTimeout(() => { this._revealTimer = 0; this.rest(); }, BitScrollablePane._revealDelay);
+            this._revealTimer = setTimeout(() => { this._revealTimer = 0; this.rest(); }, delay);
 
             this.idle(false);
         }
@@ -1551,8 +1571,9 @@
 
         private static _dragThreshold = 4;
 
-        // How long the scrollbar of an auto hiding pane stays on the screen after the last scroll event.
-        private static _revealDelay = 800;
+        // The shortest time the scrollbar of an auto hiding pane stays on the screen after a scroll event,
+        // whatever AutoHideDelay says - long enough to span the gap between two frames of one scroll.
+        private static _revealFloor = 150;
 
         // How near an edge still counts as standing ON it, in pixels. A scroll offset is fractional at a
         // fractional zoom level and on a scaled display, while the maxima it is compared against are

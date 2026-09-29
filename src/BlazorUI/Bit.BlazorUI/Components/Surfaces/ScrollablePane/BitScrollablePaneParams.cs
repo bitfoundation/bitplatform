@@ -52,6 +52,11 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
     public bool? AutoHideScrollbar { get; set; }
 
     /// <summary>
+    /// How long (in milliseconds) the AutoHideScrollbar scrollbar stays on the screen after the pane was last pointed at, focused or scrolled.
+    /// </summary>
+    public int? AutoHideDelay { get; set; }
+
+    /// <summary>
     /// Lets the pane be scrolled by dragging its content with a pointer.
     /// </summary>
     public bool? DragScroll { get; set; }
@@ -302,6 +307,11 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.AutoHideScrollbar = AutoHideScrollbar.Value;
 
             bitScrollablePane.ClassBuilder.Reset();
+        }
+
+        if (AutoHideDelay.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoHideDelay)))
+        {
+            bitScrollablePane.AutoHideDelay = AutoHideDelay.Value;
         }
 
         if (DragScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(DragScroll)))

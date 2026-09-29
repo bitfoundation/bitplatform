@@ -240,8 +240,9 @@ private bool scrollbarOverflowing;";
 </style>
 
 <BitToggle @bind-Value=""autoHideScrollbar"" Label=""AutoHideScrollbar"" />
+<BitNumberField Label=""AutoHideDelay (ms)"" Min=""0"" Step=""200"" @bind-Value=""autoHideDelay"" Style=""max-width: 20rem"" />
 
-<BitScrollablePane Height=""10rem"" Class=""pane"" Modern AutoHideScrollbar=""autoHideScrollbar"">
+<BitScrollablePane Height=""10rem"" Class=""pane"" Modern AutoHideScrollbar=""autoHideScrollbar"" AutoHideDelay=""(int)autoHideDelay"">
     <p>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
@@ -260,7 +261,7 @@ private bool scrollbarOverflowing;";
     </p>
 </BitScrollablePane>
 
-<BitScrollablePane Horizontal Width=""20rem"" Class=""pane"" Modern AutoHideScrollbar=""autoHideScrollbar"">
+<BitScrollablePane Horizontal Width=""20rem"" Class=""pane"" Modern AutoHideScrollbar=""autoHideScrollbar"" AutoHideDelay=""(int)autoHideDelay"">
     <div class=""chip-row"">
         @for (var i = 1; i <= 12; i++)
         {
@@ -269,7 +270,8 @@ private bool scrollbarOverflowing;";
     </div>
 </BitScrollablePane>";
     private readonly string example6CsharpCode = @"
-private bool autoHideScrollbar = true;";
+private bool autoHideScrollbar = true;
+private double autoHideDelay = 800;";
 
     private readonly string example7RazorCode = @"
 <style>

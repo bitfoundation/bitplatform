@@ -983,6 +983,49 @@ public class BitScrollablePaneTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitScrollablePaneShouldHandOverTheAutoHideDelay()
+    {
+        RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Modern, true);
+            parameters.Add(p => p.AutoHideScrollbar, true);
+            parameters.Add(p => p.AutoHideDelay, 1500);
+        });
+
+        var options = SetupOptions();
+
+        Assert.AreEqual(true, Option(options, "AutoHide"));
+        Assert.AreEqual(1500, Option(options, "AutoHideDelay"));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldDefaultTheAutoHideDelayTo800()
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Modern, true);
+            parameters.Add(p => p.AutoHideScrollbar, true);
+        });
+
+        Assert.AreEqual(800, component.Instance.AutoHideDelay);
+        Assert.AreEqual(800, Option(SetupOptions(), "AutoHideDelay"));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldNotUpdateTheBrowserSideForTheAutoHideDelayOfAPaneThatHidesNothing()
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Fade, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.AutoHideDelay, 2000));
+
+        Assert.AreEqual(0, InvocationCount(Update));
+        Assert.AreEqual(0, Option(SetupOptions(), "AutoHideDelay"));
+    }
+
+    [TestMethod]
     public void BitScrollablePaneShouldClampNegativeOffsets()
     {
         RenderComponent<BitScrollablePane>(parameters =>
@@ -991,9 +1034,14 @@ public class BitScrollablePaneTests : BunitTestContext
             parameters.Add(p => p.ReachOffset, -5);
             parameters.Add(p => p.ScrollThrottle, -5);
             parameters.Add(p => p.AutoScrollThreshold, -5);
+            parameters.Add(p => p.Modern, true);
+            parameters.Add(p => p.AutoHideScrollbar, true);
+            parameters.Add(p => p.AutoHideDelay, -5);
         });
 
         var options = SetupOptions();
+
+        Assert.AreEqual(0, Option(options, "AutoHideDelay"));
 
         Assert.AreEqual(0, Option(options, "Offset"));
         Assert.AreEqual(0, Option(options, "Throttle"));
@@ -1805,6 +1853,9 @@ public class BitScrollablePaneTests : BunitTestContext
             ReachOffset = 120,
             ScrollThrottle = 50,
             AutoScrollThreshold = 16,
+            Modern = true,
+            AutoHideScrollbar = true,
+            AutoHideDelay = 300,
         });
 
         Assert.AreEqual(1, InvocationCount(Setup));
@@ -1819,6 +1870,8 @@ public class BitScrollablePaneTests : BunitTestContext
         Assert.AreEqual(120, Option(options, "Offset"));
         Assert.AreEqual(50, Option(options, "Throttle"));
         Assert.AreEqual(16, Option(options, "AutoScrollThreshold"));
+        Assert.AreEqual(true, Option(options, "AutoHide"));
+        Assert.AreEqual(300, Option(options, "AutoHideDelay"));
     }
 
     [TestMethod]

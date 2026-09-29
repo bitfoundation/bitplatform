@@ -98,6 +98,18 @@ public class BitScrollablePaneStylesheetTests
         StringAssert.Contains(fade, "&:focus-visible {\n            mask-image: none;");
     }
 
+    [TestMethod]
+    public void BitScrollablePaneFadeShouldBeSetAsideForMoreContrastAndForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+        var media = stylesheet.IndexOf("@media (forced-colors: active), (prefers-contrast: more) {", System.StringComparison.Ordinal);
+
+        Assert.IsTrue(media >= 0, "The fade is not guarded against forced colors and more contrast.");
+
+        // A faded band draws content below its contrast, which both preferences ask not to be shown.
+        StringAssert.Contains(stylesheet[media..], ".bit-scp-fad {\n            mask-image: none;");
+    }
+
     private static string ReadStylesheet([CallerFilePath] string thisFile = "")
     {
         var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",

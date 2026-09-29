@@ -261,4 +261,13 @@
             mask-image: none;
         }
     }
+
+    // A faded band is text drawn at a fraction of its contrast, which a reader who asked the system for
+    // more contrast - or for colors of their own - asked not to be shown. The edge still says there is more
+    // through the scrollbar, which forced colors mode keeps on the screen.
+    @media (forced-colors: active), (prefers-contrast: more) {
+        .bit-scp-fad {
+            mask-image: none;
+        }
+    }
 }

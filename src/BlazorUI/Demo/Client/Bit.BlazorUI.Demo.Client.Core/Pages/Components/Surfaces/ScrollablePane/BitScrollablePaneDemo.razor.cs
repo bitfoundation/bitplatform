@@ -48,6 +48,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "AutoHideDelay",
+            Type = "int",
+            DefaultValue = "800",
+            Description = "How long (in milliseconds) the AutoHideScrollbar scrollbar lingers after the pane was last pointed at, focused or scrolled. 0 hides it as soon as the pointer or the focus leaves.",
+        },
+        new()
+        {
             Name = "Body",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -932,6 +939,7 @@ public partial class BitScrollablePaneDemo
     private bool scrollbarOverflowing;
 
     private bool autoHideScrollbar = true;
+    private double autoHideDelay = 800;
 
     private bool fade = true;
     private double fadeSize = 2;

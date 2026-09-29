@@ -170,6 +170,20 @@ public partial class BitScrollablePane : BitComponentBase
     public bool AutoHideScrollbar { get; set; }
 
     /// <summary>
+    /// How long (in milliseconds) the <see cref="AutoHideScrollbar"/> scrollbar stays on the screen after the
+    /// pane was last pointed at, focused or scrolled.
+    /// <br />
+    /// The default value is <strong>800</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The linger is what keeps the bar from blinking out the instant the pointer brushes past the edge of
+    /// the pane, and what leaves it up long enough after a flick to be grabbed. 0 hides it the moment the
+    /// pointer leaves or the focus goes; a scroll still shows it for a short moment whatever this says, so
+    /// the bar never flickers between two frames of one scroll.
+    /// </remarks>
+    [Parameter] public int AutoHideDelay { get; set; } = 800;
+
+    /// <summary>
     /// Alias for the ChildContent parameter.
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
@@ -242,6 +256,9 @@ public partial class BitScrollablePane : BitComponentBase
     /// scrollbar that is not on the screen anyway - <see cref="ScrollbarWidth"/> of
     /// <see cref="BitScrollbarWidth.None"/>, or <see cref="Modern"/> with
     /// <see cref="AutoHideScrollbar"/> - which is the pairing the fade is for in the first place.
+    /// <br />
+    /// A faded band is content drawn below its contrast, so the fade is not drawn for a reader whose system
+    /// asks for more contrast (<c>prefers-contrast: more</c>) or for colors of their own (forced colors).
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Fade { get; set; }
@@ -1303,6 +1320,8 @@ public partial class BitScrollablePane : BitComponentBase
         Wheel = HorizontalWheel,
         Preserve = PreserveScroll,
         AutoHide = _autoHides,
+        // Only sent while there is a bar to hide, so a change to it on a pane that hides nothing is no round trip.
+        AutoHideDelay = _autoHides ? Math.Max(0, AutoHideDelay) : 0,
         NoScroll = NoScroll,
     };
 

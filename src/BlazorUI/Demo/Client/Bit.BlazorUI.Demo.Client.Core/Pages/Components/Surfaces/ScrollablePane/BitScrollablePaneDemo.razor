@@ -205,13 +205,15 @@
                     <b>Modern</b> draws a thin rounded thumb over a transparent track in the theme's colors, the same on
                     every platform (Firefox gets its thin standard bar in the same colors). <b>AutoHideScrollbar</b> paints
                     it only while the pane is pointed at, holds the focus, or has just been scrolled - so it is never
-                    hidden from a keyboard or touch reader. In forced colors mode the pane keeps the system scrollbar.
+                    hidden from a keyboard or touch reader - and <b>AutoHideDelay</b> (ms, 800) is how long it lingers
+                    after that. In forced colors mode the pane keeps the system scrollbar.
                     Chromium lets <b>ScrollbarWidth</b> and <b>ScrollbarColor</b> win over Modern, so use one or the other.
                 </div>
                 <br /><br />
                 <BitToggle @bind-Value="autoHideScrollbar" Label="AutoHideScrollbar" />
+                <BitNumberField Label="AutoHideDelay (ms)" Min="0" Step="200" @bind-Value="autoHideDelay" Style="max-width: 20rem" />
                 <br />
-                <BitScrollablePane Height="10rem" Class="pane" Modern AutoHideScrollbar="autoHideScrollbar">
+                <BitScrollablePane Height="10rem" Class="pane" Modern AutoHideScrollbar="autoHideScrollbar" AutoHideDelay="(int)autoHideDelay">
                     <p>
                         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                         These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
@@ -230,7 +232,7 @@
                     </p>
                 </BitScrollablePane>
                 <br /><br />
-                <BitScrollablePane Horizontal Width="20rem" Class="pane" Modern AutoHideScrollbar="autoHideScrollbar">
+                <BitScrollablePane Horizontal Width="20rem" Class="pane" Modern AutoHideScrollbar="autoHideScrollbar" AutoHideDelay="(int)autoHideDelay">
                     <div class="chip-row">
                         @for (var i = 1; i <= 12; i++)
                         {
@@ -245,7 +247,8 @@
                     <b>Fade</b> fades each edge that still has content beyond it, so the pane shows which way there is
                     more; <b>FadeSize</b> sets how far it reaches (2rem). It is a mask, so it works over any background -
                     and also fades a classic scrollbar and sticky content in the band. Pair it with a scrollbar that is
-                    out of sight: <b>ScrollbarWidth="None"</b>, or <b>Modern</b> with <b>AutoHideScrollbar</b>.
+                    out of sight: <b>ScrollbarWidth="None"</b>, or <b>Modern</b> with <b>AutoHideScrollbar</b>. It is not
+                    drawn under <i>prefers-contrast: more</i> or forced colors, where faded text would lose contrast.
                 </div>
                 <br /><br />
                 <BitToggle @bind-Value="fade" Label="Fade" />
