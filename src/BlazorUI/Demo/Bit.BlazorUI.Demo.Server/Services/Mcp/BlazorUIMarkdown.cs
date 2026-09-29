@@ -90,6 +90,14 @@ public static class BlazorUIMarkdown
 
         builder.AppendLine(component.Description ?? component.Summary).AppendLine();
 
+        // A family documented on one page answers with its abstract base, which is not a tag anyone can write:
+        // the tags are the concrete components deriving from it, read off the assembly when the catalog is built.
+        if (component.FamilyMembers.Count > 0)
+        {
+            builder.AppendLine($"A family of {component.FamilyMembers.Count} components sharing the API below - write one of them as the tag: {string.Join(", ", component.FamilyMembers.Select(m => $"`{m}`"))}.")
+                   .AppendLine();
+        }
+
         // The note nearly every Extras component carries says to install the package, which the
         // block below says with the package name, the registration call and the tags. Two sentences
         // about the same thing, one of them vague, is the redundancy this server exists to avoid.

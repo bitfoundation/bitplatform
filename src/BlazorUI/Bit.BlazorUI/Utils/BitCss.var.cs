@@ -456,6 +456,12 @@ public static partial class BitCss
 
             public const string Required = "--bit-clr-req";
 
+            public static class Tooltip
+            {
+                public const string Background = "--bit-clr-tooltip-bg";
+                public const string Foreground = "--bit-clr-tooltip-fg";
+            }
+
             public static class Neutral
             {
                 public const string White = "--bit-clr-ntr-white";
@@ -526,6 +532,7 @@ public static partial class BitCss
             public const string FocusRing = "--bit-shd-focus-ring";
 
             public const string Card = "--bit-shd-card";
+            public const string CardHover = "--bit-shd-card-hover";
             public const string Popup = "--bit-shd-popup";
             public const string Dialog = "--bit-shd-dialog";
             public const string Sheet = "--bit-shd-sheet";
@@ -580,6 +587,13 @@ public static partial class BitCss
         {
             public const string ScalingFactor = "--bit-spa-scaling-factor";
             public const string Dialog = "--bit-spa-dialog";
+
+            public static class Card
+            {
+                public const string Sm = "--bit-spa-card-sm";
+                public const string Md = "--bit-spa-card-md";
+                public const string Lg = "--bit-spa-card-lg";
+            }
         }
 
         public static class Motion
@@ -601,6 +615,7 @@ public static partial class BitCss
             public const string DialogActionsDirection = "--bit-layout-dialog-actions-direction";
             public const string DialogActionsJustify = "--bit-layout-dialog-actions-justify";
             public const string DialogActionsAlign = "--bit-layout-dialog-actions-align";
+            public const string DialogTextAlign = "--bit-layout-dialog-text-align";
 
             public static class Breakpoints
             {
@@ -777,6 +792,12 @@ public static partial class BitCss
             {
                 public const string LetterSpacing = "--bit-tpg-ctrl-letter-spacing";
                 public const string TextTransform = "--bit-tpg-ctrl-text-transform";
+            }
+
+            public static class Dialog
+            {
+                public const string TitleFontSize = "--bit-tpg-dialog-title-font-size";
+                public const string TitleFontWeight = "--bit-tpg-dialog-title-font-weight";
             }
 
             public static class H1

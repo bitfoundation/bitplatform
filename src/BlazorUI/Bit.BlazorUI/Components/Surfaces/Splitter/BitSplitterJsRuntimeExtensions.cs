@@ -34,11 +34,13 @@ internal static class BitSplitterJsRuntimeExtensions
     /// The JavaScript side writes the size it dragged the panels to onto the root element itself, which is
     /// not something Blazor is tracking - a render whose style attribute happens not to change leaves those
     /// values standing. This is how the component puts them back in step whenever it has decided on
-    /// something other than what was dragged: a null share hands the panels back to their parameters.
+    /// something other than what was dragged: a null share hands the panels back to their parameters, whose
+    /// values <paramref name="declared"/> carries, since the drag wrote over the very properties the style
+    /// attribute declares them in.
     /// </remarks>
-    internal static ValueTask BitSplitterSync(this IJSRuntime js, string? id, double? percent)
+    internal static ValueTask BitSplitterSync(this IJSRuntime js, string? id, double? percent, string?[]? declared)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.sync", id, percent);
+        return js.InvokeVoid("BitBlazorUI.Splitter.sync", id, percent, declared);
     }
 
     /// <remarks>

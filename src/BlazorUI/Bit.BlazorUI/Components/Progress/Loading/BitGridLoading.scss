@@ -8,64 +8,64 @@
 .bit-ldn-grd-chl {
     position: absolute;
     border-radius: 50%;
-    width: var(--bit-ldn-grd-16);
-    height: var(--bit-ldn-grd-16);
+    width: calc(16 * var(--bit-ldn-unit));
+    height: calc(16 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
     animation: bit-ldn-grd-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) linear infinite;
 }
 
 .bit-ldn-grd-ch1 {
     animation-delay: calc(0s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-8);
-    left: var(--bit-ldn-grd-8);
+    top: calc(8 * var(--bit-ldn-unit));
+    left: calc(8 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-grd-ch2 {
     animation-delay: calc(-0.4s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-8);
-    left: var(--bit-ldn-grd-32);
+    top: calc(8 * var(--bit-ldn-unit));
+    left: calc(32 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-grd-ch3 {
     animation-delay: calc(-0.8s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-8);
-    left: var(--bit-ldn-grd-56);
+    top: calc(8 * var(--bit-ldn-unit));
+    left: calc(56 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-grd-ch4 {
     animation-delay: calc(-0.4s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-32);
-    left: var(--bit-ldn-grd-8);
+    top: calc(32 * var(--bit-ldn-unit));
+    left: calc(8 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-grd-ch5 {
     animation-delay: calc(-0.8s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-32);
-    left: var(--bit-ldn-grd-32);
+    top: calc(32 * var(--bit-ldn-unit));
+    left: calc(32 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-grd-ch6 {
     animation-delay: calc(-1.2s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-32);
-    left: var(--bit-ldn-grd-56);
+    top: calc(32 * var(--bit-ldn-unit));
+    left: calc(56 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-grd-ch7 {
     animation-delay: calc(-0.8s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-56);
-    left: var(--bit-ldn-grd-8);
+    top: calc(56 * var(--bit-ldn-unit));
+    left: calc(8 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-grd-ch8 {
     animation-delay: calc(-1.2s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-56);
-    left: var(--bit-ldn-grd-32);
+    top: calc(56 * var(--bit-ldn-unit));
+    left: calc(32 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-grd-ch9 {
     animation-delay: calc(-1.6s * var(--bit-ldn-mot-factor, 1));
-    top: var(--bit-ldn-grd-56);
-    left: var(--bit-ldn-grd-56);
+    top: calc(56 * var(--bit-ldn-unit));
+    left: calc(56 * var(--bit-ldn-unit));
 }
 
 @keyframes bit-ldn-grd-anm {

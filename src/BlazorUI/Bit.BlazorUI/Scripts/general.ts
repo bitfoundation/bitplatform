@@ -52,7 +52,7 @@ window.addEventListener('scroll', (e: Event) => {
 
     // A callout that asked not to be dismissed by the page moving under it is re-anchored to its
     // component instead, so that it follows what it points at rather than being left behind by it.
-    if (currentCallout.noDismiss) {
+    if (currentCallout.noScrollDismiss) {
         repositionOnNextFrame();
         return;
     }
@@ -81,7 +81,7 @@ window.addEventListener('resize', () => {
 
     // See the scroll handler above: a callout that opted out of being dismissed by the page moving
     // under it follows its component instead.
-    if (BitBlazorUI.Callouts.current.noDismiss) {
+    if (BitBlazorUI.Callouts.current.noScrollDismiss) {
         BitBlazorUI.Callouts.reposition();
         return;
     }

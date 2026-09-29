@@ -106,6 +106,13 @@ public sealed record BlazorUIComponent
     /// </summary>
     public IReadOnlyList<ComponentSubType> SharedTypes { get; init; } = [];
 
+    /// <summary>
+    /// The concrete components of a family documented on one page - the eighteen loaders on Loading -
+    /// whose <see cref="ComponentType"/> is their abstract base, which is not a tag anyone can write.
+    /// Read off the assembly once, while the catalog is built, and empty for every other component.
+    /// </summary>
+    public IReadOnlyList<string> FamilyMembers { get; init; } = [];
+
     public IReadOnlyList<DemoExampleSource> Examples { get; init; } = [];
 }
 
@@ -220,7 +227,7 @@ public static class BlazorUIComponentCatalog
         return [.. ComponentCatalog.Items.Select(item =>
         {
             var name = $"Bit{item.Name}";
-            var componentType = FindType(name);
+            var componentType = FindComponentType(name);
             var demoType = demoAssembly.GetTypes().FirstOrDefault(t => t.Name == $"{name}Demo");
             var demo = demoType is null ? null : BlazorUIDemoSource.Get(demoType);
             var tables = demoType is null ? null : DemoTables.Read(demoType);
@@ -252,9 +259,24 @@ public static class BlazorUIComponentCatalog
                 CascadingParams = CascadingParamsOf(componentType),
                 OwnTypes = own,
                 SharedTypes = shared,
+                FamilyMembers = FamilyMembersOf(componentType),
                 Examples = demo?.Examples ?? []
             };
         })];
+    }
+
+    /// <summary>
+    /// The concrete components deriving from an abstract component type - see
+    /// <see cref="BlazorUIComponent.FamilyMembers"/> - in ordinal order.
+    /// </summary>
+    private static string[] FamilyMembersOf(Type? componentType)
+    {
+        if (componentType is not { IsAbstract: true } family) return [];
+
+        return [.. family.Assembly.GetExportedTypes()
+                                  .Where(t => t.IsAbstract is false && family.IsAssignableFrom(t))
+                                  .Select(t => t.Name)
+                                  .Order(StringComparer.Ordinal)];
     }
 
     /// <summary>
@@ -538,6 +560,21 @@ public static class BlazorUIComponentCatalog
         var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase));
 
         return ([.. own[true]], [.. own[false]]);
+    }
+
+    /// <summary>
+    /// The type whose API a nav entry documents. That is the type of the same name, except for a family of
+    /// components documented on one page - the eighteen loaders on Loading - whose name belongs to the shell they
+    /// all render through (<c>BitLoading</c>, a plain <c>ComponentBase</c> taking <c>This</c>): the family's
+    /// parameters, its base and its <c>BitParams</c> cascade are declared on its abstract <c>...Base</c> instead.
+    /// </summary>
+    private static Type? FindComponentType(string name)
+    {
+        var type = FindType(name);
+
+        if (type is null || typeof(BitComponentBase).IsAssignableFrom(type)) return type;
+
+        return FindType($"{name}Base") is { } family && typeof(BitComponentBase).IsAssignableFrom(family) ? family : type;
     }
 
     private static Type? FindType(string name)

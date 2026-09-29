@@ -195,12 +195,13 @@ the whole library from one `:root[bit-theme="..."]` block.
   tracks `$siz-track-sm/md/lg`, switch track and knob `$siz-switch-w/h/thumb-sm/md/lg`, slider handle
   `$siz-slider-thumb-sm/md/lg`, badge height and dot `$siz-badge-sm/md/lg` / `$siz-badge-dot-sm/md/lg`,
   tag (chip) height inside its rule `$siz-chip-sm/md/lg`, scrolling popup lists `$siz-popup-max-height`.
-- **Spacing & layout**: dialogs and message boxes inset their content with `$spa-dialog`; their action
-  footers lay out via `$layout-dialog-actions-direction` / `$layout-dialog-actions-justify` /
-  `$layout-dialog-actions-align` (never a literal `row` / `flex-end` / `center` in a dialog footer -
-  Cupertino stacks its actions full width).
+- **Spacing & layout**: dialogs and message boxes inset their content with `$spa-dialog`, cards with
+  `$spa-card-sm/md/lg`; dialog action footers lay out via `$layout-dialog-actions-direction` /
+  `$layout-dialog-actions-justify` / `$layout-dialog-actions-align` (never a literal `row` /
+  `flex-end` / `center` in a dialog footer - Cupertino stacks its actions full width).
 - **Elevation**: `$box-shadow-card/popup/dialog/sheet/tooltip/snackbar/appbar-top/appbar-bottom` per
-  surface family, never `$box-shadow-callout` directly.
+  surface family (plus `$box-shadow-card-hover`, the lift of a card under the pointer), never
+  `$box-shadow-callout` directly.
 - **Motion**: `$mot-easing` for state transitions, `$mot-easing-decelerate` / `-accelerate` for popup
   entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
 - **Opacity**: a disabled element that keeps its own colors dims with `$opa-dis`; text-bearing
