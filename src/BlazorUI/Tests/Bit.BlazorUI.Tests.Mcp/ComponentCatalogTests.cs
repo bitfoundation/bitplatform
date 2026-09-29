@@ -358,6 +358,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitModal", "BitModalParams")]
     [DataRow("BitDialog", "BitDialogParams")]
     [DataRow("BitCollapse", "BitCollapseParams")]
+    [DataRow("BitLabel", "BitLabelParams")]
     [DataRow("BitImage", "BitImageParams")]
     [DataRow("BitShimmer", "BitShimmerParams")]
     [DataRow("BitTooltip", "BitTooltipParams")]

@@ -337,6 +337,7 @@
                     <li><code>--bit-tpg-fw-{light,regular,medium,semibold,bold}</code> - the weight scale</li>
                     <li><code>--bit-tpg-ctrl-letter-spacing</code> / <code>--bit-tpg-ctrl-text-transform</code> - the control-label pair</li>
                     <li><code>--bit-tpg-dialog-title-font-size</code> / <code>--bit-tpg-dialog-title-font-weight</code> - a dialog's title: 20px semibold under Fluent and Fluent&nbsp;2, 24px regular under Material, 17px semibold under Cupertino</li>
+                    <li><code>--bit-tpg-field-label-font-weight</code> - the caption naming a form field (<code>BitLabel</code> and the inputs' own labels): semibold under Fluent, regular under Fluent&nbsp;2, Material and Cupertino</li>
                     <li>the <code>BitText</code> variants <code>h1..h6</code>, <code>body1/2</code>, <code>subtitle1/2</code>, <code>caption1/2</code>, <code>button</code>, <code>overline</code>, <code>inherit</code></li>
                 </ul>
 
@@ -600,7 +601,7 @@ public static class BitThemePresetsExtensions
                     <li>the brand moves to <code>#0F6CBD</code> (<code>brandWeb.80</code>)</li>
                     <li>the flat callout shadow becomes Fluent&nbsp;2's ambient&nbsp;+&nbsp;key pair (<code>shadow2</code>&hellip;<code>shadow64</code>)</li>
                     <li>controls sit on the 24&nbsp;/&nbsp;32&nbsp;/&nbsp;40 height ladder, with 96px-wide labeled buttons and 16&nbsp;/&nbsp;20&nbsp;/&nbsp;24 glyphs</li>
-                    <li>labels go semibold</li>
+                    <li>control labels go semibold, while a field's caption drops to regular (<code>--bit-tpg-field-label-font-weight</code>)</li>
                     <li>the focus indicator becomes one <code>colorStrokeFocus2</code> stroke (black on light, white on dark) instead of the role's own color</li>
                 </ul>
 
@@ -761,6 +762,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     --bit-tpg-ctrl-text-transform: none;        /* Material 2 would say uppercase */
     --bit-tpg-dialog-title-font-size: 1.5rem;   /* headline-small */
     --bit-tpg-dialog-title-font-weight: 400;
+    --bit-tpg-field-label-font-weight: 400;     /* fields are captioned in the body weight */
 
     /* shape: 4px fields/menus, 12px cards, 28px dialogs, pill buttons, 8px chips, 2px checkbox */
     --bit-shp-radius-control: 0.25rem;
@@ -803,7 +805,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
                 </BitText>
 
                 <ul>
-                    <li>SF Pro at 17px (<code>--bit-tpg-fs-sm: 1.0625rem</code>), 590 semibold</li>
+                    <li>SF Pro at 17px (<code>--bit-tpg-fs-sm: 1.0625rem</code>), 590 semibold, with fields captioned in the regular weight</li>
                     <li>44px controls</li>
                     <li>8px field corners, with capsule buttons and chips (<code>--bit-shp-radius-button: var(--bit-shp-radius-full)</code>)</li>
                     <li>14px dialog corners, with a centred 17px semibold title (<code>--bit-layout-dialog-text-align: center</code>)</li>
