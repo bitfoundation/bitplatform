@@ -261,6 +261,129 @@
             } catch (e) { console.error("BitBlazorUI.Utils.syncAriaDescription:", e); }
         }
 
+        private static _tooltips = new Map<string, { root: HTMLElement, dotnetObj: DotNetObject, controller: AbortController }>();
+        private static _tooltipsByRoot = new Map<HTMLElement, DotNetObject>();
+        private static _tooltipsController: AbortController | null = null;
+
+        // An element that answers Escape itself - a text entry clears or reverts on it, a combobox or anything
+        // expanded closes what it opened - so a tooltip around it lets the key through to that element.
+        private static readonly _escapeOwners =
+            'input:not([type="button"],[type="submit"],[type="reset"],[type="checkbox"],[type="radio"],[type="image"],[type="range"],[type="color"],[type="file"]),' +
+            'textarea,select,[contenteditable]:not([contenteditable="false"]),' +
+            '[role="combobox"],[role="searchbox"],[role="textbox"],[role="spinbutton"],[aria-expanded="true"]';
+
+        // Lets Escape dismiss a shown tooltip (WCAG 1.4.13 "dismissible") from the two places it can come from:
+        // the keyboard inside the tooltip - on its anchor - and anywhere on the page while the pointer rests on
+        // the tooltip, since a tooltip shown on hover is shown while the focus is wherever the user left it.
+        // Either way the key is the tooltip's alone: it is taken before Blazor's document-level delegation sees
+        // it, so a dialog or a callout the tooltip sits in is not dismissed by the same press, and a second
+        // Escape reaches them as usual. The one exception is a key pressed on something inside the anchor that
+        // answers Escape itself (a text field, a search box, a dropdown): the tooltip is dismissed along with
+        // it, and the key goes on to the component it was pressed on. Whether a tooltip takes it is read off the
+        // DOM on the spot - shown (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot
+        // wait for a round trip. It also tells a tooltip a click opened about the press outside it that
+        // dismisses it.
+        public static setupTooltip(rootId: string, tooltipId: string, attribute: string, dotnetObj: DotNetObject) {
+            Utils.disposeTooltip(rootId);
+
+            Utils.syncAriaDescription(rootId, tooltipId, attribute);
+
+            const root = document.getElementById(rootId);
+            if (!root) return;
+
+            const controller = new AbortController();
+
+            // A component inside the anchor that answered the key natively itself (and said so) keeps it.
+            root.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]')) return;
+
+                const target = e.target as Element | null;
+                const owner = target?.closest(Utils._escapeOwners);
+                if (!owner || !root.contains(owner) || owner.closest('.bit-ttp-wrp')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+
+                dotnetObj.invokeMethodAsync('OnEscape')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
+            }, { signal: controller.signal });
+
+            Utils._tooltips.set(rootId, { root, dotnetObj, controller });
+            Utils._tooltipsByRoot.set(root, dotnetObj);
+
+            Utils.ensureTooltipListeners();
+        }
+
+        public static disposeTooltip(rootId: string) {
+            const entry = Utils._tooltips.get(rootId);
+            if (!entry) return;
+
+            entry.controller.abort();
+            Utils._tooltips.delete(rootId);
+            if (Utils._tooltipsByRoot.get(entry.root) === entry.dotnetObj) {
+                Utils._tooltipsByRoot.delete(entry.root);
+            }
+
+            if (Utils._tooltips.size === 0) {
+                Utils._tooltipsController?.abort();
+                Utils._tooltipsController = null;
+            }
+        }
+
+        // The two document-level listeners every tooltip needs are shared by all of them, and each one asks the
+        // DOM for the few tooltips that are actually shown instead of every tooltip on the page asking for
+        // itself - a toolbar or a grid of a few hundred tooltips pays for one listener per key and press.
+        private static ensureTooltipListeners() {
+            if (Utils._tooltipsController) return;
+
+            const controller = Utils._tooltipsController = new AbortController();
+
+            const shown = (marker: string) => Array.from(document.querySelectorAll<HTMLElement>(`.bit-ttp-wrp.bit-ttp-vis[${marker}]`))
+                .map(wrp => wrp.parentElement)
+                .filter((root): root is HTMLElement => !!root && Utils._tooltipsByRoot.has(root));
+
+            // In the capture phase, so the key is taken before whatever holds the focus acts on it. Every
+            // tooltip under the pointer - a nested one along with the one around it - is dismissed by the press,
+            // and stopImmediatePropagation keeps it from any other listener on the document as well, a callout's
+            // own Escape listener included.
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                const target = e.target as Node | null;
+                let taken = false;
+
+                for (const root of shown('data-bit-ttp-esc')) {
+                    if (target && root.contains(target)) continue; // the root's own listener answers it
+                    if (!root.matches(':hover')) continue;
+
+                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
+                    taken = true;
+                }
+
+                if (!taken) return;
+
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }, { signal: controller.signal, capture: true });
+
+            // A tooltip a press of the anchor opened (data-bit-ttp-clk) is dismissed by the next press elsewhere.
+            // The focus leaving the anchor says as much in some browsers, but Safari and the touch browsers never
+            // focus a pressed button, and an anchor that is not focusable is never focused at all. Nothing is
+            // prevented: the press goes on to do whatever it was aimed at.
+            document.addEventListener('pointerdown', e => {
+                const target = e.target as Node | null;
+
+                for (const root of shown('data-bit-ttp-clk')) {
+                    if (target && root.contains(target)) continue;
+
+                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnOutsidePress')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
+                }
+            }, { signal: controller.signal, capture: true });
+        }
+
         // True when the focus currently sits inside the given container. The popup components ask before
         // they close, since handing the focus back to the element that opened them is only correct when
         // the focus was theirs to hand back - moving it out of wherever the user put it otherwise.
@@ -452,6 +575,61 @@
             Utils._focusTraps.delete(elementId);
         }
 
+        private static _surfaceEscapes = new Map<string, AbortController>();
+
+        // Answers an Escape pressed inside a surface (a dialog) through the OnEscape callback - but only when the
+        // key is the surface's own. Four things own it first: an IME composition, which Escape cancels; a
+        // control that has taken it (defaultPrevented); a component inside the surface whose own popup is open -
+        // a combo box, a search box's suggestions, a date picker - which closes that popup on the key and has its
+        // keydown bubble on up through the surface; and a surface nested inside this one (a dialog opened from
+        // inside it), which has answered the key before it got here.
+        // The popups are read as the key is pressed: this listener is on the element, so it runs before Blazor's
+        // document-level delegation lets the component close its popup, while the stack of open callouts is still
+        // the one the key was pressed against. Whether a control took the key is read once the whole dispatch is
+        // over instead, since a Blazor handler's @onkeydown:preventDefault is applied by that same delegation,
+        // after this listener has run. The decision is made here, in the browser, so the surface is only called
+        // when it is to act - there is no round trip to ask whether it should.
+        // Registering again on the same element replaces the previous registration.
+        public static setupSurfaceEscape(elementId: string, dotnetObj: DotNetObject) {
+            Utils.disposeSurfaceEscape(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                // The nearest surface owns the key whatever it goes on to do with it, so an outer one never
+                // answers an Escape an inner one has already seen.
+                const event = e as KeyboardEvent & { __bitSurfaceEscape?: boolean };
+                if (event.__bitSurfaceEscape) return;
+                event.__bitSurfaceEscape = true;
+
+                if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
+
+                if (Callouts.componentContains(e.target as Node | null, element)) return;
+
+                setTimeout(() => {
+                    if (e.defaultPrevented || signal.aborted) return;
+
+                    dotnetObj.invokeMethodAsync('OnEscape');
+                });
+            }, { signal });
+
+            Utils._surfaceEscapes.set(elementId, controller);
+        }
+
+        public static disposeSurfaceEscape(elementId: string) {
+            const controller = Utils._surfaceEscapes.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._surfaceEscapes.delete(elementId);
+        }
+
         private static _tabOuts = new Map<string, AbortController>();
 
         // Hands the keyboard back to the page around the trigger of a popup that does not trap it. The popup is
@@ -594,6 +772,103 @@
 
             controller.abort();
             Utils._escapes.delete(elementId);
+        }
+
+        private static _escapeWatches = new Map<string, AbortController>();
+
+        // Dismisses a surface on Escape through the OnEscape callback (a modal, whose own Blazor handler only
+        // reports the key) - but only for a press nothing inside it had the better claim to: a dropdown or a
+        // menu opened from inside the surface closes its own popup on the same key, an input method editor
+        // cancels the candidate it is composing, and a control that answered the key says so by preventing its
+        // default. One press then closes the innermost layer only, rather than that layer and the surface the
+        // user is still working in.
+        // The two halves of the decision are true at different times, so two listeners take it. The stack of
+        // open callouts is read in the capture phase on the element, ahead of every listener inside it and of
+        // Blazor's document-level delegation that lets the nested component close its popup - after which the
+        // stack would no longer say there was one. Whether the default was prevented is read on the window,
+        // once the event has bubbled past that delegation: a Blazor handler's @onkeydown:preventDefault is only
+        // on the event from there on. Taking the decision at the time of the event leaves nothing for .NET to
+        // ask about later, so two quick presses cannot overwrite each other's answer, and .NET is only called
+        // for a press that is the surface's.
+        // A surface nested inside another one - a modal opened from inside a modal, rendered inside its
+        // content - takes the presses made inside it, and the outer one leaves them alone.
+        public static watchEscape(elementId: string, dotnetObj: DotNetObject) {
+            Utils.unwatchEscape(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+            const claimed = new WeakSet<Event>();
+
+            (element as any).__bitEscapeRoot = true;
+
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                if (e.isComposing || Callouts.isOpenedFrom(element)) {
+                    claimed.add(e);
+                }
+            }, { signal: controller.signal, capture: true });
+
+            window.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                const target = e.target as Node | null;
+                if (!target || !element.contains(target)) return;
+
+                if (Utils.nearestEscapeRoot(target) !== element) return;
+
+                if (claimed.has(e) || e.defaultPrevented) return;
+
+                dotnetObj.invokeMethodAsync('OnEscape');
+            }, { signal: controller.signal });
+
+            Utils._escapeWatches.set(elementId, controller);
+        }
+
+        public static unwatchEscape(elementId: string) {
+            const controller = Utils._escapeWatches.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._escapeWatches.delete(elementId);
+
+            const element = document.getElementById(elementId) as any;
+            if (element) {
+                delete element.__bitEscapeRoot;
+            }
+        }
+
+        private static nearestEscapeRoot(node: Node): Node | null {
+            let current: Node | null = node;
+
+            while (current && !(current as any).__bitEscapeRoot) {
+                current = current.parentNode;
+            }
+
+            return current;
+        }
+
+        // Resolves once the exit animation of a surface has played out, so that it is only taken out of the page
+        // after it: the animations running on the element and on its direct children (an overlay, a content
+        // box), which is where a surface's own movement is. Anything deeper is the content's own business - a
+        // spinner inside it runs forever - and so is anything that repeats. `timeout` bounds the wait, so a
+        // surface is never kept in the page by an animation that does not end.
+        public static async waitForAnimations(elementId: string, timeout: number = 1000) {
+            const element = document.getElementById(elementId);
+            if (!element || typeof element.getAnimations !== 'function') return;
+
+            const animations = [element, ...Array.from(element.children)]
+                .flatMap(e => e.getAnimations())
+                .filter(a => a.effect?.getTiming().iterations !== Infinity);
+
+            if (animations.length === 0) return;
+
+            await Promise.race([
+                Promise.all(animations.map(a => a.finished.catch(() => { }))),
+                new Promise(resolve => setTimeout(resolve, timeout)),
+            ]);
         }
 
         // The trigger may be a plain container around the control the user actually lands on - the anchor a callout
@@ -767,8 +1042,10 @@
         // way - a stored origin is only ever restored once. `onlyWhenLost` is the guard for the usual case:
         // the focus is only the popup's to hand back while it is still where the popup left it, which after
         // the popup is taken out of the page means nowhere (the browser drops it on the body). A focus that
-        // has since moved somewhere else belongs to whoever moved it.
-        public static restoreFocus(key: string, onlyWhenLost: boolean) {
+        // has since moved somewhere else belongs to whoever moved it. `scopeId` names a popup that is still in
+        // the page while it closes - playing its exit animation, inert already - where the browser only moves
+        // the focus out at its next focus fixup: a focus still inside it is as lost as one on the body.
+        public static restoreFocus(key: string, onlyWhenLost: boolean, scopeId?: string | null) {
             const element = Utils._focusOrigins.get(key);
             Utils._focusOrigins.delete(key);
 
@@ -777,7 +1054,8 @@
             try {
                 if (onlyWhenLost) {
                     const active = document.activeElement;
-                    if (active && active !== document.body && active !== document.documentElement) return;
+                    const scope = scopeId ? document.getElementById(scopeId) : null;
+                    if (active && active !== document.body && active !== document.documentElement && !scope?.contains(active)) return;
                 }
 
                 if (!element.isConnected) return;

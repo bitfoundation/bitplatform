@@ -67,10 +67,13 @@ internal static class BitThemeMapper
         new(BitCss.Var.Shape.Radius.Chip, BitCss.Var.Shape.Radius.Control),
         new(BitCss.Var.Shape.Radius.Selection, BitCss.Var.Shape.Radius.Control),
         new(BitCss.Var.Shadow.Card, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Shadow.CardHover, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Popup, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Dialog, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Sheet, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Tooltip, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Color.Tooltip.Background, BitCss.Var.Color.Background.Secondary.Main),
+        new(BitCss.Var.Color.Tooltip.Foreground, BitCss.Var.Color.Foreground.Primary.Main),
     ];
 
     /// <summary>
@@ -91,12 +94,32 @@ internal static class BitThemeMapper
     /// </remarks>
     internal static void AugmentWithFamilyAliasReSubstitution(Dictionary<string, string> cssVariables)
     {
+        var tooltipBackground = BitCss.Var.Color.Tooltip.Background;
+        var tooltipForeground = BitCss.Var.Color.Tooltip.Foreground;
+        var tooltipColorsSet = cssVariables.ContainsKey(tooltipBackground) || cssVariables.ContainsKey(tooltipForeground);
+
         foreach (var (alias, target) in FamilyAliasTargets)
         {
             if (cssVariables.ContainsKey(alias)) continue; // explicit alias value wins
             if (cssVariables.ContainsKey(target) is false) continue; // target untouched; keep the inherited alias
 
             cssVariables[alias] = $"var({target})";
+        }
+
+        // The tooltip's fill and text are one decision, and a preset may make it differently from the default
+        // pair (Material paints the inverse surface: the fill is the page's text color and the text its
+        // background). Re-declaring only the half whose palette color the theme touched would pair the
+        // default for that half with the preset's already-substituted other half - the same color for both,
+        // in the case of Material - so once either half is re-declared, both are.
+        if (tooltipColorsSet is false &&
+            (cssVariables.ContainsKey(tooltipBackground) || cssVariables.ContainsKey(tooltipForeground)))
+        {
+            foreach (var (alias, target) in FamilyAliasTargets)
+            {
+                if (alias != tooltipBackground && alias != tooltipForeground) continue;
+
+                cssVariables[alias] = $"var({target})";
+            }
         }
 
         // The role foregrounds are the one part of the tier that is not a plain var() alias: each one
@@ -170,6 +193,43 @@ internal static class BitThemeMapper
     /// </summary>
     internal static string RoleTintDefault(string roleMain)
         => $"color-mix(in srgb, var({roleMain}) 10%, transparent)";
+
+    /// <summary>
+    /// Each card inset token paired with the unitless steps of the spacing unit it is derived from,
+    /// mirroring <c>Styles/Fluent/shapes.fluent.scss</c> and the Extras presets' <c>tokens.*.scss</c>.
+    /// </summary>
+    internal static readonly IReadOnlyList<KeyValuePair<string, string>> CardSpacingStepTargets =
+    [
+        new(BitCss.Var.Spacing.Card.Sm, "--bit-spa-card-sm-steps"),
+        new(BitCss.Var.Spacing.Card.Md, "--bit-spa-card-md-steps"),
+        new(BitCss.Var.Spacing.Card.Lg, "--bit-spa-card-lg-steps"),
+    ];
+
+    /// <summary>
+    /// Re-declares the card insets next to a re-valued density scale or spacing unit, so a theme
+    /// applied lower in the tree resizes the cards of its subtree.
+    /// </summary>
+    /// <remarks>
+    /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>: the
+    /// stylesheets compute <c>--bit-spa-card-{sm,md,lg}</c> on <c>:root</c> from
+    /// <c>--bit-spa-scaling-factor</c> and <c>--bit-layout-density-scale</c>, and descendants inherit
+    /// the already-computed length, so an inline <see cref="BitThemeLayout.DensityScale"/> alone would
+    /// leave every card inside it at the document's inset. Each preset declares its steps as a
+    /// unitless token that inherits unchanged, so the expression re-declared here still lands on the
+    /// active preset's steps. An inset the theme sets explicitly always wins.
+    /// </remarks>
+    internal static void AugmentWithSpacingReSubstitution(Dictionary<string, string> cssVariables)
+    {
+        if (cssVariables.ContainsKey(BitCss.Var.Layout.DensityScale) is false &&
+            cssVariables.ContainsKey(BitCss.Var.Spacing.ScalingFactor) is false) return; // neither input touched
+
+        foreach (var (inset, steps) in CardSpacingStepTargets)
+        {
+            if (cssVariables.ContainsKey(inset)) continue; // explicit inset wins
+
+            cssVariables[inset] = $"calc(var({BitCss.Var.Spacing.ScalingFactor}) * var({BitCss.Var.Layout.DensityScale}) * var({steps}))";
+        }
+    }
 
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
     {
@@ -428,6 +488,9 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Color.Required, bitTheme.Color.Required);
 
+        addCssVar(BitCss.Var.Color.Tooltip.Background, bitTheme.Color.TooltipBackground);
+        addCssVar(BitCss.Var.Color.Tooltip.Foreground, bitTheme.Color.TooltipForeground);
+
         addCssVar(BitCss.Var.Color.Neutral.White, bitTheme.Color.Neutral.White);
         addCssVar(BitCss.Var.Color.Neutral.Black, bitTheme.Color.Neutral.Black);
         addCssVar(BitCss.Var.Color.Neutral.Gray10, bitTheme.Color.Neutral.Gray10);
@@ -498,6 +561,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shadow.S24, bitTheme.BoxShadow.S24);
         addCssVar(BitCss.Var.Shadow.FocusRing, bitTheme.BoxShadow.FocusRing);
         addCssVar(BitCss.Var.Shadow.Card, bitTheme.BoxShadow.Card);
+        addCssVar(BitCss.Var.Shadow.CardHover, bitTheme.BoxShadow.CardHover);
         addCssVar(BitCss.Var.Shadow.Popup, bitTheme.BoxShadow.Popup);
         addCssVar(BitCss.Var.Shadow.Dialog, bitTheme.BoxShadow.Dialog);
         addCssVar(BitCss.Var.Shadow.Sheet, bitTheme.BoxShadow.Sheet);
@@ -508,6 +572,9 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Spacing.ScalingFactor, bitTheme.Spacing.ScalingFactor);
         addCssVar(BitCss.Var.Spacing.Dialog, bitTheme.Spacing.Dialog);
+        addCssVar(BitCss.Var.Spacing.Card.Sm, bitTheme.Spacing.Card.Sm);
+        addCssVar(BitCss.Var.Spacing.Card.Md, bitTheme.Spacing.Card.Md);
+        addCssVar(BitCss.Var.Spacing.Card.Lg, bitTheme.Spacing.Card.Lg);
 
         addCssVar(BitCss.Var.ZIndex.Snackbar, bitTheme.ZIndex.Snackbar);
         addCssVar(BitCss.Var.ZIndex.Modal, bitTheme.ZIndex.Modal);
@@ -563,6 +630,8 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Typography.Control.LetterSpacing, bitTheme.Typography.Control.LetterSpacing);
         addCssVar(BitCss.Var.Typography.Control.TextTransform, bitTheme.Typography.Control.TextTransform);
+        addCssVar(BitCss.Var.Typography.Dialog.TitleFontSize, bitTheme.Typography.Dialog.TitleFontSize);
+        addCssVar(BitCss.Var.Typography.Dialog.TitleFontWeight, bitTheme.Typography.Dialog.TitleFontWeight);
 
         addCssVar(BitCss.Var.Typography.Body1.Margin, bitTheme.Typography.Body1.Margin);
         addCssVar(BitCss.Var.Typography.Body1.FontWeight, bitTheme.Typography.Body1.FontWeight);
@@ -675,6 +744,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Layout.DialogActionsDirection, bitTheme.Layout.DialogActionsDirection);
         addCssVar(BitCss.Var.Layout.DialogActionsJustify, bitTheme.Layout.DialogActionsJustify);
         addCssVar(BitCss.Var.Layout.DialogActionsAlign, bitTheme.Layout.DialogActionsAlign);
+        addCssVar(BitCss.Var.Layout.DialogTextAlign, bitTheme.Layout.DialogTextAlign);
 
         addCssVar(BitCss.Var.Layout.Breakpoints.Xs, bitTheme.Layout.Breakpoints.Xs);
         addCssVar(BitCss.Var.Layout.Breakpoints.Sm, bitTheme.Layout.Breakpoints.Sm);
@@ -837,7 +907,7 @@ internal static class BitThemeMapper
         {
             Color = NormalizeColors(src.Color),
             BoxShadow = src.BoxShadow ?? new(),
-            Spacing = src.Spacing ?? new(),
+            Spacing = NormalizeSpacing(src.Spacing),
             ZIndex = src.ZIndex ?? new(),
             Shape = NormalizeShape(src.Shape),
             Typography = NormalizeTypography(src.Typography),
@@ -868,6 +938,8 @@ internal static class BitThemeMapper
             Neutral = src.Neutral ?? new(),
             Semantic = src.Semantic ?? new(),
             Required = src.Required,
+            TooltipBackground = src.TooltipBackground,
+            TooltipForeground = src.TooltipForeground,
         };
     }
 
@@ -885,6 +957,7 @@ internal static class BitThemeMapper
             FontSize = src.FontSize ?? new(),
             FontWeights = src.FontWeights ?? new(),
             Control = src.Control ?? new(),
+            Dialog = src.Dialog ?? new(),
             H1 = src.H1 ?? new(),
             H2 = src.H2 ?? new(),
             H3 = src.H3 ?? new(),
@@ -916,6 +989,18 @@ internal static class BitThemeMapper
             FocusRingWidth = src.FocusRingWidth,
             FocusRingOffset = src.FocusRingOffset,
             Radius = src.Radius ?? new(),
+        };
+    }
+
+    private static BitThemeSpacings NormalizeSpacing(BitThemeSpacings? src)
+    {
+        src ??= new BitThemeSpacings();
+
+        return new BitThemeSpacings
+        {
+            ScalingFactor = src.ScalingFactor,
+            Dialog = src.Dialog,
+            Card = src.Card ?? new(),
         };
     }
 
@@ -970,6 +1055,7 @@ internal static class BitThemeMapper
             DialogActionsDirection = src.DialogActionsDirection,
             DialogActionsJustify = src.DialogActionsJustify,
             DialogActionsAlign = src.DialogActionsAlign,
+            DialogTextAlign = src.DialogTextAlign,
             Breakpoints = src.Breakpoints ?? new(),
         };
     }
@@ -1229,6 +1315,8 @@ internal static class BitThemeMapper
         result.Color.Border.Disabled = bitTheme.Color.Border.Disabled ?? other.Color.Border.Disabled;
 
         result.Color.Required = bitTheme.Color.Required ?? other.Color.Required;
+        result.Color.TooltipBackground = bitTheme.Color.TooltipBackground ?? other.Color.TooltipBackground;
+        result.Color.TooltipForeground = bitTheme.Color.TooltipForeground ?? other.Color.TooltipForeground;
 
         result.Color.Neutral.White = bitTheme.Color.Neutral.White ?? other.Color.Neutral.White;
         result.Color.Neutral.Black = bitTheme.Color.Neutral.Black ?? other.Color.Neutral.Black;
@@ -1300,6 +1388,7 @@ internal static class BitThemeMapper
         result.BoxShadow.S24 = bitTheme.BoxShadow.S24 ?? other.BoxShadow.S24;
         result.BoxShadow.FocusRing = bitTheme.BoxShadow.FocusRing ?? other.BoxShadow.FocusRing;
         result.BoxShadow.Card = bitTheme.BoxShadow.Card ?? other.BoxShadow.Card;
+        result.BoxShadow.CardHover = bitTheme.BoxShadow.CardHover ?? other.BoxShadow.CardHover;
         result.BoxShadow.Popup = bitTheme.BoxShadow.Popup ?? other.BoxShadow.Popup;
         result.BoxShadow.Dialog = bitTheme.BoxShadow.Dialog ?? other.BoxShadow.Dialog;
         result.BoxShadow.Sheet = bitTheme.BoxShadow.Sheet ?? other.BoxShadow.Sheet;
@@ -1310,6 +1399,9 @@ internal static class BitThemeMapper
 
         result.Spacing.ScalingFactor = bitTheme.Spacing.ScalingFactor ?? other.Spacing.ScalingFactor;
         result.Spacing.Dialog = bitTheme.Spacing.Dialog ?? other.Spacing.Dialog;
+        result.Spacing.Card.Sm = bitTheme.Spacing.Card.Sm ?? other.Spacing.Card.Sm;
+        result.Spacing.Card.Md = bitTheme.Spacing.Card.Md ?? other.Spacing.Card.Md;
+        result.Spacing.Card.Lg = bitTheme.Spacing.Card.Lg ?? other.Spacing.Card.Lg;
 
         result.ZIndex.Snackbar = bitTheme.ZIndex.Snackbar ?? other.ZIndex.Snackbar;
         result.ZIndex.Modal = bitTheme.ZIndex.Modal ?? other.ZIndex.Modal;
@@ -1365,6 +1457,8 @@ internal static class BitThemeMapper
 
         result.Typography.Control.LetterSpacing = bitTheme.Typography.Control.LetterSpacing ?? other.Typography.Control.LetterSpacing;
         result.Typography.Control.TextTransform = bitTheme.Typography.Control.TextTransform ?? other.Typography.Control.TextTransform;
+        result.Typography.Dialog.TitleFontSize = bitTheme.Typography.Dialog.TitleFontSize ?? other.Typography.Dialog.TitleFontSize;
+        result.Typography.Dialog.TitleFontWeight = bitTheme.Typography.Dialog.TitleFontWeight ?? other.Typography.Dialog.TitleFontWeight;
 
         result.Typography.Body1.Margin = bitTheme.Typography.Body1.Margin ?? other.Typography.Body1.Margin;
         result.Typography.Body1.FontWeight = bitTheme.Typography.Body1.FontWeight ?? other.Typography.Body1.FontWeight;
@@ -1477,6 +1571,7 @@ internal static class BitThemeMapper
         result.Layout.DialogActionsDirection = bitTheme.Layout.DialogActionsDirection ?? other.Layout.DialogActionsDirection;
         result.Layout.DialogActionsJustify = bitTheme.Layout.DialogActionsJustify ?? other.Layout.DialogActionsJustify;
         result.Layout.DialogActionsAlign = bitTheme.Layout.DialogActionsAlign ?? other.Layout.DialogActionsAlign;
+        result.Layout.DialogTextAlign = bitTheme.Layout.DialogTextAlign ?? other.Layout.DialogTextAlign;
         result.Layout.Breakpoints.Xs = bitTheme.Layout.Breakpoints.Xs ?? other.Layout.Breakpoints.Xs;
         result.Layout.Breakpoints.Sm = bitTheme.Layout.Breakpoints.Sm ?? other.Layout.Breakpoints.Sm;
         result.Layout.Breakpoints.Md = bitTheme.Layout.Breakpoints.Md ?? other.Layout.Breakpoints.Md;

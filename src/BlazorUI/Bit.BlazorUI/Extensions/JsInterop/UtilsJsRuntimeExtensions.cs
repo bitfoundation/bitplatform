@@ -69,6 +69,21 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Registers the Escape a shown tooltip takes for itself - pressed inside it, or anywhere on the page while the
+    // pointer rests on it - and mirrors its relationship onto the anchor in the same call; see Utils.setupTooltip.
+    internal static ValueTask BitUtilsSetupTooltip<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string rootId, string tooltipId, string attribute, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupTooltip", rootId, tooltipId, attribute, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeTooltip(this IJSRuntime jsRuntime, string rootId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeTooltip", rootId);
+    }
+
+
     internal static ValueTask<bool> BitUtilsContainsActiveElement(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.containsActiveElement", elementId);
@@ -101,6 +116,22 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Answers an Escape pressed inside a surface through the OnEscape callback, only when nothing inside it took
+    // the key first (an IME composition, a control, a component whose own popup is open, a surface nested inside
+    // it); see Utils.setupSurfaceEscape.
+    internal static ValueTask BitUtilsSetupSurfaceEscape<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupSurfaceEscape", elementId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeSurfaceEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeSurfaceEscape", elementId);
+    }
+
+
     // Hands the keyboard back to the page around the trigger when Tab leaves either end of a popup that is
     // relocated to the body, and reports it through the OnTabOut callback; see Utils.setupTabOut.
     internal static ValueTask BitUtilsSetupTabOut<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
@@ -129,6 +160,29 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsDisposeEscape(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeEscape", elementId);
+    }
+
+
+    // Calls OnEscape for each Escape pressed inside the element that nothing inside it had the better claim to -
+    // an open dropdown or menu opened from inside it, an input method composing, a control that prevented the
+    // key's default; see Utils.watchEscape.
+    internal static ValueTask BitUtilsWatchEscape<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.watchEscape", elementId, dotnetObj);
+    }
+
+    internal static ValueTask BitUtilsUnwatchEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.unwatchEscape", elementId);
+    }
+
+
+    // Resolves once the exit animation of the element and its direct children has played out, bounded by a
+    // timeout; see Utils.waitForAnimations.
+    internal static ValueTask BitUtilsWaitForAnimations(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.waitForAnimations", elementId);
     }
 
 
@@ -187,9 +241,11 @@ internal static class UtilsJsRuntimeExtensions
     // Hands the focus back to the element stored under the given key and forgets it. With onlyWhenLost the
     // focus is only handed back while nothing else holds it, which after the popup was taken out of the page
     // is the case the restore exists for: a focus that has since moved elsewhere belongs to whoever moved it.
-    internal static ValueTask BitUtilsRestoreFocus(this IJSRuntime jsRuntime, string key, bool onlyWhenLost = true)
+    // A focus still inside the element named by scopeId - a popup that stays in the page while it closes - counts
+    // as lost too.
+    internal static ValueTask BitUtilsRestoreFocus(this IJSRuntime jsRuntime, string key, bool onlyWhenLost = true, string? scopeId = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocus", key, onlyWhenLost);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocus", key, onlyWhenLost, scopeId);
     }
 
 

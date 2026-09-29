@@ -20,6 +20,7 @@
         wheel: boolean;
         preserve: boolean; // whether the reader's place is kept when content lands above what they see
         autoHide: boolean; // whether the Modern scrollbar is only painted while the pane is being used
+        autoHideDelay: number; // how long, in milliseconds, that scrollbar stays up after the pane was last used
         noScroll: boolean; // whether the pane is not to be moved by the reader at all
     }
 
@@ -191,27 +192,41 @@
                 const target = element.querySelector<HTMLElement>(`#${CSS.escape(targetId)}`);
                 if (!target) return;
 
-                const m = ScrollablePane.measure(element);
-                const paneRect = element.getBoundingClientRect();
-                const rect = target.getBoundingClientRect();
-
-                // Without an offset of its own the move keeps whatever room scroll-padding asks for, which
-                // is what the browser's own scrolling honors: a pane with a sticky header of its own gets
-                // the same clearance here that a fragment navigation into it would have got.
-                const padding = offset
-                    ? { left: offset, right: offset, top: offset, bottom: offset }
-                    : ScrollablePane.scrollPadding(element);
-
-                // Where the element stands inside the content of the pane, which is where it is on the
-                // screen taken back to the top left corner of the scrolled content.
-                const x = m.x + (rect.left - paneRect.left) - element.clientLeft;
-                const y = m.y + (rect.top - paneRect.top) - element.clientTop;
-
-                ScrollablePane.apply(element,
-                    ScrollablePane.align(x, rect.width, m.x, element.clientWidth, padding.left, padding.right, alignment, m.rtl),
-                    ScrollablePane.align(y, rect.height, m.y, element.clientHeight, padding.top, padding.bottom, alignment),
-                    m, smooth);
+                ScrollablePane.bringIntoView(element, target, offset, smooth, alignment);
             } catch (e) { console.error("BitBlazorUI.ScrollablePane.scrollToElement:", e); }
+        }
+
+        // The same move for an element .NET already holds a reference to, which is what a component's @ref
+        // hands over - no id needed. An element that is not inside the pane is left alone.
+        public static scrollToTarget(element: HTMLElement, target: HTMLElement, offset: number, smooth?: boolean, alignment?: ScrollAlignment) {
+            if (!element || !target || target === element || element.contains(target) === false) return;
+
+            try {
+                ScrollablePane.bringIntoView(element, target, offset, smooth, alignment);
+            } catch (e) { console.error("BitBlazorUI.ScrollablePane.scrollToTarget:", e); }
+        }
+
+        private static bringIntoView(element: HTMLElement, target: HTMLElement, offset: number, smooth?: boolean, alignment?: ScrollAlignment) {
+            const m = ScrollablePane.measure(element);
+            const paneRect = element.getBoundingClientRect();
+            const rect = target.getBoundingClientRect();
+
+            // Without an offset of its own the move keeps whatever room scroll-padding asks for, which
+            // is what the browser's own scrolling honors: a pane with a sticky header of its own gets
+            // the same clearance here that a fragment navigation into it would have got.
+            const padding = offset
+                ? { left: offset, right: offset, top: offset, bottom: offset }
+                : ScrollablePane.scrollPadding(element);
+
+            // Where the element stands inside the content of the pane, which is where it is on the
+            // screen taken back to the top left corner of the scrolled content.
+            const x = m.x + (rect.left - paneRect.left) - element.clientLeft;
+            const y = m.y + (rect.top - paneRect.top) - element.clientTop;
+
+            ScrollablePane.apply(element,
+                ScrollablePane.align(x, rect.width, m.x, element.clientWidth, padding.left, padding.right, alignment, m.rtl),
+                ScrollablePane.align(y, rect.height, m.y, element.clientHeight, padding.top, padding.bottom, alignment),
+                m, smooth);
         }
 
         // Where the pane has to stand along one axis for an element to be left where the alignment asks
@@ -388,6 +403,24 @@
         // rather than on the pane: a pointer that is released outside the pane - or before it has travelled
         // far enough for the capture to be taken - still has to end the drag it started.
         private _draggingAbortController?: AbortController;
+
+        // What keeps the Modern scrollbar of an auto hiding pane on the screen, one flag per reason, so that
+        // one of them ending - the pointer leaving - does not hide a bar another one still wants: a keyboard
+        // reader whose focus is inside the pane keeps it whatever the mouse does. The timer is the third
+        // reason, a scroll that has just happened, which is what a touch, a flick or a move made from code
+        // shows the bar for, the way an overlay scrollbar does - and the linger after the pointer or the
+        // focus has gone, so the bar does not blink out the instant one of them leaves.
+        //
+        // The timer is armed once and moved on lazily: every scroll event only pushes _holdUntil further out,
+        // and the timer, when it fires, arms itself again for whatever is left of it - so a scroll costs no
+        // timer and no DOM write per frame. _idle mirrors the attribute idle() writes, so neither the timer
+        // nor linger() has to read the element to know whether the bar is up.
+        private _hovered = false;
+        private _focused = false;
+        private _revealTimer = 0;
+        private _holdUntil = 0;
+        private _focusTimer = 0;
+        private _idle = false;
 
         private _frame = 0;
         private _reportTimer = 0;
@@ -579,6 +612,8 @@
             this.cancelDrag();
             this.idle(false);
 
+            this.release();
+
             this._disposed = true;
 
             this._abortController?.abort();
@@ -713,32 +748,159 @@
 
                 // enter and leave rather than over and out: the pane is one region here, and a pointer
                 // crossing from the content onto something inside it is not a pointer that left the pane.
-                this._element.addEventListener('pointerenter', () => this.idle(false), { passive: true, signal: ac.signal });
-                this._element.addEventListener('pointerleave', () => this.idle(true), { passive: true, signal: ac.signal });
+                this._element.addEventListener('pointerenter', () => { this._hovered = true; this.rest(); }, { passive: true, signal: ac.signal });
+                this._element.addEventListener('pointerleave', () => { this._hovered = false; this.linger(); }, { passive: true, signal: ac.signal });
 
                 // focusin and focusout rather than focus and blur, because what keeps the scrollbar on the
-                // screen is the focus being anywhere INSIDE the pane - and those two do not bubble.
-                this._element.addEventListener('focusin', () => this.idle(false), { passive: true, signal: ac.signal });
-                this._element.addEventListener('focusout', () => this.idle(true), { passive: true, signal: ac.signal });
+                // screen is the focus being anywhere INSIDE the pane - and those two do not bubble. Only a
+                // focus the keyboard is driving counts (see keyboardFocus): a button clicked with the mouse
+                // takes the focus too, and a bar held up by it would stay on the screen long after the
+                // pointer had gone, until the reader happened to click somewhere else.
+                this._element.addEventListener('focusin', () => { this._focused = this.keyboardFocus(this._focused); this.rest(); }, { passive: true, signal: ac.signal });
+                this._element.addEventListener('focusout', e => this.blurred(e), { passive: true, signal: ac.signal });
+
+                // A focus the pointer gave is one the keyboard can take over without moving it - a button
+                // clicked and then worked with the keys - and no focusin says so when it does.
+                this._element.addEventListener('keydown', () => {
+                    if (this._focused || this._element.contains(document.activeElement) === false) return;
+
+                    this._focused = true;
+                    this.rest();
+                }, { passive: true, signal: ac.signal });
 
                 // A pane that is already being pointed at or typed in when the flag is turned on is one the
-                // scrollbar belongs on: the two events that would say so have already been and gone.
-                this.idle(this.used() === false);
+                // scrollbar belongs on: the two events that would say so have already been and gone. A focus
+                // this side cannot see into counts, since nothing says the keyboard did not put it there.
+                this._hovered = this.hovered();
+                this._focused = this.keyboardFocus(true);
+                this.rest();
             } else if (this._options.autoHide === false && this._autoHideAbortController) {
                 this._autoHideAbortController.abort();
                 this._autoHideAbortController = undefined;
+
+                this.release();
 
                 this.idle(false);
             }
         }
 
-        // Whether the pane is being used right now, for the one moment nothing was listening to say so.
-        private used(): boolean {
+        // A focus leaving an element of the pane. When it names where it is going, that alone decides it: a
+        // move to another element of the pane is followed by a focusin that says the rest. When it does not -
+        // the focus went into a frame inside the pane, or the window itself lost it - where it ended up is
+        // only known once this move is over, which is a task away: a microtask would still run in the middle
+        // of it, before the document has taken in the new active element.
+        private blurred(e: FocusEvent) {
+            if (this._focusTimer) clearTimeout(this._focusTimer);
+            this._focusTimer = 0;
+
+            const to = e.relatedTarget as Node | null;
+
+            if (to) {
+                if (this._element.contains(to)) return;
+
+                this._focused = false;
+                this.linger();
+                return;
+            }
+
+            this._focusTimer = setTimeout(() => {
+                this._focusTimer = 0;
+                this._focused = this.keyboardFocus(this._focused);
+                this.linger();
+            }, 0);
+        }
+
+        // Whether the focus is inside the pane and the keyboard is what put it there - which is what
+        // :focus-visible says of the element holding it. A frame is the one element that cannot say: the
+        // focus is in a document of its own, beyond the reach of this one, so a frame keeps whatever the focus
+        // that moved into it was - a keyboard reader who tabbed into a video in the pane is still one.
+        private keyboardFocus(previous: boolean): boolean {
+            const active = document.activeElement;
+
+            if (active === null || this._element.contains(active) === false) return false;
+
+            if (/^(IFRAME|FRAME|OBJECT|EMBED)$/.test(active.tagName)) return previous;
+
             try {
-                return this._element.matches(':hover') || this._element.contains(document.activeElement);
+                return active.matches(':focus-visible');
+            } catch {
+                return true; // no :focus-visible to ask: keep the bar for every focus rather than for none
+            }
+        }
+
+        // Whether the pointer is over the pane right now, for the one moment nothing was listening to say so.
+        private hovered(): boolean {
+            try {
+                return this._element.matches(':hover');
             } catch {
                 return false; // :hover is unmatchable in a browser that never had a pointer
             }
+        }
+
+        // Puts the scrollbar of an auto hiding pane away unless something still wants it on the screen.
+        private rest() {
+            if (this._disposed || this._options.autoHide === false) return;
+
+            this.idle((this._hovered || this._focused || this._revealTimer !== 0) === false);
+        }
+
+        // Shows the scrollbar of an auto hiding pane for as long as it is scrolling and a moment after, which
+        // is what brings it up for a scroll the pointer did not make over it: a touch (whose pointer leaves the
+        // pane the moment the finger is lifted, momentum and all), a move made from code, a pinned log.
+        // The delay is never shorter than a few frames here, whatever the pane asked for: scroll events arrive
+        // once a frame, and a timer that ran out between two of them would flicker the bar for the whole scroll.
+        private reveal() {
+            if (this._options.autoHide === false) return;
+
+            this.hold(Math.max(this._options.autoHideDelay, BitScrollablePane._revealFloor));
+        }
+
+        // Keeps the scrollbar of an auto hiding pane up for a moment after the pointer or the focus that was
+        // holding it there has gone, so a pointer brushing past the edge of the pane does not blink it out.
+        private linger() {
+            if (this._disposed || this._options.autoHide === false) return;
+
+            if (this._options.autoHideDelay > 0 && this._idle === false) {
+                this.hold(this._options.autoHideDelay);
+            } else {
+                this.rest();
+            }
+        }
+
+        // Keeps the bar up for at least another `delay` milliseconds. A hold never shortens one already under
+        // way - a pointer leaving in the middle of a long scroll does not cut the scroll's own moment short -
+        // and the timer is only armed when none is running: the one that is re-arms itself on firing for
+        // whatever is left, which is what makes the ~60 calls a second of a scroll cost a clock read each.
+        private hold(delay: number) {
+            this._holdUntil = Math.max(this._holdUntil, performance.now() + delay);
+
+            if (this._revealTimer === 0) {
+                this._revealTimer = setTimeout(() => this.held(), delay);
+            }
+
+            this.idle(false);
+        }
+
+        private held() {
+            const left = this._holdUntil - performance.now();
+
+            if (left > 0) {
+                this._revealTimer = setTimeout(() => this.held(), left);
+                return;
+            }
+
+            this._revealTimer = 0;
+            this.rest();
+        }
+
+        // Drops every timer of the auto hiding, for a pane that stops auto hiding or goes away.
+        private release() {
+            if (this._revealTimer) clearTimeout(this._revealTimer);
+            if (this._focusTimer) clearTimeout(this._focusTimer);
+
+            this._revealTimer = 0;
+            this._focusTimer = 0;
+            this._holdUntil = 0;
         }
 
         // Whether the Modern scrollbar of an auto hiding pane is currently painted, written onto the
@@ -752,6 +914,10 @@
         // An attribute, and not a class or an inline custom property, for the reason the fade uses one:
         // Blazor rewrites both of those whole on every render and would wipe whatever this side added.
         private idle(idle: boolean) {
+            if (idle === this._idle) return;
+
+            this._idle = idle;
+
             if (idle) {
                 this._element.setAttribute('data-bit-scp-idle', '');
             } else {
@@ -809,6 +975,8 @@
         // one is a short idle after the last event.
         private scrolled() {
             this.began();
+
+            this.reveal();
 
             this.schedule();
 
@@ -1492,6 +1660,10 @@
         private static _noDragSelector = 'input,textarea,select,button,a,audio,video,[contenteditable=""],[contenteditable="true"],[draggable="true"],[data-bit-scp-nodrag]';
 
         private static _dragThreshold = 4;
+
+        // The shortest time the scrollbar of an auto hiding pane stays on the screen after a scroll event,
+        // whatever AutoHideDelay says - long enough to span the gap between two frames of one scroll.
+        private static _revealFloor = 150;
 
         // How near an edge still counts as standing ON it, in pixels. A scroll offset is fractional at a
         // fractional zoom level and on a scaled display, while the maxima it is compared against are
