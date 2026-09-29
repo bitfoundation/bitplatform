@@ -538,6 +538,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Surface, bitTheme.Shape.Radius.Surface);
         addCssVar(BitCss.Var.Shape.Radius.Popup, bitTheme.Shape.Radius.Popup);
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
+        addCssVar(BitCss.Var.Shape.Radius.Sheet, bitTheme.Shape.Radius.Sheet);
 
         addCssVar(BitCss.Var.Typography.FontFamily, bitTheme.Typography.FontFamily);
         addCssVar(BitCss.Var.Typography.MonoFontFamily, bitTheme.Typography.MonoFontFamily);
@@ -1340,6 +1341,7 @@ internal static class BitThemeMapper
         result.Shape.Radius.Surface = bitTheme.Shape.Radius.Surface ?? other.Shape.Radius.Surface;
         result.Shape.Radius.Popup = bitTheme.Shape.Radius.Popup ?? other.Shape.Radius.Popup;
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;
+        result.Shape.Radius.Sheet = bitTheme.Shape.Radius.Sheet ?? other.Shape.Radius.Sheet;
 
         result.Typography.FontFamily = bitTheme.Typography.FontFamily ?? other.Typography.FontFamily;
         result.Typography.MonoFontFamily = bitTheme.Typography.MonoFontFamily ?? other.Typography.MonoFontFamily;

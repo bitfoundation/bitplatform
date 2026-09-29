@@ -1400,6 +1400,26 @@ public class BitPanelTests : BunitTestContext
         Assert.AreEqual("Footer Template", com.Find(".bit-pnl-ftr").TextContent);
     }
 
+    // A title the panel renders itself is a heading a screen reader can move to; a template keeps whatever
+    // semantics its own markup gives it, so the wrapper around it claims none.
+    [TestMethod]
+    public void BitPanelHeaderTextShouldBeAHeadingAndTheTemplateShouldNot()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HeaderText, "Header Text");
+        });
+
+        var header = com.Find(".bit-pnl-hdr");
+        Assert.AreEqual("heading", header.GetAttribute("role"));
+        Assert.AreEqual("2", header.GetAttribute("aria-level"));
+
+        com.Render(parameters => parameters.Add(p => p.Header, "<h3>Header Template</h3>"));
+
+        Assert.IsFalse(com.Find(".bit-pnl-hdr").HasAttribute("role"));
+    }
+
     [TestMethod]
     public void BitPanelShouldRenderFooterTextWhenFooterTemplateMissing()
     {

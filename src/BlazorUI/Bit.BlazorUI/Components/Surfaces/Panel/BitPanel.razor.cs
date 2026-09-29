@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Panel is an overlay surface that slides in from an edge of the screen to host supplementary content -
@@ -59,6 +61,17 @@ public partial class BitPanel : BitComponentBase
     // Bit.BlazorUI.Extras, which this assembly cannot reference.
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the panel component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple panel components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPanelParams.ParamName)]
+    public BitPanelParams? CascadingParameters { get; set; }
 
 
 
@@ -628,6 +641,16 @@ public partial class BitPanel : BitComponentBase
         _contentRendered = IsOpen;
 
         base.OnInitialized();
+    }
+
+    // Filled in before OnParametersSetAsync reads any of them: the swipe geometry, the focus trap and the scroll
+    // hold are all decided from parameters a BitParams ancestor may be the one giving.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPanelParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnParametersSetAsync()

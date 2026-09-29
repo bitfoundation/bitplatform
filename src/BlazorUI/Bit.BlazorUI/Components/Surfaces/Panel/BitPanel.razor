@@ -73,7 +73,10 @@
                         }
                         else if (HeaderText.HasValue())
                         {
-                            <div id="@_headerId" style="@Styles?.Header" class="bit-pnl-hdr @Classes?.Header">
+                            @* A title the panel renders itself is also a heading, so a screen reader moving by
+                               headings lands on it the way it lands on the title of a dialog. A Header template
+                               is left to carry whatever semantics its markup gives it. *@
+                            <div id="@_headerId" role="heading" aria-level="2" style="@Styles?.Header" class="bit-pnl-hdr @Classes?.Header">
                                 @HeaderText
                             </div>
                         }
