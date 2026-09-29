@@ -261,6 +261,129 @@
             } catch (e) { console.error("BitBlazorUI.Utils.syncAriaDescription:", e); }
         }
 
+        private static _tooltips = new Map<string, { root: HTMLElement, dotnetObj: DotNetObject, controller: AbortController }>();
+        private static _tooltipsByRoot = new Map<HTMLElement, DotNetObject>();
+        private static _tooltipsController: AbortController | null = null;
+
+        // An element that answers Escape itself - a text entry clears or reverts on it, a combobox or anything
+        // expanded closes what it opened - so a tooltip around it lets the key through to that element.
+        private static readonly _escapeOwners =
+            'input:not([type="button"],[type="submit"],[type="reset"],[type="checkbox"],[type="radio"],[type="image"],[type="range"],[type="color"],[type="file"]),' +
+            'textarea,select,[contenteditable]:not([contenteditable="false"]),' +
+            '[role="combobox"],[role="searchbox"],[role="textbox"],[role="spinbutton"],[aria-expanded="true"]';
+
+        // Lets Escape dismiss a shown tooltip (WCAG 1.4.13 "dismissible") from the two places it can come from:
+        // the keyboard inside the tooltip - on its anchor - and anywhere on the page while the pointer rests on
+        // the tooltip, since a tooltip shown on hover is shown while the focus is wherever the user left it.
+        // Either way the key is the tooltip's alone: it is taken before Blazor's document-level delegation sees
+        // it, so a dialog or a callout the tooltip sits in is not dismissed by the same press, and a second
+        // Escape reaches them as usual. The one exception is a key pressed on something inside the anchor that
+        // answers Escape itself (a text field, a search box, a dropdown): the tooltip is dismissed along with
+        // it, and the key goes on to the component it was pressed on. Whether a tooltip takes it is read off the
+        // DOM on the spot - shown (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot
+        // wait for a round trip. It also tells a tooltip a click opened about the press outside it that
+        // dismisses it.
+        public static setupTooltip(rootId: string, tooltipId: string, attribute: string, dotnetObj: DotNetObject) {
+            Utils.disposeTooltip(rootId);
+
+            Utils.syncAriaDescription(rootId, tooltipId, attribute);
+
+            const root = document.getElementById(rootId);
+            if (!root) return;
+
+            const controller = new AbortController();
+
+            // A component inside the anchor that answered the key natively itself (and said so) keeps it.
+            root.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]')) return;
+
+                const target = e.target as Element | null;
+                const owner = target?.closest(Utils._escapeOwners);
+                if (!owner || !root.contains(owner) || owner.closest('.bit-ttp-wrp')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+
+                dotnetObj.invokeMethodAsync('OnEscape')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
+            }, { signal: controller.signal });
+
+            Utils._tooltips.set(rootId, { root, dotnetObj, controller });
+            Utils._tooltipsByRoot.set(root, dotnetObj);
+
+            Utils.ensureTooltipListeners();
+        }
+
+        public static disposeTooltip(rootId: string) {
+            const entry = Utils._tooltips.get(rootId);
+            if (!entry) return;
+
+            entry.controller.abort();
+            Utils._tooltips.delete(rootId);
+            if (Utils._tooltipsByRoot.get(entry.root) === entry.dotnetObj) {
+                Utils._tooltipsByRoot.delete(entry.root);
+            }
+
+            if (Utils._tooltips.size === 0) {
+                Utils._tooltipsController?.abort();
+                Utils._tooltipsController = null;
+            }
+        }
+
+        // The two document-level listeners every tooltip needs are shared by all of them, and each one asks the
+        // DOM for the few tooltips that are actually shown instead of every tooltip on the page asking for
+        // itself - a toolbar or a grid of a few hundred tooltips pays for one listener per key and press.
+        private static ensureTooltipListeners() {
+            if (Utils._tooltipsController) return;
+
+            const controller = Utils._tooltipsController = new AbortController();
+
+            const shown = (marker: string) => Array.from(document.querySelectorAll<HTMLElement>(`.bit-ttp-wrp.bit-ttp-vis[${marker}]`))
+                .map(wrp => wrp.parentElement)
+                .filter((root): root is HTMLElement => !!root && Utils._tooltipsByRoot.has(root));
+
+            // In the capture phase, so the key is taken before whatever holds the focus acts on it. Every
+            // tooltip under the pointer - a nested one along with the one around it - is dismissed by the press,
+            // and stopImmediatePropagation keeps it from any other listener on the document as well, a callout's
+            // own Escape listener included.
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                const target = e.target as Node | null;
+                let taken = false;
+
+                for (const root of shown('data-bit-ttp-esc')) {
+                    if (target && root.contains(target)) continue; // the root's own listener answers it
+                    if (!root.matches(':hover')) continue;
+
+                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
+                    taken = true;
+                }
+
+                if (!taken) return;
+
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }, { signal: controller.signal, capture: true });
+
+            // A tooltip a press of the anchor opened (data-bit-ttp-clk) is dismissed by the next press elsewhere.
+            // The focus leaving the anchor says as much in some browsers, but Safari and the touch browsers never
+            // focus a pressed button, and an anchor that is not focusable is never focused at all. Nothing is
+            // prevented: the press goes on to do whatever it was aimed at.
+            document.addEventListener('pointerdown', e => {
+                const target = e.target as Node | null;
+
+                for (const root of shown('data-bit-ttp-clk')) {
+                    if (target && root.contains(target)) continue;
+
+                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnOutsidePress')
+                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
+                }
+            }, { signal: controller.signal, capture: true });
+        }
+
         // True when the focus currently sits inside the given container. The popup components ask before
         // they close, since handing the focus back to the element that opened them is only correct when
         // the focus was theirs to hand back - moving it out of wherever the user put it otherwise.

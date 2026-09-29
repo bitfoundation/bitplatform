@@ -122,6 +122,12 @@
     // opacity M3 names for the disabled state, against Fluent's 50%.
     --bit-opa-dis: 0.38;
 
+    /*---- Surface colors ----*/
+    // A plain M3 tooltip is the inverse surface with inverse-on-surface text, which is what lets it sit
+    // at L0 (see --bit-shd-tooltip below): it stands off the page by its contrast rather than by a shadow.
+    --bit-clr-tooltip-bg: var(--bit-clr-fg-pri);
+    --bit-clr-tooltip-fg: var(--bit-clr-bg-pri);
+
     /*---- Spacing / layout ----*/
     --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px - M3 dialog inset
     // M3 cards inset their content 16dp, on the 4dp grid either side of it.

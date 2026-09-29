@@ -10,6 +10,7 @@
  *                surfaces (an outlined or text-only variant) instead of filled behind its on-color
  *   tint       - pri/sec/ter/inf/suc/wrn/swr/err: the role laid over a surface as a faint wash (the
  *                soft surface of a tinted variant) instead of a fill
+ *   tooltip    - the fill and the text of the tooltip surface
  *
  * Components consume THESE (via $shp-radius-control, $box-shadow-popup, $clr-wrn-fg, ... in
  * theme-variables.scss) instead of the single --bit-shp-brd-radius / --bit-shd-cal primitives or a
@@ -67,6 +68,12 @@
     --bit-shd-snackbar: none;
     --bit-shd-appbar-top: 0 #{rem2(2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
     --bit-shd-appbar-bottom: 0 #{rem2(-2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(-4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
+
+    // the tooltip surface - the one popup whose FILL design systems disagree on: Fluent lifts a light
+    // surface off the page with a shadow, Material paints its plain tooltip in the inverse surface and
+    // casts none. Plain aliases of the palette, so either choice tracks both schemes.
+    --bit-clr-tooltip-bg: var(--bit-clr-bg-sec);
+    --bit-clr-tooltip-fg: var(--bit-clr-fg-pri);
 
     // foreground per accent role - a role's main color is picked to FILL a surface rather than to be
     // read on the page (a warning amber is under 2:1 on white), so the unfilled variants of a
