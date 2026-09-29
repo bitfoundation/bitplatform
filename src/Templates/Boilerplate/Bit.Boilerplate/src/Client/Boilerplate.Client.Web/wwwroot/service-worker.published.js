@@ -96,6 +96,7 @@ self.serverHandledUrls = [
     /\/odata\//,
     /\/core\//,
     /\/hangfire/,
+    /\/healthchecks-ui/,
     /\/healthz/,
     /\/health/,
     /\/alive/,

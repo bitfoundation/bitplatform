@@ -361,7 +361,7 @@ self.serverHandledUrls = [
 
 **Server-handled URLs** bypass the service worker and let the server handle these endpoints:
 - API endpoints (`/api/`, `/odata/`)
-- Administrative interface (`/hangfire`)
+- Administrative interfaces (`/hangfire`, `/healthchecks-ui`)
 - Health check endpoints (`/healthz`, `/health`, `/alive`)
 - Authentication callbacks (`/signin-*`)
 - Static server resources (sitemap, well-known files)
