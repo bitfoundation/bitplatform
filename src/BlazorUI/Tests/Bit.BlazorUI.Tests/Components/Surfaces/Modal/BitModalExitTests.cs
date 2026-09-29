@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -195,7 +197,7 @@ public class BitModalExitTests : BunitTestContext
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
 
-        container.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = container.PressEscape();
 
         container.WaitForAssertion(() => Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("bit-mdl-lvg")));
         Assert.IsTrue(modalRef.IsClosed);
@@ -207,6 +209,103 @@ public class BitModalExitTests : BunitTestContext
         container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
         Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count);
         Assert.AreEqual(1, dismissed);
+    }
+
+    // bUnit gives up on a script call left unanswered for longer than its wait timeout, which is process-wide, so the
+    // test that holds one past the container's deadline raises it and runs on its own.
+    [TestMethod, DoNotParallelize]
+    public async Task BitModalServiceShouldHearOutAModalThatStartedClosingPastItsOwnDeadline()
+    {
+        var waitTimeout = BunitContext.DefaultWaitTimeout;
+
+        try
+        {
+            BunitContext.DefaultWaitTimeout = TimeSpan.FromSeconds(10);
+
+            // The close sequence makes its round trips to the browser before the animation starts; on a slow circuit
+            // those alone can outlast the deadline the container keeps for a modal that never starts closing.
+            var animation = Context.JSInterop.SetupVoid(WaitForAnimations, _ => true);
+
+            var container = RenderComponent<BitModalContainer>();
+
+            var modalRef = await ModalService.Show<TestModalContent>();
+
+            container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+
+            await modalRef.Close();
+
+            container.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count));
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
+
+            // Still playing its way out: the modal, not the container's deadline, says when it is out of the way.
+            Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("bit-mdl-lvg"));
+
+            await container.InvokeAsync(() => animation.SetVoidResult());
+
+            container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        }
+        finally
+        {
+            BunitContext.DefaultWaitTimeout = waitTimeout;
+        }
+    }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldTakeAModalOutAtOnceFromAContainerThatCannotHearItOut()
+    {
+        var dismissed = 0;
+
+        var container = RenderComponent<HandWrittenModalContainer>();
+
+        var modalRef = await ModalService.Show<TestModalContent>(new BitModalParameters
+        {
+            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++),
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+
+        await modalRef.Close();
+
+        // A container a consumer wrote hands the modal no BitModalExit, so it has no way of hearing that the modal
+        // played its way out: the modal goes at once, as it always has, and the application closing it is still not
+        // reported as a dismissal.
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        Assert.AreEqual(0, dismissed);
+        Assert.AreEqual(0, Context.JSInterop.Invocations[WaitForAnimations].Count);
+        Assert.AreEqual(0, ModalService.OpenModals.Count);
+    }
+
+    // A container written by hand the way a consumer outside the library writes one: it can cascade the reference and
+    // the parameters, but not the BitModalExit, which is internal to the library.
+    private sealed class HandWrittenModalContainer : BitModalContainerBase<BitModalReference, BitModalParameters>
+    {
+        [Inject] private BitModalService _modalService { get; set; } = default!;
+
+        protected override BitModalServiceBase<BitModalReference, BitModalParameters> ModalService => _modalService;
+
+        protected override BitModalParameters? MergeParameters(BitModalParameters? modalParameters, BitModalParameters? containerParameters)
+        {
+            return BitModalParameters.Merge(modalParameters, containerParameters);
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            foreach (var modalRef in _modalRefs)
+            {
+                builder.OpenComponent<CascadingValue<BitModalReference>>(0);
+                builder.SetKey(modalRef.Id);
+                builder.AddComponentParameter(1, nameof(CascadingValue<BitModalReference>.Value), modalRef);
+                builder.AddComponentParameter(2, nameof(CascadingValue<BitModalReference>.ChildContent), (RenderFragment)(b =>
+                {
+                    b.OpenComponent<CascadingValue<BitModalParameters>>(0);
+                    b.AddComponentParameter(1, nameof(CascadingValue<BitModalParameters>.Value), GetMergedParameters(modalRef));
+                    b.AddComponentParameter(2, nameof(CascadingValue<BitModalParameters>.ChildContent), modalRef.Modal);
+                    b.CloseComponent();
+                }));
+                builder.CloseComponent();
+            }
+        }
     }
 
     [TestMethod]

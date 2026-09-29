@@ -502,27 +502,80 @@
             Utils._escapes.delete(elementId);
         }
 
-        // Watches the Escape presses that reach a surface dismissed by the key from its own Blazor handler (a
-        // modal), and records whether the last of them belonged to something inside it instead: a dropdown or a
+        private static _escapeWatches = new Map<string, AbortController>();
+
+        // Dismisses a surface on Escape through the OnEscape callback (a modal, whose own Blazor handler only
+        // reports the key) - but only for a press nothing inside it had the better claim to: a dropdown or a
         // menu opened from inside the surface closes its own popup on the same key, an input method editor
         // cancels the candidate it is composing, and a control that answered the key says so by preventing its
         // default. One press then closes the innermost layer only, rather than that layer and the surface the
-        // user is still working in. The decision has to be taken here, at the time of the event: the listener is
-        // on the element, so it runs before Blazor's document-level delegation lets the nested component close
-        // its popup, after which the stack of open callouts would no longer say that there was one.
-        // Registering again on the same element does nothing, and the listener goes away with the element.
-        public static watchEscape(element: HTMLElement) {
+        // user is still working in.
+        // The two halves of the decision are true at different times, so two listeners take it. The stack of
+        // open callouts is read in the capture phase on the element, ahead of every listener inside it and of
+        // Blazor's document-level delegation that lets the nested component close its popup - after which the
+        // stack would no longer say there was one. Whether the default was prevented is read on the window,
+        // once the event has bubbled past that delegation: a Blazor handler's @onkeydown:preventDefault is only
+        // on the event from there on. Taking the decision at the time of the event leaves nothing for .NET to
+        // ask about later, so two quick presses cannot overwrite each other's answer, and .NET is only called
+        // for a press that is the surface's.
+        // A surface nested inside another one - a modal opened from inside a modal, rendered inside its
+        // content - takes the presses made inside it, and the outer one leaves them alone.
+        public static watchEscape(elementId: string, dotnetObj: DotNetObject) {
+            Utils.unwatchEscape(elementId);
+
+            const element = document.getElementById(elementId);
             if (!element) return;
 
-            const el = element as any;
-            if (el.__bitEscapeWatched) return;
-            el.__bitEscapeWatched = true;
+            const controller = new AbortController();
+            const claimed = new WeakSet<Event>();
 
-            element.addEventListener('keydown', (e: KeyboardEvent) => {
+            (element as any).__bitEscapeRoot = true;
+
+            element.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
 
-                el.__bitEscapeClaimed = e.defaultPrevented || e.isComposing || Callouts.isOpenedFrom(element);
-            });
+                if (e.isComposing || Callouts.isOpenedFrom(element)) {
+                    claimed.add(e);
+                }
+            }, { signal: controller.signal, capture: true });
+
+            window.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                const target = e.target as Node | null;
+                if (!target || !element.contains(target)) return;
+
+                if (Utils.nearestEscapeRoot(target) !== element) return;
+
+                if (claimed.has(e) || e.defaultPrevented) return;
+
+                dotnetObj.invokeMethodAsync('OnEscape');
+            }, { signal: controller.signal });
+
+            Utils._escapeWatches.set(elementId, controller);
+        }
+
+        public static unwatchEscape(elementId: string) {
+            const controller = Utils._escapeWatches.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._escapeWatches.delete(elementId);
+
+            const element = document.getElementById(elementId) as any;
+            if (element) {
+                delete element.__bitEscapeRoot;
+            }
+        }
+
+        private static nearestEscapeRoot(node: Node): Node | null {
+            let current: Node | null = node;
+
+            while (current && !(current as any).__bitEscapeRoot) {
+                current = current.parentNode;
+            }
+
+            return current;
         }
 
         // Resolves once the exit animation of a surface has played out, so that it is only taken out of the page
@@ -544,11 +597,6 @@
                 Promise.all(animations.map(a => a.finished.catch(() => { }))),
                 new Promise(resolve => setTimeout(resolve, timeout)),
             ]);
-        }
-
-        // Whether the last Escape the watched element saw was claimed by something inside it (see watchEscape).
-        public static isEscapeClaimed(element: HTMLElement) {
-            return !!(element as any)?.__bitEscapeClaimed;
         }
 
         public static disposeTabOut(elementId: string) {

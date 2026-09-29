@@ -59,6 +59,8 @@ public partial class BitModal : BitComponentBase
     // exact same selector even if DragElementSelector changed since the Modal was opened.
     private string? _dragElementSelectorOnSetup;
     private bool _dragSetup;
+    private bool _escapeWatched;
+    private DotNetObjectReference<BitModal>? _dotnetObj;
 
     // Which of the two interchangeable "refused" animations the content is carrying, 0 for none. Two
     // classes carrying the same movement under different names are alternated rather than one being added
@@ -495,6 +497,9 @@ public partial class BitModal : BitComponentBase
     /// Invoked for every Escape, including the ones a Modal with <see cref="NoDismissOnEscape"/> refuses to
     /// be dismissed by, which makes it the counterpart of <see cref="OnOverlayClick"/> for the keyboard: the
     /// place to react to a dismissal that was turned down, or to close a Modal on terms of its own.
+    /// <br/>
+    /// That includes the Escapes a layer inside the Modal answered first - a dropdown opened from inside it closing
+    /// its list, an input method cancelling what it was composing - which do not dismiss the Modal.
     /// </remarks>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
@@ -625,12 +630,6 @@ public partial class BitModal : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => _params.Classes?.Root);
 
-        // The base builder marks the root disabled and right-to-left off the component's own IsEnabled and Dir,
-        // which are blind to the ones the service cascades; these read the effective values, so both ways of
-        // asking for either reach the rendered classes - once, since each only adds what the base one did not.
-        ClassBuilder.Register(() => IsEnabled && _params.IsEnabled is false ? "bit-dis" : string.Empty);
-        ClassBuilder.Register(() => Dir != BitDir.Rtl && _params.Dir == BitDir.Rtl ? "bit-rtl" : string.Empty);
-
         ClassBuilder.Register(() => IsFullHeight ? "bit-mdl-fhe" : string.Empty);
         ClassBuilder.Register(() => IsFullWidth ? "bit-mdl-fwi" : string.Empty);
         ClassBuilder.Register(() => (_params.ModeFull ?? false) ? "bit-mdl-mfl" : string.Empty);
@@ -663,16 +662,6 @@ public partial class BitModal : BitComponentBase
         StyleBuilder.Register(() => _params.Styles?.Root);
 
         StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
-
-        // The base builder registers this same rule off the component's own Visibility, which is blind to
-        // the one the service cascades; this one reads the effective value, so both ways of asking for it
-        // reach the rendered style.
-        StyleBuilder.Register(() => EffectiveVisibility switch
-        {
-            BitVisibility.Hidden => "visibility:hidden",
-            BitVisibility.Collapsed => "display:none",
-            _ => string.Empty
-        });
     }
 
     protected override void OnInitialized()
@@ -718,11 +707,15 @@ public partial class BitModal : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitModalParams))]
     protected override void OnParametersSet()
     {
+        ResetUnsetBaseParameters();
+
         CascadingParameters?.UpdateParameters(this);
 
         var previous = _params;
 
         _params = BuildParameters();
+
+        ApplyEffectiveBaseParameters();
 
         // The [ResetClassBuilder] attribute only resets ClassBuilder when this component's own
         // parameters change. However, the registered class/style lambdas also read the (own and
@@ -884,6 +877,11 @@ public partial class BitModal : BitComponentBase
         }
         else
         {
+            // The container of a Modal shown through the service hears the Modal out from here on: the round trips
+            // of the close sequence come before the animation even starts, and a deadline of the container's own
+            // would cut the animation short on a slow circuit.
+            Exit?.Closing();
+
             await HandleOnClosed();
 
             await FinishLeaving(generation);
@@ -946,6 +944,8 @@ public partial class BitModal : BitComponentBase
     private async Task HandleOnClosed()
     {
         _contentFocused = false;
+
+        await UnwatchEscape();
 
         await DisposeFocusTrap();
 
@@ -1023,28 +1023,41 @@ public partial class BitModal : BitComponentBase
         await TryDismiss();
     }
 
-    // Escape dismisses the Modal from anywhere inside it, as the dialog pattern requires. The key is only
-    // seen while the focus is inside the Modal, which is where it is put when the Modal opens.
+    // Every Escape pressed inside the Modal is reported here, including the ones a layer inside it answered first.
+    // The key is only seen while the focus is inside the Modal, which is where it is put when the Modal opens.
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (_params.IsEnabled is false) return;
 
         if (e.Key is not "Escape") return;
 
-        // One press closes one layer: an Escape that a dropdown or a menu opened from inside the Modal closed
-        // its popup with - or that an input method used to cancel what it was composing - is not also a
-        // dismissal of the Modal the user is still working in.
-        if (await IsEscapeClaimed()) return;
-
         await _params.OnEscapeKeyDown.InvokeAsync(e);
+    }
+
+    /// <summary>
+    /// Escape dismisses the Modal from anywhere inside it, as the dialog pattern requires - called by the script
+    /// only for the presses nothing inside the Modal had the better claim to (see Utils.watchEscape). One press
+    /// closes one layer: an Escape a dropdown or a menu opened from inside the Modal closed its popup with, that an
+    /// input method used to cancel what it was composing, or that a control answered by preventing its default, is
+    /// not also a dismissal of the Modal the user is still working in.
+    /// </summary>
+    [JSInvokable("OnEscape")]
+    public async Task _OnEscape()
+    {
+        if (IsOpen is false || _params.IsEnabled is false) return;
 
         if (_params.NoDismissOnEscape ?? false)
         {
             Bounce();
-            return;
+        }
+        else
+        {
+            await TryDismiss();
         }
 
-        await TryDismiss();
+        if (IsDisposed) return;
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
@@ -1094,15 +1107,24 @@ public partial class BitModal : BitComponentBase
             if (IsOpen is false) return false;
         }
 
+        var wasOpen = IsOpen;
+        bool assigned;
+
         _dismissing = true;
 
         try
         {
-            await AssignIsOpen(false);
+            assigned = await AssignIsOpen(false);
         }
         finally
         {
             _dismissing = false;
+        }
+
+        // Reported here rather than from OnSetIsOpen, which one closing can reach more than once (see there).
+        if (assigned && wasOpen && IsOpen is false)
+        {
+            ReportDismiss();
         }
 
         return true;
@@ -1125,16 +1147,18 @@ public partial class BitModal : BitComponentBase
         return (_params.IsAlert ?? ((_params.Blocking ?? false) && IsModeless is false)) ? "alertdialog" : "dialog";
     }
 
-    // A dialog needs a name (WCAG 4.1.2), and a Modal whose chrome shows a title already has one on the screen:
+    // A dialog needs a name (WCAG 4.1.2), and a Modal whose chrome shows a text title already has one on the screen:
     // that title names it unless the consumer pointed TitleAriaId somewhere else or gave it an AriaLabel of its own,
-    // which aria-labelledby would otherwise take precedence over.
+    // which aria-labelledby would otherwise take precedence over. A Header template is never pointed at as a whole:
+    // the name would then be everything the template holds - the search box beside the title, the text of its
+    // buttons - rather than the title, so it names the Modal only through the TitleAriaId it points at its title.
     private string? GetAriaLabelledBy()
     {
         if (_params.TitleAriaId is not null) return _params.TitleAriaId;
 
         if (_params.AriaLabel.HasValue()) return null;
 
-        return HasChrome && (_params.Header is not null || _params.HeaderText.HasValue()) ? _titleId : null;
+        return HasChrome && _params.Header is null && _params.HeaderText.HasValue() ? _titleId : null;
     }
 
     // Null rather than an empty string when there is nothing to render, so a Modal that was given no
@@ -1243,13 +1267,24 @@ public partial class BitModal : BitComponentBase
 
         if (IsRendered is false) return;
 
+        // The user dismissing the Modal is reported by TryDismiss, once. This hook can be reached more than once
+        // for one closing: the parent a dismissal re-renders (the container of a Modal shown through the service)
+        // hands the Modal a cascading value first, and Blazor re-supplies the Modal's previous parameters along
+        // with it - open, then closed again a moment later.
+        if (_dismissing) return;
+
         // A Modal shown through the service is closed by its service as well, which is the application closing
         // it rather than the user dismissing it, and is not reported as a dismissal.
-        if (Exit is not null && _dismissing is false) return;
+        if (Exit is not null) return;
 
-        // Fire-and-forget the dismiss callback, then re-render. Wrapped in a local async method
-        // (instead of ContinueWith) so a throwing OnDismiss surfaces through Blazor's normal async
-        // error handling via the renderer dispatcher rather than being swallowed on an unobserved task.
+        ReportDismiss();
+    }
+
+    // Fire-and-forget the dismiss callback, then re-render. Wrapped in a local async method
+    // (instead of ContinueWith) so a throwing OnDismiss surfaces through Blazor's normal async
+    // error handling via the renderer dispatcher rather than being swallowed on an unobserved task.
+    private void ReportDismiss()
+    {
         _ = InvokeAsync(async () =>
         {
             await _params.OnDismiss.InvokeAsync(new MouseEventArgs());
@@ -1393,32 +1428,35 @@ public partial class BitModal : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    // The Escape presses are watched from the root, where the Modal's own handler is, so that the ones a layer
-    // inside it answered first can be told apart from the ones meant for the Modal (Utils.watchEscape). The
-    // listener goes away with the element, so there is nothing to take back when the Modal closes.
+    // The Escape presses are watched from the root, so that the ones a layer inside the Modal answered first can be
+    // told apart from the ones meant for the Modal - which only the script can, at the time of the event - and only
+    // those reach OnEscape (Utils.watchEscape). Watched while the Modal is open, since part of the watch is on the
+    // window rather than on the element.
     private async Task WatchEscape()
     {
-        if (IsDisposed) return;
+        if (_escapeWatched || IsDisposed) return;
+
+        _escapeWatched = true;
+        _dotnetObj ??= DotNetObjectReference.Create(this);
 
         try
         {
-            await _js.BitUtilsWatchEscape(RootElement);
+            await _js.BitUtilsWatchEscape(_Id, _dotnetObj);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    private async Task<bool> IsEscapeClaimed()
+    private async Task UnwatchEscape()
     {
-        if (IsDisposed) return false;
+        if (_escapeWatched is false) return;
+
+        _escapeWatched = false;
 
         try
         {
-            return await _js.BitUtilsIsEscapeClaimed(RootElement);
+            await _js.BitUtilsUnwatchEscape(_Id);
         }
-        catch (JSDisconnectedException)
-        {
-            return false;
-        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task SetupFocusTrap()
@@ -1632,17 +1670,17 @@ public partial class BitModal : BitComponentBase
         return new BitModalParameters
         {
             // Can only force off (default is enabled): see remarks on asymmetric merge.
-            IsEnabled = MergeBaseOff(nameof(IsEnabled), IsEnabled, p.IsEnabled),
+            IsEnabled = MergeBase(nameof(IsEnabled), Off(IsEnabled), p.IsEnabled),
             // HtmlAttributes on both sources are externally settable (non-nullable) properties, so a
             // caller can still assign null. Coalesce to empty dictionaries so the Concat in
             // MergeHtmlAttributes (and the snapshot copies) never NRE, mirroring BitModalParameters.Merge.
             HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes ?? [], HtmlAttributes ?? []),
-            AbsolutePosition = MergeOn(nameof(AbsolutePosition), AbsolutePosition, p.AbsolutePosition),
-            Dir = BaseHasNotBeenSet(nameof(Dir)) ? (p.Dir ?? Dir) : (Dir ?? p.Dir),
-            AriaLabel = BaseHasNotBeenSet(nameof(AriaLabel)) ? (p.AriaLabel ?? AriaLabel) : (AriaLabel ?? p.AriaLabel),
-            AriaModal = MergeOff(nameof(AriaModal), AriaModal, p.AriaModal),
-            AutoToggleScroll = MergeOn(nameof(AutoToggleScroll), AutoToggleScroll, p.AutoToggleScroll),
-            Blocking = MergeOn(nameof(Blocking), Blocking, p.Blocking),
+            AbsolutePosition = Merge(nameof(AbsolutePosition), On(AbsolutePosition), p.AbsolutePosition),
+            Dir = MergeBase(nameof(Dir), Dir, p.Dir),
+            AriaLabel = MergeBase(nameof(AriaLabel), AriaLabel, p.AriaLabel),
+            AriaModal = Merge(nameof(AriaModal), Off(AriaModal), p.AriaModal),
+            AutoToggleScroll = Merge(nameof(AutoToggleScroll), On(AutoToggleScroll), p.AutoToggleScroll),
+            Blocking = Merge(nameof(Blocking), On(Blocking), p.Blocking),
             Body = Body ?? p.Body,
             // A guard of the Modal's own is asked instead of the one the service was given, the same way a Modal
             // shown through the service is asked its own guard instead of the container-level one.
@@ -1650,49 +1688,47 @@ public partial class BitModal : BitComponentBase
             // Service-level knobs the Modal itself has no say in: carried through the merge so that the
             // effective parameters stay a faithful picture of what the Modal was shown with.
             Classes = p.Classes,
-            CloseButtonTitle = MergeRef(nameof(CloseButtonTitle), CloseButtonTitle, p.CloseButtonTitle),
-            CloseIcon = MergeRef(nameof(CloseIcon), CloseIcon, p.CloseIcon),
-            CloseIconName = MergeRef(nameof(CloseIconName), CloseIconName, p.CloseIconName),
+            CloseButtonTitle = Merge(nameof(CloseButtonTitle), CloseButtonTitle, p.CloseButtonTitle),
+            CloseIcon = Merge(nameof(CloseIcon), CloseIcon, p.CloseIcon),
+            CloseIconName = Merge(nameof(CloseIconName), CloseIconName, p.CloseIconName),
             CloseOnNavigation = p.CloseOnNavigation,
-            DragElementSelector = MergeRef(nameof(DragElementSelector), DragElementSelector, p.DragElementSelector),
-            Draggable = MergeOn(nameof(Draggable), Draggable, p.Draggable),
+            DragElementSelector = Merge(nameof(DragElementSelector), DragElementSelector, p.DragElementSelector),
+            Draggable = Merge(nameof(Draggable), On(Draggable), p.Draggable),
             Footer = Footer ?? p.Footer,
             FooterText = FooterText ?? p.FooterText,
-            FullHeight = MergeOn(nameof(FullHeight), FullHeight, p.FullHeight),
-            FullSize = MergeOn(nameof(FullSize), FullSize, p.FullSize),
-            FullWidth = MergeOn(nameof(FullWidth), FullWidth, p.FullWidth),
+            FullHeight = Merge(nameof(FullHeight), On(FullHeight), p.FullHeight),
+            FullSize = Merge(nameof(FullSize), On(FullSize), p.FullSize),
+            FullWidth = Merge(nameof(FullWidth), On(FullWidth), p.FullWidth),
             Header = Header ?? p.Header,
             HeaderText = HeaderText ?? p.HeaderText,
-            Height = MergeRef(nameof(Height), Height, p.Height),
-            IsAlert = MergeValue(nameof(IsAlert), IsAlert, p.IsAlert),
-            KeepMounted = MergeOn(nameof(KeepMounted), KeepMounted, p.KeepMounted),
-            MaxHeight = MergeRef(nameof(MaxHeight), MaxHeight, p.MaxHeight),
-            MaxWidth = MergeRef(nameof(MaxWidth), MaxWidth, p.MaxWidth),
-            ModeFull = MergeOn(nameof(ModeFull), ModeFull, p.ModeFull),
-            Modeless = MergeOn(nameof(Modeless), Modeless, p.Modeless),
-            NoAutoFocus = MergeOn(nameof(NoAutoFocus), NoAutoFocus, p.NoAutoFocus),
-            NoBorder = MergeOn(nameof(NoBorder), NoBorder, p.NoBorder),
-            NoDismissOnEscape = MergeOn(nameof(NoDismissOnEscape), NoDismissOnEscape, p.NoDismissOnEscape),
-            NoFocusTrap = MergeOn(nameof(NoFocusTrap), NoFocusTrap, p.NoFocusTrap),
-            NoRestoreFocus = MergeOn(nameof(NoRestoreFocus), NoRestoreFocus, p.NoRestoreFocus),
-            NoScrollLock = MergeOn(nameof(NoScrollLock), NoScrollLock, p.NoScrollLock),
+            Height = Merge(nameof(Height), Height, p.Height),
+            IsAlert = Merge(nameof(IsAlert), IsAlert, p.IsAlert),
+            KeepMounted = Merge(nameof(KeepMounted), On(KeepMounted), p.KeepMounted),
+            MaxHeight = Merge(nameof(MaxHeight), MaxHeight, p.MaxHeight),
+            MaxWidth = Merge(nameof(MaxWidth), MaxWidth, p.MaxWidth),
+            ModeFull = Merge(nameof(ModeFull), On(ModeFull), p.ModeFull),
+            Modeless = Merge(nameof(Modeless), On(Modeless), p.Modeless),
+            NoAutoFocus = Merge(nameof(NoAutoFocus), On(NoAutoFocus), p.NoAutoFocus),
+            NoBorder = Merge(nameof(NoBorder), On(NoBorder), p.NoBorder),
+            NoDismissOnEscape = Merge(nameof(NoDismissOnEscape), On(NoDismissOnEscape), p.NoDismissOnEscape),
+            NoFocusTrap = Merge(nameof(NoFocusTrap), On(NoFocusTrap), p.NoFocusTrap),
+            NoRestoreFocus = Merge(nameof(NoRestoreFocus), On(NoRestoreFocus), p.NoRestoreFocus),
+            NoScrollLock = Merge(nameof(NoScrollLock), On(NoScrollLock), p.NoScrollLock),
             OnDismiss = _onDismiss,
             OnEscapeKeyDown = _onEscapeKeyDown,
             OnOpen = _onOpen,
             OnOverlayClick = _onOverlayClick,
-            Position = MergeValue(nameof(Position), Position, p.Position),
+            Position = Merge(nameof(Position), Position, p.Position),
             ScrollerElement = ScrollerElement ?? p.ScrollerElement,
-            ScrollerSelector = MergeRef(nameof(ScrollerSelector), ScrollerSelector, p.ScrollerSelector),
-            ShowCloseButton = MergeOn(nameof(ShowCloseButton), ShowCloseButton, p.ShowCloseButton),
+            ScrollerSelector = Merge(nameof(ScrollerSelector), ScrollerSelector, p.ScrollerSelector),
+            ShowCloseButton = Merge(nameof(ShowCloseButton), On(ShowCloseButton), p.ShowCloseButton),
             Styles = p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
             // Can only force off (default is Visible): own value wins only when it is a meaningful
             // (non-default) override, otherwise the cascaded value is used.
-            Visibility = BaseHasNotBeenSet(nameof(Visibility))
-                ? (p.Visibility ?? (Visibility != BitVisibility.Visible ? Visibility : null))
-                : (Visibility != BitVisibility.Visible ? Visibility : p.Visibility),
-            Width = MergeRef(nameof(Width), Width, p.Width),
+            Visibility = MergeBase(nameof(Visibility), Visibility != BitVisibility.Visible ? Visibility : (BitVisibility?)null, p.Visibility),
+            Width = Merge(nameof(Width), Width, p.Width),
         };
     }
 
@@ -1700,47 +1736,55 @@ public partial class BitModal : BitComponentBase
     // ahead of a value that is on the property only because a BitParams ancestor put it there (or because it is
     // the built-in default) - which is what keeps an app-wide default from overriding what one showing of a
     // service Modal asked for. Without a BitParams ancestor the result is the plain "own, else cascaded" merge.
+    // The one rule is Pick; the two below only say whose record of "given explicitly" it reads.
 
-    private T? MergeRef<T>(string name, T? own, T? cascaded) where T : class
+    private T Merge<T>(string name, T own, T cascaded) => Pick(HasNotBeenSet(name), own, cascaded);
+
+    // For a parameter declared on the base component, which the generated HasNotBeenSet of this one does not track
+    // (see BaseHasNotBeenSet).
+    private T MergeBase<T>(string name, T own, T cascaded) => Pick(BaseHasNotBeenSet(name), own, cascaded);
+
+    // A null says nothing on either side, so it never masks the other one's value.
+    private static T Pick<T>(bool ownNotGiven, T own, T cascaded)
     {
-        return HasNotBeenSet(name) ? (cascaded ?? own) : (own ?? cascaded);
+        return ownNotGiven ? (cascaded is null ? own : cascaded) : (own is null ? cascaded : own);
     }
 
-    private T? MergeValue<T>(string name, T? own, T? cascaded) where T : struct
-    {
-        return HasNotBeenSet(name) ? (cascaded ?? own) : (own ?? cascaded);
-    }
+    // What a non-nullable flag has to say to the merge. One the own parameter can only force on says nothing when
+    // it is false, so it never masks the cascaded value; one it can only force off (its default is true) says
+    // nothing when it is true.
+    private static bool? On(bool own) => own ? true : null;
 
-    // A flag the own parameter can only force on: false says nothing, so it never masks the cascaded value.
-    private bool? MergeOn(string name, bool own, bool? cascaded)
-    {
-        if (HasNotBeenSet(name)) return cascaded ?? (own ? true : null);
-
-        return own ? true : cascaded;
-    }
-
-    // A flag the own parameter can only force off (its default is true): true says nothing.
-    private bool? MergeOff(string name, bool own, bool? cascaded)
-    {
-        if (HasNotBeenSet(name)) return cascaded ?? (own ? null : false);
-
-        return own ? cascaded : false;
-    }
-
-    // The same as MergeOff for a parameter declared on the base component, which the generated HasNotBeenSet of
-    // this one does not track (see BaseHasNotBeenSet).
-    private bool? MergeBaseOff(string name, bool own, bool? cascaded)
-    {
-        if (BaseHasNotBeenSet(name)) return cascaded ?? (own ? null : false);
-
-        return own ? cascaded : false;
-    }
+    private static bool? Off(bool own) => own ? null : false;
 
     // The parameters declared on BitComponentBase (Dir, AriaLabel, IsEnabled, Visibility) are tracked by the base
     // component: the HasNotBeenSet generated for this one hides that method and only knows its own parameters, so
     // it reports every base parameter as not set - which would let a value a BitParams ancestor put on one of them
     // be mistaken for a value the Modal was given explicitly, or the other way round.
     private bool BaseHasNotBeenSet(string name) => ((BitComponentBase)this).HasNotBeenSet(name);
+
+    // The base component marks the root disabled, right-to-left and hidden off its own IsEnabled, Dir and
+    // Visibility, which never see what the service asks for - and a BitParams default written on them would leave
+    // its mark on a Modal whose showing asked for the opposite. So those three are made to hold the merged values
+    // (ApplyEffectiveBaseParameters), and the ones the Modal was not given are first put back to what they hold
+    // when not given, for the merge to read what the Modal was given rather than what it was rendered with last:
+    // the ones it was given, its parent has just set again.
+    private void ResetUnsetBaseParameters()
+    {
+        if (BaseHasNotBeenSet(nameof(IsEnabled))) IsEnabled = true;
+
+        // Null leaves the direction to the one cascaded from an ancestor.
+        if (BaseHasNotBeenSet(nameof(Dir))) Dir = null;
+
+        if (BaseHasNotBeenSet(nameof(Visibility))) Visibility = BitVisibility.Visible;
+    }
+
+    private void ApplyEffectiveBaseParameters()
+    {
+        IsEnabled = _params.IsEnabled ?? true;
+        Dir = _params.Dir;
+        Visibility = EffectiveVisibility;
+    }
 
     /// <summary>
     /// Merges the cascaded and own HtmlAttributes (own values win), reusing the previous result when
@@ -1789,12 +1833,16 @@ public partial class BitModal : BitComponentBase
         // A Modal disposed while it is still open never reaches its close, so the registrations it made on
         // the JS side - the focus trap, the hold on the page behind it, the gestures it was handing to the
         // page, the drag handlers, the overflow it took off its scroller - are taken back here instead, and
-        // the focus is handed back here too. This is the only close a Modal shown through the service ever
-        // gets: its container takes it out of the page rather than rendering it closed, so it is disposed
-        // before its own close can run, and dropping the stored focus here left every keyboard user who
-        // closed one standing on the body instead of back on whatever opened it.
-        if (_focusTrapped || _focusStored || _scrollLocked || _scrollForwarded || _dragSetup || _scrollToggledOnOpen)
+        // the focus is handed back here too. That is the case of a Modal whose container goes away with it
+        // still open, of one inside a page the app navigated away from, and of one shown through the service
+        // by a container that does not hand it a BitModalExit (one a consumer wrote), which takes it out of the
+        // page instead of rendering it closed - dropping the stored focus here would leave every keyboard user
+        // who closed one standing on the body instead of back on whatever opened it. The built-in container
+        // renders a closed service Modal closed and waits for it to report its exit (BitModalExit), so that one
+        // gets the close sequence every other Modal gets and arrives here with nothing left to take back.
+        if (_escapeWatched || _focusTrapped || _focusStored || _scrollLocked || _scrollForwarded || _dragSetup || _scrollToggledOnOpen)
         {
+            var watched = _escapeWatched;
             var trapped = _focusTrapped;
             var stored = _focusStored;
             var locked = _scrollLocked;
@@ -1802,6 +1850,7 @@ public partial class BitModal : BitComponentBase
             var dragged = _dragSetup;
             var toggled = _scrollToggledOnOpen;
             var dragSelector = _dragElementSelectorOnSetup ?? _dragElementSelector;
+            _escapeWatched = false;
             _focusTrapped = false;
             _focusStored = false;
             _scrollLocked = false;
@@ -1811,6 +1860,11 @@ public partial class BitModal : BitComponentBase
 
             try
             {
+                if (watched)
+                {
+                    await _js.BitUtilsUnwatchEscape(_Id);
+                }
+
                 if (trapped)
                 {
                     await _js.BitUtilsDisposeFocusTrap(_containerId);
@@ -1853,6 +1907,8 @@ public partial class BitModal : BitComponentBase
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
+
+        _dotnetObj?.Dispose();
 
         await base.DisposeAsync(disposing);
     }

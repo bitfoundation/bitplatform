@@ -166,7 +166,8 @@ public class BitModalStylesheetTests
         // unless the Modal was asked to animate regardless.
         StringAssert.Contains(reduced, "animation-name: bit-mdl-refuse-ring-a;");
         StringAssert.Contains(reduced, "animation-name: bit-mdl-refuse-ring-b;");
-        StringAssert.Contains(reduced, "var(--bit-mot-duration-long-full, 300ms)");
+        StringAssert.Contains(reduced, "var(--bit-mot-duration-long-full, #{$mot-duration-long})");
+        Assert.IsFalse(Regex.IsMatch(reduced, @"\d+m?s\b"), "The ring hard-codes a duration instead of reading the motion token.");
         StringAssert.Contains(reduced, ":not(.bit-fam *)");
     }
 

@@ -29,18 +29,30 @@ public class BitModalAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitModalShouldBeNamedByAHeaderTemplateWithoutCallingItAHeading()
+    public void BitModalShouldNotBeNamedByTheWholeOfAHeaderTemplate()
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.Header, (RenderFragment)(b => b.AddContent(0, "Search the docs")));
+            parameters.Add(p => p.Header, (RenderFragment)(b =>
+            {
+                b.AddMarkupContent(0, "<span id=\"docs-title\">Search the docs</span>");
+                b.AddMarkupContent(1, "<input placeholder=\"Search here...\" />");
+            }));
         });
 
-        var title = com.Find(".bit-mdl-hdr");
+        var header = com.Find(".bit-mdl-hdr");
 
-        Assert.AreEqual(title.Id, com.Find(".bit-mdl-ctn").GetAttribute("aria-labelledby"));
-        Assert.IsNull(title.GetAttribute("role"));
+        // Everything the template holds - the search box beside the title too - would otherwise be the name, so the
+        // template is neither pointed at nor called a heading.
+        Assert.IsNull(com.Find(".bit-mdl-ctn").GetAttribute("aria-labelledby"));
+        Assert.IsTrue(string.IsNullOrEmpty(header.Id));
+        Assert.IsNull(header.GetAttribute("role"));
+
+        // It names the Modal through the title it points TitleAriaId at.
+        com.Render(parameters => parameters.Add(p => p.TitleAriaId, "docs-title"));
+
+        Assert.AreEqual("docs-title", com.Find(".bit-mdl-ctn").GetAttribute("aria-labelledby"));
     }
 
     [TestMethod]
@@ -128,7 +140,7 @@ public class BitModalAccessibilityTests : BunitTestContext
 
         com.Find(".bit-mdl-cls").Click();
         com.Find(".bit-mdl-ovl").Click();
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         // Every way the user dismisses the Modal is put to the guard, none of them closes it, and the refusal is
         // answered with the pulse rather than with nothing.
@@ -178,7 +190,7 @@ public class BitModalAccessibilityTests : BunitTestContext
         // rather than putting the same question to the user again.
         com.Find(".bit-mdl-cls").Click();
         com.Find(".bit-mdl-ovl").Click();
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.AreEqual(1, asked);
         Assert.IsTrue(isOpen);
@@ -220,10 +232,6 @@ public class BitModalAccessibilityTests : BunitTestContext
     [TestMethod]
     public void BitModalShouldLeaveAnEscapeClaimedInsideItToThatLayer()
     {
-        // The script reports the press as claimed: a dropdown opened from inside the Modal closed its popup with it,
-        // or an input method used it to cancel what it was composing.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isEscapeClaimed", _ => true).SetResult(true);
-
         var escapes = 0;
         var isOpen = true;
 
@@ -233,21 +241,56 @@ public class BitModalAccessibilityTests : BunitTestContext
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
         });
 
+        // A press a layer inside the Modal answered first - a dropdown opened from inside it closed its popup with
+        // it, an input method used it to cancel what it was composing - reaches the Modal's handler, and the script
+        // does not forward it (Utils.watchEscape).
         com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        // One press closes one layer: the Modal stays open, is not told about the key, and does not pulse either.
+        // One press closes one layer: the Modal is told about the key, as it is about every Escape, but it stays
+        // open and does not pulse either.
+        Assert.AreEqual(1, escapes);
         Assert.IsTrue(isOpen);
-        Assert.AreEqual(0, escapes);
         Assert.AreEqual(1, com.FindAll(".bit-mdl-ctn").Count);
         Assert.IsFalse(com.Find(".bit-mdl-ctn").ClassList.Contains("bit-mdl-bna"));
     }
 
     [TestMethod]
-    public void BitModalShouldWatchTheEscapePressesFromItsRoot()
+    public async Task BitModalShouldWatchTheEscapePressesFromItsRootWhileItIsOpen()
     {
-        var com = RenderComponent<BitModal>(parameters => parameters.Add(p => p.IsOpen, true));
+        var com = RenderComponent<BitModal>(parameters => parameters.Add(p => p.DefaultIsOpen, true));
 
         com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscape"].Count));
+
+        var rootId = com.Find(".bit-mdl").Id;
+        Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscape"][0].Arguments[0]);
+
+        // Part of the watch is on the window, so it is taken back with the close rather than left to the element.
+        await com.InvokeAsync(() => com.Instance.Close());
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscape"].Count));
+        Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscape"][0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitModalShouldIgnoreAForwardedEscapeOnceItIsClosed()
+    {
+        var dismissed = 0;
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsOpen, true);
+            parameters.Add(p => p.KeepMounted, true);
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++));
+        });
+
+        await com.InvokeAsync(() => com.Instance.Close());
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, dismissed));
+
+        // A press the script forwarded just before the Modal closed arrives after it: there is nothing left to dismiss.
+        await com.ForwardEscape();
+
+        Assert.AreEqual(1, dismissed);
     }
 
     [TestMethod]

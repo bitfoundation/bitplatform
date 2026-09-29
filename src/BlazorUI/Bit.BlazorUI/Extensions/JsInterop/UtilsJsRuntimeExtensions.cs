@@ -124,11 +124,18 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    // Records, for each Escape that reaches the element, whether something inside it had the better claim to
-    // the key - an open dropdown or menu opened from inside it, an input method composing; see Utils.watchEscape.
-    internal static ValueTask BitUtilsWatchEscape(this IJSRuntime jsRuntime, ElementReference element)
+    // Calls OnEscape for each Escape pressed inside the element that nothing inside it had the better claim to -
+    // an open dropdown or menu opened from inside it, an input method composing, a control that prevented the
+    // key's default; see Utils.watchEscape.
+    internal static ValueTask BitUtilsWatchEscape<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.watchEscape", element);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.watchEscape", elementId, dotnetObj);
+    }
+
+    internal static ValueTask BitUtilsUnwatchEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.unwatchEscape", elementId);
     }
 
 
@@ -137,12 +144,6 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsWaitForAnimations(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.waitForAnimations", elementId);
-    }
-
-
-    internal static ValueTask<bool> BitUtilsIsEscapeClaimed(this IJSRuntime jsRuntime, ElementReference element)
-    {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isEscapeClaimed", element);
     }
 
 

@@ -148,7 +148,7 @@ public partial class BitModalDemo
             Name = "Header",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The template of the header section. Takes precedence over HeaderText, and names the dialog unless TitleAriaId or AriaLabel is set.",
+            Description = "The template of the header section. Takes precedence over HeaderText. It does not name the dialog by itself: point TitleAriaId at the title inside it.",
         },
         new()
         {

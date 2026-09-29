@@ -215,7 +215,7 @@
 @media (prefers-reduced-motion: reduce) {
     .bit-mdl-bna:not(.bit-fam *),
     .bit-mdl-bnb:not(.bit-fam *) {
-        animation-duration: var(--bit-mot-duration-long-full, 300ms);
+        animation-duration: var(--bit-mot-duration-long-full, #{$mot-duration-long});
         animation-timing-function: steps(1, end);
     }
 

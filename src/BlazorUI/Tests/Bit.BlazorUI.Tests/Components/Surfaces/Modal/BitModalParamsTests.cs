@@ -179,6 +179,66 @@ public class BitModalParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalShouldNotKeepTheMarksOfACascadedBaseDefaultItsShowingOverrode()
+    {
+        Services.AddSingleton<BitModalService>();
+
+        var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitModalParams.ParamName);
+            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, IsEnabled = false, Visibility = BitVisibility.Hidden });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitModalContainer>(0);
+                builder.CloseComponent();
+            }));
+        });
+
+        var modalService = Services.GetRequiredService<BitModalService>();
+
+        await modalService.Show(builder => builder.AddContent(0, "shown"), new BitModalParameters
+        {
+            Dir = BitDir.Ltr,
+            IsEnabled = true,
+            Visibility = BitVisibility.Visible,
+        });
+
+        // The base component marks the root off its own IsEnabled, Dir and Visibility, which the app-wide default was
+        // written on: none of those marks may be left on a Modal whose showing asked for the opposite - an invisible
+        // Modal that still holds the keyboard and the page, first of all.
+        component.WaitForAssertion(() =>
+        {
+            var root = component.Find(".bit-mdl");
+            Assert.AreEqual("ltr", root.GetAttribute("dir"));
+            Assert.IsFalse(root.ClassList.Contains("bit-rtl"));
+            Assert.IsFalse(root.ClassList.Contains("bit-dis"));
+            Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("visibility:hidden"));
+        });
+    }
+
+    [TestMethod]
+    public void BitModalShouldMarkItsRootOffTheCascadedBaseDefaults()
+    {
+        var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitModalParams.ParamName);
+            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, IsEnabled = false, Visibility = BitVisibility.Hidden });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitModal>(0);
+                builder.AddComponentParameter(1, nameof(BitModal.IsOpen), true);
+                builder.CloseComponent();
+            }));
+        });
+
+        // With nothing to override them, the defaults mark the root once each.
+        var root = component.Find(".bit-mdl");
+        Assert.AreEqual(1, root.ClassList.Count(c => c == "bit-rtl"));
+        Assert.AreEqual(1, root.ClassList.Count(c => c == "bit-dis"));
+        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+    }
+
+    [TestMethod]
     public void BitModalShouldTakeCascadedBaseDefaultsItDidNotSetItself()
     {
         var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>

@@ -402,8 +402,7 @@ private bool isOpenModeless;";
         <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.BottomRight)"">Bottom Right</BitButton>
     </div>
 </div>
-<BitModal @bind-IsOpen=""isOpenPosition"" Position=""position"" ShowCloseButton MaxWidth=""24rem"">
-    <Header>Position: @position</Header>
+<BitModal @bind-IsOpen=""isOpenPosition"" Position=""position"" ShowCloseButton MaxWidth=""24rem"" HeaderText=""@($""Position: {position}"")"">
     <Body>
         <BitText>This Modal is placed by the Position parameter.</BitText>
     </Body>
