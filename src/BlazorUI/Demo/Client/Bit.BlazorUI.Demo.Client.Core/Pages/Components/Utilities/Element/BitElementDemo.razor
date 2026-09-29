@@ -5,48 +5,31 @@
             Description="Renders any HTML tag - an anchor, a button, an input, an SVG shape or a custom element - with the styling, attribute, direction and state parameters of the bit BlazorUI." />
 
 <DemoPage Name="Element"
-          Description="BitElement renders whatever HTML tag the Element parameter names - a div by default, but just as easily an anchor, a button, an input, an SVG shape or a custom element - while still accepting the styling, direction and state parameters every other component of the library offers. Everything that is not a parameter is splatted onto that tag, so attributes and event handlers land on whichever element is rendered, and the class and style it builds are merged with the ones written as plain HTML attributes. The tag then decides the rest: a void element holds no content, a disabled element is disabled the way its own tag allows, and NoWrapper drops the tag altogether and leaves only the content behind. On top of that it reaches what Razor offers on a plain element and not on a component: the stopPropagation and preventDefault modifiers of the click and of any other event."
+          Description="BitElement renders whatever tag the Element parameter names - a div by default, or an anchor, a button, an input, an SVG shape, a custom element - with the parameters every bit BlazorUI component takes. Anything that is not a parameter is splatted onto the tag, void elements hold no content, disabling follows what the tag supports, NoWrapper drops the tag and keeps the content, and the stopPropagation / preventDefault modifiers Razor only allows on plain elements are parameters here."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
           GitHubUrl="Utilities/Element/BitElement.cs"
           GitHubDemoUrl="Utilities/Element/BitElementDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div class="example-desc">
-            An element with no parameters is a plain <code>div</code>: it carries the <code>bit-elm</code> class, an
-            automatically generated <code>id</code> and whatever content is put inside it. That is the whole of the
-            component with nothing configured, and every other example only changes which tag that content ends up in.
+            With no parameters the element is a <code>div</code>. <b>Element</b> names any other tag and is used as
+            written. A value that is not a valid tag name (whitespace, a <code>&lt;</code>, other symbols) falls back to
+            the <code>div</code> instead of reaching the markup.
         </div>
         <div class="example-content">
-            <BitElement>This is the default element (a div).</BitElement>
-        </div>
-    </DemoExample>
-    <DemoExample Title="Element" RazorCode="@example2RazorCode" Id="example2">
-        <div class="example-desc">
-            <b>Element</b> names the tag to render, and the value is used exactly as written, since SVG tag names such as
-            <code>linearGradient</code> are case sensitive. What is accepted is a name a tag can be made of: an ASCII
-            letter, followed by letters, digits and the <code>-</code>, <code>_</code>, <code>.</code> and <code>:</code>
-            that join them in every markup language that has tag names. Anything else falls back to the default
-            <code>div</code> rather than reaching the markup - a whitespace or a <code>&lt;</code> would end the tag and
-            write markup of its own, and the remaining symbols are names the browsers do not agree to build an element
-            of, so one of them would throw where the element is created. Changing the tag between renders replaces the
-            rendered element with a new one.
-        </div>
-        <div class="example-content">
+            <BitElement>The default element (div)</BitElement>
             <BitElement Element="h4">A heading (h4)</BitElement>
-            <BitElement Element="p">A paragraph (p) with a <BitElement Element="mark">highlighted (mark)</BitElement> word in it.</BitElement>
+            <BitElement Element="p">A paragraph (p) with a <BitElement Element="mark">highlighted (mark)</BitElement> word.</BitElement>
             <BitElement Element="blockquote">A quotation (blockquote)</BitElement>
-            <BitElement Element="code">A code span (code)</BitElement>
-            <BitElement Element="not a tag name">A tag name carrying whitespace falls back to a div.</BitElement>
-            <BitElement Element="h4!">And so does one carrying a symbol no tag name is made of.</BitElement>
+            <BitElement Element="not a tag name">An invalid tag name falls back to a div.</BitElement>
         </div>
     </DemoExample>
-    <DemoExample Title="SVG & custom elements" RazorCode="@example3RazorCode" Id="example3">
+
+    <DemoExample Title="SVG & custom elements" RazorCode="@example2RazorCode" Id="example2">
         <div class="example-desc">
-            The tag does not have to be an HTML one. An SVG shape works because the browser reads the namespace from the
-            <code>svg</code> the element is rendered into, and the case of the tag name is kept, which is what
-            <code>linearGradient</code>, <code>clipPath</code> and <code>feGaussianBlur</code> need. A custom element -
-            any name with a dash in it - is passed through untouched, so a web component is reachable from Razor with the
-            same parameters as everything else.
+            The tag's case is kept, so case-sensitive SVG names (<code>linearGradient</code>, <code>clipPath</code>) work
+            inside an <code>svg</code>. A custom element (any name with a dash) passes through untouched.
         </div>
         <div class="example-content">
             <BitElement Element="svg" width="160" height="48" viewBox="0 0 160 48" role="img" AriaLabel="A gradient bar">
@@ -61,51 +44,40 @@
             <BitElement Element="demo-badge">A custom element (demo-badge)</BitElement>
         </div>
     </DemoExample>
-    <DemoExample Title="Void elements" RazorCode="@example4RazorCode" Id="example4">
+
+    <DemoExample Title="Void elements" RazorCode="@example3RazorCode" Id="example3">
         <div class="example-desc">
-            HTML defines a handful of <b>void</b> elements - <code>area</code>, <code>base</code>, <code>br</code>,
-            <code>col</code>, <code>embed</code>, <code>hr</code>, <code>img</code>, <code>input</code>, <code>link</code>,
-            <code>meta</code>, <code>param</code>, <code>source</code>, <code>track</code> and <code>wbr</code>, plus the
-            obsolete <code>basefont</code>, <code>bgsound</code>, <code>frame</code> and <code>keygen</code> the HTML
-            parser still treats as such - which hold no content at all. The component knows them, so it renders them
-            without a closing tag and leaves the <b>ChildContent</b> out rather than emitting markup a browser would have
-            to repair.
+            Void elements (<code>input</code>, <code>img</code>, <code>hr</code>, <code>br</code>, ...) render without a
+            closing tag, and their <b>ChildContent</b> is left out rather than emitted as invalid markup.
         </div>
         <div class="example-content">
-            <BitElement Element="input" placeholder="An input" />
+            <BitElement Element="input" placeholder="An input" AriaLabel="An input" />
             <BitElement Element="hr" />
             <BitElement Element="img" src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" alt="bit logo" width="64" />
-            <BitElement Element="br">This content is not rendered, because a br holds none.</BitElement>
+            <BitElement Element="br">Not rendered: a br holds no content.</BitElement>
         </div>
     </DemoExample>
-    <DemoExample Title="Attributes & events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+
+    <DemoExample Title="Attributes & events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div class="example-desc">
-            Anything that is not a parameter of the component is splatted onto the rendered tag, which is what makes the
-            element useful in the first place: <code>href</code> and <code>target</code> on an anchor, <code>placeholder</code>
-            on an input, a <code>data-*</code> attribute anywhere, and the Blazor event handlers (<code>@@onclick</code>,
-            <code>@@oninput</code>, ...) that go with them. Nothing about them is tag-specific, so the same markup keeps
-            working when the tag changes.
+            Anything that is not a parameter - <code>href</code>, <code>placeholder</code>, <code>role</code>,
+            <code>aria-*</code>, <code>data-*</code>, <code>@@onclick</code>, <code>@@oninput</code>, ... - is splatted
+            onto the rendered tag.
         </div>
         <div class="example-content">
             <BitElement Element="a" href="https://bitplatform.dev/" target="_blank" rel="noopener">An anchor to bitplatform.dev</BitElement>
             <BitElement Element="button" data-demo="counter" @onclick="() => counter++">Clicked @counter times</BitElement>
-            <BitElement Element="input" placeholder="Type something" @oninput="e => typed = e.Value?.ToString()" />
-            <BitElement>You typed: @typed</BitElement>
+            <BitElement Element="input" placeholder="Type something" aria-describedby="typed-output" @oninput="e => typed = e.Value?.ToString()" />
+            <BitElement id="typed-output" role="status">You typed: @typed</BitElement>
         </div>
     </DemoExample>
-    <DemoExample Title="Event modifiers" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+
+    <DemoExample Title="Event modifiers" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div class="example-desc">
-            Razor only accepts the <code>@@onclick:stopPropagation</code> and <code>@@onclick:preventDefault</code>
-            directives on a plain HTML element, never on a component, so the element offers them as parameters instead.
-            <b>StopPropagation</b> keeps a click inside a clickable container from also reaching that container, and
-            <b>PreventDefault</b> cancels the browser's own action - the navigation of an anchor, the submit of a button -
-            while the click handler still runs. <b>StopPropagationEvents</b> and <b>PreventDefaultEvents</b> are the same
-            two modifiers for every other event, named with or without the <code>on</code> prefix: the
-            <code>contextmenu</code> a custom menu replaces, the <code>dragover</code> of a drop target, the
-            <code>submit</code> of a form, a <code>keydown</code> the page handles itself. A name in either list is a
-            modifier of the element rather than a handler of the event, so it applies whether or not a handler of that
-            event is written beside it - and naming the <code>click</code> in a list is allowed too, where it has the
-            last word over the parameter of the same name beside it.
+            Razor only allows <code>:stopPropagation</code> and <code>:preventDefault</code> on plain elements, so they
+            are parameters here. <b>StopPropagation</b> and <b>PreventDefault</b> apply to the click;
+            <b>StopPropagationEvents</b> and <b>PreventDefaultEvents</b> take any other event names (with or without
+            the <code>on</code> prefix) and apply whether or not a handler is attached.
         </div>
         <div class="example-content">
             <div class="demo-card" @onclick="() => card++">
@@ -119,70 +91,23 @@
             <div class="demo-card" @ondblclick="() => doubled++">
                 The card was double-clicked @doubled times.
                 <BitElement class="demo-boxed"
-                            StopPropagationEvents="@(new[] { "dblclick" })"
-                            PreventDefaultEvents="@(new[] { "contextmenu" })"
+                            StopPropagationEvents="@(["dblclick"])"
+                            PreventDefaultEvents="@(["contextmenu"])"
                             @ondblclick="() => inner++"
                             @oncontextmenu="() => inner++">
-                    Double-click keeps the card out of it, right-click opens no browser menu (@inner)
+                    Double-click stays here, right-click opens no browser menu (@inner)
                 </BitElement>
             </div>
         </div>
     </DemoExample>
-    <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+
+    <DemoExample Title="Dynamic element" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div class="example-desc">
-            <b>IsEnabled</b> set to false dims the element and takes it out of hit testing through the <code>bit-dis</code>
-            class, so the state means the same thing whichever tag is rendered. On top of that it writes the
-            <code>disabled</code> attribute only on the elements HTML defines one on (<code>button</code>,
-            <code>fieldset</code>, <code>input</code>, <code>optgroup</code>, <code>option</code>, <code>select</code> and
-            <code>textarea</code>), and on every other tag a <code>tabindex</code> of -1 instead, so that a tag the browser
-            will not disable of itself is at least out of the keyboard's reach as well as the pointer's.
-            <code>aria-disabled</code> goes on all of them, so assistive technologies announce the element as disabled
-            rather than as missing. A disabled hyperlink - an <code>a</code> or an image map's <code>area</code> - also
-            loses its <code>href</code>, since a link is focusable and followed by the enter key whatever the tab order
-            says. The state describes the element itself: content inside it keeps its own tab stops.
+            The tag can change at runtime; the element is then rebuilt. Splatted attributes follow it, and each tag uses
+            only the ones it understands.
         </div>
         <div class="example-content">
-            <BitElement Element="button" IsEnabled="false" @onclick="() => counter++">A disabled button</BitElement>
-            <BitElement Element="input" IsEnabled="false" placeholder="A disabled input" />
-            <BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="false">A disabled anchor</BitElement>
-        </div>
-    </DemoExample>
-    <DemoExample Title="Visibility" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div class="example-desc">
-            <b>Visibility</b> hides the element in the two ways CSS offers: <b>Hidden</b> keeps the space it occupies and
-            <b>Collapsed</b> takes the element out of the layout altogether. Collapsed is the one state that still means
-            something without an element to carry it, so it applies to an unwrapped element too - there it renders nothing
-            at all, not even the content.
-        </div>
-        <div class="example-content">
-            <BitToggle @bind-Value="isVisible" Text="Visible" />
-            <BitElement class="demo-boxed" Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Hidden)">Hidden keeps its space.</BitElement>
-            <BitElement class="demo-boxed" Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Collapsed)">Collapsed takes its space with it.</BitElement>
-            <BitElement NoWrapper Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Collapsed)">Even unwrapped content is dropped while collapsed.</BitElement>
-        </div>
-    </DemoExample>
-    <DemoExample Title="No wrapper" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div class="example-desc">
-            <b>NoWrapper</b> renders the content and nothing else, which is the conditional wrapper: the same markup either
-            wraps its content in a tag or leaves it untouched, without writing the content twice in the two branches of an
-            <code>if</code>. Since no element is rendered, everything that describes one - the tag, the class, the style,
-            the id, the direction, the splatted attributes and the captured element reference - has nowhere to land and is
-            ignored.
-        </div>
-        <div class="example-content">
-            <BitToggle @bind-Value="wrapped" Text="Wrap the content" />
-            <BitElement Element="mark" NoWrapper="@(wrapped is false)">The same content, highlighted or bare.</BitElement>
-        </div>
-    </DemoExample>
-    <DemoExample Title="Dynamic element" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <div class="example-desc">
-            The tag is an ordinary parameter, so it can come from a variable and change while the page is running. The
-            attributes below are splatted onto whichever tag is picked and only the ones that tag understands have any
-            effect - <code>href</code> on the anchor, <code>placeholder</code> on the input and the textarea - which is
-            what lets one piece of markup serve every one of them.
-        </div>
-        <div class="example-content">
-            <BitDropdown Label="Elements" Items="elementsList" @bind-Value="element" Style="width: 8rem;" />
+            <BitDropdown Label="Element" Items="elementsList" @bind-Value="element" Style="width: 8rem;" />
             <BitElement Element="@element"
                         placeholder="@element"
                         target="_blank"
@@ -191,41 +116,109 @@
             </BitElement>
         </div>
     </DemoExample>
-    <DemoExample Title="Element reference" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+
+    <DemoExample Title="No wrapper" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div class="example-desc">
-            An <code>@@ref</code> on the component reaches the rendered element: <b>FocusAsync</b> gives it the browser
-            focus, and <b>RootElement</b> is the <code>ElementReference</code> to hand to JavaScript interop. The
-            element has to be one the browser can focus - a tag that is focusable of itself, or any other tag carrying a
-            <b>TabIndex</b>, which is what puts the <code>div</code> below into the tab order. The overload of
-            <b>FocusAsync</b> taking a <code>preventScroll</code> flag focuses without the browser scrolling the
-            document to bring the element into view. Both are about an element that is there, so while <b>NoWrapper</b>
-            is set, or before the first render, the call does nothing rather than fail.
+            <b>NoWrapper</b> renders the content alone, making the element a conditional wrapper. With no tag to land
+            on, the class, style, id, attributes and element reference are ignored.
         </div>
         <div class="example-content">
-            <BitElement Element="input" @ref="inputElement" placeholder="Focused by the button" />
+            <BitToggle @bind-Value="wrapped" Text="Wrap the content" />
+            <BitElement Element="mark" NoWrapper="@(wrapped is false)">The same content, highlighted or bare.</BitElement>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Element reference" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div class="example-desc">
+            <b>RootElement</b> is the rendered element's <code>ElementReference</code> for JS interop, and
+            <b>FocusAsync</b> focuses it - optionally without scrolling. A non-focusable tag needs a <b>TabIndex</b>.
+            Both are no-ops while <b>NoWrapper</b> is set or before the first render.
+        </div>
+        <div class="example-content">
+            <BitElement Element="input" @ref="inputElement" placeholder="Focused by the button" AriaLabel="Focus target" />
             <BitElement class="demo-boxed" TabIndex="0" @ref="boxElement">A div, focusable because it has a TabIndex.</BitElement>
             <BitButton OnClick="FocusTheInput">Focus the input</BitButton>
             <BitButton OnClick="FocusTheBox">Focus the div without scrolling</BitButton>
         </div>
     </DemoExample>
+
+    <DemoExample Title="Disabled" RazorCode="@example9RazorCode" Id="example9">
+        <div class="example-desc">
+            <b>IsEnabled="false"</b> dims the element and blocks the pointer on any tag, and sets <code>aria-disabled</code>.
+            Form elements also get the native <code>disabled</code>; other tags get <code>tabindex="-1"</code>. A disabled
+            anchor loses its <code>href</code> and keeps <code>role="link"</code>, so it is still announced as a
+            (disabled) link. Screen readers only announce <code>aria-disabled</code> on an element with a role, so give
+            a generic tag one. Content inside keeps its own tab stops.
+        </div>
+        <div class="example-content">
+            <BitElement Element="button" IsEnabled="false">A disabled button</BitElement>
+            <BitElement Element="input" IsEnabled="false" placeholder="A disabled input" AriaLabel="A disabled input" />
+            <BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="false">A disabled anchor</BitElement>
+            <BitElement class="demo-boxed" TabIndex="0" role="group" IsEnabled="false">A disabled div, out of the tab order</BitElement>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Visibility" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div class="example-desc">
+            <b>Hidden</b> keeps the element's space, <b>Collapsed</b> removes it from the layout. Collapsed also drops
+            the content of a <b>NoWrapper</b> element.
+        </div>
+        <div class="example-content">
+            <BitToggle @bind-Value="isVisible" Text="Visible" />
+            <BitElement class="demo-boxed" Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Hidden)">Hidden keeps its space.</BitElement>
+            <BitElement class="demo-boxed" Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Collapsed)">Collapsed takes its space with it.</BitElement>
+            <BitElement NoWrapper Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Collapsed)">Unwrapped content is dropped while collapsed.</BitElement>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div class="example-desc">
+            <b>BitParams</b> hands a <b>BitElementParams</b> to every element below it as defaults, not overrides: an
+            element that sets a parameter itself keeps its own value. Here every item of the toolbar becomes a
+            <code>button</code> that keeps its clicks from the card, except the last one.
+        </div>
+        <div class="example-content">
+            <div class="demo-card" @onclick="() => toolbarCard++">
+                The card was clicked @toolbarCard times.
+                <BitParams Parameters="@elementParams">
+                    <BitElement @onclick="() => toolbar++">Edit (@toolbar)</BitElement>
+                    <BitElement @onclick="() => toolbar++">Share (@toolbar)</BitElement>
+                    <BitElement StopPropagation="false" @onclick="() => toolbar++">Bubbles up (@toolbar)</BitElement>
+                </BitParams>
+            </div>
+            <BitElement>Outside the cascade: a plain div again.</BitElement>
+        </div>
+    </DemoExample>
+
     <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div class="example-desc">
-            <b>Style</b> and <b>Class</b> apply to the rendered element like they do on every other component of the
-            library. They are merged with a <code>style</code> or a <code>class</code> written as a plain HTML attribute
-            rather than replacing it, so an element can take a class from a parameter and another one from splatted
-            attributes at the same time and keep both.
+            <b>Style</b> and <b>Class</b> are merged with a plain <code>style</code> or <code>class</code> attribute
+            instead of replacing it.
         </div>
         <div class="example-content">
             <BitElement Style="color: tomato; font-weight: bold;">Styled through the Style parameter</BitElement>
             <BitElement Class="demo-boxed">Classed through the Class parameter</BitElement>
-            <BitElement Class="demo-boxed" style="color: mediumseagreen;">Both a Class parameter and a splatted style</BitElement>
+            <BitElement Class="demo-boxed" style="color: mediumseagreen;">A Class parameter and a plain style attribute</BitElement>
+        </div>
+        <br />
+        <div class="example-desc">
+            The <BitLink Href="#css-variables-section">CSS variables</BitLink> inherit, so they can be set on
+            <code>:root</code>, on an ancestor, or on the <b>Style</b> of one element.
+        </div>
+        <div class="example-content">
+            <BitElement Element="button" IsEnabled="false" Style="--bit-Element-disabled-opacity: 0.2;">Disabled, dimmed further</BitElement>
+            <div style="--bit-Element-disabled-opacity: 1;">
+                <BitElement Element="fieldset" IsEnabled="false">
+                    <BitElement Element="legend">A disabled fieldset, not dimmed</BitElement>
+                    <BitElement Element="input" placeholder="Its input shows its own disabled look" AriaLabel="Fieldset input" />
+                </BitElement>
+            </div>
         </div>
     </DemoExample>
+
     <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div class="example-desc">
-            <b>Dir</b> sets the text direction of the rendered element, writing the <code>dir</code> attribute and, for
-            right-to-left, the <code>bit-rtl</code> class the rest of the library reads. It applies to whichever tag is
-            rendered and cascades to everything inside it.
+            <b>Dir</b> writes the <code>dir</code> attribute (and the <code>bit-rtl</code> class) on any tag.
         </div>
         <div dir="rtl" class="example-content">
             <BitElement Dir="BitDir.Rtl">این یک المنت راست‌چین است.</BitElement>

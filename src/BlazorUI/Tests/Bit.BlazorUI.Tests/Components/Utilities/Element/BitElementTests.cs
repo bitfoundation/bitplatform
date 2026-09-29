@@ -156,6 +156,42 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitElementShouldKeepTheLinkRoleOfADisabledAnchor()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        // An anchor without an href is a generic element to assistive technologies, which aria-disabled means nothing
+        // on, so the role is what keeps it announced as a disabled link rather than as plain text.
+        Assert.AreEqual("link", component.FindAll(".bit-elm")[6].GetAttribute("role"));
+        // An enabled anchor is a link of itself and needs no role, and an area without an href may carry none.
+        Assert.IsFalse(component.FindAll(".bit-elm")[5].HasAttribute("role"));
+        Assert.IsFalse(component.FindAll(".bit-elm")[8].HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepASplattedRoleOfADisabledAnchor()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        Assert.AreEqual("menuitem", component.FindAll(".bit-elm")[11].GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldDropTheLinkRoleOfAnAnchorEnabledAfterRender()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        Assert.AreEqual("link", component.FindAll(".bit-elm")[12].GetAttribute("role"));
+        Assert.IsFalse(component.FindAll(".bit-elm")[12].HasAttribute("href"));
+
+        component.Render(parameters => parameters.Add(p => p.LinkEnabled, true));
+
+        var element = component.FindAll(".bit-elm")[12];
+        Assert.IsFalse(element.HasAttribute("role"));
+        Assert.AreEqual("https://bitplatform.dev/", element.GetAttribute("href"));
+    }
+
+    [TestMethod]
     public void BitElementShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitElement>();

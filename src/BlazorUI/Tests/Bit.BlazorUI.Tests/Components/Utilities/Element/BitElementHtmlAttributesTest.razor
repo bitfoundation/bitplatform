@@ -47,3 +47,12 @@
 <BitElement aria-disabled="@false" data-plain-attribute="@false">I'm an element with false attributes</BitElement>
 
 <BitElement aria-disabled="@true" data-plain-attribute="@true">I'm an element with true attributes</BitElement>
+
+@* A disabled anchor is given the link role back once its href is gone, but a role the page wrote itself is kept. *@
+<BitElement Element="a" href="https://bitplatform.dev/" role="menuitem" IsEnabled="false">I'm a disabled menu item link</BitElement>
+
+<BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="@LinkEnabled">I'm a link enabled by the test</BitElement>
+
+@code {
+    [Parameter] public bool LinkEnabled { get; set; }
+}

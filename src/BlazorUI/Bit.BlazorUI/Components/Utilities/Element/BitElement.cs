@@ -19,7 +19,8 @@ namespace Bit.BlazorUI;
 /// The tag decides the rest of the behavior: a void element such as "input" or "img" holds no content, so <see cref="ChildContent"/>
 /// is not rendered into it, and a disabled element gets the "disabled" attribute only where HTML defines one, plus "aria-disabled"
 /// and a tabindex of -1 everywhere else, so that a tag HTML cannot disable is at least taken out of the tab order. A disabled
-/// hyperlink ("a" or "area") also loses its "href", which is what keeps the link itself from being focused and followed.
+/// hyperlink ("a" or "area") also loses its "href", which is what keeps the link itself from being focused and followed, and a
+/// disabled "a" is given the "link" role back, so it is still announced as a link - a disabled one - rather than as plain text.
 /// <see cref="NoWrapper"/> removes the tag altogether and leaves only the content behind, which is what turns the component into a
 /// conditional wrapper. <see cref="StopPropagation"/> and <see cref="PreventDefault"/>, and <see cref="StopPropagationEvents"/> and
 /// <see cref="PreventDefaultEvents"/> for the events other than the click, reach the event modifiers that Razor only offers on plain
@@ -264,14 +265,21 @@ public partial class BitElement : BitComponentBase
         // Written over the splatted href of a disabled hyperlink, which is what takes the link out of the tab order the
         // browser builds of itself and leaves nothing for the enter key to follow; every other tag has no href to lose.
         builder.AddAttribute(10, "href", disabledLink ? null : GetSplattedAttribute("href"));
+        // An anchor without an href is no longer a link to assistive technologies but a generic element, which the
+        // aria-disabled above means nothing on, so the role is given back to keep it announced as a disabled link.
+        // The area gets none, since ARIA allows no role on an area without an href.
+        if (disabledLink && string.Equals(element, "a", StringComparison.OrdinalIgnoreCase))
+        {
+            builder.AddAttribute(11, "role", GetSplattedAttribute("role") ?? "link");
+        }
         // The event modifiers of a plain element, which the razor compiler refuses on a component. A modifier that is
         // off writes no attribute at all, and the renderer takes the one a previous render wrote away again by not
         // finding it here, so the two of the click are asked for on every render whichever way they stand and the ones
         // of the other events only while they are named. A name in either list has the last word over the parameter of
         // the click beside it, since it is written after it and the later of two attributes of a name is the one kept.
-        builder.AddEventStopPropagationAttribute(11, "onclick", StopPropagation);
-        builder.AddEventPreventDefaultAttribute(12, "onclick", PreventDefault);
-        var seq = 13;
+        builder.AddEventStopPropagationAttribute(12, "onclick", StopPropagation);
+        builder.AddEventPreventDefaultAttribute(13, "onclick", PreventDefault);
+        var seq = 14;
         foreach (var name in StopPropagationEvents ?? [])
         {
             var @event = NormalizeEventName(name);

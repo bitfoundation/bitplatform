@@ -342,6 +342,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitCarousel", "BitCarouselParams")]
     [DataRow("BitDropdown", "BitDropdownParams<TItem, TValue>")]
     [DataRow("BitPagination", "BitPaginationParams")]
+    [DataRow("BitElement", "BitElementParams")]
     [DataRow("BitCallout", "BitCalloutParams")]
     [DataRow("BitAccordion", "BitAccordionParams")]
     [DataRow("BitBreadcrumb", "BitBreadcrumbParams")]
