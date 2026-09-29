@@ -294,9 +294,22 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
         var style = RenderProviderStyle(theme);
 
+        // The text is re-declared along with the fill: a preset that remaps the pair (Material's inverse
+        // surface) would otherwise keep its own text color over the default fill.
         StringAssert.Contains(style, "--bit-clr-tooltip-bg:var(--bit-clr-bg-sec)");
-        Assert.IsFalse(style.Contains("--bit-clr-tooltip-fg", StringComparison.Ordinal),
-            $"The tooltip text does not depend on the secondary background. Actual: {style}");
+        StringAssert.Contains(style, "--bit-clr-tooltip-fg:var(--bit-clr-fg-pri)");
+    }
+
+    [TestMethod]
+    public void OverridingThePrimaryForegroundReDeclaresTheWholeTooltipPair()
+    {
+        var theme = new BitTheme();
+        theme.Color.Foreground.Primary = "#111111";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-tooltip-fg:var(--bit-clr-fg-pri)");
+        StringAssert.Contains(style, "--bit-clr-tooltip-bg:var(--bit-clr-bg-sec)");
     }
 
     [TestMethod]

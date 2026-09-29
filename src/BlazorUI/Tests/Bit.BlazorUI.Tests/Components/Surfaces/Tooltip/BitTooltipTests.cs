@@ -1699,10 +1699,36 @@ public class BitTooltipTests : BunitTestContext
 
         // Pressing the text of the tooltip takes the focus off the anchor to the body, with the pointer
         // still on the component: that is not a click elsewhere.
+        component.Find(".bit-ttp-wrp").TriggerEvent("onpointerdown", Mouse());
         component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+        component.Find(".bit-ttp-wrp").TriggerEvent("onpointerup", Mouse());
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
         Assert.IsTrue(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+    }
+
+    [TestMethod]
+    public void BitTooltipOpenedByAClickShouldBeDismissedByATabAwayWhileThePointerRestsOnIt()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerdown", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // No press is under way, so the focus leaving is a Tab away: with ShowOnHover off, the pointer
+        // resting on the anchor holds nothing, and nothing else could dismiss the tooltip afterwards.
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 
     [TestMethod]
@@ -1838,6 +1864,26 @@ public class BitTooltipTests : BunitTestContext
         Assert.AreEqual("tip-ttp", invocation.Arguments[1]);
         Assert.AreEqual("aria-describedby", invocation.Arguments[2]);
         Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipShouldDisposeItsListenersUnderTheIdTheyWereSetUpWith()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Id, "tip");
+            parameters.Add(p => p.Text, "Tip");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Id, "renamed"));
+
+        await component.Instance.DisposeAsync();
+
+        // The JS side registered the listeners under the first id, so that is the one that takes them down.
+        var invocation = Context.JSInterop.Invocations
+                                .Single(i => i.Identifier == "BitBlazorUI.Utils.disposeTooltip");
+
+        Assert.AreEqual("tip", invocation.Arguments[0]);
     }
 
     [TestMethod]

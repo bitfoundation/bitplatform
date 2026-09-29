@@ -182,16 +182,28 @@
             } catch (e) { console.error("BitBlazorUI.Utils.syncAriaDescription:", e); }
         }
 
-        private static _tooltips = new Map<string, AbortController>();
+        private static _tooltips = new Map<string, { root: HTMLElement, dotnetObj: DotNetObject, controller: AbortController }>();
+        private static _tooltipsByRoot = new Map<HTMLElement, DotNetObject>();
+        private static _tooltipsController: AbortController | null = null;
+
+        // An element that answers Escape itself - a text entry clears or reverts on it, a combobox or anything
+        // expanded closes what it opened - so a tooltip around it lets the key through to that element.
+        private static readonly _escapeOwners =
+            'input:not([type="button"],[type="submit"],[type="reset"],[type="checkbox"],[type="radio"],[type="image"],[type="range"],[type="color"],[type="file"]),' +
+            'textarea,select,[contenteditable]:not([contenteditable="false"]),' +
+            '[role="combobox"],[role="searchbox"],[role="textbox"],[role="spinbutton"],[aria-expanded="true"]';
 
         // Lets Escape dismiss a shown tooltip (WCAG 1.4.13 "dismissible") from the two places it can come from:
         // the keyboard inside the tooltip - on its anchor - and anywhere on the page while the pointer rests on
         // the tooltip, since a tooltip shown on hover is shown while the focus is wherever the user left it.
         // Either way the key is the tooltip's alone: it is taken before Blazor's document-level delegation sees
         // it, so a dialog or a callout the tooltip sits in is not dismissed by the same press, and a second
-        // Escape reaches them as usual. Whether a tooltip takes it is read off the DOM on the spot - shown
-        // (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot wait for a round trip.
-        // It also tells a tooltip a click opened about the press outside it that dismisses it.
+        // Escape reaches them as usual. The one exception is a key pressed on something inside the anchor that
+        // answers Escape itself (a text field, a search box, a dropdown): the tooltip is dismissed along with
+        // it, and the key goes on to the component it was pressed on. Whether a tooltip takes it is read off the
+        // DOM on the spot - shown (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot
+        // wait for a round trip. It also tells a tooltip a click opened about the press outside it that
+        // dismisses it.
         public static setupTooltip(rootId: string, tooltipId: string, attribute: string, dotnetObj: DotNetObject) {
             Utils.disposeTooltip(rootId);
 
@@ -202,34 +214,77 @@
 
             const controller = new AbortController();
 
-            const takes = () => root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]') !== null;
-
-            const dismiss = (e: KeyboardEvent) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                dotnetObj.invokeMethodAsync('OnEscape');
-            };
-
             // A component inside the anchor that answered the key natively itself (and said so) keeps it.
             root.addEventListener('keydown', e => {
-                if (e.key !== 'Escape' || e.defaultPrevented || !takes()) return;
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]')) return;
 
-                dismiss(e);
+                const target = e.target as Element | null;
+                const owner = target?.closest(Utils._escapeOwners);
+                if (!owner || !root.contains(owner) || owner.closest('.bit-ttp-wrp')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+
+                dotnetObj.invokeMethodAsync('OnEscape');
             }, { signal: controller.signal });
 
-            // In the capture phase, so the key is taken before whatever holds the focus acts on it. No
-            // defaultPrevented check here: nothing but another tooltip under the same pointer - a nested one -
-            // can have run before this, and both of them are dismissed.
+            Utils._tooltips.set(rootId, { root, dotnetObj, controller });
+            Utils._tooltipsByRoot.set(root, dotnetObj);
+
+            Utils.ensureTooltipListeners();
+        }
+
+        public static disposeTooltip(rootId: string) {
+            const entry = Utils._tooltips.get(rootId);
+            if (!entry) return;
+
+            entry.controller.abort();
+            Utils._tooltips.delete(rootId);
+            if (Utils._tooltipsByRoot.get(entry.root) === entry.dotnetObj) {
+                Utils._tooltipsByRoot.delete(entry.root);
+            }
+
+            if (Utils._tooltips.size === 0) {
+                Utils._tooltipsController?.abort();
+                Utils._tooltipsController = null;
+            }
+        }
+
+        // The two document-level listeners every tooltip needs are shared by all of them, and each one asks the
+        // DOM for the few tooltips that are actually shown instead of every tooltip on the page asking for
+        // itself - a toolbar or a grid of a few hundred tooltips pays for one listener per key and press.
+        private static ensureTooltipListeners() {
+            if (Utils._tooltipsController) return;
+
+            const controller = Utils._tooltipsController = new AbortController();
+
+            const shown = (marker: string) => Array.from(document.querySelectorAll<HTMLElement>(`.bit-ttp-wrp.bit-ttp-vis[${marker}]`))
+                .map(wrp => wrp.parentElement)
+                .filter((root): root is HTMLElement => !!root && Utils._tooltipsByRoot.has(root));
+
+            // In the capture phase, so the key is taken before whatever holds the focus acts on it. Every
+            // tooltip under the pointer - a nested one along with the one around it - is dismissed by the press,
+            // and stopImmediatePropagation keeps it from any other listener on the document as well, a callout's
+            // own Escape listener included.
             document.addEventListener('keydown', e => {
-                if (e.key !== 'Escape' || !takes()) return;
+                if (e.key !== 'Escape') return;
 
                 const target = e.target as Node | null;
-                if (target && root.contains(target)) return; // the listener above answers it
+                let taken = false;
 
-                if (!root.matches(':hover')) return;
+                for (const root of shown('data-bit-ttp-esc')) {
+                    if (target && root.contains(target)) continue; // the root's own listener answers it
+                    if (!root.matches(':hover')) continue;
 
-                dismiss(e);
+                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape');
+                    taken = true;
+                }
+
+                if (!taken) return;
+
+                e.preventDefault();
+                e.stopImmediatePropagation();
             }, { signal: controller.signal, capture: true });
 
             // A tooltip a press of the anchor opened (data-bit-ttp-clk) is dismissed by the next press elsewhere.
@@ -237,23 +292,14 @@
             // focus a pressed button, and an anchor that is not focusable is never focused at all. Nothing is
             // prevented: the press goes on to do whatever it was aimed at.
             document.addEventListener('pointerdown', e => {
-                if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-clk]')) return;
-
                 const target = e.target as Node | null;
-                if (target && root.contains(target)) return;
 
-                dotnetObj.invokeMethodAsync('OnOutsidePress');
+                for (const root of shown('data-bit-ttp-clk')) {
+                    if (target && root.contains(target)) continue;
+
+                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnOutsidePress');
+                }
             }, { signal: controller.signal, capture: true });
-
-            Utils._tooltips.set(rootId, controller);
-        }
-
-        public static disposeTooltip(rootId: string) {
-            const controller = Utils._tooltips.get(rootId);
-            if (!controller) return;
-
-            controller.abort();
-            Utils._tooltips.delete(rootId);
         }
 
         // True when the focus currently sits inside the given container. The popup components ask before

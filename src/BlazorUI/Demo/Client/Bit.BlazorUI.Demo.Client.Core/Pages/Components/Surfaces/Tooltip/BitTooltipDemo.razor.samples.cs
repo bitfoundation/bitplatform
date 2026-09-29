@@ -202,6 +202,18 @@ public partial class BitTooltipDemo
 }";
 
     private readonly string example8RazorCode = @"
+<style>
+    .plain-anchor {
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        color: var(--bit-clr-fg-pri);
+        border: 1px solid var(--bit-clr-brd-pri);
+        border-radius: var(--bit-shp-radius-button, 0.25rem);
+        background-color: transparent;
+    }
+</style>
+
+
 <BitTooltip Text=""Save the current document"" Relationship=""BitTooltipRelationship.Label"">
     <BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.Save"" />
 </BitTooltip>
@@ -211,7 +223,7 @@ public partial class BitTooltipDemo
 </BitTooltip>
 
 <BitTooltip Id=""discard-tip"" Text=""Discard"" Relationship=""BitTooltipRelationship.None"">
-    <button aria-describedby=""discard-tip-ttp"">Discard</button>
+    <button class=""plain-anchor"" aria-describedby=""discard-tip-ttp"">Discard</button>
 </BitTooltip>
 
 <BitTooltip Text=""Escape leaves me alone"" NoDismissOnEscape>
