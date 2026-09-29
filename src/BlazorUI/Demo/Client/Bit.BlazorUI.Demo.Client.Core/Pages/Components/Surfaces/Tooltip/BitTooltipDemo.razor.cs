@@ -568,6 +568,12 @@ public partial class BitTooltipDemo
         },
         new()
         {
+            Name = "--bit-Tooltip-line-height",
+            DefaultValue = "--bit-tpg-caption1-line-height",
+            Description = "Height of a line of text, as a ratio of the font size so it follows Size.",
+        },
+        new()
+        {
             Name = "--bit-Tooltip-text-align",
             DefaultValue = "start",
             Description = "Alignment of a text that wraps onto more than one line.",

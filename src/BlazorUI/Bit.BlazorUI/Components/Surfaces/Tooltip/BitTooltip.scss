@@ -7,6 +7,7 @@
 //   --bit-Tooltip-padding      room around the content                    (default: spacing(1.25))
 //   --bit-Tooltip-font-size    size of the text                           (default: $tg-fs-xs)
 //   --bit-Tooltip-font-weight  weight of the text                         (default: $tg-fw-medium)
+//   --bit-Tooltip-line-height  height of a line of text                   (default: $tg-caption1-line-height)
 //   --bit-Tooltip-text-align   alignment of a text that wraps             (default: start)
 //   --bit-Tooltip-radius       corner of the surface                      (default: $shp-radius-popup)
 //   --bit-Tooltip-shadow       elevation of the surface                   (default: $box-shadow-tooltip)
@@ -102,6 +103,16 @@
     padding: var(--bit-ttp-padding);
     font-size: var(--bit-ttp-fontsize);
     font-weight: var(--bit-Tooltip-font-weight, #{$tg-fw-medium});
+    // The surface is drawn inside whatever the tooltip was put in - a heading, a nowrap toolbar or table cell,
+    // an uppercase nav, the 1.75rem line of a BitLayout - so everything a text inherits is set here rather
+    // than taken from there: a bubble of 12px text on 28px lines, or one that never wraps at its cap, is what
+    // leaving them to the page does. The line height is a ratio, so it follows the Size classes along.
+    font-family: $tg-font-family;
+    font-style: normal;
+    line-height: var(--bit-Tooltip-line-height, #{$tg-caption1-line-height});
+    white-space: normal;
+    letter-spacing: normal;
+    text-transform: none;
     border-radius: var(--bit-Tooltip-radius, #{$shp-radius-popup});
     box-shadow: var(--bit-Tooltip-shadow, #{$box-shadow-tooltip});
     z-index: var(--bit-ttp-zindex);

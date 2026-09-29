@@ -1592,6 +1592,25 @@ public class BitTooltipTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTooltipShowOnClickShouldIgnoreAnAutoRepeatedKey()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });
+
+        // A key held down is still the one press that opened it, not a second one that closes it again.
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter", Repeat = true });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
     public void BitTooltipHideOnClickShouldAnswerTheKeyboardPressToo()
     {
         var component = RenderComponent<BitTooltip>(parameters =>

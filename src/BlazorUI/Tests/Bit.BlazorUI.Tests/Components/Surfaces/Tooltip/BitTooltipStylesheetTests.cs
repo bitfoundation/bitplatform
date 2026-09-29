@@ -21,6 +21,7 @@ public class BitTooltipStylesheetTests
         "--bit-Tooltip-padding",
         "--bit-Tooltip-font-size",
         "--bit-Tooltip-font-weight",
+        "--bit-Tooltip-line-height",
         "--bit-Tooltip-text-align",
         "--bit-Tooltip-radius",
         "--bit-Tooltip-shadow",
@@ -87,6 +88,30 @@ public class BitTooltipStylesheetTests
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-ttp {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-ttp-sm {", System.StringComparison.Ordinal));
         StringAssert.Contains(sizes, "--bit-ttp-fontsize: #{$tg-fs-xs};");
         StringAssert.Contains(colors, "--bit-ttp-clr-bg: #{role($tokens, main)};");
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldNotInheritTheTextOfWhereItIsPut()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var surface = stylesheet[stylesheet.IndexOf("\n.bit-ttp-ctn {", System.StringComparison.Ordinal)..];
+        surface = surface[..surface.IndexOf("\n}", System.StringComparison.Ordinal)];
+
+        // A tooltip in a nowrap cell, a heading or a BitLayout would otherwise take its wrapping, its type and its
+        // 1.75rem line from there.
+        foreach (var declaration in new[]
+                 {
+                     "font-family: $tg-font-family;",
+                     "font-style: normal;",
+                     "line-height: var(--bit-Tooltip-line-height, #{$tg-caption1-line-height});",
+                     "white-space: normal;",
+                     "letter-spacing: normal;",
+                     "text-transform: none;",
+                 })
+        {
+            StringAssert.Contains(surface, declaration);
+        }
     }
 
     private static string ReadStylesheet() => ReadFile("Bit.BlazorUI", "Components", "Surfaces", "Tooltip", "BitTooltip.scss");

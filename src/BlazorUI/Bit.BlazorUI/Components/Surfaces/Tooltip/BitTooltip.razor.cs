@@ -898,6 +898,10 @@ public partial class BitTooltip : BitComponentBase
         // could never open. The key is left to travel on to the anchor, which is what is being pressed.
         if (e.Key is not ("Enter" or " ")) return;
 
+        // A key held down is one press, not a stream of them: a click-driven tooltip would otherwise flicker
+        // on and off for as long as the key auto-repeats.
+        if (e.Repeat) return;
+
         if (ShowOnClick)
         {
             if (IsShown)
