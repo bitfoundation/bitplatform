@@ -69,11 +69,11 @@ jobs:
       run: dotnet build src/Bswup/Bit.Bswup.slnx
 
     - name: dotnet test (MCP server)
-      run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj -f net10.0 --no-build
+      run: cd src/Bswup/Tests/Bit.Bswup.Tests.Mcp && dotnet test -f net10.0 --no-build
 
     - name: dotnet test (hosting - served assets, host documents and BswupProgress over HTTP, net8.0/net9.0/net10.0)
       # Real-browser coverage (install, offline, updates, recovery) and the published-output gate are the stages below.
-      run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Hosting/Bit.Bswup.Tests.Hosting.csproj --no-build
+      run: cd src/Bswup/Tests/Bit.Bswup.Tests.Hosting && dotnet test --no-build
 
     # Runs against Bit.Bswup/wwwroot/*.js, which the build above produces, so this also covers
     # the build step itself (e.g. the minifier re-introducing downleveled syntax).
@@ -136,8 +136,8 @@ jobs:
         BSWUP_E2E_SKIP_BUILD: 1
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Bswup &&
-        dotnet test --project Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release --no-build
+        cd src/Bswup/Tests/Bit.Bswup.Tests.E2E &&
+        dotnet test -c Release --no-build
         --report-trx --report-trx-filename bswup-e2e-web-${{ matrix.framework }}.trx
 
     - name: Upload test results
@@ -189,8 +189,8 @@ jobs:
       env:
         BSWUP_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/bswup-harness
       run: >
-        cd src/Bswup &&
-        dotnet test --project Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release --no-build
+        cd src/Bswup/Tests/Bit.Bswup.Tests.E2E &&
+        dotnet test -c Release --no-build
         --report-trx --report-trx-filename bswup-publish.trx
 
     - name: Upload test results
