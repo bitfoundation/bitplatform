@@ -16,7 +16,7 @@ Before reading a single pin, fetch and count:
 
 ```bash
 up=$(git remote -v | awk '$2 ~ /bitfoundation\/bitplatform(\.git)?$/ && $3 == "(fetch)" { print $1; exit }')
-git fetch "$up" develop
+git fetch "$up" "+refs/heads/develop:refs/remotes/$up/develop"   # a bare `develop` leaves this ref stale in single-branch clones
 git rev-list --count HEAD.."$up"/develop   # commits the checkout is missing
 ```
 
@@ -144,8 +144,8 @@ versions ascending):
 - latest stable = last entry with no `-`
 - target = latest stable, **except** a package whose newest release is a prerelease with no stable
   above it, which takes the prerelease. That is the whole `OpenTelemetry.*` 1.18.0-beta.1 family,
-  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace`,
-  `Aspire.Hosting.Keycloak` and `Aspire.Hosting.Maui`.
+  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace` and
+  `Aspire.Hosting.Keycloak`.
 
 Run the lookups with `xargs -P 12`; ~210 packages otherwise takes minutes.
 
@@ -190,9 +190,10 @@ Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). The newest major i
 `<Task>V<n>` folder in `gh api repos/microsoft/azure-pipelines-tasks/contents/Tasks --jq '.[].name'`.
 A task can change name across majors while keeping its id: `NodeTool@1` resolves to `UseNodeV1`.
 
-`AzureRmWebAppDeployment` is on @4 while @5 exists. For `webAppLinux` @5 defaults to `oneDeploy` with
-`CleanDeploymentFlag: true`, which deletes wwwroot files missing from the package — a deploy-behaviour
-decision for the maintainer, not a routine bump.
+`AzureRmWebAppDeployment@5` passes `DeploymentTypeLinux: 'zipDeploy'` on purpose. For `webAppLinux` @5
+defaults to `oneDeploy` with `CleanDeploymentFlag: true`, which deletes every file the package does not
+carry, the template's `App_Data` (SQLite database, local file storage, Hangfire jobs) included.
+`zipDeploy` keeps them, as @4 did. Keep that input on any later major.
 
 ### devcontainers
 
