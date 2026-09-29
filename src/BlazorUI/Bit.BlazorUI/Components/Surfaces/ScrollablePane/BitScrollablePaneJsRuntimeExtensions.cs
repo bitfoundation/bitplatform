@@ -72,6 +72,11 @@ internal static class BitScrollablePaneJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.ScrollablePane.scrollToElement", element, elementId, offset, smooth, alignment);
     }
 
+    internal static ValueTask BitScrollablePaneScrollToTarget(this IJSRuntime jsRuntime, ElementReference element, ElementReference target, double offset, bool smooth, string alignment)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.ScrollablePane.scrollToTarget", element, target, offset, smooth, alignment);
+    }
+
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollOffset))]
     internal static ValueTask<BitScrollOffset?> BitScrollablePaneGetOffset(this IJSRuntime jsRuntime, ElementReference element)
     {
