@@ -145,12 +145,14 @@
 
     <DemoExample Title="Disabled" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div class="example-desc">
-            <b>IsEnabled="false"</b> dims the element and blocks the pointer on any tag. Form elements get the native
-            <code>disabled</code>; other tags get <code>aria-disabled</code> and <code>tabindex="-1"</code>. A disabled
-            link loses its <code>href</code> but keeps <code>role="link"</code>, so it is announced as a disabled link.
-            Any disabled tag drops its <code>@@onclick</code>, so a screen reader's click cannot run it. Screen readers
-            ignore <code>aria-disabled</code> on a generic tag, so give it a role. Content inside keeps its own tab
-            stops - use a <code>fieldset</code> to disable a whole form.
+            <b>IsEnabled="false"</b> dims the element and blocks the pointer on any tag. Every tag gets
+            <code>aria-disabled</code>; form elements also get the native <code>disabled</code>, other tags
+            <code>tabindex="-1"</code>. An anchor with an <code>href</code> loses it but gets <code>role="link"</code>,
+            so it is announced as a disabled link; an <code>area</code> keeps its <code>href</code> and has its clicks'
+            default action prevented instead. Any disabled tag drops its activation handlers (<code>@@onclick</code>,
+            <code>@@onkeydown</code>, <code>@@onpointerdown</code>, ...), so neither a screen reader's click nor an event
+            bubbling up from its content can run them. Screen readers ignore <code>aria-disabled</code> on a generic tag,
+            so give it a role. Content inside keeps its own tab stops - use a <code>fieldset</code> to disable a whole form.
         </div>
         <div class="example-content">
             <BitElement Element="button" IsEnabled="false">A disabled button</BitElement>
@@ -205,16 +207,15 @@
         <br />
         <div class="example-desc">
             The <BitLink Href="#css-variables-section">CSS variables</BitLink> inherit, so they can be set on
-            <code>:root</code>, on an ancestor, or on the <b>Style</b> of one element.
+            <code>:root</code>, on an ancestor, or on the <b>Style</b> of one element - and a value set on an element
+            also reaches every element inside it.
         </div>
         <div class="example-content">
             <BitElement Element="button" IsEnabled="false" Style="--bit-Element-disabled-opacity: 0.2;">Disabled, dimmed further</BitElement>
-            <div style="--bit-Element-disabled-opacity: 1;">
-                <BitElement Element="fieldset" IsEnabled="false">
-                    <BitElement Element="legend">A disabled fieldset, not dimmed</BitElement>
-                    <BitElement Element="input" placeholder="Its input shows its own disabled look" AriaLabel="Fieldset input" />
-                </BitElement>
-            </div>
+            <BitElement Element="fieldset" IsEnabled="false" Style="--bit-Element-disabled-opacity: 1;">
+                <BitElement Element="legend">A disabled fieldset, not dimmed</BitElement>
+                <BitElement Element="input" placeholder="Its input shows its own disabled look" AriaLabel="Fieldset input" />
+            </BitElement>
         </div>
     </DemoExample>
 

@@ -155,12 +155,10 @@ private readonly BitElementParams[] elementParams =
 <BitElement Class=""demo-boxed"" style=""color: mediumseagreen;"">A Class parameter and a plain style attribute</BitElement>
 
 <BitElement Element=""button"" IsEnabled=""false"" Style=""--bit-Element-disabled-opacity: 0.2;"">Disabled, dimmed further</BitElement>
-<div style=""--bit-Element-disabled-opacity: 1;"">
-    <BitElement Element=""fieldset"" IsEnabled=""false"">
-        <BitElement Element=""legend"">A disabled fieldset, not dimmed</BitElement>
-        <BitElement Element=""input"" placeholder=""Its input shows its own disabled look"" AriaLabel=""Fieldset input"" />
-    </BitElement>
-</div>";
+<BitElement Element=""fieldset"" IsEnabled=""false"" Style=""--bit-Element-disabled-opacity: 1;"">
+    <BitElement Element=""legend"">A disabled fieldset, not dimmed</BitElement>
+    <BitElement Element=""input"" placeholder=""Its input shows its own disabled look"" AriaLabel=""Fieldset input"" />
+</BitElement>";
 
     private readonly string example13RazorCode = @"
 <BitElement Dir=""BitDir.Rtl"">این یک المنت راست‌چین است.</BitElement>

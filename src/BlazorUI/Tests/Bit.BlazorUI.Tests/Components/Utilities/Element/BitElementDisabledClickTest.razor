@@ -10,9 +10,24 @@
     <button class="inner" @onclick="() => InnerClicks++">I'm an enabled button inside</button>
 </BitElement>
 
+@* The other events an element is activated through go the same way as the click, while a hover, which activates
+   nothing, is left alone. *@
+<BitElement class="activated" role="button" TabIndex="0" IsEnabled="@IsEnabled"
+            @ondblclick="() => Activations++"
+            @oncontextmenu="() => Activations++"
+            @onmousedown="() => Activations++"
+            @onpointerdown="() => Activations++"
+            @onkeydown="() => Activations++"
+            @onmouseover="() => Hovers++">
+    <button class="inner-key" @onkeydown="() => InnerKeys++">I'm an enabled button inside</button>
+</BitElement>
+
 @code {
     [Parameter] public bool IsEnabled { get; set; }
 
     public int Clicks { get; private set; }
     public int InnerClicks { get; private set; }
+    public int Activations { get; private set; }
+    public int Hovers { get; private set; }
+    public int InnerKeys { get; private set; }
 }

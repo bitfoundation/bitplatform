@@ -35,8 +35,8 @@
 
 <BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="false">I'm a disabled link</BitElement>
 
-@* An area is the other tag that is a hyperlink of its own, and the one with no box of its own for the pointer
-   events of the disabled class to turn off, so the href is all there is to take away from a disabled one. *@
+@* An area is the other tag that is a hyperlink of its own, and one without an href may carry no role, so a disabled
+   one keeps its href and has the default action of its clicks prevented instead. *@
 <BitElement Element="area" href="https://bitplatform.dev/" alt="I'm an image map link" />
 
 <BitElement Element="area" href="https://bitplatform.dev/" alt="I'm a disabled image map link" IsEnabled="false" />
@@ -53,8 +53,13 @@
 
 <BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="@LinkEnabled">I'm a link enabled by the test</BitElement>
 
-@* A form element disabled natively carries no aria-disabled of its own, but one the page wrote is kept. *@
+@* A form element disabled natively carries aria-disabled beside its disabled attribute, like every other tag. *@
 <BitElement Element="button" aria-disabled="true" IsEnabled="false">I'm a disabled button with its own aria-disabled</BitElement>
+
+@* A role written empty, or as a true written with no value, names no role, so the link role is still given back. *@
+<BitElement Element="a" href="https://bitplatform.dev/" role="" IsEnabled="false">I'm a disabled link with an empty role</BitElement>
+
+<BitElement Element="a" href="https://bitplatform.dev/" role="@true" IsEnabled="false">I'm a disabled link with a true role</BitElement>
 
 @code {
     [Parameter] public bool LinkEnabled { get; set; }

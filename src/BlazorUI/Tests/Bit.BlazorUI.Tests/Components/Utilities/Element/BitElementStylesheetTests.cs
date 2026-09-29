@@ -30,7 +30,7 @@ public class BitElementStylesheetTests
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"(^|[\s;{{]){Regex.Escape(variable)}\s*:", RegexOptions.Multiline), $"{variable} is declared, which stops it from inheriting.");
         }
 
-        var read = Regex.Matches(stylesheet, @"var\((--bit-Element-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct();
+        var read = Regex.Matches(stylesheet, @"var\((--bit-Element-[A-Za-z0-9_-]+)").Select(m => m.Groups[1].Value).Distinct();
 
         CollectionAssert.IsSubsetOf(read.ToArray(), PublicVariables);
     }
@@ -41,7 +41,7 @@ public class BitElementStylesheetTests
         // The demo page's CSS variables table is the only source of these names the site and the MCP server have.
         var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Utilities", "Element", "BitElementDemo.razor.cs");
 
-        var documented = Regex.Matches(demo, @"Name = ""(--bit-Element-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
+        var documented = Regex.Matches(demo, @"Name = ""(--bit-Element-[A-Za-z0-9_-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
         CollectionAssert.AreEquivalent(PublicVariables, documented);
     }
