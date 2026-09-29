@@ -237,28 +237,6 @@ private async Task HandleFocusCollapsing()
 }";
 
     private readonly string example12RazorCode = @"
-<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""cssVarExpanded"" />
-
-<div style=""--bit-Collapse-background: var(--bit-clr-bg-sec);
-            --bit-Collapse-padding: 1.5rem;
-            --bit-Collapse-duration: 800ms;
-            --bit-Collapse-easing: cubic-bezier(0.2, 0, 0, 1);"">
-    <BitCollapse Expanded=""cssVarExpanded"">Background, padding, pace and easing from an ancestor.</BitCollapse>
-    <BitCollapse Expanded=""cssVarExpanded"" Background=""BitColorKind.Tertiary"">Same ancestor, its own Background.</BitCollapse>
-</div>
-
-<BitCollapse Expanded=""cssVarExpanded"" Style=""--bit-Collapse-color: var(--bit-clr-pri); --bit-Collapse-font-size: var(--bit-tpg-fs-md);"">
-    Color and font size on one collapse.
-</BitCollapse>
-
-<BitCollapse Expanded=""cssVarExpanded"" CollapsedSize=""2.5rem"" Style=""--bit-Collapse-peek-fade: 1.5rem;"">
-    A faded peek: while the section is closed, its last lines melt into the background, which tells the reader
-    there is more to it than the peek shows. Opening the section takes the fade off along with the clamp.
-</BitCollapse>";
-    private readonly string example12CsharpCode = @"
-private bool cssVarExpanded = true;";
-
-    private readonly string example13RazorCode = @"
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""cascadingExpanded"" />
 
 <BitParams Parameters=""collapseParams"">
@@ -266,7 +244,7 @@ private bool cssVarExpanded = true;";
     <BitCollapse Expanded=""cascadingExpanded"">The same, from the same BitParams.</BitCollapse>
     <BitCollapse Expanded=""cascadingExpanded"" NoPadding=""false"">Keeps its own padding.</BitCollapse>
 </BitParams>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool cascadingExpanded = true;
 private readonly BitCollapseParams[] collapseParams =
 [
@@ -278,7 +256,7 @@ private readonly BitCollapseParams[] collapseParams =
     }
 ];";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .custom-expanded {
         border-radius: 0.5rem;
@@ -305,10 +283,10 @@ private readonly BitCollapseParams[] collapseParams =
 <BitCollapse Expanded=""styleExpanded"" Classes=""@(new() { Expanded = ""custom-expanded"", Wrapper = ""custom-wrapper"" })"">
     Classes for the expanded root and the wrapper.
 </BitCollapse>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool styleExpanded = true;";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <div dir=""rtl"">
     <BitToggleButton OnText=""بستن"" OffText=""باز کردن"" @bind-IsChecked=""rtlExpanded"" />
     <BitCollapse Expanded=""rtlExpanded"" Dir=""BitDir.Rtl"">
@@ -321,6 +299,6 @@ private bool styleExpanded = true;";
         <div style=""white-space:nowrap"">این بخش از سمت راست باز می شود.</div>
     </BitCollapse>
 </div>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool rtlExpanded = true;";
 }

@@ -264,33 +264,7 @@
             </BitCollapse>
         </DemoExample>
 
-        <DemoExample Title="CSS variables" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-            <div>
-                The public <b>--bit-Collapse-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink>
-                table) inherit, so set them on <code>:root</code>, on an ancestor or on one collapse's <b>Style</b>. A parameter
-                wins over its variable: the second section keeps its own <b>Background</b>. <b>--bit-Collapse-peek-fade</b>
-                fades the trailing edge of a closed <b>CollapsedSize</b> peek to show there is more.
-            </div>
-            <br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="cssVarExpanded" />
-            <br /><br />
-            <div style="--bit-Collapse-background: var(--bit-clr-bg-sec); --bit-Collapse-padding: 1.5rem; --bit-Collapse-duration: 800ms; --bit-Collapse-easing: cubic-bezier(0.2, 0, 0, 1);">
-                <BitCollapse Expanded="cssVarExpanded">Background, padding, pace and easing from an ancestor.</BitCollapse>
-                <br />
-                <BitCollapse Expanded="cssVarExpanded" Background="BitColorKind.Tertiary">Same ancestor, its own Background.</BitCollapse>
-            </div>
-            <br />
-            <BitCollapse Expanded="cssVarExpanded" Style="--bit-Collapse-color: var(--bit-clr-pri); --bit-Collapse-font-size: var(--bit-tpg-fs-md);">
-                Color and font size on one collapse.
-            </BitCollapse>
-            <br />
-            <BitCollapse Expanded="cssVarExpanded" CollapsedSize="2.5rem" Style="--bit-Collapse-peek-fade: 1.5rem;">
-                A faded peek: while the section is closed, its last lines melt into the background, which tells the reader
-                there is more to it than the peek shows. Opening the section takes the fade off along with the clamp.
-            </BitCollapse>
-        </DemoExample>
-
-        <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>BitParams</b> with a <b>BitCollapseParams</b> sets defaults for every collapse under it; a collapse's own value
                 wins (the last one keeps its padding). The state, the content, the callbacks and <b>LabelledBy</b> are not cascaded.
@@ -307,7 +281,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach its parts: <b>Root</b>,
                 the <b>Expanded</b> / <b>Collapsed</b> states of the root, the <b>Content</b> region and the padded <b>Wrapper</b>.
@@ -331,7 +305,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 A vertical collapse is unchanged by the direction; a horizontal one opens from the start edge, the right in RTL.
             </div>

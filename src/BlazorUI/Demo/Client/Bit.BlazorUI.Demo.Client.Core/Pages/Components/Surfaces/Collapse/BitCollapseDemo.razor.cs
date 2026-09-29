@@ -425,8 +425,6 @@ public partial class BitCollapseDemo
     private BitButton? focusTriggerRef;
     private BitCollapse? focusCollapseRef;
 
-    private bool cssVarExpanded = true;
-
     private bool cascadingExpanded = true;
     private readonly BitCollapseParams[] collapseParams =
     [
