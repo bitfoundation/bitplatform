@@ -197,6 +197,35 @@ public class BitMediaQueryParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMediaQueryShouldDropACascadedQueryWhenItTakesAScreenQueryOfItsOwn()
+    {
+        // The cascaded Query would outrank the component's new ScreenQuery if it were left behind.
+        BitScreenQuery? ownScreenQuery = null;
+        var mediaQueryParams = new BitMediaQueryParams { Query = "(orientation: portrait)" };
+        var component = RenderWithParams(mediaQueryParams, builder =>
+        {
+            if (ownScreenQuery.HasValue)
+            {
+                builder.AddAttribute(1, nameof(BitMediaQuery.ScreenQuery), ownScreenQuery);
+            }
+        });
+
+        var instance = component.FindComponent<BitMediaQuery>().Instance;
+        Assert.AreEqual("(orientation: portrait)", instance.Query);
+
+        ownScreenQuery = BitScreenQuery.Md;
+        component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams> { mediaQueryParams }));
+
+        Assert.AreSame(instance, component.FindComponent<BitMediaQuery>().Instance);
+        Assert.IsNull(instance.Query);
+        Assert.AreEqual(BitScreenQuery.Md, instance.ScreenQuery);
+
+        var setup = LastSetup();
+        Assert.IsNull(setup.Arguments[QueryArg]);
+        Assert.AreEqual("Md", setup.Arguments[ScreenQueryArg]);
+    }
+
+    [TestMethod]
     public void BitMediaQueryParamsShouldLeaveUnsetValuesAlone()
     {
         var component = RenderWithParams(new BitMediaQueryParams());

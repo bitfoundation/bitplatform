@@ -208,11 +208,12 @@ public partial class BitMediaQuery : BitComponentBase
     protected override void OnParametersSet()
     {
         // A value the cascade handed down is not one the component keeps once the cascade stops carrying it: it goes
-        // back to its default. A value assigned on the component is left alone.
-        if (_queryFromCascade && HasNotBeenSet(nameof(Query)) && HasNotBeenSet(nameof(ScreenQuery)))
+        // back to its default. A value assigned on the component is left alone. The two are cleared one by one: a
+        // ScreenQuery the component now sets itself must not be left behind a cascaded Query that would outrank it.
+        if (_queryFromCascade)
         {
-            Query = null;
-            ScreenQuery = null;
+            if (HasNotBeenSet(nameof(Query))) Query = null;
+            if (HasNotBeenSet(nameof(ScreenQuery))) ScreenQuery = null;
         }
 
         if (_noWrapperFromCascade && HasNotBeenSet(nameof(NoWrapper)))
