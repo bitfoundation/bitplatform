@@ -628,12 +628,12 @@ public partial class ProductResponseCacheTests
     /// Runs <c>ResponseCacheService.PurgeProductCache</c>, which needs an HttpContext of its own to decide whether the
     /// request came through a CDN, and there is none in a bare DI scope (See <c>ResponseCacheService.PurgeCache</c>).
     /// </summary>
-    private async Task PurgeProductCache(AppClient client, int productShortId)
+    private async Task PurgeProductCache(AsyncServiceScope scopeApiApp, int productShortId)
     {
-        var httpContextAccessor = client.Services.GetRequiredService<IHttpContextAccessor>();
-        httpContextAccessor.HttpContext ??= new DefaultHttpContext { RequestServices = client.Services };
+        var httpContextAccessor = scopeApiApp.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext ??= new DefaultHttpContext { RequestServices = scopeApiApp.ServiceProvider };
 
-        var responseCacheService = client.Services.GetRequiredService<ResponseCacheService>();
+        var responseCacheService = scopeApiApp.ServiceProvider.GetRequiredService<ResponseCacheService>();
 
         await responseCacheService.PurgeProductCache(productShortId);
     }

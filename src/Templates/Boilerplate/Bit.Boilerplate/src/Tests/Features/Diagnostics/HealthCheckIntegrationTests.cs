@@ -245,6 +245,23 @@ public partial class HealthCheckIntegrationTests
     [TestMethod]
     public async Task UnconfiguredDependencies_Should_ReportDegraded_OutsideDevelopment()
     {
+        //#if (api == "Standalone")
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        // The checks are Server.Api's (See AddServerApiHealthChecks), and so is the appsettings.json they are built with.
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Production,
+            ApplicationName = typeof(Server.Api.Program).Assembly.GetName().Name,
+            ContentRootPath = AppTestServer.ProjectDirectoryOf(typeof(Server.Api.Program).Assembly.GetName().Name!)
+        });
+
+        builder.Configuration.AddSharedConfigurations();
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        //#else
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             EnvironmentName = Environments.Production,
@@ -252,6 +269,7 @@ public partial class HealthCheckIntegrationTests
         });
 
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
+        //#endif
 
         string[] expectedChecks =
         [
@@ -286,7 +304,18 @@ public partial class HealthCheckIntegrationTests
             builder.Configuration[key] = "";
         }
 
+        //#if (api == "Standalone")
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        builder.Services.AddSharedProjectServices(builder.Configuration);
+        Server.Api.Program.AddServerApiProjectServices(builder);
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        //#else
         builder.AddServerWebProjectServices();
+        //#endif
 
         await using var serviceProvider = builder.Services.BuildServiceProvider();
         var registrations = serviceProvider.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;

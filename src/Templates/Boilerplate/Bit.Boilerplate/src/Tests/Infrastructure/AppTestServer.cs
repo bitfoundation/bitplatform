@@ -406,7 +406,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     /// and only one of the two can land in this project's output. Found by walking up from <see cref="AppContext.BaseDirectory"/>
     /// (See Server.Web's FileWatcherService.FindSrcDirectory).
     /// </summary>
-    private static string ProjectDirectoryOf(string projectName)
+    internal static string ProjectDirectoryOf(string projectName)
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
         {
