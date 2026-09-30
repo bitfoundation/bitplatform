@@ -163,6 +163,21 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Calls OnEscape for each Escape pressed while a layer that covers the page is open, wherever the focus is,
+    // as long as nothing had the better claim to the key and the layer is the topmost one; see
+    // Utils.watchLayerEscape.
+    internal static ValueTask BitUtilsWatchLayerEscape<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.watchLayerEscape", elementId, dotnetObj);
+    }
+
+    internal static ValueTask BitUtilsUnwatchLayerEscape(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.unwatchLayerEscape", elementId);
+    }
+
+
     // Resolves once the exit animation of the element and its direct children has played out, bounded by a
     // timeout; see Utils.waitForAnimations.
     internal static ValueTask BitUtilsWaitForAnimations(this IJSRuntime jsRuntime, string elementId)

@@ -1336,4 +1336,126 @@ public class BitOverlayTests : BunitTestContext
             () => StringAssert.Contains(component.Find(".bit-ovl").GetAttribute("style"), "top:300px"),
             TimeSpan.FromSeconds(5));
     }
+
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitPosition.Center, "bit-ovl-ctr"),
+        DataRow(BitPosition.TopStart, "bit-ovl-tst"),
+        DataRow(BitPosition.TopLeft, "bit-ovl-tlf"),
+        DataRow(BitPosition.BottomEnd, "bit-ovl-ben"),
+        DataRow(BitPosition.CenterRight, "bit-ovl-crg")
+    ]
+    public void BitOverlayShouldRespectPosition(BitPosition? position, string? cssClass)
+    {
+        var component = RenderComponent<BitOverlay>(parameters => parameters.Add(p => p.Position, position));
+
+        var expected = cssClass is null ? null : $" {cssClass}";
+
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl{expected}"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitOverlayShouldRespectPositionChangingAfterRender()
+    {
+        var component = RenderComponent<BitOverlay>();
+
+        component.Render(parameters => parameters.Add(p => p.Position, BitPosition.BottomCenter));
+
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-ovl-bcr"" id:ignore></div>");
+    }
+
+    // Escape is the keyboard's way of doing what a click on the layer does, so it is watched for while an
+    // Overlay that click would dismiss is open, and not a moment longer: part of the watch is on the window.
+    [TestMethod]
+    public void BitOverlayShouldWatchForEscapeOnlyWhileItIsOpen()
+    {
+        var isOpen = false;
+        var component = RenderComponent<BitOverlay>(parameters => parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v));
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.watchLayerEscape");
+
+        isOpen = true;
+        component.Render(parameters => parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v));
+
+        var layerId = component.Find(".bit-ovl").Id;
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"].Count));
+        Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"][0].Arguments[0]);
+
+        component.Find(".bit-ovl").Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"].Count));
+        Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"][0].Arguments[0]);
+    }
+
+    // Whatever takes the click's dismissal away takes the key's as well - yet an Overlay that refuses the key
+    // still takes its place on the stack of open layers the script hands a press to, so a press made while a
+    // blocking one is on top does not fall through to a lighter one underneath it.
+    [TestMethod,
+        DataRow(true, false, false),
+        DataRow(false, true, false),
+        DataRow(false, false, true)
+    ]
+    public async Task BitOverlayShouldRefuseAnEscapeItCannotBeDismissedByYetStillWatchForIt(bool blocking, bool noDismissOnEscape, bool disabled)
+    {
+        var isOpen = true;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.Blocking, blocking);
+            parameters.Add(p => p.NoDismissOnEscape, noDismissOnEscape);
+            parameters.Add(p => p.IsEnabled, disabled is false);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"].Count));
+
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    public async Task BitOverlayShouldCloseOnEscape()
+    {
+        var isOpen = true;
+        var closed = 0;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.IsFalse(isOpen);
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
+        component.WaitForAssertion(() => Assert.AreEqual(1, closed));
+    }
+
+    [TestMethod]
+    public void BitOverlayNoDismissOnEscapeShouldStillCloseOnAClickOnTheLayer()
+    {
+        var isOpen = true;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.NoDismissOnEscape, true);
+        });
+
+        component.Find(".bit-ovl").Click();
+
+        Assert.IsFalse(isOpen);
+    }
+
+    [TestMethod]
+    public async Task BitOverlayShouldStopWatchingForEscapeOnDispose()
+    {
+        var component = RenderComponent<BitOverlay>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"].Count));
+
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"].Count);
+    }
 }

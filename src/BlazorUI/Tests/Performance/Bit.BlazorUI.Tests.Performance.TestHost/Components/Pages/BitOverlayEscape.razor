@@ -1,0 +1,64 @@
+@page "/regression/overlay-escape"
+
+<PageTitle>BitOverlay Escape Regression</PageTitle>
+
+@* Escape is the keyboard's equivalent of a click on the layer of a BitOverlay. The Overlay does not take the
+   focus when it opens, so the key is watched for on the window: it has to reach an Overlay opened from a button
+   that still holds the focus, close only the topmost of two open Overlays, and never fall through a blocking
+   Overlay to a lighter one underneath it. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitOverlay Escape Regression</h3>
+    <div style="margin-bottom: 10px;">
+        <button @onclick="OpenLower" id="btn-open-lower">Open lower</button>
+        <button @onclick="OpenBoth" id="btn-open-both">Open both</button>
+        <label><input type="checkbox" @bind="_upperBlocking" id="chk-upper-blocking" /> Upper blocking</label>
+    </div>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Lower: <span id="lower-state">@(_lowerIsOpen ? "open" : "closed")</span></p>
+        <p>Upper: <span id="upper-state">@(_upperIsOpen ? "open" : "closed")</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+<BitOverlay @bind-IsOpen="_lowerIsOpen" ModeFull>
+    <div id="lower-content">Lower</div>
+</BitOverlay>
+
+<BitOverlay @bind-IsOpen="_upperIsOpen" Blocking="_upperBlocking">
+    <div id="upper-content">Upper</div>
+</BitOverlay>
+
+@code {
+    private bool _lowerIsOpen;
+    private bool _upperIsOpen;
+    private bool _upperBlocking;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void OpenLower()
+    {
+        _lowerIsOpen = true;
+        _status = "Lower open";
+    }
+
+    private async Task OpenBoth()
+    {
+        _lowerIsOpen = true;
+        StateHasChanged();
+
+        // The upper one is opened a render later, so it is the one watched last - the topmost.
+        await Task.Delay(100);
+
+        _upperIsOpen = true;
+        _status = "Both open";
+    }
+}

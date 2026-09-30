@@ -5,18 +5,19 @@ namespace Bit.BlazorUI;
 /// the user of a state change within the application and can be used for creating loaders, dialogs and more.
 /// </summary>
 /// <remarks>
-/// The Overlay is the low-level layer the dialog surfaces of the library (Modal, Panel, Dialog) are built
-/// on: a single element that covers the screen - or, with <see cref="AbsolutePosition"/>, the container it
-/// was declared inside of - catches the clicks meant for what it covers, and shows whatever content it was
-/// given. The dialog behaviors that follow from holding the keyboard (focus trapping, Escape dismissal)
-/// belong to those surfaces; what the Overlay itself offers is the layer, the click handling and the
+/// The Overlay is the bare layer the dialog surfaces of the library (Modal, Panel, Dialog) draw behind
+/// themselves: a single element that covers the screen - or, with <see cref="AbsolutePosition"/>, the
+/// container it was declared inside of - catches the clicks meant for what it covers, and shows whatever
+/// content it was given. The dialog behaviors that follow from holding the keyboard (a dialog role, focus
+/// trapping) belong to those surfaces; what the Overlay itself offers is the layer, its dismissal and the
 /// scroll handling - the counted hold it takes on the scroller it was told to hold, and the gestures it
 /// hands on to the one it was told to leave scrolling.
 /// <br/>
 /// A click dismisses the Overlay only where it is the layer that was clicked: the content it hosts is what
 /// the user is reaching past the layer for, so neither a click on it nor a press that began on it and
-/// ended on the layer takes the Overlay away. Every click is reported through <see cref="OnClick"/> all
-/// the same, and <see cref="Blocking"/> takes the last dismissal away as well.
+/// ended on the layer takes the Overlay away. Escape is the keyboard's way of doing the same, wherever the
+/// focus is (<see cref="NoDismissOnEscape"/>). Every click is reported through <see cref="OnClick"/> all
+/// the same, and <see cref="Blocking"/> takes both dismissals away.
 /// </remarks>
 public partial class BitOverlay : BitComponentBase
 {
@@ -46,6 +47,10 @@ public partial class BitOverlay : BitComponentBase
     private bool _scrollForwarded;
     private string? _forwardedScrollerSelector;
     private ElementReference? _forwardedScrollerElement;
+    // Whether the Escape presses are being watched for, which they are only while the Overlay is open, since
+    // the watch is on the window.
+    private bool _escapeWatched;
+    private DotNetObjectReference<BitOverlay>? _dotnetObj;
 
 
 
@@ -61,6 +66,17 @@ public partial class BitOverlay : BitComponentBase
     // reference.
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the overlay component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple overlay components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitOverlayParams.ParamName)]
+    public BitOverlayParams? CascadingParameters { get; set; }
 
 
 
@@ -103,7 +119,8 @@ public partial class BitOverlay : BitComponentBase
     [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
-    /// When enabled, prevents the Overlay from being light dismissed by clicking on the layer.
+    /// When enabled, prevents the Overlay from being light dismissed by clicking on the layer or by pressing
+    /// the Escape key.
     /// </summary>
     /// <remarks>
     /// The click is still reported through <see cref="OnClick"/>, which is what makes that the place to
@@ -144,6 +161,20 @@ public partial class BitOverlay : BitComponentBase
     public bool ModeFull { get; set; }
 
     /// <summary>
+    /// Prevents the Overlay from being dismissed by pressing the Escape key, while a click on the layer still
+    /// dismisses it.
+    /// </summary>
+    /// <remarks>
+    /// Escape dismisses an open Overlay the way a click on its layer does - the keyboard's equivalent of that
+    /// click - wherever the focus is: an Overlay does not take the focus when it opens, so it is most often
+    /// still on the control that opened it. A press something else had the better claim to is left alone: an
+    /// open dropdown or menu closing its popup, a control that prevented the key's default, a dialog the focus
+    /// is inside of, or another Overlay opened over this one. <see cref="Blocking"/> takes this dismissal away
+    /// as well.
+    /// </remarks>
+    [Parameter] public bool NoDismissOnEscape { get; set; }
+
+    /// <summary>
     /// Callback that is called when the overlay is clicked.
     /// </summary>
     /// <remarks>
@@ -176,6 +207,18 @@ public partial class BitOverlay : BitComponentBase
     /// has been taken.
     /// </remarks>
     [Parameter] public EventCallback OnOpen { get; set; }
+
+    /// <summary>
+    /// Where the content is placed on the layer.
+    /// </summary>
+    /// <remarks>
+    /// The content stretches over the whole of the layer when this is not set, which is what a surface of the
+    /// consumer's own that sizes itself wants; <see cref="BitPosition.Center"/> is the scrim that centers a
+    /// loader or a message. The <c>Start</c> / <c>End</c> members are the direction-aware counterparts of the
+    /// <c>Left</c> / <c>Right</c> ones.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// The element reference of the scroller whose scrolling is taken away while the Overlay is open, for
@@ -286,6 +329,32 @@ public partial class BitOverlay : BitComponentBase
         ClassBuilder.Register(() => IsOpen ? "bit-ovl-opn" : string.Empty);
         ClassBuilder.Register(() => ModeFull ? "bit-ovl-mfl" : string.Empty);
         ClassBuilder.Register(() => AbsolutePosition ? "bit-ovl-abs" : string.Empty);
+        ClassBuilder.Register(() => Position switch
+        {
+            BitPosition.TopLeft => "bit-ovl-tlf",
+            BitPosition.TopCenter => "bit-ovl-tcr",
+            BitPosition.TopRight => "bit-ovl-trg",
+            BitPosition.TopStart => "bit-ovl-tst",
+            BitPosition.TopEnd => "bit-ovl-ten",
+            BitPosition.CenterLeft => "bit-ovl-clf",
+            BitPosition.Center => "bit-ovl-ctr",
+            BitPosition.CenterRight => "bit-ovl-crg",
+            BitPosition.CenterStart => "bit-ovl-cst",
+            BitPosition.CenterEnd => "bit-ovl-cen",
+            BitPosition.BottomLeft => "bit-ovl-blf",
+            BitPosition.BottomCenter => "bit-ovl-bcr",
+            BitPosition.BottomRight => "bit-ovl-brg",
+            BitPosition.BottomStart => "bit-ovl-bst",
+            BitPosition.BottomEnd => "bit-ovl-ben",
+            _ => string.Empty
+        });
+    }
+
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -298,6 +367,7 @@ public partial class BitOverlay : BitComponentBase
             // what the parameters say it is: an Overlay told to hold its scroller, or aimed at another one,
             // while it is open has to have it taken back or made again there and then.
             await SyncScroll();
+            await SyncEscape();
             return;
         }
 
@@ -348,6 +418,10 @@ public partial class BitOverlay : BitComponentBase
         if (Overtaken()) return;
 
         await SyncScrollForward();
+
+        if (Overtaken()) return;
+
+        await SyncEscape();
 
         if (Overtaken()) return;
 
@@ -562,6 +636,63 @@ public partial class BitOverlay : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    // The presses are watched for while the Overlay is open, whether or not it goes on to answer them: the
+    // script hands a press made outside of every layer to the topmost one alone, so an Overlay that refuses the
+    // key - a blocking loader over a lighter one - still has to be on that stack, or the press would fall through
+    // to the Overlay underneath it. Whether it is answered is _OnEscape's to decide.
+    private bool ShouldWatchEscape => IsOpen && IsRendered && IsDisposed is false;
+
+    // The presses are watched on the window rather than on the layer (Utils.watchLayerEscape): an Overlay does
+    // not take the focus when it opens, so the focus is most often still on the control behind it.
+    private async Task SyncEscape()
+    {
+        if (ShouldWatchEscape == _escapeWatched) return;
+
+        if (_escapeWatched)
+        {
+            await UnwatchEscape();
+            return;
+        }
+
+        _escapeWatched = true;
+        _dotnetObj ??= DotNetObjectReference.Create(this);
+
+        try
+        {
+            await _js.BitUtilsWatchLayerEscape(_Id, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task UnwatchEscape()
+    {
+        if (_escapeWatched is false) return;
+
+        _escapeWatched = false;
+
+        try
+        {
+            await _js.BitUtilsUnwatchLayerEscape(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    /// <summary>
+    /// Dismisses the Overlay on an Escape the script found to be its own - called by the script only for the
+    /// presses nothing else had the better claim to (see Utils.watchLayerEscape).
+    /// </summary>
+    [JSInvokable("OnEscape")]
+    public async Task _OnEscape()
+    {
+        // The key is the keyboard's equivalent of a click on the layer, so whatever takes the click's dismissal
+        // away (Blocking, being disabled) takes the key's as well.
+        if (IsDisposed || IsOpen is false || IsEnabled is false || Blocking || NoDismissOnEscape) return;
+
+        if (await AssignIsOpen(false) is false) return;
+
+        StateHasChanged();
+    }
+
     // A press on the layer is the start of a dismissal; a press on the content is not, and the content
     // stops its own press from reaching here, so this only ever runs for the one on the layer.
     private void HandleOnMouseDown()
@@ -617,6 +748,10 @@ public partial class BitOverlay : BitComponentBase
         await ToggleScroll(false);
 
         await StopForwardScroll();
+
+        await UnwatchEscape();
+
+        _dotnetObj?.Dispose();
 
         try
         {
