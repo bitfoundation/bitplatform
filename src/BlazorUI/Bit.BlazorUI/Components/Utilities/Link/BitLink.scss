@@ -8,10 +8,13 @@
 //   --bit-Link-active-color           text color while pressed                    (default: from the Color role)
 //   --bit-Link-visited-color          text color of a link already visited        (default: the rest color)
 //   --bit-Link-disabled-color         text color when disabled                    (default: from the Color role)
+//   --bit-Link-current-color          text color of the current link (aria-current,
+//                                     or a Match on the URL) at rest              (default: the rest color)
 //   --bit-Link-focus-color            color of the keyboard focus ring            (default: from the Color role)
 //   --bit-Link-font-family            typeface                                    (default: $tg-font-family)
 //   --bit-Link-font-size              text size                                   (default: inherit, or per Size)
 //   --bit-Link-font-weight            text weight                                 (default: inherit)
+//   --bit-Link-current-font-weight    text weight of the current link             (default: the text weight)
 //   --bit-Link-underline-color        color of the underline                      (default: currentColor)
 //   --bit-Link-underline-thickness    thickness of the underline                  (default: auto)
 //   --bit-Link-underline-offset       gap between the text and its underline      (default: auto)
@@ -60,6 +63,15 @@
     // Declared ahead of the states below: a visited link still changes under the pointer and while pressed.
     &:visited {
         color: var(--bit-Link-visited-color, var(--bit-Link-color, var(--bit-lnk-clr)));
+    }
+
+    // The link to the page already open. That page has been visited by definition, so the visited color would
+    // otherwise be the only one it ever showed. :where() costs no specificity, which leaves the pointer, the
+    // press, the focus, NoColor and the disabled state all winning over it the way they win over the rest color.
+    &:where(.bit-lnk-cur),
+    &:where(.bit-lnk-cur):visited {
+        color: var(--bit-Link-current-color, var(--bit-Link-color, var(--bit-lnk-clr)));
+        font-weight: var(--bit-Link-current-font-weight, var(--bit-Link-font-weight, inherit));
     }
 
     // Under a pointer that can hover only, so a tap on a touch screen does not leave the link underlined.
@@ -112,6 +124,12 @@
     &:focus-visible {
         color: inherit;
     }
+}
+
+// A color is all that tells the current link from the rest otherwise, which is nothing to a reader who does not
+// see it (WCAG 1.4.1), so it keeps the underline at rest. Declared ahead of NoUnderline, which still wins.
+.bit-lnk-cur {
+    --bit-lnk-deco: underline;
 }
 
 .bit-lnk-nun {

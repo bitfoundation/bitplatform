@@ -6,7 +6,7 @@
 
 <DemoPage Name="Link"
           SecondaryNames="@(["Anchor"])"
-          Description="BitLink renders an anchor when it has an Href and a button when it does not, so a link that runs a command still answers the keyboard like a button. An Href starting with # scrolls to its target and moves the focus there. A new-tab link gets a noopener rel and an announcement that it opens a new tab. It is restyled through its parameters, its public CSS variables or a BitParams cascade."
+          Description="BitLink renders an anchor when it has an Href and a button when it does not, so a link that runs a command still answers the keyboard like a button. An Href starting with # scrolls to its target and moves the focus there, and a Match follows the URL to mark the current link. A new-tab link gets a noopener rel and an announcement that it opens a new tab. It is restyled through its parameters, its public CSS variables or a BitParams cascade."
           Notes="A link goes somewhere and a button does something: reach for BitButton or BitActionButton when the action changes the page rather than leaving it. Inside a sentence, keep a link Underlined - color alone does not tell every reader it is a link."
           Parameters="componentParameters"
           CssVariables="componentCssVariables"
@@ -145,7 +145,39 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Current link" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>Match</b> follows the URL like Blazor's NavLink: while the <b>Href</b> matches the page, the link gets
+            <b>aria-current="page"</b> and keeps its underline, so the current one is not told apart by color alone.
+            <b>Exact</b> matches the page itself, <b>Prefix</b> every page under it too.
+        </div>
+        <br />
+        <nav aria-label="Components" class="example-row">
+            <BitLink Match="BitNavMatch.Prefix" Href="/components">Components</BitLink>
+            <BitLink Match="BitNavMatch.Exact" Href="/components/button">Button</BitLink>
+            <BitLink Match="BitNavMatch.Exact" Href="/components/link">Link</BitLink>
+            <BitLink Match="BitNavMatch.Exact" Href="/components/image">Image</BitLink>
+        </nav>
+        <br /><br />
+        <div>
+            <b>AriaCurrent</b> sets it by hand where there is no URL to follow - <b>Step</b> in a wizard, <b>Location</b>
+            in a breadcrumb. With a <b>Match</b>, it only picks the kind.
+        </div>
+        <br />
+        <ol aria-label="Checkout" class="example-row steps">
+            @for (var i = 0; i < checkoutSteps.Length; i++)
+            {
+                var step = i;
+                <li>
+                    <BitLink AriaCurrent="@(currentStep == step ? BitNavAriaCurrent.Step : null)" OnClick="() => currentStep = step">
+                        @checkoutSteps[step]
+                    </BitLink>
+                </li>
+            }
+        </ol>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>Title</b> is a hover-only tooltip, so it only adds to what the text says. <b>AriaDescription</b> is read after
             the link's name - the place for a file's size or format.
@@ -157,17 +189,6 @@
                 Download the brand guidelines
             </BitLink>
         </div>
-        <br /><br />
-        <div>
-            <b>AriaCurrent</b> announces the link to where the reader already is: <b>Page</b> in a menu, <b>Step</b> in a
-            wizard, <b>Location</b> in a breadcrumb.
-        </div>
-        <br />
-        <nav aria-label="Components" class="example-row">
-            <BitLink AriaCurrent="BitNavAriaCurrent.Page" Underlined Href="/components/link">Link</BitLink>
-            <BitLink Href="/components/button">Button</BitLink>
-            <BitLink Href="/components/image">Image</BitLink>
-        </nav>
         <br /><br />
         <div>
             A disabled link leaves the tab order. <b>AllowDisabledFocus</b> keeps it focusable with <b>aria-disabled</b>, so
@@ -183,10 +204,11 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="CSS variables" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="CSS variables" RazorCode="@example11RazorCode" Id="example11">
         <div>
             The public <b>--bit-Link-*</b> variables inherit, so one set on <b>:root</b> or a container restyles every link
-            inside it, and one set in <b>Style</b> restyles that link. They win over <b>Color</b> and <b>Size</b>.
+            inside it, and one set in <b>Style</b> restyles that link. They win over <b>Color</b> and <b>Size</b>. A current
+            link drawn in a weight of its own no longer needs the underline to stand out.
         </div>
         <br />
         <div class="example-content">
@@ -194,6 +216,11 @@
                 Set on the container: <BitLink Underlined Href="https://github.com/bitfoundation/bitplatform">an offset, thicker underline</BitLink>,
                 and <BitLink Underlined Href="/components/link">a visited link</BitLink> in its own color.
             </div>
+            <nav aria-label="Components" class="example-row" style="--bit-Link-color: var(--bit-clr-fg-sec); --bit-Link-current-color: var(--bit-clr-fg-pri); --bit-Link-current-font-weight: 600;">
+                <BitLink Match="BitNavMatch.Exact" NoUnderline Href="/components/button">Button</BitLink>
+                <BitLink Match="BitNavMatch.Exact" NoUnderline Href="/components/link">Link</BitLink>
+                <BitLink Match="BitNavMatch.Exact" NoUnderline Href="/components/image">Image</BitLink>
+            </nav>
             <BitLink Style="--bit-Link-color: var(--bit-clr-fg-pri); --bit-Link-hover-color: var(--bit-clr-sec-fg); --bit-Link-font-weight: 600; --bit-Link-icon-gap: 8px;"
                      IconName="@BitIconName.ChevronRight"
                      IconPosition="BitIconPosition.End"
@@ -203,7 +230,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>BitParams</b> with a <b>BitLinkParams</b> sets defaults for every link under it - say, a translated
             <b>NewTabHint</b> for a whole app. A link's own value wins (the last one opts out of <b>Underlined</b>).
@@ -218,7 +245,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <b>Color</b> picks a role, <b>Primary</b> by default. Accent roles use the role's readable text shade, so every
             color keeps its contrast on the page. <b>NoColor</b> drops the link color for content that brings its own.
@@ -268,7 +295,7 @@
         </BitLink>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Icon</b> takes a <b>BitIconInfo</b> for external sets like FontAwesome and Bootstrap Icons, sized and
             colored like the link text.
@@ -284,7 +311,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
         <div>
             Unset, a link takes the font size around it. <b>Size</b> is for a link that stands on its own; the icon follows it.
         </div>
@@ -296,7 +323,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
         <div>
             The link is one element, so <b>Style</b> and <b>Class</b> are all it takes to restyle it.
         </div>
@@ -307,7 +334,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Dir</b> set to <b>BitDir.Rtl</b> lays the link out right to left; a leading icon stays on the leading side.
         </div>

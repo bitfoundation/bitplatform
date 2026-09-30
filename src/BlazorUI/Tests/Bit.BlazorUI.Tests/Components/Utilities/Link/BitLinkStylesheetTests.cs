@@ -134,6 +134,27 @@ public partial class BitLinkStylesheetTests
     }
 
     [TestMethod]
+    public void BitLinkShouldDrawTheCurrentLinkWithoutOutrankingItsStates()
+    {
+        var stylesheet = ReadStylesheet();
+        var root = Block(stylesheet, "\n.bit-lnk {");
+
+        // The page a current link points at is visited by definition, so the current color covers :visited too,
+        // and :where() keeps it below the pointer, the press, the focus, NoColor and the disabled state.
+        var current = root.IndexOf("&:where(.bit-lnk-cur),", System.StringComparison.Ordinal);
+        var hover = root.IndexOf("&:hover {", System.StringComparison.Ordinal);
+
+        Assert.IsTrue(current >= 0 && current < hover, "The current link is not styled ahead of the interactive states.");
+        StringAssert.Contains(root, "&:where(.bit-lnk-cur):visited {");
+        StringAssert.Contains(root, "color: var(--bit-Link-current-color, var(--bit-Link-color, var(--bit-lnk-clr)));");
+
+        // Color alone must not be what tells the current link apart, and NoUnderline still takes the underline off.
+        StringAssert.Contains(Block(stylesheet, "\n.bit-lnk-cur {"), "--bit-lnk-deco: underline;");
+        Assert.IsTrue(stylesheet.IndexOf("\n.bit-lnk-cur {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-lnk-nun {", System.StringComparison.Ordinal),
+                      "NoUnderline is declared ahead of the current link, which would win over it.");
+    }
+
+    [TestMethod]
     public void BitLinkShouldKeepADisabledLinkInTheDisabledColor()
     {
         var disabled = Block(ReadStylesheet(), "\n    &.bit-dis {");

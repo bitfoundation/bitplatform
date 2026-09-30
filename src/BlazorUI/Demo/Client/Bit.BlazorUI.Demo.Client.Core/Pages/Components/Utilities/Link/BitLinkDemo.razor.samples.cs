@@ -84,6 +84,30 @@ private void HandleGuardedClick()
 <BitLink Href=""#article-start"">Back to the start of the article</BitLink>";
 
     private readonly string example9RazorCode = @"
+<nav aria-label=""Components"">
+    <BitLink Match=""BitNavMatch.Prefix"" Href=""/components"">Components</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" Href=""/components/button"">Button</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" Href=""/components/link"">Link</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" Href=""/components/image"">Image</BitLink>
+</nav>
+
+
+<ol aria-label=""Checkout"">
+    @for (var i = 0; i < checkoutSteps.Length; i++)
+    {
+        var step = i;
+        <li>
+            <BitLink AriaCurrent=""@(currentStep == step ? BitNavAriaCurrent.Step : null)"" OnClick=""() => currentStep = step"">
+                @checkoutSteps[step]
+            </BitLink>
+        </li>
+    }
+</ol>";
+    private readonly string example9CsharpCode = @"
+private int currentStep;
+private readonly string[] checkoutSteps = [""Cart"", ""Shipping"", ""Payment""];";
+
+    private readonly string example10RazorCode = @"
 <BitLink Title=""github.com/bitfoundation/bitplatform"" Href=""https://github.com/bitfoundation/bitplatform"">Hover for the full address</BitLink>
 
 <BitLink IconName=""@BitIconName.Download"" AriaDescription=""SVG, 12 kilobytes"" Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Download="""">
@@ -91,26 +115,25 @@ private void HandleGuardedClick()
 </BitLink>
 
 
-<nav aria-label=""Components"">
-    <BitLink AriaCurrent=""BitNavAriaCurrent.Page"" Underlined Href=""/components/link"">Link</BitLink>
-    <BitLink Href=""/components/button"">Button</BitLink>
-    <BitLink Href=""/components/image"">Image</BitLink>
-</nav>
-
-
 <BitLink IsEnabled=""false"" Href=""https://github.com/bitfoundation/bitplatform"">Disabled (skipped by Tab)</BitLink>
 <BitLink IsEnabled=""false"" AllowDisabledFocus Href=""https://github.com/bitfoundation/bitplatform"">Disabled (still focusable)</BitLink>
 
 <BitLink OnClick=""() => focusTargetRef.FocusAsync()"">Focus the link below</BitLink>
 <BitLink @ref=""focusTargetRef"" Href=""https://github.com/bitfoundation/bitplatform"">The focus lands here</BitLink>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private BitLink focusTargetRef = default!;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <div style=""--bit-Link-underline-offset: 0.25em; --bit-Link-underline-thickness: 2px; --bit-Link-underline-color: var(--bit-clr-sec); --bit-Link-visited-color: var(--bit-clr-ter);"">
     Set on the container: <BitLink Underlined Href=""https://github.com/bitfoundation/bitplatform"">an offset, thicker underline</BitLink>,
     and <BitLink Underlined Href=""/components/link"">a visited link</BitLink> in its own color.
 </div>
+
+<nav aria-label=""Components"" style=""--bit-Link-color: var(--bit-clr-fg-sec); --bit-Link-current-color: var(--bit-clr-fg-pri); --bit-Link-current-font-weight: 600;"">
+    <BitLink Match=""BitNavMatch.Exact"" NoUnderline Href=""/components/button"">Button</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" NoUnderline Href=""/components/link"">Link</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" NoUnderline Href=""/components/image"">Image</BitLink>
+</nav>
 
 <BitLink Style=""--bit-Link-color: var(--bit-clr-fg-pri); --bit-Link-hover-color: var(--bit-clr-sec-fg); --bit-Link-font-weight: 600; --bit-Link-icon-gap: 8px;""
          IconName=""@BitIconName.ChevronRight""
@@ -119,13 +142,13 @@ private BitLink focusTargetRef = default!;";
     Set on one link
 </BitLink>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitParams Parameters=""linkParams"">
     <BitLink Href=""https://bitplatform.dev"">bit platform</BitLink>
     <BitLink Href=""https://github.com/bitfoundation/bitplatform"">bit platform on GitHub</BitLink>
     <BitLink Underlined=""false"" Href=""https://github.com/bitfoundation/bitplatform/issues"">Its own Underlined, the cascaded rest</BitLink>
 </BitParams>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private readonly BitLinkParams[] linkParams =
 [
     new()
@@ -137,7 +160,7 @@ private readonly BitLinkParams[] linkParams =
     }
 ];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitLink Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary</BitLink>
 <BitLink Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary</BitLink>
 <BitLink Color=""BitColor.Tertiary"" Href=""https://github.com/bitfoundation/bitplatform"">Tertiary</BitLink>
@@ -173,7 +196,7 @@ private readonly BitLinkParams[] linkParams =
     <BitText Typography=""BitTypography.Body2"">Its text keeps the colors BitText gives it.</BitText>
 </BitLink>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -182,12 +205,12 @@ private readonly BitLinkParams[] linkParams =
 <BitLink Icon=""@BitIconInfo.Bi(""github"")"" Href=""https://github.com/bitfoundation/bitplatform"">Bootstrap</BitLink>
 <BitLink Icon=""@BitIconInfo.Bi(""box-arrow-up-right"")"" IconPosition=""BitIconPosition.End"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">Bootstrap, trailing</BitLink>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitLink Size=""BitSize.Small"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Small</BitLink>
 <BitLink Size=""BitSize.Medium"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Medium</BitLink>
 <BitLink Size=""BitSize.Large"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Large</BitLink>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -199,7 +222,7 @@ private readonly BitLinkParams[] linkParams =
 <BitLink Style=""color: goldenrod; font-weight: bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
 <BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <div dir=""rtl"">
     <BitLink Dir=""BitDir.Rtl"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند راست به چپ</BitLink>
     <BitLink Dir=""BitDir.Rtl"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند راست به چپ با آیکن</BitLink>

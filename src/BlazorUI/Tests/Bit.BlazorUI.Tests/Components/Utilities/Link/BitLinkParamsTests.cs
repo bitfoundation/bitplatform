@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -135,5 +136,38 @@ public class BitLinkParamsTests : BunitTestContext
 
         Assert.AreEqual("BUTTON", root.TagName);
         Assert.IsTrue(root.ClassList.Contains("bit-lnk-und"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldFollowTheUrlWithACascadedMatch()
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/docs/getting-started");
+
+        var component = RenderComponent<BitLinkParamsTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/docs");
+            parameters.Add(p => p.Params, new BitLinkParams { Match = BitNavMatch.Prefix });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        // One Match on the params is every link of a navigation bar following the URL.
+        Assert.AreEqual("page", anchor.GetAttribute("aria-current"));
+        Assert.IsTrue(anchor.ClassList.Contains("bit-lnk-cur"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldKeepItsOwnMatchOverTheCascadedOne()
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/docs/getting-started");
+
+        var component = RenderComponent<BitLinkParamsTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/docs");
+            parameters.Add(p => p.Params, new BitLinkParams { Match = BitNavMatch.Prefix });
+            parameters.Add(p => p.Overrides, new Dictionary<string, object> { [nameof(BitLink.Match)] = BitNavMatch.Exact });
+        });
+
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("aria-current"));
     }
 }

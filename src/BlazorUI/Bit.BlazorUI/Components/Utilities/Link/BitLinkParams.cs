@@ -7,9 +7,9 @@
 /// Every parameter of the link that is a value rather than content or a callback is here, and each is a default
 /// rather than an override: a link that sets a parameter for itself keeps its own value, and only what it left
 /// unset is filled in from the cascade. What a subtree of links usually shares is how they look and how they
-/// behave - a color, an underline, a size, a <see cref="Target"/> - while an <see cref="Href"/> or a
-/// <see cref="Title"/> shared by every link would be one link written many times over. The one worth having
-/// above all the others is <see cref="NewTabHint"/>: the sentence a new-tab link is announced with is English
+/// behave - a color, an underline, a size, a <see cref="Target"/>, the <see cref="Match"/> every link of a
+/// navigation bar follows the URL with - while an <see cref="Href"/> or a <see cref="Title"/> shared by every
+/// link would be one link written many times over. The one worth having above all the others is <see cref="NewTabHint"/>: the sentence a new-tab link is announced with is English
 /// until an app says otherwise, and an app says it once here rather than at every link it writes.
 /// </remarks>
 public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
@@ -99,6 +99,13 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
     /// <see cref="BitLink.IconPosition"/>.
     /// </summary>
     public BitIconPosition? IconPosition { get; set; }
+
+    /// <summary>
+    /// Follows the URL the app sits on and reports the link as the current one while its href matches it.
+    /// <br />
+    /// <see cref="BitLink.Match"/>.
+    /// </summary>
+    public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Replaces the text a new-tab link is announced with, for translating it or for saying it another way.
@@ -249,6 +256,11 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.IconPosition = IconPosition.Value;
 
             bitLink.ClassBuilder.Reset();
+        }
+
+        if (Match.HasValue && bitLink.HasNotBeenSet(nameof(Match)))
+        {
+            bitLink.Match = Match.Value;
         }
 
         if (NewTabHint is not null && bitLink.HasNotBeenSet(nameof(NewTabHint)))
