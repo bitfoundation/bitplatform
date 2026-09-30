@@ -120,18 +120,38 @@ private int dismissalClicks;";
         justify-content: center;
         border: 2px solid var(--bit-clr-pri);
     }
+
+    .report {
+        gap: 1rem;
+        display: flex;
+        min-width: 240px;
+        flex-flow: column nowrap;
+    }
 </style>
 
-<BitButton OnClick=""() => absoluteIsOpen = true"">Load</BitButton>
+<BitButton OnClick=""LoadReport"">Load</BitButton>
 
 <div class=""container"" aria-busy=""@(absoluteIsOpen ? ""true"" : ""false"")"">
-    <BitOverlay @bind-IsOpen=""absoluteIsOpen"" Position=""BitPosition.Center"" ModeFull AbsolutePosition>
+    <div class=""report"" inert=""@absoluteIsOpen"">
+        <h3>Report</h3>
+        <BitTextField Label=""Filter"" />
+        <BitButton Variant=""BitVariant.Outline"">Export</BitButton>
+    </div>
+    <BitOverlay @bind-IsOpen=""absoluteIsOpen"" Position=""BitPosition.Center"" ModeFull AbsolutePosition Blocking>
         <BitProgress Circular Indeterminate Thickness=""10"" AriaLabel=""Loading the report"" />
     </BitOverlay>
-    <h3>Report</h3>
 </div>";
     private readonly string example4CsharpCode = @"
-private bool absoluteIsOpen;";
+private bool absoluteIsOpen;
+
+private async Task LoadReport()
+{
+    if (absoluteIsOpen) return;
+
+    absoluteIsOpen = true;
+    await Task.Delay(3000);
+    absoluteIsOpen = false;
+}";
 
     private readonly string example5RazorCode = @"
 <style>
@@ -325,8 +345,8 @@ private readonly BitOverlayParams[] overlayParams =
 <BitOverlay @bind-IsOpen=""cssVarsIsOpen""
             ModeFull
             Position=""BitPosition.BottomCenter""
-            Style=""--bit-Overlay-background: #1e1b4b99; --bit-Overlay-backdrop-filter: blur(4px); --bit-Overlay-padding: 2rem;"">
-    <div class=""content"">Tint, blur and padding all come from variables.</div>
+            Style=""--bit-Overlay-background: #1e1b4b99; --bit-Overlay-backdrop-filter: blur(4px); --bit-Overlay-padding: 2rem; --bit-Overlay-transition-duration: 400ms;"">
+    <div class=""content"">Tint, blur, padding and a slower fade all come from variables.</div>
 </BitOverlay>";
     private readonly string example9CsharpCode = @"
 private bool styleIsOpen;

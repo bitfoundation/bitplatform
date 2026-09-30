@@ -47,6 +47,7 @@ public class BitOverlayStylesheetTests
 
         StringAssert.Contains(GetBlock(stylesheet, "\n.bit-ovl {"), "z-index: var(--bit-Overlay-z-index, #{$zindex-overlay});");
         StringAssert.Contains(GetBlock(stylesheet, "\n.bit-ovl-mfl {"), "background-color: var(--bit-Overlay-background, #{$clr-bg-overlay});");
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-ovl {"), "var(--bit-Overlay-transition-duration, #{$mot-duration-short})");
     }
 
     [TestMethod]

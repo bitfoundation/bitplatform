@@ -188,6 +188,12 @@ public partial class BitOverlayDemo
             DefaultValue = "0px",
             Description = "Room kept between the content and the edges of the layer.",
         },
+        new()
+        {
+            Name = "--bit-Overlay-transition-duration",
+            DefaultValue = "--bit-mot-duration-short",
+            Description = "How long the layer takes to fade in and out. The default collapses under reduced motion; a value set here does not.",
+        },
     ];
 
 
@@ -215,6 +221,14 @@ public partial class BitOverlayDemo
     private int dismissalClicks;
 
     private bool absoluteIsOpen;
+    private async Task LoadReport()
+    {
+        if (absoluteIsOpen) return;
+
+        absoluteIsOpen = true;
+        await Task.Delay(3000);
+        absoluteIsOpen = false;
+    }
 
     private bool pageLockIsOpen;
     private bool boxScrollIsOpen;

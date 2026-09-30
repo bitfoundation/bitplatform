@@ -43,6 +43,13 @@
     border: rem2(2px) solid $bit-color-primary;
 }
 
+.report {
+    gap: 1rem;
+    display: flex;
+    min-width: rem2(240px);
+    flex-flow: column nowrap;
+}
+
 .btn-container {
     gap: 1rem;
     display: flex;

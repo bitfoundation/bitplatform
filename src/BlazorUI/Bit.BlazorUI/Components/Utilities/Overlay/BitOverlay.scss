@@ -2,15 +2,17 @@
 
 // Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
 // ancestor or on the Style of an Overlay inherits down to whatever reads it:
-//   --bit-Overlay-z-index            stacking order of an Overlay fixed to the screen  (default: $zindex-overlay; the ZIndex parameter wins)
-//   --bit-Overlay-background         fill of the layer in ModeFull                     (default: $clr-bg-overlay)
-//   --bit-Overlay-backdrop-filter    filter over what the layer covers                 (default: none; e.g. blur(4px))
-//   --bit-Overlay-padding            room kept between the content and the layer's edges (default: 0px)
+//   --bit-Overlay-z-index              stacking order of an Overlay fixed to the screen     (default: $zindex-overlay; the ZIndex parameter wins)
+//   --bit-Overlay-background           fill of the layer in ModeFull                        (default: $clr-bg-overlay)
+//   --bit-Overlay-backdrop-filter      filter over what the layer covers                    (default: none; e.g. blur(4px))
+//   --bit-Overlay-padding              room kept between the content and the layer's edges  (default: 0px)
+//   --bit-Overlay-transition-duration  how long the layer takes to fade in and out          (default: $mot-duration-short)
 
 // The Overlay stays in the page while it is closed so that it fades out rather than vanishing in one
 // frame. It is hidden rather than removed, and a hidden element takes neither the clicks of the page nor
 // a place in the accessibility tree, so a closed Overlay leaves the page untouched. The durations
-// collapse to nothing under reduced motion, which the motion tokens take care of.
+// collapse to nothing under reduced motion, which the motion tokens take care of - unless a duration of the
+// consumer's own is set through --bit-Overlay-transition-duration, which is then theirs to honour.
 // The layer is a flex container: what it hosts stretches over the whole of it unless Position places it.
 // The layer is made programmatically focusable so that a press on it has somewhere inside the Overlay to
 // put the focus it takes off an input.
@@ -30,7 +32,8 @@
     padding: var(--bit-Overlay-padding, 0px);
     backdrop-filter: var(--bit-Overlay-backdrop-filter, none);
     z-index: var(--bit-Overlay-z-index, #{$zindex-overlay});
-    transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
+    --bit-ovl-duration: var(--bit-Overlay-transition-duration, #{$mot-duration-short});
+    transition: opacity var(--bit-ovl-duration) $mot-easing-accelerate, visibility 0s linear var(--bit-ovl-duration);
 
     @include focus-anchor;
 }
@@ -38,7 +41,7 @@
 .bit-ovl-opn {
     opacity: 1;
     visibility: visible;
-    transition: opacity $mot-duration-short $mot-easing-decelerate, visibility 0s linear 0s;
+    transition: opacity var(--bit-ovl-duration) $mot-easing-decelerate, visibility 0s linear 0s;
 }
 
 // The box the content is given so that its clicks are told apart from the layer's. display:contents takes
