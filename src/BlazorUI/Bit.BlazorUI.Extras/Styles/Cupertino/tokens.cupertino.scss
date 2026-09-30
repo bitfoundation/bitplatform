@@ -31,6 +31,7 @@
     --bit-shp-radius-surface: 0.625rem; //10px - inset-grouped section
     --bit-shp-radius-popup: 0.8125rem; //13px - context menus / popovers
     --bit-shp-radius-dialog: 0.875rem; //14px - alerts
+    --bit-shp-radius-sheet: 0.625rem; //10px - sheets
     // iOS buttons are capsules, and a menu button and a dialog action are buttons there as well.
     // BitButtonGroup is left on the control radius: it publishes its own Rounded parameter, and the
     // iOS segmented control is a rounded rectangle rather than a capsule anyway.

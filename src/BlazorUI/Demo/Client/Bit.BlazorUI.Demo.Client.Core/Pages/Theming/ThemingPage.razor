@@ -466,6 +466,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 --bit-shp-radius-surface   /* &rarr; var(--bit-shp-brd-radius)  cards, accordions, messages, images */
 --bit-shp-radius-popup     /* &rarr; var(--bit-shp-brd-radius)  callouts, menus, dropdown lists, tooltips, snackbars */
 --bit-shp-radius-dialog    /* &rarr; var(--bit-shp-brd-radius)  dialogs, modals */
+--bit-shp-radius-sheet     /* &rarr; 0  the inner corners of panels (square unless a preset rounds them) */
 
 /* radius per control sub-family - all three fall back to the control radius */
 --bit-shp-radius-button    /* &rarr; var(--bit-shp-radius-control)  buttons and dialog actions */
@@ -501,7 +502,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 --bit-clr-tooltip-fg       /* &rarr; var(--bit-clr-fg-pri) */</CodeBox>
 
                 <BitText>
-                    Under Fluent every family points at the same primitive, so overriding <code>--bit-shp-brd-radius</code> still re-rounds everything exactly as before. The families exist for the design systems that disagree: Material rounds a button (pill), a chip (8px), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino capsules its buttons and chips over 8px fields, and separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS - exactly what the packaged Material and Cupertino presets do; see <i>Authoring your own preset</i> below. Themable from C# via <code>BitTheme.Shape.Radius.*</code> and <code>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</code>.
+                    Under Fluent every family points at the same primitive, so overriding <code>--bit-shp-brd-radius</code> still re-rounds everything exactly as before - except the sheet radius, which stays square until a preset rounds the inner corners of its panels on purpose. The families exist for the design systems that disagree: Material rounds a button (pill), a chip (8px), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino capsules its buttons and chips over 8px fields, and separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS - exactly what the packaged Material and Cupertino presets do; see <i>Authoring your own preset</i> below. Themable from C# via <code>BitTheme.Shape.Radius.*</code> and <code>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</code>.
                 </BitText>
 
                 <BitText>
@@ -764,11 +765,12 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     --bit-tpg-dialog-title-font-weight: 400;
     --bit-tpg-field-label-font-weight: 400;     /* fields are captioned in the body weight */
 
-    /* shape: 4px fields/menus, 12px cards, 28px dialogs, pill buttons, 8px chips, 2px checkbox */
+    /* shape: 4px fields/menus, 12px cards, 28px dialogs, 16px sheets, pill buttons, 8px chips, 2px checkbox */
     --bit-shp-radius-control: 0.25rem;
     --bit-shp-radius-popup: 0.25rem;
     --bit-shp-radius-surface: 0.75rem;
     --bit-shp-radius-dialog: 1.75rem;
+    --bit-shp-radius-sheet: 1rem;
     --bit-shp-radius-button: var(--bit-shp-radius-full);
     --bit-shp-radius-chip: 0.5rem;
     --bit-shp-radius-selection: 0.125rem;
@@ -831,7 +833,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     },
     Shape =
     {
-        Radius = { Control = "0.25rem", Popup = "0.25rem", Surface = "0.75rem", Dialog = "1.75rem",
+        Radius = { Control = "0.25rem", Popup = "0.25rem", Surface = "0.75rem", Dialog = "1.75rem", Sheet = "1rem",
                    Button = "var(--bit-shp-radius-full)", Chip = "0.5rem", Selection = "0.125rem" },
     },
     Size =

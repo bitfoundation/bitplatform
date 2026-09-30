@@ -38,6 +38,8 @@
     --bit-shp-radius-surface: 0.75rem; //12px
     --bit-shp-radius-popup: 0.25rem; //4px
     --bit-shp-radius-dialog: 1.75rem; //28px
+    // Modal side sheets and navigation drawers round the corners they turn towards the page.
+    --bit-shp-radius-sheet: 1rem; //16px
     // M3 buttons are full-round pills while the control radius stays 4px for fields and menus - a
     // menu button is a button in M3, and so are the actions of a dialog. BitButtonGroup keeps the
     // control radius: it publishes its own Rounded parameter, and a preset that pilled it

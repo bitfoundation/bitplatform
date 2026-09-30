@@ -354,6 +354,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitCard", "BitCardParams")]
     [DataRow("BitIcon", "BitIconParams")]
     [DataRow("BitPivot", "BitPivotParams")]
+    [DataRow("BitPanel", "BitPanelParams")]
     [DataRow("BitScrollablePane", "BitScrollablePaneParams")]
     [DataRow("BitModal", "BitModalParams")]
     [DataRow("BitDialog", "BitDialogParams")]
