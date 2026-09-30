@@ -3,9 +3,11 @@
 
 @* The Escape key is handled on the root rather than on the container so that it is caught wherever the
    keyboard actually is while the panel is open - inside the content, or on the overlay that took the click.
-   The key stops here when the panel acts on it: a panel opened from inside another one sits in that one's
-   content, where an Escape left to carry on up would dismiss the panel the keyboard is still working inside
-   of along with the one it was meant for. *@
+   The keys stop here when the panel acts on Escape: a panel opened from inside another one sits in that
+   one's content, where an Escape left to carry on up would dismiss the panel the keyboard is still working
+   inside of along with the one it was meant for. A panel that refuses the key lets every key through, so the
+   keyboard shortcuts of the page around it keep working while it is open; that an Escape it refused does not
+   dismiss a panel it was opened from, taking it along, is the escape guard's to see to (Utils.setupEscapeGuard). *@
 @* tabindex="-1" makes the root programmatically focusable so that a press on the overlay lands the focus
    inside the panel rather than on the body. The root only catches it: the focus trap passes it straight on
    into the container below, where the dialog role is (Utils.setupFocusTrap has the whole of it). It is
@@ -28,10 +30,13 @@
        way of the clicks the page is meant to keep while the panel is closed.
        The press on it is left its default action: it is what blurs the input the user was typing into, and
        an input only commits what was typed once it loses the focus - before the click the press turns into
-       runs any dismissal handler. Where that focus lands is the tabindex of the root above. *@
+       runs any dismissal handler. Where that focus lands is the tabindex of the root above.
+       data-no-swipe keeps a drag on it from swiping a panel this one was opened from: nested in that one's
+       content, the overlay sits inside the surface the outer panel is swiped by. *@
     @if (Modeless is false)
     {
         <div @onclick="HandleOnOverlayClick"
+             data-no-swipe
              aria-hidden="true"
              style="@Styles?.Overlay"
              class="@GetOverlayCssClasses()" />
@@ -73,7 +78,10 @@
                         }
                         else if (HeaderText.HasValue())
                         {
-                            <div id="@_headerId" style="@Styles?.Header" class="bit-pnl-hdr @Classes?.Header">
+                            @* A title the panel renders itself is also a heading, so a screen reader moving by
+                               headings lands on it the way it lands on the title of a dialog. A Header template
+                               is left to carry whatever semantics its markup gives it. *@
+                            <div id="@_headerId" role="heading" aria-level="2" style="@Styles?.Header" class="bit-pnl-hdr @Classes?.Header">
                                 @HeaderText
                             </div>
                         }

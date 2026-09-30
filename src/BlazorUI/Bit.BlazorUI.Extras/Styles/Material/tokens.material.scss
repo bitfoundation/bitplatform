@@ -38,6 +38,8 @@
     --bit-shp-radius-surface: 0.75rem; //12px
     --bit-shp-radius-popup: 0.25rem; //4px
     --bit-shp-radius-dialog: 1.75rem; //28px
+    // Modal side sheets and navigation drawers round the corners they turn towards the page.
+    --bit-shp-radius-sheet: 1rem; //16px
     // M3 buttons are full-round pills while the control radius stays 4px for fields and menus - a
     // menu button is a button in M3, and so are the actions of a dialog. BitButtonGroup keeps the
     // control radius: it publishes its own Rounded parameter, and a preset that pilled it
@@ -122,6 +124,12 @@
     // opacity M3 names for the disabled state, against Fluent's 50%.
     --bit-opa-dis: 0.38;
 
+    /*---- Surface colors ----*/
+    // A plain M3 tooltip is the inverse surface with inverse-on-surface text, which is what lets it sit
+    // at L0 (see --bit-shd-tooltip below): it stands off the page by its contrast rather than by a shadow.
+    --bit-clr-tooltip-bg: var(--bit-clr-fg-pri);
+    --bit-clr-tooltip-fg: var(--bit-clr-bg-pri);
+
     /*---- Spacing / layout ----*/
     --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px - M3 dialog inset
     // M3 cards inset their content 16dp, on the 4dp grid either side of it.
@@ -152,6 +160,9 @@
     // M3 titles a dialog in headline-small: 24px regular - the 2xl step of the core ramp it keeps.
     --bit-tpg-dialog-title-font-size: var(--bit-tpg-fs-2xl); //24px
     --bit-tpg-dialog-title-font-weight: var(--bit-tpg-fw-regular);
+    // A field is captioned in the body type, regular: the medium weight belongs to the label-* styles
+    // of buttons, chips and tabs.
+    --bit-tpg-field-label-font-weight: var(--bit-tpg-fw-regular);
     // The --bit-tpg-fs-* ramp is deliberately left at the core stylesheet's values rather than
     // retuned. The three steps the size classes read are already M3's own control sizes (sm -> 12px
     // label-medium, md -> 14px label-large, lg -> 16px body-large), and above them the M3 scale has

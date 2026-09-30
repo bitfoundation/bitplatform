@@ -4,11 +4,27 @@ public partial class BitIconDemo
 {
     private bool isStarred = true;
     private int clickCount;
+    private int replayKey;
 
     // Every name the FontAwesome example writes is a FontAwesome one - except the ones FontAwesome does
     // not have, which are left to the built-in set by answering with nothing.
     private readonly Func<string, BitIconInfo?> faResolver =
         name => name is "house" or "heart" or "rocket" ? BitIconInfo.Fa($"solid {name}") : null;
+
+    private readonly BitIconParams[] iconParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Circular = true,
+        }
+    ];
+
+    private readonly BitColor[] colors = Enum.GetValues<BitColor>();
+
+    // The background roles are the page's own surface colors, so they are shown on a dark panel to be seen at all.
+    private static bool IsBackground(BitColor color) =>
+        color is BitColor.PrimaryBackground or BitColor.SecondaryBackground or BitColor.TertiaryBackground;
 
 
 
@@ -19,7 +35,7 @@ public partial class BitIconDemo
             Name = "Animation",
             Type = "BitIconAnimation?",
             DefaultValue = "null",
-            Description = "Specifies a looping animation to play on the icon. The animation is drawn with a transform of its own while Rotate, RotateAngle and Flip are drawn with the individual rotate and scale properties beside it, so the two compose: a mirrored arrow still spins, and it spins around the angle it was turned to.",
+            Description = "A looping animation to play on the icon. It composes with Rotate, RotateAngle and Flip: a mirrored arrow still spins.",
             LinkType = LinkType.Link,
             Href = "#animation-enum",
         },
@@ -28,35 +44,42 @@ public partial class BitIconDemo
             Name = "AnimationDuration",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Overrides how long one cycle of the animation takes, as any CSS time. The reduced motion factor still multiplies it, so an animation asked to run fast still slows down for a reader who asked for less motion.",
+            Description = "How long one cycle of the animation takes, as any CSS time. Still slowed down under reduced motion.",
         },
         new()
         {
             Name = "AnimationDelay",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Waits this long before the animation starts, as any CSS time - which is what turns a row of identical animated icons into a wave. The wait is not stretched under reduced motion the way the cycle is.",
+            Description = "How long to wait before the animation starts, as any CSS time.",
+        },
+        new()
+        {
+            Name = "AnimationIterationCount",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "How many times the animation plays before the icon comes to rest. Unset, it loops. Beat and Fade run out and back as two iterations.",
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content rendered inside the icon element, for an icon set that is neither a font nor a class - an inline svg, an image, a ligature of your own. The color, the size and the variant still apply around it.",
+            Description = "Content rendered inside the icon element instead of a glyph - an inline svg, an image. The color, size and variant still apply.",
         },
         new()
         {
             Name = "Circular",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws the icon in a circle rather than in the rounded box of the design system, squaring the box off at the same time so a narrow glyph and a wide one are drawn in circles of the same size.",
+            Description = "Draws the Fill or Outline box as a circle, the same size for narrow and wide glyphs.",
         },
         new()
         {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "Specifies the color theme of the icon. Default value is BitColor.Primary.",
+            Description = "Specifies the color theme of the icon, BitColor.Primary when unset. It supplies the defaults of the --bit-Icon-* color variables, which win over it.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -81,7 +104,7 @@ public partial class BitIconDemo
             Name = "FlipRtl",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Mirrors the icon horizontally when it is rendered in a right-to-left direction. The direction is read off the rendered document, so it follows an ancestor's dir as well as the component's own Dir.",
+            Description = "Mirrors the icon horizontally when it renders right-to-left, whether by its own Dir or an ancestor's dir.",
         },
         new()
         {
@@ -104,7 +127,7 @@ public partial class BitIconDemo
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies the name of the icon from the built-in Fluent UI icon library. This property is ignored when Icon names a glyph.",
+            Description = "The name of a glyph in the built-in Fabric MDL2 set (or in another set, through IconResolver). Ignored when Icon names a glyph.",
             LinkType = LinkType.Link,
             Href = "/iconography",
         },
@@ -113,21 +136,21 @@ public partial class BitIconDemo
             Name = "IconResolver",
             Type = "Func<string, BitIconInfo?>?",
             DefaultValue = "null",
-            Description = "Names the icon set that IconName is a name in - name => BitIconInfo.Fa(name), BitIconInfo.Ms, or a lookup of your own. An Icon that names a glyph still wins over it, and a resolver that answers with null leaves the name to the built-in set. Cascades through BitParams to a whole subtree.",
+            Description = "Maps an IconName to an icon of another set - name => BitIconInfo.Fa(name), or a lookup of your own. Icon wins over it; answering null leaves the name to the built-in set. Cascades through BitParams.",
         },
         new()
         {
             Name = "Inline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Drops the icon a quarter of an em below the baseline so that an inline svg or an image given as ChildContent sits centered on the line of text it is written in. A glyph of an icon font needs none of it.",
+            Description = "Drops an inline svg or image given as ChildContent onto the line of text it sits in.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
-            Description = "The callback for when the icon is clicked. An icon with a click handler joins the tab order, answers Enter and Space, and is announced as a button - so give it an AriaLabel or a Title.",
+            Description = "The callback for when the icon is clicked. The icon then becomes a button: a tab stop answering Enter and Space. Name it with an AriaLabel or a Title.",
         },
         new()
         {
@@ -150,7 +173,7 @@ public partial class BitIconDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Specifies the size of the icon. Default value is BitSize.Medium.",
+            Description = "Specifies the size of the icon, BitSize.Medium when unset. It supplies the default of --bit-Icon-size, which wins over it; FontSize wins over both.",
             LinkType = LinkType.Link,
             Href = "#icon-size-enum",
         },
@@ -159,7 +182,7 @@ public partial class BitIconDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text shown in the native tooltip when the pointer rests on the icon. It also names the icon for assistive technology, so an icon that carries one is announced rather than skipped.",
+            Description = "The native tooltip text. It also names the icon for assistive technology.",
         },
         new()
         {
@@ -355,7 +378,7 @@ public partial class BitIconDemo
         {
             Id = "icon-size-enum",
             Name = "BitSize",
-            Description = "",
+            Description = "The three icon sizes of the theme.",
             Items =
             [
                 new()
@@ -463,7 +486,7 @@ public partial class BitIconDemo
         {
             Id = "animation-enum",
             Name = "BitIconAnimation",
-            Description = "The looping animations an icon can play. All of them slow down rather than stop under reduced motion, and ForceAnimation restores their full speed. AnimationDuration replaces the length of one cycle, and a Rotate, RotateAngle or Flip is drawn beside the animation rather than under it.",
+            Description = "The looping animations an icon can play. They slow down rather than stop under reduced motion; ForceAnimation restores their full speed, AnimationIterationCount stops them after a few cycles.",
             Items =
             [
                 new()
@@ -518,310 +541,67 @@ public partial class BitIconDemo
         }
     ];
 
-
-
-    private readonly string example1RazorCode = @"
-<BitIcon IconName=""@BitIconName.Accept"" />
-<BitIcon IconName=""@BitIconName.Bus"" />
-<BitIcon IconName=""@BitIconName.Pinned"" />
-
-<BitIcon IconName=""@BitIconName.Accept"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Bus"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Pinned"" IsEnabled=""false"" />";
-
-    private readonly string example2RazorCode = @"
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
-
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
-
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Circular />
-<BitIcon IconName=""@BitIconName.Cancel"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" Circular />
-<BitIcon IconName=""@BitIconName.Info"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" Size=""BitSize.Large"" Circular />";
-
-    private readonly string example3RazorCode = @"
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate90"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate180"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate270"" />
-
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""45"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""135"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""-30"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""200"" Flip=""BitIconFlip.Horizontal"" />
-
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" />
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" Flip=""BitIconFlip.Horizontal"" />
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" Flip=""BitIconFlip.Vertical"" />
-<BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" Flip=""BitIconFlip.Both"" />
-
-<div>
-    <BitIcon IconName=""@BitIconName.Forward"" Size=""BitSize.Large"" FlipRtl />
-    <BitIcon IconName=""@BitIconName.Back"" Size=""BitSize.Large"" FlipRtl />
-    <BitIcon IconName=""@BitIconName.Clock"" Size=""BitSize.Large"" />
-</div>
-
-<div dir=""rtl"">
-    <BitIcon IconName=""@BitIconName.Forward"" Size=""BitSize.Large"" FlipRtl />
-    <BitIcon IconName=""@BitIconName.Back"" Size=""BitSize.Large"" FlipRtl />
-    <BitIcon IconName=""@BitIconName.Clock"" Size=""BitSize.Large"" />
-</div>";
-
-    private readonly string example4RazorCode = @"
-<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" />
-<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.SpinReverse"" />
-<BitIcon IconName=""@BitIconName.ProgressRingDots"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Pulse"" />
-<BitIcon IconName=""@BitIconName.Heart"" Size=""BitSize.Large"" Color=""BitColor.Error"" Animation=""BitIconAnimation.Beat"" />
-<BitIcon IconName=""@BitIconName.StatusCircleInner"" Size=""BitSize.Large"" Color=""BitColor.Success"" Animation=""BitIconAnimation.Fade"" />
-<BitIcon IconName=""@BitIconName.Ringer"" Size=""BitSize.Large"" Color=""BitColor.Warning"" Animation=""BitIconAnimation.Shake"" />
-<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Color=""BitColor.Info"" Animation=""BitIconAnimation.Bounce"" />
-<BitIcon IconName=""@BitIconName.CircleFill"" Size=""BitSize.Large"" Color=""BitColor.Error"" Animation=""BitIconAnimation.BeatFade"" />
-
-<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" AnimationDuration=""4s"" />
-<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" AnimationDuration=""0.4s"" />
-<BitIcon IconName=""@BitIconName.Ringer"" Size=""BitSize.Large"" Color=""BitColor.Warning"" Animation=""BitIconAnimation.Shake"" AnimationDuration=""2s"" />
-<BitIcon IconName=""@BitIconName.Send"" Size=""BitSize.Large"" Color=""BitColor.Success"" Animation=""BitIconAnimation.Beat"" RotateAngle=""45"" />
-
-<BitIcon IconName=""@BitIconName.CircleFill"" Color=""BitColor.Info"" Animation=""BitIconAnimation.Fade"" AnimationDuration=""1.2s"" />
-<BitIcon IconName=""@BitIconName.CircleFill"" Color=""BitColor.Info"" Animation=""BitIconAnimation.Fade"" AnimationDuration=""1.2s"" AnimationDelay=""0.2s"" />
-<BitIcon IconName=""@BitIconName.CircleFill"" Color=""BitColor.Info"" Animation=""BitIconAnimation.Fade"" AnimationDuration=""1.2s"" AnimationDelay=""0.4s"" />";
-
-    private readonly string example5RazorCode = @"
-<ul>
-    <li><BitIcon IconName=""@BitIconName.Home"" /> Home</li>
-    <li><BitIcon IconName=""@BitIconName.Settings"" /> Settings</li>
-    <li><BitIcon IconName=""@BitIconName.Contact"" /> Profile</li>
-    <li><BitIcon IconName=""@BitIconName.SignOut"" /> Sign out</li>
-</ul>
-
-<ul>
-    <li><BitIcon IconName=""@BitIconName.Home"" FixedWidth /> Home</li>
-    <li><BitIcon IconName=""@BitIconName.Settings"" FixedWidth /> Settings</li>
-    <li><BitIcon IconName=""@BitIconName.Contact"" FixedWidth /> Profile</li>
-    <li><BitIcon IconName=""@BitIconName.SignOut"" FixedWidth /> Sign out</li>
-</ul>";
-
-    private readonly string example6RazorCode = @"
-<BitIcon IconName=""@BitIconName.FavoriteStarFill""
-         Size=""BitSize.Large""
-         Color=""@(isStarred ? BitColor.Warning : BitColor.TertiaryForeground)""
-         Title=""@(isStarred ? ""Remove from favorites"" : ""Add to favorites"")""
-         OnClick=""() => isStarred = !isStarred"" />
-
-<BitIcon IconName=""@BitIconName.Refresh""
-         Size=""BitSize.Large""
-         Variant=""BitVariant.Outline""
-         AriaLabel=""Refresh the list""
-         OnClick=""() => clickCount++"" />
-
-<BitIcon IconName=""@BitIconName.Delete""
-         Size=""BitSize.Large""
-         Color=""BitColor.Error""
-         Title=""Deleting is unavailable here""
-         IsEnabled=""false""
-         OnClick=""() => clickCount++"" />
-
-<div>Clicked @clickCount times.</div>";
-    private readonly string example6CsharpCode = @"
-private bool isStarred = true;
-private int clickCount;";
-
-    private readonly string example7RazorCode = @"
-<BitIcon Color=""BitColor.Info"" Size=""BitSize.Large"">
-    <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
-        <path d=""M12 2 15.1 8.6 22 9.7l-5 4.9 1.2 7L12 18.3 5.8 21.6 7 14.6l-5-4.9 6.9-1.1z"" />
-    </svg>
-</BitIcon>
-
-<BitIcon Color=""BitColor.Success"" Variant=""BitVariant.Outline"">
-    <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
-        <path d=""M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"" />
-    </svg>
-</BitIcon>
-
-<BitIcon Color=""BitColor.Error"" Variant=""BitVariant.Fill"" Size=""BitSize.Large"">
-    <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
-        <path d=""M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"" />
-    </svg>
-</BitIcon>
-
-<div style=""font-size:1.25rem"">
-    Aligned by its box
-    <BitIcon Color=""BitColor.Info"" FontSize=""inherit"">
-        <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
-            <path d=""M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"" />
-        </svg>
-    </BitIcon>
-    and dropped onto the line with Inline
-    <BitIcon Color=""BitColor.Info"" FontSize=""inherit"" Inline>
-        <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
-            <path d=""M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"" />
-        </svg>
-    </BitIcon>
-</div>";
-
-    private readonly string example8RazorCode = @"
-<BitIcon IconName=""@BitIconName.CompletedSolid"" Color=""BitColor.Success"" AriaLabel=""Succeeded"" />
-
-<BitIcon IconName=""@BitIconName.ErrorBadge"" Color=""BitColor.Error"" Title=""Failed on the last run"" />
-
-<span><BitIcon IconName=""@BitIconName.Attach"" /> Attachment</span>";
-
-    private readonly string example9RazorCode = @"
-<BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.Secondary"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.Secondary"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.Secondary"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.Tertiary"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.Tertiary"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.Tertiary"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />
-
-<div style=""background:var(--bit-clr-fg-sec);padding:1rem;color:var(--bit-clr-bg-sec)"">
-    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Accept"" />
-    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Bus"" />
-    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Pinned"" />
-
-    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Accept"" />
-    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Bus"" />
-    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Pinned"" />
-
-    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Accept"" />
-    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Bus"" />
-    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Pinned"" />
-</div>
-
-<BitIcon Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Pinned"" />";
-
-    private readonly string example10RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitIcon Icon=""@(""fa-solid fa-house"")"" Size=""BitSize.Large"" />
-<BitIcon Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Color=""BitColor.Error"" />
-<BitIcon Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" Size=""BitSize.Large"" />
-<BitIcon Icon=""@BitIconInfo.Fa(""solid rocket"")"" Color=""BitColor.Secondary"" />
-
-
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
-<BitIcon Icon=""@(""bi bi-house-fill"")"" Size=""BitSize.Large"" />
-<BitIcon Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" Color=""BitColor.Error"" />
-<BitIcon Icon=""@BitIconInfo.Bi(""github"")"" Size=""BitSize.Large"" />
-<BitIcon Icon=""@BitIconInfo.Bi(""gear-fill"")"" Color=""BitColor.Secondary"" />
-
-
-<link rel=""stylesheet"" href=""https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"" />
-
-<BitIcon Icon=""@BitIconInfo.Ms(""home"")"" Size=""BitSize.Large"" />
-<BitIcon Icon=""@BitIconInfo.Ms(""favorite"")"" Color=""BitColor.Error"" />
-<BitIcon Icon=""@BitIconInfo.Ms(""settings"")"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" />
-<BitIcon Icon=""@BitIconInfo.Ms(""rocket_launch"")"" Color=""BitColor.Secondary"" />
-
-
-<BitIcon IconName=""house"" IconResolver=""@faResolver"" Size=""BitSize.Large"" />
-<BitIcon IconName=""heart"" IconResolver=""@faResolver"" Color=""BitColor.Error"" />
-<BitIcon IconName=""rocket"" IconResolver=""@faResolver"" Color=""BitColor.Secondary"" />
-<BitIcon IconName=""Accept"" IconResolver=""@faResolver"" Color=""BitColor.Success"" />";
-    private readonly string example10CsharpCode = @"
-// Every name this app writes is a FontAwesome one - except the ones FontAwesome does not have,
-// which are left to the built-in set by answering with nothing.
-private readonly Func<string, BitIconInfo?> faResolver =
-    name => name is ""house"" or ""heart"" or ""rocket"" ? BitIconInfo.Fa($""solid {name}"") : null;
-
-// The same resolver given to every icon of a subtree at once:
-// <BitParams Parameters=""@([new BitIconParams { IconResolver = faResolver }])"">...</BitParams>";
-
-    private readonly string example11RazorCode = @"
-<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon FontSize=""1.5rem"" IconName=""@BitIconName.Accept"" />
-<BitIcon FontSize=""2.5rem"" IconName=""@BitIconName.Bus"" />
-<BitIcon FontSize=""4rem"" IconName=""@BitIconName.Pinned"" />
-
-<div style=""font-size:1.75rem"">
-    Sized by the text around it <BitIcon FontSize=""inherit"" IconName=""@BitIconName.FavoriteStarFill"" Color=""BitColor.Warning"" />
-</div>";
-
-    private readonly string example12RazorCode = @"
-<style>
-    .icon-class {
-        padding: 4px;
-        font-size: 3rem;
-        margin-left: 1rem;
-        background-color: aquamarine;
-    }
-</style>
-
-<BitIcon Size=""BitSize.Large""
-         IconName=""@BitIconName.Accept""
-         Style=""background-color: brown; border-radius: 4px"" />
-
-<BitIcon Class=""icon-class""
-         IconName=""@BitIconName.Accept"" />";
-
-    private readonly string example13RazorCode = @"
-<div dir=""rtl"">
-    <BitIcon Dir=""BitDir.Rtl"" IconName=""@BitIconName.Accept"" />
-    <BitIcon Dir=""BitDir.Rtl"" IconName=""@BitIconName.Bus"" Color=""BitColor.Info"" />
-    <BitIcon Dir=""BitDir.Rtl"" IconName=""@BitIconName.Forward"" FlipRtl />
-    <BitIcon Dir=""BitDir.Rtl"" IconName=""@BitIconName.Send"" Color=""BitColor.Success"" Variant=""BitVariant.Outline"" FlipRtl />
-</div>";
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Icon-color",
+            DefaultValue = "the main color of the icon's Color role",
+            Description = "The icon's color: the glyph of a Text or an Outline icon, the box of a Fill one. It wins over the Color of the icon. currentColor makes a Text icon follow the text around it - set it around Text icons only, since a Fill icon would paint its box in its own glyph color.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-contrast-color",
+            DefaultValue = "the text color of the icon's Color role",
+            Description = "The glyph drawn over the box of a Fill icon, and of a clickable Outline icon under the pointer. It wins over the Color of the icon.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-hover-color",
+            DefaultValue = "a shade of --bit-Icon-color when it is set, otherwise the hover color of the icon's Color role",
+            Description = "The color of a clickable icon under the pointer. It wins over the Color of the icon.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-active-color",
+            DefaultValue = "a shade of the hover color when either variable above is set, otherwise the active color of the icon's Color role",
+            Description = "The color of a clickable icon while pressed. It wins over the Color of the icon.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-focus-color",
+            DefaultValue = "the focus color of the icon's role",
+            Description = "Color of the keyboard focus ring of a clickable or otherwise focusable icon. It wins over the Color of the icon.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-size",
+            DefaultValue = "per Size, --bit-siz-icon-sm/md/lg",
+            Description = "Font size, which is the size of the glyph. It wins over the Size of the icon; FontSize wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-padding",
+            DefaultValue = "half a spacing unit (4px)",
+            Description = "Room around the glyph in a Fill or an Outline box.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of a Fill or an Outline box. Circular wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Border width of a Fill or an Outline box.",
+        },
+        new()
+        {
+            Name = "--bit-Icon-fixed-width",
+            DefaultValue = "1.25em",
+            Description = "Width of a FixedWidth icon, for a set whose widest glyph needs more (or less) room.",
+        },
+    ];
 }

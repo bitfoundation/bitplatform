@@ -58,7 +58,7 @@ public class BitSplitterTests : BunitTestContext
         var style = root.GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains($"--gutter-size:{gutter}px"));
+        Assert.IsTrue(style.Contains($"--bit-spl-gtr-size:{gutter}px"));
     }
 
     [TestMethod]
@@ -75,10 +75,10 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--gutter-size:0px"));
-        Assert.IsTrue(style.Contains("--first-panel:0px"));
-        Assert.IsTrue(style.Contains("--first-panel-min:0px"));
-        Assert.IsTrue(style.Contains("--second-panel-max:0px"));
+        Assert.IsTrue(style.Contains("--bit-spl-gtr-size:0px"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:0px"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-min:0px"));
+        Assert.IsTrue(style.Contains("--bit-spl-spn-max:0px"));
     }
 
     [TestMethod]
@@ -255,13 +255,13 @@ public class BitSplitterTests : BunitTestContext
         var style = root.GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--first-panel:128px"));
-        Assert.IsTrue(style.Contains("--first-panel-max:256px"));
-        Assert.IsTrue(style.Contains("--first-panel-min:64px"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:128px"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-max:256px"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-min:64px"));
 
-        Assert.IsTrue(style.Contains("--second-panel:200px"));
-        Assert.IsTrue(style.Contains("--second-panel-max:300px"));
-        Assert.IsTrue(style.Contains("--second-panel-min:100px"));
+        Assert.IsTrue(style.Contains("--bit-spl-spn-size:200px"));
+        Assert.IsTrue(style.Contains("--bit-spl-spn-max:300px"));
+        Assert.IsTrue(style.Contains("--bit-spl-spn-min:100px"));
     }
 
     [TestMethod]
@@ -275,8 +275,8 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--second-panel:200px"));
-        Assert.IsTrue(style.Contains("--second-panel-grow:0"));
+        Assert.IsTrue(style.Contains("--bit-spl-spn-size:200px"));
+        Assert.IsTrue(style.Contains("--bit-spl-spn-grow:0"));
     }
 
     [TestMethod]
@@ -294,10 +294,10 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--first-panel:128px"));
-        Assert.IsTrue(style.Contains("--first-panel-grow:0"));
-        Assert.IsTrue(style.Contains("--second-panel:200px"));
-        Assert.IsTrue(style.Contains("--second-panel-grow:1"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:128px"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-grow:0"));
+        Assert.IsTrue(style.Contains("--bit-spl-spn-size:200px"));
+        Assert.IsTrue(style.Contains("--bit-spl-spn-grow:1"));
     }
 
     [TestMethod]
@@ -307,7 +307,7 @@ public class BitSplitterTests : BunitTestContext
 
         var style = component.Find(".bit-spl").GetAttribute("style");
 
-        Assert.IsTrue(string.IsNullOrEmpty(style) || style.Contains("--first-panel") is false);
+        Assert.IsTrue(string.IsNullOrEmpty(style) || style.Contains("--bit-spl-fpn-size") is false);
     }
 
     [TestMethod]
@@ -323,12 +323,12 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--first-panel:42.5%"));
-        Assert.IsTrue(style.Contains("--first-panel-grow:0"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:42.5%"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-grow:0"));
 
         // The second panel takes what is left over; a pin on it as well could not add up at every width.
-        Assert.IsFalse(style.Contains("--second-panel:"));
-        Assert.IsFalse(style.Contains("--second-panel-grow:"));
+        Assert.IsFalse(style.Contains("--bit-spl-spn-size:"));
+        Assert.IsFalse(style.Contains("--bit-spl-spn-grow:"));
     }
 
     [TestMethod]
@@ -351,7 +351,7 @@ public class BitSplitterTests : BunitTestContext
             var style = component.Find(".bit-spl").GetAttribute("style");
 
             Assert.IsNotNull(style);
-            Assert.IsTrue(style.Contains("--first-panel:42.5%"), style);
+            Assert.IsTrue(style.Contains("--bit-spl-fpn-size:42.5%"), style);
         }
         finally
         {
@@ -563,12 +563,12 @@ public class BitSplitterTests : BunitTestContext
         var component = RenderComponent<BitSplitter>(parameters =>
         {
             parameters.Add(p => p.GutterSize, 12);
-            parameters.Add(p => p.Styles, new BitSplitterClassStyles { Root = "--gutter-size:99px" });
+            parameters.Add(p => p.Styles, new BitSplitterClassStyles { Root = "--bit-spl-gtr-size:99px" });
         });
 
         var style = component.Find(".bit-spl").GetAttribute("style")!;
 
-        Assert.IsTrue(style.IndexOf("--gutter-size:12px") < style.IndexOf("--gutter-size:99px"));
+        Assert.IsTrue(style.IndexOf("--bit-spl-gtr-size:12px") < style.IndexOf("--bit-spl-gtr-size:99px"));
     }
 
     [TestMethod]
@@ -584,7 +584,93 @@ public class BitSplitterTests : BunitTestContext
         var root = component.Find(".bit-spl");
 
         Assert.IsTrue(root.ClassList.Contains("bit-spl-col"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--collapsed-size:8px"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-spl-col-size:8px"));
+    }
+
+    [TestMethod]
+    public void BitSplitterDefaultPercentShouldStartTheSplitAtAShare()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.DefaultPercent, 30d);
+            parameters.Add(p => p.FirstPanelSize, 120);
+            parameters.Add(p => p.SecondPanelSize, 200);
+        });
+
+        var style = component.Find(".bit-spl").GetAttribute("style")!;
+
+        // The share wins over both lengths, and releases the second panel to take the rest.
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:30%"), style);
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-grow:0"), style);
+        Assert.IsFalse(style.Contains("--bit-spl-fpn-size:120px"), style);
+        Assert.IsFalse(style.Contains("--bit-spl-spn-size:"), style);
+    }
+
+    [TestMethod]
+    public void BitSplitterPercentShouldWinOverDefaultPercent()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.DefaultPercent, 30d);
+            parameters.Add(p => p.Percent, 60d);
+        });
+
+        var style = component.Find(".bit-spl").GetAttribute("style")!;
+
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:60%"), style);
+        Assert.IsFalse(style.Contains("--bit-spl-fpn-size:30%"), style);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterResetSizeShouldGoBackToDefaultPercent()
+    {
+        // Unlike a one-way Percent, DefaultPercent leaves the split the component's to move - and to reset.
+        var component = RenderComponent<BitSplitter>(parameters => parameters.Add(p => p.DefaultPercent, 25d));
+
+        await component.InvokeAsync(() => component.Instance.SetPercent(70));
+
+        Assert.AreEqual(70d, component.Instance.Percent);
+        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-fpn-size:70%"));
+
+        await component.InvokeAsync(() => component.Instance.ResetSize());
+
+        Assert.IsNull(component.Instance.Percent);
+        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-fpn-size:25%"));
+    }
+
+    [TestMethod,
+     DataRow(false, "fpn", "spn"),
+     DataRow(true, "spn", "fpn")]
+    public void BitSplitterShouldMakeAPanelFoldedToNothingInert(bool collapseSecond, string folded, string standing)
+    {
+        // Nothing of a panel folded down to nothing is on the screen, so the keyboard must not be able to walk into it.
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.CollapseSecondPanel, collapseSecond);
+            parameters.Add(p => p.Collapsed, true);
+        });
+
+        Assert.IsTrue(component.Find($".bit-spl-{folded}").HasAttribute("inert"));
+        Assert.IsFalse(component.Find($".bit-spl-{standing}").HasAttribute("inert"));
+
+        component.Render(parameters => parameters.Add(p => p.Collapsed, false));
+
+        Assert.IsFalse(component.Find($".bit-spl-{folded}").HasAttribute("inert"));
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldKeepAPanelFoldedToASizeOfItsOwnUsable()
+    {
+        // A panel held at a size of its own still shows something - an icon rail, a strip of tools.
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.Collapsed, true);
+            parameters.Add(p => p.CollapsedSize, 48);
+        });
+
+        Assert.IsFalse(component.Find(".bit-spl-fpn").HasAttribute("inert"));
     }
 
     [TestMethod]
@@ -775,12 +861,12 @@ public class BitSplitterTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.SetPercent(70));
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--first-panel:70%"));
+        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-fpn-size:70%"));
 
         await component.InvokeAsync(() => component.Instance.ResetSize());
 
         Assert.IsNull(component.Instance.Percent);
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--first-panel:150px"));
+        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-fpn-size:150px"));
     }
 
     [TestMethod]
@@ -966,7 +1052,7 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--first-panel:33.3333%"));
+        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:33.3333%"));
     }
 
     [TestMethod]
@@ -1331,12 +1417,15 @@ public class BitSplitterTests : BunitTestContext
      DataRow(false, false, true, "bit-icon--ChevronRight"),
      DataRow(false, true, true, "bit-icon--ChevronRight bit-ico-r180"),
      DataRow(true, false, false, "bit-icon--ChevronRight bit-ico--r90"),
-     DataRow(true, true, false, "bit-icon--ChevronRight bit-ico-r90")]
+     DataRow(true, true, false, "bit-icon--ChevronRight bit-ico-r90"),
+     DataRow(true, false, true, "bit-icon--ChevronRight bit-ico--r90"),
+     DataRow(true, true, true, "bit-icon--ChevronRight bit-ico-r90")]
     public void BitSplitterTheCollapseControlShouldPointAtWhatThePressWillDo(bool vertical, bool collapsed, bool rtl, string expected)
     {
-        // The chevron makes the same turn the drag does: at the panel while it is there to be folded away,
-        // at the room it is about to come back into once it is gone, and the other way round across a row
-        // that is written right to left.
+        // The chevron makes the same turn the drag does: at the panel while it is there to be folded away, and
+        // at the room it is about to come back into once it is gone. A row the Dir parameter writes right to left
+        // is turned here, in the markup, which every browser draws; one that is right to left only by inheriting it
+        // is left to the stylesheet (:dir(rtl) on .bit-spl-cbd). A stacked splitter is the same in both directions.
         var component = RenderComponent<BitSplitter>(parameters =>
         {
             parameters.Add(p => p.Collapsible, true);
@@ -1349,6 +1438,7 @@ public class BitSplitterTests : BunitTestContext
         var icon = component.Find(".bit-spl-cbi");
 
         Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-spl-cbd"), "The default chevron is the one the stylesheet mirrors for a row that inherits right to left.");
 
         foreach (var expectedClass in expected.Split(' '))
         {
@@ -1374,6 +1464,9 @@ public class BitSplitterTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-spl-cbi").ClassList.Contains($"bit-icon--{expected}"));
+
+        // An icon the page chose is drawn the way the page drew it, whichever way the row is written.
+        Assert.IsFalse(component.Find(".bit-spl-cbi").ClassList.Contains("bit-spl-cbd"));
     }
 
     [DataTestMethod,
@@ -1451,7 +1544,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterHitSize, 36);
         });
 
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--gutter-hit-size:36px"));
+        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-hit-size:36px"));
     }
 
     [TestMethod]
@@ -1462,7 +1555,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterHitSize, -36);
         });
 
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--gutter-hit-size:0px"));
+        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-hit-size:0px"));
     }
 
     [TestMethod]
@@ -1470,7 +1563,7 @@ public class BitSplitterTests : BunitTestContext
     {
         var style = RenderComponent<BitSplitter>().Find(".bit-spl").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--gutter-hit-size"));
+        Assert.IsFalse(style.Contains("--bit-spl-hit-size"));
     }
 
     [TestMethod]
@@ -1517,6 +1610,43 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual(30d, ReadOption(options, "Percent"));
         Assert.AreEqual("a-key", ReadOption(options, "PersistKey"));
         Assert.AreEqual(true, ReadOption(options, "PersistSession"));
+    }
+
+    [DataTestMethod,
+     DataRow(double.NaN, null, null),
+     DataRow(double.PositiveInfinity, 100d, "100"),
+     DataRow(double.NegativeInfinity, 0d, "0"),
+     DataRow(140d, 100d, "100")]
+    public void BitSplitterShouldReadAPercentItCannotUseAsNoneOrHoldItToTheRange(double percent, double? expected, string? valueNow)
+    {
+        // A share the page worked out for itself can be NaN - a division by a container with no room in it - and the
+        // interop serializer refuses NaN and the infinities outright, which would take the render sending them down.
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Percent, percent);
+            parameters.Add(p => p.DefaultPercent, percent);
+        });
+
+        Assert.AreEqual(expected, ReadOption(SetupOptions(), "Percent"));
+
+        var style = component.Find(".bit-spl").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(style.Contains("NaN", StringComparison.Ordinal), style);
+        Assert.IsFalse(style.Contains("Infinity", StringComparison.Ordinal), style);
+        Assert.AreEqual(valueNow, component.Find(".bit-spl-gtr").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public async Task BitSplitterSetPercentShouldIgnoreNaN()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.DefaultPercent, 40d);
+        });
+
+        await component.InvokeAsync(() => component.Instance.SetPercent(double.NaN));
+
+        Assert.IsNull(component.Instance.Percent);
     }
 
     [TestMethod]
@@ -1567,6 +1697,52 @@ public class BitSplitterTests : BunitTestContext
         var sync = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Splitter.sync");
 
         Assert.IsNull(sync.Arguments[1]);
+
+        // The drag wrote over the very properties the style attribute declares the parameters in, so they are handed
+        // over too - a render producing the same attribute again would not put them back.
+        CollectionAssert.AreEqual(new string?[] { "150px", "0", null, null }, (string?[])sync.Arguments[2]!);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterResetSizeShouldHandTheJavaScriptSideTheDefaultPercentEvenWhenPercentWasNeverSet()
+    {
+        Context.JSInterop.Setup<string>("BitBlazorUI.Splitter.setup", _ => true).SetResult("spl-1");
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.DefaultPercent, 30d);
+            parameters.Add(p => p.SecondPanelSize, 200);
+        });
+
+        // Nothing has been dragged into Percent, so the style attribute a double-click renders is the one already
+        // there - the declared split has to reach the JavaScript side through the sync itself.
+        await component.InvokeAsync(() => component.Instance.ResetSize());
+
+        var sync = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Splitter.sync");
+
+        Assert.IsNull(sync.Arguments[1]);
+        CollectionAssert.AreEqual(new string?[] { "30%", "0", null, null }, (string?[])sync.Arguments[2]!);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterExpandingShouldHandTheJavaScriptSideTheDeclaredSizes()
+    {
+        Context.JSInterop.Setup<string>("BitBlazorUI.Splitter.setup", _ => true).SetResult("spl-1");
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.FirstPanelSize, 120);
+            parameters.Add(p => p.SecondPanelSize, 200);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Collapse());
+        await component.InvokeAsync(() => component.Instance.Expand());
+
+        var sync = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Splitter.sync");
+
+        Assert.IsNull(sync.Arguments[1]);
+        CollectionAssert.AreEqual(new string?[] { "120px", "0", "200px", "1" }, (string?[])sync.Arguments[2]!);
     }
 
     [TestMethod]
@@ -1661,6 +1837,7 @@ public class BitSplitterTests : BunitTestContext
      DataRow(false, false, false, "bit-icon--ChevronRight"),
      DataRow(false, true, false, "bit-icon--ChevronRight bit-ico-r180"),
      DataRow(false, false, true, "bit-icon--ChevronRight bit-ico-r180"),
+     DataRow(false, true, true, "bit-icon--ChevronRight"),
      DataRow(true, false, false, "bit-icon--ChevronRight bit-ico-r90"),
      DataRow(true, true, false, "bit-icon--ChevronRight bit-ico--r90")]
     public void BitSplitterTheCollapseControlShouldPointAtTheSecondPanelWhenThatIsTheOneThatFolds(bool vertical, bool collapsed, bool rtl, string expected)
@@ -1726,7 +1903,7 @@ public class BitSplitterTests : BunitTestContext
         // are about.
         Assert.IsTrue(root.ClassList.Contains("bit-spl-col"));
         Assert.IsTrue(root.ClassList.Contains("bit-spl-cse"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--collapsed-size:8px"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-spl-col-size:8px"));
     }
 
     [TestMethod]

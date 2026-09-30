@@ -1,14 +1,78 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// icon and one set on the Style of an instance re-skins that one alone:
+//   --bit-Icon-color                 the icon's color: the glyph of a Text or an
+//                                    Outline icon, the box of a Fill one            (default: from the Color role)
+//   --bit-Icon-contrast-color        the glyph drawn over the box of a Fill icon,
+//                                    and of a clickable Outline one under the
+//                                    pointer                                        (default: from the Color role)
+//   --bit-Icon-hover-color           the icon's color under the pointer, when it
+//                                    has a click handler                            (default: a shade of --bit-Icon-color
+//                                                                                   when it is set, otherwise from the
+//                                                                                   Color role)
+//   --bit-Icon-active-color          the icon's color while pressed, when it has a
+//                                    click handler                                  (default: a shade of the hover color
+//                                                                                   when either variable above is set,
+//                                                                                   otherwise from the Color role)
+//   --bit-Icon-focus-color           color of the keyboard focus ring               (default: from the Color role)
+//   --bit-Icon-size                  font size, which is the size of the glyph      (default: per Size, $siz-icon-*)
+//   --bit-Icon-padding               room around the glyph in a Fill or an Outline
+//                                    box                                            (default: spacing(0.5))
+//   --bit-Icon-radius                corner radius of a Fill or an Outline box      (default: $shp-radius-control)
+//   --bit-Icon-border-width          border width of a Fill or an Outline box       (default: $shp-border-width)
+//   --bit-Icon-fixed-width           width of a FixedWidth icon                     (default: 1.25em)
+//
+// As on every other component of the library, the variables win over the Color and the Size of the icon, which
+// only supply their defaults. Two parameters still win over them, since they are not a theme decision at all:
+// FontSize, an inline size of the instance's own, and Circular, a shape rather than a corner radius. A disabled
+// icon ignores the colors and keeps the disabled colors of the theme, so it never reads as an enabled one.
+//
+// currentColor makes a Text icon follow the color of the text it sits in, the way a glyph of a font does - but
+// only a Text one. A Fill icon paints its box in --bit-Icon-color and its glyph in the contrast color, and
+// currentColor on the box is the element's own color, which is that contrast color: the box and the glyph come
+// out the same, and the icon is a blank square. Scope such a value to the Text variant (.bit-ico-txt) or to the
+// icon's own Style rather than to an ancestor holding icons of every variant.
+$ico-clr: var(--bit-Icon-color, var(--bit-ico-clr, #{$clr-pri}));
+$ico-clr-txt: var(--bit-Icon-contrast-color, var(--bit-ico-clr-txt, #{$clr-pri-text}));
+$ico-clr-hover: var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, var(--bit-ico-clr-hover, #{$clr-pri-hover})));
+$ico-clr-active: var(--bit-Icon-active-color, var(--bit-ico-pub-active, var(--bit-ico-clr-active, #{$clr-pri-active})));
+$ico-clr-focus: var(--bit-Icon-focus-color, var(--bit-ico-clr-focus, #{$clr-pri-focus}));
+$ico-clr-dis: var(--bit-ico-clr-dis, #{$clr-pri-dis});
+$ico-clr-dis-text: var(--bit-ico-clr-dis-text, #{$clr-pri-dis-text});
+
+// Every private variable the classes and the inline style of an icon set on its root. Custom properties inherit,
+// which would hand the role, the size, the turn and the timing of an icon to an icon drawn inside its
+// ChildContent, so each of them is registered as one that does not - an icon that sets none of them reads every
+// var() of them to its fallback, whatever the icon around it set. A browser too old for @property (before 2023)
+// gets the same from the root rule, which starts each of them out unset. A private variable added to the
+// component goes in this list, and the stylesheet test fails on one that does not.
+$ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, pub-hover, pub-active,
+                         size, rotate, scale-x, scale-y, rtl-scale-x, anm-dur, anm-dly, anm-itr;
+
+@each $name in $ico-private-properties {
+    @property --bit-ico-#{$name} {
+        syntax: "*";
+        inherits: false;
+    }
+}
+
 .bit-ico {
+    // The classes below set these again for the icon that asked, and win over these by being written later at
+    // the same weight; an inline declaration (RotateAngle, AnimationDuration, AnimationDelay,
+    // AnimationIterationCount) wins over both.
+    @each $name in $ico-private-properties {
+        --bit-ico-#{$name}: initial;
+    }
     // An icon font class brings its own inline-block, but an icon named by a bare CSS class, drawn as
     // an inline svg, or written as a ligature brings nothing - and an inline box takes neither the
     // padding nor the rule that the filled and outlined variants are drawn with.
     display: inline-block;
-    padding: spacing(0.5);
-    border-radius: $shp-radius-control;
+    font-size: var(--bit-Icon-size, var(--bit-ico-size, #{$siz-icon-md}));
+    padding: var(--bit-Icon-padding, #{spacing(0.5)});
+    border-radius: var(--bit-Icon-radius, #{$shp-radius-control});
     border-style: $shp-border-style;
-    border-width: $shp-border-width;
+    border-width: var(--bit-Icon-border-width, #{$shp-border-width});
     // A glyph is one line and nothing else: left to inherit, the line height of whatever paragraph or
     // list the icon sits in would decide how tall its box is, so the same icon would be drawn in a
     // taller badge on one row than on the next, and a fixed-width column would not line up.
@@ -20,44 +84,51 @@
     -webkit-user-select: none;
 
     &.bit-dis {
-        color: var(--bit-ico-clr-dis-text);
+        color: $ico-clr-dis-text;
+    }
+
+    // Whatever made the icon focusable - a click handler, or a TabIndex that makes it the anchor of a
+    // tooltip - the keyboard sees the themed ring rather than the browser's own outline. It follows the
+    // border radius of the variant the icon is drawn in.
+    &:focus-visible {
+        @include focus-ring($ico-clr-focus);
     }
 }
 
 
 .bit-ico-fil {
-    color: var(--bit-ico-clr-txt);
-    border-color: var(--bit-ico-clr);
-    background-color: var(--bit-ico-clr);
+    color: $ico-clr-txt;
+    border-color: $ico-clr;
+    background-color: $ico-clr;
 
     &.bit-dis {
-        color: var(--bit-ico-clr-dis-text);
-        border-color: var(--bit-ico-clr-dis);
-        background-color: var(--bit-ico-clr-dis);
+        color: $ico-clr-dis-text;
+        border-color: $ico-clr-dis;
+        background-color: $ico-clr-dis;
     }
 }
 
 .bit-ico-out {
-    color: var(--bit-ico-clr);
-    border-color: var(--bit-ico-clr);
+    color: $ico-clr;
+    border-color: $ico-clr;
     background-color: transparent;
 
     &.bit-dis {
-        color: var(--bit-ico-clr-dis-text);
-        border-color: var(--bit-ico-clr-dis);
+        color: $ico-clr-dis-text;
+        border-color: $ico-clr-dis;
         background-color: transparent;
     }
 }
 
 .bit-ico-txt {
-    color: var(--bit-ico-clr);
+    color: $ico-clr;
     border-color: transparent;
     background-color: transparent;
     border: none;
     padding: 0;
 
     &.bit-dis {
-        color: var(--bit-ico-clr-dis-text);
+        color: $ico-clr-dis-text;
     }
 }
 
@@ -65,7 +136,8 @@
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), which
 // carries the nine surface families beside the eight accent ones and every slot each of them has - so
 // the hover, the active and the focus color an icon with a click handler is drawn in come from the
-// same place as its main color, for all seventeen roles.
+// same place as its main color, for all seventeen roles. An icon given no Color is given the primary
+// one, and the chains at the top of this file read the public variables before any of them.
 @each $role, $tokens in $bit-color-roles {
     .bit-ico-#{$role} {
         --bit-ico-clr: #{role($tokens, main)};
@@ -79,16 +151,18 @@
 }
 
 
+// A Size is the default of --bit-Icon-size rather than an override of it, the same as a Color is of the
+// colors, so it sets the private variable the root reads after the public one.
 .bit-ico-sm {
-    font-size: $siz-icon-sm;
+    --bit-ico-size: #{$siz-icon-sm};
 }
 
 .bit-ico-md {
-    font-size: $siz-icon-md;
+    --bit-ico-size: #{$siz-icon-md};
 }
 
 .bit-ico-lg {
-    font-size: $siz-icon-lg;
+    --bit-ico-size: #{$siz-icon-lg};
 }
 
 
@@ -171,9 +245,13 @@
 // The glyphs of an icon font are not all the same width, which is what makes the labels of a menu or
 // a nav start at a different place on every row. 1.25em is the widest glyph of the Fabric MDL2 set
 // plus the room the design system leaves around it.
+// The width is the glyph's alone: an app that sizes every box by its border (the `* { box-sizing:
+// border-box }` of Bootstrap and most resets) would otherwise take the padding and the border of a
+// Fill or an Outline icon out of that 1.25em, and the glyph would spill out of its own box.
 .bit-ico-fxw {
-    width: 1.25em;
+    width: var(--bit-Icon-fixed-width, 1.25em);
     text-align: center;
+    box-sizing: content-box;
     display: inline-block;
 }
 
@@ -266,6 +344,12 @@
     animation-delay: var(--bit-ico-anm-dly, 0s);
 }
 
+// A count of the app's own, written as a longhand after every shorthand above for the same reason as the
+// duration. The fill mode stays none, so the icon is back at rest - unturned, fully opaque - once it has run.
+.bit-ico-itr {
+    animation-iteration-count: var(--bit-ico-anm-itr, infinite);
+}
+
 @keyframes bit-ico-spin-anm {
     from {
         transform: rotate(0deg);
@@ -329,9 +413,9 @@
 }
 
 
-// An icon given a click handler is announced and operated as a button, so it also has to look and
-// focus like one. It keeps the icon's own shape - the ring follows the border radius of the variant
-// it is drawn in - and a disabled one stops answering the pointer entirely.
+// An icon given a click handler is announced and operated as a button, so it also has to look like
+// one: a pointer cursor, a target big enough to hit, and hover and pressed states. Its focus ring is
+// the one every focusable icon draws, on the root rule above.
 .bit-ico-int {
     cursor: pointer;
     position: relative;
@@ -341,6 +425,13 @@
     // parent instead, leaving the box to work only where the parent happened to form a context itself.
     isolation: isolate;
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+    // An app that re-colors its icons with --bit-Icon-color alone still expects them to answer the pointer,
+    // and the role's hover and active shades belong to a different color. So the hover is that color moved
+    // a step toward the page's text - darker on a light scheme, lighter on a dark one - and the press a step
+    // further. Each is a var() of the public variables without a fallback, so it is unset, and the chains
+    // fall through to the role, for as long as neither variable is set.
+    --bit-ico-pub-hover: color-mix(in srgb, var(--bit-Icon-color) 85%, #{$clr-fg-pri});
+    --bit-ico-pub-active: color-mix(in srgb, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover)) 85%, #{$clr-fg-pri});
 
     // A small size class puts the glyph well under the 24x24 CSS pixels WCAG 2.2 asks of a target, and
     // the icon is now a target. This grows the area that answers the pointer without growing the icon:
@@ -367,35 +458,31 @@
     // device is not left with the hover state stuck on after a tap.
     @media (hover: hover) {
         &:not(.bit-dis):hover {
-            color: var(--bit-ico-clr-hover);
+            color: $ico-clr-hover;
         }
 
         &.bit-ico-fil:not(.bit-dis):hover {
-            color: var(--bit-ico-clr-txt);
-            border-color: var(--bit-ico-clr-hover);
-            background-color: var(--bit-ico-clr-hover);
+            color: $ico-clr-txt;
+            border-color: $ico-clr-hover;
+            background-color: $ico-clr-hover;
         }
 
         &.bit-ico-out:not(.bit-dis):hover {
-            color: var(--bit-ico-clr-txt);
-            border-color: var(--bit-ico-clr-hover);
-            background-color: var(--bit-ico-clr-hover);
+            color: $ico-clr-txt;
+            border-color: $ico-clr-hover;
+            background-color: $ico-clr-hover;
         }
     }
 
     &:not(.bit-dis):active {
-        color: var(--bit-ico-clr-active);
+        color: $ico-clr-active;
     }
 
     &.bit-ico-fil:not(.bit-dis):active,
     &.bit-ico-out:not(.bit-dis):active {
-        color: var(--bit-ico-clr-txt);
-        border-color: var(--bit-ico-clr-active);
-        background-color: var(--bit-ico-clr-active);
-    }
-
-    &:focus-visible {
-        @include focus-ring(var(--bit-ico-clr-focus));
+        color: $ico-clr-txt;
+        border-color: $ico-clr-active;
+        background-color: $ico-clr-active;
     }
 
     // A disabled icon keeps answering the pointer, and refuses the click in the handler instead. Turning

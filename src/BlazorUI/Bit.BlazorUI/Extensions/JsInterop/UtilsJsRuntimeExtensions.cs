@@ -69,6 +69,21 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Registers the Escape a shown tooltip takes for itself - pressed inside it, or anywhere on the page while the
+    // pointer rests on it - and mirrors its relationship onto the anchor in the same call; see Utils.setupTooltip.
+    internal static ValueTask BitUtilsSetupTooltip<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string rootId, string tooltipId, string attribute, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupTooltip", rootId, tooltipId, attribute, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeTooltip(this IJSRuntime jsRuntime, string rootId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeTooltip", rootId);
+    }
+
+
     internal static ValueTask<bool> BitUtilsContainsActiveElement(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.containsActiveElement", elementId);
@@ -145,6 +160,22 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsDisposeEscape(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeEscape", elementId);
+    }
+
+
+    // Reports, through the OnEscapeVerdict callback, as each Escape goes down inside the element, whether it
+    // belongs to something in there - an open popup of a component in its content, an IME composition, a
+    // surface nested inside it - rather than to the surface itself; see Utils.setupEscapeGuard.
+    internal static ValueTask BitUtilsSetupEscapeGuard<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupEscapeGuard", elementId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeEscapeGuard(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeEscapeGuard", elementId);
     }
 
 

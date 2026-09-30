@@ -72,6 +72,8 @@ internal static class BitThemeMapper
         new(BitCss.Var.Shadow.Dialog, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Sheet, BitCss.Var.Shadow.Callout),
         new(BitCss.Var.Shadow.Tooltip, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Color.Tooltip.Background, BitCss.Var.Color.Background.Secondary.Main),
+        new(BitCss.Var.Color.Tooltip.Foreground, BitCss.Var.Color.Foreground.Primary.Main),
     ];
 
     /// <summary>
@@ -92,12 +94,32 @@ internal static class BitThemeMapper
     /// </remarks>
     internal static void AugmentWithFamilyAliasReSubstitution(Dictionary<string, string> cssVariables)
     {
+        var tooltipBackground = BitCss.Var.Color.Tooltip.Background;
+        var tooltipForeground = BitCss.Var.Color.Tooltip.Foreground;
+        var tooltipColorsSet = cssVariables.ContainsKey(tooltipBackground) || cssVariables.ContainsKey(tooltipForeground);
+
         foreach (var (alias, target) in FamilyAliasTargets)
         {
             if (cssVariables.ContainsKey(alias)) continue; // explicit alias value wins
             if (cssVariables.ContainsKey(target) is false) continue; // target untouched; keep the inherited alias
 
             cssVariables[alias] = $"var({target})";
+        }
+
+        // The tooltip's fill and text are one decision, and a preset may make it differently from the default
+        // pair (Material paints the inverse surface: the fill is the page's text color and the text its
+        // background). Re-declaring only the half whose palette color the theme touched would pair the
+        // default for that half with the preset's already-substituted other half - the same color for both,
+        // in the case of Material - so once either half is re-declared, both are.
+        if (tooltipColorsSet is false &&
+            (cssVariables.ContainsKey(tooltipBackground) || cssVariables.ContainsKey(tooltipForeground)))
+        {
+            foreach (var (alias, target) in FamilyAliasTargets)
+            {
+                if (alias != tooltipBackground && alias != tooltipForeground) continue;
+
+                cssVariables[alias] = $"var({target})";
+            }
         }
 
         // The role foregrounds are the one part of the tier that is not a plain var() alias: each one
@@ -466,6 +488,9 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Color.Required, bitTheme.Color.Required);
 
+        addCssVar(BitCss.Var.Color.Tooltip.Background, bitTheme.Color.TooltipBackground);
+        addCssVar(BitCss.Var.Color.Tooltip.Foreground, bitTheme.Color.TooltipForeground);
+
         addCssVar(BitCss.Var.Color.Neutral.White, bitTheme.Color.Neutral.White);
         addCssVar(BitCss.Var.Color.Neutral.Black, bitTheme.Color.Neutral.Black);
         addCssVar(BitCss.Var.Color.Neutral.Gray10, bitTheme.Color.Neutral.Gray10);
@@ -580,6 +605,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Surface, bitTheme.Shape.Radius.Surface);
         addCssVar(BitCss.Var.Shape.Radius.Popup, bitTheme.Shape.Radius.Popup);
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
+        addCssVar(BitCss.Var.Shape.Radius.Sheet, bitTheme.Shape.Radius.Sheet);
 
         addCssVar(BitCss.Var.Typography.FontFamily, bitTheme.Typography.FontFamily);
         addCssVar(BitCss.Var.Typography.MonoFontFamily, bitTheme.Typography.MonoFontFamily);
@@ -607,6 +633,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Typography.Control.TextTransform, bitTheme.Typography.Control.TextTransform);
         addCssVar(BitCss.Var.Typography.Dialog.TitleFontSize, bitTheme.Typography.Dialog.TitleFontSize);
         addCssVar(BitCss.Var.Typography.Dialog.TitleFontWeight, bitTheme.Typography.Dialog.TitleFontWeight);
+        addCssVar(BitCss.Var.Typography.FieldLabel.FontWeight, bitTheme.Typography.FieldLabel.FontWeight);
 
         addCssVar(BitCss.Var.Typography.Body1.Margin, bitTheme.Typography.Body1.Margin);
         addCssVar(BitCss.Var.Typography.Body1.FontWeight, bitTheme.Typography.Body1.FontWeight);
@@ -913,6 +940,8 @@ internal static class BitThemeMapper
             Neutral = src.Neutral ?? new(),
             Semantic = src.Semantic ?? new(),
             Required = src.Required,
+            TooltipBackground = src.TooltipBackground,
+            TooltipForeground = src.TooltipForeground,
         };
     }
 
@@ -931,6 +960,7 @@ internal static class BitThemeMapper
             FontWeights = src.FontWeights ?? new(),
             Control = src.Control ?? new(),
             Dialog = src.Dialog ?? new(),
+            FieldLabel = src.FieldLabel ?? new(),
             H1 = src.H1 ?? new(),
             H2 = src.H2 ?? new(),
             H3 = src.H3 ?? new(),
@@ -1288,6 +1318,8 @@ internal static class BitThemeMapper
         result.Color.Border.Disabled = bitTheme.Color.Border.Disabled ?? other.Color.Border.Disabled;
 
         result.Color.Required = bitTheme.Color.Required ?? other.Color.Required;
+        result.Color.TooltipBackground = bitTheme.Color.TooltipBackground ?? other.Color.TooltipBackground;
+        result.Color.TooltipForeground = bitTheme.Color.TooltipForeground ?? other.Color.TooltipForeground;
 
         result.Color.Neutral.White = bitTheme.Color.Neutral.White ?? other.Color.Neutral.White;
         result.Color.Neutral.Black = bitTheme.Color.Neutral.Black ?? other.Color.Neutral.Black;
@@ -1403,6 +1435,7 @@ internal static class BitThemeMapper
         result.Shape.Radius.Surface = bitTheme.Shape.Radius.Surface ?? other.Shape.Radius.Surface;
         result.Shape.Radius.Popup = bitTheme.Shape.Radius.Popup ?? other.Shape.Radius.Popup;
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;
+        result.Shape.Radius.Sheet = bitTheme.Shape.Radius.Sheet ?? other.Shape.Radius.Sheet;
 
         result.Typography.FontFamily = bitTheme.Typography.FontFamily ?? other.Typography.FontFamily;
         result.Typography.MonoFontFamily = bitTheme.Typography.MonoFontFamily ?? other.Typography.MonoFontFamily;
@@ -1430,6 +1463,7 @@ internal static class BitThemeMapper
         result.Typography.Control.TextTransform = bitTheme.Typography.Control.TextTransform ?? other.Typography.Control.TextTransform;
         result.Typography.Dialog.TitleFontSize = bitTheme.Typography.Dialog.TitleFontSize ?? other.Typography.Dialog.TitleFontSize;
         result.Typography.Dialog.TitleFontWeight = bitTheme.Typography.Dialog.TitleFontWeight ?? other.Typography.Dialog.TitleFontWeight;
+        result.Typography.FieldLabel.FontWeight = bitTheme.Typography.FieldLabel.FontWeight ?? other.Typography.FieldLabel.FontWeight;
 
         result.Typography.Body1.Margin = bitTheme.Typography.Body1.Margin ?? other.Typography.Body1.Margin;
         result.Typography.Body1.FontWeight = bitTheme.Typography.Body1.FontWeight ?? other.Typography.Body1.FontWeight;

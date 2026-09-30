@@ -33,7 +33,7 @@
 //
 //   --bit-DateRangePicker-label-color              color of the label                         (default: $clr-fg-pri)
 //   --bit-DateRangePicker-label-font-size          text size of the label          (default: per size, from the ramp)
-//   --bit-DateRangePicker-label-font-weight        weight of the label                     (default: $tg-fw-semibold)
+//   --bit-DateRangePicker-label-font-weight        weight of the label                     (default: $tg-field-label-font-weight)
 //
 //   --bit-DateRangePicker-callout-background       background of the calendar surface         (default: $clr-bg-pri)
 //   --bit-DateRangePicker-callout-radius           corner radius of the callout       (default: $shp-radius-popup)
@@ -228,7 +228,7 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: var(--bit-DateRangePicker-label-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-DateRangePicker-label-font-weight, #{$tg-field-label-font-weight});
     box-sizing: border-box;
     padding: spacing(0.5) 0;
     font-size: var(--bit-DateRangePicker-label-font-size, var(--bit-dtrp-lbl-fs));

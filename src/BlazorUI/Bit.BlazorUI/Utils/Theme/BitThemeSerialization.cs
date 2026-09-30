@@ -156,6 +156,7 @@ public static class BitThemeSerialization
         typography.FontWeights ??= new BitThemeTypographyFontWeights();
         typography.Control ??= new BitThemeControlTypography();
         typography.Dialog ??= new BitThemeDialogTypography();
+        typography.FieldLabel ??= new BitThemeFieldLabelTypography();
 
         // Layout branch.
         theme.Layout.Breakpoints ??= new BitThemeBreakpoints();
