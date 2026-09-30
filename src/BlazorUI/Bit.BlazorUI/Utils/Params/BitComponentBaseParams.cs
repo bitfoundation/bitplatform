@@ -36,6 +36,7 @@ public abstract class BitComponentBaseParams
 
     /// <summary>
     /// Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.
+    /// A nested params object of the same type adds its entries to these instead of replacing them.
     /// <br />
     /// <see cref="BitComponentBase.HtmlAttributes"/>.
     /// </summary>
@@ -43,6 +44,7 @@ public abstract class BitComponentBaseParams
 
     /// <summary>
     /// Gets or sets the unique identifier for the component's root element.
+    /// Every component that reads this params object gets the same id, so only share it with a single component.
     /// <br />
     /// <see cref="BitComponentBase.Id"/>.
     /// </summary>
@@ -53,7 +55,7 @@ public abstract class BitComponentBaseParams
     /// <br />
     /// <see cref="BitComponentBase.IsEnabled"/>.
     /// </summary>
-    public bool? IsEnabled { get; set; } = true;
+    public bool? IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the CSS style string to apply to the rendered element.

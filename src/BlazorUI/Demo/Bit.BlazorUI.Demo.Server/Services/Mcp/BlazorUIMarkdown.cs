@@ -485,7 +485,7 @@ public static class BlazorUIMarkdown
         var inherits = baseName is null ? string.Empty : $" - its own and the `{baseName}` ones alike";
 
         builder.AppendLine("## Cascading parameters").AppendLine();
-        builder.AppendLine($"`{name}` carries {carried.Count} of this component's parameters again as nullables{inherits} - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+        builder.AppendLine($"`{name}` carries {carried.Count} of this component's parameters again as nullables{inherits} - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else, and a nested `BitParams` likewise replaces only the parameters its own `{name}` sets. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
 
         if (missing.Length > 0)
         {
@@ -503,7 +503,8 @@ public static class BlazorUIMarkdown
     {
         if (type.IsEnum) return "enum";
 
-        return BlazorUITypeCatalog.Find(type.Name)?.Kind == "component" ? "component" : "class";
+        // An interface reads as a class it could construct too, so it is named for what it is.
+        return BlazorUITypeCatalog.Find(type.Name)?.Kind is { } kind and ("component" or "interface") ? kind : "class";
     }
 
     /// <summary>A table of parameters or members, or nothing at all when there are none.</summary>

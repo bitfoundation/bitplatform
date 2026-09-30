@@ -13,12 +13,40 @@ public partial class BitParamsDemo
         },
         new()
         {
+            Name = "Dir",
+            Type = "BitDir?",
+            DefaultValue = "null",
+            Description = "The text direction of every component below, whatever its type. A component that sets its own Dir, or whose params object does, keeps it. Null leaves it to the ancestors.",
+        },
+        new()
+        {
+            Name = "IsEnabled",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Disables every component below when false, whatever its type. A component that sets its own IsEnabled keeps it; a nested BitParams can enable a part again with true. Null leaves it to the ancestors.",
+        },
+        new()
+        {
+            Name = "Isolated",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Ignores everything the BitParams ancestors provide (params objects, Dir, IsEnabled and ReadOnly), so the components below take their defaults from this one alone.",
+        },
+        new()
+        {
             Name = "Parameters",
             Type = "IEnumerable<IBitComponentParams>?",
             DefaultValue = "null",
-            Description = "List of parameters to provide for the children components.",
+            Description = "The params objects to provide, one per component type (BitButtonParams, BitTagParams, ...). A later or nested object of the same type only replaces the parameters it sets.",
             LinkType = LinkType.Link,
             Href = "#component-params",
+        },
+        new()
+        {
+            Name = "ReadOnly",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Makes every input below read-only when true, whatever its type. An input that sets its own ReadOnly keeps it; a nested BitParams can make a part editable again with false. Null leaves it to the ancestors.",
         },
     ];
 
@@ -28,7 +56,7 @@ public partial class BitParamsDemo
         {
             Id = "component-params",
             Title = "IBitComponentParams",
-            Description = "Defines the contract for parameters that can be cascaded by BitParams.",
+            Description = "Implemented by every <Component>Params class; its Name is what the component reads it by.",
             Parameters =
             [
                 new()
@@ -36,7 +64,7 @@ public partial class BitParamsDemo
                     Name = "Name",
                     Type = "string",
                     DefaultValue = "",
-                    Description = "Gets the name associated with the current instance of BitComponentParams.",
+                    Description = "The cascading name the component reads the params object by (its ParamName constant).",
                 }
             ]
         },
@@ -44,7 +72,7 @@ public partial class BitParamsDemo
         {
             Id = "bit-component-base-params",
             Title = "BitComponentBaseParams",
-            Description = "Base class shared by BitParams models to map BitComponentBase defaults.",
+            Description = "The base class of every <Component>Params class: the parameters every component inherits from BitComponentBase. A null value is left unset.",
             Parameters =
             [
                 new()
@@ -80,20 +108,20 @@ public partial class BitParamsDemo
                     Name = "HtmlAttributes",
                     Type = "Dictionary<string, object>?",
                     DefaultValue = "null",
-                    Description = "Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.",
+                    Description = "Additional HTML attributes for the root element. A nested object of the same type adds its entries to the outer ones.",
                 },
                 new()
                 {
                     Name = "Id",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Gets or sets the unique identifier for the component's root element.",
+                    Description = "Gets or sets the unique identifier for the component's root element. Every component that reads it gets the same id, so share it only with a single component.",
                 },
                 new()
                 {
                     Name = "IsEnabled",
                     Type = "bool?",
-                    DefaultValue = "true",
+                    DefaultValue = "null",
                     Description = "Gets or sets a value indicating whether the component is enabled and can respond to user interaction.",
                 },
                 new()
@@ -118,140 +146,56 @@ public partial class BitParamsDemo
                     Description = "Gets or sets the visibility state (visible, hidden, or collapsed) of the component.",
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-input-base-params",
+            Title = "BitInputBaseParams<TValue>",
+            Description = "The base class of the params of an input: BitComponentBaseParams plus the parameters every input inherits from BitInputBase. What identifies a single field (Value, Name, DisplayName) is left out.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "ReadOnly",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Makes the input read-only.",
+                },
+                new()
+                {
+                    Name = "Required",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Makes the input required.",
+                }
+            ]
+        },
     ];
 
 
 
     private readonly List<IBitComponentParams> basicParams =
     [
-        new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = "padding: 3rem" },
-        new BitTagParams { Color = BitColor.Tertiary, Variant = BitVariant.Fill, Size = BitSize.Large },
-        new BitTextParams { Typography = BitTypography.H5, Color = BitColor.Secondary, Gutter = true },
+        new BitButtonParams { Variant = BitVariant.Outline, Color = BitColor.Tertiary, Size = BitSize.Small },
+        new BitTagParams { Variant = BitVariant.Fill, Color = BitColor.Tertiary, Size = BitSize.Small },
     ];
 
+    private bool isCompact = true;
 
-
-    private bool useAltParameters;
-
-    private readonly List<IBitComponentParams> altParams =
+    private readonly List<IBitComponentParams> outerParams =
     [
-        new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = false, Style = "padding: 1rem" },
-        new BitTagParams { Color = BitColor.Secondary, Variant = BitVariant.Outline, Size = BitSize.Small },
-        new BitTextParams { Typography = BitTypography.H4, Color = BitColor.Primary, Gutter = true },
+        new BitButtonParams { Variant = BitVariant.Outline, Size = BitSize.Small },
     ];
 
-
-
-    private readonly List<IBitComponentParams> nestedParentParams =
+    private readonly List<IBitComponentParams> dangerParams =
     [
-        new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = "padding: 1rem" },
-        new BitTagParams { Color = BitColor.Primary, Variant = BitVariant.Outline, Size = BitSize.Medium },
-        new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.PrimaryForeground }
+        new BitButtonParams { Color = BitColor.Error },
     ];
 
-    private readonly List<IBitComponentParams> nestedChildParams =
-    [
-        new BitCardParams { Background = BitColorKind.Secondary, FullWidth = true, Style = "padding: 0.75rem" },
-        new BitTagParams { Color = BitColor.Warning, Variant = BitVariant.Fill, Size = BitSize.Small },
-        new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.Warning }
-    ];
-
-
-
-    private readonly string example1RazorCode = @"
-<BitParams Parameters=""basicParams"">
-    <BitCard>
-        <BitText>BitText with provided parameters</BitText>
-        <br />
-        <BitTag>BitTag with provided parameters</BitTag>
-    </BitCard>
-</BitParams>";
-    private readonly string example1CsharpCode = @"
-private readonly List<IBitComponentParams> basicParams =
-[
-    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = ""padding: 3rem"" },
-    new BitTagParams { Color = BitColor.Tertiary, Variant = BitVariant.Fill, Size = BitSize.Large },
-    new BitTextParams { Typography = BitTypography.H5, Color = BitColor.Secondary, Gutter = true },
-];";
-
-    private readonly string example2RazorCode = @"
-<BitParams Parameters=""basicParams"">
-    <BitCard Style=""padding:1rem"">
-        <BitText Color=""BitColor.Primary"">
-            BitText with provided and overriden parameters
-        </BitText>
-        <br />
-        <BitTag Color=""BitColor.Secondary"">
-            BitTag with provided and overriden parameters
-        </BitTag>
-    </BitCard>
-</BitParams>";
-    private readonly string example2CsharpCode = @"
-private readonly List<IBitComponentParams> basicParams =
-[
-    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = ""padding: 3rem"" },
-    new BitTagParams { Color = BitColor.Tertiary, Variant = BitVariant.Fill, Size = BitSize.Large },
-    new BitTextParams { Typography = BitTypography.H5, Color = BitColor.Secondary, Gutter = true },
-];";
-
-    private readonly string example3RazorCode = @"
-<BitToggle @bind-Value=""useAltParameters"" Text=""Use alternate parameters"" />
-
-<BitParams Parameters=""@(useAltParameters? altParams : basicParams)"">
-    <BitCard>
-        <BitText>BitText with provided parameters</BitText>
-        <br />
-        <BitTag>BitTag with provided parameters</BitTag>
-    </BitCard>
-</BitParams>";
-    private readonly string example3CsharpCode = @"
-private bool useAltParameters;
-
-private readonly List<IBitComponentParams> basicParams =
-[
-    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = ""padding: 3rem"" },
-    new BitTagParams { Color = BitColor.Tertiary, Variant = BitVariant.Fill, Size = BitSize.Large },
-    new BitTextParams { Typography = BitTypography.H5, Color = BitColor.Secondary, Gutter = true },
-];
-
-private readonly List<IBitComponentParams> altParams =
-[
-    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = false, Style = ""padding: 1rem"" },
-    new BitTagParams { Color = BitColor.Secondary, Variant = BitVariant.Outline, Size = BitSize.Small },
-    new BitTextParams { Typography = BitTypography.H4, Color = BitColor.Primary, Gutter = true },
-];";
-
-    private readonly string example4RazorCode = @"
-<BitParams Parameters=""nestedParentParams"">
-    <BitCard Style=""padding:1rem"">
-        <BitText Typography=""BitTypography.H6"">Outer defaults</BitText>
-        <BitText>These tags use the parent BitParams values.</BitText>
-        <BitTag IconName=""@BitIconName.Globe"">Global</BitTag>
-        <BitTag IconName=""@BitIconName.People"">Team</BitTag>
-
-        <BitParams Parameters=""nestedChildParams"">
-            <BitCard Style=""margin-top: 0.75rem; padding: 0.75rem"">
-                <BitText Typography=""BitTypography.H6"">Nested overrides</BitText>
-                <BitText>Inner BitParams changes colors and variants for this scope.</BitText>
-                <BitTag IconName=""@BitIconName.Warning"">Alert</BitTag>
-                <BitTag IconName=""@BitIconName.FavoriteStar"">Highlight</BitTag>
-            </BitCard>
-        </BitParams>
-    </BitCard>
-</BitParams>";
-    private readonly string example4CsharpCode = @"
-private readonly List<IBitComponentParams> nestedParentParams =
-[
-    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = ""padding: 1rem"" },
-    new BitTagParams { Color = BitColor.Primary, Variant = BitVariant.Outline, Size = BitSize.Medium },
-    new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.PrimaryForeground }
-];
-
-private readonly List<IBitComponentParams> nestedChildParams =
-[
-    new BitCardParams { Background = BitColorKind.Secondary, FullWidth = true, Style = ""padding: 0.75rem"" },
-    new BitTagParams { Color = BitColor.Warning, Variant = BitVariant.Fill, Size = BitSize.Small },
-    new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.Warning }
-];";
+    private bool isSaving;
+    private bool isViewOnly;
+    private bool isRtl;
+    private string? formName = "Ada";
+    private int formQuantity = 1;
+    private bool formGiftWrap;
 }
