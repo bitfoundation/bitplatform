@@ -65,7 +65,7 @@ public partial class BitMediaQueryDemo
             Name = "Query",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom media query to be matched, verbatim: any valid CSS media query, including the features other than the width. Takes precedence over ScreenQuery.",
+            Description = "The custom media query to be matched: any valid CSS media query, including the features other than the width, with or without a leading @media. Takes precedence over ScreenQuery.",
         },
         new()
         {

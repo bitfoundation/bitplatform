@@ -252,14 +252,14 @@
                 const target = (focusedId && candidates.find(c => c.id === focusedId)) || candidates[0];
 
                 if (target) {
-                    target.focus({ preventScroll: true });
+                    MediaQuery.focusInView(target);
                     return;
                 }
 
                 // Nothing inside can take the focus; the element holds it for the time being, so
                 // the next Tab carries on from where the content was rather than from the top.
                 if (element.hasAttribute('tabindex')) {
-                    element.focus({ preventScroll: true });
+                    MediaQuery.focusInView(element);
                     return;
                 }
 
@@ -267,7 +267,7 @@
                 element.addEventListener('blur', () => {
                     if (element.getAttribute('tabindex') === '-1') element.removeAttribute('tabindex');
                 }, { once: true });
-                element.focus({ preventScroll: true });
+                MediaQuery.focusInView(element);
             });
 
             // The update this waits for is the render the notification causes; one that never comes
@@ -281,6 +281,23 @@
             timer = setTimeout(stop, 5000) as unknown as number;
 
             return stop;
+        }
+
+        // Focuses an element the new layout may well have put out of sight - the content that
+        // replaced it can be laid out anywhere - and brings it into view only then, by the least
+        // scroll that does: a focus the user cannot see is no better than a lost one (WCAG 2.4.11),
+        // while scrolling to an element already on screen would move the page under the reader.
+        private static focusInView(el: HTMLElement) {
+            el.focus({ preventScroll: true });
+
+            const rect = el.getBoundingClientRect();
+            const inView = rect.top >= 0 && rect.left >= 0
+                && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+                && rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+
+            if (!inView && typeof el.scrollIntoView === 'function') {
+                el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
         }
 
         private static isFocusable(el: HTMLElement): boolean {

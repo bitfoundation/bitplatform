@@ -112,8 +112,9 @@
 
         <DemoExample Title="Custom query" RazorCode="@example5RazorCode" Id="example5">
             <div>
-                <b>Query</b> takes any media query verbatim, including the range syntax and the features other than the width.
-                It takes precedence over <b>ScreenQuery</b>; one the browser cannot parse is reported in the console.
+                <b>Query</b> takes any media query, including the range syntax and the features other than the width; a leading
+                <b>@@media</b> is dropped. It takes precedence over <b>ScreenQuery</b>; one the browser cannot parse is reported in
+                the console.
             </div>
             <br /><br />
             <div class="example-content">

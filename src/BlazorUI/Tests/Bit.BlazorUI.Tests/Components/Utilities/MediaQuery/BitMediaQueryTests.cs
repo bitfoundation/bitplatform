@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -584,7 +584,7 @@ public class BitMediaQueryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMediaQueryShouldNotReSetupWhenOnlyTheIdChangesForACustomQuery()
+    public void BitMediaQueryShouldSendTheNewElementIdForACustomQueryWhenTheIdChanges()
     {
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
@@ -598,10 +598,83 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.Id, "second-id");
         });
 
-        // The listener is keyed by the component's own unique id, and a verbatim query is resolved
-        // without reading anything off the element, so the new id changes nothing about it.
-        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+        // The element is where the focus is kept across a flip, so the JS side is told the new id -
+        // under the same key and without a teardown, since the query itself has not changed.
+        var setups = Setups(Context.JSInterop);
+        Assert.AreEqual(2, setups.Count);
+        Assert.AreEqual("second-id", setups[1].Arguments[ElementIdArg]);
+        Assert.AreEqual(component.Instance.UniqueId, setups[1].Arguments[KeyArg]);
         Assert.AreEqual(0, Disposals(Context.JSInterop).Count);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldNotReSetupAnUnchangedCustomQueryWithAnUnchangedElement()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.Id, "same-id");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Class, "another-class");
+        });
+
+        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldSendTheElementIdForACustomQueryOnceContentAppears()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.Id, "late-id");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        var setups = Setups(Context.JSInterop);
+        Assert.AreEqual(2, setups.Count);
+        Assert.IsNull(setups[0].Arguments[ElementIdArg]);
+        Assert.AreEqual("late-id", setups[1].Arguments[ElementIdArg]);
+    }
+
+    [TestMethod]
+    [DataRow("@media (max-width: 600px)", "(max-width: 600px)")]
+    [DataRow("@media screen and (min-width: 960px)", "screen and (min-width: 960px)")]
+    [DataRow("  @MEDIA   print  ", "print")]
+    [DataRow("@media(orientation: portrait)", "(orientation: portrait)")]
+    [DataRow("@mediafoo", "@mediafoo")]
+    public void BitMediaQueryShouldDropALeadingMediaKeyword(string query, string expected)
+    {
+        RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, query);
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        Assert.AreEqual(expected, Setups(Context.JSInterop)[0].Arguments[QueryArg]);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldTreatABareMediaKeywordAsNoQuery()
+    {
+        RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "@media ");
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.Md);
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        var invocation = Setups(Context.JSInterop)[0];
+        Assert.IsNull(invocation.Arguments[QueryArg]);
+        Assert.AreEqual("Md", invocation.Arguments[ScreenQueryArg]);
     }
 
     [TestMethod]

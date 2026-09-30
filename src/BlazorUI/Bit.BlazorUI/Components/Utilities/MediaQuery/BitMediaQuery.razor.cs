@@ -18,13 +18,15 @@ namespace Bit.BlazorUI;
 /// <br />
 /// A flip that removes the focused element (zooming in crosses breakpoints for a keyboard user too)
 /// hands the focus to the content that replaced it - the element with the same id, else the first
-/// focusable one - instead of leaving it to fall back to the top of the page. That takes the root
+/// focusable one - instead of leaving it to fall back to the top of the page, and scrolls it into
+/// view when the new layout has put it out of sight. That takes the root
 /// element, so it is not done with <see cref="NoWrapper"/>; a <see cref="Template"/> keeps the focused
 /// element itself.
 /// </remarks>
 public partial class BitMediaQuery : BitComponentBase
 {
     private string? _query;
+    private string? _elementId;
     private bool _isSetup;
     private bool _isSeeded;
     private bool _queryFromCascade;
@@ -133,6 +135,9 @@ public partial class BitMediaQuery : BitComponentBase
     /// non-viewport features such as orientation, pointer, or prefers-color-scheme.
     /// Takes precedence over <see cref="ScreenQuery"/> when both are provided.
     /// </summary>
+    /// <remarks>
+    /// A leading <c>@media</c> keyword is dropped, so a query copied out of a stylesheet works as is.
+    /// </remarks>
     [Parameter] public string? Query { get; set; }
 
     /// <summary>
@@ -257,9 +262,10 @@ public partial class BitMediaQuery : BitComponentBase
         // media query is built on the JS side from the live theme breakpoints so a customized
         // BitTheme.Layout.Breakpoints is honored (rather than baking fixed px here).
         // A blank Query is treated as absent so a bound-but-empty value still lets ScreenQuery win.
-        var customQuery = Query.HasValue() ? Query!.Trim() : null;
+        var customQuery = NormalizeQuery(Query);
         var screenQuery = customQuery is null ? ScreenQuery?.ToString() : null;
         var effectiveKey = customQuery ?? screenQuery;
+        var elementId = _ElementId;
 
         if (effectiveKey.HasValue())
         {
@@ -268,16 +274,19 @@ public partial class BitMediaQuery : BitComponentBase
             // same (e.g. after new breakpoints are applied, or when the element the tokens are read
             // from moves into another themed scope). Re-invoke setup on every render in that case
             // and let the JS side reuse the existing listener when the resolved expression is
-            // unchanged; a custom Query is verbatim, so the key comparison suffices. The listener is
-            // keyed by the component's own unique id, so nothing else here depends on the Id.
-            if (effectiveKey != _query || _isSetup is false || screenQuery is not null)
+            // unchanged; a custom Query is verbatim, so the key comparison suffices - plus the
+            // element, which is where the focus is kept across a flip: a new Id, a NoWrapper toggle
+            // or content that appears later changes it, and the JS side takes the new one in without
+            // rebuilding the listener. The listener itself is keyed by the component's unique id.
+            if (effectiveKey != _query || elementId != _elementId || _isSetup is false || screenQuery is not null)
             {
                 _query = effectiveKey;
+                _elementId = elementId;
                 _isSetup = true;
 
                 try
                 {
-                    await _js.BitMediaQuerySetup(UniqueId, _ElementId, customQuery, screenQuery, _ThemeBreakpoints, _dotnetObj);
+                    await _js.BitMediaQuerySetup(UniqueId, elementId, customQuery, screenQuery, _ThemeBreakpoints, _dotnetObj);
                 }
                 catch (JSDisconnectedException)
                 {
@@ -293,6 +302,7 @@ public partial class BitMediaQuery : BitComponentBase
             // Neither a Query nor a ScreenQuery resolves anymore: tear down the previous listener
             // and reset so a later (re)assignment sets up cleanly.
             _query = null;
+            _elementId = null;
             _isSetup = false;
             try
             {
@@ -304,11 +314,30 @@ public partial class BitMediaQuery : BitComponentBase
 
 
 
-    // The id of the element the theme breakpoints are read from, or null when this component renders
-    // no element of its own - in no-wrapper mode, and when there is nothing at all to render. The id
-    // is not the listener key, so nothing but the breakpoint lookup depends on it: any other element
-    // that happens to carry the same id (the rendered content itself, in no-wrapper mode) is not this
-    // component's themed scope and is deliberately not read.
+    // A query is written the way a stylesheet writes it more often than not - the "@media" at-rule
+    // keyword included, as the BitScreenQuery docs show theirs - and matchMedia rejects that keyword
+    // (the query then silently never matches), so it is dropped here rather than left to trip over.
+    private static string? NormalizeQuery(string? query)
+    {
+        if (query.HasValue() is false) return null;
+
+        var normalized = query!.Trim();
+
+        const string atRule = "@media";
+        if (normalized.StartsWith(atRule, StringComparison.OrdinalIgnoreCase)
+            && (normalized.Length == atRule.Length || char.IsWhiteSpace(normalized[atRule.Length]) || normalized[atRule.Length] == '('))
+        {
+            normalized = normalized[atRule.Length..].TrimStart();
+        }
+
+        return normalized.HasValue() ? normalized : null;
+    }
+
+    // The id of the element the theme breakpoints are read from and the focus is kept in, or null
+    // when this component renders no element of its own - in no-wrapper mode, and when there is
+    // nothing at all to render. The id is not the listener key: any other element that happens to
+    // carry the same id (the rendered content itself, in no-wrapper mode) is not this component's
+    // element and is deliberately not read.
     private string? _ElementId => NoWrapper is false && _HasContent ? _Id : null;
 
     // A splatted aria-label is resolved here rather than written over: the null a markup attribute
