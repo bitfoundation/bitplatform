@@ -336,6 +336,7 @@ public static partial class Program
             signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
             {
                 options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
+                options.Configuration.AbortOnConnectFail = false;
             });
         }
         //#if (IsInsideProjectTemplate == true)
