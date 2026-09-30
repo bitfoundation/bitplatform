@@ -18,7 +18,7 @@ public class TwoFactorAmrClaimTests
     public async Task TheAmrClaim_Should_SurviveARefresh_SoAPolicyCanRelyOnIt()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
 
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);

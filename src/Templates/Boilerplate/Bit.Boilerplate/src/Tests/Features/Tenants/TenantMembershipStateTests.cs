@@ -39,7 +39,7 @@ public class TenantMembershipStateTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scopeWebAppStranger = server.WebApp.Services.CreateAsyncScope();
         await using var scopeWebAppAdmin = server.WebApp.Services.CreateAsyncScope();

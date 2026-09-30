@@ -11,7 +11,7 @@ public class DevMcpConfigurationTests
     public async Task GetDeploymentInfo_Should_ReturnLiveValues_AndNeverSecrets()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
@@ -50,7 +50,7 @@ public class DevMcpConfigurationTests
     public async Task GetHealth_Should_ReturnPerCheckStatus()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);

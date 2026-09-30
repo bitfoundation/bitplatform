@@ -27,7 +27,7 @@ public class DiagnosticReportSourcesTests
     public async Task EveryWayIn_Should_AnswerAboutItsOwnRequest()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         // Only /dev-mcp needs this; the other two are anonymous, and the report is the caller's own either way.

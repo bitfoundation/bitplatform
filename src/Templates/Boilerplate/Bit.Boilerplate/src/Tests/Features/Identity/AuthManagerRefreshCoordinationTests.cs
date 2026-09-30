@@ -58,7 +58,7 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
+            services.AddBrowserlessClientServices();
             services.RemoveAll<IIdentityController>();
             services.AddScoped(_ => identityController);
         }).Start(TestContext.CancellationToken);
@@ -106,7 +106,7 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
+            services.AddBrowserlessClientServices();
             services.RemoveAll<IIdentityController>();
             services.AddScoped(_ => identityController);
         }).Start(TestContext.CancellationToken);
@@ -143,7 +143,7 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
+            services.AddBrowserlessClientServices();
             services.RemoveAll<IStorageService>();
             services.AddScoped<IStorageService, ThrowsWhenTheRefreshTokenIsRead>();
         }).Start(TestContext.CancellationToken);

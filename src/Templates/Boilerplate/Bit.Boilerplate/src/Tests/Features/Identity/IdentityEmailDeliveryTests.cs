@@ -32,7 +32,7 @@ public class IdentityEmailDeliveryTests
     public async Task SendResetPasswordToken_WithAnUntrustedOrigin_Should_BeRefusedBeforeAnythingIsCommitted()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
@@ -119,7 +119,7 @@ public class IdentityEmailDeliveryTests
         // that formats a placeholder is a subject that carries the credential. Asserted against the resource itself
         // because the test double replaces IdentityEmailService before any subject is ever composed.
         await using var server = new AppTestServer();
-        server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices());
+        server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices());
 
         var localizer = server.ApiApp.Services.GetRequiredService<IStringLocalizer<EmailStrings>>();
 

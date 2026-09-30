@@ -43,7 +43,7 @@ public class OAuthClientManagementTests
     public async Task TheClientList_Should_IncludeAClientThatHasNoStoredRegistration()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
@@ -94,7 +94,7 @@ public class OAuthClientManagementTests
     public async Task RevokingAClient_Should_EndItsAccessForEveryUser()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();

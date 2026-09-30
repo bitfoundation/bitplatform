@@ -59,7 +59,7 @@ public class SigningKeyRotationTests
     public async Task IssuedTokens_Should_CarryTheActiveCertificatesThumbprintAsKid()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -82,7 +82,7 @@ public class SigningKeyRotationTests
     public async Task Jwks_Should_PublishOneKeyPerTrustedCertificate()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var trustedCertificates = AppCertificateService.GetAllAppCertificates(server.WebApp.Configuration);
 
@@ -115,7 +115,7 @@ public class SigningKeyRotationTests
     public async Task ATokenSignedByARetiredCertificate_Should_StillBeAccepted()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -143,7 +143,7 @@ public class SigningKeyRotationTests
     public async Task ATokenSignedByAnUntrustedKey_Should_BeRejected()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);

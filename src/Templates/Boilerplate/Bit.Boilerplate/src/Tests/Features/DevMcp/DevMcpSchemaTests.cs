@@ -11,7 +11,7 @@ public class DevMcpSchemaTests
     public async Task GetDatabaseSchema_Should_DescribeUser_IncludingQueryFiltersAndKeys()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;
@@ -31,7 +31,7 @@ public class DevMcpSchemaTests
     public async Task GetAppliedMigrations_Should_ListTheLatestMigration()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;
@@ -49,7 +49,7 @@ public class DevMcpSchemaTests
     public async Task GetDatabaseSchema_Should_RejectUnknownEntities_AndMarkHangfireStorage()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;

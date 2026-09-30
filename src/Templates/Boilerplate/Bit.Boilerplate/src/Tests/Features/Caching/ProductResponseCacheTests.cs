@@ -49,7 +49,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 // Pre-rendering makes the server produce the product page's HTML itself, so the page is a cacheable
@@ -209,7 +209,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
@@ -288,7 +288,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
@@ -355,7 +355,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -426,7 +426,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -472,7 +472,7 @@ public partial class ProductResponseCacheTests
         var replays = new ReplayCountingOutputCacheStore.Counter();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics().CountOutputCacheReplays(replays),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics().CountOutputCacheReplays(replays),
             configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 

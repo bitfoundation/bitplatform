@@ -37,7 +37,7 @@ public partial class ServerSideHttpClientTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services =>
                     {
-                        services.AddIntegrationApiOnlyTestsServices();
+                        services.AddBrowserlessClientServices();
                         UseTheRealServerWebHttpClient(services);
                     }).Start(TestContext.CancellationToken);
 
@@ -80,7 +80,7 @@ public partial class ServerSideHttpClientTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services =>
                     {
-                        services.AddIntegrationApiOnlyTestsServices();
+                        services.AddBrowserlessClientServices();
                         UseTheRealServerWebHttpClient(services);
                     }).Start(TestContext.CancellationToken);
 
@@ -113,7 +113,7 @@ public partial class ServerSideHttpClientTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services =>
                     {
-                        services.AddIntegrationApiOnlyTestsServices();
+                        services.AddBrowserlessClientServices();
                         UseTheRealServerWebHttpClient(services);
                     }).Start(TestContext.CancellationToken);
 
@@ -147,7 +147,7 @@ public partial class ServerSideHttpClientTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services =>
                     {
-                        services.AddIntegrationApiOnlyTestsServices();
+                        services.AddBrowserlessClientServices();
                         UseTheRealServerWebHttpClient(services);
                     }).Start(TestContext.CancellationToken);
 
@@ -169,7 +169,7 @@ public partial class ServerSideHttpClientTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services =>
                     {
-                        services.AddIntegrationApiOnlyTestsServices();
+                        services.AddBrowserlessClientServices();
                         UseTheRealServerWebHttpClient(services);
                     }).Start(TestContext.CancellationToken);
 

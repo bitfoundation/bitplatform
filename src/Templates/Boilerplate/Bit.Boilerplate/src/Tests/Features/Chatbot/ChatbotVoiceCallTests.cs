@@ -399,7 +399,7 @@ public class ChatbotVoiceCallTests
     {
         var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
         configureTestApiAppServices: services =>
         {
             services.AddSingleton<OpenAIRealtimeCallClient>(realtime);

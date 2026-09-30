@@ -29,7 +29,7 @@ public partial class DashboardBroadcastTenantScopeTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         // IStorageService is registered per scope, so each scope holds its own signed-in identity and every typed API
         // client resolved from it calls the server as that user (See TenantInvitationIsolationTests).

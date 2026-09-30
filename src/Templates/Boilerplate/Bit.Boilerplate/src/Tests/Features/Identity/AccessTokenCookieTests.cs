@@ -23,7 +23,7 @@ public class AccessTokenCookieTests
     [TestMethod]
     public async Task UpdateSession_Should_WriteAHostOnlyCookie_ThatSignOutDeletes()
     {
-        await using var server = await StartServer(services => services.AddIntegrationApiOnlyTestsServices());
+        await using var server = await StartServer(services => services.AddBrowserlessClientServices());
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
 
@@ -55,7 +55,7 @@ public class AccessTokenCookieTests
     [TestMethod]
     public async Task ANonWebClient_Should_GetNoAccessTokenCookie()
     {
-        await using var server = await StartServer(services => services.AddIntegrationApiOnlyTestsServices());
+        await using var server = await StartServer(services => services.AddBrowserlessClientServices());
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
 
@@ -79,7 +79,7 @@ public class AccessTokenCookieTests
     [TestMethod]
     public async Task TheSharedServerSideHandler_Should_NotCarryOneUsersCookieIntoAnothersCall()
     {
-        await using var server = await StartServer(services => services.AddIntegrationApiOnlyTestsServices());
+        await using var server = await StartServer(services => services.AddBrowserlessClientServices());
         var sharedHandler = server.WebApp.Services.GetRequiredService<SocketsHttpHandler>();
 
         await using var scopeWebAppSignedIn = server.WebApp.Services.CreateAsyncScope();

@@ -41,7 +41,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         // A per-run device id, so anything this test leaves behind is an inert orphan rather than a collision with
         // the shared development database.
@@ -117,7 +117,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var deviceId = $"push-resignin-{Guid.NewGuid():N}";
 
@@ -208,7 +208,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var pushNotificationController = scope.ServiceProvider.GetRequiredService<IPushNotificationController>();
@@ -233,7 +233,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var deviceId = $"push-anon-{Guid.NewGuid():N}";
 
@@ -276,7 +276,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -327,7 +327,7 @@ public partial class PushSubscriptionOwnershipTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider));
@@ -393,7 +393,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var firstDeviceId = $"push-two-rows-a-{Guid.NewGuid():N}";
         var secondDeviceId = $"push-two-rows-b-{Guid.NewGuid():N}";
@@ -461,7 +461,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var deviceId = $"push-unsub-{Guid.NewGuid():N}";
 

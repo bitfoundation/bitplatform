@@ -38,7 +38,7 @@ public class ChatbotSpeechEndpointTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ISpeechToTextClient>(speechToTextClient);
@@ -80,7 +80,7 @@ public class ChatbotSpeechEndpointTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = spoken, MediaType = "audio/mpeg" });
@@ -112,7 +112,7 @@ public class ChatbotSpeechEndpointTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
@@ -138,7 +138,7 @@ public class ChatbotSpeechEndpointTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
@@ -165,7 +165,7 @@ public class ChatbotSpeechEndpointTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
@@ -193,7 +193,7 @@ public class ChatbotSpeechEndpointTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
@@ -224,7 +224,7 @@ public class ChatbotSpeechEndpointTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
@@ -263,7 +263,7 @@ public class ChatbotSpeechEndpointTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" });
@@ -296,7 +296,7 @@ public class ChatbotSpeechEndpointTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" });

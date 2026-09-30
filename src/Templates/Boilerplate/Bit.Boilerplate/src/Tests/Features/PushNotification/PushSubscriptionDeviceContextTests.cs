@@ -18,7 +18,7 @@ public partial class PushSubscriptionDeviceContextTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         // A per-run device id, so leftovers are inert orphans rather than collisions.
         var deviceId = $"push-context-{Guid.NewGuid():N}";

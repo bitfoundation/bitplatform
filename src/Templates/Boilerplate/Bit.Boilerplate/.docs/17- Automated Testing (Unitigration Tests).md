@@ -97,7 +97,7 @@ public partial class AppTestServer : IAsyncDisposable
 - **Full Application Stack**: All middleware, authentication, authorization, etc. work exactly as in production
 
 **Which host?** Pick by what the code under test runs in, and pass every lambda by name:
-- `WebApp`, `configureTestWebAppServices` and `WebAppServerAddress`: pages, pre-rendering and the typed API clients a test calls through (`AddIntegrationApiOnlyTestsServices()` belongs here).
+- `WebApp`, `configureTestWebAppServices` and `WebAppServerAddress`: pages, pre-rendering and the typed API clients a test calls through (`AddBrowserlessClientServices()` belongs here).
 - `ApiApp`, `configureTestApiAppServices` and `ApiServerAddress`: controllers, `AppDbContext`, Hangfire, and the endpoints only Server.Api serves, such as `/healthz`.
 - `configureTestConfigurations`: Server.Web's and Server.Api's configuration alike.
 

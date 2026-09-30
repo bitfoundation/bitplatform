@@ -122,7 +122,7 @@ public class SpeechHealthChecksTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
         configureTestApiAppServices: services =>
         {
             services.Replace(ServiceDescriptor.Singleton(providers.SpeechToTextClient));

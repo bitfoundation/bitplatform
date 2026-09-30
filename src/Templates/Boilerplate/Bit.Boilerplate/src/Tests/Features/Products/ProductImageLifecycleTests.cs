@@ -191,7 +191,7 @@ public partial class ProductImageLifecycleTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
                            configureTestConfigurations: configuration => configuration["AI:OpenAI:ChatApiKey"] = null)
                     .Start(TestContext.CancellationToken);
         return server;

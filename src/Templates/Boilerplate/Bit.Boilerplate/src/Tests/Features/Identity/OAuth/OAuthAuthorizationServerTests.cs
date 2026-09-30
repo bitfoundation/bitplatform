@@ -43,7 +43,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheFullFlow_Should_IssueATokenScopedToTheResourceAndToTheGrantedScope()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -96,7 +96,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnUnregisteredRedirectUri_Should_NeverBeRedirectedTo()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         const string attackerUri = "https://attacker.example/steal";
@@ -139,7 +139,7 @@ public class OAuthAuthorizationServerTests
     public async Task AReplayedCode_Should_BeRefused_AndRevokeWhatTheFirstExchangeIssued()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
@@ -184,7 +184,7 @@ public class OAuthAuthorizationServerTests
     public async Task ACodeVerifierThatDoesNotMatchTheChallenge_Should_BeRefused()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -216,7 +216,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheAuthorizationServerMetadata_Should_DescribeWhatThisServerActuallyDoes()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
         using var document = JsonDocument.Parse(
@@ -247,7 +247,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOAuthToken_Should_ReachDevMcp_AndNothingElse()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -286,7 +286,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnUnauthenticatedDevMcpCall_Should_PointAtTheProtectedResourceMetadata()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
         using var request = new HttpRequestMessage(HttpMethod.Post, "dev-mcp");
@@ -312,7 +312,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheProtectedResourceMetadata_Should_NameThisServerAsItsOwnAuthorizationServer()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
         using var document = JsonDocument.Parse(
@@ -334,7 +334,7 @@ public class OAuthAuthorizationServerTests
     public async Task ALoopbackRedirectUri_Should_BeAcceptedOnAnyPort()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -376,7 +376,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOmittedScope_Should_DefaultToWhatTheResourceIsFor()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -406,7 +406,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheOAuthScheme_Should_NotAppearAsAnExternalSignInProvider()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
@@ -425,7 +425,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnAuthorizedApplication_Should_AppearInTheUsersSessionsWithItsClientId()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
@@ -480,7 +480,7 @@ public class OAuthAuthorizationServerTests
     public async Task AReusedRefreshToken_Should_BeRefusedImmediately_AndRevokeTheGrant()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
@@ -532,7 +532,7 @@ public class OAuthAuthorizationServerTests
     public async Task AUserWithoutTheFeature_Should_BeRefusedAtConsent()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -556,7 +556,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnAdminWithoutTwoFactor_Should_BeRefusedAtConsent()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -584,7 +584,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOrdinaryUser_Should_BeAbleToGrantTheChatScope()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -616,7 +616,7 @@ public class OAuthAuthorizationServerTests
     public async Task AChatToken_Should_NotReachDevMcp()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -644,7 +644,7 @@ public class OAuthAuthorizationServerTests
     public async Task ADevMcpToken_Should_NotReachTheChatbot()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -673,7 +673,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheTokenEndpoint_Should_NormalizeTheResourceTheWayTheAuthorizationEndpointDid()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -707,7 +707,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheAuthorizeEndpoint_Should_ForwardTheQueryStringAsItArrived()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         var (_, challenge) = GeneratePkcePair();
@@ -749,7 +749,7 @@ public class OAuthAuthorizationServerTests
     public async Task AFirstPartyRefreshToken_Should_BeRefusedAtTheTokenEndpoint()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();

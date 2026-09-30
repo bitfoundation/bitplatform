@@ -37,7 +37,7 @@ public partial class PrivilegedSessionTenantSwitchTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         // The shipped default. The fourth sign-in is the first one that cannot be privileged.
         const int maxPrivilegedSessions = 3;

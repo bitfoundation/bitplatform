@@ -16,7 +16,7 @@ public class PushSubscriptionsRetentionTests
     public async Task EnforceRetention_Should_DeleteExpiredSubscriptions_AndKeepLiveOnes()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         // Per-run device ids, so anything left behind is an inert orphan rather than a collision with the shared
         // development database.

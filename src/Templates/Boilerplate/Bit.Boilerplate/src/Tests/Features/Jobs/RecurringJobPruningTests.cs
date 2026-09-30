@@ -21,7 +21,7 @@ public class RecurringJobPruningTests
     public async Task Startup_Should_RemoveARecurringJobItNoLongerRegisters()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var storage = server.ApiApp.Services.GetRequiredService<JobStorage>();
         var recurringJobManager = server.ApiApp.Services.GetRequiredService<IRecurringJobManager>();

@@ -23,7 +23,7 @@ public partial class DiagnosticTestMessagesTests
     public async Task EmailAndSms_Should_RejectAnonymousCallers(string action)
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
         using var response = await anonymousClient.PostAsync($"api/v1/Diagnostic/{action}", null, TestContext.CancellationToken);
@@ -40,7 +40,7 @@ public partial class DiagnosticTestMessagesTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services =>
             {
                 services.Replace(ServiceDescriptor.Transient(_ => fluentEmail));
@@ -68,7 +68,7 @@ public partial class DiagnosticTestMessagesTests
     public async Task TestPushNotification_Should_ReportWhetherTheDeviceIsSubscribed_AndKeepToTheCallersOwnDevice()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var deviceId = $"push-test-{Guid.NewGuid():N}";
 

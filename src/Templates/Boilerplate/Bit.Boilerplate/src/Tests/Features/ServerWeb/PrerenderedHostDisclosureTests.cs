@@ -17,7 +17,7 @@ public class PrerenderedHostDisclosureTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 

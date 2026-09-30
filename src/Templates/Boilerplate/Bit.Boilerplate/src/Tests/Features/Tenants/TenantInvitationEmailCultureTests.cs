@@ -29,7 +29,7 @@ public partial class TenantInvitationEmailCultureTests
         }
 
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         // A per-run recipient, so nothing another test does to the shared seeded account's sessions can shadow the
         // culture arranged here (See TestAccountUtils' rationale).

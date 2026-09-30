@@ -17,7 +17,7 @@ public partial class MagicLinkReplayTests
     public async Task ReplayingAConsumedMagicLinkCode_Should_BeRejectedAsExpired()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
@@ -64,7 +64,7 @@ public partial class MagicLinkReplayTests
     public async Task RequestingANewCode_Should_BeAllowedRightAfterAConsumedOne()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();

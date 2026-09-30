@@ -13,7 +13,7 @@ public partial class IntegrationTests
 
         await server.Build(configureTestWebAppServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
+            services.AddBrowserlessClientServices();
             // You can override services here for this specific test if needed:
             // services.Replace(ServiceDescriptor.Scoped(sp => fakeAuthTokenProvider));
         }).Start(TestContext.CancellationToken);
@@ -40,7 +40,7 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 

@@ -197,7 +197,7 @@ public partial class RefreshTokenRotationTests
         await server.Build(
             configureTestWebAppServices: services =>
             {
-                services.AddIntegrationApiOnlyTestsServices();
+                services.AddBrowserlessClientServices();
                 services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider));
             },
             configureTestApiAppServices: services => services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider)))

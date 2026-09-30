@@ -175,7 +175,7 @@ public class ProductImageCacheInvalidationTests
         var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestConfigurations: configuration =>
             {
                 configuration["AI:OpenAI:ChatApiKey"] = null;

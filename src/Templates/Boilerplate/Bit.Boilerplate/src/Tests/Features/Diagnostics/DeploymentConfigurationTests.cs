@@ -17,7 +17,7 @@ public partial class DeploymentConfigurationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
         using (var anonymousResponse = await anonymousClient.GetAsync(Url, TestContext.CancellationToken))
@@ -43,7 +43,7 @@ public partial class DeploymentConfigurationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var adminScope = server.WebApp.Services.CreateAsyncScope();
 

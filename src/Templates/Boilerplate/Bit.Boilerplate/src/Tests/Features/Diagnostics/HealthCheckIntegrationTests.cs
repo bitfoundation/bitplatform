@@ -39,7 +39,7 @@ public partial class HealthCheckIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
@@ -63,7 +63,7 @@ public partial class HealthCheckIntegrationTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestApiAppServices: services => services.AddHealthChecks().AddCheck("failing", () => HealthCheckResult.Unhealthy("Down on purpose", new InvalidOperationException("The test broke it"))))
             .Start(TestContext.CancellationToken);
 
@@ -125,7 +125,7 @@ public partial class HealthCheckIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var healthzUrl = new Uri(server.ApiServerAddress, "healthz/v1");
 
@@ -163,7 +163,7 @@ public partial class HealthCheckIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: configuration =>
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices(), configureTestConfigurations: configuration =>
         {
             configuration["Authentication:Keycloak:KeycloakUrl"] = "http://keycloak.invalid/";
             configuration["Authentication:Keycloak:Realm"] = "dev";
@@ -332,7 +332,7 @@ public partial class HealthCheckIntegrationTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestConfigurations: configuration => configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-this-test",
             configureTestApiAppServices: services => services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient)))
             .Start(TestContext.CancellationToken);
@@ -384,7 +384,7 @@ public partial class HealthCheckIntegrationTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestConfigurations: configuration => configuration["AI:OpenAI:EmbeddingApiKey"] = "fake-key-never-used-by-this-test",
             configureTestApiAppServices: services => services.Replace(ServiceDescriptor.Singleton(embeddingGenerator)))
             .Start(TestContext.CancellationToken);
@@ -446,7 +446,7 @@ public partial class HealthCheckIntegrationTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestConfigurations: configuration =>
             {
                 configuration["Cloudflare:ApiToken"] = "not-a-real-token";

@@ -30,7 +30,7 @@ public partial class AuthManagerTokenPersistenceTests
     public async Task BothTokens_Should_KeepTheRememberMeTheUserChose_AcrossARefresh(bool rememberMe)
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices())
+        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices())
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();

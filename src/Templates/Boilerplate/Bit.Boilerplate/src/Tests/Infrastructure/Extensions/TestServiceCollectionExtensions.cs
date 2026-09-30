@@ -27,9 +27,17 @@ public static class TestServiceCollectionExtensions
             return services;
         }
 
-        public IServiceCollection AddIntegrationApiOnlyTestsServices()
+        /// <summary>
+        /// Lets a test use the app's typed API clients - <see cref="IUserController"/> and the rest - outside a browser, as
+        /// integration tests do. Behind those clients <see cref="AuthManager"/> keeps the signed-in user's tokens in
+        /// <see cref="IStorageService"/>, and <c>AuthDelegatingHandler</c> attaches them to every request through
+        /// <see cref="IAuthTokenProvider"/>. The real implementations need a browser (local storage through JS interop) or the
+        /// request's cookies, and a test has neither, so this swaps both for in-memory ones: once <see cref="AuthManager"/>
+        /// signs a user in, every client resolved from the same scope calls the api as that user. These are client-side
+        /// services, so register them in <c>configureTestWebAppServices</c>.
+        /// </summary>
+        public IServiceCollection AddBrowserlessClientServices()
         {
-            // Real implementation wanna read the token from local storage, but during integration tests, there is no access to localStorage or the stored cookies.
             services.AddScoped<IStorageService, TestStorageService>();
             services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
 

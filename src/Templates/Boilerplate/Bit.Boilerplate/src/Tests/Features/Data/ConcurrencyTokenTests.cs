@@ -30,7 +30,7 @@ public partial class ConcurrencyTokenTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
         var tenantId = Guid.NewGuid();
         var tenantName = $"concurrency-{Guid.NewGuid():N}";

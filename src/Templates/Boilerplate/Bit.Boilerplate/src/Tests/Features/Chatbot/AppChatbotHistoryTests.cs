@@ -680,7 +680,7 @@ public partial class AppChatbotHistoryTests
     private static AppTestServer BuildServerWith(TestChatClient chatClient, Action<IServiceCollection>? configureTestApiAppServices = null)
     {
         return new AppTestServer().Build(
-            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestConfigurations: configuration =>
             {
                 // Without a chat api key neither AddChatClient nor AddAppAIAgents runs, and the keyed "SupportAgent"
