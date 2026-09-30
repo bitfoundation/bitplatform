@@ -489,6 +489,27 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     }
 
     /// <summary>
+    /// Shows a new modal with markup built from the modal's own reference as its content, so the markup can
+    /// answer and close the modal it is in - <c>modal =&gt; @&lt;BitButton OnClick="() =&gt; modal.CloseWith(true)"&gt;Yes&lt;/BitButton&gt;</c>
+    /// - without a component of its own to take the cascaded reference.
+    /// </summary>
+    /// <remarks>
+    /// The reference is handed over before the markup is built, the way the parameters factory overload does it,
+    /// so a callback in the markup never sees a reference that is not assigned yet. The reference's
+    /// <see cref="BitModalReferenceBase{TReference, TParameters}.Content"/> stays <c>null</c>, as it does for
+    /// any markup.
+    /// </remarks>
+    public Task<TReference> Show(RenderFragment<TReference> content, TParameters? modalParameters = null, bool persistent = false)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        var modalReference = CreateReference(persistent);
+        modalReference.SetParameters(modalParameters);
+
+        return Show(modalReference, content(modalReference), persistent);
+    }
+
+    /// <summary>
     /// Shows a new modal, building the content component's parameters from a factory that receives the modal reference.
     /// Use this overload when a parameter needs the reference itself (e.g. an <c>OnClose</c> callback that closes this
     /// very modal): the reference is handed to the factory before the content is rendered, so the callback can never

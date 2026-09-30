@@ -15,7 +15,9 @@
         <BitText>
             Mount one <b>BitModalContainer</b> in the layout, in the same interactive render mode as the components
             that show modals - a modal shown with no container is not rendered, and the service logs it. Register the
-            service <b>Scoped</b> on Blazor Server; a singleton is only safe on WebAssembly and Hybrid.
+            service <b>Scoped</b> on Blazor Server; a singleton is only safe on WebAssembly and Hybrid. For a
+            ready-made alert or confirmation, <BitLink Href="/components/messagebox">BitMessageBoxService</BitLink>
+            (Extras) is built on this service.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -35,11 +37,15 @@
 
         <DemoExample Title="Markup as content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                <b>Show</b> also takes a <b>RenderFragment</b>, for content not worth a component of its own. The
-                reference's <b>Content</b> stays null, since markup is no component instance.
+                <b>Show</b> also takes a <b>RenderFragment</b>, for content not worth a component of its own, or a
+                <b>RenderFragment&lt;BitModalReference&gt;</b>, built from the modal's own reference so the markup can
+                close it. The reference's <b>Content</b> stays null, since markup is no component instance.
             </div>
             <br />
-            <BitButton OnClick="ShowMarkupModal">Show markup</BitButton>
+            <div class="example-box">
+                <BitButton OnClick="ShowMarkupModal">Show markup</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="ShowClosingMarkupModal">Markup that closes itself</BitButton>
+            </div>
         </DemoExample>
 
         <DemoExample Title="Awaiting a result" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode"
@@ -47,7 +53,9 @@
             <div>
                 <b>CloseWith</b> answers the modal, and <b>Result</b> / <b>GetResult&lt;T&gt;</b> complete with that
                 answer. A dismissal answers null (the type's default), so <b>IsDismissed</b> tells "walked away" from
-                "answered with nothing".
+                "answered with nothing". <b>BitModalContentParameters&lt;T&gt;</b> passes the content's parameters
+                checked by the compiler. For a question, <b>IsAlert</b> announces an alertdialog and <b>AutoFocus</b>
+                starts on the least destructive answer.
             </div>
             <br />
             <BitButton OnClick="ShowConfirmModal">Delete the project</BitButton>
@@ -170,7 +178,17 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style &amp; Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="External Icons" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>CloseIcon</b> takes the close button's icon from an external library (FontAwesome, Bootstrap Icons,
+                ...) and wins over <b>CloseIconName</b>, a built-in Fluent UI icon.
+            </div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <BitButton OnClick="ShowExternalIconModal">External close icon</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Style &amp; Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root of the modal; <b>Styles</b> and <b>Classes</b> reach each
                 part. The public <b>--bit-Modal-*</b> variables (see the <BitLink Href="/components/modal#css-variables-section">BitModal</BitLink>
@@ -184,7 +202,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>Dir = BitDir.Rtl</b> lays the modal out right-to-left, chrome included; <b>Start</b>/<b>End</b>
                 positions follow along.
@@ -196,3 +214,14 @@
         </DemoExample>
     </Examples>
 </DemoPage>
+
+@code {
+    // Written here rather than in the code-behind: a Razor template is only markup inside a .razor file.
+    private async Task ShowClosingMarkupModal()
+    {
+        await modalService.Show(modal => @<BitStack Gap="1rem" Style="padding:1rem">
+            <BitText>This markup was handed the reference of its own modal.</BitText>
+            <BitButton OnClick="modal.Close">Got it</BitButton>
+        </BitStack>, new BitModalParameters { AriaLabel = "Markup that closes itself" });
+    }
+}

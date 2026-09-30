@@ -535,6 +535,18 @@ public static class BlazorUIMarkdown
     /// </summary>
     private static void AppendCssVariables(StringBuilder builder, BlazorUIComponent component)
     {
+        // A service has no root of its own: the variables are those of the component it shows, pointed at rather
+        // than tabulated a second time - with where a service's modals take a Style from, which that page cannot say.
+        if (component.CssVariables.Count == 0 &&
+            component.ShownComponentType is { } shown &&
+            BlazorUIComponentCatalog.Find(shown.Name) is { CssVariables.Count: > 0 } shownComponent)
+        {
+            builder.AppendLine("## CSS variables").AppendLine();
+            builder.AppendLine($"Every `{shownComponent.Name}` this service shows reads the {shownComponent.CssVariables.Count} public CSS variables `GetBitBlazorUIComponent(name: \"{shownComponent.Name}\")` lists (`{shownComponent.CssVariables[0].Name}`, ...). They inherit: set them on the `Style` of the parameters one showing is given to restyle that one, on the `Style` of the container's parameters to restyle every one it renders, or on `:root` to restyle every `{shownComponent.Name}` in the app.").AppendLine();
+
+            return;
+        }
+
         if (component.CssVariables.Count == 0) return;
 
         builder.AppendLine("## CSS variables").AppendLine();

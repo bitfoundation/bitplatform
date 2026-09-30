@@ -75,6 +75,41 @@ public class BitModalServiceTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalServiceShouldBuildTheMarkupFromTheModalsOwnReference()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        BitModalReference? handed = null;
+
+        var modalRef = await ModalService.Show(modal => builder =>
+        {
+            handed = modal;
+
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", "answer");
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(modal, () => modal.CloseWith("yes")));
+            builder.AddContent(3, modal.Id);
+            builder.CloseElement();
+        }, new BitModalParameters { AriaLabel = "Answer" });
+
+        container.WaitForAssertion(() => Assert.AreEqual(modalRef.Id, container.Find(".answer").TextContent));
+
+        Assert.AreSame(modalRef, handed);
+        Assert.IsNull(modalRef.Content);
+
+        container.Find(".answer").Click();
+
+        Assert.AreEqual("yes", await modalRef.Result);
+        Assert.IsFalse(modalRef.IsDismissed);
+    }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldRefuseANullMarkupBuilder()
+    {
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => ModalService.Show((RenderFragment<BitModalReference>)null!));
+    }
+
+    [TestMethod]
     public async Task BitModalServiceShouldPutTheClassAndStyleOfTheParametersOnTheRoot()
     {
         var container = RenderComponent<BitModalContainer>(parameters =>

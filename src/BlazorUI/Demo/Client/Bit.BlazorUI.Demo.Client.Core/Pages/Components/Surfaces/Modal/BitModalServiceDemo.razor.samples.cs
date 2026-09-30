@@ -25,7 +25,8 @@ public partial class BitModalServiceDemo
     <BitSeparator />
     <BitStack Horizontal Gap=""0.5rem"" AutoHeight>
         <BitButton OnClick=""() => modalReference.CloseWith(true)"">Yes</BitButton>
-        <BitButton Variant=""BitVariant.Outline"" OnClick=""() => modalReference.CloseWith(false)"">No</BitButton>
+        @* the least destructive answer takes the focus when the modal opens *@
+        <BitButton AutoFocus Variant=""BitVariant.Outline"" OnClick=""() => modalReference.CloseWith(false)"">No</BitButton>
     </BitStack>
 </BitStack>
 
@@ -151,7 +152,19 @@ private async Task ShowModalByType(Type contentType)
     ];
 
     private readonly string example2RazorCode = @"
-<BitButton OnClick=""ShowMarkupModal"">Show markup</BitButton>";
+<BitButton OnClick=""ShowMarkupModal"">Show markup</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ShowClosingMarkupModal"">Markup that closes itself</BitButton>
+
+@code {
+    // a template taking the modal's own reference, so the markup can close it
+    private async Task ShowClosingMarkupModal()
+    {
+        await modalService.Show(modal => @<BitStack Gap=""1rem"" Style=""padding:1rem"">
+            <BitText>This markup was handed the reference of its own modal.</BitText>
+            <BitButton OnClick=""modal.Close"">Got it</BitButton>
+        </BitStack>, new BitModalParameters { AriaLabel = ""Markup that closes itself"" });
+    }
+}";
     private readonly string example2CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
@@ -177,9 +190,10 @@ private string confirmAnswer = ""-"";
 
 private async Task ShowConfirmModal()
 {
-    var modal = await modalService.Show<ConfirmModalContent>(new Dictionary<string, object>
+    // the content's parameters, checked by the compiler; a Dictionary<string, object> works too
+    var modal = await modalService.Show<ConfirmModalContent>(new BitModalContentParameters<ConfirmModalContent>
     {
-        { nameof(ConfirmModalContent.Question), ""Delete the project?"" }
+        { c => c.Question, ""Delete the project?"" }
     }, new BitModalParameters { AriaLabel = ""Delete the project?"", IsAlert = true });
 
     var confirmed = await modal.GetResult<bool>();
@@ -204,9 +218,9 @@ private string contentReport = ""-"";
 
 private async Task ShowContentReachingModal()
 {
-    var modal = await modalService.Show<ConfirmModalContent>(new Dictionary<string, object>
+    var modal = await modalService.Show<ConfirmModalContent>(new BitModalContentParameters<ConfirmModalContent>
     {
-        { nameof(ConfirmModalContent.Question), ""How long is this question?"" }
+        { c => c.Question, ""How long is this question?"" }
     }, new BitModalParameters { AriaLabel = ""How long is this question?"" });
 
     // The content is only instantiated once the container renders the modal, so it is waited for rather
@@ -222,9 +236,9 @@ private async Task ShowContentReachingModal()
 // parameter of the content can be built from it - a callback that closes this very modal, or its id.
 private async Task ShowSelfNamingModal()
 {
-    await modalService.Show<ConfirmModalContent>(modalRef => new Dictionary<string, object>
+    await modalService.Show<ConfirmModalContent>(modalRef => new BitModalContentParameters<ConfirmModalContent>
     {
-        { nameof(ConfirmModalContent.Question), $""Close modal {modalRef.Id}?"" }
+        { c => c.Question, $""Close modal {modalRef.Id}?"" }
     }, new BitModalParameters { AriaLabel = ""Close the modal?"" });
 }";
 
@@ -245,9 +259,9 @@ private async Task ShowGuardedModal()
     guardReport = ""-"";
 
     guardedModal = await modalService.Show<UnsavedModalContent>(
-        new Dictionary<string, object>
+        new BitModalContentParameters<UnsavedModalContent>
         {
-            { nameof(UnsavedModalContent.HasChangesChanged), EventCallback.Factory.Create<bool>(this, v => hasUnsavedChanges = v) }
+            { c => c.HasChangesChanged, EventCallback.Factory.Create<bool>(this, v => hasUnsavedChanges = v) }
         },
         new BitModalParameters
         {
@@ -570,12 +584,30 @@ private async Task ShowCascadedOwnModal()
     ];
 
     private readonly string example11RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitButton OnClick=""ShowExternalIconModal"">External close icon</BitButton>";
+    private readonly string example11CsharpCode = @"
+[AutoInject] private BitModalService modalService = default!;
+
+private async Task ShowExternalIconModal()
+{
+    await modalService.Show<ModalBodyContent>(new BitModalParameters
+    {
+        MaxWidth = ""32rem"",
+        ShowCloseButton = true,
+        HeaderText = ""External close icon"",
+        CloseIcon = BitIconInfo.Fa(""solid xmark"")
+    });
+}";
+
+    private readonly string example12RazorCode = @"
 @* in the layout: the house style of every modal
 <BitModalContainer ModalParameters=""houseStyle"" /> *@
 
 <BitButton OnClick=""ShowCssVariablesModal"">CSS variables</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ShowStyledPartsModal"">Styles</BitButton>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 // in the layout
@@ -610,11 +642,11 @@ private async Task ShowStyledPartsModal()
     });
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <div dir=""rtl"">
     <BitButton Dir=""BitDir.Rtl"" OnClick=""ShowRtlModal"">باز کردن مُدال</BitButton>
 </div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowRtlModal()

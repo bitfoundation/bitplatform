@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Collections.Frozen;
 using Microsoft.AspNetCore.Components;
 using Bit.BlazorUI.Demo.Client.Core.Models;
@@ -243,7 +243,7 @@ public static class BlazorUIComponentCatalog
             var inherited = InheritedBases(componentType);
             var shownType = ShownComponentTypeOf(componentType);
             var parameters = MergeParameters(tables?.Parameters, componentType);
-            var (own, shared) = SplitSubTypes(name, tables);
+            var (own, shared) = SplitSubTypes(name, shownType, tables);
 
             return new BlazorUIComponent
             {
@@ -576,14 +576,20 @@ public static class BlazorUIComponentCatalog
     /// dropped it from both halves - <c>BitButton</c> never mentioned the <c>BitIconInfo</c> its
     /// own <c>Icon</c> parameter takes.
     /// </para>
+    /// <para>
+    /// A service's types are named after the component it shows rather than after the service -
+    /// <c>BitModalReference</c>, <c>BitModalParameters</c> on the <c>BitModalService</c> page - and that
+    /// page is the only one documenting them, so they are its own too.
+    /// </para>
     /// </summary>
-    private static (ComponentSubType[] Own, ComponentSubType[] Shared) SplitSubTypes(string name, DemoTables? tables)
+    private static (ComponentSubType[] Own, ComponentSubType[] Shared) SplitSubTypes(string name, Type? shownType, DemoTables? tables)
     {
         if (tables is null) return ([], []);
 
         var all = tables.SubClasses.Concat(tables.SubEnums).ToArray();
 
-        var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase));
+        var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase) ||
+                                    (shownType is not null && t.Name.StartsWith(shownType.Name, StringComparison.OrdinalIgnoreCase)));
 
         return ([.. own[true]], [.. own[false]]);
     }

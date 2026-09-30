@@ -112,6 +112,13 @@ public partial class BitModalServiceDemo : IDisposable
         new()
         {
             Name = "Show",
+            Type = "Task<BitModalReference> (RenderFragment<BitModalReference> content, BitModalParameters? modalParameters, bool persistent)",
+            DefaultValue = "",
+            Description = "Shows a new BitModal with markup built from the modal's own reference as its content, so the markup can close and answer the modal it is in: modal => @<BitButton OnClick=\"modal.Close\">Got it</BitButton>.",
+        },
+        new()
+        {
+            Name = "Show",
             Type = "Task<BitModalReference> (Func<BitModalReference, Dictionary<string, object>?> parametersFactory, BitModalParameters? modalParameters, bool persistent)",
             DefaultValue = "",
             Description = "Shows a new BitModal, building the content component's parameters from a factory that receives the modal reference. Use this overload when a parameter needs the reference itself, such as an OnClose callback that closes this very modal.",
@@ -274,6 +281,22 @@ public partial class BitModalServiceDemo : IDisposable
                     Description = "Whether the modal closes when the app navigates somewhere else, which it does by default (a persistent modal only closes when this is set to true). Only a change of path counts; a query string or a fragment changed on the same page does not. Set it to false for the modals that outlive a route change."
                 }
             ]
+        },
+        new()
+        {
+            Id = "modal-content-parameters",
+            Title = "BitModalContentParameters<TComponent>",
+            Description = "The parameters of the content component, named by its own properties instead of strings. It is a Dictionary<string, object>, so it goes wherever a Show overload takes the content's parameters.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Add<TValue>",
+                    Type = "void (Expression<Func<TComponent, TValue>> parameter, TValue value)",
+                    DefaultValue = "",
+                    Description = "Adds the value of one parameter, named as c => c.Parameter - the collection initializer form is { c => c.Parameter, value }. Throws an ArgumentException for an expression that names no [Parameter] property of TComponent, or a value its type cannot take."
+                }
+            ]
         }
     ];
 
@@ -321,9 +344,9 @@ public partial class BitModalServiceDemo : IDisposable
     private string confirmAnswer = "-";
     private async Task ShowConfirmModal()
     {
-        var modal = await modalService.Show<ConfirmModalContent>(new Dictionary<string, object>
+        var modal = await modalService.Show<ConfirmModalContent>(new BitModalContentParameters<ConfirmModalContent>
         {
-            { nameof(ConfirmModalContent.Question), "Delete the project?" }
+            { c => c.Question, "Delete the project?" }
         }, new BitModalParameters { AriaLabel = "Delete the project?", IsAlert = true });
 
         var confirmed = await modal.GetResult<bool>();
@@ -337,9 +360,9 @@ public partial class BitModalServiceDemo : IDisposable
     private string contentReport = "-";
     private async Task ShowContentReachingModal()
     {
-        var modal = await modalService.Show<ConfirmModalContent>(new Dictionary<string, object>
+        var modal = await modalService.Show<ConfirmModalContent>(new BitModalContentParameters<ConfirmModalContent>
         {
-            { nameof(ConfirmModalContent.Question), "How long is this question?" }
+            { c => c.Question, "How long is this question?" }
         }, new BitModalParameters { AriaLabel = "How long is this question?" });
 
         // The content is only instantiated once the container renders the modal, so it is waited for rather
@@ -361,9 +384,9 @@ public partial class BitModalServiceDemo : IDisposable
         guardReport = "-";
 
         guardedModal = await modalService.Show<UnsavedModalContent>(
-            new Dictionary<string, object>
+            new BitModalContentParameters<UnsavedModalContent>
             {
-                { nameof(UnsavedModalContent.HasChangesChanged), EventCallback.Factory.Create<bool>(this, v => hasUnsavedChanges = v) }
+                { c => c.HasChangesChanged, EventCallback.Factory.Create<bool>(this, v => hasUnsavedChanges = v) }
             },
             new BitModalParameters
             {
@@ -588,6 +611,18 @@ public partial class BitModalServiceDemo : IDisposable
         {
             HeaderText = "Own position",
             Position = BitPosition.BottomCenter
+        });
+    }
+
+
+    private async Task ShowExternalIconModal()
+    {
+        await modalService.Show<ModalBodyContent>(new BitModalParameters
+        {
+            MaxWidth = "32rem",
+            ShowCloseButton = true,
+            HeaderText = "External close icon",
+            CloseIcon = BitIconInfo.Fa("solid xmark")
         });
     }
 
