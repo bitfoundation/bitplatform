@@ -457,6 +457,8 @@ private static string DescribeNavigationModal(BitModalReference? modalRef)
 }";
 
     private readonly string example9RazorCode = @"
+@implements IDisposable
+
 <BitButton OnClick=""ShowStackedModal"">Show one more</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""CloseAllModals"">Close all</BitButton>
 <div>
