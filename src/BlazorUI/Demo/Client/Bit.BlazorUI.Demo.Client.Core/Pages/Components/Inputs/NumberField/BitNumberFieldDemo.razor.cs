@@ -1113,7 +1113,7 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "--bit-NumberField-label-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
             Description = "Weight of the label.",
         },
         new()

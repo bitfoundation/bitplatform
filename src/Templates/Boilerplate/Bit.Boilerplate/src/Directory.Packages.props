@@ -37,7 +37,7 @@
         <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.100" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.100" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.110" />
-        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
+        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
         <PackageVersion Include="MSTest" Version="4.4.1" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.19.1-beta.1" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.19.0-beta.1" />
@@ -49,8 +49,8 @@
         <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.19.1-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.3.0" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.17.9" />
-        <PackageVersion Include="Velopack" Version="1.2.158" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.17.11" />
+        <PackageVersion Include="Velopack" Version="1.2.161" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.12" />
@@ -95,11 +95,11 @@
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.33.1" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="10.10.0" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.0" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.1" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Connectors.HuggingFace" Version="1.80.1-preview" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Core" Version="1.80.1" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI" Version="1.22.0" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI.Hosting" Version="1.22.0-preview.260918.1" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI" Version="1.23.0" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI.Hosting" Version="1.23.0-preview.260928.1" />
         <PackageVersion Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.9.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.3.0" />
@@ -122,7 +122,7 @@
         <!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="3.0.10" />
         <PackageVersion Include="QRCoder" Version="1.8.0" />
-        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.17.1" />
+        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.17.2" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageVersion Include="FluentStorage" Version="8.0.22" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
@@ -140,7 +140,7 @@
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="10.0.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="10.0.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
-        <PackageVersion Include="Twilio" Version="8.0.1" />
+        <PackageVersion Include="Twilio" Version="8.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />

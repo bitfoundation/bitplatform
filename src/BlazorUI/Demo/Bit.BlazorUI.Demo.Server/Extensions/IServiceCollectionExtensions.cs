@@ -44,7 +44,7 @@ public static class IServiceCollectionExtensions
         });
     }
 
-    public static IServiceCollection AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
+    public static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
@@ -52,11 +52,6 @@ public static class IServiceCollectionExtensions
 
         if (healthCheckSettings.EnableHealthChecks is false)
             return services;
-
-        services.AddHealthChecksUI(setupSettings: setup =>
-        {
-            setup.AddHealthCheckEndpoint("BPHealthChecks", env.IsDevelopment() ? "https://localhost:5031/healthz" : "/healthz");
-        }).AddInMemoryStorage();
 
         var healthChecksBuilder = services.AddHealthChecks()
             .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)

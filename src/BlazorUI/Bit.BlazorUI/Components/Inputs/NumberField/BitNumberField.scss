@@ -16,7 +16,7 @@
 //   --bit-NumberField-font-size                 size of the value text                       (default: per Size, from the type ramp)
 //   --bit-NumberField-label-color               color of the label                           (default: $clr-fg-pri)
 //   --bit-NumberField-label-font-size           size of the label                            (default: per Size, from the type ramp)
-//   --bit-NumberField-label-font-weight         weight of the label                          (default: $tg-fw-semibold)
+//   --bit-NumberField-label-font-weight         weight of the label                          (default: $tg-field-label-font-weight)
 //   --bit-NumberField-required-color            color of the asterisk of a required field    (default: $clr-req)
 //   --bit-NumberField-description-color         color of the hint under the field            (default: $clr-fg-pri)
 //   --bit-NumberField-description-font-size     size of that hint, and of the error message  (default: $tg-fs-2xs)
@@ -207,7 +207,7 @@
     line-height: spacing(2.5);
     color: var(--bit-NumberField-label-color, #{$clr-fg-pri});
     font-size: var(--bit-NumberField-label-font-size, var(--bit-nfl-label-fontsize));
-    font-weight: var(--bit-NumberField-label-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-NumberField-label-font-weight, #{$tg-field-label-font-weight});
 }
 
 .bit-nfl-cnt {
