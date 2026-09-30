@@ -102,10 +102,7 @@ public partial class AppTestServer : IAsyncDisposable
 - `configureTestConfigurations`: Server.Web's and Server.Api's configuration alike.
 
 <!--#if (api == "Standalone")-->
-The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. The typed API clients call it directly on `ApiServerAddress`, as Server.Web's own `HttpClient` does, and `WebApp` also forwards `/api` and `/hangfire` to it.
-<!--#if (advancedTests == true)-->
-[`ApiForwardingTests`](/src/Tests/Features/ServerWeb/ApiForwardingTests.cs) covers that forwarding on its own.
-<!--#endif-->
+The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. The typed API clients call `WebAppServerAddress`, and `WebApp` forwards `/api` and `/hangfire` to `ApiApp`; everything else Server.Api serves is only on `ApiServerAddress`.
 <!--#endif-->
 <!--#if (api == "Integrated")-->
 The api is integrated into Server.Web, so `ApiApp` is `WebApp` itself, `ApiServerAddress` is `WebAppServerAddress`, and `configureTestApiAppServices` runs on the same host, right after `configureTestWebAppServices`.

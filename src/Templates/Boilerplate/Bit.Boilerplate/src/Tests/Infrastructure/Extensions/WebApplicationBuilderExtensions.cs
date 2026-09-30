@@ -27,19 +27,18 @@ public static partial class WebApplicationBuilderExtensions
             services.AddTransient<HttpClient>(sp =>
             {
                 var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
-                // Read on every resolve, so a test that overrides either setting is heard (See AppTestServer.Build).
-                var configuration = sp.GetRequiredService<IConfiguration>();
+                // Read on every resolve, so a test that overrides WebAppUrl is heard (See AppTestServer.Build).
+                var webAppUrl = new Uri(sp.GetRequiredService<IConfiguration>()["WebAppUrl"]
+                    ?? throw new InvalidOperationException("WebAppUrl is not configured."), UriKind.Absolute);
                 var httpClient = new HttpClient(handlerFactory.Invoke())
                 {
                     //#if (api == "Standalone")
-                    // Server.Api itself, the way Server.Web's own HttpClient calls it. Server.Web's forwarding of /api
-                    // and /hangfire has a test of its own (See ApiForwardingTests).
+                    // Server.Web accepts the api requests and forwards them to Server.Api through YARP (See its
+                    // Program.Middlewares.cs).
                     //#endif
-                    BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
+                    BaseAddress = webAppUrl
                 };
-                // The web app's origin, the one a browser sends, which the api builds its links from.
-                httpClient.DefaultRequestHeaders.Add("X-Origin", configuration["WebAppUrl"]
-                    ?? throw new InvalidOperationException("WebAppUrl is not configured."));
+                httpClient.DefaultRequestHeaders.Add("X-Origin", webAppUrl.ToString());
                 return httpClient;
             });
         }

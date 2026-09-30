@@ -26,7 +26,7 @@ public partial class IntegrationTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
-        var siteMap = await httpClient.GetStringAsync(new Uri(server.WebAppServerAddress, "sitemap.xml"), TestContext.CancellationToken);
+        var siteMap = await httpClient.GetStringAsync("sitemap.xml", TestContext.CancellationToken);
 
         Assert.Contains("<urlset", siteMap);
 
@@ -72,7 +72,7 @@ public partial class IntegrationTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
-        var siteMapIndex = await httpClient.GetStringAsync(new Uri(server.WebAppServerAddress, "sitemap_index.xml"), TestContext.CancellationToken);
+        var siteMapIndex = await httpClient.GetStringAsync("sitemap_index.xml", TestContext.CancellationToken);
 
         // Non-vacuity first: the document has to actually list the sitemap, or the assertions below prove nothing.
         Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, "sitemap.xml")}</loc>", siteMapIndex);
@@ -113,7 +113,7 @@ public partial class IntegrationTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
-        var html = await httpClient.GetStringAsync(new Uri(server.WebAppServerAddress, PageUrls.Home), TestContext.CancellationToken);
+        var html = await httpClient.GetStringAsync(PageUrls.Home, TestContext.CancellationToken);
 
         var homeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), CultureInfo.InvariantCulture)!;
 
@@ -138,7 +138,7 @@ public partial class IntegrationTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
-        var html = await httpClient.GetStringAsync(new Uri(server.WebAppServerAddress, PageUrls.Home), TestContext.CancellationToken);
+        var html = await httpClient.GetStringAsync(PageUrls.Home, TestContext.CancellationToken);
 
         var script = JsonLdScript().Match(html);
 
@@ -190,7 +190,7 @@ public partial class IntegrationTests
 
         // Reading the first complete response ourselves is what makes the streaming assertion below meaningful: a client
         // that waits for a streamed response to finish cannot tell whether streaming happened at all.
-        using var response = await httpClient.GetAsync(new Uri(server.WebAppServerAddress, PageUrls.Home), HttpCompletionOption.ResponseHeadersRead, TestContext.CancellationToken);
+        using var response = await httpClient.GetAsync(PageUrls.Home, HttpCompletionOption.ResponseHeadersRead, TestContext.CancellationToken);
         response.EnsureSuccessStatusCode();
         var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
@@ -231,7 +231,7 @@ public partial class IntegrationTests
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
         // "fa-IR/" is the exact culture-prefixed home URL advertised in the sitemap.
-        var html = await httpClient.GetStringAsync(new Uri(server.WebAppServerAddress, $"{PageUrls.Home}fa-IR/"), TestContext.CancellationToken);
+        var html = await httpClient.GetStringAsync($"{PageUrls.Home}fa-IR/", TestContext.CancellationToken);
         // Decode so the assertion holds whether the non-ASCII (Persian) text is emitted as raw UTF-8 or HTML entities.
         html = System.Net.WebUtility.HtmlDecode(html);
 

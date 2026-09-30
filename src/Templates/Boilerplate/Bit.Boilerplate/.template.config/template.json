@@ -863,12 +863,10 @@
                     ]
                 },
                 {
-                    // RequestHeadersDelegatingHandler sends UpdateSession to the page's own host only under a standalone api,
-                    // and only a standalone api has Server.Web forwarding /api and /hangfire to it.
+                    // RequestHeadersDelegatingHandler sends UpdateSession to the page's own host only under a standalone api.
                     "condition": "(advancedTests != true || api == Integrated)",
                     "exclude": [
-                        "src/Tests/Features/Identity/AccessTokenCookieUITests.cs",
-                        "src/Tests/Features/ServerWeb/ApiForwardingTests.cs"
+                        "src/Tests/Features/Identity/AccessTokenCookieUITests.cs"
                     ]
                 },
                 {

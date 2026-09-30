@@ -8,16 +8,17 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        /* var fakeAuthTokenProvider = A.Fake<IAuthTokenProvider>();
-        A.CallTo(() => fakeAuthTokenProvider.GetAccessToken()).ReturnsLazily(() => (string?)null); */
+        /* var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow); // Microsoft.Extensions.TimeProvider.Testing */
 
         await server.Build(configureTestWebAppServices: services =>
         {
             services.AddBrowserlessClientServices();
             // You can override services here for this specific test if needed:
-            // services.Replace(ServiceDescriptor.Scoped(sp => fakeAuthTokenProvider));
+            // services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider));
         }).Start(TestContext.CancellationToken);
 
+        // AuthManager and the typed api clients come from Server.Web's container, so the test calls the api through the
+        // app's whole HttpClient pipeline, error handling included.
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthManager>();

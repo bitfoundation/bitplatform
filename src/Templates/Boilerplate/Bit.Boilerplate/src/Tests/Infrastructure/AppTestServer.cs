@@ -130,7 +130,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         // reads its discovery document there, and /api and /hangfire are forwarded to it.
         //#endif
         webAppBuilder.Configuration["ServerAddress"] = ApiServerAddress.ToString();
-        // The origin the test HttpClient sends as X-Origin (See AddTestProjectServices), which a test may override.
+        // The test HttpClient's base address and X-Origin (See AddTestProjectServices), which a test may override.
         webAppBuilder.Configuration["WebAppUrl"] = WebAppServerAddress.ToString();
         webAppBuilder.WebHost.UseUrls(WebAppServerAddress.ToString());
 

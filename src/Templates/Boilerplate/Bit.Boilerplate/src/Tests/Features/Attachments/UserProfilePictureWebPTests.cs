@@ -51,7 +51,7 @@ public partial class UserProfilePictureWebPTests
 
             // Real, non-webp repo image served at the web root (512x512 PNG >= the 256x256 minimum, so it is not rejected
             // with ImageTooSmall). Downloading it through the running server avoids brittle on-disk asset paths.
-            var sourceImageBytes = await httpClient.GetByteArrayAsync(new Uri(server.WebAppServerAddress, "images/icons/bit-icon-512.png"), TestContext.CancellationToken);
+            var sourceImageBytes = await httpClient.GetByteArrayAsync("images/icons/bit-icon-512.png", TestContext.CancellationToken);
 
             // Sanity: the source really is NOT WebP, otherwise the assertion below would be meaningless.
             Assert.AreNotEqual(MagickFormat.WebP, new MagickImageInfo(sourceImageBytes).Format);
