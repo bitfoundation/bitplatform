@@ -1,8 +1,5 @@
 //+:cnd:noEmit
 using Boilerplate.Shared.Infrastructure.Services.Contracts;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR.Client;
-//#endif
 
 namespace Boilerplate.Tests.Infrastructure;
 
@@ -57,15 +54,6 @@ public sealed class AppClient : IAsyncDisposable
     {
         return Services.GetRequiredService<T>();
     }
-
-    //#if (signalR == true)
-    /// <summary>
-    /// The app's SignalR connection to the api's app-hub, a WebSocket that carries the api's pushes to the app and the
-    /// app's calls to the hub. As the app does, register what it listens for with On, then open it with StartAsync and
-    /// call the hub with InvokeAsync; it connects as the user <see cref="AuthManager"/> signed in, or anonymously.
-    /// </summary>
-    public HubConnection HubConnection => Services.GetRequiredService<HubConnection>();
-    //#endif
 
     public ValueTask DisposeAsync() => scope.DisposeAsync();
 }

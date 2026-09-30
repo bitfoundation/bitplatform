@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Categories;
 using Boilerplate.Shared.Infrastructure.Services;
@@ -53,8 +54,8 @@ public partial class DashboardBroadcastTenantScopeTests
 
         // Connected only now, after both identities are final: the group a connection joins comes from the tenant claim
         // of the token it handshakes with.
-        var storeDashboard = await ConnectToTheHub(storeClient);
-        var otherDashboard = await ConnectToTheHub(otherClient);
+        await using var storeDashboard = await ConnectToTheHub(storeClient);
+        await using var otherDashboard = await ConnectToTheHub(otherClient);
 
         var storeCategories = storeClient.GetController<ICategoryController>();
         var otherCategories = otherClient.GetController<ICategoryController>();
@@ -103,7 +104,7 @@ public partial class DashboardBroadcastTenantScopeTests
     private CategoryDto NewCategory() => new() { Id = Guid.CreateSequentialGuid(), Name = $"dash-cat-{Guid.NewGuid():N}", Color = "#336699" };
 
     /// <summary>
-    /// Opens <paramref name="client"/>'s own hub connection, counting the <c>DASHBOARD_DATA_CHANGED</c> it receives.
+    /// A real hub connection for <paramref name="client"/>, counting the <c>DASHBOARD_DATA_CHANGED</c> it receives.
     /// </summary>
     private async Task<DashboardMessages> ConnectToTheHub(AppClient client)
     {
@@ -111,14 +112,22 @@ public partial class DashboardBroadcastTenantScopeTests
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "An anonymous connection joins no group at all, which would make this test assert nothing.");
 
-        var dashboardMessages = new DashboardMessages(client.HubConnection);
+        var hubConnection = new HubConnectionBuilder()
+            .WithUrl(new Uri(client.Server.ApiServerAddress, "app-hub"), options =>
+            {
+                options.Transports = HttpTransportType.WebSockets;
+                options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
+            })
+            .Build();
 
-        await client.HubConnection.StartAsync(TestContext.CancellationToken);
+        var dashboardMessages = new DashboardMessages(hubConnection);
+
+        await hubConnection.StartAsync(TestContext.CancellationToken);
 
         // StartAsync returns once the handshake is answered, which happens before OnConnectedAsync has finished joining
         // the groups. A hub method is dispatched only after OnConnectedAsync completed, and this one re-runs that very
         // join, so awaiting it is a deterministic gate on group membership rather than a sleep.
-        await client.HubConnection.InvokeAsync(SharedAppMessages.ChangeAuthenticationState, accessToken, TestContext.CancellationToken);
+        await hubConnection.InvokeAsync(SharedAppMessages.ChangeAuthenticationState, accessToken, TestContext.CancellationToken);
 
         return dashboardMessages;
     }
@@ -136,13 +145,16 @@ public partial class DashboardBroadcastTenantScopeTests
         }
     }
 
-    /// <summary>The <c>DASHBOARD_DATA_CHANGED</c> messages a hub connection received.</summary>
-    private sealed class DashboardMessages
+    /// <summary>A hub connection, with the <c>DASHBOARD_DATA_CHANGED</c> messages it received.</summary>
+    private sealed class DashboardMessages : IAsyncDisposable
     {
+        private readonly HubConnection hubConnection;
         private int messages;
 
         public DashboardMessages(HubConnection hubConnection)
         {
+            this.hubConnection = hubConnection;
+
             // Exactly what AppClientCoordinator subscribes to; the payload of this particular message is always null.
             hubConnection.On<string, object?>(SharedAppMessages.PUBLISH_MESSAGE, (message, _) =>
             {
@@ -154,5 +166,7 @@ public partial class DashboardBroadcastTenantScopeTests
         }
 
         public int Messages => Volatile.Read(ref messages);
+
+        public ValueTask DisposeAsync() => hubConnection.DisposeAsync();
     }
 }

@@ -100,9 +100,6 @@ public sealed class AppClient : IAsyncDisposable
     public AuthManager AuthManager { get; }
     public HttpClient HttpClient { get; } // Works exactly like the app's own
     public T GetController<T>() where T : class, IAppController; // IUserController and the rest
-<!--#if (signalR == true)-->
-    public HubConnection HubConnection { get; } // The app's SignalR connection to the api's app-hub, a WebSocket
-<!--#endif-->
 }
 ```
 
@@ -120,9 +117,6 @@ public sealed class AppClient : IAsyncDisposable
 **Calling the api.** `server.CreateAppClient()` is the app as a client of the api, without its UI, and a test creates one per user it needs: it calls anonymously until its `AuthManager` signs a user in, and as that user from then on (See the example below).
 - `client.GetController<T>()`: the app's own client of an api controller, `IUserController` and the rest. Prefer it.
 - `client.HttpClient`: the HttpClient those clients are built on, which works exactly like the app's own. The test reaches the api the way the client does, only without the UI: `ExceptionDelegatingHandler` turns an error response into the exception the app would get, for example.
-<!--#if (signalR == true)-->
-- `client.HubConnection`: the app's SignalR connection to the api's `app-hub`, a WebSocket. As the app does, register what it listens for with `On`, then open it with `StartAsync` and call the hub with `InvokeAsync`.
-<!--#endif-->
 - `server.CreateRawHttpClient()`: straight to Server.Api, with none of the app's handlers, for a test about the response itself: a status code, a header, a redirect.
 
 No browser signs in on a server built without one, so `AppTestServer` keeps `AuthManager`'s tokens in memory there (See `AddBrowserlessClientServices`). A server a browser drives has no `AppClient`: the test signs in through the browser's pages.

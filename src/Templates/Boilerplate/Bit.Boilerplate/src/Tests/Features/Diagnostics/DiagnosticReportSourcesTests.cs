@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Shared.Infrastructure.Services;
 using Boilerplate.Tests.Features.DevMcp;
@@ -40,11 +41,19 @@ public class DiagnosticReportSourcesTests
             .PerformDiagnostic(signalRConnectionId: null, pushNotificationSubscriptionDeviceId: null, TestContext.CancellationToken)
             .ToArrayAsync(TestContext.CancellationToken));
 
-        // The app's own connection, a WebSocket: long polling would travel the same path as the http call above.
-        await client.HubConnection.StartAsync(TestContext.CancellationToken);
+        await using var hubConnection = new HubConnectionBuilder()
+            .WithUrl(new Uri(server.ApiServerAddress, "app-hub"), options =>
+            {
+                // The upgrade is the whole point: long polling would travel the same path as the http call above.
+                options.Transports = HttpTransportType.WebSockets;
+                options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
+            })
+            .Build();
+
+        await hubConnection.StartAsync(TestContext.CancellationToken);
 
         var signalR = string.Join(Environment.NewLine,
-            await client.HubConnection.InvokeAsync<string[]>(SharedAppMessages.GetDiagnosticReport, TestContext.CancellationToken));
+            await hubConnection.InvokeAsync<string[]>(SharedAppMessages.GetDiagnosticReport, TestContext.CancellationToken));
 
         await using var mcp = await DevMcpTestUtils.Connect(server, accessToken, "dev-mcp", TestContext.CancellationToken);
 
