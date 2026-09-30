@@ -9,6 +9,20 @@
     flex-flow: column;
     align-items: flex-start;
 
+    // The rows the examples lay their buttons and links out in. A NoWrapper media query renders its content straight
+    // into them, which is what lets the buttons it holds take part in the row.
+    .toolbar,
+    .nav-links {
+        gap: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .nav-links {
+        gap: 1rem;
+    }
+
     // The class handed to a BitMediaQuery in the "Style & Class" example. It lands on a component, and the
     // scope attribute of this stylesheet only lands on the plain elements written in this page, so it is
     // reached through the container that carries it.

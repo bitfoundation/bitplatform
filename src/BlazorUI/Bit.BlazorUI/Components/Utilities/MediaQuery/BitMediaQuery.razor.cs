@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A component to render content based on CSS media queries, using the browser's matchMedia API.
@@ -13,11 +15,20 @@
 /// keeps its content across the flip. The state itself is readable from <see cref="IsMatched"/>,
 /// bindable with <c>@bind-IsMatched</c>, and reported through <see cref="OnChange"/>, so a page can
 /// take the answer without rendering anything through the component at all.
+/// <br />
+/// A flip that removes the focused element (zooming in crosses breakpoints for a keyboard user too)
+/// hands the focus to the content that replaced it - the element with the same id, else the first
+/// focusable one - instead of leaving it to fall back to the top of the page. That takes the root
+/// element, so it is not done with <see cref="NoWrapper"/>; a <see cref="Template"/> keeps the focused
+/// element itself.
 /// </remarks>
 public partial class BitMediaQuery : BitComponentBase
 {
     private string? _query;
     private bool _isSetup;
+    private bool _isSeeded;
+    private bool _queryFromCascade;
+    private bool _noWrapperFromCascade;
     private DotNetObjectReference<BitMediaQuery>? _dotnetObj;
 
 
@@ -36,6 +47,19 @@ public partial class BitMediaQuery : BitComponentBase
     /// component's own to read them from: <see cref="NoWrapper"/>, and a usage with no content at all.
     /// </remarks>
     [CascadingParameter] public BitTheme? CascadingTheme { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the media query component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple media query components through the <see cref="BitParams"/> component.
+    /// <see cref="Query"/> and <see cref="ScreenQuery"/> are one decision there: neither is cascaded to a media query
+    /// that sets either of them itself.
+    /// </remarks>
+    [CascadingParameter(Name = BitMediaQueryParams.ParamName)]
+    public BitMediaQueryParams? CascadingParameters { get; set; }
 
 
 
@@ -92,7 +116,7 @@ public partial class BitMediaQuery : BitComponentBase
     /// <br />
     /// A <see cref="ScreenQuery"/> is unaffected: with no element to read the <c>--bit-bp-*</c>
     /// variables from, the breakpoints of an enclosing <see cref="BitThemeProvider"/> are taken from
-    /// the cascading theme (see <see cref="CascadingTheme"/>) and the document root answers for the
+    /// the cascading theme (see <see cref="CascadingTheme"/>) and the document body answers for the
     /// rest, so a scoped theme is honored here as it is anywhere else.
     /// </remarks>
     [Parameter] public bool NoWrapper { get; set; }
@@ -175,17 +199,48 @@ public partial class BitMediaQuery : BitComponentBase
 
     protected override string RootElementClass => "bit-mdq";
 
-    protected override async Task OnInitializedAsync()
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMediaQueryParams))]
+    protected override void OnParametersSet()
+    {
+        // A value the cascade handed down is not one the component keeps once the cascade stops carrying it: it goes
+        // back to its default. A value assigned on the component is left alone.
+        if (_queryFromCascade && HasNotBeenSet(nameof(Query)) && HasNotBeenSet(nameof(ScreenQuery)))
+        {
+            Query = null;
+            ScreenQuery = null;
+        }
+
+        if (_noWrapperFromCascade && HasNotBeenSet(nameof(NoWrapper)))
+        {
+            NoWrapper = false;
+        }
+
+        _queryFromCascade = CascadingParameters?.AppliesQuery(this) is true;
+        _noWrapperFromCascade = CascadingParameters?.NoWrapper.HasValue is true && HasNotBeenSet(nameof(NoWrapper));
+
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
     {
         // Render with the DefaultMatched state until the browser reports the actual result of the
         // query (e.g. during prerendering); the first JS notification then takes over. A bound
         // IsMatched hands its own initial value over and owns this instead.
-        if (IsMatchedHasBeenSet is false && DefaultMatched)
+        // Seeded here rather than on initialization, so a DefaultMatched a BitParams cascades is
+        // already in place: the cascade is applied with the rest of the parameters, after it.
+        if (_isSeeded is false)
         {
-            await AssignIsMatched(true);
+            _isSeeded = true;
+
+            if (IsMatchedHasBeenSet is false && DefaultMatched)
+            {
+                await AssignIsMatched(true);
+            }
         }
 
-        await base.OnInitializedAsync();
+        await base.OnParametersSetAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -255,6 +310,15 @@ public partial class BitMediaQuery : BitComponentBase
     // that happens to carry the same id (the rendered content itself, in no-wrapper mode) is not this
     // component's themed scope and is deliberately not read.
     private string? _ElementId => NoWrapper is false && _HasContent ? _Id : null;
+
+    // A splatted aria-label is resolved here rather than written over: the null a markup attribute
+    // written after the splat carries would otherwise remove it, since it binds no parameter.
+    private string? _AriaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+
+    // ARIA prohibits naming an element with no role, so a named wrapper is a group - the generic
+    // container a name can be given to - unless the page gives it a role of its own.
+    private string? _Role => GetSplattedAttribute("role")
+        ?? (_AriaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null);
 
     private bool _HasContent => Template is not null || Matched is not null || ChildContent is not null || NotMatched is not null;
 

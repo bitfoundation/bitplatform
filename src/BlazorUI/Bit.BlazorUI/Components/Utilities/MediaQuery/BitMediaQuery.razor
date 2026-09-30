@@ -32,7 +32,8 @@
     {
         <div @ref="RootElement" @attributes="HtmlAttributes"
              id="@_Id"
-             aria-label="@AriaLabel"
+             role="@_Role"
+             aria-label="@_AriaLabel"
              style="@StyleBuilder.Value"
              class="@ClassBuilder.Value"
              dir="@Dir?.ToString().ToLower()">

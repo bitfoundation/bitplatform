@@ -1,13 +1,31 @@
 ﻿namespace BitBlazorUI {
     type BreakpointKey = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
 
-    export class MediaQuery {
-        private static _abortControllers: { [key: string]: AbortController } = {};
+    type MediaQueryListener = {
+        ac: AbortController;
+        // The resolved media-query expression the listener was created with, so a repeated setup call
+        // can reuse the existing listener when the expression is unchanged and replace it when the
+        // theme breakpoints have changed the resolved query for the same ScreenQuery name.
+        resolvedQuery: string;
+        elementId: string | null;
+        query: string | null;
+        screenQuery: string | null;
+        breakpoints: { [key: string]: string } | null;
+        dotnetObj: DotNetObject;
+        // The state last reported to .NET, carried over when the listener is rebuilt for a new
+        // expression, so a rebuild that leaves the answer as it was does not report it again.
+        matches?: boolean;
+    };
 
-        // The resolved media-query expression each listener was created with, so a repeated setup
-        // call can reuse the existing listener when the expression is unchanged and replace it when
-        // the theme breakpoints have changed the resolved query for the same ScreenQuery name.
-        private static _resolvedQueries: { [key: string]: string } = {};
+    export class MediaQuery {
+        private static _listeners: { [key: string]: MediaQueryListener } = {};
+
+        // Watches what can re-value the --bit-bp-* breakpoints of the whole document without any
+        // component rendering again: BitThemeManager applying a theme (an inline style on the body or
+        // the root), and a switch between named themes (the bit-theme attribute, and the event the
+        // theme runtime dispatches). Only alive while a ScreenQuery listener exists to re-resolve.
+        private static _themeObserver: MutationObserver | null = null;
+        private static _themeFrame = 0;
 
         // Fallback breakpoints (px), used only when the corresponding --bit-bp-* CSS variable is
         // not resolvable. Kept in sync with the defaults published by media-queries.scss.
@@ -29,12 +47,15 @@
         // fractional media-query bound and one is not always enough to stay below the edge.
         private static _rangeEpsilon = 0.02;
 
+        // The elements the focus can be handed to when the content it was on is swapped out.
+        private static _focusables = 'a[href], area[href], button, input, select, textarea, iframe, summary, audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
+
         /**
          * @param key          The listener key. The component's own unique id rather than the id of
          *                     an element, so two components sharing an explicit Id cannot collide.
          * @param elementId    The id of the element whose themed scope the --bit-bp-* breakpoints
          *                     are read from, or null when the component renders no element of its
-         *                     own (the document root is read instead).
+         *                     own (the body is read instead).
          * @param query        A custom, verbatim media query (takes precedence when provided).
          * @param screenQuery  One of the predefined BitScreenQuery names (e.g. "Md", "LtLg", "GtSm").
          *                     When set (and no custom query), the query is built from the live
@@ -56,6 +77,26 @@
             // the component simply keeps whatever DefaultMatched asked for.
             if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
 
+            await MediaQuery.listen(key, elementId, query, screenQuery, breakpoints, dotnetObj);
+        }
+
+        public static dispose(key: string) {
+            const listener = MediaQuery._listeners[key];
+            if (!listener) return;
+
+            listener.ac.abort();
+
+            delete MediaQuery._listeners[key];
+
+            MediaQuery.syncThemeObserver();
+        }
+
+        private static async listen(key: string,
+                                    elementId: string | null,
+                                    query: string | null,
+                                    screenQuery: string | null,
+                                    breakpoints: { [key: string]: string } | null,
+                                    dotnetObj: DotNetObject) {
             const resolvedQuery = query || (screenQuery ? MediaQuery.buildScreenQuery(screenQuery, elementId, breakpoints) : '');
             if (!resolvedQuery) {
                 // Nothing resolves to listen for any more, so a listener a previous call left behind
@@ -66,14 +107,27 @@
 
             // The .NET side re-invokes setup for screen queries on every render (the expression
             // depends on the live breakpoints); keep the existing listener when the resolved
-            // expression is unchanged and only rebuild it when it actually differs.
-            if (MediaQuery._abortControllers[key] && MediaQuery._resolvedQueries[key] === resolvedQuery) return;
+            // expression is unchanged and only rebuild it when it actually differs. What the
+            // listener re-resolves with later is refreshed either way: the id or the scoped
+            // breakpoints can change without changing the expression they resolve to today.
+            const existing = MediaQuery._listeners[key];
+            if (existing && existing.resolvedQuery === resolvedQuery) {
+                existing.elementId = elementId;
+                existing.query = query;
+                existing.screenQuery = screenQuery;
+                existing.breakpoints = breakpoints;
+                existing.dotnetObj = dotnetObj;
+                MediaQuery.syncThemeObserver();
+                return;
+            }
 
             MediaQuery.dispose(key);
 
             const ac = new AbortController();
-            MediaQuery._abortControllers[key] = ac;
-            MediaQuery._resolvedQueries[key] = resolvedQuery;
+            const listener: MediaQueryListener = { ac, resolvedQuery, elementId, query, screenQuery, breakpoints, dotnetObj, matches: existing?.matches };
+            MediaQuery._listeners[key] = listener;
+
+            MediaQuery.syncThemeObserver();
 
             const queryList = window.matchMedia(resolvedQuery);
 
@@ -91,29 +145,149 @@
             await handleMatchChange(queryList.matches);
 
             async function handleMatchChange(matches: boolean) {
+                if (listener.matches === matches) return;
+                listener.matches = matches;
+
+                // A flip swaps the content the component renders, and the element the focus is on
+                // can go with it - most often while the page is zoomed, which is what crosses a
+                // breakpoint for a keyboard user. The focus is watched across the swap, so it lands
+                // in the content that replaced it rather than falling back to the top of the page.
+                const stopKeepingFocus = MediaQuery.keepFocus(listener.elementId);
+
                 try {
-                    await dotnetObj.invokeMethodAsync("OnMatchChange", matches);
+                    await listener.dotnetObj.invokeMethodAsync("OnMatchChange", matches);
                 } catch {
+                    stopKeepingFocus();
+
                     // The .NET side is gone (the component or its circuit was disposed while the
                     // notification was in flight); stop listening instead of failing on every change.
                     // Only this listener though: a notification still in flight from the call before
                     // a rebuild would otherwise take the listener that replaced it down with it.
-                    if (MediaQuery._abortControllers[key] === ac) {
+                    if (MediaQuery._listeners[key] === listener) {
                         MediaQuery.dispose(key);
                     }
                 }
             }
         }
 
-        public static dispose(key: string) {
-            delete MediaQuery._resolvedQueries[key];
+        // Starts or stops watching the document for re-valued breakpoints, by whether any listener
+        // is built from them; a custom query is verbatim and has nothing to re-resolve.
+        private static syncThemeObserver() {
+            const needed = Object.keys(MediaQuery._listeners).some(k => !!MediaQuery._listeners[k].screenQuery);
 
-            const ac = MediaQuery._abortControllers[key];
-            if (!ac) return;
+            if (needed && !MediaQuery._themeObserver) {
+                if (typeof MutationObserver !== 'function' || typeof document === 'undefined') return;
 
-            ac.abort();
+                const observer = new MutationObserver(MediaQuery.scheduleThemeRefresh);
+                const options = { attributes: true, attributeFilter: ['style', 'class', 'bit-theme'] };
+                observer.observe(document.documentElement, options);
+                if (document.body) {
+                    observer.observe(document.body, options);
+                }
+                document.addEventListener('bit-theme-change', MediaQuery.scheduleThemeRefresh);
 
-            delete MediaQuery._abortControllers[key];
+                MediaQuery._themeObserver = observer;
+            } else if (!needed && MediaQuery._themeObserver) {
+                MediaQuery._themeObserver.disconnect();
+                MediaQuery._themeObserver = null;
+                document.removeEventListener('bit-theme-change', MediaQuery.scheduleThemeRefresh);
+            }
+        }
+
+        // Coalesces a burst of mutations (a theme applies dozens of properties one by one) into one
+        // pass, taken once the style has settled.
+        private static scheduleThemeRefresh() {
+            if (MediaQuery._themeFrame) return;
+
+            MediaQuery._themeFrame = requestAnimationFrame(() => {
+                MediaQuery._themeFrame = 0;
+
+                Object.keys(MediaQuery._listeners).forEach(key => {
+                    const l = MediaQuery._listeners[key];
+                    if (!l || !l.screenQuery) return;
+
+                    // Unchanged expressions keep their listener: listen() only rebuilds (and reports)
+                    // the ones the new breakpoints actually moved.
+                    MediaQuery.listen(key, l.elementId, l.query, l.screenQuery, l.breakpoints, l.dotnetObj);
+                });
+            });
+        }
+
+        // Watches the updates of the component's element for the one that removes the focused
+        // element, and hands the focus to the content that replaced it: an element with the same
+        // id when there is one (the same control, rendered for the other side of the query), else
+        // the first focusable one, else the element itself. Other updates can come first (the
+        // content re-rendering on its own while the notification is on its way), so it is not the
+        // first update that ends the watch but the focus leaving the element, or a timeout.
+        // Returns what stops watching.
+        private static keepFocus(elementId: string | null): () => void {
+            const none = () => { };
+
+            if (!elementId || typeof MutationObserver !== 'function') return none;
+
+            const element = document.getElementById(elementId);
+            const focused = document.activeElement as HTMLElement | null;
+            if (!element || !focused || focused === element || !element.contains(focused)) return none;
+
+            const focusedId = focused.id;
+
+            let timer = 0;
+            const observer = new MutationObserver(() => {
+                // Still in place: either the update this waits for has not come yet, or it is one
+                // that keeps the focused element (a Template, whose content is updated rather than
+                // replaced). Only once the focus has moved on is there nothing left to keep.
+                if (focused.isConnected) {
+                    if (document.activeElement !== focused) stop();
+                    return;
+                }
+
+                stop();
+
+                // Something else already took the focus on (the new content focusing itself).
+                const active = document.activeElement;
+                if (active && active !== document.body && active !== document.documentElement) return;
+                if (!element.isConnected) return;
+
+                const candidates = Array.from(element.querySelectorAll<HTMLElement>(MediaQuery._focusables)).filter(MediaQuery.isFocusable);
+                const target = (focusedId && candidates.find(c => c.id === focusedId)) || candidates[0];
+
+                if (target) {
+                    target.focus({ preventScroll: true });
+                    return;
+                }
+
+                // Nothing inside can take the focus; the element holds it for the time being, so
+                // the next Tab carries on from where the content was rather than from the top.
+                if (element.hasAttribute('tabindex')) {
+                    element.focus({ preventScroll: true });
+                    return;
+                }
+
+                element.setAttribute('tabindex', '-1');
+                element.addEventListener('blur', () => {
+                    if (element.getAttribute('tabindex') === '-1') element.removeAttribute('tabindex');
+                }, { once: true });
+                element.focus({ preventScroll: true });
+            });
+
+            // The update this waits for is the render the notification causes; one that never comes
+            // (an IsMatched frozen by a one-way binding, a state that did not change) is not waited on.
+            function stop() {
+                observer.disconnect();
+                clearTimeout(timer);
+            }
+
+            observer.observe(element, { childList: true, subtree: true });
+            timer = setTimeout(stop, 5000) as unknown as number;
+
+            return stop;
+        }
+
+        private static isFocusable(el: HTMLElement): boolean {
+            if (el.tabIndex < 0 || (el as HTMLButtonElement).disabled) return false;
+            if (el.closest('[inert]')) return false;
+
+            return el.getClientRects().length > 0;
         }
 
         // Builds the media query for a predefined BitScreenQuery from the resolved theme breakpoints.
@@ -172,11 +346,12 @@
         // element of its own; then the --bit-bp-* tokens of the queried element's themed scope,
         // which is how a theme applied to the document (or to any ancestor) is picked up - custom
         // properties inherit, so a document-root definition still resolves through the element;
-        // then the built-in defaults, for a token that is set nowhere. The document root is what is
-        // read when there is no element: in no-wrapper mode, and when nothing is rendered at all
-        // (an OnChange-only usage with no content).
+        // then the built-in defaults, for a token that is set nowhere. The body is what is read when
+        // there is no element - in no-wrapper mode, and when nothing is rendered at all (an
+        // OnChange-only usage with no content) - rather than the root: it inherits everything the
+        // root declares, and it is where BitThemeManager applies a theme unless told otherwise.
         private static resolveBreakpoints(elementId: string | null, breakpoints: { [key: string]: string } | null): Record<BreakpointKey, string> {
-            const element = (elementId ? document.getElementById(elementId) : null) ?? document.documentElement;
+            const element = (elementId ? document.getElementById(elementId) : null) ?? document.body ?? document.documentElement;
             const styles = typeof getComputedStyle === 'function'
                 ? getComputedStyle(element)
                 : null;

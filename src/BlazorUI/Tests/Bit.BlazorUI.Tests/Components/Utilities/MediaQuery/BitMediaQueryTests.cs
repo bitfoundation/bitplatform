@@ -828,6 +828,68 @@ public class BitMediaQueryTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMediaQueryShouldMakeANamedWrapperAGroup()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.AriaLabel, "Compact layout");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        // ARIA prohibits naming an element with no role, so the name would otherwise go unread.
+        Assert.AreEqual("group", component.Find(".bit-mdq").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldRenderNoRoleForAnUnnamedWrapper()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.IsFalse(root.HasAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldKeepASplattedAriaLabel()
+    {
+        var component = RenderComponent<BitMediaQueryAriaLabelTest>();
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.AreEqual("Compact layout", root.GetAttribute("aria-label"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldMakeAWrapperLabelledByAnotherElementAGroup()
+    {
+        var component = RenderComponent<BitMediaQueryLabelledByTest>();
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.AreEqual("compact-title", root.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldKeepASplattedRole()
+    {
+        var component = RenderComponent<BitMediaQueryRoleTest>();
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.AreEqual("region", root.GetAttribute("role"));
+        Assert.AreEqual("Compact layout", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitMediaQueryShouldRespectClassStyleIdAndDir()
     {
         var component = RenderComponent<BitMediaQuery>(parameters =>
