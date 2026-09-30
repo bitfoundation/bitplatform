@@ -15,53 +15,196 @@ namespace Boilerplate.Tests.Infrastructure;
 public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null) : IAsyncDisposable
 {
     private WebApplication? webApp;
-    private WebApplicationBuilder? builder;
+    private WebApplicationBuilder? webAppBuilder;
+    //#if (api == "Standalone")
+    //#if (IsInsideProjectTemplate)
+    /*
+    //#endif
+    private WebApplication? apiApp;
+    //#if (advancedTests == true)
+    private WebApplicationBuilder? apiAppBuilder;
+    //#endif
+    //#if (IsInsideProjectTemplate)
+    */
+    //#endif
+    //#endif
 
     public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
 
+    //#if (api == "Standalone")
+    //#if (IsInsideProjectTemplate)
+    /*
+    //#endif
+    /// <summary>
+    /// Server.Api, a host of its own next to <see cref="WebApp"/>, which forwards /api and /hangfire to it - the way the
+    /// two are deployed. The database, Hangfire and the captured identity e-mails live here, so resolve them from its services.
+    /// </summary>
+    public WebApplication ApiApp => apiApp ?? throw new InvalidOperationException($"{nameof(ApiApp)} is null. Call {nameof(Build)} method first.");
+    //#if (IsInsideProjectTemplate)
+    */
+    //#endif
+    //#else
+    /// <summary>
+    /// The host Server.Api's services live in - the database, Hangfire and the captured identity e-mails among them.
+    /// The api is integrated into Server.Web, so that is <see cref="WebApp"/> itself.
+    /// </summary>
+    public WebApplication ApiApp => WebApp;
+    //#endif
+
     //#if (advancedTests == true)
-    public IServiceCollection Services => builder?.Services ?? throw new InvalidOperationException($"{nameof(Services)} is null. Call {nameof(Build)} method first.");
+    public IServiceCollection WebAppServices => webAppBuilder?.Services ?? throw new InvalidOperationException($"{nameof(WebAppServices)} is null. Call {nameof(Build)} method first.");
+    //#if (api == "Standalone")
+    //#if (IsInsideProjectTemplate)
+    /*
+    //#endif
+    public IServiceCollection ApiAppServices => apiAppBuilder?.Services ?? throw new InvalidOperationException($"{nameof(ApiAppServices)} is null. Call {nameof(Build)} method first.");
+    //#if (IsInsideProjectTemplate)
+    */
+    //#endif
+    //#else
+    /// <summary>The registrations of the host Server.Api's services live in (See <see cref="ApiApp"/>).</summary>
+    public IServiceCollection ApiAppServices => WebAppServices;
+    //#endif
     //#endif
     public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
 
-    public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,
-        Action<ConfigurationManager>? configureTestConfigurations = null)
+    //#if (api == "Standalone")
+    //#if (IsInsideProjectTemplate)
+    /*
+    //#endif
+    public readonly Uri ApiServerAddress = new(GenerateServerUrl());
+    //#if (IsInsideProjectTemplate)
+    */
+    //#endif
+    //#else
+    public Uri ApiServerAddress => WebAppServerAddress;
+    //#endif
+
+    /// <param name="configureTestWebAppServices">Overrides Server.Web's services, the client services it hosts included.</param>
+    /// <param name="configureTestConfigurations">Overrides Server.Web's and Server.Api's configuration.</param>
+    /// <param name="configureTestApiAppServices">Overrides Server.Api's services.</param>
+    public AppTestServer Build(Action<IServiceCollection>? configureTestWebAppServices = null,
+        Action<ConfigurationManager>? configureTestConfigurations = null,
+        Action<IServiceCollection>? configureTestApiAppServices = null)
     {
         if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
 
-        builder = WebApplication.CreateBuilder(options: new()
+        //#if (api == "Standalone")
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        apiApp = BuildApi(configureTestConfigurations, configureTestApiAppServices);
+
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        //#endif
+        webAppBuilder = WebApplication.CreateBuilder(options: new()
         {
             EnvironmentName = Environments.Development,
+            //#if (api == "Standalone")
+            //#if (IsInsideProjectTemplate)
+            /*
+            //#endif
+            ContentRootPath = ProjectDirectoryOf(typeof(Server.Web.Program).Assembly.GetName().Name!),
+            //#if (IsInsideProjectTemplate)
+            */
+            //#endif
+            //#endif
             ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
         });
 
-        builder.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
-        builder.WebHost.UseUrls(WebAppServerAddress.ToString());
+        //#if (api == "Standalone")
+        // As in a real deployment, ServerAddress is Server.Api's own address: Server.Web's HttpClient calls it, JwtBearer
+        // reads its discovery document there, and /api and /hangfire are forwarded to it.
+        //#endif
+        webAppBuilder.Configuration["ServerAddress"] = ApiServerAddress.ToString();
+        webAppBuilder.WebHost.UseUrls(WebAppServerAddress.ToString());
 
-        AppEnvironment.Set(builder.Environment.EnvironmentName);
+        AppEnvironment.Set(webAppBuilder.Environment.EnvironmentName);
 
-        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
+        webAppBuilder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
-        configureTestConfigurations?.Invoke(builder.Configuration);
+        configureTestConfigurations?.Invoke(webAppBuilder.Configuration);
 
-        builder.AddTestProjectServices();
+        webAppBuilder.AddTestProjectServices(WebAppServerAddress);
 
-        configureTestServices?.Invoke(builder.Services);
+        configureTestWebAppServices?.Invoke(webAppBuilder.Services);
+        //#if (api == "Integrated")
+        configureTestApiAppServices?.Invoke(webAppBuilder.Services);
+        //#endif
 
-        var app = webApp = builder.Build();
+        var app = webApp = webAppBuilder.Build();
 
         app.ConfigureMiddlewares();
 
         return this;
     }
 
+    //#if (api == "Standalone")
+    //#if (IsInsideProjectTemplate)
+    /*
+    //#endif
+    /// <summary>
+    /// Builds Server.Api the way its own Program.Main does, minus Sentry and the database initialization
+    /// (See <see cref="TestsAssemblyInitializer"/>).
+    /// </summary>
+    private WebApplication BuildApi(Action<ConfigurationManager>? configureTestConfigurations, Action<IServiceCollection>? configureTestApiAppServices)
+    {
+        var apiAppBuilder = WebApplication.CreateBuilder(options: new()
+        {
+            EnvironmentName = Environments.Development,
+            ApplicationName = typeof(Server.Api.Program).Assembly.GetName().Name,
+            ContentRootPath = ProjectDirectoryOf(typeof(Server.Api.Program).Assembly.GetName().Name!)
+        });
+        //#if (advancedTests == true)
+        this.apiAppBuilder = apiAppBuilder;
+        //#endif
+
+        // The links the api builds (e-mail confirmation, reset password, ...) point at the web app, which is another host here.
+        apiAppBuilder.Configuration["WebAppUrl"] = WebAppServerAddress.ToString();
+        apiAppBuilder.WebHost.UseUrls(ApiServerAddress.ToString());
+
+        AppEnvironment.Set(apiAppBuilder.Environment.EnvironmentName);
+
+        apiAppBuilder.Configuration.AddSharedConfigurations();
+
+        configureTestConfigurations?.Invoke(apiAppBuilder.Configuration);
+
+        apiAppBuilder.Services.AddSharedProjectServices(apiAppBuilder.Configuration);
+        Server.Api.Program.AddServerApiProjectServices(apiAppBuilder);
+        apiAppBuilder.AddTestApiProjectServices();
+
+        configureTestApiAppServices?.Invoke(apiAppBuilder.Services);
+
+        var app = apiAppBuilder.Build();
+
+        Server.Api.Program.ConfigureMiddlewares(app);
+
+        return app;
+    }
+
+    //#if (IsInsideProjectTemplate)
+    */
+    //#endif
+    //#endif
     public async Task Start(CancellationToken cancellationToken)
     {
+        //#if (api == "Standalone")
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        // The api first: the web app forwards to it and validates tokens against its discovery document.
+        await ApiApp.StartAsync(cancellationToken);
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        //#endif
         await WebApp.StartAsync(cancellationToken);
         if (ClientBrowserContext is not null)
         {
-            await ClientBrowserContext.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={WebAppServerAddress}' ]; }};");
+            await ClientBrowserContext.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={ApiServerAddress}' ]; }};");
         }
     }
 
@@ -72,7 +215,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     /// </summary>
     public async Task WaitForBackgroundJobsToComplete(CancellationToken cancellationToken)
     {
-        var monitoringApi = WebApp.Services.GetRequiredService<JobStorage>().GetMonitoringApi();
+        var monitoringApi = ApiApp.Services.GetRequiredService<JobStorage>().GetMonitoringApi();
 
         var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(30);
 
@@ -97,7 +240,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     /// </summary>
     public async Task<CapturedEmail> WaitForCapturedEmail(string email, Func<CapturedEmail, bool> predicate, CancellationToken cancellationToken)
     {
-        var store = WebApp.Services.GetRequiredService<EmailCaptureStore>();
+        var store = ApiApp.Services.GetRequiredService<EmailCaptureStore>();
 
         var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(30);
 
@@ -142,7 +285,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
         // Share the whole server container (same as Blazor Server), except the services that only work with a
         // live Blazor circuit - bUnit already registered its own working test doubles for these.
-        foreach (var descriptor in builder!.Services)
+        foreach (var descriptor in webAppBuilder!.Services)
         {
             if (currentBunitServices.Any(s => s.ServiceType == descriptor.ServiceType))
                 continue;
@@ -161,17 +304,57 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
     public async ValueTask DisposeAsync()
     {
-        if (webApp != null)
+        await StopAndDispose(webApp);
+        //#if (api == "Standalone")
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        await StopAndDispose(apiApp);
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        //#endif
+    }
+
+    private static async Task StopAndDispose(WebApplication? app)
+    {
+        if (app != null)
         {
             try
             {
-                await webApp.StopAsync();
+                await app.StopAsync();
             }
             catch (OperationCanceledException) { }
-            await webApp.DisposeAsync();
+            await app.DisposeAsync();
         }
     }
 
+    //#if (api == "Standalone")
+    //#if (IsInsideProjectTemplate)
+    /*
+    //#endif
+    /// <summary>
+    /// The source directory of a server project, which its host uses as the content root - as <c>dotnet run</c> does - so
+    /// it reads that project's own appsettings.json and wwwroot: Server.Web and Server.Api both ship an appsettings.json,
+    /// and only one of the two can land in this project's output. Found by walking up from <see cref="AppContext.BaseDirectory"/>
+    /// (See Server.Web's FileWatcherService.FindSrcDirectory).
+    /// </summary>
+    private static string ProjectDirectoryOf(string projectName)
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            var projectDirectory = Path.Combine(directory.FullName, "Server", projectName);
+            if (File.Exists(Path.Combine(projectDirectory, $"{projectName}.csproj")))
+                return projectDirectory;
+        }
+
+        throw new DirectoryNotFoundException($"No Server/{projectName} directory was found above {AppContext.BaseDirectory}.");
+    }
+
+    //#if (IsInsideProjectTemplate)
+    */
+    //#endif
+    //#endif
     private static string GenerateServerUrl()
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);

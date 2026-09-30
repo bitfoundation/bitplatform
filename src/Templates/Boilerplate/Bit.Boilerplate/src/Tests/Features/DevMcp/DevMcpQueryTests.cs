@@ -16,7 +16,7 @@ public class DevMcpQueryTests
     public async Task QueryEntity_Should_RequireProjection_AndRefuseCredentials()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;
@@ -70,7 +70,7 @@ public class DevMcpQueryTests
     public async Task QueryEntity_Should_ReturnProjectedRows_AndCapTake()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;
@@ -106,7 +106,7 @@ public class DevMcpQueryTests
     public async Task QueryEntity_Should_RefuseUnknownAndCredentialEntities_ButAllowHangfireStorage()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;
@@ -150,7 +150,7 @@ public class DevMcpQueryTests
     public async Task QueryEntity_Should_RefuseForbiddenOrderBy_AndHonorAFilter()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (email, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;
@@ -191,17 +191,17 @@ public class DevMcpQueryTests
     public async Task QueryEntity_Should_IgnoreTheTenantQueryFilter()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebApp, TestContext.CancellationToken);
         await using var _ = grant;
 
         var hiddenName = $"hidden-{Guid.NewGuid():N}";
         var otherTenantId = Guid.CreateVersion7();
 
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
-            var db = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var db = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             await db.Tenants.AddAsync(new Tenant
             {
                 Id = otherTenantId,
@@ -221,7 +221,7 @@ public class DevMcpQueryTests
             await db.SaveChangesAsync(TestContext.CancellationToken);
         }
 
-        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "dev-mcp", TestContext.CancellationToken);
+        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scopeWebApp), "dev-mcp", TestContext.CancellationToken);
         var text = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
         {
             ["entity"] = "Category",

@@ -121,7 +121,7 @@ public class RoleAdministrationGuardTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -149,7 +149,7 @@ public class RoleAdministrationGuardTests
 
     private async Task<Guid> ReadRoleId(AppTestServer server, string roleName)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Roles.Where(r => r.Name == roleName).Select(r => r.Id).FirstAsync(TestContext.CancellationToken);
@@ -157,7 +157,7 @@ public class RoleAdministrationGuardTests
 
     private async Task<int> CountRoleAssignments(AppTestServer server, Guid roleId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.UserRoles.CountAsync(ur => ur.RoleId == roleId, TestContext.CancellationToken);
@@ -165,7 +165,7 @@ public class RoleAdministrationGuardTests
 
     private async Task<string[]> ReadClaimValues(AppTestServer server, Guid roleId, string claimType)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.RoleClaims

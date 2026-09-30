@@ -191,8 +191,8 @@ public partial class ProductImageLifecycleTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices(),
-                           configuration => configuration["AI:OpenAI:ChatApiKey"] = null)
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+                           configureTestConfigurations: configuration => configuration["AI:OpenAI:ChatApiKey"] = null)
                     .Start(TestContext.CancellationToken);
         return server;
     }
@@ -252,7 +252,7 @@ public partial class ProductImageLifecycleTests
 
     private async Task<int> CountAttachments(AppTestServer server, Guid attachmentId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Attachments.CountAsync(att => att.Id == attachmentId, TestContext.CancellationToken);

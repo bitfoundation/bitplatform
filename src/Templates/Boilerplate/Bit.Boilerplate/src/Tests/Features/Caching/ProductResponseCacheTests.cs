@@ -49,7 +49,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 // Pre-rendering makes the server produce the product page's HTML itself, so the page is a cacheable
@@ -73,9 +73,9 @@ public partial class ProductResponseCacheTests
             // ---- Step 1: both readers fetch the product, filling the output cache ----
 
             // The signed-in tenant-user reads it through the public (UserAgnostic) product view API.
-            await using var tenantUserScope = server.WebApp.Services.CreateAsyncScope();
-            await SignIn(tenantUserScope, TenantUserEmail);
-            var tenantUserProductView = tenantUserScope.ServiceProvider.GetRequiredService<IProductViewController>();
+            await using var scopeWebAppTenantUser = server.WebApp.Services.CreateAsyncScope();
+            await SignIn(scopeWebAppTenantUser, TenantUserEmail);
+            var tenantUserProductView = scopeWebAppTenantUser.ServiceProvider.GetRequiredService<IProductViewController>();
 
             var seenByTenantUser = await tenantUserProductView.Get(productShortId, TestContext.CancellationToken);
             Assert.AreEqual(productName, seenByTenantUser.Name);
@@ -110,9 +110,9 @@ public partial class ProductResponseCacheTests
 
             // ---- Step 2: the tenant-admin edits the description through the real write endpoint ----
 
-            await using (var tenantAdminScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeWebAppTenantAdmin = server.WebApp.Services.CreateAsyncScope())
             {
-                var tenantAdminUser = await SignIn(tenantAdminScope, TenantAdminEmail);
+                var tenantAdminUser = await SignIn(scopeWebAppTenantAdmin, TenantAdminEmail);
 
                 // ProductController demands a privileged session, a selected tenant and ProductCatalog_Manage. Her fresh
                 // password sign-in covers the first, and being a t-admin of the tenant that owns the product covers the rest.
@@ -121,7 +121,7 @@ public partial class ProductResponseCacheTests
 
                 // A real authenticated PUT, so the purge under test is the one the endpoint itself performs after saving
                 // (See ProductController.Update) - including running it under a genuine HttpContext.
-                var products = tenantAdminScope.ServiceProvider.GetRequiredService<IProductController>();
+                var products = scopeWebAppTenantAdmin.ServiceProvider.GetRequiredService<IProductController>();
 
                 var toUpdate = await products.Get(productId, TestContext.CancellationToken);
                 toUpdate.DescriptionText = updatedDescription;
@@ -149,9 +149,9 @@ public partial class ProductResponseCacheTests
 
             await DeleteProduct(server, productId);
 
-            await using (var scope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
                 Assert.IsFalse(await dbContext.Products.IgnoreQueryFilters().AnyAsync(p => p.Id == productId, TestContext.CancellationToken),
                     "The product should be gone from the database at this point.");
             }
@@ -173,9 +173,9 @@ public partial class ProductResponseCacheTests
 
             // The row is gone, so ProductController.Delete would 404 before reaching its purge; this control step calls the
             // shared purge service directly instead.
-            await using (var scope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
             {
-                await PurgeProductCache(scope, productShortId);
+                await PurgeProductCache(scopeApiApp, productShortId);
             }
 
             await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(
@@ -209,7 +209,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
@@ -288,7 +288,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
@@ -355,7 +355,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -426,7 +426,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -472,7 +472,7 @@ public partial class ProductResponseCacheTests
         var replays = new ReplayCountingOutputCacheStore.Counter();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics().CountOutputCacheReplays(replays),
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics().CountOutputCacheReplays(replays),
             configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -495,12 +495,13 @@ public partial class ProductResponseCacheTests
 
         try
         {
-            await using var tenantAdminScope = server.WebApp.Services.CreateAsyncScope();
-            await SignIn(tenantAdminScope, TenantAdminEmail);
-            var products = tenantAdminScope.ServiceProvider.GetRequiredService<IProductController>();
+            await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+            await SignIn(scopeWebApp, TenantAdminEmail);
+            var products = scopeWebApp.ServiceProvider.GetRequiredService<IProductController>();
 
             // IgnoreQueryFilters because a bare DI scope has no HttpContext for TenantProvider to read the tenant from.
-            var dbContext = tenantAdminScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             var categoryId = await dbContext.Products
                 .IgnoreQueryFilters()
                 .Where(p => p.TenantId == TenantConfiguration.FallbackTenantId)
@@ -560,7 +561,7 @@ public partial class ProductResponseCacheTests
 
     private async Task<(Guid Id, int ShortId)> CreateProduct(AppTestServer server, string name, string description)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var categoryId = await dbContext.Products
@@ -592,7 +593,7 @@ public partial class ProductResponseCacheTests
 
     private async Task DeleteProduct(AppTestServer server, Guid productId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.Products

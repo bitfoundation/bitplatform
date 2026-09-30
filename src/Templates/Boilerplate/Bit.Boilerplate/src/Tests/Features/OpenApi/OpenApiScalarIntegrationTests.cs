@@ -28,13 +28,13 @@ public partial class OpenApiScalarIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
         // 1) The generated OpenAPI document must be valid JSON describing the API surface.
-        using var openApiResponse = await httpClient.GetAsync("openapi/v1.json", TestContext.CancellationToken);
+        using var openApiResponse = await httpClient.GetAsync(new Uri(server.ApiServerAddress, "openapi/v1.json"), TestContext.CancellationToken);
 
         var openApiBody = await openApiResponse.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
@@ -54,7 +54,7 @@ public partial class OpenApiScalarIntegrationTests
         Assert.IsTrue(openApiJson.RootElement.TryGetProperty("paths", out _), "The OpenAPI document must contain a 'paths' section.");
 
         // 2) The Scalar API reference UI (which renders the document above) must be served as an HTML page.
-        using var scalarResponse = await httpClient.GetAsync("scalar", TestContext.CancellationToken);
+        using var scalarResponse = await httpClient.GetAsync(new Uri(server.ApiServerAddress, "scalar"), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, scalarResponse.StatusCode, "The Scalar API reference UI must be mapped.");
         var scalarContentType = scalarResponse.Content.Headers.ContentType;

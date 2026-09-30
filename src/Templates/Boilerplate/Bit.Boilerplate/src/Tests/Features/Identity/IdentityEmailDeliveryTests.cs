@@ -32,10 +32,10 @@ public class IdentityEmailDeliveryTests
     public async Task SendResetPasswordToken_WithAnUntrustedOrigin_Should_BeRefusedBeforeAnythingIsCommitted()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
 
         // Driven over raw HTTP rather than the typed proxy: the header is the thing under test and the generated proxy
         // has no way to set it.
@@ -59,7 +59,7 @@ public class IdentityEmailDeliveryTests
         Assert.Contains("Invalid origin", body, StringComparison.Ordinal,
             $"The refusal has to be the origin check in GetWebAppUrl, not some earlier rejection. Body: {body}");
 
-        var store = server.WebApp.Services.GetRequiredService<EmailCaptureStore>();
+        var store = server.ApiApp.Services.GetRequiredService<EmailCaptureStore>();
 
         Assert.DoesNotContain(e => e.IsTo(email) && e.Kind is CapturedEmailKind.ResetPassword, store.Captured,
             "The request was refused, so no reset-password e-mail may have gone out.");
@@ -67,9 +67,9 @@ public class IdentityEmailDeliveryTests
         // The property worth protecting: the refused request left no trace on the account. Read off the row rather
         // than inferred from the next call's behaviour, so a failure names the column instead of surfacing as a
         // confusing TooManyRequests three lines further down.
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
-            var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             var normalizedEmail = email.ToUpperInvariant();
 
             var requestedOn = await dbContext.Set<User>()
@@ -84,7 +84,7 @@ public class IdentityEmailDeliveryTests
         }
 
         // And the account really can still ask for a code.
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = scopeWebApp.ServiceProvider.GetRequiredService<IIdentityController>();
 
         await identityController.SendResetPasswordToken(new() { Email = email }, TestContext.CancellationToken);
 
@@ -119,9 +119,9 @@ public class IdentityEmailDeliveryTests
         // that formats a placeholder is a subject that carries the credential. Asserted against the resource itself
         // because the test double replaces IdentityEmailService before any subject is ever composed.
         await using var server = new AppTestServer();
-        server.Build(s => s.AddIntegrationApiOnlyTestsServices());
+        server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices());
 
-        var localizer = server.WebApp.Services.GetRequiredService<IStringLocalizer<EmailStrings>>();
+        var localizer = server.ApiApp.Services.GetRequiredService<IStringLocalizer<EmailStrings>>();
 
         string[] tokenBearingSubjects =
         [

@@ -29,9 +29,9 @@ public class EmailUniquenessIndexTests
     public async Task TheUserUniquenessIndex_Should_CoverTheColumnLookupsActuallyUse()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var userEntity = dbContext.Model.FindEntityType(typeof(User))!;

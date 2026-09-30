@@ -107,7 +107,7 @@ public class AccountErasureTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -126,7 +126,7 @@ public class AccountErasureTests
 
     private async Task<string[]> ReadAttachmentPaths(AppTestServer server, Guid userId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Attachments
@@ -137,7 +137,7 @@ public class AccountErasureTests
 
     private async Task<int> CountAttachments(AppTestServer server, Guid userId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Attachments.CountAsync(att => att.Id == userId, TestContext.CancellationToken);
@@ -145,7 +145,7 @@ public class AccountErasureTests
 
     private async Task<int> CountUserSessions(AppTestServer server, Guid userId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.UserSessions.CountAsync(us => us.UserId == userId, TestContext.CancellationToken);
@@ -153,7 +153,7 @@ public class AccountErasureTests
 
     private async Task<bool> UserExists(AppTestServer server, Guid userId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Set<User>().AnyAsync(user => user.Id == userId, TestContext.CancellationToken);
@@ -162,7 +162,7 @@ public class AccountErasureTests
     //#if (notification == true)
     private async Task<bool> PushSubscriptionExists(AppTestServer server, string deviceId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.PushNotificationSubscriptions.AnyAsync(sub => sub.DeviceId == deviceId, TestContext.CancellationToken);
@@ -171,7 +171,7 @@ public class AccountErasureTests
 
     private async Task<bool> BlobExists(AppTestServer server, string blobPath)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         return await scope.ServiceProvider.GetRequiredService<IStore>().ObjectExists(blobPath, TestContext.CancellationToken);
     }

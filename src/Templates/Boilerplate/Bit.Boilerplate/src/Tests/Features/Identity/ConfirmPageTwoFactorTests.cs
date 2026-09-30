@@ -64,8 +64,8 @@ public class ConfirmPageTwoFactorTests
     /// </summary>
     private async Task<(string email, string token)> CreateUnconfirmedTwoFactorAccount(AppTestServer server)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+        var identityController = scopeWebApp.ServiceProvider.GetRequiredService<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -75,8 +75,8 @@ public class ConfirmPageTwoFactorTests
 
         var captured = await server.WaitForCapturedEmail(email, e => e.Kind is CapturedEmailKind.EmailToken, TestContext.CancellationToken);
 
-        await using var dbScope = server.WebApp.Services.CreateAsyncScope();
-        var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
         await dbContext.Set<User>()
             .Where(u => u.NormalizedEmail == normalizedEmail)
@@ -87,7 +87,7 @@ public class ConfirmPageTwoFactorTests
 
     private static async Task<bool> IsEmailConfirmed(AppTestServer server, string email)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 

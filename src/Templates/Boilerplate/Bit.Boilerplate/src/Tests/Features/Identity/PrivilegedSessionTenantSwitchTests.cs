@@ -37,14 +37,14 @@ public partial class PrivilegedSessionTenantSwitchTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         // The shipped default. The fourth sign-in is the first one that cannot be privileged.
         const int maxPrivilegedSessions = 3;
 
-        await using var firstScope = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeWebAppFirst = server.WebApp.Services.CreateAsyncScope();
 
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, firstScope, TestContext.CancellationToken);
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppFirst, TestContext.CancellationToken);
 
         // A freshly auto-provisioned account belongs to no tenant, and the bypass is only meaningful against a tenant
         // that actually caps her - so give her an accepted membership of the seeded one, the way
@@ -55,7 +55,7 @@ public partial class PrivilegedSessionTenantSwitchTests
         // Refresh never re-derives a tenant for a session that has none (it only follows an explicit RequestedTenantId
         // - See IdentityController.Refresh). Without this the session sits outside the tenant and the fill below is one
         // short, which is a fault in the arrangement, not in the code under test.
-        await SwitchTenant(firstScope, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
+        await SwitchTenant(scopeWebAppFirst, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
 
         // Fill the remaining privileged slots from their own scopes: IStorageService is per scope, so each is a
         // separate device with its own session.
@@ -65,33 +65,33 @@ public partial class PrivilegedSessionTenantSwitchTests
         {
             for (var device = 1; device < maxPrivilegedSessions; device++)
             {
-                var scope = server.WebApp.Services.CreateAsyncScope();
-                deviceScopes.Add(scope);
-                await SignInAgain(server, scope, email, TestContext.CancellationToken);
+                var scopeWebAppDevice = server.WebApp.Services.CreateAsyncScope();
+                deviceScopes.Add(scopeWebAppDevice);
+                await SignInAgain(server, scopeWebAppDevice, email, TestContext.CancellationToken);
             }
 
             // The fourth device. Every privileged slot is taken, so this one must not be privileged.
-            await using var cappedScope = server.WebApp.Services.CreateAsyncScope();
-            var cappedToken = await SignInAgain(server, cappedScope, email, TestContext.CancellationToken);
+            await using var scopeWebAppCapped = server.WebApp.Services.CreateAsyncScope();
+            var cappedToken = await SignInAgain(server, scopeWebAppCapped, email, TestContext.CancellationToken);
 
             Assert.AreEqual("false", ReadPrivilegedClaim(cappedToken),
                 $"With {maxPrivilegedSessions} privileged sessions already in place, the next sign-in must not be privileged - otherwise the rest of this test proves nothing.");
 
             // She mints a tenant of her own. Create is gated on elevated access only, which is a code to her own
             // address, and it makes her its t-admin with MAX_PRIVILEGED_SESSIONS = UNLIMITED.
-            await TestAccountUtils.Elevate(server, cappedScope, email, TestContext.CancellationToken);
+            await TestAccountUtils.Elevate(server, scopeWebAppCapped, email, TestContext.CancellationToken);
 
-            var ownTenant = await cappedScope.ServiceProvider.GetRequiredService<ITenantController>()
+            var ownTenant = await scopeWebAppCapped.ServiceProvider.GetRequiredService<ITenantController>()
                 .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
             // Inside her own tenant she is legitimately unlimited, so this one IS expected to be privileged.
-            var insideOwnTenant = await SwitchTenant(cappedScope, ownTenant.Id, TestContext.CancellationToken);
+            var insideOwnTenant = await SwitchTenant(scopeWebAppCapped, ownTenant.Id, TestContext.CancellationToken);
 
             Assert.AreEqual("true", ReadPrivilegedClaim(insideOwnTenant),
                 "A t-admin of her own tenant carries MAX_PRIVILEGED_SESSIONS = UNLIMITED there, so this step is supposed to succeed. It is the round trip that follows which must not stick.");
 
             // ... and back into the tenant that caps her at three, where three privileged sessions already exist.
-            var backInCappedTenant = await SwitchTenant(cappedScope, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
+            var backInCappedTenant = await SwitchTenant(scopeWebAppCapped, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
 
 
             Assert.AreEqual("false", ReadPrivilegedClaim(backInCappedTenant),
@@ -99,9 +99,9 @@ public partial class PrivilegedSessionTenantSwitchTests
         }
         finally
         {
-            foreach (var scope in deviceScopes)
+            foreach (var scopeWebAppDevice in deviceScopes)
             {
-                await scope.DisposeAsync();
+                await scopeWebAppDevice.DisposeAsync();
             }
         }
     }
@@ -160,7 +160,7 @@ public partial class PrivilegedSessionTenantSwitchTests
 
     private static async Task JoinSeededTenant(AppTestServer server, Guid userId, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.TenantUsers.AddAsync(new()

@@ -36,7 +36,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_AcceptOurAccessToken_UsingOnlyTheDiscoveryDocument()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -65,7 +65,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_RejectAnAnonymousCallAndAForgedToken()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -94,7 +94,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_AcceptATokenSignedByARetiredCertificate()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         var activeThumbprint = AppCertificateService.GetActiveAppCertificate(server.WebApp.Configuration).Thumbprint;
         var retired = AppCertificateService.GetAllAppCertificates(server.WebApp.Configuration)
@@ -131,7 +131,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task TheDiscoveryDocument_Should_PublishTheSameIssuerTheTokensCarry()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -139,7 +139,7 @@ public class OpenIdConfigurationIntegrationTests
         var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
         var mintedIssuer = new JwtSecurityToken(accessToken).Issuer;
 
-        using var anonymousHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var anonymousHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
         using var document = JsonDocument.Parse(
             await anonymousHttpClient.GetStringAsync(".well-known/openid-configuration", TestContext.CancellationToken));
 
@@ -152,7 +152,7 @@ public class OpenIdConfigurationIntegrationTests
         Assert.IsTrue(Uri.TryCreate(mintedIssuer, UriKind.Absolute, out var issuerUri),
             $"The issuer must be an absolute url (RFC 8414), not a name. Got '{mintedIssuer}'.");
 
-        Assert.AreEqual(server.WebAppServerAddress.GetLeftPart(UriPartial.Authority), issuerUri!.GetLeftPart(UriPartial.Authority),
+        Assert.AreEqual(server.ApiServerAddress.GetLeftPart(UriPartial.Authority), issuerUri!.GetLeftPart(UriPartial.Authority),
             "And it must be the origin the caller actually reached, or discovery sends them somewhere this server is not.");
     }
 
@@ -181,7 +181,7 @@ public class OpenIdConfigurationIntegrationTests
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
-            options.Authority = server.WebAppServerAddress.ToString();
+            options.Authority = server.ApiServerAddress.ToString();
             options.RequireHttpsMetadata = false;
             options.TokenValidationParameters = new()
             {

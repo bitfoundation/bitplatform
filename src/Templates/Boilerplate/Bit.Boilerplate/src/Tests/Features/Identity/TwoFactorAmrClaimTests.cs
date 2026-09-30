@@ -18,22 +18,22 @@ public class TwoFactorAmrClaimTests
     public async Task TheAmrClaim_Should_SurviveARefresh_SoAPolicyCanRelyOnIt()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
 
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
 
         // The per-run account is created through the magic link, so it has no password to sign in with a second time.
         const string password = "P@ssw0rdP@ssw0rd";
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
-            var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             var account = await dbContext.Users.SingleAsync(item => item.Id == userId, TestContext.CancellationToken);
             account.PasswordHash = new PasswordHasher<User>().HashPassword(account, password);
             await dbContext.SaveChangesAsync(TestContext.CancellationToken);
         }
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = scopeWebApp.ServiceProvider.GetRequiredService<IUserController>();
         var enrolment = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
         var sharedKey = enrolment.SharedKey!.Replace(" ", "");
 
@@ -41,7 +41,7 @@ public class TwoFactorAmrClaimTests
             new() { Enable = true, TwoFactorCode = ComputeTotp(sharedKey) }, TestContext.CancellationToken);
         Assert.IsTrue(enabled.IsTwoFactorEnabled, "Sanity: two factor has to be on before signing in with it.");
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = scopeWebApp.ServiceProvider.GetRequiredService<AuthManager>();
 
         var requiresTwoFactor = await authManager.SignIn(
             new() { Email = email, Password = password }, TestContext.CancellationToken);
@@ -54,18 +54,18 @@ public class TwoFactorAmrClaimTests
             TwoFactorCode = ComputeTotp(sharedKey)
         }, TestContext.CancellationToken);
 
-        var afterSignIn = await ReadAccessToken(scope);
+        var afterSignIn = await ReadAccessToken(scopeWebApp);
         Assert.IsTrue(afterSignIn.HasClaim("amr", "mfa"),
             $"SignInManager stamps amr=mfa on a completed two-factor sign-in. Claims: [{Describe(afterSignIn)}]");
 
-        var refreshToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("refresh_token");
+        var refreshToken = await scopeWebApp.ServiceProvider.GetRequiredService<IStorageService>().GetItem("refresh_token");
         var rawRefreshClaims = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().ReadJwtToken(refreshToken).Claims.ToArray();
         Assert.Contains(claim => claim.Type == "amr" && claim.Value == "mfa", rawRefreshClaims,
             "The refresh token has to carry amr, since that is what the refresh reads it back from.");
 
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().RefreshToken(requestedBy: nameof(TwoFactorAmrClaimTests));
+        await scopeWebApp.ServiceProvider.GetRequiredService<AuthManager>().RefreshToken(requestedBy: nameof(TwoFactorAmrClaimTests));
 
-        var afterRefresh = await ReadAccessToken(scope);
+        var afterRefresh = await ReadAccessToken(scopeWebApp);
         Assert.IsTrue(afterRefresh.HasClaim("amr", "mfa"),
             "A five minute access token is refreshed constantly, so a policy built on amr=mfa would start refusing a " +
             $"legitimately two-factor session on its first refresh. Claims: [{Describe(afterRefresh)}]");

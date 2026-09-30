@@ -128,12 +128,13 @@ public class PersonalDataExportTests
     public async Task ExportingOwnData_Should_NameTheApplicationsHoldingAGrant()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
 
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
+        var httpClient = scopeWebApp.ServiceProvider.GetRequiredService<HttpClient>();
 
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
         var grantedClientId = $"https://export-test.example/{Guid.NewGuid():N}";
 
         await dbContext.UserSessions.AddAsync(new UserSession
@@ -152,7 +153,7 @@ public class PersonalDataExportTests
         }, TestContext.CancellationToken);
         await dbContext.SaveChangesAsync(TestContext.CancellationToken);
 
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(server, scopeWebApp, email, TestContext.CancellationToken);
 
         using var response = await httpClient.GetAsync(IUserController.ExportPersonalDataUri, TestContext.CancellationToken);
         response.EnsureSuccessStatusCode();
@@ -178,7 +179,7 @@ public class PersonalDataExportTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 

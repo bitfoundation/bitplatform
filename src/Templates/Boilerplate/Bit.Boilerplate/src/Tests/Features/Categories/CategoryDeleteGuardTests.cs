@@ -82,20 +82,20 @@ public partial class CategoryDeleteGuardTests
     public async Task DeletingACategoryBehindTheGuard_Should_NotDestroyItsProducts()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
 
-        await SignIn(scope);
+        await SignIn(scopeWebApp);
 
-        var categories = scope.ServiceProvider.GetRequiredService<ICategoryController>();
-        var products = scope.ServiceProvider.GetRequiredService<IProductController>();
+        var categories = scopeWebApp.ServiceProvider.GetRequiredService<ICategoryController>();
+        var products = scopeWebApp.ServiceProvider.GetRequiredService<IProductController>();
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
 
         try
         {
-            await using var dbScope = server.WebApp.Services.CreateAsyncScope();
-            var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
 
             // IgnoreQueryFilters: this bare scope has no HttpContext, so the tenant-aware filter has no current tenant
             // to resolve. See TenantProvider.GetCurrentTenantId.
@@ -166,7 +166,7 @@ public partial class CategoryDeleteGuardTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 

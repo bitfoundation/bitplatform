@@ -47,11 +47,11 @@ public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
 
         await using var server = new AppTestServer(Context);
 
-        await server.Build(services =>
+        await server.Build(configureTestApiAppServices: services =>
         {
             services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
         },
-        configuration =>
+        configureTestConfigurations: configuration =>
         {
             configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-these-tests";
         }).Start(TestContext.CancellationToken);

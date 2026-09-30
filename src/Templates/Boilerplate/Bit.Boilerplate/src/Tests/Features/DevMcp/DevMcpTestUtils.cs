@@ -26,20 +26,20 @@ internal static class DevMcpTestUtils
 
     /// <summary>Enrols an authenticator, then signs in through it so the session really carries amr=mfa.</summary>
     public static async Task EnableTwoFactorAndSignInWithIt(
-        AppTestServer server, AsyncServiceScope scope, string email, Guid userId, CancellationToken cancellationToken)
+        AppTestServer server, AsyncServiceScope scopeWebApp, string email, Guid userId, CancellationToken cancellationToken)
     {
         const string password = "P@ssw0rdP@ssw0rd";
 
         // The per-run account is created through the magic link, so it has no password to sign in with a second time.
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
-            var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             var account = await dbContext.Users.IgnoreQueryFilters().SingleAsync(item => item.Id == userId, cancellationToken);
             account.PasswordHash = new PasswordHasher<User>().HashPassword(account, password);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = scopeWebApp.ServiceProvider.GetRequiredService<IUserController>();
         var enrolment = await userController.TwoFactorAuth(new(), cancellationToken);
         var sharedKey = enrolment.SharedKey!.Replace(" ", "");
 
@@ -47,7 +47,7 @@ internal static class DevMcpTestUtils
             new() { Enable = true, TwoFactorCode = ComputeTotp(sharedKey) }, cancellationToken);
         Assert.IsTrue(enabled.IsTwoFactorEnabled, "Two factor should be on after enabling it with a valid code.");
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = scopeWebApp.ServiceProvider.GetRequiredService<AuthManager>();
 
         Assert.IsTrue(await authManager.SignIn(new() { Email = email, Password = password }, cancellationToken),
             "An account with two factor on must be challenged for the second factor.");
@@ -73,7 +73,7 @@ internal static class DevMcpTestUtils
     {
         var transport = new HttpClientTransport(new HttpClientTransportOptions
         {
-            Endpoint = new Uri(server.WebAppServerAddress, path),
+            Endpoint = new Uri(server.ApiServerAddress, path),
             TransportMode = HttpTransportMode.StreamableHttp,
             AdditionalHeaders = new Dictionary<string, string>
             {

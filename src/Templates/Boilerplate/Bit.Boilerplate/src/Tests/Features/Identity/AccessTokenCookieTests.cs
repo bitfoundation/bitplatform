@@ -82,18 +82,18 @@ public class AccessTokenCookieTests
         await using var server = await StartServer(services => services.AddIntegrationApiOnlyTestsServices());
         var sharedHandler = server.WebApp.Services.GetRequiredService<SocketsHttpHandler>();
 
-        await using var signedInScope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(signedInScope);
+        await using var scopeWebAppSignedIn = server.WebApp.Services.CreateAsyncScope();
+        await SignIn(scopeWebAppSignedIn);
 
-        using (var signedInClient = CreateServerSideClient(signedInScope, server, sharedHandler))
+        using (var signedInClient = CreateServerSideClient(scopeWebAppSignedIn, server, sharedHandler))
         {
             using var updated = await signedInClient.PostAsJsonAsync(UpdateSessionUri, new UpdateUserSessionRequestDto(), TestContext.CancellationToken);
 
             Assert.IsNotNull(AccessTokenCookie(updated), "Precondition: the api answered the signed-in session with its cookie.");
         }
 
-        await using var anonymousScope = server.WebApp.Services.CreateAsyncScope();
-        using var anonymousClient = CreateServerSideClient(anonymousScope, server, sharedHandler);
+        await using var scopeWebAppAnonymous = server.WebApp.Services.CreateAsyncScope();
+        using var anonymousClient = CreateServerSideClient(scopeWebAppAnonymous, server, sharedHandler);
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(
             () => anonymousClient.GetAsync($"api/v1/User/{nameof(IUserController.GetCurrentUser)}", TestContext.CancellationToken),
@@ -101,10 +101,10 @@ public class AccessTokenCookieTests
     }
 
 
-    private async Task<AppTestServer> StartServer(Action<IServiceCollection>? configureTestServices = null)
+    private async Task<AppTestServer> StartServer(Action<IServiceCollection>? configureTestWebAppServices = null)
     {
         var server = new AppTestServer();
-        await server.Build(configureTestServices).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: configureTestWebAppServices).Start(TestContext.CancellationToken);
         return server;
     }
 

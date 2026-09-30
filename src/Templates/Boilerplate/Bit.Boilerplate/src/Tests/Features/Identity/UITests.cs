@@ -8,7 +8,7 @@ public partial class UITests : AppPageTest
     {
         await using var server = new AppTestServer(Context);
 
-        await server.Build(services =>
+        await server.Build(configureTestWebAppServices: services =>
         {
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start(TestContext.CancellationToken);

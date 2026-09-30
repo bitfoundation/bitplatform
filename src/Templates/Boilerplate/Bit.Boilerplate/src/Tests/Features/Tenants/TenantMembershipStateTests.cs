@@ -39,32 +39,32 @@ public class TenantMembershipStateTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        await using var strangerScope = server.WebApp.Services.CreateAsyncScope();
-        await using var adminScope = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeWebAppStranger = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeWebAppAdmin = server.WebApp.Services.CreateAsyncScope();
 
         // A tenant owned by somebody else entirely. Its creator gets an accepted membership; the global admin below
         // gets none, which is the state that used to be indistinguishable from a pending invitation.
-        var (strangerEmail, _) = await TestAccountUtils.CreateAndSignIn(server, strangerScope, TestContext.CancellationToken);
-        await TestAccountUtils.Elevate(server, strangerScope, strangerEmail, TestContext.CancellationToken);
+        var (strangerEmail, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppStranger, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(server, scopeWebAppStranger, strangerEmail, TestContext.CancellationToken);
 
-        var foreignTenant = await strangerScope.ServiceProvider.GetRequiredService<ITenantController>()
+        var foreignTenant = await scopeWebAppStranger.ServiceProvider.GetRequiredService<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         // The caller: a global admin, so GetTenants returns every active tenant to her, including foreignTenant.
-        var (adminEmail, adminUserId) = await TestAccountUtils.CreateAndSignIn(server, adminScope, TestContext.CancellationToken);
-        await using var globalAdminGrant = await TestAccountUtils.MakeGlobalAdmin(server, adminScope, adminUserId, TestContext.CancellationToken);
-        await TestAccountUtils.Elevate(server, adminScope, adminEmail, TestContext.CancellationToken);
+        var (adminEmail, adminUserId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppAdmin, TestContext.CancellationToken);
+        await using var globalAdminGrant = await TestAccountUtils.MakeGlobalAdmin(server, scopeWebAppAdmin, adminUserId, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(server, scopeWebAppAdmin, adminEmail, TestContext.CancellationToken);
 
         // Her own tenant, accepted, because creating one makes the creator its t-admin.
-        var ownTenant = await adminScope.ServiceProvider.GetRequiredService<ITenantController>()
+        var ownTenant = await scopeWebAppAdmin.ServiceProvider.GetRequiredService<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         // And a genuine pending invitation from a third tenant, which is the value the null must not look like.
         var invitedTenant = await CreateTenantAndInvite(server, adminEmail, TestContext.CancellationToken);
 
-        var tenants = await adminScope.ServiceProvider.GetRequiredService<IUserController>()
+        var tenants = await scopeWebAppAdmin.ServiceProvider.GetRequiredService<IUserController>()
             .GetTenants(TestContext.CancellationToken);
 
         var foreign = tenants.SingleOrDefault(t => t.Id == foreignTenant.Id);

@@ -113,7 +113,7 @@ public class WebAuthnCredentialOwnershipTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -126,7 +126,7 @@ public class WebAuthnCredentialOwnershipTests
     {
         var credentialId = Guid.NewGuid().ToByteArray();
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.WebAuthnCredential.AddAsync(new WebAuthnCredential
@@ -143,7 +143,7 @@ public class WebAuthnCredentialOwnershipTests
 
     private async Task RemoveCredential(AppTestServer server, byte[] credentialId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.WebAuthnCredential.Where(c => c.Id == credentialId).ExecuteDeleteAsync(CancellationToken.None);
@@ -151,7 +151,7 @@ public class WebAuthnCredentialOwnershipTests
 
     private async Task<bool> CredentialExists(AppTestServer server, byte[] credentialId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.WebAuthnCredential.AnyAsync(c => c.Id == credentialId, TestContext.CancellationToken);

@@ -17,7 +17,7 @@ public partial class MagicLinkReplayTests
     public async Task ReplayingAConsumedMagicLinkCode_Should_BeRejectedAsExpired()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
@@ -64,7 +64,7 @@ public partial class MagicLinkReplayTests
     public async Task RequestingANewCode_Should_BeAllowedRightAfterAConsumedOne()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
@@ -96,7 +96,7 @@ public partial class MagicLinkReplayTests
 
     private static async Task<int> ReadAccessFailedCount(AppTestServer server, string email)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 
@@ -108,7 +108,7 @@ public partial class MagicLinkReplayTests
 
     private static async Task<int> ReadUserSessionCount(AppTestServer server, string email)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 

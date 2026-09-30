@@ -12,17 +12,17 @@ public class DevMcpEndpointTests
     public async Task DevMcp_Should_RejectAnonymousAndNonAdminCallers()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         Assert.AreEqual(HttpStatusCode.Unauthorized,
-            await DevMcpTestUtils.ProbeInitialize(server.WebAppServerAddress, "dev-mcp", accessToken: null, TestContext.CancellationToken),
+            await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "dev-mcp", accessToken: null, TestContext.CancellationToken),
             "/dev-mcp must reject an anonymous caller.");
 
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
         var userToken = await DevMcpTestUtils.AccessToken(scope);
-        var status = await DevMcpTestUtils.ProbeInitialize(server.WebAppServerAddress, "dev-mcp", userToken, TestContext.CancellationToken);
+        var status = await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "dev-mcp", userToken, TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.Forbidden, status,
             "/dev-mcp is a System feature, so a signed-in non-admin must be refused.");
     }
@@ -35,36 +35,36 @@ public class DevMcpEndpointTests
     public async Task DevMcp_Should_RequireTheFeatureAndTwoFactorTogether()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        await using (var featureOnlyScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeWebAppFeatureOnly = server.WebApp.Services.CreateAsyncScope())
         {
-            var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, featureOnlyScope, TestContext.CancellationToken);
-            await using var grant = await TestAccountUtils.MakeGlobalAdmin(server, featureOnlyScope, userId, TestContext.CancellationToken);
+            var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppFeatureOnly, TestContext.CancellationToken);
+            await using var grant = await TestAccountUtils.MakeGlobalAdmin(server, scopeWebAppFeatureOnly, userId, TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.Forbidden,
-                await DevMcpTestUtils.ProbeInitialize(server.WebAppServerAddress, "dev-mcp",
-                    await DevMcpTestUtils.AccessToken(featureOnlyScope), TestContext.CancellationToken),
+                await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "dev-mcp",
+                    await DevMcpTestUtils.AccessToken(scopeWebAppFeatureOnly), TestContext.CancellationToken),
                 "A global admin without 2FA holds the feature and must still be refused; two policies on one endpoint are ANDed.");
         }
 
-        await using (var twoFactorOnlyScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeWebAppTwoFactorOnly = server.WebApp.Services.CreateAsyncScope())
         {
-            var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, twoFactorOnlyScope, TestContext.CancellationToken);
-            await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, twoFactorOnlyScope, email, userId, TestContext.CancellationToken);
+            var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppTwoFactorOnly, TestContext.CancellationToken);
+            await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scopeWebAppTwoFactorOnly, email, userId, TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.Forbidden,
-                await DevMcpTestUtils.ProbeInitialize(server.WebAppServerAddress, "dev-mcp",
-                    await DevMcpTestUtils.AccessToken(twoFactorOnlyScope), TestContext.CancellationToken),
+                await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "dev-mcp",
+                    await DevMcpTestUtils.AccessToken(scopeWebAppTwoFactorOnly), TestContext.CancellationToken),
                 "2FA on its own grants nothing; the System feature is still required.");
         }
 
-        await using (var bothScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeWebAppBoth = server.WebApp.Services.CreateAsyncScope())
         {
-            var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, bothScope, TestContext.CancellationToken);
+            var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebAppBoth, TestContext.CancellationToken);
             await using var _ = grant;
 
-            await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(bothScope), "dev-mcp", TestContext.CancellationToken);
+            await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scopeWebAppBoth), "dev-mcp", TestContext.CancellationToken);
             var tools = await client.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
 
             Assert.IsNotEmpty(tools, "Holding both must actually get in, or the two assertions above pass for the wrong reason.");
@@ -75,7 +75,7 @@ public class DevMcpEndpointTests
     public async Task DevMcp_Should_NotAdvertiseChatbotTools_AndChatbotMcpShouldNotAdvertiseDevTools()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
@@ -108,7 +108,7 @@ public class DevMcpEndpointTests
     public async Task DevMcpTools_Should_WorkWithoutElevatedAccess()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);

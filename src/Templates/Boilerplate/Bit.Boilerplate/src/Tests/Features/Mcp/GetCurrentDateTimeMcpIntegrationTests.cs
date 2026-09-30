@@ -32,14 +32,12 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-
+        await server.Build(
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
             // Even though GetCurrentDateTime works fine with the real clock, fake the TimeProvider so the tool returns
             // an instant we control and can assert on exactly.
-            services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider));
-        }).Start(TestContext.CancellationToken);
+            configureTestApiAppServices: services => services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider)))
+            .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
@@ -50,7 +48,7 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
         // through the MCP client, whose transport wraps/obscures the 401 - and through a bare HttpClient rather than
         // the DI one, whose handler chain attaches auth and turns the non-success status into an exception.
         // This exercises Server.Web's mapping (Program.Middlewares.cs); Server.Api's own MapMcp stays mirror-protected.
-        using (var anonymousHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+        using (var anonymousHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress })
         {
             using var anonymousRequest = new HttpRequestMessage(HttpMethod.Post, "mcp");
             anonymousRequest.Content = new StringContent("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}""",
@@ -78,7 +76,7 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
         // Connect a real MCP client to the server's Streamable HTTP endpoint, carrying the bearer token.
         var transport = new HttpClientTransport(new HttpClientTransportOptions
         {
-            Endpoint = new Uri(server.WebAppServerAddress, "mcp"),
+            Endpoint = new Uri(server.ApiServerAddress, "mcp"),
             TransportMode = HttpTransportMode.StreamableHttp,
             AdditionalHeaders = new Dictionary<string, string>
             {
@@ -118,10 +116,10 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized,
-            await DevMcpTestUtils.ProbeInitialize(server.WebAppServerAddress, "mcp/v1", accessToken: null, TestContext.CancellationToken),
+            await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "mcp/v1", accessToken: null, TestContext.CancellationToken),
             "The versioned path must reject an anonymous caller, exactly as /mcp does.");
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();

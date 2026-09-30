@@ -46,7 +46,7 @@ public class ProductImageCacheInvalidationTests
 
         var products = scope.ServiceProvider.GetRequiredService<IProductController>();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
-        var recorder = server.WebApp.Services.GetRequiredService<RecordingOutputCacheStore>();
+        var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Red));
@@ -116,7 +116,7 @@ public class ProductImageCacheInvalidationTests
         var products = scope.ServiceProvider.GetRequiredService<IProductController>();
         var attachments = scope.ServiceProvider.GetRequiredService<IAttachmentController>();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
-        var recorder = server.WebApp.Services.GetRequiredService<RecordingOutputCacheStore>();
+        var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Green));
@@ -175,19 +175,19 @@ public class ProductImageCacheInvalidationTests
         var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services =>
-            {
-                services.AddIntegrationApiOnlyTestsServices();
-
-                var recorder = new RecordingOutputCacheStore();
-                services.AddSingleton(recorder);
-                services.RemoveAll<IOutputCacheStore>();
-                services.AddSingleton<IOutputCacheStore>(recorder);
-            },
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
             configureTestConfigurations: configuration =>
             {
                 configuration["AI:OpenAI:ChatApiKey"] = null;
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
+            },
+            // The attachment endpoint and its purge are the api's, and so is the output cache they meet in.
+            configureTestApiAppServices: services =>
+            {
+                var recorder = new RecordingOutputCacheStore();
+                services.AddSingleton(recorder);
+                services.RemoveAll<IOutputCacheStore>();
+                services.AddSingleton<IOutputCacheStore>(recorder);
             }).Start(TestContext.CancellationToken);
 
         return server;

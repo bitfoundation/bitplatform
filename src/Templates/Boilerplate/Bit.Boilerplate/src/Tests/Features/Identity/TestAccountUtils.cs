@@ -54,11 +54,11 @@ public static class TestAccountUtils
     /// database, and they pile up one per test run.
     /// </para>
     /// </summary>
-    public static async Task<GlobalAdminGrant> MakeGlobalAdmin(AppTestServer server, AsyncServiceScope scope, Guid userId, CancellationToken cancellationToken)
+    public static async Task<GlobalAdminGrant> MakeGlobalAdmin(AppTestServer server, AsyncServiceScope scopeWebApp, Guid userId, CancellationToken cancellationToken)
     {
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
-            var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var globalAdminRoleId = await dbContext.Roles
                 .Where(r => r.Name == AppRoles.GlobalAdmin)
@@ -69,7 +69,7 @@ public static class TestAccountUtils
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<AuthManager>()
+        var accessToken = await scopeWebApp.ServiceProvider.GetRequiredService<AuthManager>()
             .RefreshToken(requestedBy: nameof(MakeGlobalAdmin));
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Refreshing after the role grant should have produced a new access token.");
@@ -82,12 +82,12 @@ public static class TestAccountUtils
         //#if (multitenant == true)
         // The management controllers additionally require AuthPolicies.TENANT_SELECTED, and a freshly auto-provisioned
         // account has no tenant selected. A global admin may switch into any active tenant (See UserController.GetTenants).
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = scopeWebApp.ServiceProvider.GetRequiredService<IUserController>();
 
         var tenants = await userController.GetTenants(cancellationToken);
         Assert.IsNotEmpty(tenants, "A global admin should see every active tenant, and the template seeds one.");
 
-        Assert.IsTrue(await scope.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(tenants[0].Id, cancellationToken),
+        Assert.IsTrue(await scopeWebApp.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(tenants[0].Id, cancellationToken),
             "Switching into the seeded tenant should succeed for a global admin.");
         //#endif
 
@@ -99,7 +99,7 @@ public static class TestAccountUtils
     {
         public async ValueTask DisposeAsync()
         {
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
+            await using var scope = server.ApiApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             // The role id first, not ur.Role!.Name: a bulk delete whose predicate needs a join becomes a subquery over
@@ -146,7 +146,7 @@ public static class TestAccountUtils
     /// </summary>
     public static async Task ResetOtpAndLockoutState(AppTestServer server, string email, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 
@@ -161,7 +161,7 @@ public static class TestAccountUtils
 
     public static async Task<Guid> ReadUserId(AppTestServer server, string email, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 

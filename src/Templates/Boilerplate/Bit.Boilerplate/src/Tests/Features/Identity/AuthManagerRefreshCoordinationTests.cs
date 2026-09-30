@@ -56,7 +56,7 @@ public partial class AuthManagerRefreshCoordinationTests
             });
 
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
+        await server.Build(configureTestWebAppServices: services =>
         {
             services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IIdentityController>();
@@ -104,7 +104,7 @@ public partial class AuthManagerRefreshCoordinationTests
             });
 
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
+        await server.Build(configureTestWebAppServices: services =>
         {
             services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IIdentityController>();
@@ -141,7 +141,7 @@ public partial class AuthManagerRefreshCoordinationTests
     public async Task AFailureInsideTheRefresh_Should_StillCompleteTheAwaitingCallers()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
+        await server.Build(configureTestWebAppServices: services =>
         {
             services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IStorageService>();

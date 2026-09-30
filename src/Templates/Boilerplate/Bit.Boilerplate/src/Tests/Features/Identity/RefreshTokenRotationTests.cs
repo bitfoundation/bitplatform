@@ -96,7 +96,7 @@ public partial class RefreshTokenRotationTests
         var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
         var (sessionId, refreshToken) = await ReadSession(scope);
 
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var dbScope = server.ApiApp.Services.CreateAsyncScope())
         {
             var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.UserSessions.Where(us => us.Id == sessionId).ExecuteDeleteAsync(TestContext.CancellationToken);
@@ -193,11 +193,15 @@ public partial class RefreshTokenRotationTests
 
         var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider));
-        }).Start(TestContext.CancellationToken);
+        // The clock is the api's, which issues, rotates and expires the tokens, and the client's, which judges when to refresh them.
+        await server.Build(
+            configureTestWebAppServices: services =>
+            {
+                services.AddIntegrationApiOnlyTestsServices();
+                services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider));
+            },
+            configureTestApiAppServices: services => services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider)))
+            .Start(TestContext.CancellationToken);
 
         var scope = server.WebApp.Services.CreateAsyncScope();
 
@@ -231,7 +235,7 @@ public partial class RefreshTokenRotationTests
 
     private static async Task<(long startedOn, long? renewedOn)> ReadSessionTimestamps(AppTestServer server, Guid sessionId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var timestamps = await dbContext.UserSessions
@@ -244,7 +248,7 @@ public partial class RefreshTokenRotationTests
 
     private static async Task<bool> SessionExists(AppTestServer server, Guid sessionId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.UserSessions.AnyAsync(us => us.Id == sessionId);

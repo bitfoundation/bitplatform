@@ -17,7 +17,7 @@ public partial class DeploymentConfigurationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
         using (var anonymousResponse = await anonymousClient.GetAsync(Url, TestContext.CancellationToken))
@@ -43,7 +43,7 @@ public partial class DeploymentConfigurationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var adminScope = server.WebApp.Services.CreateAsyncScope();
 
@@ -59,7 +59,7 @@ public partial class DeploymentConfigurationTests
 
         var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-        var configuration = server.WebApp.Services.GetRequiredService<IConfiguration>();
+        var configuration = server.ApiApp.Services.GetRequiredService<IConfiguration>();
 
         // Every connection string this deployment holds, plus the parts that identify one wherever it is spelled out.
         // A name is fine - "sqlite" is a name - so only the values are looked for.

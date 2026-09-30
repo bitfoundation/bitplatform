@@ -31,13 +31,13 @@ public partial class OpenApiParameterContractTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
-        var document = await httpClient.GetStringAsync("openapi/v1.json", TestContext.CancellationToken);
+        var document = await httpClient.GetStringAsync(new Uri(server.ApiServerAddress, "openapi/v1.json"), TestContext.CancellationToken);
 
         using var json = JsonDocument.Parse(document);
 

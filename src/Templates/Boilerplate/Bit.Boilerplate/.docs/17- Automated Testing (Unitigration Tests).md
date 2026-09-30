@@ -69,20 +69,23 @@ The [`AppTestServer`](/src/Tests/Infrastructure/AppTestServer.cs) class is respo
 public partial class AppTestServer : IAsyncDisposable
 {
     public WebApplication WebApp { get; }
+    public WebApplication ApiApp { get; } // The host Server.Api's services run in
     public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
+    public Uri ApiServerAddress { get; } // The address ApiApp listens on
 
     public AppTestServer Build(
-        Action<IServiceCollection>? configureTestServices = null,
-        Action<ConfigurationManager>? configureTestConfigurations = null)
+        Action<IServiceCollection>? configureTestWebAppServices = null,
+        Action<ConfigurationManager>? configureTestConfigurations = null,
+        Action<IServiceCollection>? configureTestApiAppServices = null)
     {
-        // Creates a WebApplication with test-specific configuration
+        // Builds the app under test with test-specific configuration
         // Allows overriding services and configuration
         // Returns the configured test server
     }
 
     public async Task Start(CancellationToken cancellationToken)
     {
-        await WebApp.StartAsync(cancellationToken);
+        // Starts the app under test
     }
 }
 ```
@@ -92,6 +95,20 @@ public partial class AppTestServer : IAsyncDisposable
 - **Service Overriding**: Replace production services with test doubles
 - **Configuration Overriding**: Modify appsettings for test scenarios
 - **Full Application Stack**: All middleware, authentication, authorization, etc. work exactly as in production
+
+**Which host?** Pick by what the code under test runs in, and pass every lambda by name:
+- `WebApp`, `configureTestWebAppServices` and `WebAppServerAddress`: pages, pre-rendering and the typed API clients a test calls through (`AddIntegrationApiOnlyTestsServices()` belongs here).
+- `ApiApp`, `configureTestApiAppServices` and `ApiServerAddress`: controllers, `AppDbContext`, Hangfire, and the endpoints only Server.Api serves, such as `/healthz`.
+- `configureTestConfigurations`: Server.Web's and Server.Api's configuration alike.
+
+<!--#if (api == "Standalone")-->
+The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. `WebApp` forwards `/api` and `/hangfire` to it; everything else Server.Api serves is only on `ApiServerAddress`.
+<!--#endif-->
+<!--#if (api == "Integrated")-->
+The api is integrated into Server.Web, so `ApiApp` is `WebApp` itself, `ApiServerAddress` is `WebAppServerAddress`, and `configureTestApiAppServices` runs on the same host, right after `configureTestWebAppServices`.
+<!--#endif-->
+
+A method that holds more than one DI scope names each one after its host - `scopeWebApp`, `scopeApiApp` - adding a role when one host has several, such as `scopeWebAppAdmin`.
 
 ### 2. TestsAssemblyInitializer - Assembly Setup
 
@@ -135,7 +152,7 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
+        await server.Build(configureTestWebAppServices: services =>
         {
             // Replace production services with test doubles
             services.Replace(ServiceDescriptor.Scoped<IExampleService, TestExampleService>());

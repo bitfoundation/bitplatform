@@ -21,10 +21,10 @@ public class RecurringJobPruningTests
     public async Task Startup_Should_RemoveARecurringJobItNoLongerRegisters()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        var storage = server.WebApp.Services.GetRequiredService<JobStorage>();
-        var recurringJobManager = server.WebApp.Services.GetRequiredService<IRecurringJobManager>();
+        var storage = server.ApiApp.Services.GetRequiredService<JobStorage>();
+        var recurringJobManager = server.ApiApp.Services.GetRequiredService<IRecurringJobManager>();
 
         // Exactly the shape a rename leaves behind: an id nothing registers any more.
         var orphanId = $"RenamedAwayJobRunner-{Guid.NewGuid():N}";

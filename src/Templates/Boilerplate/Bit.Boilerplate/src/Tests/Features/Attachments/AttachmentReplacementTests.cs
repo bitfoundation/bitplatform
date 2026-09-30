@@ -157,7 +157,7 @@ public class AttachmentReplacementTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -199,7 +199,7 @@ public class AttachmentReplacementTests
 
     private async Task<int> CountAttachments(AppTestServer server, Guid attachmentId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Attachments.CountAsync(att => att.Id == attachmentId, TestContext.CancellationToken);
@@ -207,7 +207,7 @@ public class AttachmentReplacementTests
 
     private async Task<bool> HasProfilePicture(AppTestServer server, Guid userId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Set<User>().Where(u => u.Id == userId).Select(u => u.HasProfilePicture).SingleAsync(TestContext.CancellationToken);

@@ -222,7 +222,7 @@ public class TrustedSessionTests
     /// </summary>
     private async Task SetReachability(AppTestServer server, Guid sessionId, bool notificationsAllowed, bool connected)
     {
-        await using var dbScope = server.WebApp.Services.CreateAsyncScope();
+        await using var dbScope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var session = await dbContext.UserSessions.SingleAsync(us => us.Id == sessionId, TestContext.CancellationToken);
@@ -234,18 +234,18 @@ public class TrustedSessionTests
     }
 
     /// <summary>Signs the same account in a second time through the authenticator, producing another trusted session.</summary>
-    private async Task SignInWithTwoFactorAgain(AppTestServer server, AsyncServiceScope scope, string email, Guid userId)
+    private async Task SignInWithTwoFactorAgain(AppTestServer server, AsyncServiceScope scopeWebApp, string email, Guid userId)
     {
         string sharedKey;
 
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
-            var userManager = dbScope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var userManager = scopeApiApp.ServiceProvider.GetRequiredService<UserManager<User>>();
             var user = await userManager.FindByIdAsync(userId.ToString());
             sharedKey = (await userManager.GetAuthenticatorKeyAsync(user!))!;
         }
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = scopeWebApp.ServiceProvider.GetRequiredService<AuthManager>();
 
         await authManager.SignIn(new()
         {
@@ -258,21 +258,21 @@ public class TrustedSessionTests
     /// <summary>How many sessions the account holds, so a test can assert that a refused sign-in wrote none.</summary>
     private async Task<int> CountSessions(AppTestServer server, Guid userId)
     {
-        await using var dbScope = server.WebApp.Services.CreateAsyncScope();
+        await using var dbScope = server.ApiApp.Services.CreateAsyncScope();
 
         return await dbScope.ServiceProvider.GetRequiredService<AppDbContext>()
             .UserSessions.CountAsync(us => us.UserId == userId, TestContext.CancellationToken);
     }
 
     /// <summary>Reads the row behind the access token this scope currently holds.</summary>
-    private async Task<UserSession> ReadCurrentSession(AppTestServer server, AsyncServiceScope scope)
+    private async Task<UserSession> ReadCurrentSession(AppTestServer server, AsyncServiceScope scopeWebApp)
     {
-        var accessToken = await DevMcpTestUtils.AccessToken(scope);
+        var accessToken = await DevMcpTestUtils.AccessToken(scopeWebApp);
         var sessionId = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).GetSessionId();
 
-        await using var dbScope = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
 
-        return await dbScope.ServiceProvider.GetRequiredService<AppDbContext>()
+        return await scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>()
             .UserSessions.AsNoTracking()
             .SingleAsync(us => us.Id == sessionId, TestContext.CancellationToken);
     }
@@ -280,7 +280,7 @@ public class TrustedSessionTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 

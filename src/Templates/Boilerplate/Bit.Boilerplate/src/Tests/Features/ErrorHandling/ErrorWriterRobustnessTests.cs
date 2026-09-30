@@ -99,7 +99,7 @@ public class ErrorWriterRobustnessTests
 
     private async Task<string> Write(AppTestServer server, DefaultHttpContext httpContext, Exception exception)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         // The scope's own IHttpContextAccessor is what the handler's [AutoInject] fields resolve against.
         scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = httpContext;
@@ -116,7 +116,7 @@ public class ErrorWriterRobustnessTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 }

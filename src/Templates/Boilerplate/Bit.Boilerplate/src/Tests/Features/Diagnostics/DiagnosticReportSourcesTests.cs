@@ -27,7 +27,7 @@ public class DiagnosticReportSourcesTests
     public async Task EveryWayIn_Should_AnswerAboutItsOwnRequest()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         // Only /dev-mcp needs this; the other two are anonymous, and the report is the caller's own either way.
@@ -42,7 +42,7 @@ public class DiagnosticReportSourcesTests
             .ToArrayAsync(TestContext.CancellationToken));
 
         await using var hubConnection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.WebAppServerAddress, "app-hub"), options =>
+            .WithUrl(new Uri(server.ApiServerAddress, "app-hub"), options =>
             {
                 // The upgrade is the whole point: long polling would travel the same path as the http call above.
                 options.Transports = HttpTransportType.WebSockets;

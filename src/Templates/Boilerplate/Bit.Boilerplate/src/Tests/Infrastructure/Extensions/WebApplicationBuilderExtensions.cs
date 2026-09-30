@@ -10,13 +10,43 @@ public static partial class WebApplicationBuilderExtensions
 {
     extension(WebApplicationBuilder builder)
     {
-        public void AddTestProjectServices()
+        /// <summary>
+        /// Server.Web's test services. Server.Api's are in <c>AddTestApiProjectServices</c>.
+        /// </summary>
+        public void AddTestProjectServices(Uri webAppServerAddress)
         {
             var services = builder.Services;
 
             builder.AddServerWebProjectServices();
+            //#if (api == "Integrated")
+            builder.AddTestApiProjectServices(); // The api is integrated into this host.
+            //#endif
 
             // Register test-specific services for all tests here
+
+            services.AddTransient<HttpClient>(sp =>
+            {
+                var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
+                var httpClient = new HttpClient(handlerFactory.Invoke())
+                {
+                    //#if (api == "Standalone")
+                    // Server.Web, which serves the pages and forwards /api and /hangfire to Server.Api (See its
+                    // Program.Middlewares.cs). Server.Api's other endpoints (/healthz, /mcp, /.well-known, ...) take
+                    // AppTestServer.ApiServerAddress.
+                    //#endif
+                    BaseAddress = webAppServerAddress
+                };
+                httpClient.DefaultRequestHeaders.Add("X-Origin", webAppServerAddress.ToString());
+                return httpClient;
+            });
+        }
+
+        /// <summary>
+        /// Server.Api's test services, registered wherever its services are (See <c>AppTestServer.ApiApp</c>).
+        /// </summary>
+        public void AddTestApiProjectServices()
+        {
+            var services = builder.Services;
 
             // Capture every identity e-mail in-process (See TestIdentityEmailService) instead of rendering and delivering it,
             // so tests can read back the confirmation link / OTP / elevated-access token straight from the message. Capturing
@@ -25,18 +55,6 @@ public static partial class WebApplicationBuilderExtensions
             services.AddSingleton<EmailCaptureStore>();
             services.RemoveAll<IdentityEmailService>();
             services.AddScoped<IdentityEmailService, TestIdentityEmailService>();
-
-            services.AddTransient<HttpClient>(sp =>
-            {
-                var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
-                var serverAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetServerAddress(), UriKind.Absolute);
-                var httpClient = new HttpClient(handlerFactory.Invoke())
-                {
-                    BaseAddress = serverAddress
-                };
-                httpClient.DefaultRequestHeaders.Add("X-Origin", serverAddress.ToString());
-                return httpClient;
-            });
 
             services.AddHangfire((sp, hangfireConfiguration) =>
             {

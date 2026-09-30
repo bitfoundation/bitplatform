@@ -156,7 +156,7 @@ public partial class TwoFactorAuthTests : AppPageTest
 
         // No elevated-access token e-mail was sent: the 2FA sign-in already elevated the session. Read every e-mail the
         // server captured straight from its in-memory store (See TestIdentityEmailService / EmailCaptureStore).
-        var capturedEmails = server.WebApp.Services.GetRequiredService<EmailCaptureStore>().Captured;
+        var capturedEmails = server.ApiApp.Services.GetRequiredService<EmailCaptureStore>().Captured;
         Assert.DoesNotContain(
             capturedEmail => capturedEmail.IsTo(email) && capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, capturedEmails,
             "The 2FA sign-in already elevated the session, so deleting the account must not send an elevated-access token e-mail.");

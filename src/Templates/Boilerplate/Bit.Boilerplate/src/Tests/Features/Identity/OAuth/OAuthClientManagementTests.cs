@@ -43,21 +43,21 @@ public class OAuthClientManagementTests
     public async Task TheClientList_Should_IncludeAClientThatHasNoStoredRegistration()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices(), ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebApp, TestContext.CancellationToken);
         await using var _ = grant;
 
         // Stands in for a metadata-document client: a grant whose client id matches nothing stored. Marked on this
         // test's own session, found from its access token - the newest row belongs to whoever signed in last.
         var selfDescribedClientId = $"https://example.test/{Guid.NewGuid():N}/client.json";
-        var sessionId = IAuthTokenProvider.ParseAccessToken(await DevMcpTestUtils.AccessToken(scope), validateExpiry: false).GetSessionId();
+        var sessionId = IAuthTokenProvider.ParseAccessToken(await DevMcpTestUtils.AccessToken(scopeWebApp), validateExpiry: false).GetSessionId();
 
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
-            var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.OAuthGrants.AddAsync(new OAuthGrant
             {
                 UserSessionId = sessionId,
@@ -69,7 +69,7 @@ public class OAuthClientManagementTests
             await dbContext.SaveChangesAsync(TestContext.CancellationToken);
         }
 
-        var clients = await scope.ServiceProvider.GetRequiredService<IOAuthClientManagementController>()
+        var clients = await scopeWebApp.ServiceProvider.GetRequiredService<IOAuthClientManagementController>()
                                                  .GetAllClients(TestContext.CancellationToken);
 
         var selfDescribed = clients.SingleOrDefault(client => client.ClientId == selfDescribedClientId);
@@ -94,7 +94,7 @@ public class OAuthClientManagementTests
     public async Task RevokingAClient_Should_EndItsAccessForEveryUser()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices(), ConfigureTestClient)
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(), configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -112,12 +112,12 @@ public class OAuthClientManagementTests
             Scope = OAuthScopes.DevMcp,
             CodeChallenge = challenge,
             CodeChallengeMethod = "S256",
-            Resource = $"{server.WebAppServerAddress.ToString().TrimEnd('/')}/dev-mcp"
+            Resource = $"{server.ApiServerAddress.ToString().TrimEnd('/')}/dev-mcp"
         }, TestContext.CancellationToken);
 
         var code = QueryHelpers.ParseQuery(new Uri(approval.RedirectUrl).Query)["code"].ToString();
 
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
         using var tokenResponse = await httpClient.PostAsync("oauth/token", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["grant_type"] = "authorization_code",

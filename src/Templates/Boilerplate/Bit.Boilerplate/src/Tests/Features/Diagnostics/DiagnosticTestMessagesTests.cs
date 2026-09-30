@@ -23,7 +23,7 @@ public partial class DiagnosticTestMessagesTests
     public async Task EmailAndSms_Should_RejectAnonymousCallers(string action)
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
         using var response = await anonymousClient.PostAsync($"api/v1/Diagnostic/{action}", null, TestContext.CancellationToken);
@@ -39,11 +39,12 @@ public partial class DiagnosticTestMessagesTests
         A.CallTo(() => fluentEmail.SendAsync(A<CancellationToken?>._)).Returns(new SendResponse());
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.Replace(ServiceDescriptor.Transient(_ => fluentEmail));
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
+            configureTestApiAppServices: services =>
+            {
+                services.Replace(ServiceDescriptor.Transient(_ => fluentEmail));
+            }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
@@ -67,37 +68,37 @@ public partial class DiagnosticTestMessagesTests
     public async Task TestPushNotification_Should_ReportWhetherTheDeviceIsSubscribed_AndKeepToTheCallersOwnDevice()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         var deviceId = $"push-test-{Guid.NewGuid():N}";
 
         try
         {
-            await using (var ownerScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeWebAppOwner = server.WebApp.Services.CreateAsyncScope())
             {
-                await TestAccountUtils.CreateAndSignIn(server, ownerScope, TestContext.CancellationToken);
-                var diagnosticController = ownerScope.ServiceProvider.GetRequiredService<IDiagnosticController>();
+                await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOwner, TestContext.CancellationToken);
+                var diagnosticController = scopeWebAppOwner.ServiceProvider.GetRequiredService<IDiagnosticController>();
 
                 Assert.IsFalse(await diagnosticController.SendTestPushNotification(deviceId, TestContext.CancellationToken));
 
-                await ownerScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await scopeWebAppOwner.ServiceProvider.GetRequiredService<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "test-channel" }, TestContext.CancellationToken);
 
                 Assert.IsTrue(await diagnosticController.SendTestPushNotification(deviceId, TestContext.CancellationToken));
             }
 
-            await using (var otherScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeWebAppOther = server.WebApp.Services.CreateAsyncScope())
             {
-                await TestAccountUtils.CreateAndSignIn(server, otherScope, TestContext.CancellationToken);
+                await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOther, TestContext.CancellationToken);
 
-                await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(() => otherScope.ServiceProvider.GetRequiredService<IDiagnosticController>()
+                await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(() => scopeWebAppOther.ServiceProvider.GetRequiredService<IDiagnosticController>()
                     .SendTestPushNotification(deviceId, TestContext.CancellationToken), "Another session's device must not be reachable.");
             }
         }
         finally
         {
-            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
-            await cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>().PushNotificationSubscriptions
+            await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+            await scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>().PushNotificationSubscriptions
                 .Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
     }

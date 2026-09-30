@@ -29,37 +29,37 @@ public partial class DashboardBroadcastTenantScopeTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         // IStorageService is registered per scope, so each scope holds its own signed-in identity and every typed API
         // client resolved from it calls the server as that user (See TenantInvitationIsolationTests).
-        await using var storeScope = server.WebApp.Services.CreateAsyncScope();
-        await using var otherScope = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeWebAppStore = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeWebAppOther = server.WebApp.Services.CreateAsyncScope();
 
         // ---- Tenant A: the seeded "store" tenant and its seeded t-admin ----
-        var requiresTwoFactor = await storeScope.ServiceProvider.GetRequiredService<AuthManager>()
+        var requiresTwoFactor = await scopeWebAppStore.ServiceProvider.GetRequiredService<AuthManager>()
             .SignIn(new() { Email = StoreAdminEmail, Password = Password }, TestContext.CancellationToken);
 
         Assert.IsFalse(requiresTwoFactor, $"'{StoreAdminEmail}' is not expected to have two factor authentication enabled.");
 
         // ---- Tenant B: a per-run tenant, whose creator becomes its t-admin with an accepted membership ----
-        var (otherEmail, _) = await TestAccountUtils.CreateAndSignIn(server, otherScope, TestContext.CancellationToken);
+        var (otherEmail, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOther, TestContext.CancellationToken);
 
-        await TestAccountUtils.Elevate(server, otherScope, otherEmail, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(server, scopeWebAppOther, otherEmail, TestContext.CancellationToken);
 
-        var otherTenant = await otherScope.ServiceProvider.GetRequiredService<ITenantController>()
+        var otherTenant = await scopeWebAppOther.ServiceProvider.GetRequiredService<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
-        Assert.IsTrue(await otherScope.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(otherTenant.Id, TestContext.CancellationToken),
+        Assert.IsTrue(await scopeWebAppOther.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(otherTenant.Id, TestContext.CancellationToken),
             "The creator must be able to switch into the tenant she just created, otherwise her token carries no tenant and nothing below is tenant scoped.");
 
         // Connected only now, after both identities are final: the group a connection joins comes from the tenant claim
         // of the token it handshakes with.
-        await using var storeClient = await ConnectAsSignedInClient(server, storeScope);
-        await using var otherClient = await ConnectAsSignedInClient(server, otherScope);
+        await using var storeClient = await ConnectAsSignedInClient(server, scopeWebAppStore);
+        await using var otherClient = await ConnectAsSignedInClient(server, scopeWebAppOther);
 
-        var storeCategories = storeScope.ServiceProvider.GetRequiredService<ICategoryController>();
-        var otherCategories = otherScope.ServiceProvider.GetRequiredService<ICategoryController>();
+        var storeCategories = scopeWebAppStore.ServiceProvider.GetRequiredService<ICategoryController>();
+        var otherCategories = scopeWebAppOther.ServiceProvider.GetRequiredService<ICategoryController>();
 
         CategoryDto? createdInOther = null, createdInStore = null;
 
@@ -114,7 +114,7 @@ public partial class DashboardBroadcastTenantScopeTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "An anonymous connection joins no group at all, which would make this test assert nothing.");
 
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.WebAppServerAddress, "app-hub"), options =>
+            .WithUrl(new Uri(server.ApiServerAddress, "app-hub"), options =>
             {
                 options.Transports = HttpTransportType.WebSockets;
                 options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);

@@ -47,7 +47,7 @@ public class ForceUpdateHeaderHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         using var response = await SendAttachmentRequest(server, appVersion, appPlatform);
 
@@ -67,7 +67,7 @@ public class ForceUpdateHeaderHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices(),
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices(),
             configureTestConfigurations: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = "9.9.9")
             .Start(TestContext.CancellationToken);
 

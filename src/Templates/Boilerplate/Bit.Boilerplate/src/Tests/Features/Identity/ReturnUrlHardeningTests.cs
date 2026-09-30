@@ -90,7 +90,7 @@ public class ReturnUrlHardeningTests
     public async Task SendOtp_Should_NotPutAnOffOriginReturnUrlIntoTheConfirmationEmail()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
@@ -125,7 +125,7 @@ public class ReturnUrlHardeningTests
     public async Task SendResetPasswordToken_Should_OnlyEmailAnAppRelativeReturnUrl(string requested, string expected, string because)
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();

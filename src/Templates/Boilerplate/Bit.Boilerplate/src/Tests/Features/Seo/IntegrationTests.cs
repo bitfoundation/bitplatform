@@ -21,7 +21,7 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
@@ -67,7 +67,7 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
@@ -106,7 +106,7 @@ public partial class IntegrationTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
@@ -131,7 +131,7 @@ public partial class IntegrationTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
@@ -176,7 +176,7 @@ public partial class IntegrationTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
@@ -223,7 +223,7 @@ public partial class IntegrationTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
@@ -280,7 +280,7 @@ public partial class IntegrationTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestWebAppServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 

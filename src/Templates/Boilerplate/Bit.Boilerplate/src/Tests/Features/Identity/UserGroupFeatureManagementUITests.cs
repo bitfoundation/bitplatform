@@ -79,7 +79,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     /// </summary>
     private async Task<(string UserGroupName, string MemberEmail)> CreateUserGroupWithMember(AppTestServer server)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 

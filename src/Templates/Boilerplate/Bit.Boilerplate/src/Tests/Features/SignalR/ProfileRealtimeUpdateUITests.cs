@@ -87,7 +87,7 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
 
         while (true)
         {
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
+            await using var scope = server.ApiApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var connectedSessions = await dbContext.UserSessions

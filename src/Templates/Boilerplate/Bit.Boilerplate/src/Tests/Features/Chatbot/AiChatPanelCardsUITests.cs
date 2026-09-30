@@ -481,11 +481,11 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
         // Disposed with the test rather than with a using in each method, so the page outlives the arrangement.
         testCleanup.Add(server);
 
-        await server.Build(services =>
+        await server.Build(configureTestApiAppServices: services =>
         {
             services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
         },
-        configuration =>
+        configureTestConfigurations: configuration =>
         {
             // Without a chat api key the AI agents are never registered and the panel would have nothing to talk to.
             configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-these-tests";

@@ -30,26 +30,26 @@ public partial class ConcurrencyTokenTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         var tenantId = Guid.NewGuid();
         var tenantName = $"concurrency-{Guid.NewGuid():N}";
 
         try
         {
-            await using (var scope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
                 await dbContext.Tenants.AddAsync(new Tenant { Id = tenantId, Name = tenantName, Title = "original" }, TestContext.CancellationToken);
                 await dbContext.SaveChangesAsync(TestContext.CancellationToken);
             }
 
             // Two independent DbContexts stand in for two independent requests: each holds the Version it read, which
             // is what a client sends back in its DTO.
-            await using var scopeA = server.WebApp.Services.CreateAsyncScope();
-            await using var scopeB = server.WebApp.Services.CreateAsyncScope();
-            var dbContextA = scopeA.ServiceProvider.GetRequiredService<AppDbContext>();
-            var dbContextB = scopeB.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiAppA = server.ApiApp.Services.CreateAsyncScope();
+            await using var scopeApiAppB = server.ApiApp.Services.CreateAsyncScope();
+            var dbContextA = scopeApiAppA.ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContextB = scopeApiAppB.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var tenantForA = await dbContextA.Tenants.SingleAsync(t => t.Id == tenantId, TestContext.CancellationToken);
             var tenantForB = await dbContextB.Tenants.SingleAsync(t => t.Id == tenantId, TestContext.CancellationToken);
@@ -60,9 +60,9 @@ public partial class ConcurrencyTokenTests
             await dbContextA.SaveChangesAsync(TestContext.CancellationToken);
 
             long versionAfterA;
-            await using (var scope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
                 versionAfterA = (await dbContext.Tenants.AsNoTracking().SingleAsync(t => t.Id == tenantId, TestContext.CancellationToken)).Version;
             }
 
@@ -76,17 +76,17 @@ public partial class ConcurrencyTokenTests
                 () => dbContextB.SaveChangesAsync(TestContext.CancellationToken),
                 "B's write is based on a version A has already superseded, so it must be rejected rather than silently overwrite A's edit.");
 
-            await using (var scope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
                 var finalTenant = await dbContext.Tenants.AsNoTracking().SingleAsync(t => t.Id == tenantId, TestContext.CancellationToken);
                 Assert.AreEqual("written-by-A", finalTenant.Title, "A's edit must survive; losing it is the data loss this test exists to catch.");
             }
         }
         finally
         {
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Tenants.Where(t => t.Id == tenantId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
     }

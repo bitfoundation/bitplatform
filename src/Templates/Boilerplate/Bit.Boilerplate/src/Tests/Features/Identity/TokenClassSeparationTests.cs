@@ -86,7 +86,7 @@ public class TokenClassSeparationTests
     private async Task<AppTestServer> StartServerAndSignIn()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -101,7 +101,7 @@ public class TokenClassSeparationTests
 
     private async Task<bool> SessionExists(AppTestServer server, Guid sessionId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.UserSessions.AnyAsync(us => us.Id == sessionId, TestContext.CancellationToken);

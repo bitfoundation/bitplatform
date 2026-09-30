@@ -17,13 +17,14 @@ public class OAuthRetentionTests
     public async Task TheRetentionJob_Should_SweepExpiredCodes_AndKeepExchangeableOnes()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
 
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var now = scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow().ToUnixTimeSeconds();
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
+        var now = scopeApiApp.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow().ToUnixTimeSeconds();
 
         // A day past expiry, which is the grace a consumed code keeps so a replay still has a session to revoke.
         var expiredCode = NewCode(userId, expiresOn: now - 2 * 86400);
@@ -36,7 +37,7 @@ public class OAuthRetentionTests
 
         try
         {
-            await scope.ServiceProvider.GetRequiredService<OAuthRetentionJobRunner>().EnforceRetention(TestContext.CancellationToken);
+            await scopeApiApp.ServiceProvider.GetRequiredService<OAuthRetentionJobRunner>().EnforceRetention(TestContext.CancellationToken);
 
             Assert.IsFalse(await dbContext.OAuthAuthorizationCodes.AnyAsync(code => code.Id == expiredCode.Id, TestContext.CancellationToken),
                 "A code a day past its expiry has nothing left to prove and goes.");

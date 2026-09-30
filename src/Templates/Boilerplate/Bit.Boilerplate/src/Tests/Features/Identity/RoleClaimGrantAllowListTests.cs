@@ -102,7 +102,7 @@ public class RoleClaimGrantAllowListTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -131,7 +131,7 @@ public class RoleClaimGrantAllowListTests
 
     private async Task<int> CountClaims(AppTestServer server, Guid roleId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.RoleClaims.CountAsync(rc => rc.RoleId == roleId, TestContext.CancellationToken);

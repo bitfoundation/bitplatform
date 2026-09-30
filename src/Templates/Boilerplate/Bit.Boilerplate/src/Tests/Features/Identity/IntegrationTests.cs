@@ -11,7 +11,7 @@ public partial class IntegrationTests
         /* var fakeAuthTokenProvider = A.Fake<IAuthTokenProvider>();
         A.CallTo(() => fakeAuthTokenProvider.GetAccessToken()).ReturnsLazily(() => (string?)null); */
 
-        await server.Build(services =>
+        await server.Build(configureTestWebAppServices: services =>
         {
             services.AddIntegrationApiOnlyTestsServices();
             // You can override services here for this specific test if needed:
@@ -40,7 +40,7 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 

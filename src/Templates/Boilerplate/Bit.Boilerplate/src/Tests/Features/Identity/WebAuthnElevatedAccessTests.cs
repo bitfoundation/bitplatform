@@ -20,7 +20,7 @@ public class WebAuthnElevatedAccessTests
     public async Task AWebAuthnAssertionOnTheRefreshRequest_Should_DeserializeThroughTheAppSerializer()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         var jsonSerializerOptions = scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
 
@@ -84,7 +84,7 @@ public class WebAuthnElevatedAccessTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 

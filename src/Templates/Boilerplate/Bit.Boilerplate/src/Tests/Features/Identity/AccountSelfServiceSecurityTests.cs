@@ -118,10 +118,10 @@ public class AccountSelfServiceSecurityTests
     public async Task DeleteAccount_WithoutElevatedAccess_Should_BeRejected()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = scopeWebApp.ServiceProvider.GetRequiredService<IUserController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
             () => userController.Delete(TestContext.CancellationToken),
@@ -129,8 +129,8 @@ public class AccountSelfServiceSecurityTests
 
         // Deliberately not asserted by re-running the delete: the row still being there is the whole property, and
         // reading it costs nothing.
-        await using var dbScope = server.WebApp.Services.CreateAsyncScope();
-        var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
 
         Assert.IsTrue(await dbContext.Set<User>().AnyAsync(u => u.Id == userId, TestContext.CancellationToken),
             "The refused request must not have deleted anything.");
@@ -188,20 +188,20 @@ public class AccountSelfServiceSecurityTests
     public async Task SendElevatedAccessToken_WithNoDeliveryChannel_Should_NotReportSuccess()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
 
         // Put the account into the shape an external sign-in leaves behind: neither identifier confirmed.
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
-            var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Set<User>()
                 .Where(u => u.Id == userId)
                 .ExecuteUpdateAsync(u => u.SetProperty(x => x.EmailConfirmed, false)
                                           .SetProperty(x => x.PhoneNumberConfirmed, false), TestContext.CancellationToken);
         }
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = scopeWebApp.ServiceProvider.GetRequiredService<IUserController>();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => userController.SendElevatedAccessToken(TestContext.CancellationToken),
@@ -236,13 +236,13 @@ public class AccountSelfServiceSecurityTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
         return server;
     }
 
     private async Task<(bool emailConfirmed, string? securityStamp)> ReadEmailState(AppTestServer server, string email)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 
