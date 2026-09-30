@@ -15,23 +15,23 @@ internal static class DevMcpTestUtils
     /// authenticator and signs in through it rather than flipping a column.
     /// </summary>
     public static async Task<(string Email, TestAccountUtils.GlobalAdminGrant Grant)> SignInAsGlobalAdmin(
-        AppTestServer server, AsyncServiceScope scope, CancellationToken cancellationToken)
+        AppClient client, CancellationToken cancellationToken)
     {
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, cancellationToken);
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, cancellationToken);
         // Two factor first, so MakeGlobalAdmin's refresh is also what proves amr=mfa survives one.
-        await EnableTwoFactorAndSignInWithIt(server, scope, email, userId, cancellationToken);
-        var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, cancellationToken);
+        await EnableTwoFactorAndSignInWithIt(client, email, userId, cancellationToken);
+        var grant = await TestAccountUtils.MakeGlobalAdmin(client, userId, cancellationToken);
         return (email, grant);
     }
 
     /// <summary>Enrols an authenticator, then signs in through it so the session really carries amr=mfa.</summary>
     public static async Task EnableTwoFactorAndSignInWithIt(
-        AppTestServer server, AsyncServiceScope scopeWebApp, string email, Guid userId, CancellationToken cancellationToken)
+        AppClient client, string email, Guid userId, CancellationToken cancellationToken)
     {
         const string password = "P@ssw0rdP@ssw0rd";
 
         // The per-run account is created through the magic link, so it has no password to sign in with a second time.
-        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = client.Server.ApiApp.Services.CreateAsyncScope())
         {
             var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             var account = await dbContext.Users.IgnoreQueryFilters().SingleAsync(item => item.Id == userId, cancellationToken);
@@ -39,7 +39,7 @@ internal static class DevMcpTestUtils
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var userController = scopeWebApp.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
         var enrolment = await userController.TwoFactorAuth(new(), cancellationToken);
         var sharedKey = enrolment.SharedKey!.Replace(" ", "");
 
@@ -47,7 +47,7 @@ internal static class DevMcpTestUtils
             new() { Enable = true, TwoFactorCode = ComputeTotp(sharedKey) }, cancellationToken);
         Assert.IsTrue(enabled.IsTwoFactorEnabled, "Two factor should be on after enabling it with a valid code.");
 
-        var authManager = scopeWebApp.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         Assert.IsTrue(await authManager.SignIn(new() { Email = email, Password = password }, cancellationToken),
             "An account with two factor on must be challenged for the second factor.");
@@ -62,9 +62,9 @@ internal static class DevMcpTestUtils
 
     public static string ComputeTotp(string base32Secret) => new Totp(Base32Encoding.ToBytes(base32Secret)).ComputeTotp();
 
-    public static async Task<string> AccessToken(AsyncServiceScope scope)
+    public static async Task<string> AccessToken(AppClient client)
     {
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
         Assert.IsNotNull(accessToken, "Sign-in should have stored an access token.");
         return accessToken;
     }

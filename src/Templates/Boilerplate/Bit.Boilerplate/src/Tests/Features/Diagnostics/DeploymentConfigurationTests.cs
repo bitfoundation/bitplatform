@@ -25,12 +25,12 @@ public partial class DeploymentConfigurationTests
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode, "An anonymous caller must not read the configuration.");
         }
 
-        await using var userScope = server.WebApp.Services.CreateAsyncScope();
+        await using var userClient = server.CreateAppClient();
 
-        await TestAccountUtils.CreateAndSignIn(server, userScope, TestContext.CancellationToken);
+        await TestAccountUtils.CreateAndSignIn(userClient, TestContext.CancellationToken);
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
-            () => userScope.CreateRichHttpClient().GetAsync(Url, TestContext.CancellationToken),
+            () => userClient.HttpClient.GetAsync(Url, TestContext.CancellationToken),
             "A signed-in user without the feature must not read the configuration.");
     }
 
@@ -45,15 +45,15 @@ public partial class DeploymentConfigurationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var adminScope = server.WebApp.Services.CreateAsyncScope();
+        await using var adminClient = server.CreateAppClient();
 
-        await adminScope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await adminClient.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await adminScope.CreateRichHttpClient().GetAsync(Url, TestContext.CancellationToken);
+        using var response = await adminClient.HttpClient.GetAsync(Url, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
@@ -75,7 +75,7 @@ public partial class DeploymentConfigurationTests
         }
 
         var report = await response.Content.ReadFromJsonAsync(
-            adminScope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<DeploymentConfigurationDto>(), TestContext.CancellationToken);
+            adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<DeploymentConfigurationDto>(), TestContext.CancellationToken);
 
         Assert.IsNotNull(report);
         Assert.IsFalse(string.IsNullOrWhiteSpace(report.Environment), "The environment is what the rest of the report is read against.");

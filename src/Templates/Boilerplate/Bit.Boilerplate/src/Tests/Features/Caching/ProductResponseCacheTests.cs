@@ -73,9 +73,9 @@ public partial class ProductResponseCacheTests
             // ---- Step 1: both readers fetch the product, filling the output cache ----
 
             // The signed-in tenant-user reads it through the public (UserAgnostic) product view API.
-            await using var scopeWebAppTenantUser = server.WebApp.Services.CreateAsyncScope();
-            await SignIn(scopeWebAppTenantUser, TenantUserEmail);
-            var tenantUserProductView = scopeWebAppTenantUser.CreateAppController<IProductViewController>();
+            await using var tenantUserClient = server.CreateAppClient();
+            await SignIn(tenantUserClient, TenantUserEmail);
+            var tenantUserProductView = tenantUserClient.GetController<IProductViewController>();
 
             var seenByTenantUser = await tenantUserProductView.Get(productShortId, TestContext.CancellationToken);
             Assert.AreEqual(productName, seenByTenantUser.Name);
@@ -110,9 +110,9 @@ public partial class ProductResponseCacheTests
 
             // ---- Step 2: the tenant-admin edits the description through the real write endpoint ----
 
-            await using (var scopeWebAppTenantAdmin = server.WebApp.Services.CreateAsyncScope())
+            await using (var tenantAdminClient = server.CreateAppClient())
             {
-                var tenantAdminUser = await SignIn(scopeWebAppTenantAdmin, TenantAdminEmail);
+                var tenantAdminUser = await SignIn(tenantAdminClient, TenantAdminEmail);
 
                 // ProductController demands a privileged session, a selected tenant and ProductCatalog_Manage. Her fresh
                 // password sign-in covers the first, and being a t-admin of the tenant that owns the product covers the rest.
@@ -121,7 +121,7 @@ public partial class ProductResponseCacheTests
 
                 // A real authenticated PUT, so the purge under test is the one the endpoint itself performs after saving
                 // (See ProductController.Update) - including running it under a genuine HttpContext.
-                var products = scopeWebAppTenantAdmin.CreateAppController<IProductController>();
+                var products = tenantAdminClient.GetController<IProductController>();
 
                 var toUpdate = await products.Get(productId, TestContext.CancellationToken);
                 toUpdate.DescriptionText = updatedDescription;
@@ -388,9 +388,9 @@ public partial class ProductResponseCacheTests
             Assert.Contains(productName, await cachedAnonymousResponse.Content.ReadAsStringAsync(TestContext.CancellationToken),
                 "The anonymous read was not served from the output cache, so this test cannot detect a shared entry.");
 
-            await using var tenantUserScope = server.WebApp.Services.CreateAsyncScope();
-            await SignIn(tenantUserScope, TenantUserEmail);
-            var accessToken = await tenantUserScope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+            await using var tenantUserClient = server.CreateAppClient();
+            await SignIn(tenantUserClient, TenantUserEmail);
+            var accessToken = await tenantUserClient.Services.GetRequiredService<IStorageService>().GetItem("access_token");
             Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Signing in did not store an access token, so the read below would not be authenticated.");
 
             using var tenantMemberRequest = new HttpRequestMessage(HttpMethod.Get, requestPath);
@@ -497,9 +497,9 @@ public partial class ProductResponseCacheTests
 
         try
         {
-            await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-            await SignIn(scopeWebApp, TenantAdminEmail);
-            var products = scopeWebApp.CreateAppController<IProductController>();
+            await using var client = server.CreateAppClient();
+            await SignIn(client, TenantAdminEmail);
+            var products = client.GetController<IProductController>();
 
             // IgnoreQueryFilters because a bare DI scope has no HttpContext for TenantProvider to read the tenant from.
             await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
@@ -605,13 +605,13 @@ public partial class ProductResponseCacheTests
     }
 
     /// <summary>
-    /// Signs the given e-mail in within <paramref name="scope"/> and returns her resulting claims. The access token
-    /// lands in that scope's (in-memory) TestStorageService, so every typed API client resolved from the same scope
-    /// calls the server as her.
+    /// Signs the given e-mail in on <paramref name="client"/> and returns her resulting claims. The access token
+    /// lands in that client's (in-memory) TestStorageService, so every controller created from the same client calls
+    /// the server as her.
     /// </summary>
-    private async Task<ClaimsPrincipal> SignIn(AsyncServiceScope scope, string email)
+    private async Task<ClaimsPrincipal> SignIn(AppClient client, string email)
     {
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var requiresTwoFactor = await authManager.SignIn(new()
         {
@@ -628,12 +628,12 @@ public partial class ProductResponseCacheTests
     /// Runs <c>ResponseCacheService.PurgeProductCache</c>, which needs an HttpContext of its own to decide whether the
     /// request came through a CDN, and there is none in a bare DI scope (See <c>ResponseCacheService.PurgeCache</c>).
     /// </summary>
-    private async Task PurgeProductCache(AsyncServiceScope scope, int productShortId)
+    private async Task PurgeProductCache(AppClient client, int productShortId)
     {
-        var httpContextAccessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
-        httpContextAccessor.HttpContext ??= new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+        var httpContextAccessor = client.Services.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext ??= new DefaultHttpContext { RequestServices = client.Services };
 
-        var responseCacheService = scope.ServiceProvider.GetRequiredService<ResponseCacheService>();
+        var responseCacheService = client.Services.GetRequiredService<ResponseCacheService>();
 
         await responseCacheService.PurgeProductCache(productShortId);
     }

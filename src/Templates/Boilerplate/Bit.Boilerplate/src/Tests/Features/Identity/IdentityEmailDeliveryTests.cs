@@ -34,8 +34,8 @@ public class IdentityEmailDeliveryTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         // Driven over raw HTTP rather than the typed proxy: the header is the thing under test and the generated proxy
         // has no way to set it.
@@ -84,7 +84,7 @@ public class IdentityEmailDeliveryTests
         }
 
         // And the account really can still ask for a code.
-        var identityController = scopeWebApp.CreateAppController<IIdentityController>();
+        var identityController = client.GetController<IIdentityController>();
 
         await identityController.SendResetPasswordToken(new() { Email = email }, TestContext.CancellationToken);
 

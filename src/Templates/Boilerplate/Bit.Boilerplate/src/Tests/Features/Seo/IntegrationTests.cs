@@ -23,8 +23,8 @@ public partial class IntegrationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         var siteMap = await httpClient.GetStringAsync("sitemap.xml", TestContext.CancellationToken);
 
@@ -69,8 +69,8 @@ public partial class IntegrationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         var siteMapIndex = await httpClient.GetStringAsync("sitemap_index.xml", TestContext.CancellationToken);
 
@@ -110,8 +110,8 @@ public partial class IntegrationTests
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         var html = await httpClient.GetStringAsync(PageUrls.Home, TestContext.CancellationToken);
 
@@ -135,8 +135,8 @@ public partial class IntegrationTests
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         var html = await httpClient.GetStringAsync(PageUrls.Home, TestContext.CancellationToken);
 
@@ -184,8 +184,8 @@ public partial class IntegrationTests
             }
         ).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         // Reading the first complete response ourselves is what makes the streaming assertion below meaningful: a client
         // that waits for a streamed response to finish cannot tell whether streaming happened at all.
@@ -226,8 +226,8 @@ public partial class IntegrationTests
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         // "fa-IR/" is the exact culture-prefixed home URL advertised in the sitemap.
         var html = await httpClient.GetStringAsync($"{PageUrls.Home}fa-IR/", TestContext.CancellationToken);

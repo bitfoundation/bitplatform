@@ -13,15 +13,15 @@ public class DevMcpEndpointTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
         Assert.AreEqual(HttpStatusCode.Unauthorized,
             await DevMcpTestUtils.ProbeInitialize(server, "dev-mcp", accessToken: null, TestContext.CancellationToken),
             "/dev-mcp must reject an anonymous caller.");
 
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userToken = await DevMcpTestUtils.AccessToken(scope);
+        var userToken = await DevMcpTestUtils.AccessToken(client);
         var status = await DevMcpTestUtils.ProbeInitialize(server, "dev-mcp", userToken, TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.Forbidden, status,
             "/dev-mcp is a System feature, so a signed-in non-admin must be refused.");
@@ -37,35 +37,35 @@ public class DevMcpEndpointTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using (var scopeWebAppFeatureOnly = server.WebApp.Services.CreateAsyncScope())
+        await using (var featureOnlyClient = server.CreateAppClient())
         {
-            var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppFeatureOnly, TestContext.CancellationToken);
-            await using var grant = await TestAccountUtils.MakeGlobalAdmin(server, scopeWebAppFeatureOnly, userId, TestContext.CancellationToken);
+            var (_, userId) = await TestAccountUtils.CreateAndSignIn(featureOnlyClient, TestContext.CancellationToken);
+            await using var grant = await TestAccountUtils.MakeGlobalAdmin(featureOnlyClient, userId, TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.Forbidden,
                 await DevMcpTestUtils.ProbeInitialize(server, "dev-mcp",
-                    await DevMcpTestUtils.AccessToken(scopeWebAppFeatureOnly), TestContext.CancellationToken),
+                    await DevMcpTestUtils.AccessToken(featureOnlyClient), TestContext.CancellationToken),
                 "A global admin without 2FA holds the feature and must still be refused; two policies on one endpoint are ANDed.");
         }
 
-        await using (var scopeWebAppTwoFactorOnly = server.WebApp.Services.CreateAsyncScope())
+        await using (var twoFactorOnlyClient = server.CreateAppClient())
         {
-            var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppTwoFactorOnly, TestContext.CancellationToken);
-            await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scopeWebAppTwoFactorOnly, email, userId, TestContext.CancellationToken);
+            var (email, userId) = await TestAccountUtils.CreateAndSignIn(twoFactorOnlyClient, TestContext.CancellationToken);
+            await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(twoFactorOnlyClient, email, userId, TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.Forbidden,
                 await DevMcpTestUtils.ProbeInitialize(server, "dev-mcp",
-                    await DevMcpTestUtils.AccessToken(scopeWebAppTwoFactorOnly), TestContext.CancellationToken),
+                    await DevMcpTestUtils.AccessToken(twoFactorOnlyClient), TestContext.CancellationToken),
                 "2FA on its own grants nothing; the System feature is still required.");
         }
 
-        await using (var scopeWebAppBoth = server.WebApp.Services.CreateAsyncScope())
+        await using (var bothClient = server.CreateAppClient())
         {
-            var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebAppBoth, TestContext.CancellationToken);
+            var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(bothClient, TestContext.CancellationToken);
             await using var _ = grant;
 
-            await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scopeWebAppBoth), "dev-mcp", TestContext.CancellationToken);
-            var tools = await client.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
+            await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(bothClient), "dev-mcp", TestContext.CancellationToken);
+            var tools = await mcp.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
 
             Assert.IsNotEmpty(tools, "Holding both must actually get in, or the two assertions above pass for the wrong reason.");
         }
@@ -76,11 +76,11 @@ public class DevMcpEndpointTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
-        var accessToken = await DevMcpTestUtils.AccessToken(scope);
+        var accessToken = await DevMcpTestUtils.AccessToken(client);
 
         await using var devClient = await DevMcpTestUtils.Connect(server, accessToken, "dev-mcp", TestContext.CancellationToken);
         var devTools = (await devClient.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Select(tool => tool.Name).ToArray();
@@ -109,18 +109,18 @@ public class DevMcpEndpointTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
-        var accessToken = await DevMcpTestUtils.AccessToken(scope);
+        var accessToken = await DevMcpTestUtils.AccessToken(client);
 
-        await using var client = await DevMcpTestUtils.Connect(server, accessToken, "dev-mcp", TestContext.CancellationToken);
+        await using var mcp = await DevMcpTestUtils.Connect(server, accessToken, "dev-mcp", TestContext.CancellationToken);
 
-        var config = await DevMcpTestUtils.CallText(client, "GetDeploymentInfo", [], TestContext.CancellationToken);
+        var config = await DevMcpTestUtils.CallText(mcp, "GetDeploymentInfo", [], TestContext.CancellationToken);
         Assert.Contains("issuer", config, StringComparison.OrdinalIgnoreCase);
 
-        var query = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var query = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "User",
             ["select"] = new[] { "Id", "Email" },
@@ -128,10 +128,10 @@ public class DevMcpEndpointTests
         }, TestContext.CancellationToken);
         Assert.Contains("rows", query, StringComparison.OrdinalIgnoreCase);
 
-        var stats = await DevMcpTestUtils.CallText(client, "GetHangfireStats", [], TestContext.CancellationToken);
+        var stats = await DevMcpTestUtils.CallText(mcp, "GetHangfireStats", [], TestContext.CancellationToken);
         Assert.Contains("jobExpiration", stats, StringComparison.OrdinalIgnoreCase);
 
-        var listed = await DevMcpTestUtils.CallText(client, "ListHangfireJobs", new() { ["state"] = "any", ["take"] = 1 }, TestContext.CancellationToken);
+        var listed = await DevMcpTestUtils.CallText(mcp, "ListHangfireJobs", new() { ["state"] = "any", ["take"] = 1 }, TestContext.CancellationToken);
         Assert.Contains("jobs", listed, StringComparison.OrdinalIgnoreCase);
     }
 }

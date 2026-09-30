@@ -28,12 +28,12 @@ public partial class RefreshTokenRotationTests
     [TestMethod]
     public async Task CurrentRefreshToken_Should_RotateAndStampTheSession()
     {
-        var (server, scope, timeProvider) = await StartServerAndSignIn();
+        var (server, client, timeProvider) = await StartServerAndSignIn();
         await using var _ = server;
-        await using var __ = scope;
+        await using var __ = client;
 
-        var identityController = scope.CreateAppController<IIdentityController>();
-        var (sessionId, firstRefreshToken) = await ReadSession(scope);
+        var identityController = client.GetController<IIdentityController>();
+        var (sessionId, firstRefreshToken) = await ReadSession(client);
 
         var (startedOn, renewedOnBefore) = await ReadSessionTimestamps(server, sessionId);
         Assert.IsNull(renewedOnBefore, "A session that has never been refreshed carries no RenewedOn.");
@@ -60,12 +60,12 @@ public partial class RefreshTokenRotationTests
     [TestMethod]
     public async Task SupersededRefreshToken_Should_BeRejectedAndDestroyTheSession()
     {
-        var (server, scope, timeProvider) = await StartServerAndSignIn();
+        var (server, client, timeProvider) = await StartServerAndSignIn();
         await using var _ = server;
-        await using var __ = scope;
+        await using var __ = client;
 
-        var identityController = scope.CreateAppController<IIdentityController>();
-        var (sessionId, supersededToken) = await ReadSession(scope);
+        var identityController = client.GetController<IIdentityController>();
+        var (sessionId, supersededToken) = await ReadSession(client);
 
         // A legitimate rotation: `supersededToken` is spent here and replaced by the one in the response.
         timeProvider.Advance(RefreshInterval);
@@ -89,12 +89,12 @@ public partial class RefreshTokenRotationTests
     [TestMethod]
     public async Task RefreshToken_Of_ARevokedSession_Should_BeRejected()
     {
-        var (server, scope, timeProvider) = await StartServerAndSignIn();
+        var (server, client, timeProvider) = await StartServerAndSignIn();
         await using var _ = server;
-        await using var __ = scope;
+        await using var __ = client;
 
-        var identityController = scope.CreateAppController<IIdentityController>();
-        var (sessionId, refreshToken) = await ReadSession(scope);
+        var identityController = client.GetController<IIdentityController>();
+        var (sessionId, refreshToken) = await ReadSession(client);
 
         await using (var dbScope = server.ApiApp.Services.CreateAsyncScope())
         {
@@ -123,12 +123,12 @@ public partial class RefreshTokenRotationTests
     [TestMethod]
     public async Task LostRotationResponse_Should_LetTheClientRetryWithTheSupersededToken()
     {
-        var (server, scope, timeProvider) = await StartServerAndSignIn();
+        var (server, client, timeProvider) = await StartServerAndSignIn();
         await using var _ = server;
-        await using var __ = scope;
+        await using var __ = client;
 
-        var identityController = scope.CreateAppController<IIdentityController>();
-        var (_, refreshToken) = await ReadSession(scope);
+        var identityController = client.GetController<IIdentityController>();
+        var (_, refreshToken) = await ReadSession(client);
 
         // The rotation the client never sees the response of: the reply is simply discarded here.
         timeProvider.Advance(RefreshInterval);
@@ -160,12 +160,12 @@ public partial class RefreshTokenRotationTests
     [TestMethod, Ignore("Needs UserSession.PreviousRenewedOn (and a migration); see the remarks above.")]
     public async Task TwoRotationsWithinTheTolerance_Should_StillRejectTheOldestToken()
     {
-        var (server, scope, timeProvider) = await StartServerAndSignIn();
+        var (server, client, timeProvider) = await StartServerAndSignIn();
         await using var _ = server;
-        await using var __ = scope;
+        await using var __ = client;
 
-        var identityController = scope.CreateAppController<IIdentityController>();
-        var (_, oldestToken) = await ReadSession(scope);
+        var identityController = client.GetController<IIdentityController>();
+        var (_, oldestToken) = await ReadSession(client);
 
         // Both rotations happen inside the 30-second tolerance of when `oldestToken` was minted - the shape produced by
         // a routine refresh immediately followed by SwitchTenant / TryEnterElevatedAccessMode.
@@ -187,7 +187,7 @@ public partial class RefreshTokenRotationTests
     /// <see cref="UserSession"/> and a real token pair exist. The fake clock is seeded from the wall clock so nothing
     /// else (certificate validity, token signature validation) sees a skewed time.
     /// </summary>
-    private async Task<(AppTestServer server, AsyncServiceScope scope, FakeTimeProvider timeProvider)> StartServerAndSignIn()
+    private async Task<(AppTestServer server, AppClient client, FakeTimeProvider timeProvider)> StartServerAndSignIn()
     {
         var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
 
@@ -197,24 +197,24 @@ public partial class RefreshTokenRotationTests
         await server.Build(configureTestServices: services => services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider)))
             .Start(TestContext.CancellationToken);
 
-        var scope = server.WebApp.Services.CreateAsyncScope();
+        var client = server.CreateAppClient();
 
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        return (server, scope, timeProvider);
+        return (server, client, timeProvider);
     }
 
     /// <summary>
     /// Reads the refresh token the client is currently holding, plus the id of the session it belongs to (the
     /// <see cref="AppClaimTypes.SESSION_ID"/> claim of the matching access token).
     /// </summary>
-    private static async Task<(Guid sessionId, string refreshToken)> ReadSession(AsyncServiceScope scope)
+    private static async Task<(Guid sessionId, string refreshToken)> ReadSession(AppClient client)
     {
-        var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+        var storageService = client.Services.GetRequiredService<IStorageService>();
 
         var accessToken = await storageService.GetItem("access_token");
         var refreshToken = await storageService.GetItem("refresh_token");

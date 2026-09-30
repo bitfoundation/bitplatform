@@ -38,10 +38,10 @@ public class OpenIdConfigurationIntegrationTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
         Assert.IsNotNull(accessToken, "Signing in should have stored an access token.");
 
         await using var resourceServer = await StartResourceServer(server);
@@ -67,10 +67,10 @@ public class OpenIdConfigurationIntegrationTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
 
         await using var resourceServer = await StartResourceServer(server);
 
@@ -102,10 +102,10 @@ public class OpenIdConfigurationIntegrationTests
 
         Assert.IsNotNull(retired, "No retired certificate was staged, so this test would prove nothing.");
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
 
         var signedByRetired = ReSign(new JwtSecurityToken(accessToken!),
             new RsaSecurityKey(retired.GetRSAPrivateKey()!) { KeyId = retired.Thumbprint });
@@ -133,10 +133,10 @@ public class OpenIdConfigurationIntegrationTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
         var mintedIssuer = new JwtSecurityToken(accessToken).Issuer;
 
         using var anonymousHttpClient = server.CreateRawHttpClient();
@@ -266,9 +266,9 @@ public class OpenIdConfigurationIntegrationTests
         return $"http://127.0.0.1:{port}/";
     }
 
-    private Task SignIn(AsyncServiceScope scope)
+    private Task SignIn(AppClient client)
     {
-        return scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        return client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword

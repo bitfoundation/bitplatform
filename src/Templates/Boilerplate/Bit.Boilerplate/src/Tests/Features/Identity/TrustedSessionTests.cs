@@ -22,10 +22,10 @@ public class TrustedSessionTests
     public async Task ASessionOpenedWithAnEmailedCode_Should_NotBeTrusted()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var session = await ReadCurrentSession(server, scope);
+        var session = await ReadCurrentSession(client);
 
         Assert.AreEqual("Email", session.AuthenticationMethod,
             "The magic-link sign-in confirms the account through an e-mailed code, which is what the column has to record.");
@@ -43,12 +43,12 @@ public class TrustedSessionTests
     public async Task ASessionThatCompletedTheSecondFactor_Should_BeTrusted()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scope, email, userId, TestContext.CancellationToken);
+        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(client, email, userId, TestContext.CancellationToken);
 
-        var session = await ReadCurrentSession(server, scope);
+        var session = await ReadCurrentSession(client);
 
         Assert.AreEqual("Password", session.AuthenticationMethod,
             "The first step was the password; the second factor is recorded by Trusted, not by overwriting the method.");
@@ -65,12 +65,12 @@ public class TrustedSessionTests
     public async Task AnOtpSignIn_Should_OpenNoSession_WhenTwoFactorIsEnabled()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scope, email, userId, TestContext.CancellationToken);
+        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(client, email, userId, TestContext.CancellationToken);
 
-        await scope.CreateAppController<IIdentityController>()
+        await client.GetController<IIdentityController>()
                                    .SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 
         var otp = await server.WaitForCapturedEmail(email,
@@ -78,7 +78,7 @@ public class TrustedSessionTests
 
         var sessionsBefore = await CountSessions(server, userId);
 
-        var requiresTwoFactor = await scope.ServiceProvider.GetRequiredService<AuthManager>()
+        var requiresTwoFactor = await client.AuthManager
             .SignIn(new() { Email = email, Otp = otp.Token }, TestContext.CancellationToken);
 
         Assert.IsTrue(requiresTwoFactor,
@@ -96,12 +96,12 @@ public class TrustedSessionTests
     public async Task EnablingTwoFactor_Should_LeaveNoUntrustedSessionBehind()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var beforeTwoFactor = await ReadCurrentSession(server, scope);
+        var beforeTwoFactor = await ReadCurrentSession(client);
 
-        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scope, email, userId, TestContext.CancellationToken);
+        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(client, email, userId, TestContext.CancellationToken);
 
         // The stamp check runs on refresh, so the row survives until that session asks for a token. What matters is that
         // it can never receive anything: the push filters on Trusted, and this one is false.
@@ -117,10 +117,10 @@ public class TrustedSessionTests
     public async Task SendElevatedAccessToken_Should_NotClaimOtherDevices_WhenNoSessionIsTrusted()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var sentTo = await scope.CreateAppController<IUserController>()
+        var sentTo = await client.GetController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsFalse(sentTo.SentToOtherDevices,
@@ -138,22 +138,22 @@ public class TrustedSessionTests
     public async Task SendElevatedAccessToken_Should_ClaimOtherDevices_WhenATrustedOneExists()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scope, email, userId, TestContext.CancellationToken);
-        var firstTrustedSession = await ReadCurrentSession(server, scope);
+        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(client, email, userId, TestContext.CancellationToken);
+        var firstTrustedSession = await ReadCurrentSession(client);
 
         await SetReachability(server, firstTrustedSession.Id, notificationsAllowed: true, connected: true);
 
-        await SignInWithTwoFactorAgain(server, scope, email, userId);
-        var secondTrustedSession = await ReadCurrentSession(server, scope);
+        await SignInWithTwoFactorAgain(client, email, userId);
+        var secondTrustedSession = await ReadCurrentSession(client);
 
         Assert.AreNotEqual(firstTrustedSession.Id, secondTrustedSession.Id,
             "The second sign-in has to be its own session, otherwise there is no other device in play.");
         Assert.IsTrue(secondTrustedSession.Trusted);
 
-        var sentTo = await scope.CreateAppController<IUserController>()
+        var sentTo = await client.GetController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsTrue(sentTo.SentToOtherDevices,
@@ -168,19 +168,19 @@ public class TrustedSessionTests
     public async Task SendElevatedAccessToken_Should_NotClaimOtherDevices_WhenTheTrustedOneIsOffline()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scope, email, userId, TestContext.CancellationToken);
-        var offlineSession = await ReadCurrentSession(server, scope);
+        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(client, email, userId, TestContext.CancellationToken);
+        var offlineSession = await ReadCurrentSession(client);
 
         Assert.IsTrue(offlineSession.Trusted, "The setup depends on this session being trusted; only its reachability is in question.");
 
         await SetReachability(server, offlineSession.Id, notificationsAllowed: true, connected: false);
 
-        await SignInWithTwoFactorAgain(server, scope, email, userId);
+        await SignInWithTwoFactorAgain(client, email, userId);
 
-        var sentTo = await scope.CreateAppController<IUserController>()
+        var sentTo = await client.GetController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsFalse(sentTo.SentToOtherDevices,
@@ -195,11 +195,11 @@ public class TrustedSessionTests
     public async Task SendElevatedAccessToken_Should_NotClaimOtherDevices_WhenTheTrustedOneIsMuted()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scope, email, userId, TestContext.CancellationToken);
-        var mutedSession = await ReadCurrentSession(server, scope);
+        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(client, email, userId, TestContext.CancellationToken);
+        var mutedSession = await ReadCurrentSession(client);
 
         Assert.IsTrue(mutedSession.Trusted, "The setup depends on this session being trusted; only its notifications are off.");
         Assert.AreNotEqual(UserSessionNotificationStatus.Allowed, mutedSession.NotificationStatus);
@@ -207,9 +207,9 @@ public class TrustedSessionTests
         // Connected, so the mute is the only thing left that can stop the message.
         await SetReachability(server, mutedSession.Id, notificationsAllowed: false, connected: true);
 
-        await SignInWithTwoFactorAgain(server, scope, email, userId);
+        await SignInWithTwoFactorAgain(client, email, userId);
 
-        var sentTo = await scope.CreateAppController<IUserController>()
+        var sentTo = await client.GetController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsFalse(sentTo.SentToOtherDevices,
@@ -234,18 +234,18 @@ public class TrustedSessionTests
     }
 
     /// <summary>Signs the same account in a second time through the authenticator, producing another trusted session.</summary>
-    private async Task SignInWithTwoFactorAgain(AppTestServer server, AsyncServiceScope scopeWebApp, string email, Guid userId)
+    private async Task SignInWithTwoFactorAgain(AppClient client, string email, Guid userId)
     {
         string sharedKey;
 
-        await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = client.Server.ApiApp.Services.CreateAsyncScope())
         {
             var userManager = scopeApiApp.ServiceProvider.GetRequiredService<UserManager<User>>();
             var user = await userManager.FindByIdAsync(userId.ToString());
             sharedKey = (await userManager.GetAuthenticatorKeyAsync(user!))!;
         }
 
-        var authManager = scopeWebApp.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         await authManager.SignIn(new()
         {
@@ -264,13 +264,13 @@ public class TrustedSessionTests
             .UserSessions.CountAsync(us => us.UserId == userId, TestContext.CancellationToken);
     }
 
-    /// <summary>Reads the row behind the access token this scope currently holds.</summary>
-    private async Task<UserSession> ReadCurrentSession(AppTestServer server, AsyncServiceScope scopeWebApp)
+    /// <summary>Reads the row behind the access token this client currently holds.</summary>
+    private async Task<UserSession> ReadCurrentSession(AppClient client)
     {
-        var accessToken = await DevMcpTestUtils.AccessToken(scopeWebApp);
+        var accessToken = await DevMcpTestUtils.AccessToken(client);
         var sessionId = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).GetSessionId();
 
-        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+        await using var scopeApiApp = client.Server.ApiApp.Services.CreateAsyncScope();
 
         return await scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>()
             .UserSessions.AsNoTracking()

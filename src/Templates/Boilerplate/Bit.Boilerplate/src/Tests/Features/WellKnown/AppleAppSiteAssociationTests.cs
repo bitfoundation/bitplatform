@@ -23,8 +23,8 @@ public partial class AppleAppSiteAssociationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         var appleAppSiteAssociationUrl = new Uri(server.WebAppServerAddress, "/.well-known/apple-app-site-association");
 

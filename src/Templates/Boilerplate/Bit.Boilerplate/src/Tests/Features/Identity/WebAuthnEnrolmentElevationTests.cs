@@ -32,10 +32,10 @@ public class WebAuthnEnrolmentElevationTests
     public async Task CreateWebAuthnCredential_WithoutElevatedAccess_Should_BeRejected()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
             () => userController.CreateWebAuthnCredential(EmptyAttestation, TestContext.CancellationToken),
@@ -57,12 +57,12 @@ public class WebAuthnEnrolmentElevationTests
     public async Task CreateWebAuthnCredential_WithElevatedAccess_Should_PassAuthorization()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         var exception = await Assert.ThrowsAsync<Exception>(
             () => userController.CreateWebAuthnCredential(EmptyAttestation, TestContext.CancellationToken));

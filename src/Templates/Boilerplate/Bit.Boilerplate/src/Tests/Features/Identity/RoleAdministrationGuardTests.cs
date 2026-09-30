@@ -24,8 +24,8 @@ public class RoleAdministrationGuardTests
     public async Task RemoveAllUsersFromRole_Should_RefuseOnlyTheGlobalAdminRole()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (roleManagementController, signedInUserId, grant) = await SignInAsGlobalAdmin(server, scope);
+        await using var client = server.CreateAppClient();
+        var (roleManagementController, signedInUserId, grant) = await SignInAsGlobalAdmin(client);
         await using var globalAdminGrant = grant;
 
         var globalAdminRoleId = await ReadRoleId(server, AppRoles.GlobalAdmin);
@@ -66,8 +66,8 @@ public class RoleAdministrationGuardTests
     public async Task UpdateClaims_Should_ReplaceTheClaimValue_RatherThanAccumulateRows()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (roleManagementController, _, grant) = await SignInAsGlobalAdmin(server, scope);
+        await using var client = server.CreateAppClient();
+        var (roleManagementController, _, grant) = await SignInAsGlobalAdmin(client);
         await using var globalAdminGrant = grant;
 
         var roleId = await CreateRole(roleManagementController);
@@ -96,8 +96,8 @@ public class RoleAdministrationGuardTests
     public async Task UpdateClaims_Should_NotRevokeTheOtherFeatureClaimsOfTheRole()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (roleManagementController, _, grant) = await SignInAsGlobalAdmin(server, scope);
+        await using var client = server.CreateAppClient();
+        var (roleManagementController, _, grant) = await SignInAsGlobalAdmin(client);
         await using var globalAdminGrant = grant;
 
         var roleId = await CreateRole(roleManagementController);
@@ -130,13 +130,13 @@ public class RoleAdministrationGuardTests
     /// must be disposed by the caller so the developer's database is not left with an extra global administrator.
     /// </summary>
     private async Task<(IRoleManagementController Controller, Guid UserId, TestAccountUtils.GlobalAdminGrant Grant)> SignInAsGlobalAdmin(
-        AppTestServer server, AsyncServiceScope scope)
+        AppClient client)
     {
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var grant = await TestAccountUtils.MakeGlobalAdmin(client, userId, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
-        return (scope.CreateAppController<IRoleManagementController>(), userId, grant);
+        return (client.GetController<IRoleManagementController>(), userId, grant);
     }
 
     private async Task<Guid> CreateRole(IRoleManagementController roleManagementController)

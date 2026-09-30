@@ -46,14 +46,14 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (verifier, challenge) = GeneratePkcePair();
         var request = BuildRequest(server, challenge);
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(request, TestContext.CancellationToken);
 
         var code = QueryValueOf(approval.RedirectUrl, "code");
@@ -139,13 +139,13 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scopeWebApp.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var code = QueryValueOf(approval.RedirectUrl, "code")!;
@@ -184,14 +184,14 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (_, challenge) = GeneratePkcePair();
         var (wrongVerifier, _) = GeneratePkcePair();
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var (status, body) = await PostToken(server, new()
@@ -247,13 +247,13 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var token = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
@@ -334,8 +334,8 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (_, challenge) = GeneratePkcePair();
@@ -343,13 +343,13 @@ public class OAuthAuthorizationServerTests
         var request = BuildRequest(server, challenge);
         request.RedirectUri = "http://127.0.0.1:62435/callback"; // ConfigureTestClient registers the same path on :33418.
 
-        var consent = await scope.CreateAppController<IOAuthController>()
+        var consent = await client.GetController<IOAuthController>()
                                                  .Review(request, TestContext.CancellationToken);
 
         Assert.AreEqual(request.RedirectUri, consent.RedirectUri,
             "A loopback redirect uri must be matched on everything except its port.");
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(request, TestContext.CancellationToken);
 
         Assert.StartsWith(request.RedirectUri, approval.RedirectUrl,
@@ -361,7 +361,7 @@ public class OAuthAuthorizationServerTests
         wrongPath.RedirectUri = "http://127.0.0.1:62435/somewhere-else";
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
-            () => scope.CreateAppController<IOAuthController>().Review(wrongPath, TestContext.CancellationToken),
+            () => client.GetController<IOAuthController>().Review(wrongPath, TestContext.CancellationToken),
             "Only the port may differ - a different path on the same loopback host is still an unregistered uri.");
     }
 
@@ -376,8 +376,8 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (verifier, challenge) = GeneratePkcePair();
@@ -385,7 +385,7 @@ public class OAuthAuthorizationServerTests
         var request = BuildRequest(server, challenge);
         request.Scope = null;
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(request, TestContext.CancellationToken);
 
         var token = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
@@ -405,8 +405,8 @@ public class OAuthAuthorizationServerTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var providers = await scope.CreateAppController<IIdentityController>()
+        await using var client = server.CreateAppClient();
+        var providers = await client.GetController<IIdentityController>()
                                                    .GetSupportedExternalAuthSchemes(TestContext.CancellationToken);
 
         Assert.DoesNotContain(AppAuthSchemes.OAUTH_BEARER, providers,
@@ -424,18 +424,18 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scopeWebApp.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
 
-        var sessions = await scopeWebApp.CreateAppController<IUserController>()
+        var sessions = await client.GetController<IUserController>()
                                                   .GetUserSessions(TestContext.CancellationToken);
 
         var grantedSession = sessions.SingleOrDefault(session => session.OAuthClientId is not null);
@@ -479,13 +479,13 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scopeWebApp.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var granted = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
@@ -531,13 +531,13 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         var (_, challenge) = GeneratePkcePair();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
-            () => scope.CreateAppController<IOAuthController>()
+            () => client.GetController<IOAuthController>()
                        .Review(BuildRequest(server, challenge), TestContext.CancellationToken),
             "An account without System.DevMcp has nothing to grant for this scope, so consent must refuse rather than " +
             "present a screen whose only outcome is an empty grant.");
@@ -555,12 +555,12 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        await using var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        await using var grant = await TestAccountUtils.MakeGlobalAdmin(client, userId, TestContext.CancellationToken);
 
         var (_, challenge) = GeneratePkcePair();
-        var oauthController = scope.CreateAppController<IOAuthController>();
+        var oauthController = client.GetController<IOAuthController>();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => oauthController.Review(BuildRequest(server, challenge), TestContext.CancellationToken),
@@ -583,13 +583,13 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         var (verifier, challenge) = GeneratePkcePair();
         var request = BuildRequest(server, challenge, OAuthScopes.Chat, "/mcp");
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(request, TestContext.CancellationToken);
 
         var accessToken = (await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier))
@@ -615,13 +615,13 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        await using var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        await using var grant = await TestAccountUtils.MakeGlobalAdmin(client, userId, TestContext.CancellationToken);
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
             .Approve(BuildRequest(server, challenge, OAuthScopes.Chat, "/mcp"), TestContext.CancellationToken);
 
         var accessToken = (await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier))
@@ -643,13 +643,13 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var accessToken = (await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier))
@@ -672,13 +672,13 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scope.CreateAppController<IOAuthController>()
+        var approval = await client.GetController<IOAuthController>()
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var (status, body) = await PostToken(server, new()
@@ -745,10 +745,10 @@ public class OAuthAuthorizationServerTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var firstPartyRefreshToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("refresh_token");
+        var firstPartyRefreshToken = await client.Services.GetRequiredService<IStorageService>().GetItem("refresh_token");
         Assert.IsNotNull(firstPartyRefreshToken, "Sign-in should have stored a refresh token.");
 
         foreach (var clientId in new[] { "", TestClientId })

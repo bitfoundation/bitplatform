@@ -24,13 +24,13 @@ public class AccessTokenCookieTests
     public async Task UpdateSession_Should_WriteAHostOnlyCookie_ThatSignOutDeletes()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
         var tokenExpiry = DateTimeOffset.FromUnixTimeSeconds(IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).GetClaimValue<long>("exp"));
 
-        var httpClient = scope.CreateRichHttpClient();
+        var httpClient = client.HttpClient;
 
         using var updated = await httpClient.PostAsJsonAsync(UpdateSessionUri, new UpdateUserSessionRequestDto(), TestContext.CancellationToken);
         var written = AccessTokenCookie(updated);
@@ -56,8 +56,8 @@ public class AccessTokenCookieTests
     public async Task ANonWebClient_Should_GetNoAccessTokenCookie()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, UpdateSessionUri)
         {
@@ -66,7 +66,7 @@ public class AccessTokenCookieTests
         // RequestHeadersDelegatingHandler keeps a platform the request already names.
         request.Headers.Add("X-App-Platform", nameof(AppPlatformType.Android));
 
-        using var response = await scope.CreateRichHttpClient().SendAsync(request, TestContext.CancellationToken);
+        using var response = await client.HttpClient.SendAsync(request, TestContext.CancellationToken);
 
         Assert.IsFalse(response.Headers.Contains(HeaderNames.SetCookie), "Only a browser pre-renders, so only a web client gets the cookie.");
     }
@@ -82,21 +82,21 @@ public class AccessTokenCookieTests
         await using var server = await StartServer();
         var sharedHandler = server.WebApp.Services.GetRequiredService<SocketsHttpHandler>();
 
-        await using var scopeWebAppSignedIn = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scopeWebAppSignedIn);
+        await using var signedInClient = server.CreateAppClient();
+        await SignIn(signedInClient);
 
-        using (var signedInClient = CreateServerSideClient(scopeWebAppSignedIn, server, sharedHandler))
+        using (var signedInHttpClient = CreateServerSideClient(signedInClient, sharedHandler))
         {
-            using var updated = await signedInClient.PostAsJsonAsync(UpdateSessionUri, new UpdateUserSessionRequestDto(), TestContext.CancellationToken);
+            using var updated = await signedInHttpClient.PostAsJsonAsync(UpdateSessionUri, new UpdateUserSessionRequestDto(), TestContext.CancellationToken);
 
             Assert.IsNotNull(AccessTokenCookie(updated), "Precondition: the api answered the signed-in session with its cookie.");
         }
 
-        await using var scopeWebAppAnonymous = server.WebApp.Services.CreateAsyncScope();
-        using var anonymousClient = CreateServerSideClient(scopeWebAppAnonymous, server, sharedHandler);
+        await using var anonymousClient = server.CreateAppClient();
+        using var anonymousHttpClient = CreateServerSideClient(anonymousClient, sharedHandler);
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(
-            () => anonymousClient.GetAsync($"api/v1/User/{nameof(IUserController.GetCurrentUser)}", TestContext.CancellationToken),
+            () => anonymousHttpClient.GetAsync($"api/v1/User/{nameof(IUserController.GetCurrentUser)}", TestContext.CancellationToken),
             "A call with no token of its own must stay anonymous, whatever an earlier response on the same handler set.");
     }
 
@@ -108,9 +108,9 @@ public class AccessTokenCookieTests
         return server;
     }
 
-    private Task SignIn(AsyncServiceScope scope)
+    private Task SignIn(AppClient client)
     {
-        return scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        return client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
@@ -121,13 +121,13 @@ public class AccessTokenCookieTests
     /// What Server.Web's own HttpClient is: the app's handler chain on the shared transport. Neither is disposed here,
     /// the transport belongs to the server.
     /// </summary>
-    private static HttpClient CreateServerSideClient(AsyncServiceScope scope, AppTestServer server, SocketsHttpHandler sharedHandler)
+    private static HttpClient CreateServerSideClient(AppClient client, SocketsHttpHandler sharedHandler)
     {
-        var handlerFactory = scope.ServiceProvider.GetRequiredService<HttpMessageHandlersChainFactory>();
+        var handlerFactory = client.Services.GetRequiredService<HttpMessageHandlersChainFactory>();
 
         return new HttpClient(handlerFactory.Invoke(sharedHandler), disposeHandler: false)
         {
-            BaseAddress = server.ApiServerAddress
+            BaseAddress = client.Server.ApiServerAddress
         };
     }
 

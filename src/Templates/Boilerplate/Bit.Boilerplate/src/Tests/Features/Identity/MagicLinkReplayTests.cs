@@ -19,11 +19,11 @@ public partial class MagicLinkReplayTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         // A confirmed, per-run account. Confirming already signs it in once, which leaves no outstanding code behind.
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         // The magic link e-mail of a repeat sign-in: the account is confirmed, so the code arrives as a plain OTP.
         await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
@@ -66,10 +66,10 @@ public partial class MagicLinkReplayTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 

@@ -24,10 +24,10 @@ public class AccountSelfServiceSecurityTests
     public async Task SendChangeEmailToken_WithoutElevatedAccess_Should_BeRejected()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
             () => userController.SendChangeEmailToken(new() { Email = MagicLinkSignInUtils.NewTestEmail() }, TestContext.CancellationToken),
@@ -44,10 +44,10 @@ public class AccountSelfServiceSecurityTests
     public async Task DisablingTwoFactor_WithoutElevatedAccess_Should_BeRejected_WhileReadingSettingsStaysOpen()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         var settings = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
         Assert.IsFalse(string.IsNullOrWhiteSpace(settings.SharedKey),
@@ -77,12 +77,12 @@ public class AccountSelfServiceSecurityTests
     public async Task ChangeEmail_Should_ConfirmTheNewAddress_And_RotateTheSecurityStamp()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
         var (confirmedBefore, stampBefore) = await ReadEmailState(server, email);
         Assert.IsTrue(confirmedBefore, "The account confirmed its e-mail while being created.");
@@ -118,10 +118,10 @@ public class AccountSelfServiceSecurityTests
     public async Task DeleteAccount_WithoutElevatedAccess_Should_BeRejected()
     {
         await using var server = await StartServer();
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scopeWebApp.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
             () => userController.Delete(TestContext.CancellationToken),
@@ -146,13 +146,13 @@ public class AccountSelfServiceSecurityTests
     public async Task SendChangeEmailToken_ToAnAddressAnotherAccountOwns_Should_BeARequestError()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        var userController = client.GetController<IUserController>();
+        var identityController = client.GetController<IIdentityController>();
 
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
         // A second, real account, created the way the app itself creates one.
         var otherEmail = MagicLinkSignInUtils.NewTestEmail();
@@ -188,8 +188,8 @@ public class AccountSelfServiceSecurityTests
     public async Task SendElevatedAccessToken_WithNoDeliveryChannel_Should_NotReportSuccess()
     {
         await using var server = await StartServer();
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         // Put the account into the shape an external sign-in leaves behind: neither identifier confirmed.
         await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
@@ -201,7 +201,7 @@ public class AccountSelfServiceSecurityTests
                                           .SetProperty(x => x.PhoneNumberConfirmed, false), TestContext.CancellationToken);
         }
 
-        var userController = scopeWebApp.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => userController.SendElevatedAccessToken(TestContext.CancellationToken),
@@ -216,10 +216,10 @@ public class AccountSelfServiceSecurityTests
     public async Task SendElevatedAccessToken_Should_ReportTheConfirmedChannelsItUsed()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         var sentTo = await userController.SendElevatedAccessToken(TestContext.CancellationToken);
 

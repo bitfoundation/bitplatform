@@ -36,8 +36,8 @@ public class IdentityRateLimitTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var served = 0;
 
@@ -76,8 +76,8 @@ public class IdentityRateLimitTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var minimalApiSampleController = scope.CreateAppController<IMinimalApiSampleController>();
+        await using var client = server.CreateAppClient();
+        var minimalApiSampleController = client.GetController<IMinimalApiSampleController>();
 
         for (var i = 0; i < BurstSize; i++)
         {

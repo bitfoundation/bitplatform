@@ -46,14 +46,14 @@ public class OAuthClientManagementTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         // Stands in for a metadata-document client: a grant whose client id matches nothing stored. Marked on this
         // test's own session, found from its access token - the newest row belongs to whoever signed in last.
         var selfDescribedClientId = $"https://example.test/{Guid.NewGuid():N}/client.json";
-        var sessionId = IAuthTokenProvider.ParseAccessToken(await DevMcpTestUtils.AccessToken(scopeWebApp), validateExpiry: false).GetSessionId();
+        var sessionId = IAuthTokenProvider.ParseAccessToken(await DevMcpTestUtils.AccessToken(client), validateExpiry: false).GetSessionId();
 
         await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
         {
@@ -69,7 +69,7 @@ public class OAuthClientManagementTests
             await dbContext.SaveChangesAsync(TestContext.CancellationToken);
         }
 
-        var clients = await scopeWebApp.CreateAppController<IOAuthClientManagementController>()
+        var clients = await client.GetController<IOAuthClientManagementController>()
                                                  .GetAllClients(TestContext.CancellationToken);
 
         var selfDescribed = clients.SingleOrDefault(client => client.ClientId == selfDescribedClientId);
@@ -97,14 +97,14 @@ public class OAuthClientManagementTests
         await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var verifier = WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32));
         var challenge = WebEncoders.Base64UrlEncode(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
 
-        var approval = await scope.CreateAppController<IOAuthController>().Approve(new()
+        var approval = await client.GetController<IOAuthController>().Approve(new()
         {
             ClientId = testClientId,
             RedirectUri = TestRedirectUri,
@@ -130,7 +130,7 @@ public class OAuthClientManagementTests
         var granted = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync(TestContext.CancellationToken)).RootElement;
         var refreshToken = granted.GetProperty("refresh_token").GetString()!;
 
-        var management = scope.CreateAppController<IOAuthClientManagementController>();
+        var management = client.GetController<IOAuthClientManagementController>();
 
         Assert.AreEqual(1, (await management.GetAllClients(TestContext.CancellationToken))
                               .Single(client => client.ClientId == testClientId).ActiveGrants);

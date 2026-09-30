@@ -46,8 +46,8 @@ public class PushSubscriptionsRetentionTests
 
     private async Task Subscribe(AppTestServer server, string deviceId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await scope.CreateAppController<IPushNotificationController>()
+        await using var client = server.CreateAppClient();
+        await client.GetController<IPushNotificationController>()
             .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = $"channel-{deviceId}" }, TestContext.CancellationToken);
     }
 

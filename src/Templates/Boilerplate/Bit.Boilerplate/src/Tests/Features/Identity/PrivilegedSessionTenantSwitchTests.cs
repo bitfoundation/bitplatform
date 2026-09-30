@@ -42,9 +42,9 @@ public partial class PrivilegedSessionTenantSwitchTests
         // The shipped default. The fourth sign-in is the first one that cannot be privileged.
         const int maxPrivilegedSessions = 3;
 
-        await using var scopeWebAppFirst = server.WebApp.Services.CreateAsyncScope();
+        await using var firstClient = server.CreateAppClient();
 
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppFirst, TestContext.CancellationToken);
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(firstClient, TestContext.CancellationToken);
 
         // A freshly auto-provisioned account belongs to no tenant, and the bypass is only meaningful against a tenant
         // that actually caps her - so give her an accepted membership of the seeded one, the way
@@ -55,43 +55,42 @@ public partial class PrivilegedSessionTenantSwitchTests
         // Refresh never re-derives a tenant for a session that has none (it only follows an explicit RequestedTenantId
         // - See IdentityController.Refresh). Without this the session sits outside the tenant and the fill below is one
         // short, which is a fault in the arrangement, not in the code under test.
-        await SwitchTenant(scopeWebAppFirst, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
+        await SwitchTenant(firstClient, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
 
-        // Fill the remaining privileged slots from their own scopes: IStorageService is per scope, so each is a
-        // separate device with its own session.
-        List<AsyncServiceScope> deviceScopes = [];
+        // Fill the remaining privileged slots from clients of their own, each a separate device with its own session.
+        List<AppClient> deviceClients = [];
 
         try
         {
             for (var device = 1; device < maxPrivilegedSessions; device++)
             {
-                var scopeWebAppDevice = server.WebApp.Services.CreateAsyncScope();
-                deviceScopes.Add(scopeWebAppDevice);
-                await SignInAgain(server, scopeWebAppDevice, email, TestContext.CancellationToken);
+                var deviceClient = server.CreateAppClient();
+                deviceClients.Add(deviceClient);
+                await SignInAgain(deviceClient, email, TestContext.CancellationToken);
             }
 
             // The fourth device. Every privileged slot is taken, so this one must not be privileged.
-            await using var scopeWebAppCapped = server.WebApp.Services.CreateAsyncScope();
-            var cappedToken = await SignInAgain(server, scopeWebAppCapped, email, TestContext.CancellationToken);
+            await using var cappedClient = server.CreateAppClient();
+            var cappedToken = await SignInAgain(cappedClient, email, TestContext.CancellationToken);
 
             Assert.AreEqual("false", ReadPrivilegedClaim(cappedToken),
                 $"With {maxPrivilegedSessions} privileged sessions already in place, the next sign-in must not be privileged - otherwise the rest of this test proves nothing.");
 
             // She mints a tenant of her own. Create is gated on elevated access only, which is a code to her own
             // address, and it makes her its t-admin with MAX_PRIVILEGED_SESSIONS = UNLIMITED.
-            await TestAccountUtils.Elevate(server, scopeWebAppCapped, email, TestContext.CancellationToken);
+            await TestAccountUtils.Elevate(cappedClient, email, TestContext.CancellationToken);
 
-            var ownTenant = await scopeWebAppCapped.CreateAppController<ITenantController>()
+            var ownTenant = await cappedClient.GetController<ITenantController>()
                 .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
             // Inside her own tenant she is legitimately unlimited, so this one IS expected to be privileged.
-            var insideOwnTenant = await SwitchTenant(scopeWebAppCapped, ownTenant.Id, TestContext.CancellationToken);
+            var insideOwnTenant = await SwitchTenant(cappedClient, ownTenant.Id, TestContext.CancellationToken);
 
             Assert.AreEqual("true", ReadPrivilegedClaim(insideOwnTenant),
                 "A t-admin of her own tenant carries MAX_PRIVILEGED_SESSIONS = UNLIMITED there, so this step is supposed to succeed. It is the round trip that follows which must not stick.");
 
             // ... and back into the tenant that caps her at three, where three privileged sessions already exist.
-            var backInCappedTenant = await SwitchTenant(scopeWebAppCapped, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
+            var backInCappedTenant = await SwitchTenant(cappedClient, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
 
 
             Assert.AreEqual("false", ReadPrivilegedClaim(backInCappedTenant),
@@ -99,15 +98,15 @@ public partial class PrivilegedSessionTenantSwitchTests
         }
         finally
         {
-            foreach (var scopeWebAppDevice in deviceScopes)
+            foreach (var deviceClient in deviceClients)
             {
-                await scopeWebAppDevice.DisposeAsync();
+                await deviceClient.DisposeAsync();
             }
         }
     }
 
     /// <summary>
-    /// Switches the scope''s session into a tenant by calling <c>Refresh</c> directly, rather than through
+    /// Switches the client's session into a tenant by calling <c>Refresh</c> directly, rather than through
     /// <c>AuthManager.SwitchTenant</c>.
     /// <para>
     /// Deliberate: <c>AuthManager.RefreshToken</c> returns the in-flight <c>accessTokenTsc.Task</c> when one exists, and
@@ -119,17 +118,17 @@ public partial class PrivilegedSessionTenantSwitchTests
     /// a server-side assertion, and the tenant claim is asserted below so a no-op can never be mistaken for a result.
     /// </para>
     /// </summary>
-    private static async Task<string> SwitchTenant(AsyncServiceScope scope, Guid tenantId, CancellationToken cancellationToken)
+    private static async Task<string> SwitchTenant(AppClient client, Guid tenantId, CancellationToken cancellationToken)
     {
-        var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+        var storageService = client.Services.GetRequiredService<IStorageService>();
 
         var refreshToken = await storageService.GetItem("refresh_token");
         Assert.IsFalse(string.IsNullOrWhiteSpace(refreshToken), "The scope has to be signed in before it can switch tenant.");
 
-        var tokens = await scope.CreateAppController<IIdentityController>()
+        var tokens = await client.GetController<IIdentityController>()
             .Refresh(new() { RefreshToken = refreshToken, RequestedTenantId = tenantId }, cancellationToken);
 
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().StoreTokens(tokens);
+        await client.AuthManager.StoreTokens(tokens);
 
         var principal = IAuthTokenProvider.ParseAccessToken(tokens.AccessToken!, validateExpiry: false);
 
@@ -142,18 +141,18 @@ public partial class PrivilegedSessionTenantSwitchTests
         return tokens.AccessToken!;
     }
     /// <summary>Signs an already confirmed account in again through the OTP flow, creating a brand-new UserSession.</summary>
-    private async Task<string> SignInAgain(AppTestServer server, AsyncServiceScope scope, string email, CancellationToken cancellationToken)
+    private async Task<string> SignInAgain(AppClient client, string email, CancellationToken cancellationToken)
     {
-        var identityController = scope.CreateAppController<IIdentityController>();
+        var identityController = client.GetController<IIdentityController>();
 
         await identityController.SendOtp(new() { Email = email }, null, cancellationToken);
 
-        var captured = await server.WaitForCapturedEmail(email,
+        var captured = await client.Server.WaitForCapturedEmail(email,
             capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, cancellationToken);
 
         var tokens = await identityController.SignIn(new() { Email = email, Otp = captured.Token }, cancellationToken);
 
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().StoreTokens(tokens);
+        await client.AuthManager.StoreTokens(tokens);
 
         return tokens.AccessToken!;
     }

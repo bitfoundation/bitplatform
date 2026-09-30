@@ -40,19 +40,19 @@ public class ProductImageCacheInvalidationTests
     public async Task ReplacingAProductImage_Should_PurgeThePreviousVersionsAttachmentUrl()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var products = scope.CreateAppController<IProductController>();
-        var httpClient = scope.CreateRichHttpClient();
+        var products = client.GetController<IProductController>();
+        var httpClient = client.HttpClient;
         var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Red));
 
         var created = await products.Create(
-            await NewProductDto(scope, productId, $"image-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
+            await NewProductDto(client, productId, $"image-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
 
         try
         {
@@ -109,20 +109,20 @@ public class ProductImageCacheInvalidationTests
     public async Task DeletingAProductImage_Should_PurgeItsAttachmentUrl()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var products = scope.CreateAppController<IProductController>();
-        var attachments = scope.CreateAppController<IAttachmentController>();
-        var httpClient = scope.CreateRichHttpClient();
+        var products = client.GetController<IProductController>();
+        var attachments = client.GetController<IAttachmentController>();
+        var httpClient = client.HttpClient;
         var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Green));
 
         var created = await products.Create(
-            await NewProductDto(scope, productId, $"image-delete-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
+            await NewProductDto(client, productId, $"image-delete-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
 
         try
         {
@@ -193,13 +193,13 @@ public class ProductImageCacheInvalidationTests
     }
 
     /// <summary>
-    /// Signs the tenant-admin in within <paramref name="scope"/>, so every typed API client resolved from that scope
+    /// Signs the tenant-admin in on <paramref name="client"/>, so every controller created from that client
     /// calls the server as her - which is what satisfies the upload endpoint's privileged session, selected tenant and
     /// ProductCatalog_Manage policies.
     /// </summary>
-    private async Task SignIn(AsyncServiceScope scope)
+    private async Task SignIn(AppClient client)
     {
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var requiresTwoFactor = await authManager.SignIn(new()
         {
@@ -210,9 +210,9 @@ public class ProductImageCacheInvalidationTests
         Assert.IsFalse(requiresTwoFactor, $"'{TenantAdminEmail}' is not expected to have two factor authentication enabled.");
     }
 
-    private async Task<ProductDto> NewProductDto(AsyncServiceScope scope, Guid id, string name)
+    private async Task<ProductDto> NewProductDto(AppClient client, Guid id, string name)
     {
-        var categories = scope.CreateAppController<ICategoryController>();
+        var categories = client.GetController<ICategoryController>();
         var categoryId = (await categories.Get(TestContext.CancellationToken)).First().Id;
 
         return new ProductDto

@@ -1,7 +1,6 @@
 using System.Threading.Channels;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Http.Connections;
 using Boilerplate.Shared.Features.Chatbot;
 
 namespace Boilerplate.Tests.Features.Chatbot;
@@ -46,8 +45,9 @@ public partial class ChatbotConversationMetricsTests
         listener.Start();
 
         // ---- Ended by the client ----
-        await using (var connection = await Connect(server))
+        await using (var client = server.CreateAppClient())
         {
+            var connection = await Connect(client);
             using var chat = new CancellationTokenSource();
             var reading = ReadChat(connection, chat.Token);
 
@@ -60,7 +60,8 @@ public partial class ChatbotConversationMetricsTests
         }
 
         // ---- Ended by the connection going away ----
-        var droppedConnection = await Connect(server);
+        await using var droppedClient = server.CreateAppClient();
+        var droppedConnection = await Connect(droppedClient);
         var droppedReading = ReadChat(droppedConnection, CancellationToken.None);
 
         await WaitFor(() => Interlocked.Read(ref ongoing) is 1, () => $"The second chat should count as one ongoing conversation, the counter says {Interlocked.Read(ref ongoing)}.");
@@ -71,15 +72,12 @@ public partial class ChatbotConversationMetricsTests
         await WaitFor(() => Interlocked.Read(ref ongoing) is 0, () => $"A chat whose connection went away should no longer be counted, the counter says {Interlocked.Read(ref ongoing)}.");
     }
 
-    private async Task<HubConnection> Connect(AppTestServer server)
+    /// <summary>Opens the client's own hub connection, anonymously: nobody signed in on it.</summary>
+    private async Task<HubConnection> Connect(AppClient client)
     {
-        var connection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.ApiServerAddress, "app-hub"), options => options.Transports = HttpTransportType.WebSockets)
-            .Build();
+        await client.HubConnection.StartAsync(TestContext.CancellationToken);
 
-        await connection.StartAsync(TestContext.CancellationToken);
-
-        return connection;
+        return client.HubConnection;
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Http.Connections;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Shared.Infrastructure.Services;
 using Boilerplate.Tests.Features.DevMcp;
@@ -28,32 +27,24 @@ public class DiagnosticReportSourcesTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
         // Only /dev-mcp needs this; the other two are anonymous, and the report is the caller's own either way.
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
-        var accessToken = await DevMcpTestUtils.AccessToken(scope);
+        var accessToken = await DevMcpTestUtils.AccessToken(client);
 
         // The typed client goes over http, which is the same call the /diagnostic page makes. Both ids are null, so
         // none of the endpoint's side effects run.
-        var http = string.Join(Environment.NewLine, await scope.CreateAppController<IDiagnosticController>()
+        var http = string.Join(Environment.NewLine, await client.GetController<IDiagnosticController>()
             .PerformDiagnostic(signalRConnectionId: null, pushNotificationSubscriptionDeviceId: null, TestContext.CancellationToken)
             .ToArrayAsync(TestContext.CancellationToken));
 
-        await using var hubConnection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.ApiServerAddress, "app-hub"), options =>
-            {
-                // The upgrade is the whole point: long polling would travel the same path as the http call above.
-                options.Transports = HttpTransportType.WebSockets;
-                options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
-            })
-            .Build();
-
-        await hubConnection.StartAsync(TestContext.CancellationToken);
+        // The app's own connection, a WebSocket: long polling would travel the same path as the http call above.
+        await client.HubConnection.StartAsync(TestContext.CancellationToken);
 
         var signalR = string.Join(Environment.NewLine,
-            await hubConnection.InvokeAsync<string[]>(SharedAppMessages.GetDiagnosticReport, TestContext.CancellationToken));
+            await client.HubConnection.InvokeAsync<string[]>(SharedAppMessages.GetDiagnosticReport, TestContext.CancellationToken));
 
         await using var mcp = await DevMcpTestUtils.Connect(server, accessToken, "dev-mcp", TestContext.CancellationToken);
 

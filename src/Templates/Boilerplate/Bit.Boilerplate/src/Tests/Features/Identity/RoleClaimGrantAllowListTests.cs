@@ -35,8 +35,8 @@ public class RoleClaimGrantAllowListTests
     public async Task AddClaims_Should_RefuseEveryClaimTypeOutsideTheAllowList(string claimType, string claimValue)
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (roleManagementController, grant) = await SignInAsGlobalAdmin(server, scope);
+        await using var client = server.CreateAppClient();
+        var (roleManagementController, grant) = await SignInAsGlobalAdmin(client);
         await using var globalAdminGrant = grant;
 
         var roleId = await CreateRole(roleManagementController);
@@ -58,8 +58,8 @@ public class RoleClaimGrantAllowListTests
     public async Task UpdateClaims_Should_RefuseEveryClaimTypeOutsideTheAllowList()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (roleManagementController, grant) = await SignInAsGlobalAdmin(server, scope);
+        await using var client = server.CreateAppClient();
+        var (roleManagementController, grant) = await SignInAsGlobalAdmin(client);
         await using var globalAdminGrant = grant;
 
         var roleId = await CreateRole(roleManagementController);
@@ -81,8 +81,8 @@ public class RoleClaimGrantAllowListTests
     public async Task AddClaims_Should_RefuseTheWholeRequest_WhenOneClaimIsForbidden()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (roleManagementController, grant) = await SignInAsGlobalAdmin(server, scope);
+        await using var client = server.CreateAppClient();
+        var (roleManagementController, grant) = await SignInAsGlobalAdmin(client);
         await using var globalAdminGrant = grant;
 
         var roleId = await CreateRole(roleManagementController);
@@ -112,13 +112,13 @@ public class RoleClaimGrantAllowListTests
     /// extra administrator.
     /// </summary>
     private async Task<(IRoleManagementController Controller, TestAccountUtils.GlobalAdminGrant Grant)> SignInAsGlobalAdmin(
-        AppTestServer server, AsyncServiceScope scope)
+        AppClient client)
     {
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var grant = await TestAccountUtils.MakeGlobalAdmin(client, userId, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
-        return (scope.CreateAppController<IRoleManagementController>(), grant);
+        return (client.GetController<IRoleManagementController>(), grant);
     }
 
     private async Task<Guid> CreateRole(IRoleManagementController roleManagementController)

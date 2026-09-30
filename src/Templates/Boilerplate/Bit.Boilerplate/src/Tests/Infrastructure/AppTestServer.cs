@@ -147,7 +147,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
         webAppBuilder.AddTestProjectServices();
 
-        // The HttpClient the app's services get here, the typed api clients among them (See AsyncServiceScopeExtensions).
+        // The HttpClient the app's services get here, the typed api clients among them (See AppClient.HttpClient).
         webAppBuilder.Services.AddTransient(BuildRichHttpClient);
 
         if (ClientBrowserContext is null)
@@ -292,6 +292,17 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
             await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// A new client of the api, with a user of its own (See <see cref="AppClient"/>).
+    /// </summary>
+    public AppClient CreateAppClient()
+    {
+        if (ClientBrowserContext is not null)
+            throw new InvalidOperationException("A browser drives this server, so the app's services here are the browser's, not the in-memory ones an AppClient keeps its user's tokens in (See AddBrowserlessClientServices). Sign in through the browser's pages instead.");
+
+        return new(this);
     }
 
     /// <summary>

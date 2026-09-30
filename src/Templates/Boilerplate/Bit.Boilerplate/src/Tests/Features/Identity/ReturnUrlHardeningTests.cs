@@ -92,8 +92,8 @@ public class ReturnUrlHardeningTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -127,8 +127,8 @@ public class ReturnUrlHardeningTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         // A per-run account, not the seeded one: SendResetPasswordToken is throttled per user for the token's whole
         // lifetime, so sharing an account across these rows (they run in parallel) would fail on the resend delay.

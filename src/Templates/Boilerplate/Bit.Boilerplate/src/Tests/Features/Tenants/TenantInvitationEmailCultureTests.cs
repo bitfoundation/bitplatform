@@ -33,12 +33,12 @@ public partial class TenantInvitationEmailCultureTests
 
         // A per-run recipient, so nothing another test does to the shared seeded account's sessions can shadow the
         // culture arranged here (See TestAccountUtils' rationale).
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (recipientEmail, recipientUserId) = await Identity.TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (recipientEmail, recipientUserId) = await Identity.TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         // The recipient's client reports fa-IR through the real write path (See UserController.UpdateSession and
         // AppClientCoordinator.UpdateUserSession).
-        await scopeWebApp.CreateAppController<IUserController>().UpdateSession(new()
+        await client.GetController<IUserController>().UpdateSession(new()
         {
             CultureName = "fa-IR",
             AppVersion = "1.0.0-test",

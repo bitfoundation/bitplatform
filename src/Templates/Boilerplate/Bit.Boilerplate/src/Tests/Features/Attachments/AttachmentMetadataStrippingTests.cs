@@ -16,10 +16,10 @@ public class AttachmentMetadataStrippingTests
     public async Task UploadingAPictureWithExif_Should_StoreNeitherKindWithIt()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.CreateRichHttpClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         var uploaded = JpegWithExif();
 
@@ -54,10 +54,10 @@ public class AttachmentMetadataStrippingTests
     public async Task StrippingTheOriginal_Should_LeaveItInTheFormatItWasUploadedIn()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.CreateRichHttpClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         try
         {

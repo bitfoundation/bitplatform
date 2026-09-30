@@ -51,11 +51,11 @@ public partial class PushSubscriptionOwnershipTests
         {
             Guid firstSessionId;
 
-            await using (var scopeWebAppFirstUser = server.WebApp.Services.CreateAsyncScope())
+            await using (var firstUserClient = server.CreateAppClient())
             {
-                await TestAccountUtils.CreateAndSignIn(server, scopeWebAppFirstUser, TestContext.CancellationToken);
+                await TestAccountUtils.CreateAndSignIn(firstUserClient, TestContext.CancellationToken);
 
-                await scopeWebAppFirstUser.CreateAppController<IPushNotificationController>()
+                await firstUserClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "first-user-channel" }, TestContext.CancellationToken);
             }
 
@@ -63,13 +63,13 @@ public partial class PushSubscriptionOwnershipTests
             Assert.IsNotNull(afterFirstUser?.UserSessionId, "A subscribe made by a signed-in caller must bind the row to that caller's session, otherwise the rest of this test proves nothing.");
             firstSessionId = afterFirstUser.UserSessionId!.Value;
 
-            // A different account entirely, on the same device. IStorageService is registered per scope, so this scope
+            // A different account entirely, on the same device. Each client has a token store of its own, so this one
             // carries its own bearer token.
-            await using (var scopeWebAppSecondUser = server.WebApp.Services.CreateAsyncScope())
+            await using (var secondUserClient = server.CreateAppClient())
             {
-                await TestAccountUtils.CreateAndSignIn(server, scopeWebAppSecondUser, TestContext.CancellationToken);
+                await TestAccountUtils.CreateAndSignIn(secondUserClient, TestContext.CancellationToken);
 
-                await scopeWebAppSecondUser.CreateAppController<IPushNotificationController>()
+                await secondUserClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "second-user-channel" }, TestContext.CancellationToken);
             }
 
@@ -126,11 +126,11 @@ public partial class PushSubscriptionOwnershipTests
             string email;
             Guid firstSessionId;
 
-            await using (var scopeWebAppFirst = server.WebApp.Services.CreateAsyncScope())
+            await using (var firstClient = server.CreateAppClient())
             {
-                (email, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppFirst, TestContext.CancellationToken);
+                (email, _) = await TestAccountUtils.CreateAndSignIn(firstClient, TestContext.CancellationToken);
 
-                await scopeWebAppFirst.CreateAppController<IPushNotificationController>()
+                await firstClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-before" }, TestContext.CancellationToken);
             }
 
@@ -156,11 +156,11 @@ public partial class PushSubscriptionOwnershipTests
             Assert.IsNull(afterAnonymousPropagation?.UserSessionId,
                 "The device is no longer signed in, so its own anonymous re-subscribe has to detach the row from the session whose tokens are gone. Refusing it - which an ownership check does - leaves the row pointing at a dead session and the device without push.");
 
-            // A brand-new scope is a brand-new (empty) token store - exactly what clearing local storage and the cookie
+            // A brand-new client is a brand-new (empty) token store - exactly what clearing local storage and the cookie
             // leaves behind. Nothing signs the first session out, so its UserSession row survives on the server.
-            await using (var scopeWebAppSecond = server.WebApp.Services.CreateAsyncScope())
+            await using (var secondClient = server.CreateAppClient())
             {
-                var identityController = scopeWebAppSecond.CreateAppController<IIdentityController>();
+                var identityController = secondClient.GetController<IIdentityController>();
 
                 await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 
@@ -168,10 +168,10 @@ public partial class PushSubscriptionOwnershipTests
                     capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
 
                 var tokens = await identityController.SignIn(new() { Email = email, Otp = captured.Token }, TestContext.CancellationToken);
-                await scopeWebAppSecond.ServiceProvider.GetRequiredService<AuthManager>().StoreTokens(tokens);
+                await secondClient.AuthManager.StoreTokens(tokens);
 
                 // This is the call the shipped client makes on the very first auth-state propagation after signing in.
-                await scopeWebAppSecond.CreateAppController<IPushNotificationController>()
+                await secondClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-after" }, TestContext.CancellationToken);
             }
 
@@ -210,8 +210,8 @@ public partial class PushSubscriptionOwnershipTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var pushNotificationController = scope.CreateAppController<IPushNotificationController>();
+        await using var client = server.CreateAppClient();
+        var pushNotificationController = client.GetController<IPushNotificationController>();
 
         // A device token platform with no token at all.
         await Assert.ThrowsExactlyAsync<BadRequestException>(() => pushNotificationController.Subscribe(
@@ -409,11 +409,11 @@ public partial class PushSubscriptionOwnershipTests
                 response.EnsureSuccessStatusCode();
             }
 
-            await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+            await using var client = server.CreateAppClient();
 
-            await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
+            await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-            var pushNotificationController = scopeWebApp.CreateAppController<IPushNotificationController>();
+            var pushNotificationController = client.GetController<IPushNotificationController>();
 
             // This session takes the first device...
             await pushNotificationController.Subscribe(

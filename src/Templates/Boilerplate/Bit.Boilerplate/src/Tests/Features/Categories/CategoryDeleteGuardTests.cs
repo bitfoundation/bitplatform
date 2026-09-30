@@ -42,12 +42,12 @@ public partial class CategoryDeleteGuardTests
     public async Task DeletingACategoryThatStillHasProducts_Should_BeRefused()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var categories = scope.CreateAppController<ICategoryController>();
-        var products = scope.CreateAppController<IProductController>();
+        var categories = client.GetController<ICategoryController>();
+        var products = client.GetController<IProductController>();
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
@@ -82,12 +82,12 @@ public partial class CategoryDeleteGuardTests
     public async Task DeletingACategoryBehindTheGuard_Should_NotDestroyItsProducts()
     {
         await using var server = await StartServer();
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scopeWebApp);
+        await SignIn(client);
 
-        var categories = scopeWebApp.CreateAppController<ICategoryController>();
-        var products = scopeWebApp.CreateAppController<IProductController>();
+        var categories = client.GetController<ICategoryController>();
+        var products = client.GetController<IProductController>();
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
@@ -132,12 +132,12 @@ public partial class CategoryDeleteGuardTests
     public async Task UpdatingACategory_Should_ReturnItsRealProductCount()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var categories = scope.CreateAppController<ICategoryController>();
-        var products = scope.CreateAppController<IProductController>();
+        var categories = client.GetController<ICategoryController>();
+        var products = client.GetController<IProductController>();
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
@@ -170,9 +170,9 @@ public partial class CategoryDeleteGuardTests
         return server;
     }
 
-    private async Task SignIn(AsyncServiceScope scope)
+    private async Task SignIn(AppClient client)
     {
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var requiresTwoFactor = await authManager.SignIn(new()
         {

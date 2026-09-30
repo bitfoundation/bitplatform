@@ -26,10 +26,10 @@ public class TwoFactorSharedKeyExposureTests
     public async Task TwoFactorAuth_Should_NotReturnTheSharedKey_WhenTwoFactorIsAlreadyEnabled()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         // Enrol for real: read the key while 2fa is off, compute a live code from it, and turn 2fa on with that code.
         // Enable is deliberately not gated by elevated access - it already requires a valid code, which is stronger proof.
@@ -63,10 +63,10 @@ public class TwoFactorSharedKeyExposureTests
     public async Task TwoFactorAuth_Should_StillReturnTheSharedKey_WhenTwoFactorIsOff()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         var read = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
 
@@ -85,15 +85,15 @@ public class TwoFactorSharedKeyExposureTests
     public async Task TwoFactorAuth_Should_ReturnANewSharedKey_AfterResettingIt()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         var before = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
 
         // Resetting weakens the second factor, so unlike Enable it does require elevated access.
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
         var after = await userController.TwoFactorAuth(new() { ResetSharedKey = true }, TestContext.CancellationToken);
 

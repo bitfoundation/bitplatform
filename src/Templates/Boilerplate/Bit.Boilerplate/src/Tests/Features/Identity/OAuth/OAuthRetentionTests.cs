@@ -19,8 +19,8 @@ public class OAuthRetentionTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();

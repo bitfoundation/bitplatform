@@ -41,8 +41,8 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         using var response = await httpClient.GetAsync("alive", TestContext.CancellationToken);
 
@@ -75,30 +75,30 @@ public partial class HealthCheckIntegrationTests
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode, "An anonymous caller must not read the report.");
         }
 
-        await using (var scopeWebAppUser = server.WebApp.Services.CreateAsyncScope())
+        await using (var userClient = server.CreateAppClient())
         {
-            await TestAccountUtils.CreateAndSignIn(server, scopeWebAppUser, TestContext.CancellationToken);
+            await TestAccountUtils.CreateAndSignIn(userClient, TestContext.CancellationToken);
 
             await Assert.ThrowsExactlyAsync<ForbiddenException>(
-                () => scopeWebAppUser.CreateRichHttpClient().GetAsync(healthzUrl, TestContext.CancellationToken),
+                () => userClient.HttpClient.GetAsync(healthzUrl, TestContext.CancellationToken),
                 "A signed-in user without the feature must not read the report.");
         }
 
-        await using var scopeWebAppAdmin = server.WebApp.Services.CreateAsyncScope();
-        await scopeWebAppAdmin.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await scopeWebAppAdmin.CreateRichHttpClient().GetAsync(healthzUrl, TestContext.CancellationToken);
+        using var response = await adminClient.HttpClient.GetAsync(healthzUrl, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "An Unhealthy report still answers 200.");
         Assert.IsNotNull(response.Headers.CacheControl);
         Assert.IsTrue(response.Headers.CacheControl.NoStore, "The report must not be cached anywhere.");
 
         var report = await response.Content.ReadFromJsonAsync(
-            scopeWebAppAdmin.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
+            adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
 
         Assert.IsNotNull(report);
         Assert.AreEqual(HealthCheckStatus.Unhealthy, report.Status);
@@ -135,19 +135,19 @@ public partial class HealthCheckIntegrationTests
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode, "The versioned path must not be a way around the feature.");
         }
 
-        await using var adminScope = server.WebApp.Services.CreateAsyncScope();
-        await adminScope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await adminScope.CreateRichHttpClient().GetAsync(healthzUrl, TestContext.CancellationToken);
+        using var response = await adminClient.HttpClient.GetAsync(healthzUrl, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
         var report = await response.Content.ReadFromJsonAsync(
-            adminScope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
+            adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
 
         Assert.IsNotNull(report);
         Assert.Contains("live", report.Entries["binStorage"].Tags);

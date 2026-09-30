@@ -17,26 +17,26 @@ public class DevMcpQueryTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
-        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "dev-mcp", TestContext.CancellationToken);
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
 
-        var missing = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var missing = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "User",
             ["select"] = Array.Empty<string>()
         }, TestContext.CancellationToken);
         Assert.Contains("projection", missing, StringComparison.OrdinalIgnoreCase);
 
-        var hash = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var hash = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "User",
             ["select"] = new[] { "Id", "PasswordHash" }
         }, TestContext.CancellationToken);
         Assert.Contains("forbidden", hash, StringComparison.OrdinalIgnoreCase);
 
-        var filter = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var filter = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "User",
             ["select"] = new[] { "Id", "Email" },
@@ -44,7 +44,7 @@ public class DevMcpQueryTests
         }, TestContext.CancellationToken);
         Assert.Contains("forbidden", filter, StringComparison.OrdinalIgnoreCase);
 
-        var constructed = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var constructed = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "User",
             ["select"] = new[] { "Id", "Email" },
@@ -55,7 +55,7 @@ public class DevMcpQueryTests
         // Dynamic LINQ names the row itself "it"/"this"/"root"/"parent", which is the same column under another name.
         foreach (var selfReference in new[] { "it", "this", "root", "parent" })
         {
-            var aliased = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+            var aliased = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
             {
                 ["entity"] = "User",
                 ["select"] = new[] { "Id", "Email" },
@@ -71,12 +71,12 @@ public class DevMcpQueryTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
-        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "dev-mcp", TestContext.CancellationToken);
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
 
-        var text = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var text = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "User",
             ["select"] = new[] { "Id", "Email" },
@@ -92,7 +92,7 @@ public class DevMcpQueryTests
         Assert.DoesNotContain("passwordhash", payload);
         Assert.DoesNotContain("securitystamp", payload);
 
-        var capped = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var capped = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "User",
             ["select"] = new[] { "Id" },
@@ -107,12 +107,12 @@ public class DevMcpQueryTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
-        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "dev-mcp", TestContext.CancellationToken);
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
 
-        var unknown = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var unknown = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "NotAnEntity",
             ["select"] = new[] { "Id" }
@@ -121,7 +121,7 @@ public class DevMcpQueryTests
 
         foreach (var entity in new[] { "WebAuthnCredential", "UserToken", "DataProtectionKey" })
         {
-            var refused = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+            var refused = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
             {
                 ["entity"] = entity,
                 ["select"] = new[] { "Id" }
@@ -130,14 +130,14 @@ public class DevMcpQueryTests
                 $"{entity} must be refused as a credential-shaped entity. Result: {refused}");
         }
 
-        var schema = JsonNode.Parse(await DevMcpTestUtils.CallText(client, "GetDatabaseSchema", new() { ["entityName"] = (string?)null }, TestContext.CancellationToken))!;
+        var schema = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "GetDatabaseSchema", new() { ["entityName"] = (string?)null }, TestContext.CancellationToken))!;
         var hangfireEntity = schema["entities"]!.AsArray()
             .FirstOrDefault(entity => entity!["hangfireStorage"]?.GetValue<bool>() is true)
             ?["entity"]?.GetValue<string>();
         Assert.IsFalse(string.IsNullOrWhiteSpace(hangfireEntity), "The EF model includes Hangfire's jobs schema.");
 
         // Refusing these protected nothing: the Hangfire tools hand the same caller the job arguments themselves.
-        var hangfire = JsonNode.Parse(await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var hangfire = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = hangfireEntity,
             ["select"] = new[] { "Id" }
@@ -151,14 +151,14 @@ public class DevMcpQueryTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
-        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "dev-mcp", TestContext.CancellationToken);
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
 
         foreach (var key in new[] { "PasswordHash desc", "it.PasswordHash desc" })
         {
-            var orderBy = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+            var orderBy = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
             {
                 ["entity"] = "User",
                 ["select"] = new[] { "Id", "Email" },
@@ -168,7 +168,7 @@ public class DevMcpQueryTests
                 $"Ordering by '{key}' leaks the hash through the row order. Result: {orderBy}");
         }
 
-        var text = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        var text = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "User",
             ["select"] = new[] { "Email" },
@@ -192,8 +192,8 @@ public class DevMcpQueryTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scopeWebApp, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
         var hiddenName = $"hidden-{Guid.NewGuid():N}";
@@ -221,8 +221,8 @@ public class DevMcpQueryTests
             await db.SaveChangesAsync(TestContext.CancellationToken);
         }
 
-        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scopeWebApp), "dev-mcp", TestContext.CancellationToken);
-        var text = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
+        var text = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
         {
             ["entity"] = "Category",
             ["select"] = new[] { "Name", "TenantId" },

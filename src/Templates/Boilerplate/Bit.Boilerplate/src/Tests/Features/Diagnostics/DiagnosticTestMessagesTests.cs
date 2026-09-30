@@ -45,15 +45,15 @@ public partial class DiagnosticTestMessagesTests
                 services.Replace(ServiceDescriptor.Transient(_ => fluentEmail));
             }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var diagnosticController = scope.CreateAppController<IDiagnosticController>();
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var diagnosticController = client.GetController<IDiagnosticController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(() => diagnosticController.SendTestEmail(TestContext.CancellationToken),
             "Sending needs the health checks feature.");
         A.CallTo(() => fluentEmail.SendAsync(A<CancellationToken?>._)).MustNotHaveHappened();
 
-        await using var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
+        await using var grant = await TestAccountUtils.MakeGlobalAdmin(client, userId, TestContext.CancellationToken);
 
         Assert.IsTrue(await diagnosticController.SendTestEmail(TestContext.CancellationToken));
         A.CallTo(() => fluentEmail.To(email, A<string>._)).MustHaveHappenedOnceExactly();
@@ -73,24 +73,24 @@ public partial class DiagnosticTestMessagesTests
 
         try
         {
-            await using (var scopeWebAppOwner = server.WebApp.Services.CreateAsyncScope())
+            await using (var ownerClient = server.CreateAppClient())
             {
-                await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOwner, TestContext.CancellationToken);
-                var diagnosticController = scopeWebAppOwner.CreateAppController<IDiagnosticController>();
+                await TestAccountUtils.CreateAndSignIn(ownerClient, TestContext.CancellationToken);
+                var diagnosticController = ownerClient.GetController<IDiagnosticController>();
 
                 Assert.IsFalse(await diagnosticController.SendTestPushNotification(deviceId, TestContext.CancellationToken));
 
-                await scopeWebAppOwner.CreateAppController<IPushNotificationController>()
+                await ownerClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "test-channel" }, TestContext.CancellationToken);
 
                 Assert.IsTrue(await diagnosticController.SendTestPushNotification(deviceId, TestContext.CancellationToken));
             }
 
-            await using (var scopeWebAppOther = server.WebApp.Services.CreateAsyncScope())
+            await using (var otherClient = server.CreateAppClient())
             {
-                await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOther, TestContext.CancellationToken);
+                await TestAccountUtils.CreateAndSignIn(otherClient, TestContext.CancellationToken);
 
-                await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(() => scopeWebAppOther.CreateAppController<IDiagnosticController>()
+                await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(() => otherClient.GetController<IDiagnosticController>()
                     .SendTestPushNotification(deviceId, TestContext.CancellationToken), "Another session's device must not be reachable.");
             }
         }

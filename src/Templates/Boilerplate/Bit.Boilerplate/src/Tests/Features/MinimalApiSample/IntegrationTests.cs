@@ -21,8 +21,8 @@ public partial class IntegrationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var minimalApiSampleController = scope.CreateAppController<IMinimalApiSampleController>();
+        await using var client = server.CreateAppClient();
+        var minimalApiSampleController = client.GetController<IMinimalApiSampleController>();
 
         var routeParameter = "sample-route";
         var queryStringParameter = "sample-query";

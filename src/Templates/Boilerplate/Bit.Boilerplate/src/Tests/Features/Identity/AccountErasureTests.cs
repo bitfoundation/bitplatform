@@ -38,10 +38,10 @@ public class AccountErasureTests
     public async Task DeletingOwnAccount_Should_EraseTheProfilePicture_ItsBlob_AndEverySession()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.CreateRichHttpClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         await UploadProfilePicture(httpClient);
 
@@ -54,9 +54,9 @@ public class AccountErasureTests
             Assert.IsTrue(await BlobExists(server, blobPath), $"The upload should have written {blobPath}; without it the assertions below prove nothing.");
         }
 
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
-        await scope.CreateAppController<IUserController>().Delete(TestContext.CancellationToken);
+        await client.GetController<IUserController>().Delete(TestContext.CancellationToken);
 
         Assert.IsFalse(await UserExists(server, userId), "The account itself must be gone.");
 
@@ -83,20 +83,20 @@ public class AccountErasureTests
     public async Task DeletingOwnAccount_Should_EraseThePushSubscription_RatherThanOrphanIt()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         var deviceId = Guid.CreateVersion7().ToString();
 
-        await scope.CreateAppController<IPushNotificationController>()
+        await client.GetController<IPushNotificationController>()
             .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = Guid.CreateVersion7().ToString() }, TestContext.CancellationToken);
 
         Assert.IsTrue(await PushSubscriptionExists(server, deviceId), "The subscription should have been stored; without it the assertion below proves nothing.");
 
-        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
 
-        await scope.CreateAppController<IUserController>().Delete(TestContext.CancellationToken);
+        await client.GetController<IUserController>().Delete(TestContext.CancellationToken);
 
         Assert.IsFalse(await PushSubscriptionExists(server, deviceId),
             "The subscription outlived the account. Its foreign key to UserSession is SetNull, and RequestPush reads a null UserSessionId as an anonymous visitor's device - so an erased account's phone stays in the audience of every broadcast.");

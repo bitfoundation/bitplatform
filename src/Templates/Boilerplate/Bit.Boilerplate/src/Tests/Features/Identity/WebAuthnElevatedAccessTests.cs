@@ -41,13 +41,13 @@ public class WebAuthnElevatedAccessTests
     public async Task AnUnverifiableAssertion_Should_FailTheRefreshRatherThanElevateIt()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+        var storageService = client.Services.GetRequiredService<IStorageService>();
         var refreshToken = await storageService.GetItem("refresh_token");
-        var identityController = scope.CreateAppController<IIdentityController>();
+        var identityController = client.GetController<IIdentityController>();
 
         await Assert.ThrowsAsync<Exception>(
             () => identityController.Refresh(new()

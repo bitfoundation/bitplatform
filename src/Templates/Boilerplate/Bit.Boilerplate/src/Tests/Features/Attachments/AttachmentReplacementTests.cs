@@ -33,10 +33,10 @@ public class AttachmentReplacementTests
     public async Task ReUploadingAProfilePicture_Should_ReplaceItInPlace()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.CreateRichHttpClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         try
         {
@@ -74,10 +74,10 @@ public class AttachmentReplacementTests
     public async Task AnUploadRejectedAfterValidation_Should_LeaveTheExistingPictureUntouched()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.CreateRichHttpClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         try
         {
@@ -117,10 +117,10 @@ public class AttachmentReplacementTests
     public async Task AnUndecodableUpload_Should_BeRejectedAsBadRequest_AndLeaveTheExistingPictureUntouched()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.CreateRichHttpClient();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         try
         {

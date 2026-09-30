@@ -16,18 +16,16 @@ public partial class IntegrationTests
             // services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider));
         }).Start(TestContext.CancellationToken);
 
-        // The scope is the client: once its AuthManager signs a user in, the controllers created with it call as that user.
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        // Once the client's AuthManager signs a user in, the controllers created from it call the api as that user.
+        await using var client = server.CreateAppClient();
 
-        var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
-
-        await authenticationManager.SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         var user = await userController.GetCurrentUser(TestContext.CancellationToken);
 
@@ -41,8 +39,8 @@ public partial class IntegrationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var userController = scope.CreateAppController<IUserController>();
+        await using var client = server.CreateAppClient();
+        var userController = client.GetController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => userController.GetCurrentUser(TestContext.CancellationToken));
     }

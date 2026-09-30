@@ -12,13 +12,13 @@ public class DevMcpConfigurationTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
-        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "dev-mcp", TestContext.CancellationToken);
-        var text = await DevMcpTestUtils.CallText(client, "GetDeploymentInfo", [], TestContext.CancellationToken);
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
+        var text = await DevMcpTestUtils.CallText(mcp, "GetDeploymentInfo", [], TestContext.CancellationToken);
         var json = JsonNode.Parse(text)!;
 
         // Everything read from the answering process itself lives under Instance, not Hosting.
@@ -51,13 +51,13 @@ public class DevMcpConfigurationTests
     {
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
 
-        await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "dev-mcp", TestContext.CancellationToken);
-        var text = await DevMcpTestUtils.CallText(client, "GetHealth", [], TestContext.CancellationToken);
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
+        var text = await DevMcpTestUtils.CallText(mcp, "GetHealth", [], TestContext.CancellationToken);
         var json = JsonNode.Parse(text)!;
 
         Assert.IsNotNull(json["status"]);

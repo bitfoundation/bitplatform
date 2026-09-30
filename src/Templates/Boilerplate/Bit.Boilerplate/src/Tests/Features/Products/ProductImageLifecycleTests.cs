@@ -50,12 +50,12 @@ public partial class ProductImageLifecycleTests
     public async Task CreatingAProductAfterUploadingItsImage_Should_AdoptTheImage()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var products = scope.CreateAppController<IProductController>();
-        var httpClient = scope.CreateRichHttpClient();
+        var products = client.GetController<IProductController>();
+        var httpClient = client.HttpClient;
 
         // Exactly what AddOrEditProductPage does: the id is minted client-side and the upload is posted against it
         // while no such product row exists.
@@ -64,7 +64,7 @@ public partial class ProductImageLifecycleTests
 
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Red));
 
-        var created = await products.Create(await NewProductDto(scope, productId, name), TestContext.CancellationToken);
+        var created = await products.Create(await NewProductDto(client, productId, name), TestContext.CancellationToken);
 
         try
         {
@@ -99,15 +99,15 @@ public partial class ProductImageLifecycleTests
     public async Task UploadingAnImageOntoAnExistingProduct_Should_MoveTheConcurrencyStamp()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var products = scope.CreateAppController<IProductController>();
-        var httpClient = scope.CreateRichHttpClient();
+        var products = client.GetController<IProductController>();
+        var httpClient = client.HttpClient;
 
         var name = $"stale-version-{Guid.NewGuid():N}";
-        var created = await products.Create(await NewProductDto(scope, Guid.CreateSequentialGuid(), name), TestContext.CancellationToken);
+        var created = await products.Create(await NewProductDto(client, Guid.CreateSequentialGuid(), name), TestContext.CancellationToken);
 
         try
         {
@@ -150,18 +150,18 @@ public partial class ProductImageLifecycleTests
     public async Task DeletingAProduct_Should_TakeItsImageWithIt()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var products = scope.CreateAppController<IProductController>();
-        var httpClient = scope.CreateRichHttpClient();
+        var products = client.GetController<IProductController>();
+        var httpClient = client.HttpClient;
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Green));
 
         var created = await products.Create(
-            await NewProductDto(scope, productId, $"delete-image-{Guid.NewGuid():N}"), TestContext.CancellationToken);
+            await NewProductDto(client, productId, $"delete-image-{Guid.NewGuid():N}"), TestContext.CancellationToken);
 
         // Precondition: without this the assertions below would pass against a product that never had an image.
         Assert.AreEqual(2, await CountAttachments(server, productId), "One upload writes the medium and the original kind.");
@@ -197,13 +197,13 @@ public partial class ProductImageLifecycleTests
     }
 
     /// <summary>
-    /// Signs the tenant-admin in within <paramref name="scope"/>, so every typed API client resolved from that scope
+    /// Signs the tenant-admin in on <paramref name="client"/>, so every controller created from that client
     /// calls the server as her. ProductController demands a privileged session, a selected tenant and
     /// ProductCatalog_Manage; a fresh password sign-in as a t-admin of the fallback tenant covers all three.
     /// </summary>
-    private async Task SignIn(AsyncServiceScope scope)
+    private async Task SignIn(AppClient client)
     {
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var requiresTwoFactor = await authManager.SignIn(new()
         {
@@ -214,9 +214,9 @@ public partial class ProductImageLifecycleTests
         Assert.IsFalse(requiresTwoFactor, $"'{TenantAdminEmail}' is not expected to have two factor authentication enabled.");
     }
 
-    private async Task<ProductDto> NewProductDto(AsyncServiceScope scope, Guid id, string name)
+    private async Task<ProductDto> NewProductDto(AppClient client, Guid id, string name)
     {
-        var categories = scope.CreateAppController<ICategoryController>();
+        var categories = client.GetController<ICategoryController>();
         var categoryId = (await categories.Get(TestContext.CancellationToken)).First().Id;
 
         return new ProductDto

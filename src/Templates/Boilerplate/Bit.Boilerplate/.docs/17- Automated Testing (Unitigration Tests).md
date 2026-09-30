@@ -89,13 +89,21 @@ public partial class AppTestServer : IAsyncDisposable
         // Starts the app under test
     }
 
+    public AppClient CreateAppClient(); // The app as a client of the api, with a user of its own
     public HttpClient CreateRawHttpClient(HttpMessageHandler? handler = null); // Straight to Server.Api, none of the app's handlers
 }
 
-// A scope of WebApp's services is a client of the api (See AsyncServiceScopeExtensions)
-await using var scope = server.WebApp.Services.CreateAsyncScope();
-scope.CreateRichHttpClient(); // Works exactly like the app's own HttpClient
-scope.CreateAppController<IUserController>(); // IUserController and the rest, on the rich HttpClient
+public sealed class AppClient : IAsyncDisposable
+{
+    public AppTestServer Server { get; }
+    public IServiceProvider Services { get; } // The app's own services
+    public AuthManager AuthManager { get; }
+    public HttpClient HttpClient { get; } // Works exactly like the app's own
+    public T GetController<T>() where T : class, IAppController; // IUserController and the rest
+<!--#if (signalR == true)-->
+    public HubConnection HubConnection { get; } // The app's SignalR connection to the api's app-hub, a WebSocket
+<!--#endif-->
+}
 ```
 
 **Key Features:**
@@ -109,23 +117,26 @@ scope.CreateAppController<IUserController>(); // IUserController and the rest, o
 - `configureTestApiAppServices`: Server.Api's services.
 - `configureTestConfigurations`: Server.Web's and Server.Api's configuration alike.
 
-**Calling the api.** A scope of `WebApp`'s services is a client of the api: it calls anonymously until its `AuthManager` signs a user in, and as that user from then on (See the example below).
-- `scope.CreateAppController<T>()`: the app's own client of an api controller, `IUserController` and the rest. Prefer it.
-- `scope.CreateRichHttpClient()`: the HttpClient those clients are built on, which works exactly like the app's own. The test reaches the api the way the client does, only without the UI: `ExceptionDelegatingHandler` turns an error response into the exception the app would get, for example.
+**Calling the api.** `server.CreateAppClient()` is the app as a client of the api, without its UI, and a test creates one per user it needs: it calls anonymously until its `AuthManager` signs a user in, and as that user from then on (See the example below).
+- `client.GetController<T>()`: the app's own client of an api controller, `IUserController` and the rest. Prefer it.
+- `client.HttpClient`: the HttpClient those clients are built on, which works exactly like the app's own. The test reaches the api the way the client does, only without the UI: `ExceptionDelegatingHandler` turns an error response into the exception the app would get, for example.
+<!--#if (signalR == true)-->
+- `client.HubConnection`: the app's SignalR connection to the api's `app-hub`, a WebSocket. As the app does, register what it listens for with `On`, then open it with `StartAsync` and call the hub with `InvokeAsync`.
+<!--#endif-->
 - `server.CreateRawHttpClient()`: straight to Server.Api, with none of the app's handlers, for a test about the response itself: a status code, a header, a redirect.
 
-No browser signs in on a server built without one, so `AppTestServer` keeps `AuthManager`'s tokens in memory there (See `AddBrowserlessClientServices`).
+No browser signs in on a server built without one, so `AppTestServer` keeps `AuthManager`'s tokens in memory there (See `AddBrowserlessClientServices`). A server a browser drives has no `AppClient`: the test signs in through the browser's pages.
 
-**Which host?** Resolve what runs in Server.Web - pages, pre-rendering, `AuthManager` - from `WebApp.Services`, and what runs in Server.Api - `AppDbContext`, Hangfire, the captured e-mails - from `ApiApp.Services`.
+**Which host?** The app's own services - `AuthManager`, `IStorageService` - come from an `AppClient`'s `Services`, what runs in Server.Web itself - pages, pre-rendering - from `WebApp.Services`, and what runs in Server.Api - `AppDbContext`, Hangfire, the captured e-mails - from `ApiApp.Services`.
 
 <!--#if (api == "Standalone")-->
-The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. The rich HttpClient calls `WebAppServerAddress`, and `WebApp` forwards `/api` and `/hangfire` to `ApiApp` through YARP; everything else Server.Api serves, such as `/healthz`, is only on `ApiServerAddress`.
+The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. An `AppClient`'s HttpClient calls `WebAppServerAddress`, and `WebApp` forwards `/api` and `/hangfire` to `ApiApp` through YARP; everything else Server.Api serves, such as `/healthz`, is only on `ApiServerAddress`.
 <!--#endif-->
 <!--#if (api == "Integrated")-->
 The api is integrated into Server.Web, so `ApiApp` is `WebApp` itself, `ApiServerAddress` is `WebAppServerAddress`, and all three service lambdas run on that one host, in the order they are declared.
 <!--#endif-->
 
-A method that holds more than one DI scope names each one after its host - `scopeWebApp`, `scopeApiApp` - adding a role when one host has several, such as `scopeWebAppAdmin`.
+A method that holds more than one DI scope names each one after its host - `scopeWebApp`, `scopeApiApp`. An `AppClient` is `client`, or named after its user's role when a test has several, such as `adminClient`.
 
 ### 2. TestsAssemblyInitializer - Assembly Setup
 
@@ -175,19 +186,17 @@ public partial class IntegrationTests
             services.Replace(ServiceDescriptor.Scoped<IExampleService, TestExampleService>());
         }).Start(TestContext.CancellationToken);
 
-        // The scope is the client: once its AuthManager signs a user in, the controllers created with it call as that user.
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        // Once the client's AuthManager signs a user in, the controllers created from it call the api as that user.
+        await using var client = server.CreateAppClient();
 
         // Perform sign-in
-        await authenticationManager.SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var userController = scope.CreateAppController<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         // Verify the signed-in user
         var user = await userController.GetCurrentUser(TestContext.CancellationToken);
@@ -210,10 +219,10 @@ services.AddScoped<IStorageService, TestStorageService>();
 
 ### Service Resolution
 ```csharp
-await using var scope = server.WebApp.Services.CreateAsyncScope();
-var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+await using var client = server.CreateAppClient();
+var authManager = client.AuthManager;
 ```
-- Create a DI scope just like in production
+- An `AppClient` is one user's app, just like in production: a DI scope of its own
 - Resolve services from the actual application container
 - Services have access to real DbContext, configuration, etc.
 

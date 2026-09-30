@@ -38,7 +38,7 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
             configureTestServices: services => services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider)))
             .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
         // Before signing in, pin that /mcp actually REJECTS an anonymous caller. This guard once shipped commented out
         // (748225ec87, restored by 6cf854a66a), and every other line of this test authenticates first - so without this
@@ -63,13 +63,13 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         // The /mcp endpoint is behind RequireAuthorization(), so sign in with the seeded default account first and reuse
         // the resulting bearer token to authenticate the MCP transport.
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
         Assert.IsNotNull(accessToken, "Sign-in should have stored an access token to authenticate the MCP request.");
 
         // Connect a real MCP client to the server's Streamable HTTP endpoint, carrying the bearer token.
@@ -121,15 +121,15 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
             await DevMcpTestUtils.ProbeInitialize(server, "mcp/v1", accessToken: null, TestContext.CancellationToken),
             "The versioned path must reject an anonymous caller, exactly as /mcp does.");
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        await using var mcpClient = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "mcp/v1", TestContext.CancellationToken);
+        await using var mcpClient = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "mcp/v1", TestContext.CancellationToken);
 
         var tools = await mcpClient.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
 

@@ -27,10 +27,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        var answer = await StartVoiceCall(scope, httpClient);
+        var answer = await StartVoiceCall(client, httpClient);
 
         Assert.AreEqual(TestRealtimeCallClient.AnswerSdp, answer.Sdp);
         Assert.IsGreaterThan(TimeSpan.Zero, answer.MaxDuration, "The client counts down from it.");
@@ -60,10 +60,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime, reasoningEffort: configured);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         var effort = realtime.Session!["reasoning"] is JsonNode reasoning ? (string?)reasoning["effort"] : null;
 
@@ -78,10 +78,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         await realtime.Sideband.Receive(ResponseDone("call-1", "GetCurrentDateTime", """{"timeZoneId":"UTC"}"""));
 
@@ -105,10 +105,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         await realtime.Sideband.Receive(ResponseDone("call-2", "DeleteEveryUser", "{}"));
 
@@ -127,10 +127,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         await realtime.Sideband.Receive(ResponseDone(Spoken("Dark mode is on."),
                                                      FunctionCall("call-3", "ShowFollowUpSuggestions", """{"suggestions":["Switch back to light mode"]}""")));
@@ -160,10 +160,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         List<JsonObject> output = [FunctionCall("call-5", "ShowFollowUpSuggestions", """{"suggestions":["What cars do you sell?"]}""")];
 
@@ -200,10 +200,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         await realtime.Sideband.Receive(ResponseDone(FunctionCall("call-7", "ClearAppFiles", "{}")));
 
@@ -222,15 +222,15 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await using (await ConnectTab(server, scope))
+        await using (await ConnectTab(client))
         {
-            await StartVoiceCall(scope, httpClient);
+            await StartVoiceCall(client, httpClient);
         }
 
-        await using var reconnectedTab = await ConnectTab(server, scope);
+        await using var reconnectedTab = await ConnectTab(client);
 
         await realtime.Sideband.Receive(ResponseDone("call-10", "SetApplicationTheme", """{"theme":"dark"}"""));
 
@@ -248,10 +248,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient, cultureId: 1065);
+        await StartVoiceCall(client, httpClient, cultureId: 1065);
 
         var transcription = realtime.Session!["audio"]?["input"]?["transcription"];
 
@@ -268,10 +268,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         var cancelled = ResponseDone(FunctionCall("call-8", "SetApplicationTheme", """{"theme":"da"""));
         cancelled["response"]!["status"] = "cancelled";
@@ -295,10 +295,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         realtime.Sideband.End();
 
@@ -312,10 +312,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        await StartVoiceCall(scope, httpClient);
+        await StartVoiceCall(client, httpClient);
 
         await server.ApiApp.StopAsync(TestContext.CancellationToken);
 
@@ -329,12 +329,12 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
         const string answer = "bit platform is a set of dotnet libraries.";
 
-        await StartVoiceCall(scope, httpClient,
+        await StartVoiceCall(client, httpClient,
         [
             new() { Role = AiChatMessageRole.User, Content = "What is bit platform?" },
             new() { Role = AiChatMessageRole.Assistant, Content = answer, Signature = server.ApiApp.Services.GetRequiredService<ChatbotAnswerSigner>().Sign(answer) },
@@ -366,13 +366,13 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
         List<AiChatMessage> history = [.. Enumerable.Range(0, StartChatRequest.MaxChatMessagesHistory + 5)
             .Select(index => new AiChatMessage { Role = AiChatMessageRole.User, Content = $"message {index}" })];
 
-        await StartVoiceCall(scope, httpClient, history);
+        await StartVoiceCall(client, httpClient, history);
 
         Assert.AreSequenceEqual(history.TakeLast(StartChatRequest.MaxChatMessagesHistory).Select(message => message.Content),
                                 realtime.Sideband.Sent().Select(sent => (string?)sent["item"]!["content"]![0]!["text"]));
@@ -386,10 +386,10 @@ public class ChatbotVoiceCallTests
         var realtime = new TestRealtimeCallClient();
 
         await using var server = await StartServer(realtime);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.CreateRichHttpClient();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
-        await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => StartVoiceCall(scope, httpClient));
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => StartVoiceCall(client, httpClient));
 
         Assert.IsNull(realtime.OfferSdp, "Nothing may reach the provider for an anonymous caller.");
     }
@@ -415,24 +415,24 @@ public class ChatbotVoiceCallTests
         return server;
     }
 
-    private async Task<HttpClient> SignIn(AsyncServiceScope scope)
+    private async Task<HttpClient> SignIn(AppClient client)
     {
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        return scope.CreateRichHttpClient();
+        return client.HttpClient;
     }
 
     /// <summary>The signed-in user's tab, answering a theme change as the app does.</summary>
-    private async Task<HubConnection> ConnectTab(AppTestServer server, AsyncServiceScope scope)
+    private async Task<HubConnection> ConnectTab(AppClient client)
     {
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IAuthTokenProvider>().GetAccessToken();
+        var accessToken = await client.Services.GetRequiredService<IAuthTokenProvider>().GetAccessToken();
 
         var tab = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.ApiServerAddress, "app-hub"), options =>
+            .WithUrl(new Uri(client.Server.ApiServerAddress, "app-hub"), options =>
             {
                 options.Transports = HttpTransportType.WebSockets;
                 options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
@@ -449,9 +449,9 @@ public class ChatbotVoiceCallTests
         return tab;
     }
 
-    private async Task<StartVoiceCallResponseDto> StartVoiceCall(AsyncServiceScope scope, HttpClient httpClient, List<AiChatMessage>? history = null, int? cultureId = null)
+    private async Task<StartVoiceCallResponseDto> StartVoiceCall(AppClient client, HttpClient httpClient, List<AiChatMessage>? history = null, int? cultureId = null)
     {
-        var jsonOptions = scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
+        var jsonOptions = client.Services.GetRequiredService<JsonSerializerOptions>();
 
         using var response = await httpClient.PostAsJsonAsync("api/v1/Chatbot/StartVoiceCall",
                                                               new StartVoiceCallRequestDto { Sdp = OfferSdp, TimeZoneId = "UTC", CultureId = cultureId, ChatMessagesHistory = history ?? [] },

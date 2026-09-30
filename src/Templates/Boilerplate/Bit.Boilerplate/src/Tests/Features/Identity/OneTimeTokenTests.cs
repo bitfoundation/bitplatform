@@ -34,8 +34,8 @@ public class OneTimeTokenTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -71,8 +71,8 @@ public class OneTimeTokenTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var exception = await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => identityController.ConfirmPhone(new() { PhoneNumber = SeededTestPhoneNumber, Token = "123456" }, TestContext.CancellationToken),
@@ -94,8 +94,8 @@ public class OneTimeTokenTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scopeWebApp.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var email = $"Mixed.Case.{Guid.NewGuid()}@BitPlatform.dev";
 
@@ -129,8 +129,8 @@ public class OneTimeTokenTests
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.CreateAppController<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => identityController.SendConfirmPhoneToken(new() { PhoneNumber = phoneNumber }, TestContext.CancellationToken),
