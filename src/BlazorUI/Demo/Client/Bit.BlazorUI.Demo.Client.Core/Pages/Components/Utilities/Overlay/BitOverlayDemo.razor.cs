@@ -46,7 +46,7 @@ public partial class BitOverlayDemo
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the Overlay is shown; bindable, so a dismissal is reported back.",
+            Description = "Whether the Overlay is shown; bindable, so a dismissal is reported back. A closed Overlay is inert, even while it fades out.",
         },
         new()
         {

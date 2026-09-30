@@ -145,6 +145,10 @@ public partial class BitOverlay : BitComponentBase
     /// <summary>
     /// When true, the Overlay and its content will be shown.
     /// </summary>
+    /// <remarks>
+    /// A closed Overlay is marked <c>inert</c> from the moment it closes, so the page it fades away from takes
+    /// the pointer and the keyboard back at once rather than once the fade has played out.
+    /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 

@@ -10,7 +10,8 @@
 
 // The Overlay stays in the page while it is closed so that it fades out rather than vanishing in one
 // frame. It is hidden rather than removed, and a hidden element takes neither the clicks of the page nor
-// a place in the accessibility tree, so a closed Overlay leaves the page untouched. The durations
+// a place in the accessibility tree, so a closed Overlay leaves the page untouched - and while it is still
+// fading out, the inert the markup puts on a closed Overlay already hands both back. The durations
 // collapse to nothing under reduced motion, which the motion tokens take care of - unless a duration of the
 // consumer's own is set through --bit-Overlay-transition-duration, which is then theirs to honour.
 // The layer is a flex container: what it hosts stretches over the whole of it unless Position places it.
