@@ -94,6 +94,14 @@ public sealed record BlazorUIComponent
     /// </summary>
     public Type? CascadingParams { get; init; }
 
+    /// <summary>
+    /// The component a service shows, for a service named after one - <c>BitModal</c> for
+    /// <c>BitModalService</c> - which is where the service's <see cref="CascadingParams"/> come from:
+    /// what it renders is that component, so a <c>BitParams</c> around its container reaches it.
+    /// Null for a component, and for a service that is named after nothing it renders.
+    /// </summary>
+    public Type? ShownComponentType { get; init; }
+
     /// <summary>The classes and enums this component owns, in full - nothing else documents them.</summary>
     public IReadOnlyList<ComponentSubType> OwnTypes { get; init; } = [];
 
@@ -233,6 +241,7 @@ public static class BlazorUIComponentCatalog
             var tables = demoType is null ? null : DemoTables.Read(demoType);
 
             var inherited = InheritedBases(componentType);
+            var shownType = ShownComponentTypeOf(componentType);
             var parameters = MergeParameters(tables?.Parameters, componentType);
             var (own, shared) = SplitSubTypes(name, tables);
 
@@ -256,7 +265,8 @@ public static class BlazorUIComponentCatalog
                 Parameters = parameters,
                 PublicMembers = MergeMembers(tables?.PublicMembers, componentType, parameters),
                 CssVariables = tables?.CssVariables ?? [],
-                CascadingParams = CascadingParamsOf(componentType),
+                CascadingParams = CascadingParamsOf(shownType ?? componentType),
+                ShownComponentType = shownType,
                 OwnTypes = own,
                 SharedTypes = shared,
                 FamilyMembers = FamilyMembersOf(componentType),
@@ -357,6 +367,22 @@ public static class BlazorUIComponentCatalog
             .Where(p => p.IsDefined(typeof(CascadingParameterAttribute)))
             .Select(p => p.PropertyType)
             .FirstOrDefault(t => typeof(IBitComponentParams).IsAssignableFrom(t));
+    }
+
+    /// <summary>
+    /// The component a service named after one shows - see <see cref="BlazorUIComponent.ShownComponentType"/>.
+    /// </summary>
+    private static Type? ShownComponentTypeOf(Type? componentType)
+    {
+        if (componentType is null || typeof(IComponent).IsAssignableFrom(componentType)) return null;
+
+        const string suffix = "Service";
+
+        if (componentType.Name.EndsWith(suffix, StringComparison.Ordinal) is false) return null;
+
+        var shown = FindType(componentType.Name[..^suffix.Length]);
+
+        return shown is not null && typeof(IComponent).IsAssignableFrom(shown) ? shown : null;
     }
 
     /// <summary>

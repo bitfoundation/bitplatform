@@ -75,6 +75,53 @@ public class BitModalServiceTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalServiceShouldPutTheClassAndStyleOfTheParametersOnTheRoot()
+    {
+        var container = RenderComponent<BitModalContainer>(parameters =>
+        {
+            parameters.Add(p => p.ModalParameters, new BitModalParameters { Class = "house", Style = "--bit-Modal-radius:0" });
+        });
+
+        await ModalService.Show<TestModalContent>(new BitModalParameters
+        {
+            Style = "--bit-Modal-radius:1rem",
+            Classes = new BitModalClassStyles { Root = "own-root" },
+        });
+
+        container.WaitForAssertion(() =>
+        {
+            var root = container.Find(".bit-mdl");
+
+            // The container's class is the default, and the showing's own style wins over the container's.
+            Assert.IsTrue(root.ClassList.Contains("house"));
+            Assert.IsTrue(root.ClassList.Contains("own-root"));
+            StringAssert.Contains(root.GetAttribute("style"), "--bit-Modal-radius:1rem");
+            Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-Modal-radius:0"));
+        });
+    }
+
+    [TestMethod]
+    public async Task BitModalReferenceShouldUpdateTheRootClassAndStyle()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var modalRef = await ModalService.Show<TestModalContent>(new BitModalParameters { Class = "before", Style = "color:red" });
+
+        container.WaitForAssertion(() => Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("before")));
+
+        await modalRef.Update(new BitModalParameters { Class = "after", Style = "color:blue" });
+
+        container.WaitForAssertion(() =>
+        {
+            var root = container.Find(".bit-mdl");
+
+            Assert.IsFalse(root.ClassList.Contains("before"));
+            Assert.IsTrue(root.ClassList.Contains("after"));
+            StringAssert.Contains(root.GetAttribute("style"), "color:blue");
+        });
+    }
+
+    [TestMethod]
     public async Task BitModalReferenceShouldCompleteItsResultWithWhatItWasClosedWith()
     {
         var container = RenderComponent<BitModalContainer>();

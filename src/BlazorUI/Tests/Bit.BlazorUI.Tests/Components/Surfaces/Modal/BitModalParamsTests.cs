@@ -115,6 +115,39 @@ public class BitModalParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalContainerParametersShouldWinOverTheCascadedDefaults()
+    {
+        Services.AddSingleton<BitModalService>();
+
+        var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitModalParams.ParamName);
+            parameters.Add(p => p.Value, new BitModalParams { Position = BitPosition.TopCenter, ShowCloseButton = true, Style = "--bit-Modal-radius:0" });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitModalContainer>(0);
+                builder.AddComponentParameter(1, nameof(BitModalContainer.ModalParameters), new BitModalParameters { Position = BitPosition.BottomCenter });
+                builder.CloseComponent();
+            }));
+        });
+
+        var modalService = Services.GetRequiredService<BitModalService>();
+
+        await modalService.Show(builder => builder.AddContent(0, "shown"));
+
+        // The container's own parameters are the defaults of its modals, so they beat the app-wide ones; what the
+        // container leaves out still falls back to the BitParams ancestor.
+        component.WaitForAssertion(() =>
+        {
+            var root = component.Find(".bit-mdl");
+            Assert.IsTrue(root.ClassList.Contains("bit-mdl-bcr"));
+            Assert.IsFalse(root.ClassList.Contains("bit-mdl-tcr"));
+            StringAssert.Contains(root.GetAttribute("style"), "--bit-Modal-radius:0");
+            Assert.AreEqual(1, component.FindAll(".bit-mdl-cls").Count);
+        });
+    }
+
+    [TestMethod]
     public async Task BitModalServiceParametersShouldWinOverTheCascadedBaseDefaults()
     {
         Services.AddSingleton<BitModalService>();

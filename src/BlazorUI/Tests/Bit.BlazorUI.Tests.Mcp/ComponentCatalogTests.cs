@@ -380,6 +380,26 @@ public class ComponentCatalogTests : McpTestBase
     }
 
     /// <summary>
+    /// A service named after the component it shows says that component's params object reaches the
+    /// modals it shows: the service has no markup of its own and no <c>[CascadingParameter]</c> to read
+    /// it off, so without this an agent has no way to learn that one <c>BitParams</c> around the
+    /// container sets the defaults of every modal the service opens - or that a showing's own
+    /// parameters still win over them.
+    /// </summary>
+    [TestMethod]
+    public async Task A_service_names_the_params_object_of_the_component_it_shows()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## Cascading parameters", "BitModalService no longer says the modals it shows take a params object.");
+        StringAssert.Contains(answer, "`BitModalParams`", "BitModalService does not name the type the cascade carries.");
+        StringAssert.Contains(answer, "Every `BitModal` this service shows", "BitModalService does not say which component takes the cascade.");
+        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitModalParams\")", "BitModalService does not say where BitModalParams's members are listed.");
+    }
+
+    /// <summary>
     /// What a params object does NOT carry, which is the half of the cascade a reader cannot infer.
     /// <para>
     /// Every <c>...Params</c> derives from <c>BitComponentBaseParams</c>, so it carries that half of
