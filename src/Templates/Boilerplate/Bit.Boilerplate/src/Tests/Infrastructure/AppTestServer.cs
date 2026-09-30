@@ -66,13 +66,20 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     public IServiceCollection ApiAppServices => WebAppServices;
     //#endif
     //#endif
-    public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
+    /// <summary>
+    /// Under localhost rather than an IP: WebAuthn only takes a domain as its relying party id.
+    /// </summary>
+    public readonly Uri WebAppServerAddress = new(GenerateServerUrl("localhost"));
 
     //#if (api == "Standalone")
     //#if (IsInsideProjectTemplate)
     /*
     //#endif
-    public readonly Uri ApiServerAddress = new(GenerateServerUrl());
+    /// <summary>
+    /// A host other than <see cref="WebAppServerAddress"/>'s, as in a real deployment: cookies ignore the port, so under
+    /// the same host name the api's cookies would reach the web app as well.
+    /// </summary>
+    public readonly Uri ApiServerAddress = new(GenerateServerUrl("127.0.0.1"));
     //#if (IsInsideProjectTemplate)
     */
     //#endif
@@ -120,6 +127,8 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         // reads its discovery document there, and /api and /hangfire are forwarded to it.
         //#endif
         webAppBuilder.Configuration["ServerAddress"] = ApiServerAddress.ToString();
+        // The test HttpClient's base address and X-Origin (See AddTestProjectServices), which a test may override.
+        webAppBuilder.Configuration["WebAppUrl"] = WebAppServerAddress.ToString();
         webAppBuilder.WebHost.UseUrls(WebAppServerAddress.ToString());
 
         AppEnvironment.Set(webAppBuilder.Environment.EnvironmentName);
@@ -128,7 +137,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
         configureTestConfigurations?.Invoke(webAppBuilder.Configuration);
 
-        webAppBuilder.AddTestProjectServices(WebAppServerAddress);
+        webAppBuilder.AddTestProjectServices();
 
         configureTestWebAppServices?.Invoke(webAppBuilder.Services);
         //#if (api == "Integrated")
@@ -355,12 +364,36 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     */
     //#endif
     //#endif
-    private static string GenerateServerUrl()
+    /// <summary>
+    /// A free port under <paramref name="host"/>. Kestrel binds localhost to both 127.0.0.1 and ::1 and fails when either
+    /// is taken, so for localhost a port is only handed out once it is free on both.
+    /// </summary>
+    private static string GenerateServerUrl(string host)
     {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return $"http://127.0.0.1:{port}/";
+        while (true)
+        {
+            using var ipv4Listener = new TcpListener(IPAddress.Loopback, 0);
+            ipv4Listener.Start();
+            var port = ((IPEndPoint)ipv4Listener.LocalEndpoint).Port;
+
+            if (host is "localhost" && Socket.OSSupportsIPv6)
+            {
+                using var ipv6Listener = new TcpListener(IPAddress.IPv6Loopback, port);
+                try
+                {
+                    ipv6Listener.Start();
+                }
+                catch (SocketException exception) when (exception.SocketErrorCode is SocketError.AddressAlreadyInUse)
+                {
+                    continue;
+                }
+                catch (SocketException)
+                {
+                    // No IPv6 loopback on this machine, which Kestrel skips as well.
+                }
+            }
+
+            return $"http://{host}:{port}/";
+        }
     }
 }

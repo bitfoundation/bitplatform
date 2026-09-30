@@ -13,7 +13,7 @@ public static partial class WebApplicationBuilderExtensions
         /// <summary>
         /// Server.Web's test services. Server.Api's are in <c>AddTestApiProjectServices</c>.
         /// </summary>
-        public void AddTestProjectServices(Uri webAppServerAddress)
+        public void AddTestProjectServices()
         {
             var services = builder.Services;
 
@@ -27,6 +27,9 @@ public static partial class WebApplicationBuilderExtensions
             services.AddTransient<HttpClient>(sp =>
             {
                 var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
+                // Read on every resolve, so a test that overrides WebAppUrl is heard (See AppTestServer.Build).
+                var webAppUrl = new Uri(sp.GetRequiredService<IConfiguration>()["WebAppUrl"]
+                    ?? throw new InvalidOperationException("WebAppUrl is not configured."), UriKind.Absolute);
                 var httpClient = new HttpClient(handlerFactory.Invoke())
                 {
                     //#if (api == "Standalone")
@@ -34,9 +37,9 @@ public static partial class WebApplicationBuilderExtensions
                     // Program.Middlewares.cs). Server.Api's other endpoints (/healthz, /mcp, /.well-known, ...) take
                     // AppTestServer.ApiServerAddress.
                     //#endif
-                    BaseAddress = webAppServerAddress
+                    BaseAddress = webAppUrl
                 };
-                httpClient.DefaultRequestHeaders.Add("X-Origin", webAppServerAddress.ToString());
+                httpClient.DefaultRequestHeaders.Add("X-Origin", webAppUrl.ToString());
                 return httpClient;
             });
         }

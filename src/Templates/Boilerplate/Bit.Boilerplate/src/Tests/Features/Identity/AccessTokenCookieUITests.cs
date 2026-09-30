@@ -6,10 +6,10 @@ public partial class AccessTokenCookieUITests : AppPageTest
     private const string UpdateSessionUri = $"api/v1/User/{nameof(IUserController.UpdateSession)}";
 
     /// <summary>
-    /// The web app on one host and its api on another - the loopback server as localhost for the page, as 127.0.0.1 for
-    /// the api, the way a standalone api sits on a sibling host. The api's own answer would carry the access_token
-    /// cookie to the wrong host, so UpdateSession has to be answered by the page's host, or pre-rendering never sees
-    /// the user (See RequestHeadersDelegatingHandler).
+    /// The web app on one host and its api on another - localhost for the page, 127.0.0.1 for the api (See
+    /// <see cref="AppTestServer.ApiServerAddress"/>), the way a standalone api sits on a sibling host. The api's own
+    /// answer would carry the access_token cookie to the wrong host, so UpdateSession has to be answered by the page's
+    /// host, or pre-rendering never sees the user (See RequestHeadersDelegatingHandler).
     /// </summary>
     [TestMethod]
     public async Task PreRendering_Should_SeeTheUser_WhenTheApiIsOnAnotherHost()
@@ -22,7 +22,7 @@ public partial class AccessTokenCookieUITests : AppPageTest
             configuration["WebAppRender:PrerenderEnabled"] = "true";
         }).Start(TestContext.CancellationToken);
 
-        var pageBase = new UriBuilder(server.WebAppServerAddress) { Host = "localhost" }.Uri;
+        var pageBase = server.WebAppServerAddress;
         var protectedPage = new Uri(pageBase, PageUrls.Settings).ToString();
 
         var anonymousVisit = await Context.APIRequest.GetAsync(protectedPage);
