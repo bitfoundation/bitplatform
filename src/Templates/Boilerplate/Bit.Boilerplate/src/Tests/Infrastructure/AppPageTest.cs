@@ -2,6 +2,7 @@ using Microsoft.Playwright.TestAdapter;
 
 namespace Boilerplate.Tests.Infrastructure;
 
+[DoNotParallelize]
 public class AppPageTest : PageTest
 {
     /// <summary>
