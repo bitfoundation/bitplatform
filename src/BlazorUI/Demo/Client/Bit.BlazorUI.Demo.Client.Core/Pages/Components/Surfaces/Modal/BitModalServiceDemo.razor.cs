@@ -9,14 +9,14 @@ public partial class BitModalServiceDemo : IDisposable
             Name = "OnAddModal",
             Type = "event Func<BitModalReference, Task>?",
             DefaultValue = "",
-            Description = "The event for when a new modal gets added through calling the Show method.",
+            Description = "Raised for every modal shown through this service, whoever showed it.",
         },
         new()
         {
             Name = "OnCloseModal",
             Type = "event Func<BitModalReference, Task>?",
             DefaultValue = "",
-            Description = "The event for when a modal gets removed through calling the Close method.",
+            Description = "Raised once for every modal of this service that closes, however it closed: answered or closed by the application, dismissed by the user, closed by a navigation or by its container going away.",
         },
         new()
         {
@@ -65,7 +65,7 @@ public partial class BitModalServiceDemo : IDisposable
             Name = "CloseAll",
             Type = "Task",
             DefaultValue = "",
-            Description = "Closes every modal this service currently has open, each with a null result. The CanClose guards are not asked.",
+            Description = "Closes every modal this service currently has open, each with a null result, the last one opened first - so each hands the focus back to the modal under it, and the last to the page. The CanClose guards are not asked.",
         },
         new()
         {
@@ -227,6 +227,13 @@ public partial class BitModalServiceDemo : IDisposable
                 },
                 new()
                 {
+                    Name = "Update",
+                    Type = "Task (Action<BitModalParameters> change)",
+                    DefaultValue = "",
+                    Description = "Changes some of the parameters and re-renders the modal, leaving the others as they are: modal.Update(p => p.HeaderText = \"Step 2\"). The change is applied to a copy, so a set shared between showings is never changed under the other modals."
+                },
+                new()
+                {
                     Name = "GetResult<T>",
                     Type = "Task<T?>",
                     DefaultValue = "",
@@ -256,6 +263,13 @@ public partial class BitModalServiceDemo : IDisposable
                     LinkType = LinkType.Link,
                     Href = "#modal-parameters",
                     Description = "The defaults of every modal this container renders - the house style: a maximum width, a close button, a position. The parameters of one showing win over them, and they win over a BitModalParams cascaded by a BitParams."
+                },
+                new()
+                {
+                    Name = "Service",
+                    Type = "BitModalService?",
+                    DefaultValue = "null",
+                    Description = "The service this container renders the modals of, in place of the one registered in DI - for a region with modals of its own. Read when the container initializes; give the container a @key to switch it."
                 }
             ]
         },
@@ -436,12 +450,14 @@ public partial class BitModalServiceDemo : IDisposable
         // Standing in for the work: the modal can't be dismissed while it runs, and gets its way out once done.
         await Task.Delay(2000);
 
-        await modal.Update(new BitModalParameters
+        // Only what changes is named: the rest of the set stays as it was shown.
+        await modal.Update(p =>
         {
-            MaxWidth = "28rem",
-            HeaderText = "Saved",
-            ShowCloseButton = true,
-            FooterText = "The parameters were replaced while the modal was on the screen."
+            p.HeaderText = "Saved";
+            p.Blocking = null;
+            p.NoDismissOnEscape = null;
+            p.ShowCloseButton = true;
+            p.FooterText = "Only what changed was named; the rest of the set stayed.";
         });
     }
 

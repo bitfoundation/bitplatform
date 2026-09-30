@@ -60,12 +60,13 @@ public abstract class BitModalServiceBase<TReference, TParameters>
 
 
     /// <summary>
-    /// The event for when a new modal gets added through calling the Show method.
+    /// Raised for every modal shown through this service, whoever showed it.
     /// </summary>
     public event Func<TReference, Task>? OnAddModal;
 
     /// <summary>
-    /// The event for when a modal gets removed through calling the Close method.
+    /// Raised once for every modal of this service that closes, however it closed: answered or closed by the
+    /// application, dismissed by the user, closed by a navigation or by its container going away.
     /// </summary>
     public event Func<TReference, Task>? OnCloseModal;
 
@@ -360,18 +361,26 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// Closes every modal this service currently has open, each with a <c>null</c> result.
     /// </summary>
     /// <remarks>
-    /// The modals are closed in the order they were opened, and the set to close is taken before any of them
-    /// is closed, so a modal opened by a close handler of an earlier one is left alone rather than being
-    /// closed by the same call that opened it. Modals shown while no container is mounted are not tracked
-    /// here (persistent ones excepted), so they are not reached by this either.
+    /// The modals are closed the way a stack of them unwinds - the last one opened first - so each hands the
+    /// focus back to the modal it was opened from while that one is still open to take it, and the last to go
+    /// hands it back to the page. Closed the other way round, the first modal's hand-back is skipped (the focus
+    /// is in a later one by then) and every later one hands it back into a modal that has already closed, which
+    /// drops it on the body. The set to close is taken before any of them is closed, so a modal opened by a
+    /// close handler is left alone rather than being closed by the same call that opened it. Modals shown while
+    /// no container is mounted are not tracked here (persistent ones excepted), so they are not reached by this
+    /// either.
     /// <br/>
     /// This is the application closing the modals, so the close guards are not asked: a sign-out or a
     /// navigation is not something a half-filled form gets to turn down.
     /// </remarks>
     public async Task CloseAll()
     {
-        foreach (var modalRef in OpenModals)
+        var openModals = OpenModals;
+
+        for (var i = openModals.Count - 1; i >= 0; i--)
         {
+            var modalRef = openModals[i];
+
             if (modalRef.IsClosed) continue;
 
             await Close(modalRef);
@@ -690,6 +699,17 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// Creates a new concrete modal reference bound to this service.
     /// </summary>
     protected abstract TReference CreateReference(bool persistent);
+
+    /// <summary>
+    /// A copy of the given parameters that can be changed without reaching the original, which is what
+    /// <see cref="BitModalReferenceBase{TReference, TParameters}.Update(Action{TParameters})"/> applies its change
+    /// to. The base type has no opinion on what a set of parameters looks like, so a concrete service copies its own.
+    /// </summary>
+    /// <exception cref="NotSupportedException">The service does not copy its parameters.</exception>
+    protected internal virtual TParameters CopyParameters(TParameters parameters)
+    {
+        throw new NotSupportedException($"{GetType().Name} does not copy its parameters: override {nameof(CopyParameters)} to change them one at a time.");
+    }
 
     /// <summary>
     /// Builds the render fragment that hosts the concrete modal component wrapping the given content.

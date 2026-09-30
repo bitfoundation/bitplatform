@@ -85,34 +85,6 @@ public partial class BitModalServiceDemo
     }
 }";
 
-    private const string demoModalContainerCode = @"
-@inherits BitModalContainerBase<BitModalReference, BitModalParameters>
-
-@foreach (var modalReference in _modalRefs)
-{
-    <CascadingValue @key=""modalReference.Id"" Value=""modalReference"">
-        <CascadingValue Value=""GetMergedParameters(modalReference)"">
-            @modalReference.Modal
-        </CascadingValue>
-    </CascadingValue>
-}
-
-@code {
-    [Parameter, EditorRequired] public BitModalService Service { get; set; } = default!;
-
-    protected override BitModalServiceBase<BitModalReference, BitModalParameters> ModalService => Service;
-
-    protected override BitModalParameters? MergeParameters(BitModalParameters? modalParameters, BitModalParameters? containerParameters)
-    {
-        return BitModalParameters.Merge(modalParameters, containerParameters);
-    }
-
-    protected override bool? GetCloseOnNavigation(BitModalReference modalReference)
-    {
-        return GetMergedParameters(modalReference)?.CloseOnNavigation;
-    }
-}";
-
     private readonly string example1RazorCode = @"
 @* in the layout *@
 <BitModalContainer />
@@ -319,13 +291,21 @@ private async Task ShowUpdatingModal()
     // Standing in for the work: the modal can't be dismissed while it runs, and gets its way out once done.
     await Task.Delay(2000);
 
-    await modal.Update(new BitModalParameters
+    // only what changes is named: the rest of the set stays as it was shown
+    await modal.Update(p =>
     {
-        MaxWidth = ""28rem"",
-        HeaderText = ""Saved"",
-        ShowCloseButton = true,
-        FooterText = ""The parameters were replaced while the modal was on the screen.""
+        p.HeaderText = ""Saved"";
+        p.Blocking = null;
+        p.NoDismissOnEscape = null;
+        p.ShowCloseButton = true;
+        p.FooterText = ""Only what changed was named; the rest of the set stayed."";
     });
+}
+
+// a whole set replaces the one the modal was shown with
+private async Task ReplaceTheParameters(BitModalReference modal)
+{
+    await modal.Update(new BitModalParameters { HeaderText = ""A new set"", ShowCloseButton = true });
 }
 
 // mutating the parameters already handed to the modal works too, followed by a Refresh
@@ -346,11 +326,11 @@ private async Task RenameTheOpenModal(BitModalReference modal)
 <div>Persistent modal: [@DescribeModal(persistentModal)]</div>
 <div>Ordinary modal: [@DescribeModal(ordinaryModal)]</div>
 
-@* An app mounts one container, in its layout: this one is the example's, so that unmounting it
-   leaves the modals of the rest of the page alone. *@
+@* An app mounts one container, in its layout: this one renders a service of the example's own,
+   so that unmounting it leaves the modals of the rest of the page alone. *@
 @if (isDemoContainerMounted)
 {
-    <DemoModalContainer Service=""demoModalService"" />
+    <BitModalContainer Service=""demoModalService"" />
 }";
     private readonly string example7CsharpCode = @"
 private readonly BitModalService demoModalService = new();
@@ -386,11 +366,6 @@ private string DescribeModal(BitModalReference? modalRef)
 
     return isDemoContainerMounted ? ""open"" : ""open, waiting for a container"";
 }";
-
-    private readonly DemoCodeFile[] example7CodeFiles =
-    [
-        new("DemoModalContainer.razor", demoModalContainerCode),
-    ];
 
     private readonly string example8RazorCode = @"
 @* in the layout: every modal of this container outlives a route change unless it says otherwise
@@ -548,9 +523,9 @@ public void Dispose()
 <BitButton OnClick=""ShowCascadedModal"">Takes the cascade</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ShowCascadedOwnModal"">Its own position</BitButton>
 
-@* the example's own service and container (see Persistent modals), so the cascade reaches only its modals *@
+@* a container rendering a service of the example's own, so the cascade reaches only its modals *@
 <BitParams Parameters=""modalParams"">
-    <DemoModalContainer Service=""paramsModalService"" />
+    <BitModalContainer Service=""paramsModalService"" />
 </BitParams>";
     private readonly string example10CsharpCode = @"
 private readonly BitModalService paramsModalService = new();
@@ -579,11 +554,6 @@ private async Task ShowCascadedOwnModal()
         Position = BitPosition.BottomCenter
     });
 }";
-
-    private readonly DemoCodeFile[] example10CodeFiles =
-    [
-        new("DemoModalContainer.razor", demoModalContainerCode),
-    ];
 
     private readonly string example11RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

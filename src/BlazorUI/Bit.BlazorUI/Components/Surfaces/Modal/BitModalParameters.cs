@@ -304,6 +304,24 @@ public class BitModalParameters
 
 
     /// <summary>
+    /// A copy of this set that can be changed without reaching this one: what the change handed to
+    /// <see cref="BitModalReferenceBase{TReference, TParameters}.Update(Action{TParameters})"/> is applied to, so a
+    /// set shared between showings - one every confirmation of an app is shown with - is never changed under the
+    /// other modals. The attributes and the per-part classes and styles are copied too, being objects of their own
+    /// that such a change reaches into.
+    /// </summary>
+    internal BitModalParameters Copy()
+    {
+        var copy = (BitModalParameters)MemberwiseClone();
+
+        copy.HtmlAttributes = new(HtmlAttributes ?? []);
+        copy.Classes = BitModalClassStyles.Merge(Classes, null);
+        copy.Styles = BitModalClassStyles.Merge(Styles, null);
+
+        return copy;
+    }
+
+    /// <summary>
     /// Merges two sets of <see cref="BitModalParameters"/> giving precedence to the values of the first one.
     /// </summary>
     public static BitModalParameters? Merge(BitModalParameters? params1, BitModalParameters? params2)

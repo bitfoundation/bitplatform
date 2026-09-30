@@ -434,6 +434,9 @@ public class ComponentCatalogTests : McpTestBase
         StringAssert.Contains(answer, "Every parameter of BitModal", "BitModalService does not say its parameters carry every parameter of BitModal.");
         StringAssert.Contains(answer, "## BitModalContentParameters<TComponent> (class)", "BitModalService does not document its typed content parameters.");
         Assert.DoesNotContain("- `BitModalParameters` (class)", answer, "BitModalService still lists its parameters as a one-liner.");
+        StringAssert.Contains(answer, "Action<BitModalParameters>", "BitModalService does not document the Update that changes some of the parameters.");
+        StringAssert.Contains(answer, "## BitModalContainer (component)", "BitModalService does not document its container.");
+        StringAssert.Contains(answer, "BitModalService?", "BitModalService does not document the Service a container can be handed.");
     }
 
     /// <summary>

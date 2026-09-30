@@ -91,19 +91,20 @@
 
         <DemoExample Title="Updating an open modal" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                <b>Update</b> replaces the parameters of an open modal and re-renders it. After mutating a parameters
-                object in place, call <b>Refresh</b> instead.
+                <b>Update</b> changes an open modal: a lambda changes only what it names - so the content, which never
+                saw its caller's set, can retitle its own modal - and a new set replaces the whole one. After mutating
+                a parameters object in place, call <b>Refresh</b>.
             </div>
             <br />
             <BitButton OnClick="ShowUpdatingModal">Show, then update it</BitButton>
         </DemoExample>
 
-        <DemoExample Title="Persistent modals" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode"
-                     CodeFiles="@example7CodeFiles" Id="example7">
+        <DemoExample Title="Persistent modals" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 A <b>persistent</b> modal outlives its container: the service keeps it and hands it to the next
                 container that mounts - even one mounting after the modal was shown. Any other modal closes, with a
-                null result, when its container goes. Show one of each, then unmount the container.
+                null result, when its container goes. Show one of each, then unmount the container. (The container's
+                <b>Service</b> keeps this example's modals apart from the rest of the page's.)
             </div>
             <br />
             <div class="example-box">
@@ -119,7 +120,7 @@
 
             @if (isDemoContainerMounted)
             {
-                <DemoModalContainer Service="demoModalService" />
+                <BitModalContainer Service="demoModalService" />
             }
         </DemoExample>
 
@@ -160,8 +161,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode"
-                     CodeFiles="@example10CodeFiles" Id="example10">
+        <DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 A <b>BitParams</b> around the container hands a <b>BitModalParams</b> to every modal it renders, and to
                 every <b>BitModal</b> in markup below it. They are defaults: the container's <b>ModalParameters</b> and
@@ -174,7 +174,7 @@
             </div>
 
             <BitParams Parameters="modalParams">
-                <DemoModalContainer Service="paramsModalService" />
+                <BitModalContainer Service="paramsModalService" />
             </BitParams>
         </DemoExample>
 

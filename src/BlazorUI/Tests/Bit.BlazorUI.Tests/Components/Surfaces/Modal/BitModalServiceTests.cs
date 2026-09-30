@@ -236,6 +236,29 @@ public class BitModalServiceTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalServiceShouldCloseEveryOpenModalTheLastOneOpenedFirst()
+    {
+        RenderComponent<BitModalContainer>();
+
+        var first = await ModalService.Show<TestModalContent>();
+        var second = await ModalService.Show<TestModalContent>();
+        var third = await ModalService.Show<TestModalContent>();
+
+        var closedOrder = new List<BitModalReference>();
+        ModalService.OnCloseModal += modalRef =>
+        {
+            closedOrder.Add(modalRef);
+            return Task.CompletedTask;
+        };
+
+        await ModalService.CloseAll();
+
+        // A stack unwinds from the top, so each modal hands the focus back to the one it was opened from while
+        // that one is still open to take it.
+        CollectionAssert.AreEqual(new[] { third, second, first }, closedOrder);
+    }
+
+    [TestMethod]
     public async Task BitModalServiceShouldCloseThePersistentModalsItIsStillTracking()
     {
         // Shown before any container mounted, so the service - not a container - is what is holding it.
@@ -462,5 +485,98 @@ public class BitModalServiceTests : BunitTestContext
             Assert.AreEqual(0, container.FindAll(".bit-mdl").Count);
             Assert.IsTrue(modalRef.IsClosed);
         });
+    }
+
+    [TestMethod]
+    public async Task BitModalReferenceShouldChangeOnlyTheParametersItNames()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var shared = new BitModalParameters { HeaderText = "before", Class = "kept", Styles = new() { Header = "color:red" } };
+
+        var modalRef = await ModalService.Show<TestModalContent>(shared);
+
+        container.WaitForAssertion(() => Assert.AreEqual("before", container.Find(".bit-mdl-hdr").TextContent.Trim()));
+
+        await modalRef.Update(p =>
+        {
+            p.HeaderText = "after";
+            p.Styles!.Header = "color:blue";
+        });
+
+        container.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("after", container.Find(".bit-mdl-hdr").TextContent.Trim());
+            StringAssert.Contains(container.Find(".bit-mdl-hdr").GetAttribute("style"), "color:blue");
+            Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("kept"));
+        });
+
+        // The change went to a copy: a set shared between showings is not changed under the other modals.
+        Assert.AreEqual("before", shared.HeaderText);
+        Assert.AreEqual("color:red", shared.Styles.Header);
+        Assert.AreNotSame(shared, modalRef.Parameters);
+    }
+
+    [TestMethod]
+    public async Task BitModalReferenceShouldChangeTheParametersOfAModalShownWithout()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var modalRef = await ModalService.Show<TestModalContent>();
+
+        await modalRef.Update(p => p.HeaderText = "titled");
+
+        container.WaitForAssertion(() => Assert.AreEqual("titled", container.Find(".bit-mdl-hdr").TextContent.Trim()));
+    }
+
+    [TestMethod]
+    public async Task BitModalReferenceShouldRefuseANullChange()
+    {
+        var modalRef = await ModalService.Show<TestModalContent>();
+
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => modalRef.Update((Action<BitModalParameters>)null!));
+    }
+
+    [TestMethod]
+    public async Task BitModalContainerShouldRenderTheModalsOfTheServiceItIsHanded()
+    {
+        var ownService = new BitModalService();
+
+        var registered = RenderComponent<BitModalContainer>();
+        var own = RenderComponent<BitModalContainer>(parameters => parameters.Add(p => p.Service, ownService));
+
+        await ownService.Show<TestModalContent>(new Dictionary<string, object> { { nameof(TestModalContent.Message), "own" } });
+        await ModalService.Show<TestModalContent>(new Dictionary<string, object> { { nameof(TestModalContent.Message), "registered" } });
+
+        own.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, own.FindAll(".bit-mdl").Count);
+            StringAssert.Contains(own.Markup, "own");
+            Assert.IsFalse(own.Markup.Contains("registered"));
+        });
+
+        registered.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, registered.FindAll(".bit-mdl").Count);
+            StringAssert.Contains(registered.Markup, "registered");
+        });
+
+        // Each service kept its own container: mounting the second did not take the registered one over.
+        Assert.IsTrue(ModalService.IsContainerAvailable);
+        Assert.IsTrue(ownService.IsContainerAvailable);
+
+        await own.InvokeAsync(() => own.Instance.Dispose());
+
+        Assert.IsFalse(ownService.IsContainerAvailable);
+        Assert.IsTrue(ModalService.IsContainerAvailable);
+    }
+
+    [TestMethod]
+    public void BitModalContainerShouldRefuseToChangeItsService()
+    {
+        var container = RenderComponent<BitModalContainer>(parameters => parameters.Add(p => p.Service, new BitModalService()));
+
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
+            container.Render(parameters => parameters.Add(p => p.Service, new BitModalService())));
     }
 }
