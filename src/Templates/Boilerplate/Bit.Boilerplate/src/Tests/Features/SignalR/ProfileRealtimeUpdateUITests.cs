@@ -26,7 +26,7 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // The very same account signs into two independent browsers, so it owns two distinct sessions. A fresh e-mail
         // keeps this account (and its sessions) isolated from other tests that share the same database.

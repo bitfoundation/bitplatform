@@ -141,7 +141,7 @@ public partial class PushSubscriptionOwnershipTests
             // Step one of the real sequence, and the one that fails first: the tokens are gone, so the app reloads
             // ANONYMOUS and AppClientCoordinator propagates that state before anything else - which calls Subscribe
             // with no identity at all, for a device whose row is still bound to the surviving first session. A raw
-            // HttpClient because the rich one and the app's controllers both attach a bearer token through
+            // HttpClient because the app's own and its controllers both attach a bearer token through
             // AuthDelegatingHandler, and the whole point here is a request carrying none.
             using (var anonymousClient = server.CreateRawHttpClient())
             {

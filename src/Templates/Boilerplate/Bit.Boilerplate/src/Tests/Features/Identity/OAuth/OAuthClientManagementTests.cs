@@ -43,7 +43,7 @@ public class OAuthClientManagementTests
     public async Task TheClientList_Should_IncludeAClientThatHasNoStoredRegistration()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -94,7 +94,7 @@ public class OAuthClientManagementTests
     public async Task RevokingAClient_Should_EndItsAccessForEveryUser()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -112,7 +112,7 @@ public class OAuthClientManagementTests
             Scope = OAuthScopes.DevMcp,
             CodeChallenge = challenge,
             CodeChallengeMethod = "S256",
-            Resource = $"{server.ApiServerAddress.ToString().TrimEnd('/')}/dev-mcp"
+            Resource = $"{server.ApiAppAddress.ToString().TrimEnd('/')}/dev-mcp"
         }, TestContext.CancellationToken);
 
         var code = QueryHelpers.ParseQuery(new Uri(approval.RedirectUrl).Query)["code"].ToString();

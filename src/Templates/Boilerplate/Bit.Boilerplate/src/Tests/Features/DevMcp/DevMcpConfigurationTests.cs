@@ -24,7 +24,7 @@ public class DevMcpConfigurationTests
         // Everything read from the answering process itself lives under Instance, not Hosting.
         Assert.AreEqual("Development", json["instance"]!["environmentName"]!.GetValue<string>());
         // The issuer is the origin the caller reached, which is what every token minted there carries.
-        Assert.AreEqual(server.ApiServerAddress.ToString().TrimEnd('/'), json["identity"]!["issuer"]!.GetValue<string>());
+        Assert.AreEqual(server.ApiAppAddress.ToString().TrimEnd('/'), json["identity"]!["issuer"]!.GetValue<string>());
         Assert.IsTrue(json["identity"]!["requireConfirmedAccount"]!.GetValue<bool>());
         Assert.IsFalse(json["backgroundJobs"]!["useIsolatedStorage"]!.GetValue<bool>());
 

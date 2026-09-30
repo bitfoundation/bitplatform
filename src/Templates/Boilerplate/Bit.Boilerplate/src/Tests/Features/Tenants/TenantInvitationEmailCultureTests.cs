@@ -50,7 +50,7 @@ public partial class TenantInvitationEmailCultureTests
 
         // The e-mail templates read HttpContext.Request.GetWebAppUrl() for the footer links, and there is no real
         // request in a bare DI scope.
-        SetCurrentHttpContext(scopeApiApp.ServiceProvider, server.WebAppServerAddress);
+        SetCurrentHttpContext(scopeApiApp.ServiceProvider, server.WebAppAddress);
 
         var recipient = await scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>()
             .Users.SingleAsync(user => user.Id == recipientUserId, TestContext.CancellationToken);
@@ -75,7 +75,7 @@ public partial class TenantInvitationEmailCultureTests
             CultureInfo.CurrentCulture = inviterCulture;
             CultureInfo.CurrentUICulture = inviterCulture;
 
-            await emailService.SendTenantInvitation(recipient, "Inviter Adminsson", "Contoso", server.WebAppServerAddress, TestContext.CancellationToken);
+            await emailService.SendTenantInvitation(recipient, "Inviter Adminsson", "Contoso", server.WebAppAddress, TestContext.CancellationToken);
 
             Assert.AreEqual("sv-SE", CultureInfo.CurrentUICulture.Name,
                 "SendTenantInvitation must restore the inviter's culture: the rest of their request is still theirs.");

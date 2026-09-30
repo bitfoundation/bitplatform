@@ -7,7 +7,7 @@ public partial class AccessTokenCookieUITests : AppPageTest
 
     /// <summary>
     /// The web app on one host and its api on another - localhost for the page, 127.0.0.1 for the api (See
-    /// <see cref="AppTestServer.ApiServerAddress"/>), the way a standalone api sits on a sibling host. The api's own
+    /// <see cref="AppTestServer.ApiAppAddress"/>), the way a standalone api sits on a sibling host. The api's own
     /// answer would carry the access_token cookie to the wrong host, so UpdateSession has to be answered by the page's
     /// host, or pre-rendering never sees the user (See RequestHeadersDelegatingHandler).
     /// </summary>
@@ -16,13 +16,13 @@ public partial class AccessTokenCookieUITests : AppPageTest
     {
         // Its startup params point the app's ServerAddress at 127.0.0.1.
         await using var server = new AppTestServer(Context);
-        await server.Build(configureTestConfigurations: configuration =>
+        await server.Build(configureTestConfiguration: configuration =>
         {
             configuration["WebAppRender:BlazorMode"] = nameof(BlazorWebAppMode.BlazorWebAssembly);
             configuration["WebAppRender:PrerenderEnabled"] = "true";
         }).Start(TestContext.CancellationToken);
 
-        var pageBase = server.WebAppServerAddress;
+        var pageBase = server.WebAppAddress;
         var protectedPage = new Uri(pageBase, PageUrls.Settings).ToString();
 
         var anonymousVisit = await Context.APIRequest.GetAsync(protectedPage);

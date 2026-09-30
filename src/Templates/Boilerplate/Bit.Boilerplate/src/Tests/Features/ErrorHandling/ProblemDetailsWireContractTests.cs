@@ -16,7 +16,7 @@ namespace Boilerplate.Tests.Features.ErrorHandling;
 /// </para>
 /// <para>
 /// The requests below are deliberately issued with a raw HttpClient (See <see cref="AppTestServer.CreateRawHttpClient"/>)
-/// rather than the rich one: the client pipeline turns an error response into a typed exception, which is exactly the layer that hides this.
+/// rather than the app's: the client pipeline turns an error response into a typed exception, which is exactly the layer that hides this.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]

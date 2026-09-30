@@ -35,14 +35,14 @@ public partial class CultureCookieCacheabilityTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableOutputCaching"] = "true";
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
             }).Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         using var response = await GetPage(visitorHttpClient, "/");
 
@@ -72,14 +72,14 @@ public partial class CultureCookieCacheabilityTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableOutputCaching"] = "false";
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "false";
             }).Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         using var response = await GetPage(visitorHttpClient, "/");
 

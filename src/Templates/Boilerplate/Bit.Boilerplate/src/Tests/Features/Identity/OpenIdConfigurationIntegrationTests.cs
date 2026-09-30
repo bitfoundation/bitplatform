@@ -152,7 +152,7 @@ public class OpenIdConfigurationIntegrationTests
         Assert.IsTrue(Uri.TryCreate(mintedIssuer, UriKind.Absolute, out var issuerUri),
             $"The issuer must be an absolute url (RFC 8414), not a name. Got '{mintedIssuer}'.");
 
-        Assert.AreEqual(server.ApiServerAddress.GetLeftPart(UriPartial.Authority), issuerUri!.GetLeftPart(UriPartial.Authority),
+        Assert.AreEqual(server.ApiAppAddress.GetLeftPart(UriPartial.Authority), issuerUri!.GetLeftPart(UriPartial.Authority),
             "And it must be the origin the caller actually reached, or discovery sends them somewhere this server is not.");
     }
 
@@ -181,7 +181,7 @@ public class OpenIdConfigurationIntegrationTests
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
-            options.Authority = server.ApiServerAddress.ToString();
+            options.Authority = server.ApiAppAddress.ToString();
             options.RequireHttpsMetadata = false;
             options.TokenValidationParameters = new()
             {

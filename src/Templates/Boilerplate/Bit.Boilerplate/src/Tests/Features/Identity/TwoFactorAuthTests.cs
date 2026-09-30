@@ -26,7 +26,7 @@ public partial class TwoFactorAuthTests : AppPageTest
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -119,7 +119,7 @@ public partial class TwoFactorAuthTests : AppPageTest
     private async Task SignInPassingTwoFactor(IPage page, AppTestServer server, string email, string authenticatorSecret)
     {
         // Ask for a magic link / OTP for the existing account and type the 6 digits from the captured OTP e-mail.
-        await MagicLinkSignInUtils.RequestMagicLinkAndOtp(page, server.WebAppServerAddress, email);
+        await MagicLinkSignInUtils.RequestMagicLinkAndOtp(page, server.WebAppAddress, email);
 
         var otpEmail = await server.WaitForCapturedEmail(email,
             capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
@@ -130,7 +130,7 @@ public partial class TwoFactorAuthTests : AppPageTest
         await BitOtpInputUtils.FillOtpInputs(page, ComputeTotpCode(authenticatorSecret));
 
         // Passing 2FA finishes the sign-in and redirects her to the home page as herself.
-        await page.WaitForURLAsync(server.WebAppServerAddress.ToString());
+        await page.WaitForURLAsync(server.WebAppAddress.ToString());
         await Expect(page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
     }
 

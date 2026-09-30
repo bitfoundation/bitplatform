@@ -33,18 +33,18 @@ public partial class IntegrationTests
         if (CultureInfoManager.InvariantGlobalization)
         {
             // Public (anonymous) pages are listed under their bare urls.
-            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.Terms)}</loc>", siteMap);
-            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.PrivacyPolicy)}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppAddress, PageUrls.Terms)}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppAddress, PageUrls.PrivacyPolicy)}</loc>", siteMap);
         }
         else
         {
             // On a multilingual build a page is only ever served under its culture-prefixed url - the bare url 302s
             // to it (See UseCultureUrlRedirection) - so public pages are listed once per supported culture and the
             // always-redirecting bare form is not advertised at all.
-            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"en-US{PageUrls.Terms}")}</loc>", siteMap);
-            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"fa-IR{PageUrls.Terms}")}</loc>", siteMap);
-            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"fa-IR{PageUrls.PrivacyPolicy}")}</loc>", siteMap);
-            Assert.DoesNotContain($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.Terms)}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppAddress, $"en-US{PageUrls.Terms}")}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppAddress, $"fa-IR{PageUrls.Terms}")}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppAddress, $"fa-IR{PageUrls.PrivacyPolicy}")}</loc>", siteMap);
+            Assert.DoesNotContain($"<loc>{new Uri(server.WebAppAddress, PageUrls.Terms)}</loc>", siteMap);
         }
 
         // Authenticated pages are excluded because their type carries an [Authorize] attribute, which is an unwritten
@@ -75,7 +75,7 @@ public partial class IntegrationTests
         var siteMapIndex = await httpClient.GetStringAsync("sitemap_index.xml", TestContext.CancellationToken);
 
         // Non-vacuity first: the document has to actually list the sitemap, or the assertions below prove nothing.
-        Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, "sitemap.xml")}</loc>", siteMapIndex);
+        Assert.Contains($"<loc>{new Uri(server.WebAppAddress, "sitemap.xml")}</loc>", siteMapIndex);
 
         //-:cnd:noEmit
         // Conditional processing is off for these two lines. The template engine scans for the text
@@ -107,7 +107,7 @@ public partial class IntegrationTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -132,7 +132,7 @@ public partial class IntegrationTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -177,7 +177,7 @@ public partial class IntegrationTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableOutputCaching"] = "true";
@@ -223,7 +223,7 @@ public partial class IntegrationTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -250,9 +250,9 @@ public partial class IntegrationTests
 
         // hreflang: every culture of this page is advertised as a translation of one document, and x-default names
         // the culture-less url whose 302 acts as the language chooser (See App.razor's alternate links).
-        Assert.Contains($"hreflang=\"en-US\" href=\"{new Uri(server.WebAppServerAddress, "en-US/")}\"", html,
+        Assert.Contains($"hreflang=\"en-US\" href=\"{new Uri(server.WebAppAddress, "en-US/")}\"", html,
             "Each supported culture's url must be advertised as an alternate of this page.");
-        Assert.Contains($"hreflang=\"x-default\" href=\"{server.WebAppServerAddress}\"", html,
+        Assert.Contains($"hreflang=\"x-default\" href=\"{server.WebAppAddress}\"", html,
             "The culture-less (redirecting) url must be advertised as the x-default alternate.");
     }
 
@@ -280,10 +280,10 @@ public partial class IntegrationTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = new HttpClient { BaseAddress = server.WebAppAddress };
         // The neutral "fa", never "fa-IR": mapping it up to the supported specific culture is the behavior under test.
         httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("fa"));
 

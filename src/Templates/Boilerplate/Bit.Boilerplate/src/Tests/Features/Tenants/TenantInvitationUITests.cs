@@ -24,7 +24,7 @@ public partial class TenantInvitationUITests : AppPageTest
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // ---- Browser 1: the tenant admin (the default Page / Context) ----
         await SignInWithPassword(Page, serverAddress, StoreAdminEmail, StoreAdminPassword);

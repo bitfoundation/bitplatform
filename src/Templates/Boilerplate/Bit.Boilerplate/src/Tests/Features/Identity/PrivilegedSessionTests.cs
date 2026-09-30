@@ -30,7 +30,7 @@ public partial class PrivilegedSessionTests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // The same brand-new account is used for every sign-in; a fresh e-mail keeps its privileged-session count
         // isolated from other (parallel) tests that share the same database.

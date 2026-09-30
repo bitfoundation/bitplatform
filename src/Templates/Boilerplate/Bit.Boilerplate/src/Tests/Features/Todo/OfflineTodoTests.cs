@@ -22,9 +22,9 @@ public partial class OfflineTodoTests : AppPageTest
         var secondTodoTitle = Guid.NewGuid().ToString();
 
         await using var server = new AppTestServer(Context);
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
-        await server.Build(configureTestConfigurations: configuration => configuration["WebAppRender:BlazorMode"] = nameof(BlazorWebAppMode.BlazorWebAssembly))
+        await server.Build(configureTestConfiguration: configuration => configuration["WebAppRender:BlazorMode"] = nameof(BlazorWebAppMode.BlazorWebAssembly))
             .Start(TestContext.CancellationToken);
 
         await SignIn(serverAddress);

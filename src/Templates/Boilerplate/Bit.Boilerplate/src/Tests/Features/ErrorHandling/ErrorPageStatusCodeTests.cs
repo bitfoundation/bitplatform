@@ -17,10 +17,10 @@ public partial class ErrorPageStatusCodeTests
         await using var server = new AppTestServer();
         // Prerendered, like the deployments: with it off the server renders no page to redirect to or to take a body from.
         await server.Build(
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         using var response = await httpClient.GetAsync("/e2e/route/that-does-not-exist", TestContext.CancellationToken);
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
@@ -36,10 +36,10 @@ public partial class ErrorPageStatusCodeTests
         await using var server = new AppTestServer();
         // Prerendered, like the deployments: with it off the server renders no page to redirect to or to take a body from.
         await server.Build(
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         using var response = await httpClient.GetAsync(PageUrls.Settings, TestContext.CancellationToken);
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));

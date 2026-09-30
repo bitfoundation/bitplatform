@@ -127,7 +127,7 @@ public class AccessTokenCookieTests
 
         return new HttpClient(handlerFactory.Invoke(sharedHandler), disposeHandler: false)
         {
-            BaseAddress = client.Server.ApiServerAddress
+            BaseAddress = client.Server.ApiAppAddress
         };
     }
 

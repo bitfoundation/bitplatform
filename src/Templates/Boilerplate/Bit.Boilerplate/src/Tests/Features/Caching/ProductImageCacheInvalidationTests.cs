@@ -183,7 +183,7 @@ public class ProductImageCacheInvalidationTests
                 services.RemoveAll<IOutputCacheStore>();
                 services.AddSingleton<IOutputCacheStore>(recorder);
             },
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["AI:OpenAI:ChatApiKey"] = null;
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";

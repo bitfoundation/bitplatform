@@ -53,39 +53,39 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     //#endif
 
     //#if (advancedTests == true)
-    public IServiceCollection WebAppServices => webAppBuilder?.Services ?? throw new InvalidOperationException($"{nameof(WebAppServices)} is null. Call {nameof(Build)} method first.");
+    public IServiceCollection WebAppServiceCollection => webAppBuilder?.Services ?? throw new InvalidOperationException($"{nameof(WebAppServiceCollection)} is null. Call {nameof(Build)} method first.");
     //#if (api == "Standalone")
     //#if (IsInsideProjectTemplate)
     /*
     //#endif
-    public IServiceCollection ApiAppServices => apiAppBuilder?.Services ?? throw new InvalidOperationException($"{nameof(ApiAppServices)} is null. Call {nameof(Build)} method first.");
+    public IServiceCollection ApiAppServiceCollection => apiAppBuilder?.Services ?? throw new InvalidOperationException($"{nameof(ApiAppServiceCollection)} is null. Call {nameof(Build)} method first.");
     //#if (IsInsideProjectTemplate)
     */
     //#endif
     //#else
     /// <summary>The registrations of the host Server.Api's services live in (See <see cref="ApiApp"/>).</summary>
-    public IServiceCollection ApiAppServices => WebAppServices;
+    public IServiceCollection ApiAppServiceCollection => WebAppServiceCollection;
     //#endif
     //#endif
     /// <summary>
     /// Under localhost rather than an IP: WebAuthn only takes a domain as its relying party id.
     /// </summary>
-    public readonly Uri WebAppServerAddress = new(GenerateServerUrl("localhost"));
+    public readonly Uri WebAppAddress = new(GenerateServerUrl("localhost"));
 
     //#if (api == "Standalone")
     //#if (IsInsideProjectTemplate)
     /*
     //#endif
     /// <summary>
-    /// A host other than <see cref="WebAppServerAddress"/>'s, as in a real deployment: cookies ignore the port, so under
+    /// A host other than <see cref="WebAppAddress"/>'s, as in a real deployment: cookies ignore the port, so under
     /// the same host name the api's cookies would reach the web app as well.
     /// </summary>
-    public readonly Uri ApiServerAddress = new(GenerateServerUrl("127.0.0.1"));
+    public readonly Uri ApiAppAddress = new(GenerateServerUrl("127.0.0.1"));
     //#if (IsInsideProjectTemplate)
     */
     //#endif
     //#else
-    public Uri ApiServerAddress => WebAppServerAddress;
+    public Uri ApiAppAddress => WebAppAddress;
     //#endif
 
     /// <param name="configureTestServices">
@@ -94,11 +94,11 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     /// </param>
     /// <param name="configureTestWebAppServices">Overrides Server.Web's services, the client services it hosts included.</param>
     /// <param name="configureTestApiAppServices">Overrides Server.Api's services.</param>
-    /// <param name="configureTestConfigurations">Overrides Server.Web's and Server.Api's configuration.</param>
+    /// <param name="configureTestConfiguration">Overrides Server.Web's and Server.Api's configuration.</param>
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,
         Action<IServiceCollection>? configureTestWebAppServices = null,
         Action<IServiceCollection>? configureTestApiAppServices = null,
-        Action<ConfigurationManager>? configureTestConfigurations = null)
+        Action<ConfigurationManager>? configureTestConfiguration = null)
     {
         if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
@@ -107,7 +107,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         //#if (IsInsideProjectTemplate)
         /*
         //#endif
-        apiApp = BuildApi(configureTestServices, configureTestApiAppServices, configureTestConfigurations);
+        apiApp = BuildApi(configureTestServices, configureTestApiAppServices, configureTestConfiguration);
 
         //#if (IsInsideProjectTemplate)
         */
@@ -135,20 +135,20 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         // As in a real deployment, ServerAddress is Server.Api's own address: Server.Web's HttpClient calls it, JwtBearer
         // reads its discovery document there, and /api and /hangfire are forwarded to it.
         //#endif
-        webAppBuilder.Configuration["ServerAddress"] = ApiServerAddress.ToString();
-        webAppBuilder.Configuration["WebAppUrl"] = WebAppServerAddress.ToString();
-        webAppBuilder.WebHost.UseUrls(WebAppServerAddress.ToString());
+        webAppBuilder.Configuration["ServerAddress"] = ApiAppAddress.ToString();
+        webAppBuilder.Configuration["WebAppUrl"] = WebAppAddress.ToString();
+        webAppBuilder.WebHost.UseUrls(WebAppAddress.ToString());
 
         AppEnvironment.Set(webAppBuilder.Environment.EnvironmentName);
 
         webAppBuilder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
-        configureTestConfigurations?.Invoke(webAppBuilder.Configuration);
+        configureTestConfiguration?.Invoke(webAppBuilder.Configuration);
 
-        webAppBuilder.AddTestProjectServices();
+        webAppBuilder.AddTestWebProjectServices();
 
         // The HttpClient the app's services get here, the typed api clients among them (See AppClient.HttpClient).
-        webAppBuilder.Services.AddTransient(BuildRichHttpClient);
+        webAppBuilder.Services.AddTransient(BuildAppHttpClient);
 
         if (ClientBrowserContext is null)
         {
@@ -179,7 +179,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     /// </summary>
     private WebApplication BuildApi(Action<IServiceCollection>? configureTestServices,
         Action<IServiceCollection>? configureTestApiAppServices,
-        Action<ConfigurationManager>? configureTestConfigurations)
+        Action<ConfigurationManager>? configureTestConfiguration)
     {
         var apiAppBuilder = WebApplication.CreateBuilder(options: new()
         {
@@ -192,14 +192,14 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         //#endif
 
         // The links the api builds (e-mail confirmation, reset password, ...) point at the web app, which is another host here.
-        apiAppBuilder.Configuration["WebAppUrl"] = WebAppServerAddress.ToString();
-        apiAppBuilder.WebHost.UseUrls(ApiServerAddress.ToString());
+        apiAppBuilder.Configuration["WebAppUrl"] = WebAppAddress.ToString();
+        apiAppBuilder.WebHost.UseUrls(ApiAppAddress.ToString());
 
         AppEnvironment.Set(apiAppBuilder.Environment.EnvironmentName);
 
         apiAppBuilder.Configuration.AddSharedConfigurations();
 
-        configureTestConfigurations?.Invoke(apiAppBuilder.Configuration);
+        configureTestConfiguration?.Invoke(apiAppBuilder.Configuration);
 
         apiAppBuilder.Services.AddSharedProjectServices(apiAppBuilder.Configuration);
         Server.Api.Program.AddServerApiProjectServices(apiAppBuilder);
@@ -235,7 +235,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         if (ClientBrowserContext is not null)
         {
             // Points the app in the browser at this server's api.
-            await ClientBrowserContext.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={ApiServerAddress}' ]; }};");
+            await ClientBrowserContext.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={ApiAppAddress}' ]; }};");
         }
     }
 
@@ -314,18 +314,18 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     /// </param>
     public HttpClient CreateRawHttpClient(HttpMessageHandler? handler = null)
     {
-        return new HttpClient(handler ?? new HttpClientHandler()) { BaseAddress = ApiServerAddress };
+        return new HttpClient(handler ?? new HttpClientHandler()) { BaseAddress = ApiAppAddress };
     }
 
-    private HttpClient BuildRichHttpClient(IServiceProvider services)
+    private HttpClient BuildAppHttpClient(IServiceProvider services)
     {
         var httpClient = new HttpClient(services.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke())
         {
-            BaseAddress = WebAppServerAddress
+            BaseAddress = WebAppAddress
         };
 
         // The origin the api builds its links for (e-mail confirmation and the rest), which the app's clients send as well.
-        httpClient.DefaultRequestHeaders.Add("X-Origin", WebAppServerAddress.ToString());
+        httpClient.DefaultRequestHeaders.Add("X-Origin", WebAppAddress.ToString());
 
         return httpClient;
     }

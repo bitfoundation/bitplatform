@@ -18,7 +18,7 @@ public partial class QuickSignInUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // The ShortId is the human-friendly id the product page URL uses. Ignore the tenant-aware global query filter
         // here: without an HttpContext the current tenant can't be resolved, so an un-ignored read would throw.

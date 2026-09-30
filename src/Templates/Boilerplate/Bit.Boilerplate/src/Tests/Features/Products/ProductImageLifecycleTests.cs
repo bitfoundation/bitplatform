@@ -72,7 +72,7 @@ public partial class ProductImageLifecycleTests
                 "The image was uploaded before the row existed, so nothing but Create can adopt it. False here means " +
                 "the blob and both Attachment rows are referenced by nothing and the product renders a placeholder.");
 
-            Assert.IsNotNull(created.GetPrimaryMediumImageUrl(server.WebAppServerAddress),
+            Assert.IsNotNull(created.GetPrimaryMediumImageUrl(server.WebAppAddress),
                 "HasPrimaryImage is the only thing gating the image URL, so a false flag hides an image that is really there.");
 
             var served = await httpClient.GetByteArrayAsync(
@@ -171,7 +171,7 @@ public partial class ProductImageLifecycleTests
         Assert.AreEqual(0, await CountAttachments(server, productId),
             "The Attachment rows outlive the product unless Delete removes them - nothing cascades, the key is { Id, Kind }.");
 
-        // The rich HttpClient translates the server's ProblemDetails back into the original exception type
+        // The app's HttpClient translates the server's ProblemDetails back into the original exception type
         // (See ExceptionDelegatingHandler), so a 404 from GetAttachment arrives as ResourceNotFoundException.
         await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(
             () => httpClient.GetByteArrayAsync(
@@ -191,7 +191,7 @@ public partial class ProductImageLifecycleTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: configuration => configuration["AI:OpenAI:ChatApiKey"] = null)
+        await server.Build(configureTestConfiguration: configuration => configuration["AI:OpenAI:ChatApiKey"] = null)
                     .Start(TestContext.CancellationToken);
         return server;
     }

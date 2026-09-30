@@ -84,7 +84,7 @@ public class AttachmentReplacementTests
             await Upload(httpClient, SolidImage(MagickColors.Red));
             var before = await Download(httpClient, userId);
 
-            // The rich HttpClient turns a non-success response into an exception (See ExceptionDelegatingHandler); the
+            // The app's HttpClient turns a non-success response into an exception (See ExceptionDelegatingHandler); the
             // ImageTooSmall body is plain text, so the status code is what identifies the rejection.
             var rejected = await Assert.ThrowsExactlyAsync<HttpRequestException>(
                 () => Upload(httpClient, SolidImage(MagickColors.Blue, 100)),
@@ -128,7 +128,7 @@ public class AttachmentReplacementTests
             var before = await Download(httpClient, userId);
 
             // Deterministic non-image bytes, posted with a spoofed image/png content type: the server must judge the
-            // content, not the caller-controlled header. The rich HttpClient turns the non-success response into an
+            // content, not the caller-controlled header. The app's HttpClient turns the non-success response into an
             // exception (See ExceptionDelegatingHandler); the rejection body is plain text, so the status identifies it.
             var garbageBytes = new byte[1024];
             Array.Fill(garbageBytes, (byte)'x');

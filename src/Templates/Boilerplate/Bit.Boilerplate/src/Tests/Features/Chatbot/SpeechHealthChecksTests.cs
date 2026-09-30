@@ -128,7 +128,7 @@ public class SpeechHealthChecksTests
             services.Replace(ServiceDescriptor.Singleton(providers.TextToSpeechClient));
             services.Replace(ServiceDescriptor.Singleton<OpenAIRealtimeCallClient>(providers.RealtimeCallClient));
         },
-        configureTestConfigurations: configuration =>
+        configureTestConfiguration: configuration =>
         {
             // The keys are never used: every client they would build is replaced above.
             configuration["AI:OpenAI:SpeechToTextApiKey"] = "fake-key";

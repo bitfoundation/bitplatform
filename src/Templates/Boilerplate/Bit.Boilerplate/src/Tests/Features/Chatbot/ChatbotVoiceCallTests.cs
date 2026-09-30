@@ -404,7 +404,7 @@ public class ChatbotVoiceCallTests
         {
             services.AddSingleton<OpenAIRealtimeCallClient>(realtime);
             services.AddSingleton<VoiceCallRunner>();
-        }, configureTestConfigurations: configuration =>
+        }, configureTestConfiguration: configuration =>
         {
             if (reasoningEffort is not null)
             {
@@ -432,7 +432,7 @@ public class ChatbotVoiceCallTests
         var accessToken = await client.Services.GetRequiredService<IAuthTokenProvider>().GetAccessToken();
 
         var tab = new HubConnectionBuilder()
-            .WithUrl(new Uri(client.Server.ApiServerAddress, "app-hub"), options =>
+            .WithUrl(new Uri(client.Server.ApiAppAddress, "app-hub"), options =>
             {
                 options.Transports = HttpTransportType.WebSockets;
                 options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);

@@ -106,11 +106,11 @@ public partial class HostPageRenderTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
         // A bare HttpClient so the assertions are about what the server wrote, with no client side handlers in between.
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         Assert.DoesNotContain(BlazorBootScript, await GetPage(visitorHttpClient, "/", LighthouseUserAgent),
             "With pre-rendering on there IS html to measure, so a Lighthouse run should get the script-free document.");
@@ -139,10 +139,10 @@ public partial class HostPageRenderTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         Assert.Contains("<blazor-ssr", await GetPage(visitorHttpClient, "/", BrowserUserAgent),
             "An ordinary visitor is streamed to, which is what makes the assertion below mean something.");
@@ -166,7 +166,7 @@ public partial class HostPageRenderTests
         await server.Build(configureTestServices: services => services.FakeExternalStatistics())
                     .Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         foreach (var userAgent in new[] { GooglebotUserAgent, LighthouseUserAgent, BrowserUserAgent })
         {
@@ -191,10 +191,10 @@ public partial class HostPageRenderTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:BlazorMode"] = "BlazorSsr")
+            configureTestConfiguration: configuration => configuration["WebAppRender:BlazorMode"] = "BlazorSsr")
             .Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         var html = await GetPage(visitorHttpClient, "/", GooglebotUserAgent);
 
@@ -229,14 +229,14 @@ public partial class HostPageRenderTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableOutputCaching"] = "true";
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
             }).Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         foreach (var userAgent in new[] { LighthouseUserAgent, GooglebotUserAgent })
         {
@@ -274,13 +274,13 @@ public partial class HostPageRenderTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["ResponseCaching:EnableOutputCaching"] = "true";
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
             }).Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         var (_, siteMapDecision) = await GetPageWithCacheDecision(visitorHttpClient, "/sitemap.xml", GooglebotUserAgent);
 
@@ -305,10 +305,10 @@ public partial class HostPageRenderTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:BlazorMode"] = "BlazorServer")
+            configureTestConfiguration: configuration => configuration["WebAppRender:BlazorMode"] = "BlazorServer")
             .Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         var html = await visitorHttpClient.GetStringAsync("/?no-prerender=true", TestContext.CancellationToken);
 

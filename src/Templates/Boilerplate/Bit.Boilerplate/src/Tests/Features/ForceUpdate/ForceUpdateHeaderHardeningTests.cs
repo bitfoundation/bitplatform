@@ -67,7 +67,7 @@ public class ForceUpdateHeaderHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestConfigurations: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = "9.9.9")
+        await server.Build(configureTestConfiguration: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = "9.9.9")
             .Start(TestContext.CancellationToken);
 
         using var response = await SendAttachmentRequest(server, appVersion: "1.0.0", appPlatform: nameof(AppPlatformType.Web));

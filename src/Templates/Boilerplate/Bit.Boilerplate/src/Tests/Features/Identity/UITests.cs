@@ -13,7 +13,7 @@ public partial class UITests : AppPageTest
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start(TestContext.CancellationToken);
 
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Settings).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.GotoAsync(new Uri(server.WebAppAddress, PageUrls.Settings).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         await Expect(Page)
             .ToHaveTitleAsync(AppStrings.NotAuthorizedPageTitle);
@@ -25,9 +25,9 @@ public partial class UITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.GotoAsync(new Uri(server.WebAppAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
 
@@ -38,7 +38,7 @@ public partial class UITests : AppPageTest
         await SignInPanelUtils.FillCredentials(Page, email, password);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
+        await Expect(Page).ToHaveURLAsync(server.WebAppAddress.ToString());
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(userFullName);
         await Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(userFullName);

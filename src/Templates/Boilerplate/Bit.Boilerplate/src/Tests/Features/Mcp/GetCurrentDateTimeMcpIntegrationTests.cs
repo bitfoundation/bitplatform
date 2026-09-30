@@ -45,7 +45,7 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
         // probe, removing RequireAuthorization() again would leave the whole suite green while /mcp (whose tools can
         // drive any user's connected client session) goes anonymous. Asserted on the raw HTTP status rather than
         // through the MCP client, whose transport wraps/obscures the 401 - and through a raw HttpClient rather than
-        // the rich one, whose handler chain attaches auth and turns the non-success status into an exception.
+        // the app's, whose handler chain attaches auth and turns the non-success status into an exception.
         // This exercises Server.Web's mapping (Program.Middlewares.cs); Server.Api's own MapMcp stays mirror-protected.
         using (var anonymousHttpClient = server.CreateRawHttpClient())
         {
@@ -75,7 +75,7 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
         // Connect a real MCP client to the server's Streamable HTTP endpoint, carrying the bearer token.
         var transport = new HttpClientTransport(new HttpClientTransportOptions
         {
-            Endpoint = new Uri(server.ApiServerAddress, "mcp"),
+            Endpoint = new Uri(server.ApiAppAddress, "mcp"),
             TransportMode = HttpTransportMode.StreamableHttp,
             AdditionalHeaders = new Dictionary<string, string>
             {

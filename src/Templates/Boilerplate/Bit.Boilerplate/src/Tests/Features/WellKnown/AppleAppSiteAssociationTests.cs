@@ -26,7 +26,7 @@ public partial class AppleAppSiteAssociationTests
         await using var client = server.CreateAppClient();
         var httpClient = client.HttpClient;
 
-        var appleAppSiteAssociationUrl = new Uri(server.WebAppServerAddress, "/.well-known/apple-app-site-association");
+        var appleAppSiteAssociationUrl = new Uri(server.WebAppAddress, "/.well-known/apple-app-site-association");
 
         using var response = await httpClient.GetAsync(appleAppSiteAssociationUrl, TestContext.CancellationToken);
 

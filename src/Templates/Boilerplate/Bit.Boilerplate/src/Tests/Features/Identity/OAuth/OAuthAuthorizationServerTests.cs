@@ -43,7 +43,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheFullFlow_Should_IssueATokenScopedToTheResourceAndToTheGrantedScope()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -96,7 +96,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnUnregisteredRedirectUri_Should_NeverBeRedirectedTo()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         const string attackerUri = "https://attacker.example/steal";
@@ -136,7 +136,7 @@ public class OAuthAuthorizationServerTests
     public async Task AReplayedCode_Should_BeRefused_AndRevokeWhatTheFirstExchangeIssued()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -181,7 +181,7 @@ public class OAuthAuthorizationServerTests
     public async Task ACodeVerifierThatDoesNotMatchTheChallenge_Should_BeRefused()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -244,7 +244,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOAuthToken_Should_ReachDevMcp_AndNothingElse()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -331,7 +331,7 @@ public class OAuthAuthorizationServerTests
     public async Task ALoopbackRedirectUri_Should_BeAcceptedOnAnyPort()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -373,7 +373,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOmittedScope_Should_DefaultToWhatTheResourceIsFor()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -421,7 +421,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnAuthorizedApplication_Should_AppearInTheUsersSessionsWithItsClientId()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -476,7 +476,7 @@ public class OAuthAuthorizationServerTests
     public async Task AReusedRefreshToken_Should_BeRefusedImmediately_AndRevokeTheGrant()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -528,7 +528,7 @@ public class OAuthAuthorizationServerTests
     public async Task AUserWithoutTheFeature_Should_BeRefusedAtConsent()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -552,7 +552,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnAdminWithoutTwoFactor_Should_BeRefusedAtConsent()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -580,7 +580,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOrdinaryUser_Should_BeAbleToGrantTheChatScope()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -612,7 +612,7 @@ public class OAuthAuthorizationServerTests
     public async Task AChatToken_Should_NotReachDevMcp()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -640,7 +640,7 @@ public class OAuthAuthorizationServerTests
     public async Task ADevMcpToken_Should_NotReachTheChatbot()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -669,7 +669,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheTokenEndpoint_Should_NormalizeTheResourceTheWayTheAuthorizationEndpointDid()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -703,7 +703,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheAuthorizeEndpoint_Should_ForwardTheQueryStringAsItArrived()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         var (_, challenge) = GeneratePkcePair();
@@ -742,7 +742,7 @@ public class OAuthAuthorizationServerTests
     public async Task AFirstPartyRefreshToken_Should_BeRefusedAtTheTokenEndpoint()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
@@ -765,7 +765,7 @@ public class OAuthAuthorizationServerTests
         }
     }
 
-    private static string Issuer(AppTestServer server) => server.ApiServerAddress.ToString().TrimEnd('/');
+    private static string Issuer(AppTestServer server) => server.ApiAppAddress.ToString().TrimEnd('/');
 
     private static OAuthAuthorizeRequestDto BuildRequest(AppTestServer server, string codeChallenge, string scope = OAuthScopes.DevMcp, string resourcePath = "/dev-mcp") => new()
     {

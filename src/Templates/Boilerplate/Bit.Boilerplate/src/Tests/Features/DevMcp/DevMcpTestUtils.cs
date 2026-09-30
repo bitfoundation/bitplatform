@@ -73,7 +73,7 @@ internal static class DevMcpTestUtils
     {
         var transport = new HttpClientTransport(new HttpClientTransportOptions
         {
-            Endpoint = new Uri(server.ApiServerAddress, path),
+            Endpoint = new Uri(server.ApiAppAddress, path),
             TransportMode = HttpTransportMode.StreamableHttp,
             AdditionalHeaders = new Dictionary<string, string>
             {

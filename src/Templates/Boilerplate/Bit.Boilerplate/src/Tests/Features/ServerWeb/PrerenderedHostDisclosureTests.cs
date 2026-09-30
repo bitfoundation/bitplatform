@@ -18,11 +18,11 @@ public class PrerenderedHostDisclosureTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
         // A bare HttpClient, so what is asserted is what the server wrote and nothing a browser would do afterwards.
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         // The very string the client would report about itself once it is running on a device.
         var hostOperatingSystem = RuntimeInformation.OSDescription;

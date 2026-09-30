@@ -42,7 +42,7 @@ public class DiagnosticReportSourcesTests
             .ToArrayAsync(TestContext.CancellationToken));
 
         await using var hubConnection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.ApiServerAddress, "app-hub"), options =>
+            .WithUrl(new Uri(server.ApiAppAddress, "app-hub"), options =>
             {
                 // The upgrade is the whole point: long polling would travel the same path as the http call above.
                 options.Transports = HttpTransportType.WebSockets;

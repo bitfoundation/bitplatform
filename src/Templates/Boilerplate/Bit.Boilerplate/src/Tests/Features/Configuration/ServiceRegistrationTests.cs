@@ -30,7 +30,7 @@ public partial class ServiceRegistrationTests
         // dispose it along with one host would break every other host in the process.
         Type[] allowedProcessWideInstances = [typeof(LoggingEventSource)];
 
-        var preCreatedDisposables = server.WebAppServices.Union(server.ApiAppServices)
+        var preCreatedDisposables = server.WebAppServiceCollection.Union(server.ApiAppServiceCollection)
             .Where(descriptor => descriptor.ImplementationInstance is IDisposable or IAsyncDisposable
                                  && allowedProcessWideInstances.Contains(descriptor.ImplementationInstance.GetType()) is false)
             .Select(descriptor => $"{descriptor.ServiceType.Name} => {descriptor.ImplementationInstance!.GetType().Name}")

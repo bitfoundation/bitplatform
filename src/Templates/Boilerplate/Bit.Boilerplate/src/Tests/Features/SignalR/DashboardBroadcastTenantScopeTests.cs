@@ -113,7 +113,7 @@ public partial class DashboardBroadcastTenantScopeTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "An anonymous connection joins no group at all, which would make this test assert nothing.");
 
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl(new Uri(client.Server.ApiServerAddress, "app-hub"), options =>
+            .WithUrl(new Uri(client.Server.ApiAppAddress, "app-hub"), options =>
             {
                 options.Transports = HttpTransportType.WebSockets;
                 options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);

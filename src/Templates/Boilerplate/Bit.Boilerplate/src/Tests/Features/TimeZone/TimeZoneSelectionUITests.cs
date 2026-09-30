@@ -25,7 +25,7 @@ public partial class TimeZoneSelectionUITests : AppPageTest
         await server.Build().Start(TestContext.CancellationToken);
 
         // The home page is public, so opening it needs no sign-in.
-        await Page.GotoAsync(server.WebAppServerAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.GotoAsync(server.WebAppAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         var callout = Page.Locator(".app-menu-callout");
 

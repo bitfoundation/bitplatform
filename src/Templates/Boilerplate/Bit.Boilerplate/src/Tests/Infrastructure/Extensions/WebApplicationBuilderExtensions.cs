@@ -12,7 +12,7 @@ public static partial class WebApplicationBuilderExtensions
         /// <summary>
         /// Server.Web's test services. Server.Api's are in <c>AddTestApiProjectServices</c>.
         /// </summary>
-        public void AddTestProjectServices()
+        public void AddTestWebProjectServices()
         {
             builder.AddServerWebProjectServices();
             //#if (api == "Integrated")

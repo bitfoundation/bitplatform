@@ -50,7 +50,7 @@ public partial class ProductResponseCacheTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 // Pre-rendering makes the server produce the product page's HTML itself, so the page is a cacheable
                 // response rather than an empty shell filled in later by the client.
@@ -82,10 +82,10 @@ public partial class ProductResponseCacheTests
             Assert.AreEqual(originalDescription, seenByTenantUser.DescriptionText);
 
             // ...and an anonymous visitor reads the pre-rendered public product page. A bare HttpClient - rather than the
-            // rich one - keeps this reader free of any access token and of the client-side message handlers
+            // app's - keeps this reader free of any access token and of the client-side message handlers
             // (retry, client caching, exception translation) that would sit between the assertions and what the server
             // actually returned.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
             // The same page, requested four ways. The bare url no longer has an entry of its own - UseCultureUrlRedirection
             // 302s it onto its culture-prefixed form, so requesting it exercises the redirect and lands on the en-US entry -
@@ -210,7 +210,7 @@ public partial class ProductResponseCacheTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
             }).Start(TestContext.CancellationToken);
@@ -289,7 +289,7 @@ public partial class ProductResponseCacheTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
@@ -301,7 +301,7 @@ public partial class ProductResponseCacheTests
         try
         {
             // A bare HttpClient, so the headers asserted below are the ones the server actually wrote.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
             string? enCacheTag = null;
 
@@ -356,7 +356,7 @@ public partial class ProductResponseCacheTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
+            configureTestConfiguration: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
         var marker = Guid.NewGuid().ToString("N");
@@ -366,7 +366,7 @@ public partial class ProductResponseCacheTests
         try
         {
             // One raw HttpClient for both reads, so the ONLY difference between the two requests is the token: any other
-            // difference (a header the rich client adds, for instance) would split the cache key on its own and the test
+            // difference (a header the app's HttpClient adds, for instance) would split the cache key on its own and the test
             // would pass for the wrong reason.
             using var visitorHttpClient = server.CreateRawHttpClient();
 
@@ -427,7 +427,7 @@ public partial class ProductResponseCacheTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
         var marker = Guid.NewGuid().ToString("N");
@@ -436,7 +436,7 @@ public partial class ProductResponseCacheTests
 
         try
         {
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
             var html = await GetProductPage(visitorHttpClient, $"/en-US{PageUrls.Product}/{productShortId}");
 
@@ -475,10 +475,10 @@ public partial class ProductResponseCacheTests
             configureTestServices: services => services.FakeExternalStatistics(),
             // products.xml is Server.Web's, and so is the output cache that replays it.
             configureTestWebAppServices: services => services.CountOutputCacheReplays(replays),
-            configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
+            configureTestConfiguration: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         // Both fetches happen before the product exists, so the entry the assertions below have to defeat is in place:
         // whatever the second one returned is what a cache would keep replaying.

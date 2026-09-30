@@ -51,12 +51,12 @@ public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
         {
             services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
         },
-        configureTestConfigurations: configuration =>
+        configureTestConfiguration: configuration =>
         {
             configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-these-tests";
         }).Start(TestContext.CancellationToken);
 
-        await SignInWithPassword(server.WebAppServerAddress, StoreAdminEmail, StoreAdminPassword);
+        await SignInWithPassword(server.WebAppAddress, StoreAdminEmail, StoreAdminPassword);
 
         const string question = "How do I install the PWA version of this app?";
         const string answer = "Open your browser's menu and choose Install.";

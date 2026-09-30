@@ -70,14 +70,14 @@ public partial class AppTestServer : IAsyncDisposable
 {
     public WebApplication WebApp { get; }
     public WebApplication ApiApp { get; } // The host Server.Api's services run in
-    public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
-    public Uri ApiServerAddress { get; } // The address ApiApp listens on
+    public readonly Uri WebAppAddress = new(GenerateServerUrl());
+    public Uri ApiAppAddress { get; } // The address ApiApp listens on
 
     public AppTestServer Build(
         Action<IServiceCollection>? configureTestServices = null,
         Action<IServiceCollection>? configureTestWebAppServices = null,
         Action<IServiceCollection>? configureTestApiAppServices = null,
-        Action<ConfigurationManager>? configureTestConfigurations = null)
+        Action<ConfigurationManager>? configureTestConfiguration = null)
     {
         // Builds the app under test with test-specific configuration
         // Allows overriding services and configuration
@@ -112,7 +112,7 @@ public sealed class AppClient : IAsyncDisposable
 **Overriding services.** Pass every lambda by name. `configureTestServices` overrides the services of Server.Web and Server.Api alike, so the test does not have to know which of the two a service lives in: prefer it. Reach for one host only when a registration makes sense there alone, such as a type built from that host's own services:
 - `configureTestWebAppServices`: Server.Web's services, the client services it hosts included.
 - `configureTestApiAppServices`: Server.Api's services.
-- `configureTestConfigurations`: Server.Web's and Server.Api's configuration alike.
+- `configureTestConfiguration`: Server.Web's and Server.Api's configuration alike.
 
 **Calling the api.** `server.CreateAppClient()` is the app as a client of the api, without its UI, and a test creates one per user it needs: it calls anonymously until its `AuthManager` signs a user in, and as that user from then on (See the example below).
 - `client.GetController<T>()`: the app's own client of an api controller, `IUserController` and the rest. Prefer it.
@@ -124,10 +124,10 @@ No browser signs in on a server built without one, so `AppTestServer` keeps `Aut
 **Which host?** The app's own services - `AuthManager`, `IStorageService` - come from an `AppClient`'s `Services`, what runs in Server.Web itself - pages, pre-rendering - from `WebApp.Services`, and what runs in Server.Api - `AppDbContext`, Hangfire, the captured e-mails - from `ApiApp.Services`.
 
 <!--#if (api == "Standalone")-->
-The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. An `AppClient`'s HttpClient calls `WebAppServerAddress`, and `WebApp` forwards `/api` and `/hangfire` to `ApiApp` through YARP; everything else Server.Api serves, such as `/healthz`, is only on `ApiServerAddress`.
+The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. An `AppClient`'s HttpClient calls `WebAppAddress`, and `WebApp` forwards `/api` and `/hangfire` to `ApiApp` through YARP; everything else Server.Api serves, such as `/healthz`, is only on `ApiAppAddress`.
 <!--#endif-->
 <!--#if (api == "Integrated")-->
-The api is integrated into Server.Web, so `ApiApp` is `WebApp` itself, `ApiServerAddress` is `WebAppServerAddress`, and all three service lambdas run on that one host, in the order they are declared.
+The api is integrated into Server.Web, so `ApiApp` is `WebApp` itself, `ApiAppAddress` is `WebAppAddress`, and all three service lambdas run on that one host, in the order they are declared.
 <!--#endif-->
 
 A method that holds more than one DI scope names each one after its host - `scopeWebApp`, `scopeApiApp`. An `AppClient` is `client`, or named after its user's role when a test has several, such as `adminClient`.
@@ -246,7 +246,7 @@ public partial class UITests : AppPageTest
         await server.Build().Start(TestContext.CancellationToken);
 
         // Navigate to sign-in page
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString());
+        await Page.GotoAsync(new Uri(server.WebAppAddress, PageUrls.SignIn).ToString());
 
         // Verify page title
         await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
@@ -259,7 +259,7 @@ public partial class UITests : AppPageTest
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         // Verify successful sign-in
-        await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
+        await Expect(Page).ToHaveURLAsync(server.WebAppAddress.ToString());
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = TestData.DefaultTestFullName })).ToBeVisibleAsync();
     }
 }

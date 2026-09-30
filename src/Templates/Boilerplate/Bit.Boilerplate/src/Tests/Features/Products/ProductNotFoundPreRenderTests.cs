@@ -28,14 +28,14 @@ public partial class ProductNotFoundPreRenderTests
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableOutputCaching"] = "true";
             }).Start(TestContext.CancellationToken);
 
         // Redirects are followed, so this works whether or not the build is culture-prefixed (See UseCultureUrlRedirection).
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         using var response = await visitorHttpClient.GetAsync("/product/777777", TestContext.CancellationToken);
         var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);

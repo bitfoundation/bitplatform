@@ -74,7 +74,7 @@ public partial class ChatbotConversationMetricsTests
     private async Task<HubConnection> Connect(AppTestServer server)
     {
         var connection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.ApiServerAddress, "app-hub"), options => options.Transports = HttpTransportType.WebSockets)
+            .WithUrl(new Uri(server.ApiAppAddress, "app-hub"), options => options.Transports = HttpTransportType.WebSockets)
             .Build();
 
         await connection.StartAsync(TestContext.CancellationToken);

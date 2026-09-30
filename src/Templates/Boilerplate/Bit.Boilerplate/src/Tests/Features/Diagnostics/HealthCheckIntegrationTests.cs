@@ -67,7 +67,7 @@ public partial class HealthCheckIntegrationTests
             configureTestApiAppServices: services => services.AddHealthChecks().AddCheck("failing", () => HealthCheckResult.Unhealthy("Down on purpose", new InvalidOperationException("The test broke it"))))
             .Start(TestContext.CancellationToken);
 
-        var healthzUrl = new Uri(server.ApiServerAddress, "healthz");
+        var healthzUrl = new Uri(server.ApiAppAddress, "healthz");
 
         using (var anonymousClient = server.CreateRawHttpClient())
         using (var anonymousResponse = await anonymousClient.GetAsync(healthzUrl, TestContext.CancellationToken))
@@ -127,7 +127,7 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        var healthzUrl = new Uri(server.ApiServerAddress, "healthz/v1");
+        var healthzUrl = new Uri(server.ApiAppAddress, "healthz/v1");
 
         using (var anonymousClient = server.CreateRawHttpClient())
         using (var anonymousResponse = await anonymousClient.GetAsync(healthzUrl, TestContext.CancellationToken))
@@ -163,7 +163,7 @@ public partial class HealthCheckIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestConfigurations: configuration =>
+        await server.Build(configureTestConfiguration: configuration =>
         {
             configuration["Authentication:Keycloak:KeycloakUrl"] = "http://keycloak.invalid/";
             configuration["Authentication:Keycloak:Realm"] = "dev";
@@ -362,7 +362,7 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build(
             configureTestServices: services => services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient)),
-            configureTestConfigurations: configuration => configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-this-test")
+            configureTestConfiguration: configuration => configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-this-test")
             .Start(TestContext.CancellationToken);
 
         var healthCheckService = server.ApiApp.Services.GetRequiredService<HealthCheckService>();
@@ -413,7 +413,7 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build(
             configureTestServices: services => services.Replace(ServiceDescriptor.Singleton(embeddingGenerator)),
-            configureTestConfigurations: configuration => configuration["AI:OpenAI:EmbeddingApiKey"] = "fake-key-never-used-by-this-test")
+            configureTestConfiguration: configuration => configuration["AI:OpenAI:EmbeddingApiKey"] = "fake-key-never-used-by-this-test")
             .Start(TestContext.CancellationToken);
 
         var report = await server.ApiApp.Services.GetRequiredService<HealthCheckService>().CheckHealthAsync(r => r.Name is "aiEmbedding", TestContext.CancellationToken);
@@ -474,7 +474,7 @@ public partial class HealthCheckIntegrationTests
         await using var server = new AppTestServer();
         await server.Build(
             configureTestServices: services => services.AddHttpClient<ResponseCacheService>().ConfigurePrimaryHttpMessageHandler(() => handler),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["Cloudflare:ApiToken"] = "not-a-real-token";
                 configuration["Cloudflare:ZoneIds:0"] = "test-zone";
