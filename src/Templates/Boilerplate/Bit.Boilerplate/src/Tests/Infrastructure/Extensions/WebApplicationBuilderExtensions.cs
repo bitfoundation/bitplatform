@@ -27,19 +27,19 @@ public static partial class WebApplicationBuilderExtensions
             services.AddTransient<HttpClient>(sp =>
             {
                 var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
-                // Read on every resolve, so a test that overrides WebAppUrl is heard (See AppTestServer.Build).
-                var webAppUrl = new Uri(sp.GetRequiredService<IConfiguration>()["WebAppUrl"]
-                    ?? throw new InvalidOperationException("WebAppUrl is not configured."), UriKind.Absolute);
+                // Read on every resolve, so a test that overrides either setting is heard (See AppTestServer.Build).
+                var configuration = sp.GetRequiredService<IConfiguration>();
                 var httpClient = new HttpClient(handlerFactory.Invoke())
                 {
                     //#if (api == "Standalone")
-                    // Server.Web, which serves the pages and forwards /api and /hangfire to Server.Api (See its
-                    // Program.Middlewares.cs). Server.Api's other endpoints (/healthz, /mcp, /.well-known, ...) take
-                    // AppTestServer.ApiServerAddress.
+                    // Server.Api itself, the way Server.Web's own HttpClient calls it. Server.Web's forwarding of /api
+                    // and /hangfire has a test of its own (See ApiForwardingTests).
                     //#endif
-                    BaseAddress = webAppUrl
+                    BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
                 };
-                httpClient.DefaultRequestHeaders.Add("X-Origin", webAppUrl.ToString());
+                // The web app's origin, the one a browser sends, which the api builds its links from.
+                httpClient.DefaultRequestHeaders.Add("X-Origin", configuration["WebAppUrl"]
+                    ?? throw new InvalidOperationException("WebAppUrl is not configured."));
                 return httpClient;
             });
         }

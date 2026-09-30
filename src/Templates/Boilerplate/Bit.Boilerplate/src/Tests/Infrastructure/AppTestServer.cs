@@ -115,6 +115,9 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
             /*
             //#endif
             ContentRootPath = ProjectDirectoryOf(typeof(Server.Web.Program).Assembly.GetName().Name!),
+            // The build output's wwwroot, not the source one: the build adds files there that the project folder lacks,
+            // such as the _framework/bit.blazor.*.es2019.js scripts every page loads Blazor with.
+            WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot"),
             //#if (IsInsideProjectTemplate)
             */
             //#endif
@@ -127,7 +130,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         // reads its discovery document there, and /api and /hangfire are forwarded to it.
         //#endif
         webAppBuilder.Configuration["ServerAddress"] = ApiServerAddress.ToString();
-        // The test HttpClient's base address and X-Origin (See AddTestProjectServices), which a test may override.
+        // The origin the test HttpClient sends as X-Origin (See AddTestProjectServices), which a test may override.
         webAppBuilder.Configuration["WebAppUrl"] = WebAppServerAddress.ToString();
         webAppBuilder.WebHost.UseUrls(WebAppServerAddress.ToString());
 

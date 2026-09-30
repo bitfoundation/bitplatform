@@ -143,7 +143,7 @@ public partial class PushSubscriptionOwnershipTests
             // with no identity at all, for a device whose row is still bound to the surviving first session. A raw
             // HttpClient because the DI one and the typed proxy both attach a bearer token through
             // AuthDelegatingHandler, and the whole point here is a request carrying none.
-            using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+            using (var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress })
             {
                 var anonymousPropagation = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
                     new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-anonymous" },
@@ -239,7 +239,7 @@ public partial class PushSubscriptionOwnershipTests
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
             for (var attempt = 1; attempt <= 2; attempt++)
             {
@@ -337,7 +337,7 @@ public partial class PushSubscriptionOwnershipTests
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
             async Task Subscribe(string pushChannel)
             {
@@ -401,7 +401,7 @@ public partial class PushSubscriptionOwnershipTests
         try
         {
             // An unowned row for the second device, the way an anonymous visit leaves one behind.
-            using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+            using (var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress })
             {
                 var response = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
                     new PushNotificationSubscriptionDto { DeviceId = secondDeviceId, Platform = "fcmV1", PushChannel = "anonymous-channel" },
@@ -467,7 +467,7 @@ public partial class PushSubscriptionOwnershipTests
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
             // A JSON body rather than a bare route value, because AutoCsrfProtectionFilter only lets an anonymous
             // (no Authorization header) unsafe request through when it is JSON - which is also why the shipped

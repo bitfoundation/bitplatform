@@ -25,7 +25,7 @@ public partial class DiagnosticTestMessagesTests
         await using var server = new AppTestServer();
         await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
-        using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
         using var response = await anonymousClient.PostAsync($"api/v1/Diagnostic/{action}", null, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);

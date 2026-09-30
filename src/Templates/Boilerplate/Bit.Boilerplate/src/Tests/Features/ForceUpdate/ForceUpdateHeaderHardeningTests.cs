@@ -82,7 +82,7 @@ public class ForceUpdateHeaderHardeningTests
 
     private async Task<HttpResponseMessage> SendAttachmentRequest(AppTestServer server, string appVersion, string? appPlatform)
     {
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
         using var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/Attachment/GetAttachment/{Guid.NewGuid()}/UserProfileImageSmall");
 

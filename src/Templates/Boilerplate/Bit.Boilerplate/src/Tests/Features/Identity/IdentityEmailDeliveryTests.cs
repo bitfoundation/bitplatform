@@ -39,7 +39,7 @@ public class IdentityEmailDeliveryTests
 
         // Driven over raw HTTP rather than the typed proxy: the header is the thing under test and the generated proxy
         // has no way to set it.
-        using var anonymousHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var anonymousHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/Identity/SendResetPasswordToken")
         {

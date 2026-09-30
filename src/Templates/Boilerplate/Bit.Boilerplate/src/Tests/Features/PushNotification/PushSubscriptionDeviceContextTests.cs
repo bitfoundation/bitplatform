@@ -67,7 +67,7 @@ public partial class PushSubscriptionDeviceContextTests
         // RequestHeadersDelegatingHandler and by the CDN, neither of which is in play here.
         async Task Subscribe(string country, string city, string appVersion, string pushChannel)
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
             anonymousClient.DefaultRequestHeaders.Add("cf-ipcountry", country);
             anonymousClient.DefaultRequestHeaders.Add("cf-ipcity", city);

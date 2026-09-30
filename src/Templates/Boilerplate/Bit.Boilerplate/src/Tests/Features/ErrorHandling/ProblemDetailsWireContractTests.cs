@@ -31,7 +31,7 @@ public class ProblemDetailsWireContractTests
     public async Task AKnownExceptionResponse_Should_CarryEveryMemberExactlyOnce()
     {
         await using var server = await StartServer();
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
         // Anonymous, and nothing is stored under a random attachment id, so this is a deterministic ResourceNotFoundException.
         using var response = await httpClient.GetAsync($"api/v1/Attachment/GetAttachment/{Guid.NewGuid()}/UserProfileImageSmall", TestContext.CancellationToken);
@@ -58,7 +58,7 @@ public class ProblemDetailsWireContractTests
     public async Task AValidationFailureResponse_Should_CarryExactlyOnePopulatedPayload()
     {
         await using var server = await StartServer();
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
         // Neither a password nor an otp: SignInRequestDto.Validate rejects it, so InvalidModelStateResponseFactory
         // throws a ResourceValidationException. A JSON content type also satisfies AutoCsrfProtectionFilter.

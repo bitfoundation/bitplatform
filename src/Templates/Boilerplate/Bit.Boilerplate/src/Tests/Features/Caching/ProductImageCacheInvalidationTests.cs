@@ -59,7 +59,7 @@ public class ProductImageCacheInvalidationTests
             // The url a visitor is holding at this point, and the tag the edge stored it under. Anonymous on purpose:
             // an authenticated caller has a tenant claim, and AppResponseCachePolicy switches the edge off for those,
             // so the response would carry no Cache-Tag to compare with.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
             var imageUrl = $"/api/v1/Attachment/GetAttachment/{productId}/{AttachmentKind.ProductPrimaryImageMedium}";
 
             using var beforeResponse = await visitorHttpClient.GetAsync($"{imageUrl}?v={created.Version}", TestContext.CancellationToken);

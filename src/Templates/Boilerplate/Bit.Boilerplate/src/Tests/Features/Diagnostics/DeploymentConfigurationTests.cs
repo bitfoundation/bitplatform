@@ -19,7 +19,7 @@ public partial class DeploymentConfigurationTests
 
         await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
 
-        using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+        using (var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress })
         using (var anonymousResponse = await anonymousClient.GetAsync(Url, TestContext.CancellationToken))
         {
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode, "An anonymous caller must not read the configuration.");

@@ -223,7 +223,7 @@ public partial class ProductResponseCacheTests
 
             // A bare HttpClient keeps the client-side message handlers out of the way, so the headers asserted below are
             // the ones the server actually wrote.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
             var requestPath = $"/api/v1/ProductView/Get/{productShortId}";
             using var response = await visitorHttpClient.GetAsync($"{requestPath}?utm_source=test", TestContext.CancellationToken);
@@ -368,7 +368,7 @@ public partial class ProductResponseCacheTests
             // One bare HttpClient for both reads, so the ONLY difference between the two requests is the token: any other
             // difference (a header the DI client adds, for instance) would split the cache key on its own and the test
             // would pass for the wrong reason.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
 
             var requestPath = $"/api/v1/ProductView/Get/{productShortId}";
 
