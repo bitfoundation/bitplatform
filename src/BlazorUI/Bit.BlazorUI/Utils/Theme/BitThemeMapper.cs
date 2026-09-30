@@ -605,6 +605,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Surface, bitTheme.Shape.Radius.Surface);
         addCssVar(BitCss.Var.Shape.Radius.Popup, bitTheme.Shape.Radius.Popup);
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
+        addCssVar(BitCss.Var.Shape.Radius.Sheet, bitTheme.Shape.Radius.Sheet);
 
         addCssVar(BitCss.Var.Typography.FontFamily, bitTheme.Typography.FontFamily);
         addCssVar(BitCss.Var.Typography.MonoFontFamily, bitTheme.Typography.MonoFontFamily);
@@ -632,6 +633,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Typography.Control.TextTransform, bitTheme.Typography.Control.TextTransform);
         addCssVar(BitCss.Var.Typography.Dialog.TitleFontSize, bitTheme.Typography.Dialog.TitleFontSize);
         addCssVar(BitCss.Var.Typography.Dialog.TitleFontWeight, bitTheme.Typography.Dialog.TitleFontWeight);
+        addCssVar(BitCss.Var.Typography.FieldLabel.FontWeight, bitTheme.Typography.FieldLabel.FontWeight);
 
         addCssVar(BitCss.Var.Typography.Body1.Margin, bitTheme.Typography.Body1.Margin);
         addCssVar(BitCss.Var.Typography.Body1.FontWeight, bitTheme.Typography.Body1.FontWeight);
@@ -958,6 +960,7 @@ internal static class BitThemeMapper
             FontWeights = src.FontWeights ?? new(),
             Control = src.Control ?? new(),
             Dialog = src.Dialog ?? new(),
+            FieldLabel = src.FieldLabel ?? new(),
             H1 = src.H1 ?? new(),
             H2 = src.H2 ?? new(),
             H3 = src.H3 ?? new(),
@@ -1432,6 +1435,7 @@ internal static class BitThemeMapper
         result.Shape.Radius.Surface = bitTheme.Shape.Radius.Surface ?? other.Shape.Radius.Surface;
         result.Shape.Radius.Popup = bitTheme.Shape.Radius.Popup ?? other.Shape.Radius.Popup;
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;
+        result.Shape.Radius.Sheet = bitTheme.Shape.Radius.Sheet ?? other.Shape.Radius.Sheet;
 
         result.Typography.FontFamily = bitTheme.Typography.FontFamily ?? other.Typography.FontFamily;
         result.Typography.MonoFontFamily = bitTheme.Typography.MonoFontFamily ?? other.Typography.MonoFontFamily;
@@ -1459,6 +1463,7 @@ internal static class BitThemeMapper
         result.Typography.Control.TextTransform = bitTheme.Typography.Control.TextTransform ?? other.Typography.Control.TextTransform;
         result.Typography.Dialog.TitleFontSize = bitTheme.Typography.Dialog.TitleFontSize ?? other.Typography.Dialog.TitleFontSize;
         result.Typography.Dialog.TitleFontWeight = bitTheme.Typography.Dialog.TitleFontWeight ?? other.Typography.Dialog.TitleFontWeight;
+        result.Typography.FieldLabel.FontWeight = bitTheme.Typography.FieldLabel.FontWeight ?? other.Typography.FieldLabel.FontWeight;
 
         result.Typography.Body1.Margin = bitTheme.Typography.Body1.Margin ?? other.Typography.Body1.Margin;
         result.Typography.Body1.FontWeight = bitTheme.Typography.Body1.FontWeight ?? other.Typography.Body1.FontWeight;

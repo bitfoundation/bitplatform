@@ -42,6 +42,11 @@
     --bit-shp-radius-surface: var(--bit-shp-brd-radius);
     --bit-shp-radius-popup: var(--bit-shp-brd-radius);
     --bit-shp-radius-dialog: var(--bit-shp-brd-radius);
+    // A sheet sits flush against an edge of the screen, so only its inner corners can be rounded, and
+    // it is square unless a design system rounds it on purpose (Material 16dp, iOS sheets) - it does not
+    // follow the legacy global radius that rounds every other family. A literal rather than an alias, so
+    // there is nothing for an inline theme override to re-substitute.
+    --bit-shp-radius-sheet: 0;
 
     // radius per control sub-family - a button, a chip and a selection box are all controls, so all
     // three default to the control radius and only a design system that shapes them apart from a

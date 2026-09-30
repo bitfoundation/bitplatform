@@ -574,6 +574,7 @@ public static partial class BitCss
                 public const string Surface = "--bit-shp-radius-surface";
                 public const string Popup = "--bit-shp-radius-popup";
                 public const string Dialog = "--bit-shp-radius-dialog";
+                public const string Sheet = "--bit-shp-radius-sheet";
                 public const string Button = "--bit-shp-radius-button";
                 public const string Chip = "--bit-shp-radius-chip";
                 public const string Selection = "--bit-shp-radius-selection";
@@ -797,6 +798,11 @@ public static partial class BitCss
             {
                 public const string TitleFontSize = "--bit-tpg-dialog-title-font-size";
                 public const string TitleFontWeight = "--bit-tpg-dialog-title-font-weight";
+            }
+
+            public static class FieldLabel
+            {
+                public const string FontWeight = "--bit-tpg-field-label-font-weight";
             }
 
             public static class H1

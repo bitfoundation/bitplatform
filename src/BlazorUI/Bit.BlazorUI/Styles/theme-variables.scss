@@ -443,10 +443,12 @@ $shp-radius-full: var(--bit-shp-radius-full);
 //  surface - cards, accordions, messages, images, list rows
 //  popup   - callouts, menus, dropdown lists, tooltips, snackbars
 //  dialog  - dialogs and modals
+//  sheet   - the inner corners of panels and other edge-anchored sheets (square unless a preset rounds them)
 $shp-radius-control: var(--bit-shp-radius-control);
 $shp-radius-surface: var(--bit-shp-radius-surface);
 $shp-radius-popup: var(--bit-shp-radius-popup);
 $shp-radius-dialog: var(--bit-shp-radius-dialog);
+$shp-radius-sheet: var(--bit-shp-radius-sheet);
 
 //shape - per control sub-family radius. A button, a chip and a selection box are controls too, so
 //all three fall back to $shp-radius-control; a design system that shapes them apart from a plain
@@ -619,6 +621,11 @@ $tg-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
 // semibold alert headline).
 $tg-dialog-title-font-size: var(--bit-tpg-dialog-title-font-size);
 $tg-dialog-title-font-weight: var(--bit-tpg-dialog-title-font-weight);
+
+// field-label typography - the weight of the caption that names a form field (BitLabel and the label an
+// input renders above itself), which design systems decide apart from the control-label weight: Fluent
+// sets it semibold, while Fluent 2, Material and Cupertino caption a field in their regular weight.
+$tg-field-label-font-weight: var(--bit-tpg-field-label-font-weight);
 
 // h1
 $tg-h1-margin: var(--bit-tpg-h1-margin);
