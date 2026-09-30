@@ -38,7 +38,7 @@ public partial class UserProfilePictureWebPTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var httpClient = scope.CreateRichHttpClient();
 
         // Only this test's own upload may be cleaned up below: the account is the shared seeded one, so an early
         // failure - the download, the user lookup - must leave whatever picture it already had exactly as it was.
@@ -46,7 +46,7 @@ public partial class UserProfilePictureWebPTests
 
         try
         {
-            var currentUser = await server.CreateAppController<IUserController>(scope.ServiceProvider)
+            var currentUser = await scope.CreateAppController<IUserController>()
                 .GetCurrentUser(TestContext.CancellationToken);
 
             // Real, non-webp repo image served at the web root (512x512 PNG >= the 256x256 minimum, so it is not rejected

@@ -43,7 +43,7 @@ public class WebAuthnCredentialOwnershipTests
             // The attacker: an ordinary per-run account, signed in through the shipped endpoints.
             await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-            var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+            var userController = scope.CreateAppController<IUserController>();
 
             await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(
                 () => userController.DeleteWebAuthnCredential(AssertionFor(credentialId), TestContext.CancellationToken),
@@ -74,7 +74,7 @@ public class WebAuthnCredentialOwnershipTests
 
         try
         {
-            await server.CreateAppController<IUserController>(scope.ServiceProvider)
+            await scope.CreateAppController<IUserController>()
                        .DeleteWebAuthnCredential(AssertionFor(credentialId), TestContext.CancellationToken);
 
             Assert.IsFalse(await CredentialExists(server, credentialId), "The caller's own credential must be deleted.");

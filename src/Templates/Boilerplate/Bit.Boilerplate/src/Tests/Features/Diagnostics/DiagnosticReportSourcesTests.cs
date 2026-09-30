@@ -37,7 +37,7 @@ public class DiagnosticReportSourcesTests
 
         // The typed client goes over http, which is the same call the /diagnostic page makes. Both ids are null, so
         // none of the endpoint's side effects run.
-        var http = string.Join(Environment.NewLine, await server.CreateAppController<IDiagnosticController>(scope.ServiceProvider)
+        var http = string.Join(Environment.NewLine, await scope.CreateAppController<IDiagnosticController>()
             .PerformDiagnostic(signalRConnectionId: null, pushNotificationSubscriptionDeviceId: null, TestContext.CancellationToken)
             .ToArrayAsync(TestContext.CancellationToken));
 

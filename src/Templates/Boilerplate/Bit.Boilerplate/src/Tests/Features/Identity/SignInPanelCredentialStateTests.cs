@@ -134,7 +134,7 @@ public class SignInPanelCredentialStateTests
         await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
 
         // A per-run account, not the shared seeded one. SendOtp stamps OtpRequestedOn on whoever it is called for and
         // that state outlives the run, so issuing a code for test@bitplatform.dev here would leave a live magic link

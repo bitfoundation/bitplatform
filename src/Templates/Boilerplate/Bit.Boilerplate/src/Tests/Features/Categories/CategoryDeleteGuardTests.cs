@@ -46,8 +46,8 @@ public partial class CategoryDeleteGuardTests
 
         await SignIn(scope);
 
-        var categories = server.CreateAppController<ICategoryController>(scope.ServiceProvider);
-        var products = server.CreateAppController<IProductController>(scope.ServiceProvider);
+        var categories = scope.CreateAppController<ICategoryController>();
+        var products = scope.CreateAppController<IProductController>();
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
@@ -86,8 +86,8 @@ public partial class CategoryDeleteGuardTests
 
         await SignIn(scopeWebApp);
 
-        var categories = server.CreateAppController<ICategoryController>(scopeWebApp.ServiceProvider);
-        var products = server.CreateAppController<IProductController>(scopeWebApp.ServiceProvider);
+        var categories = scopeWebApp.CreateAppController<ICategoryController>();
+        var products = scopeWebApp.CreateAppController<IProductController>();
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
@@ -136,8 +136,8 @@ public partial class CategoryDeleteGuardTests
 
         await SignIn(scope);
 
-        var categories = server.CreateAppController<ICategoryController>(scope.ServiceProvider);
-        var products = server.CreateAppController<IProductController>(scope.ServiceProvider);
+        var categories = scope.CreateAppController<ICategoryController>();
+        var products = scope.CreateAppController<IProductController>();
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);

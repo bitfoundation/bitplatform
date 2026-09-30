@@ -70,7 +70,7 @@ public class TrustedSessionTests
 
         await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scope, email, userId, TestContext.CancellationToken);
 
-        await server.CreateAppController<IIdentityController>(scope.ServiceProvider)
+        await scope.CreateAppController<IIdentityController>()
                                    .SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 
         var otp = await server.WaitForCapturedEmail(email,
@@ -120,7 +120,7 @@ public class TrustedSessionTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var sentTo = await server.CreateAppController<IUserController>(scope.ServiceProvider)
+        var sentTo = await scope.CreateAppController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsFalse(sentTo.SentToOtherDevices,
@@ -153,7 +153,7 @@ public class TrustedSessionTests
             "The second sign-in has to be its own session, otherwise there is no other device in play.");
         Assert.IsTrue(secondTrustedSession.Trusted);
 
-        var sentTo = await server.CreateAppController<IUserController>(scope.ServiceProvider)
+        var sentTo = await scope.CreateAppController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsTrue(sentTo.SentToOtherDevices,
@@ -180,7 +180,7 @@ public class TrustedSessionTests
 
         await SignInWithTwoFactorAgain(server, scope, email, userId);
 
-        var sentTo = await server.CreateAppController<IUserController>(scope.ServiceProvider)
+        var sentTo = await scope.CreateAppController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsFalse(sentTo.SentToOtherDevices,
@@ -209,7 +209,7 @@ public class TrustedSessionTests
 
         await SignInWithTwoFactorAgain(server, scope, email, userId);
 
-        var sentTo = await server.CreateAppController<IUserController>(scope.ServiceProvider)
+        var sentTo = await scope.CreateAppController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsFalse(sentTo.SentToOtherDevices,

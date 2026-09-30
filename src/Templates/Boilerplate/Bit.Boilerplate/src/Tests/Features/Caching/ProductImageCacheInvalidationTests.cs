@@ -44,15 +44,15 @@ public class ProductImageCacheInvalidationTests
 
         await SignIn(scope);
 
-        var products = server.CreateAppController<IProductController>(scope.ServiceProvider);
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var products = scope.CreateAppController<IProductController>();
+        var httpClient = scope.CreateRichHttpClient();
         var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Red));
 
         var created = await products.Create(
-            await NewProductDto(server, scope, productId, $"image-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
+            await NewProductDto(scope, productId, $"image-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
 
         try
         {
@@ -113,16 +113,16 @@ public class ProductImageCacheInvalidationTests
 
         await SignIn(scope);
 
-        var products = server.CreateAppController<IProductController>(scope.ServiceProvider);
-        var attachments = server.CreateAppController<IAttachmentController>(scope.ServiceProvider);
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var products = scope.CreateAppController<IProductController>();
+        var attachments = scope.CreateAppController<IAttachmentController>();
+        var httpClient = scope.CreateRichHttpClient();
         var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Green));
 
         var created = await products.Create(
-            await NewProductDto(server, scope, productId, $"image-delete-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
+            await NewProductDto(scope, productId, $"image-delete-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
 
         try
         {
@@ -210,9 +210,9 @@ public class ProductImageCacheInvalidationTests
         Assert.IsFalse(requiresTwoFactor, $"'{TenantAdminEmail}' is not expected to have two factor authentication enabled.");
     }
 
-    private async Task<ProductDto> NewProductDto(AppTestServer server, AsyncServiceScope scope, Guid id, string name)
+    private async Task<ProductDto> NewProductDto(AsyncServiceScope scope, Guid id, string name)
     {
-        var categories = server.CreateAppController<ICategoryController>(scope.ServiceProvider);
+        var categories = scope.CreateAppController<ICategoryController>();
         var categoryId = (await categories.Get(TestContext.CancellationToken)).First().Id;
 
         return new ProductDto

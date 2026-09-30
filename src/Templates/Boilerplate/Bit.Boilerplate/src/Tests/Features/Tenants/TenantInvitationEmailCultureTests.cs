@@ -38,7 +38,7 @@ public partial class TenantInvitationEmailCultureTests
 
         // The recipient's client reports fa-IR through the real write path (See UserController.UpdateSession and
         // AppClientCoordinator.UpdateUserSession).
-        await server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider).UpdateSession(new()
+        await scopeWebApp.CreateAppController<IUserController>().UpdateSession(new()
         {
             CultureName = "fa-IR",
             AppVersion = "1.0.0-test",

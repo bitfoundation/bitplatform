@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
-using Boilerplate.Shared.Infrastructure.Services.Contracts;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Tests.Infrastructure;
@@ -18,8 +17,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 {
     private WebApplication? webApp;
     private WebApplicationBuilder? webAppBuilder;
-    /// <summary>The scopes of the clients that call anonymously (See <see cref="CreateClientScope"/>).</summary>
-    private readonly List<AsyncServiceScope> clientScopes = [];
     //#if (api == "Standalone")
     //#if (IsInsideProjectTemplate)
     /*
@@ -150,7 +147,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
         webAppBuilder.AddTestProjectServices();
 
-        // The HttpClient the app's services get here, the typed api clients among them (See CreateRichHttpClient).
+        // The HttpClient the app's services get here, the typed api clients among them (See AsyncServiceScopeExtensions).
         webAppBuilder.Services.AddTransient(BuildRichHttpClient);
 
         if (ClientBrowserContext is null)
@@ -237,6 +234,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         await WebApp.StartAsync(cancellationToken);
         if (ClientBrowserContext is not null)
         {
+            // Points the app in the browser at this server's api.
             await ClientBrowserContext.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={ApiServerAddress}' ]; }};");
         }
     }
@@ -296,29 +294,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         }
     }
 
-    //#if (api == "Standalone")
-    /// <summary>
-    /// An HttpClient that works exactly like the one in the app: a test that calls the api through it tests not only the
-    /// api's logic, but also the way the client connects to it, only without the UI. ExceptionDelegatingHandler turns an
-    /// error response into the exception the app would get, for example, and the request goes to Server.Web first, which
-    /// forwards it to Server.Api through YARP.
-    /// </summary>
-    //#else
-    /// <summary>
-    /// An HttpClient that works exactly like the one in the app: a test that calls the api through it tests not only the
-    /// api's logic, but also the way the client connects to it, only without the UI. ExceptionDelegatingHandler turns an
-    /// error response into the exception the app would get, for example.
-    /// </summary>
-    //#endif
-    /// <param name="clientServices">
-    /// The client to call as: a scope of <see cref="WebApp"/>'s services whose <see cref="AuthManager"/> signed a user in.
-    /// A scope of its own when null, which calls anonymously. What this creates is disposed along with that scope.
-    /// </param>
-    public HttpClient CreateRichHttpClient(IServiceProvider? clientServices = null)
-    {
-        return (clientServices ?? CreateClientScope()).GetRequiredService<HttpClient>();
-    }
-
     /// <summary>
     /// An HttpClient that sends its requests straight to Server.Api, with no handler of the app's in between: an error
     /// response stays a response, nothing is retried and no header is added. The caller disposes it.
@@ -329,29 +304,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     public HttpClient CreateRawHttpClient(HttpMessageHandler? handler = null)
     {
         return new HttpClient(handler ?? new HttpClientHandler()) { BaseAddress = ApiServerAddress };
-    }
-
-    /// <summary>
-    /// Creates the app's client of the api controller <typeparamref name="T"/> - <see cref="IUserController"/> and the
-    /// rest - connected to <see cref="CreateRichHttpClient"/>.
-    /// </summary>
-    /// <param name="clientServices"><inheritdoc cref="CreateRichHttpClient" path="/param[@name='clientServices']"/></param>
-    public T CreateAppController<T>(IServiceProvider? clientServices = null)
-        where T : class, IAppController
-    {
-        return (clientServices ?? CreateClientScope()).GetRequiredService<T>();
-    }
-
-    private IServiceProvider CreateClientScope()
-    {
-        var scope = WebApp.Services.CreateAsyncScope();
-
-        lock (clientScopes)
-        {
-            clientScopes.Add(scope);
-        }
-
-        return scope.ServiceProvider;
     }
 
     private HttpClient BuildRichHttpClient(IServiceProvider services)
@@ -408,11 +360,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var scope in clientScopes)
-        {
-            await scope.DisposeAsync();
-        }
-
         await StopAndDispose(webApp);
         //#if (api == "Standalone")
         //#if (IsInsideProjectTemplate)

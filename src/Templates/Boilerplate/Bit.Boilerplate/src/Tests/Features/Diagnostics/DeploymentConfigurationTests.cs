@@ -30,7 +30,7 @@ public partial class DeploymentConfigurationTests
         await TestAccountUtils.CreateAndSignIn(server, userScope, TestContext.CancellationToken);
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
-            () => server.CreateRichHttpClient(userScope.ServiceProvider).GetAsync(Url, TestContext.CancellationToken),
+            () => userScope.CreateRichHttpClient().GetAsync(Url, TestContext.CancellationToken),
             "A signed-in user without the feature must not read the configuration.");
     }
 
@@ -53,7 +53,7 @@ public partial class DeploymentConfigurationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await server.CreateRichHttpClient(adminScope.ServiceProvider).GetAsync(Url, TestContext.CancellationToken);
+        using var response = await adminScope.CreateRichHttpClient().GetAsync(Url, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 

@@ -35,7 +35,7 @@ public class WebAuthnEnrolmentElevationTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
             () => userController.CreateWebAuthnCredential(EmptyAttestation, TestContext.CancellationToken),
@@ -62,7 +62,7 @@ public class WebAuthnEnrolmentElevationTests
 
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         var exception = await Assert.ThrowsAsync<Exception>(
             () => userController.CreateWebAuthnCredential(EmptyAttestation, TestContext.CancellationToken));

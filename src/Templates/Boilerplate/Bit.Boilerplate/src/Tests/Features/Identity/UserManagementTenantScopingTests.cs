@@ -39,7 +39,7 @@ public partial class UserManagementTenantScopingTests
 
         await TestAccountUtils.Elevate(server, scopeWebAppAdmin, adminEmail, TestContext.CancellationToken);
 
-        var tenant = await server.CreateAppController<ITenantController>(scopeWebAppAdmin.ServiceProvider)
+        var tenant = await scopeWebAppAdmin.CreateAppController<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         // The elevated window is stored as a claim expiry, so it survives this refresh (See AuthPolicies.ELEVATED_ACCESS)
@@ -55,7 +55,7 @@ public partial class UserManagementTenantScopingTests
 
         await using var _ = await TestAccountUtils.MakeGlobalAdmin(server, scopeWebAppGlobalAdmin, globalAdminUserId, TestContext.CancellationToken);
 
-        var userManagement = server.CreateAppController<IUserManagementController>(scopeWebAppAdmin.ServiceProvider);
+        var userManagement = scopeWebAppAdmin.CreateAppController<IUserManagementController>();
 
         // Delete: a BadRequestException here is EnsureCallerCanRevokeSessionsOf answering ahead of the tenant guard.
         // It is a harmless-looking "you cannot remove a super admin" - and it is only ever said about a global admin.

@@ -69,7 +69,7 @@ public class OAuthClientManagementTests
             await dbContext.SaveChangesAsync(TestContext.CancellationToken);
         }
 
-        var clients = await server.CreateAppController<IOAuthClientManagementController>(scopeWebApp.ServiceProvider)
+        var clients = await scopeWebApp.CreateAppController<IOAuthClientManagementController>()
                                                  .GetAllClients(TestContext.CancellationToken);
 
         var selfDescribed = clients.SingleOrDefault(client => client.ClientId == selfDescribedClientId);
@@ -104,7 +104,7 @@ public class OAuthClientManagementTests
         var verifier = WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32));
         var challenge = WebEncoders.Base64UrlEncode(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
 
-        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider).Approve(new()
+        var approval = await scope.CreateAppController<IOAuthController>().Approve(new()
         {
             ClientId = testClientId,
             RedirectUri = TestRedirectUri,
@@ -130,7 +130,7 @@ public class OAuthClientManagementTests
         var granted = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync(TestContext.CancellationToken)).RootElement;
         var refreshToken = granted.GetProperty("refresh_token").GetString()!;
 
-        var management = server.CreateAppController<IOAuthClientManagementController>(scope.ServiceProvider);
+        var management = scope.CreateAppController<IOAuthClientManagementController>();
 
         Assert.AreEqual(1, (await management.GetAllClients(TestContext.CancellationToken))
                               .Single(client => client.ClientId == testClientId).ActiveGrants);

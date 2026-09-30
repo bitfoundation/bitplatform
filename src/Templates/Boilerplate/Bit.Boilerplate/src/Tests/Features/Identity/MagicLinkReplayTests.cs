@@ -20,7 +20,7 @@ public partial class MagicLinkReplayTests
         await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
 
         // A confirmed, per-run account. Confirming already signs it in once, which leaves no outstanding code behind.
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
@@ -67,7 +67,7 @@ public partial class MagicLinkReplayTests
         await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
 
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 

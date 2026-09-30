@@ -118,7 +118,7 @@ public class RoleClaimGrantAllowListTests
         var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
-        return (server.CreateAppController<IRoleManagementController>(scope.ServiceProvider), grant);
+        return (scope.CreateAppController<IRoleManagementController>(), grant);
     }
 
     private async Task<Guid> CreateRole(IRoleManagementController roleManagementController)

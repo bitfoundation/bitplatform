@@ -75,7 +75,7 @@ public partial class ProductResponseCacheTests
             // The signed-in tenant-user reads it through the public (UserAgnostic) product view API.
             await using var scopeWebAppTenantUser = server.WebApp.Services.CreateAsyncScope();
             await SignIn(scopeWebAppTenantUser, TenantUserEmail);
-            var tenantUserProductView = server.CreateAppController<IProductViewController>(scopeWebAppTenantUser.ServiceProvider);
+            var tenantUserProductView = scopeWebAppTenantUser.CreateAppController<IProductViewController>();
 
             var seenByTenantUser = await tenantUserProductView.Get(productShortId, TestContext.CancellationToken);
             Assert.AreEqual(productName, seenByTenantUser.Name);
@@ -121,7 +121,7 @@ public partial class ProductResponseCacheTests
 
                 // A real authenticated PUT, so the purge under test is the one the endpoint itself performs after saving
                 // (See ProductController.Update) - including running it under a genuine HttpContext.
-                var products = server.CreateAppController<IProductController>(scopeWebAppTenantAdmin.ServiceProvider);
+                var products = scopeWebAppTenantAdmin.CreateAppController<IProductController>();
 
                 var toUpdate = await products.Get(productId, TestContext.CancellationToken);
                 toUpdate.DescriptionText = updatedDescription;
@@ -499,7 +499,7 @@ public partial class ProductResponseCacheTests
         {
             await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
             await SignIn(scopeWebApp, TenantAdminEmail);
-            var products = server.CreateAppController<IProductController>(scopeWebApp.ServiceProvider);
+            var products = scopeWebApp.CreateAppController<IProductController>();
 
             // IgnoreQueryFilters because a bare DI scope has no HttpContext for TenantProvider to read the tenant from.
             await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();

@@ -47,7 +47,7 @@ public class WebAuthnElevatedAccessTests
 
         var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
         var refreshToken = await storageService.GetItem("refresh_token");
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
 
         await Assert.ThrowsAsync<Exception>(
             () => identityController.Refresh(new()

@@ -33,7 +33,7 @@ public class TwoFactorAmrClaimTests
             await dbContext.SaveChangesAsync(TestContext.CancellationToken);
         }
 
-        var userController = server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider);
+        var userController = scopeWebApp.CreateAppController<IUserController>();
         var enrolment = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
         var sharedKey = enrolment.SharedKey!.Replace(" ", "");
 

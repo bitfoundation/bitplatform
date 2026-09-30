@@ -19,7 +19,7 @@ public class AttachmentMetadataStrippingTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var httpClient = scope.CreateRichHttpClient();
 
         var uploaded = JpegWithExif();
 
@@ -57,7 +57,7 @@ public class AttachmentMetadataStrippingTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var httpClient = scope.CreateRichHttpClient();
 
         try
         {

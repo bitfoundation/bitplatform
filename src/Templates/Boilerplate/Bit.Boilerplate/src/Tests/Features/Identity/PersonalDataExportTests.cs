@@ -30,7 +30,7 @@ public class PersonalDataExportTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var httpClient = scope.CreateRichHttpClient();
 
         await UploadProfilePicture(httpClient);
 
@@ -82,7 +82,7 @@ public class PersonalDataExportTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var httpClient = scope.CreateRichHttpClient();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
             () => httpClient.GetAsync(IUserController.ExportPersonalDataUri, TestContext.CancellationToken),
@@ -100,7 +100,7 @@ public class PersonalDataExportTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var httpClient = scope.CreateRichHttpClient();
 
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
@@ -131,7 +131,7 @@ public class PersonalDataExportTests
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
 
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
-        var httpClient = server.CreateRichHttpClient(scopeWebApp.ServiceProvider);
+        var httpClient = scopeWebApp.CreateRichHttpClient();
 
         await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();

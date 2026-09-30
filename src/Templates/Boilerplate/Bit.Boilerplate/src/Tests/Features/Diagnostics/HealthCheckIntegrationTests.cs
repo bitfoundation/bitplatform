@@ -41,7 +41,8 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        var httpClient = server.CreateRichHttpClient();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpClient = scope.CreateRichHttpClient();
 
         using var response = await httpClient.GetAsync("alive", TestContext.CancellationToken);
 
@@ -79,7 +80,7 @@ public partial class HealthCheckIntegrationTests
             await TestAccountUtils.CreateAndSignIn(server, scopeWebAppUser, TestContext.CancellationToken);
 
             await Assert.ThrowsExactlyAsync<ForbiddenException>(
-                () => server.CreateRichHttpClient(scopeWebAppUser.ServiceProvider).GetAsync(healthzUrl, TestContext.CancellationToken),
+                () => scopeWebAppUser.CreateRichHttpClient().GetAsync(healthzUrl, TestContext.CancellationToken),
                 "A signed-in user without the feature must not read the report.");
         }
 
@@ -90,7 +91,7 @@ public partial class HealthCheckIntegrationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await server.CreateRichHttpClient(scopeWebAppAdmin.ServiceProvider).GetAsync(healthzUrl, TestContext.CancellationToken);
+        using var response = await scopeWebAppAdmin.CreateRichHttpClient().GetAsync(healthzUrl, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "An Unhealthy report still answers 200.");
         Assert.IsNotNull(response.Headers.CacheControl);
@@ -141,7 +142,7 @@ public partial class HealthCheckIntegrationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await server.CreateRichHttpClient(adminScope.ServiceProvider).GetAsync(healthzUrl, TestContext.CancellationToken);
+        using var response = await adminScope.CreateRichHttpClient().GetAsync(healthzUrl, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 

@@ -45,7 +45,7 @@ public partial class TenantInvitationIsolationTests
         await TestAccountUtils.Elevate(server, scopeWebAppAdmin, adminEmail, TestContext.CancellationToken);
 
         // Creating a tenant makes the creator its t-admin, with an already-accepted membership (See TenantController.Create).
-        var tenant = await server.CreateAppController<ITenantController>(scopeWebAppAdmin.ServiceProvider)
+        var tenant = await scopeWebAppAdmin.CreateAppController<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         Assert.IsTrue(await scopeWebAppAdmin.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(tenant.Id, TestContext.CancellationToken),
@@ -54,12 +54,12 @@ public partial class TenantInvitationIsolationTests
         // ---- The invitee: an ordinary account that already exists, so the invitation only adds a membership ----
         var (inviteeEmail, inviteeUserId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppInvitee, TestContext.CancellationToken);
 
-        await server.CreateAppController<ITenantController>(scopeWebAppAdmin.ServiceProvider)
+        await scopeWebAppAdmin.CreateAppController<ITenantController>()
             .InviteUser(new() { Email = inviteeEmail }, TestContext.CancellationToken);
 
         var demoRoleId = await ReadTenantDemoRoleId(server, tenant.Id, TestContext.CancellationToken);
 
-        var roleManagementController = server.CreateAppController<IRoleManagementController>(scopeWebAppAdmin.ServiceProvider);
+        var roleManagementController = scopeWebAppAdmin.CreateAppController<IRoleManagementController>();
 
         // The invitation itself already gave her the tenant's demo role (See UserManagerExtensions.AssignDemoRole), so
         // this is the exact state in which gating on the role alone leaks her profile.
@@ -84,7 +84,7 @@ public partial class TenantInvitationIsolationTests
 
         await TestAccountUtils.Elevate(server, scopeWebAppInvitee, inviteeEmail, TestContext.CancellationToken);
 
-        await server.CreateAppController<IUserController>(scopeWebAppInvitee.ServiceProvider)
+        await scopeWebAppInvitee.CreateAppController<IUserController>()
             .LeaveTenant(tenant.Id, TestContext.CancellationToken);
 
         await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();

@@ -22,7 +22,7 @@ public static class TestAccountUtils
     public static async Task<(string email, Guid userId)> CreateAndSignIn(
         AppTestServer server, AsyncServiceScope scope, CancellationToken cancellationToken)
     {
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -82,7 +82,7 @@ public static class TestAccountUtils
         //#if (multitenant == true)
         // The management controllers additionally require AuthPolicies.TENANT_SELECTED, and a freshly auto-provisioned
         // account has no tenant selected. A global admin may switch into any active tenant (See UserController.GetTenants).
-        var userController = server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider);
+        var userController = scopeWebApp.CreateAppController<IUserController>();
 
         var tenants = await userController.GetTenants(cancellationToken);
         Assert.IsNotEmpty(tenants, "A global admin should see every active tenant, and the template seeds one.");
@@ -121,7 +121,7 @@ public static class TestAccountUtils
     /// </summary>
     public static async Task Elevate(AppTestServer server, AsyncServiceScope scope, string email, CancellationToken cancellationToken)
     {
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         await userController.SendElevatedAccessToken(cancellationToken);
 

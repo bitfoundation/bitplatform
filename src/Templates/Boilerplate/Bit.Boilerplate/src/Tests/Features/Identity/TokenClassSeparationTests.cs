@@ -42,7 +42,7 @@ public class TokenClassSeparationTests
         var sessionId = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).GetSessionId();
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(
-            () => server.CreateAppController<IIdentityController>(scope.ServiceProvider)
+            () => scope.CreateAppController<IIdentityController>()
                        .Refresh(new() { RefreshToken = accessToken }, TestContext.CancellationToken),
             "An access token presented as a refresh token must be rejected. The two JWTs differ only in `aud`.");
 
@@ -65,7 +65,7 @@ public class TokenClassSeparationTests
         await SignIn(scope);
 
         var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         // Sanity: with the real access token this call succeeds, so a failure below is about the token class and not
         // about the request being malformed or the account being unusable.

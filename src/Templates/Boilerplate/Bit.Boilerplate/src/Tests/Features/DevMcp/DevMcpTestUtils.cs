@@ -39,7 +39,7 @@ internal static class DevMcpTestUtils
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var userController = server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider);
+        var userController = scopeWebApp.CreateAppController<IUserController>();
         var enrolment = await userController.TwoFactorAuth(new(), cancellationToken);
         var sharedKey = enrolment.SharedKey!.Replace(" ", "");
 

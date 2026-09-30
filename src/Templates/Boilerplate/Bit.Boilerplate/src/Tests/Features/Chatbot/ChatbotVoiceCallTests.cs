@@ -28,7 +28,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         var answer = await StartVoiceCall(scope, httpClient);
 
@@ -61,7 +61,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime, reasoningEffort: configured);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -79,7 +79,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -106,7 +106,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -128,7 +128,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -161,7 +161,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -201,7 +201,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -223,7 +223,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await using (await ConnectTab(server, scope))
         {
@@ -249,7 +249,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient, cultureId: 1065);
 
@@ -269,7 +269,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -296,7 +296,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -313,7 +313,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         await StartVoiceCall(scope, httpClient);
 
@@ -330,7 +330,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         const string answer = "bit platform is a set of dotnet libraries.";
 
@@ -367,7 +367,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         List<AiChatMessage> history = [.. Enumerable.Range(0, StartChatRequest.MaxChatMessagesHistory + 5)
             .Select(index => new AiChatMessage { Role = AiChatMessageRole.User, Content = $"message {index}" })];
@@ -387,7 +387,7 @@ public class ChatbotVoiceCallTests
 
         await using var server = await StartServer(realtime);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var httpClient = scope.CreateRichHttpClient();
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => StartVoiceCall(scope, httpClient));
 
@@ -415,7 +415,7 @@ public class ChatbotVoiceCallTests
         return server;
     }
 
-    private async Task<HttpClient> SignIn(AppTestServer server, AsyncServiceScope scope)
+    private async Task<HttpClient> SignIn(AsyncServiceScope scope)
     {
         await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
         {
@@ -423,7 +423,7 @@ public class ChatbotVoiceCallTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        return server.CreateRichHttpClient(scope.ServiceProvider);
+        return scope.CreateRichHttpClient();
     }
 
     /// <summary>The signed-in user's tab, answering a theme change as the app does.</summary>

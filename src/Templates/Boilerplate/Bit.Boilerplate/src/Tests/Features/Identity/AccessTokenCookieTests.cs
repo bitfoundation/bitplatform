@@ -30,7 +30,7 @@ public class AccessTokenCookieTests
         var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
         var tokenExpiry = DateTimeOffset.FromUnixTimeSeconds(IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).GetClaimValue<long>("exp"));
 
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
+        var httpClient = scope.CreateRichHttpClient();
 
         using var updated = await httpClient.PostAsJsonAsync(UpdateSessionUri, new UpdateUserSessionRequestDto(), TestContext.CancellationToken);
         var written = AccessTokenCookie(updated);
@@ -66,7 +66,7 @@ public class AccessTokenCookieTests
         // RequestHeadersDelegatingHandler keeps a platform the request already names.
         request.Headers.Add("X-App-Platform", nameof(AppPlatformType.Android));
 
-        using var response = await server.CreateRichHttpClient(scope.ServiceProvider).SendAsync(request, TestContext.CancellationToken);
+        using var response = await scope.CreateRichHttpClient().SendAsync(request, TestContext.CancellationToken);
 
         Assert.IsFalse(response.Headers.Contains(HeaderNames.SetCookie), "Only a browser pre-renders, so only a web client gets the cookie.");
     }

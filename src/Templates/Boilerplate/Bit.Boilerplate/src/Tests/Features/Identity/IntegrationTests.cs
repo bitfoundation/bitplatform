@@ -27,7 +27,7 @@ public partial class IntegrationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         var user = await userController.GetCurrentUser(TestContext.CancellationToken);
 
@@ -41,7 +41,8 @@ public partial class IntegrationTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var userController = scope.CreateAppController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => userController.GetCurrentUser(TestContext.CancellationToken));
     }

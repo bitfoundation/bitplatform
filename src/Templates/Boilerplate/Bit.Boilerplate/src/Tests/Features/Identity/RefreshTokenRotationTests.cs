@@ -32,7 +32,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
         var (sessionId, firstRefreshToken) = await ReadSession(scope);
 
         var (startedOn, renewedOnBefore) = await ReadSessionTimestamps(server, sessionId);
@@ -64,7 +64,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
         var (sessionId, supersededToken) = await ReadSession(scope);
 
         // A legitimate rotation: `supersededToken` is spent here and replaced by the one in the response.
@@ -93,7 +93,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
         var (sessionId, refreshToken) = await ReadSession(scope);
 
         await using (var dbScope = server.ApiApp.Services.CreateAsyncScope())
@@ -127,7 +127,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
         var (_, refreshToken) = await ReadSession(scope);
 
         // The rotation the client never sees the response of: the reply is simply discarded here.
@@ -164,7 +164,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var identityController = scope.CreateAppController<IIdentityController>();
         var (_, oldestToken) = await ReadSession(scope);
 
         // Both rotations happen inside the 30-second tolerance of when `oldestToken` was minted - the shape produced by

@@ -47,7 +47,7 @@ public partial class DashboardBroadcastTenantScopeTests
 
         await TestAccountUtils.Elevate(server, scopeWebAppOther, otherEmail, TestContext.CancellationToken);
 
-        var otherTenant = await server.CreateAppController<ITenantController>(scopeWebAppOther.ServiceProvider)
+        var otherTenant = await scopeWebAppOther.CreateAppController<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         Assert.IsTrue(await scopeWebAppOther.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(otherTenant.Id, TestContext.CancellationToken),
@@ -58,8 +58,8 @@ public partial class DashboardBroadcastTenantScopeTests
         await using var storeClient = await ConnectAsSignedInClient(server, scopeWebAppStore);
         await using var otherClient = await ConnectAsSignedInClient(server, scopeWebAppOther);
 
-        var storeCategories = server.CreateAppController<ICategoryController>(scopeWebAppStore.ServiceProvider);
-        var otherCategories = server.CreateAppController<ICategoryController>(scopeWebAppOther.ServiceProvider);
+        var storeCategories = scopeWebAppStore.CreateAppController<ICategoryController>();
+        var otherCategories = scopeWebAppOther.CreateAppController<ICategoryController>();
 
         CategoryDto? createdInOther = null, createdInStore = null;
 

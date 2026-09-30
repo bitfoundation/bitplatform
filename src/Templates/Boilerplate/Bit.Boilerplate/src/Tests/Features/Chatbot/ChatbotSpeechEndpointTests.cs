@@ -44,7 +44,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         // Leading bytes of a webm container, which is what chromium and firefox record - the shape the provider
         // sniffs for.
@@ -85,7 +85,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         using var response = await PostSynthesizeSpeech(server, scope, httpClient, "bit platform is a set of dotnet libraries.");
 
@@ -116,7 +116,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         (await PostSynthesizeSpeech(server, scope, httpClient, "## Pricing\n**bit platform** is [free](https://bitplatform.dev) ✅")).Dispose();
 
@@ -141,7 +141,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         using var response = await PostSynthesizeSpeech(server, scope, httpClient, "```bash\ndotnet build\n```");
 
@@ -167,7 +167,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         var signatureOfARealAnswer = server.ApiApp.Services.GetRequiredService<ChatbotAnswerSigner>().Sign("bit platform is a set of dotnet libraries.");
 
@@ -194,7 +194,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         const string answer = "bit platform is free.";
         var signature = server.ApiApp.Services.GetRequiredService<ChatbotAnswerSigner>().Sign(answer);
@@ -224,7 +224,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         // Past the 4096 characters a provider takes, and in lines so the split has the boundaries it prefers.
         var answer = string.Join('\n', Enumerable.Range(0, 200).Select(line => $"Line {line} of a very long answer."));
@@ -263,7 +263,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider); // Nobody signed in.
+        var httpClient = scope.CreateRichHttpClient(); // Nobody signed in.
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(
             async () => (await PostSynthesizeSpeech(server, scope, httpClient, "read this to a stranger")).Dispose());
@@ -294,7 +294,7 @@ public class ChatbotSpeechEndpointTests
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(server, scope);
+        var httpClient = await SignIn(scope);
 
         var served = 0;
 
@@ -318,7 +318,7 @@ public class ChatbotSpeechEndpointTests
     }
 
 
-    private async Task<HttpClient> SignIn(AppTestServer server, AsyncServiceScope scope)
+    private async Task<HttpClient> SignIn(AsyncServiceScope scope)
     {
         // The HttpClient created with the same scope shares its token store, so the requests it sends are
         // authenticated by AuthDelegatingHandler.
@@ -328,7 +328,7 @@ public class ChatbotSpeechEndpointTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        return server.CreateRichHttpClient(scope.ServiceProvider);
+        return scope.CreateRichHttpClient();
     }
 
     /// <summary>

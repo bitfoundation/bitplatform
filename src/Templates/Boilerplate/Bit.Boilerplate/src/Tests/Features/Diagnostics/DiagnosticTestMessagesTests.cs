@@ -47,7 +47,7 @@ public partial class DiagnosticTestMessagesTests
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var diagnosticController = server.CreateAppController<IDiagnosticController>(scope.ServiceProvider);
+        var diagnosticController = scope.CreateAppController<IDiagnosticController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(() => diagnosticController.SendTestEmail(TestContext.CancellationToken),
             "Sending needs the health checks feature.");
@@ -76,11 +76,11 @@ public partial class DiagnosticTestMessagesTests
             await using (var scopeWebAppOwner = server.WebApp.Services.CreateAsyncScope())
             {
                 await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOwner, TestContext.CancellationToken);
-                var diagnosticController = server.CreateAppController<IDiagnosticController>(scopeWebAppOwner.ServiceProvider);
+                var diagnosticController = scopeWebAppOwner.CreateAppController<IDiagnosticController>();
 
                 Assert.IsFalse(await diagnosticController.SendTestPushNotification(deviceId, TestContext.CancellationToken));
 
-                await server.CreateAppController<IPushNotificationController>(scopeWebAppOwner.ServiceProvider)
+                await scopeWebAppOwner.CreateAppController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "test-channel" }, TestContext.CancellationToken);
 
                 Assert.IsTrue(await diagnosticController.SendTestPushNotification(deviceId, TestContext.CancellationToken));
@@ -90,7 +90,7 @@ public partial class DiagnosticTestMessagesTests
             {
                 await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOther, TestContext.CancellationToken);
 
-                await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(() => server.CreateAppController<IDiagnosticController>(scopeWebAppOther.ServiceProvider)
+                await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(() => scopeWebAppOther.CreateAppController<IDiagnosticController>()
                     .SendTestPushNotification(deviceId, TestContext.CancellationToken), "Another session's device must not be reachable.");
             }
         }

@@ -84,7 +84,7 @@ public class IdentityEmailDeliveryTests
         }
 
         // And the account really can still ask for a code.
-        var identityController = server.CreateAppController<IIdentityController>(scopeWebApp.ServiceProvider);
+        var identityController = scopeWebApp.CreateAppController<IIdentityController>();
 
         await identityController.SendResetPasswordToken(new() { Email = email }, TestContext.CancellationToken);
 

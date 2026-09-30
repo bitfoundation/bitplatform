@@ -40,7 +40,8 @@ public class WebAppUrlOriginHardeningTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        var identityController = server.CreateAppController<IIdentityController>()
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var identityController = scope.CreateAppController<IIdentityController>()
             .WithQueryIf(origin is not null, "origin", origin);
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()
@@ -64,7 +65,8 @@ public class WebAppUrlOriginHardeningTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        var identityController = server.CreateAppController<IIdentityController>()
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var identityController = scope.CreateAppController<IIdentityController>()
             .WithQuery("origin", "https://evil.example");
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()
@@ -91,7 +93,8 @@ public class WebAppUrlOriginHardeningTests
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        var identityController = server.CreateAppController<IIdentityController>()
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var identityController = scope.CreateAppController<IIdentityController>()
             .WithQuery("origin", origin);
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()

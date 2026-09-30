@@ -69,7 +69,8 @@ public partial class PhoneNumberNormalizationTests
         // proves the number was normalized (not merely passed through).
         var e164 = new Regex(@"^\+[1-9]\d{6,14}$");
 
-        var identityController = server.CreateAppController<IIdentityController>();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var identityController = scope.CreateAppController<IIdentityController>();
 
         foreach (var (Typed, Normalized) in attempts)
         {

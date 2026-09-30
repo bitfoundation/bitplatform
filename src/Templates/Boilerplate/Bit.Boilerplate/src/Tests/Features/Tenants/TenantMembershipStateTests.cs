@@ -49,7 +49,7 @@ public class TenantMembershipStateTests
         var (strangerEmail, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppStranger, TestContext.CancellationToken);
         await TestAccountUtils.Elevate(server, scopeWebAppStranger, strangerEmail, TestContext.CancellationToken);
 
-        var foreignTenant = await server.CreateAppController<ITenantController>(scopeWebAppStranger.ServiceProvider)
+        var foreignTenant = await scopeWebAppStranger.CreateAppController<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         // The caller: a global admin, so GetTenants returns every active tenant to her, including foreignTenant.
@@ -58,13 +58,13 @@ public class TenantMembershipStateTests
         await TestAccountUtils.Elevate(server, scopeWebAppAdmin, adminEmail, TestContext.CancellationToken);
 
         // Her own tenant, accepted, because creating one makes the creator its t-admin.
-        var ownTenant = await server.CreateAppController<ITenantController>(scopeWebAppAdmin.ServiceProvider)
+        var ownTenant = await scopeWebAppAdmin.CreateAppController<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         // And a genuine pending invitation from a third tenant, which is the value the null must not look like.
         var invitedTenant = await CreateTenantAndInvite(server, adminEmail, TestContext.CancellationToken);
 
-        var tenants = await server.CreateAppController<IUserController>(scopeWebAppAdmin.ServiceProvider)
+        var tenants = await scopeWebAppAdmin.CreateAppController<IUserController>()
             .GetTenants(TestContext.CancellationToken);
 
         var foreign = tenants.SingleOrDefault(t => t.Id == foreignTenant.Id);
@@ -98,7 +98,7 @@ public class TenantMembershipStateTests
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, cancellationToken);
         await TestAccountUtils.Elevate(server, scope, email, cancellationToken);
 
-        var tenantController = server.CreateAppController<ITenantController>(scope.ServiceProvider);
+        var tenantController = scope.CreateAppController<ITenantController>();
         var tenant = await tenantController.Create(new() { Name = $"t{Guid.NewGuid():N}" }, cancellationToken);
 
         // InviteUser targets the caller's CURRENT tenant, so she has to be signed into the one she just made.

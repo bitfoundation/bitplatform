@@ -121,7 +121,7 @@ public class SigningKeyRotationTests
         await SignIn(scope);
 
         var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         var retired = AppCertificateService.GetAllAppCertificates(server.WebApp.Configuration)
             .Single(cert => cert.Subject.Contains(RetiredCertificateName, StringComparison.Ordinal));
@@ -149,7 +149,7 @@ public class SigningKeyRotationTests
         await SignIn(scope);
 
         var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         // Sanity: the real token works, so the failure below is about the signing key and nothing else.
         Assert.AreEqual(TestData.DefaultTestEmail, (await userController.GetCurrentUser(TestContext.CancellationToken)).Email);

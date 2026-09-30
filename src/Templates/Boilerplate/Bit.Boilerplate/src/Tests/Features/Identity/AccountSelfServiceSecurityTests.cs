@@ -27,7 +27,7 @@ public class AccountSelfServiceSecurityTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
             () => userController.SendChangeEmailToken(new() { Email = MagicLinkSignInUtils.NewTestEmail() }, TestContext.CancellationToken),
@@ -47,7 +47,7 @@ public class AccountSelfServiceSecurityTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         var settings = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
         Assert.IsFalse(string.IsNullOrWhiteSpace(settings.SharedKey),
@@ -80,7 +80,7 @@ public class AccountSelfServiceSecurityTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
@@ -121,7 +121,7 @@ public class AccountSelfServiceSecurityTests
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider);
+        var userController = scopeWebApp.CreateAppController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
             () => userController.Delete(TestContext.CancellationToken),
@@ -149,8 +149,8 @@ public class AccountSelfServiceSecurityTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
-        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
+        var identityController = scope.CreateAppController<IIdentityController>();
 
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
@@ -201,7 +201,7 @@ public class AccountSelfServiceSecurityTests
                                           .SetProperty(x => x.PhoneNumberConfirmed, false), TestContext.CancellationToken);
         }
 
-        var userController = server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider);
+        var userController = scopeWebApp.CreateAppController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => userController.SendElevatedAccessToken(TestContext.CancellationToken),
@@ -219,7 +219,7 @@ public class AccountSelfServiceSecurityTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         var sentTo = await userController.SendElevatedAccessToken(TestContext.CancellationToken);
 

@@ -89,10 +89,13 @@ public partial class AppTestServer : IAsyncDisposable
         // Starts the app under test
     }
 
-    public HttpClient CreateRichHttpClient(IServiceProvider? clientServices = null); // Works exactly like the app's own
     public HttpClient CreateRawHttpClient(HttpMessageHandler? handler = null); // Straight to Server.Api, none of the app's handlers
-    public T CreateAppController<T>(IServiceProvider? clientServices = null); // IUserController and the rest, on the rich one
 }
+
+// A scope of WebApp's services is a client of the api (See AsyncServiceScopeExtensions)
+await using var scope = server.WebApp.Services.CreateAsyncScope();
+scope.CreateRichHttpClient(); // Works exactly like the app's own HttpClient
+scope.CreateAppController<IUserController>(); // IUserController and the rest, on the rich HttpClient
 ```
 
 **Key Features:**
@@ -106,12 +109,12 @@ public partial class AppTestServer : IAsyncDisposable
 - `configureTestApiAppServices`: Server.Api's services.
 - `configureTestConfigurations`: Server.Web's and Server.Api's configuration alike.
 
-**Calling the api.**
-- `CreateAppController<T>()`: the app's own client of an api controller, `IUserController` and the rest. Prefer it.
-- `CreateRichHttpClient()`: the HttpClient those clients are built on, which works exactly like the app's own. The test reaches the api the way the client does, only without the UI: `ExceptionDelegatingHandler` turns an error response into the exception the app would get, for example.
-- `CreateRawHttpClient()`: straight to Server.Api, with none of the app's handlers, for a test about the response itself: a status code, a header, a redirect.
+**Calling the api.** A scope of `WebApp`'s services is a client of the api: it calls anonymously until its `AuthManager` signs a user in, and as that user from then on (See the example below).
+- `scope.CreateAppController<T>()`: the app's own client of an api controller, `IUserController` and the rest. Prefer it.
+- `scope.CreateRichHttpClient()`: the HttpClient those clients are built on, which works exactly like the app's own. The test reaches the api the way the client does, only without the UI: `ExceptionDelegatingHandler` turns an error response into the exception the app would get, for example.
+- `server.CreateRawHttpClient()`: straight to Server.Api, with none of the app's handlers, for a test about the response itself: a status code, a header, a redirect.
 
-The first two call anonymously, unless they are given a scope of `WebApp`'s services whose `AuthManager` signed a user in (See the example below). No browser signs in on a server built without one, so `AppTestServer` keeps `AuthManager`'s tokens in memory there (See `AddBrowserlessClientServices`).
+No browser signs in on a server built without one, so `AppTestServer` keeps `AuthManager`'s tokens in memory there (See `AddBrowserlessClientServices`).
 
 **Which host?** Resolve what runs in Server.Web - pages, pre-rendering, `AuthManager` - from `WebApp.Services`, and what runs in Server.Api - `AppDbContext`, Hangfire, the captured e-mails - from `ApiApp.Services`.
 
@@ -184,7 +187,7 @@ public partial class IntegrationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
+        var userController = scope.CreateAppController<IUserController>();
 
         // Verify the signed-in user
         var user = await userController.GetCurrentUser(TestContext.CancellationToken);
