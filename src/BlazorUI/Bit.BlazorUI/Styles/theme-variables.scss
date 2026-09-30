@@ -622,6 +622,11 @@ $tg-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
 $tg-dialog-title-font-size: var(--bit-tpg-dialog-title-font-size);
 $tg-dialog-title-font-weight: var(--bit-tpg-dialog-title-font-weight);
 
+// field-label typography - the weight of the caption that names a form field (BitLabel and the label an
+// input renders above itself), which design systems decide apart from the control-label weight: Fluent
+// sets it semibold, while Fluent 2, Material and Cupertino caption a field in their regular weight.
+$tg-field-label-font-weight: var(--bit-tpg-field-label-font-weight);
+
 // h1
 $tg-h1-margin: var(--bit-tpg-h1-margin);
 $tg-h1-font-weight: var(--bit-tpg-h1-font-weight);

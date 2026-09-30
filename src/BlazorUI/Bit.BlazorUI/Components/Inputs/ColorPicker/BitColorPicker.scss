@@ -170,7 +170,7 @@
 
 .bit-clp-lbl {
     font-size: inherit;
-    font-weight: $tg-fw-semibold;
+    font-weight: $tg-field-label-font-weight;
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-ColorPicker-label-color, #{$clr-fg-pri});
 }

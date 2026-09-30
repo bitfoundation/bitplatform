@@ -2215,7 +2215,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "--bit-Dropdown-label-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
             Description = "Label weight.",
         },
         new()

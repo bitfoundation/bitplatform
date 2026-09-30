@@ -26,6 +26,9 @@ public class BitThemeTypography
     /// <summary>The type of a dialog's title (<c>--bit-tpg-dialog-*</c>).</summary>
     public BitThemeDialogTypography Dialog { get; set; } = new();
 
+    /// <summary>The type of the caption that names a form field (<c>--bit-tpg-field-label-*</c>).</summary>
+    public BitThemeFieldLabelTypography FieldLabel { get; set; } = new();
+
     public BitThemeTypographyVariants H1 { get; set; } = new();
     public BitThemeTypographyVariants H2 { get; set; } = new();
     public BitThemeTypographyVariants H3 { get; set; } = new();
@@ -162,4 +165,17 @@ public class BitThemeDialogTypography
     /// The font weight of a dialog's title. Maps to <c>--bit-tpg-dialog-title-font-weight</c>.
     /// </summary>
     public string? TitleFontWeight { get; set; }
+}
+
+/// <summary>
+/// The type of the caption that names a form field - a BitLabel and the label an input renders above itself -
+/// which design systems set apart from the labels of their buttons: Fluent semibold, Fluent 2, Material and
+/// Cupertino regular.
+/// </summary>
+public class BitThemeFieldLabelTypography
+{
+    /// <summary>
+    /// The font weight of a field's caption. Maps to <c>--bit-tpg-field-label-font-weight</c>.
+    /// </summary>
+    public string? FontWeight { get; set; }
 }

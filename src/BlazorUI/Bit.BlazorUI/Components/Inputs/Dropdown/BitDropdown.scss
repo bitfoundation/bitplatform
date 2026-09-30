@@ -46,7 +46,7 @@
 //   LABEL AND DESCRIPTION
 //   --bit-Dropdown-label-color             label text                               (default: $clr-fg-pri)
 //   --bit-Dropdown-label-font-size         label text size                          (default: --bit-Dropdown-font-size)
-//   --bit-Dropdown-label-font-weight       label weight                             (default: $tg-fw-semibold)
+//   --bit-Dropdown-label-font-weight       label weight                             (default: $tg-field-label-font-weight)
 //   --bit-Dropdown-required-color          the asterisk a Required field carries    (default: $clr-req)
 //   --bit-Dropdown-description-color       description text                         (default: $clr-fg-pri)
 //   --bit-Dropdown-description-font-size   description and error message text size  (default: $tg-fs-2xs)
@@ -350,7 +350,7 @@
     line-height: var(--bit-drp-lbl-lh);
     color: var(--bit-Dropdown-label-color, #{$clr-fg-pri});
     font-size: var(--bit-Dropdown-label-font-size, var(--bit-drp-fs));
-    font-weight: var(--bit-Dropdown-label-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-Dropdown-label-font-weight, #{$tg-field-label-font-weight});
 }
 
 // Carries the id the combobox is named by, around the selection display alone. It takes no part in
