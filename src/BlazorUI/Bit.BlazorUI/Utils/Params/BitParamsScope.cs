@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -12,7 +12,12 @@ namespace Bit.BlazorUI;
 /// </summary>
 internal sealed class BitParamsScope
 {
+    // How deep a value is taken apart for its snapshot; anything deeper is compared as it is.
+    private const int MaxSnapshotDepth = 16;
+
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> _propertiesCache = new();
+
+    private readonly Dictionary<BitParamsKey, object?> _snapshots;
 
 
 
@@ -27,6 +32,16 @@ internal sealed class BitParamsScope
         Hidden = hidden;
         All = all;
         IsIsolated = isIsolated;
+
+        // A merged copy is only shallow, so a nested object - a ClassStyles, an icon, a list - is the very one the
+        // markup holds, and a change made to it in place shows in the previous scope too. What every params object
+        // held is therefore taken apart now, while it can still be told apart from what it holds later.
+        _snapshots = new(all.Count);
+
+        foreach (var (key, value) in all)
+        {
+            _snapshots[key] = TakeSnapshot(value, 0);
+        }
     }
 
 
@@ -109,8 +124,9 @@ internal sealed class BitParamsScope
     }
 
     /// <summary>
-    /// Whether this scope carries exactly what the other one does, parameter by parameter, so that nothing
-    /// would change for the components under it.
+    /// Whether this scope carries exactly what the other one does, parameter by parameter and down into every
+    /// nested object, as each held it when its scope was created, so that nothing would change for the components
+    /// under it.
     /// </summary>
     public bool IsEquivalentTo(BitParamsScope? other)
     {
@@ -133,10 +149,10 @@ internal sealed class BitParamsScope
             if (Hidden[i] != other.Hidden[i]) return false;
         }
 
-        foreach (var (key, value) in All)
+        foreach (var (key, snapshot) in _snapshots)
         {
-            if (other.All.TryGetValue(key, out var otherValue) is false) return false;
-            if (AreEquivalent(value, otherValue) is false) return false;
+            if (other._snapshots.TryGetValue(key, out var otherSnapshot) is false) return false;
+            if (AreEqual(snapshot, otherSnapshot) is false) return false;
         }
 
         return true;
@@ -196,46 +212,99 @@ internal sealed class BitParamsScope
         return result;
     }
 
-    private static bool AreEquivalent(IBitComponentParams first, IBitComponentParams second)
+    /// <summary>
+    /// Takes a value apart down to its leaves, so that it can be compared with what it holds later even when it is
+    /// changed in place: an object with public read-write properties and a public parameterless constructor - a
+    /// params object, a ClassStyles, an icon - property by property, a dictionary entry by entry and any other
+    /// sequence item by item. Everything else - a string, a value type, a delegate, an object of any other kind, or
+    /// one nested too deep - is a leaf, compared as it is. A params type that cannot be copied is cascaded as is, so
+    /// it is a leaf too, and the same only when it is the same object.
+    /// </summary>
+    private static object? TakeSnapshot(object? value, int depth)
     {
-        if (ReferenceEquals(first, second)) return true;
+        if (value is null or string or Delegate or Type || value.GetType().IsValueType) return value;
 
-        var type = first.GetType();
+        if (depth >= MaxSnapshotDepth) return value;
 
-        if (type != second.GetType()) return false;
-
-        var properties = GetProperties(type);
-
-        // A type that is not copied is cascaded as is, so it is the same only when it is the same object.
-        if (properties is null) return false;
-
-        foreach (var property in properties)
+        if (value is IDictionary dictionary)
         {
-            if (AreEqual(property.GetValue(first), property.GetValue(second)) is false) return false;
+            var entries = new List<KeyValuePair<object, object?>>(dictionary.Count);
+
+            foreach (DictionaryEntry entry in dictionary)
+            {
+                entries.Add(new(entry.Key, TakeSnapshot(entry.Value, depth + 1)));
+            }
+
+            return new DictionarySnapshot(entries);
         }
 
-        return true;
+        if (value is IEnumerable sequence)
+        {
+            var items = new List<object?>();
+
+            foreach (var item in sequence)
+            {
+                items.Add(TakeSnapshot(item, depth + 1));
+            }
+
+            return new SequenceSnapshot(items);
+        }
+
+        var type = value.GetType();
+        var properties = GetProperties(type);
+
+        if (properties is null || properties.Length == 0) return value;
+
+        var values = new object?[properties.Length];
+
+        for (int i = 0; i < properties.Length; i++)
+        {
+            values[i] = TakeSnapshot(properties[i].GetValue(value), depth + 1);
+        }
+
+        return new ObjectSnapshot(type, values);
     }
 
     private static bool AreEqual(object? first, object? second)
     {
         if (Equals(first, second)) return true;
 
-        // A merged dictionary is a new object on every render, so it is compared entry by entry.
-        if (first is IDictionary firstDictionary && second is IDictionary secondDictionary)
+        switch (first, second)
         {
-            if (firstDictionary.Count != secondDictionary.Count) return false;
+            case (ObjectSnapshot firstObject, ObjectSnapshot secondObject):
+                return firstObject.Type == secondObject.Type && AreAllEqual(firstObject.Values, secondObject.Values);
 
-            foreach (DictionaryEntry entry in firstDictionary)
-            {
-                if (secondDictionary.Contains(entry.Key) is false) return false;
-                if (Equals(entry.Value, secondDictionary[entry.Key]) is false) return false;
-            }
+            case (SequenceSnapshot firstSequence, SequenceSnapshot secondSequence):
+                return AreAllEqual(firstSequence.Items, secondSequence.Items);
 
-            return true;
+            case (DictionarySnapshot firstDictionary, DictionarySnapshot secondDictionary):
+                if (firstDictionary.Entries.Count != secondDictionary.Entries.Count) return false;
+
+                foreach (var (key, entry) in firstDictionary.Entries)
+                {
+                    var index = secondDictionary.Entries.FindIndex(e => Equals(e.Key, key));
+
+                    if (index < 0) return false;
+                    if (AreEqual(entry, secondDictionary.Entries[index].Value) is false) return false;
+                }
+
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool AreAllEqual(IReadOnlyList<object?> first, IReadOnlyList<object?> second)
+    {
+        if (first.Count != second.Count) return false;
+
+        for (int i = 0; i < first.Count; i++)
+        {
+            if (AreEqual(first[i], second[i]) is false) return false;
         }
 
-        return false;
+        return true;
     }
 
     /// <summary>
@@ -254,6 +323,14 @@ internal sealed class BitParamsScope
                     .ToArray();
         });
     }
+
+
+
+    private sealed record ObjectSnapshot(Type Type, object?[] Values);
+
+    private sealed record SequenceSnapshot(List<object?> Items);
+
+    private sealed record DictionarySnapshot(List<KeyValuePair<object, object?>> Entries);
 }
 
 

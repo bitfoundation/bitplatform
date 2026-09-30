@@ -360,6 +360,26 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void ANestedObjectChangedInPlaceShouldReachABitComponent()
+    {
+        var @params = new BitButtonParams { Classes = new() { Root = "first" } };
+
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [@params]);
+            builder.AddChildContent<StaticButtonHost>();
+        });
+
+        Assert.IsTrue(component.Find("button").ClassList.Contains("first"));
+
+        @params.Classes.Root = "second";
+        component.Render(builder => builder.Add(p => p.Parameters, [@params]));
+
+        Assert.IsTrue(component.Find("button").ClassList.Contains("second"));
+        Assert.IsFalse(component.Find("button").ClassList.Contains("first"));
+    }
+
+    [TestMethod]
     public void ComponentBaseParamsShouldLeaveIsEnabledUnset()
     {
         Assert.IsNull(new BitButtonParams().IsEnabled);
