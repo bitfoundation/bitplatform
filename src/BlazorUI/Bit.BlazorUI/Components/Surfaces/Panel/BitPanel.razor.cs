@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Panel is an overlay surface that slides in from an edge of the screen to host supplementary content -
@@ -47,6 +49,9 @@ public partial class BitPanel : BitComponentBase
     private MouseEventArgs? _dismissArgs;
     private DotNetObjectReference<BitPanel>? _dotnetObj;
     private DotNetObjectReference<BitPanel>? _swipesDotnetObj;
+    // What the escape guard answered for the Escape Blazor is about to hand the key handler (see
+    // _OnEscapeVerdict), taken by the handler as it starts.
+    private bool _foreignEscape;
 
 
 
@@ -59,6 +64,17 @@ public partial class BitPanel : BitComponentBase
     // Bit.BlazorUI.Extras, which this assembly cannot reference.
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the panel component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple panel components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPanelParams.ParamName)]
+    public BitPanelParams? CascadingParameters { get; set; }
 
 
 
@@ -319,8 +335,10 @@ public partial class BitPanel : BitComponentBase
     /// slid in from.
     /// </summary>
     /// <remarks>
-    /// It is what a panel hosting something that is itself dragged needs - a slider, a canvas, a table that
-    /// scrolls sideways - since the gesture would otherwise be taken by the panel before it reaches them.
+    /// A drag that starts on a field, a slider or an editable region is left to it, and so is a mouse drag
+    /// that selects text, so the gesture never takes those away. Anything else inside the panel that is
+    /// dragged itself - a canvas, a table that scrolls sideways - keeps its own drags when it is marked with a
+    /// <c>data-no-swipe</c> attribute; this turns the gesture off for the whole of the panel.
     /// </remarks>
     [Parameter] public bool NoSwipe { get; set; }
 
@@ -360,6 +378,10 @@ public partial class BitPanel : BitComponentBase
     /// <br />
     /// A dismissal the panel does perform is reported through <see cref="OnDismissing"/> - which can still
     /// refuse it - and then through <see cref="OnDismiss"/>.
+    /// <br />
+    /// An Escape that belongs to something inside the panel - it closes the open list of a dropdown in the
+    /// content, or a handler there already prevented its default - is left to it and never reaches the
+    /// panel, so one press does not take the panel away along with the list the user meant to close.
     /// </remarks>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
@@ -501,9 +523,11 @@ public partial class BitPanel : BitComponentBase
     /// shares. The overlay takes this value and the panel itself sits one above it.
     /// </summary>
     /// <remarks>
-    /// It is what a panel opened from inside another one needs: the two panels sit at the same layer
-    /// otherwise, where the overlay of the inner one lands underneath the panel it was opened from and a
-    /// click there reaches that panel rather than dismissing the inner one.
+    /// A panel declared inside the content of another one needs none of it: it is stacked inside the panel it
+    /// was opened from, so its overlay already covers that panel. It is what a panel that has to cover
+    /// something it is not nested in needs - another panel declared beside it, or a fixed header of the page
+    /// stacked above the layer the library shares - since the two would otherwise be layered by the order
+    /// they come in the page.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? ZIndex { get; set; }
@@ -590,6 +614,16 @@ public partial class BitPanel : BitComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
+    // Sent by the escape guard as each Escape goes down inside the panel, ahead of the keydown Blazor then
+    // dispatches, so the key handler that runs next reads the answer that was taken for its own key. It is
+    // written for every Escape, so one that never reaches the handler - a component in between stopped it -
+    // leaves nothing behind that the next one could be mistaken for.
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        _foreignEscape = foreign;
+    }
+
 
 
     protected override string RootElementClass => "bit-pnl";
@@ -628,6 +662,16 @@ public partial class BitPanel : BitComponentBase
         _contentRendered = IsOpen;
 
         base.OnInitialized();
+    }
+
+    // Filled in before OnParametersSetAsync reads any of them: the swipe geometry, the focus trap and the scroll
+    // hold are all decided from parameters a BitParams ancestor may be the one giving.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPanelParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -710,6 +754,8 @@ public partial class BitPanel : BitComponentBase
         if (firstRender)
         {
             await SetupTransitionEnd();
+
+            await SetupEscapeGuard();
 
             await SetupSwipes();
         }
@@ -833,9 +879,19 @@ public partial class BitPanel : BitComponentBase
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
+        if (e.Key is not "Escape") return;
+
+        // Taken before anything is awaited, and whether or not the panel goes on to act, so the answer that
+        // was sent for this key is the one read and is gone before the next one's comes in.
+        var foreign = _foreignEscape;
+        _foreignEscape = false;
+
         if (IsOpen is false || IsEnabled is false) return;
 
-        if (e.Key is not "Escape") return;
+        // An Escape that closes an open popup of the content - a dropdown's list, a date picker's calendar -
+        // is that popup's, not the panel's, and neither is one a handler inside already claimed, one that
+        // cancels an IME composition, or one a panel nested inside this one answered or refused.
+        if (foreign) return;
 
         // Reported before the dismissal is attempted, and reported whether or not there is going to be one,
         // so that a panel which refuses the key still hears it.
@@ -849,7 +905,9 @@ public partial class BitPanel : BitComponentBase
     }
 
     // Whether the Escape key is the panel's to act on, which is also whether it stops at the panel rather
-    // than carrying on up to whatever the panel was opened from.
+    // than carrying on up to whatever the panel was opened from. A panel that refuses the key lets every key
+    // through to the handlers of the page around it; one opened from inside another panel still keeps an
+    // Escape it refuses from that one, which the escape guard tells to leave it alone.
     private bool DismissesOnEscape => IsOpen && IsEnabled && NoDismissOnEscape is false;
 
     // The scroller the panel holds while it is open, as an element where one is to be had. A selector the
@@ -1063,7 +1121,10 @@ public partial class BitPanel : BitComponentBase
                 id: _containerId,
                 trigger: GetSwipeTrigger(),
                 position: position,
-                isRtl: Dir is BitDir.Rtl,
+                // A panel given no direction slides the way the page it is in reads, and one given Auto the
+                // way its content resolves it to, so for both the script reads that off the layout rather
+                // than being told a left-to-right it may not be.
+                isRtl: Dir switch { BitDir.Rtl => true, BitDir.Ltr => false, _ => null },
                 // The axis the panel is swiped away along is the one it slid in on, and the lock is what takes
                 // that axis from the page: a top or bottom panel dragged with the wrong lock follows the finger
                 // while the page scrolls out from under it at the same time.
@@ -1101,6 +1162,17 @@ public partial class BitPanel : BitComponentBase
         try
         {
             await _js.BitUtilsSetupTransitionEnd(_containerId, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task SetupEscapeGuard()
+    {
+        if (IsDisposed || _dotnetObj is null) return;
+
+        try
+        {
+            await _js.BitUtilsSetupEscapeGuard(_Id, _dotnetObj);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1314,6 +1386,8 @@ public partial class BitPanel : BitComponentBase
         try
         {
             await _js.BitUtilsDisposeTransitionEnd(_containerId);
+
+            await _js.BitUtilsDisposeEscapeGuard(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

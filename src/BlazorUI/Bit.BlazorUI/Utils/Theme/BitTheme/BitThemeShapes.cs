@@ -26,7 +26,7 @@ public class BitThemeShapes
 
 /// <summary>
 /// The radius scale (<c>--bit-shp-radius-{none,xs,sm,md,lg,xl,2xl,full}</c>) and the per-family radii
-/// (<c>--bit-shp-radius-{control,surface,popup,dialog,button,chip,selection}</c>) every component
+/// (<c>--bit-shp-radius-{control,surface,popup,dialog,sheet,button,chip,selection}</c>) every component
 /// takes its corners from.
 /// </summary>
 /// <remarks>
@@ -91,4 +91,10 @@ public class BitThemeShapeRadii
 
     /// <summary>Dialogs and modals.</summary>
     public string? Dialog { get; set; }
+
+    /// <summary>
+    /// The inner corners of panels and other edge-anchored sheets. Unlike the other families it does not fall
+    /// back to <see cref="BitThemeShapes.BorderRadius"/>: a sheet is square unless it is rounded on purpose.
+    /// </summary>
+    public string? Sheet { get; set; }
 }

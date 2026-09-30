@@ -504,15 +504,29 @@ public partial class BitAppShellDemo
         {
             Id = "cascading-value-list",
             Title = "BitCascadingValueList",
-            Description = "A helper class to ease the using of a list of the BitCascadingValue.",
+            Description = "A List<BitCascadingValue> with typed helpers for building and revising a set of cascading values; its collection initializer takes { value, name } pairs. These are the members the shell's ValueList is usually built with; the BitCascadingValueProvider page documents all of them.",
             Parameters =
             [
                 new()
                 {
-                    Name = "Add<T>(T value, string? name = null, bool isFixed = false)",
+                    Name = "Add<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)",
                     Type = "void",
                     DefaultValue = "",
-                    Description = "Adds a typed BitCascadingValue to the list.",
+                    Description = "Adds a typed BitCascadingValue to the list, cascading the value as the static type of T.",
+                },
+                new()
+                {
+                    Name = "Add(BitCascadingValue? value)",
+                    Type = "void",
+                    DefaultValue = "",
+                    Description = "Adds an already created BitCascadingValue to the list. A null item is ignored.",
+                },
+                new()
+                {
+                    Name = "Set<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)",
+                    Type = "void",
+                    DefaultValue = "",
+                    Description = "Replaces every entry of the static type of T and the given name with one new entry, in the place of the first, or appends it when there is none.",
                 }
             ]
         },
@@ -520,29 +534,36 @@ public partial class BitAppShellDemo
         {
             Id = "cascading-value",
             Title = "BitCascadingValue",
-            Description = "The cascading value to be provided using the BitCascadingValueProvider component.",
+            Description = "One value to cascade: what is cascaded, as which type, under which name, and whether it is fixed or provided at all. Bare values and (value, name) tuples of the common primitive, date, string and BitDir types convert to it implicitly. These are the members the shell's Values are usually built with; the BitCascadingValueProvider page documents all of them, including the factories and the typed BitCascadingValue<T>.",
             Parameters =
             [
-                new()
-                {
-                    Name = "Name",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "The optional name of the cascading value.",
-                },
                 new()
                 {
                     Name = "Value",
                     Type = "object?",
                     DefaultValue = "null",
-                    Description = "The value to be provided.",
+                    Description = "The value to be provided. Assigning a value not assignable to ValueType throws an ArgumentException; assigning a different value refreshes the consumers.",
+                },
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The optional name of the cascading value, matched case-insensitively; an empty or white-space name means no name.",
                 },
                 new()
                 {
                     Name = "IsFixed",
                     Type = "bool",
                     DefaultValue = "false",
-                    Description = "If true, indicates that Value will not change.",
+                    Description = "Marks a value that never changes, so its consumers are not subscribed for change notifications.",
+                },
+                new()
+                {
+                    Name = "Enabled",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Whether the value is provided at all. A disabled value is skipped as if it had never been added, so an outer or root-level value of the same type and name shows through.",
                 }
             ]
         },

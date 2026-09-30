@@ -334,7 +334,7 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-label-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
             Description = "Weight of the group label.",
         },
         new()

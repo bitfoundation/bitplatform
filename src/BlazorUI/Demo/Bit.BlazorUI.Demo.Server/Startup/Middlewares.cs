@@ -98,13 +98,6 @@ public class Middlewares
             {
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
-
-            app.MapHealthChecksUI(options =>
-            {
-                options.UseRelativeApiPath =
-                    options.UseRelativeResourcesPath =
-                        options.UseRelativeWebhookPath = false;
-            });
         }
 
         UseSiteMap(app);

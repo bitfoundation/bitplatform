@@ -14,6 +14,12 @@ public class BitThemeColors
     public BitThemeBackgroundColorVariants Background { get; set; } = new();
     public BitThemeGeneralColorVariants Border { get; set; } = new();
     public string? Required { get; set; }
+
+    /// <summary>The fill of the tooltip surface (<c>--bit-clr-tooltip-bg</c>), defaulting to the secondary background.</summary>
+    public string? TooltipBackground { get; set; }
+
+    /// <summary>The text color of the tooltip surface (<c>--bit-clr-tooltip-fg</c>), defaulting to the primary foreground.</summary>
+    public string? TooltipForeground { get; set; }
     public BitThemeNeutralColorVariants Neutral { get; set; } = new();
     public BitThemeSemanticColors Semantic { get; set; } = new();
 }

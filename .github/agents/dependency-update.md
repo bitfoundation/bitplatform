@@ -8,6 +8,29 @@ description: Sweep every version-pinned surface in the bitplatform repo (NuGet, 
 Update every version pin in the repo in one pass, then hand back a report the maintainer can review
 without opening the diff.
 
+## First, check the checkout is up to date
+
+The sweep reads its pins from the working tree, so a checkout that is behind `develop` sweeps stale
+pins: it proposes bumps that already landed upstream and misses packages added since the last pull.
+Before reading a single pin, fetch and count:
+
+```bash
+up=$(git remote -v | awk '$2 ~ /bitfoundation\/bitplatform(\.git)?$/ && $3 == "(fetch)" { print $1; exit }')
+git fetch "$up" "+refs/heads/develop:refs/remotes/$up/develop"
+git rev-list --count HEAD.."$up"/develop   # commits the checkout is missing
+```
+
+`$up` is the remote that points at `bitfoundation/bitplatform`: `upstream` when `origin` is your
+fork, `origin` in a plain clone. If the count is not 0:
+
+- On `develop` with a clean tree, fast-forward it: `git merge --ff-only "$up"/develop`.
+- Anywhere else (another branch, local changes, commits of its own), leave the checkout alone and run
+  the whole sweep, scan included, in a worktree on the latest `develop`
+  (`git worktree add --detach ../bitplatform-sweep "$up"/develop`). Once the issue exists, name the
+  branch there with `git switch -c <n>` instead of adding the worktree in Ship it step 2.
+
+Open the report with the commit the sweep read.
+
 ## Ordering
 
 Work the surfaces in this order. Each is independent; batch the network lookups.
@@ -121,8 +144,8 @@ versions ascending):
 - latest stable = last entry with no `-`
 - target = latest stable, **except** a package whose newest release is a prerelease with no stable
   above it, which takes the prerelease. That is the whole `OpenTelemetry.*` 1.18.0-beta.1 family,
-  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace`,
-  `Aspire.Hosting.Keycloak` and `Aspire.Hosting.Maui`.
+  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace` and
+  `Aspire.Hosting.Keycloak`.
 
 Run the lookups with `xargs -P 12`; ~210 packages otherwise takes minutes.
 
@@ -167,9 +190,10 @@ Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). The newest major i
 `<Task>V<n>` folder in `gh api repos/microsoft/azure-pipelines-tasks/contents/Tasks --jq '.[].name'`.
 A task can change name across majors while keeping its id: `NodeTool@1` resolves to `UseNodeV1`.
 
-`AzureRmWebAppDeployment` is on @4 while @5 exists. For `webAppLinux` @5 defaults to `oneDeploy` with
-`CleanDeploymentFlag: true`, which deletes wwwroot files missing from the package — a deploy-behaviour
-decision for the maintainer, not a routine bump.
+`AzureRmWebAppDeployment@5` passes `DeploymentTypeLinux: 'zipDeploy'` on purpose. For `webAppLinux` @5
+defaults to `oneDeploy` with `CleanDeploymentFlag: true`, which deletes every file the package does not
+carry, the template's `App_Data` (SQLite database, local file storage, Hangfire jobs) included.
+`zipDeploy` keeps them, as @4 did. Keep that input on any later major.
 
 ### devcontainers
 

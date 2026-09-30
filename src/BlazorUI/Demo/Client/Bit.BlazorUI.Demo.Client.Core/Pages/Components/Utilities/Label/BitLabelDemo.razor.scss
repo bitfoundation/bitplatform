@@ -1,4 +1,17 @@
-﻿::deep .custom-class {
+﻿.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+}
+
+.visibility-row {
+    gap: 0.25rem;
+    display: flex;
+    align-items: center;
+}
+
+::deep .custom-class {
     padding: 0.5rem;
     border: 1px solid red;
     max-width: max-content;

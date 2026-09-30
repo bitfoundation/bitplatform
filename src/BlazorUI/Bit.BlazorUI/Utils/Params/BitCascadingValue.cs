@@ -63,7 +63,7 @@ public class BitCascadingValue
     public BitCascadingValue(object? value, Type valueType) : this(value, null, false, valueType) { }
     public BitCascadingValue(object? value, string name, Type valueType) : this(value, name, false, valueType) { }
 
-    private BitCascadingValue(Func<object?> valueFactory, bool isComputed, Type valueType, string? name, bool isFixed, bool enabled)
+    private protected BitCascadingValue(Func<object?> valueFactory, bool isComputed, Type valueType, string? name, bool isFixed, bool enabled)
     {
         ArgumentNullException.ThrowIfNull(valueFactory);
         ArgumentNullException.ThrowIfNull(valueType);
@@ -148,7 +148,8 @@ public class BitCascadingValue
     /// The value to be provided. Assigning a value that is not assignable to the <see cref="ValueType"/>
     /// throws an <see cref="ArgumentException"/>.
     /// When the value comes from a lazy factory, the factory runs the first time this property is read;
-    /// when it comes from a computed factory, the factory runs on every read.
+    /// when it comes from a computed factory, the factory runs on every read. Assigning it replaces either
+    /// factory for good: a computed value then cascades the assigned value and stops tracking its source.
     /// </summary>
     public object? Value
     {
@@ -205,23 +206,7 @@ public class BitCascadingValue
         }
         set
         {
-            ValidateValue(value, ValueType);
-
-            bool changed;
-
-            lock (_lock)
-            {
-                changed = _valueFactory is not null || _computedFactory is not null || Equals(_value, value) is false;
-
-                _valueFactory = null;
-                _computedFactory = null;
-                _computedRead = false;
-                _value = value;
-            }
-
-            UpdateObservation();
-
-            if (changed)
+            if (StoreValue(value))
             {
                 NotifyChanged();
             }
@@ -465,23 +450,26 @@ public class BitCascadingValue
     /// <summary>
     /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/>, which is
     /// the safe way of cascading null values, nullable value types, interfaces and base types.
+    /// The created value is a <see cref="BitCascadingValue{T}"/>, which is what a cast or a type pattern
+    /// reaches its typed members through; construct one directly to hold it as that type from the start.
     /// </summary>
     public static BitCascadingValue From<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)
-        => new(value, name, isFixed, typeof(T), enabled);
+        => new BitCascadingValue<T>(value, name, isFixed, enabled);
 
     /// <summary>
     /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/>.
+    /// The created value is a <see cref="BitCascadingValue{T}"/>.
     /// </summary>
     public static BitCascadingValue From<T>(T value, bool isFixed, bool enabled = true)
-        => new(value, null, isFixed, typeof(T), enabled);
+        => new BitCascadingValue<T>(value, null, isFixed, enabled);
 
     /// <summary>
     /// Creates a fixed (IsFixed) cascading value whose ValueType is the static type of <typeparamref name="T"/>.
     /// Fixed values never subscribe their consumers for change notifications, so they are the cheapest way
-    /// of cascading a value that never changes.
+    /// of cascading a value that never changes. The created value is a <see cref="BitCascadingValue{T}"/>.
     /// </summary>
     public static BitCascadingValue Fixed<T>(T value, string? name = null, bool enabled = true)
-        => new(value, name, true, typeof(T), enabled);
+        => new BitCascadingValue<T>(value, name, true, enabled);
 
     /// <summary>
     /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/> and whose
@@ -489,12 +477,13 @@ public class BitCascadingValue
     /// expensive value is never built for a disabled entry, for an entry that a later one shadows, or for
     /// a provider that is never rendered. The factory runs at most once, unless it throws, in which case
     /// the exception is surfaced to the reader and the factory is run again on the next read.
+    /// The created value is a <see cref="BitCascadingValue{T}"/>.
     /// </summary>
     public static BitCascadingValue Lazy<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)
     {
         ArgumentNullException.ThrowIfNull(valueFactory);
 
-        return new(() => valueFactory(), false, typeof(T), name, isFixed, enabled);
+        return new BitCascadingValue<T>(() => valueFactory(), false, name, isFixed, enabled);
     }
 
     /// <summary>
@@ -509,29 +498,42 @@ public class BitCascadingValue
     /// Creates a cascading value that is re-read from <paramref name="valueFactory"/> every time it is
     /// provided, so one long lived BitCascadingValue keeps tracking the state it is derived from without
     /// the collection of values having to be rebuilt on every render. The provider reads it once per
-    /// render, and <see cref="NotifyChanged"/> pushes a fresh reading down on demand.
+    /// render, and <see cref="NotifyChanged"/> pushes a fresh reading down on demand. The factory never
+    /// runs while the value is disabled. The created value is a <see cref="BitCascadingValue{T}"/>.
     /// </summary>
-    public static BitCascadingValue Computed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false)
+    public static BitCascadingValue Computed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)
     {
         ArgumentNullException.ThrowIfNull(valueFactory);
 
-        return new(() => valueFactory(), true, typeof(T), name, isFixed, true);
+        return new BitCascadingValue<T>(() => valueFactory(), true, name, isFixed, enabled);
     }
+
+    // The 10.6 signature, kept so that the assemblies compiled against it still bind. Its parameters are
+    // all required, so a call passing all three picks it over the overload above without any ambiguity.
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static BitCascadingValue Computed<T>(Func<T> valueFactory, string? name, bool isFixed)
+        => Computed(valueFactory, name, isFixed, true);
 
     /// <summary>
     /// Creates a computed cascading value with an explicit ValueType, for when the cascaded type of a value
     /// that is re-read on every render is only known at runtime.
     /// </summary>
-    public static BitCascadingValue Computed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false)
-        => new(valueFactory, true, valueType, name, isFixed, true);
+    public static BitCascadingValue Computed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)
+        => new(valueFactory, true, valueType, name, isFixed, enabled);
+
+    // The 10.6 signature, kept so that the assemblies compiled against it still bind.
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static BitCascadingValue Computed(Func<object?> valueFactory, Type valueType, string? name, bool isFixed)
+        => Computed(valueFactory, valueType, name, isFixed, true);
 
     /// <summary>
     /// Creates a cascading value with <see cref="AutoNotify"/> turned on, so a value that reports its own
     /// mutations through <see cref="INotifyCollectionChanged"/> or <see cref="INotifyPropertyChanged"/>
     /// refreshes the consumers without a single call to <see cref="NotifyChanged"/>.
+    /// The created value is a <see cref="BitCascadingValue{T}"/>.
     /// </summary>
     public static BitCascadingValue Observed<T>(T value, string? name = null, bool enabled = true)
-        => new(value, name, false, typeof(T), enabled) { AutoNotify = true };
+        => new BitCascadingValue<T>(value, name, false, enabled) { AutoNotify = true };
 
 
 
@@ -613,6 +615,31 @@ public class BitCascadingValue
         }
     }
 
+    /// <summary>
+    /// Stores a new value in place of whatever was stored or produced by a factory, re-points the
+    /// <see cref="AutoNotify"/> subscription at it, and reports whether that changed what is cascaded.
+    /// </summary>
+    private protected bool StoreValue(object? value)
+    {
+        ValidateValue(value, ValueType);
+
+        bool changed;
+
+        lock (_lock)
+        {
+            changed = _valueFactory is not null || _computedFactory is not null || Equals(_value, value) is false;
+
+            _valueFactory = null;
+            _computedFactory = null;
+            _computedRead = false;
+            _value = value;
+        }
+
+        UpdateObservation();
+
+        return changed;
+    }
+
     private void HandleObservedPropertyChanged(object? sender, PropertyChangedEventArgs args) => NotifyChanged();
 
     private void HandleObservedCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args) => NotifyChanged();
@@ -656,128 +683,128 @@ public class BitCascadingValue
 
 
 
-    public static implicit operator BitCascadingValue(bool value) => new(value);
-    public static implicit operator BitCascadingValue((bool value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(bool? value) => new(value, typeof(bool?));
-    public static implicit operator BitCascadingValue((bool? value, string name) tuple) => new(tuple.value, tuple.name, typeof(bool?));
+    public static implicit operator BitCascadingValue(bool value) => new BitCascadingValue<bool>(value);
+    public static implicit operator BitCascadingValue((bool value, string name) tuple) => new BitCascadingValue<bool>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(bool? value) => new BitCascadingValue<bool?>(value);
+    public static implicit operator BitCascadingValue((bool? value, string name) tuple) => new BitCascadingValue<bool?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(byte value) => new(value);
-    public static implicit operator BitCascadingValue((byte value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(byte? value) => new(value, typeof(byte?));
-    public static implicit operator BitCascadingValue((byte? value, string name) tuple) => new(tuple.value, tuple.name, typeof(byte?));
+    public static implicit operator BitCascadingValue(byte value) => new BitCascadingValue<byte>(value);
+    public static implicit operator BitCascadingValue((byte value, string name) tuple) => new BitCascadingValue<byte>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(byte? value) => new BitCascadingValue<byte?>(value);
+    public static implicit operator BitCascadingValue((byte? value, string name) tuple) => new BitCascadingValue<byte?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(sbyte value) => new(value);
-    public static implicit operator BitCascadingValue((sbyte value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(sbyte? value) => new(value, typeof(sbyte?));
-    public static implicit operator BitCascadingValue((sbyte? value, string name) tuple) => new(tuple.value, tuple.name, typeof(sbyte?));
+    public static implicit operator BitCascadingValue(sbyte value) => new BitCascadingValue<sbyte>(value);
+    public static implicit operator BitCascadingValue((sbyte value, string name) tuple) => new BitCascadingValue<sbyte>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(sbyte? value) => new BitCascadingValue<sbyte?>(value);
+    public static implicit operator BitCascadingValue((sbyte? value, string name) tuple) => new BitCascadingValue<sbyte?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(short value) => new(value);
-    public static implicit operator BitCascadingValue((short value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(short? value) => new(value, typeof(short?));
-    public static implicit operator BitCascadingValue((short? value, string name) tuple) => new(tuple.value, tuple.name, typeof(short?));
+    public static implicit operator BitCascadingValue(short value) => new BitCascadingValue<short>(value);
+    public static implicit operator BitCascadingValue((short value, string name) tuple) => new BitCascadingValue<short>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(short? value) => new BitCascadingValue<short?>(value);
+    public static implicit operator BitCascadingValue((short? value, string name) tuple) => new BitCascadingValue<short?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(ushort value) => new(value);
-    public static implicit operator BitCascadingValue((ushort value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(ushort? value) => new(value, typeof(ushort?));
-    public static implicit operator BitCascadingValue((ushort? value, string name) tuple) => new(tuple.value, tuple.name, typeof(ushort?));
+    public static implicit operator BitCascadingValue(ushort value) => new BitCascadingValue<ushort>(value);
+    public static implicit operator BitCascadingValue((ushort value, string name) tuple) => new BitCascadingValue<ushort>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(ushort? value) => new BitCascadingValue<ushort?>(value);
+    public static implicit operator BitCascadingValue((ushort? value, string name) tuple) => new BitCascadingValue<ushort?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(int value) => new(value);
-    public static implicit operator BitCascadingValue((int value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(int? value) => new(value, typeof(int?));
-    public static implicit operator BitCascadingValue((int? value, string name) tuple) => new(tuple.value, tuple.name, typeof(int?));
+    public static implicit operator BitCascadingValue(int value) => new BitCascadingValue<int>(value);
+    public static implicit operator BitCascadingValue((int value, string name) tuple) => new BitCascadingValue<int>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(int? value) => new BitCascadingValue<int?>(value);
+    public static implicit operator BitCascadingValue((int? value, string name) tuple) => new BitCascadingValue<int?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(uint value) => new(value);
-    public static implicit operator BitCascadingValue((uint value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(uint? value) => new(value, typeof(uint?));
-    public static implicit operator BitCascadingValue((uint? value, string name) tuple) => new(tuple.value, tuple.name, typeof(uint?));
+    public static implicit operator BitCascadingValue(uint value) => new BitCascadingValue<uint>(value);
+    public static implicit operator BitCascadingValue((uint value, string name) tuple) => new BitCascadingValue<uint>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(uint? value) => new BitCascadingValue<uint?>(value);
+    public static implicit operator BitCascadingValue((uint? value, string name) tuple) => new BitCascadingValue<uint?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(long value) => new(value);
-    public static implicit operator BitCascadingValue((long value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(long? value) => new(value, typeof(long?));
-    public static implicit operator BitCascadingValue((long? value, string name) tuple) => new(tuple.value, tuple.name, typeof(long?));
+    public static implicit operator BitCascadingValue(long value) => new BitCascadingValue<long>(value);
+    public static implicit operator BitCascadingValue((long value, string name) tuple) => new BitCascadingValue<long>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(long? value) => new BitCascadingValue<long?>(value);
+    public static implicit operator BitCascadingValue((long? value, string name) tuple) => new BitCascadingValue<long?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(ulong value) => new(value);
-    public static implicit operator BitCascadingValue((ulong value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(ulong? value) => new(value, typeof(ulong?));
-    public static implicit operator BitCascadingValue((ulong? value, string name) tuple) => new(tuple.value, tuple.name, typeof(ulong?));
+    public static implicit operator BitCascadingValue(ulong value) => new BitCascadingValue<ulong>(value);
+    public static implicit operator BitCascadingValue((ulong value, string name) tuple) => new BitCascadingValue<ulong>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(ulong? value) => new BitCascadingValue<ulong?>(value);
+    public static implicit operator BitCascadingValue((ulong? value, string name) tuple) => new BitCascadingValue<ulong?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(nint value) => new(value);
-    public static implicit operator BitCascadingValue((nint value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(nint? value) => new(value, typeof(nint?));
-    public static implicit operator BitCascadingValue((nint? value, string name) tuple) => new(tuple.value, tuple.name, typeof(nint?));
+    public static implicit operator BitCascadingValue(nint value) => new BitCascadingValue<nint>(value);
+    public static implicit operator BitCascadingValue((nint value, string name) tuple) => new BitCascadingValue<nint>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(nint? value) => new BitCascadingValue<nint?>(value);
+    public static implicit operator BitCascadingValue((nint? value, string name) tuple) => new BitCascadingValue<nint?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(nuint value) => new(value);
-    public static implicit operator BitCascadingValue((nuint value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(nuint? value) => new(value, typeof(nuint?));
-    public static implicit operator BitCascadingValue((nuint? value, string name) tuple) => new(tuple.value, tuple.name, typeof(nuint?));
+    public static implicit operator BitCascadingValue(nuint value) => new BitCascadingValue<nuint>(value);
+    public static implicit operator BitCascadingValue((nuint value, string name) tuple) => new BitCascadingValue<nuint>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(nuint? value) => new BitCascadingValue<nuint?>(value);
+    public static implicit operator BitCascadingValue((nuint? value, string name) tuple) => new BitCascadingValue<nuint?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(float value) => new(value);
-    public static implicit operator BitCascadingValue((float value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(float? value) => new(value, typeof(float?));
-    public static implicit operator BitCascadingValue((float? value, string name) tuple) => new(tuple.value, tuple.name, typeof(float?));
+    public static implicit operator BitCascadingValue(float value) => new BitCascadingValue<float>(value);
+    public static implicit operator BitCascadingValue((float value, string name) tuple) => new BitCascadingValue<float>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(float? value) => new BitCascadingValue<float?>(value);
+    public static implicit operator BitCascadingValue((float? value, string name) tuple) => new BitCascadingValue<float?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(double value) => new(value);
-    public static implicit operator BitCascadingValue((double value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(double? value) => new(value, typeof(double?));
-    public static implicit operator BitCascadingValue((double? value, string name) tuple) => new(tuple.value, tuple.name, typeof(double?));
+    public static implicit operator BitCascadingValue(double value) => new BitCascadingValue<double>(value);
+    public static implicit operator BitCascadingValue((double value, string name) tuple) => new BitCascadingValue<double>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(double? value) => new BitCascadingValue<double?>(value);
+    public static implicit operator BitCascadingValue((double? value, string name) tuple) => new BitCascadingValue<double?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(decimal value) => new(value);
-    public static implicit operator BitCascadingValue((decimal value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(decimal? value) => new(value, typeof(decimal?));
-    public static implicit operator BitCascadingValue((decimal? value, string name) tuple) => new(tuple.value, tuple.name, typeof(decimal?));
+    public static implicit operator BitCascadingValue(decimal value) => new BitCascadingValue<decimal>(value);
+    public static implicit operator BitCascadingValue((decimal value, string name) tuple) => new BitCascadingValue<decimal>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(decimal? value) => new BitCascadingValue<decimal?>(value);
+    public static implicit operator BitCascadingValue((decimal? value, string name) tuple) => new BitCascadingValue<decimal?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(char value) => new(value);
-    public static implicit operator BitCascadingValue((char value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(char? value) => new(value, typeof(char?));
-    public static implicit operator BitCascadingValue((char? value, string name) tuple) => new(tuple.value, tuple.name, typeof(char?));
+    public static implicit operator BitCascadingValue(char value) => new BitCascadingValue<char>(value);
+    public static implicit operator BitCascadingValue((char value, string name) tuple) => new BitCascadingValue<char>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(char? value) => new BitCascadingValue<char?>(value);
+    public static implicit operator BitCascadingValue((char? value, string name) tuple) => new BitCascadingValue<char?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(Guid value) => new(value);
-    public static implicit operator BitCascadingValue((Guid value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(Guid? value) => new(value, typeof(Guid?));
-    public static implicit operator BitCascadingValue((Guid? value, string name) tuple) => new(tuple.value, tuple.name, typeof(Guid?));
+    public static implicit operator BitCascadingValue(Guid value) => new BitCascadingValue<Guid>(value);
+    public static implicit operator BitCascadingValue((Guid value, string name) tuple) => new BitCascadingValue<Guid>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(Guid? value) => new BitCascadingValue<Guid?>(value);
+    public static implicit operator BitCascadingValue((Guid? value, string name) tuple) => new BitCascadingValue<Guid?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(DateTime value) => new(value);
-    public static implicit operator BitCascadingValue((DateTime value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(DateTime? value) => new(value, typeof(DateTime?));
-    public static implicit operator BitCascadingValue((DateTime? value, string name) tuple) => new(tuple.value, tuple.name, typeof(DateTime?));
+    public static implicit operator BitCascadingValue(DateTime value) => new BitCascadingValue<DateTime>(value);
+    public static implicit operator BitCascadingValue((DateTime value, string name) tuple) => new BitCascadingValue<DateTime>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(DateTime? value) => new BitCascadingValue<DateTime?>(value);
+    public static implicit operator BitCascadingValue((DateTime? value, string name) tuple) => new BitCascadingValue<DateTime?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(DateOnly value) => new(value);
-    public static implicit operator BitCascadingValue((DateOnly value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(DateOnly? value) => new(value, typeof(DateOnly?));
-    public static implicit operator BitCascadingValue((DateOnly? value, string name) tuple) => new(tuple.value, tuple.name, typeof(DateOnly?));
+    public static implicit operator BitCascadingValue(DateOnly value) => new BitCascadingValue<DateOnly>(value);
+    public static implicit operator BitCascadingValue((DateOnly value, string name) tuple) => new BitCascadingValue<DateOnly>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(DateOnly? value) => new BitCascadingValue<DateOnly?>(value);
+    public static implicit operator BitCascadingValue((DateOnly? value, string name) tuple) => new BitCascadingValue<DateOnly?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(TimeOnly value) => new(value);
-    public static implicit operator BitCascadingValue((TimeOnly value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(TimeOnly? value) => new(value, typeof(TimeOnly?));
-    public static implicit operator BitCascadingValue((TimeOnly? value, string name) tuple) => new(tuple.value, tuple.name, typeof(TimeOnly?));
+    public static implicit operator BitCascadingValue(TimeOnly value) => new BitCascadingValue<TimeOnly>(value);
+    public static implicit operator BitCascadingValue((TimeOnly value, string name) tuple) => new BitCascadingValue<TimeOnly>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(TimeOnly? value) => new BitCascadingValue<TimeOnly?>(value);
+    public static implicit operator BitCascadingValue((TimeOnly? value, string name) tuple) => new BitCascadingValue<TimeOnly?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(DateTimeOffset value) => new(value);
-    public static implicit operator BitCascadingValue((DateTimeOffset value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(DateTimeOffset? value) => new(value, typeof(DateTimeOffset?));
-    public static implicit operator BitCascadingValue((DateTimeOffset? value, string name) tuple) => new(tuple.value, tuple.name, typeof(DateTimeOffset?));
+    public static implicit operator BitCascadingValue(DateTimeOffset value) => new BitCascadingValue<DateTimeOffset>(value);
+    public static implicit operator BitCascadingValue((DateTimeOffset value, string name) tuple) => new BitCascadingValue<DateTimeOffset>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(DateTimeOffset? value) => new BitCascadingValue<DateTimeOffset?>(value);
+    public static implicit operator BitCascadingValue((DateTimeOffset? value, string name) tuple) => new BitCascadingValue<DateTimeOffset?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(TimeSpan value) => new(value);
-    public static implicit operator BitCascadingValue((TimeSpan value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(TimeSpan? value) => new(value, typeof(TimeSpan?));
-    public static implicit operator BitCascadingValue((TimeSpan? value, string name) tuple) => new(tuple.value, tuple.name, typeof(TimeSpan?));
+    public static implicit operator BitCascadingValue(TimeSpan value) => new BitCascadingValue<TimeSpan>(value);
+    public static implicit operator BitCascadingValue((TimeSpan value, string name) tuple) => new BitCascadingValue<TimeSpan>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(TimeSpan? value) => new BitCascadingValue<TimeSpan?>(value);
+    public static implicit operator BitCascadingValue((TimeSpan? value, string name) tuple) => new BitCascadingValue<TimeSpan?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(string? value) => new(value, typeof(string));
-    public static implicit operator BitCascadingValue((string? value, string name) tuple) => new(tuple.value, tuple.name, typeof(string));
+    public static implicit operator BitCascadingValue(string? value) => new BitCascadingValue<string?>(value);
+    public static implicit operator BitCascadingValue((string? value, string name) tuple) => new BitCascadingValue<string?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(BitDir value) => new(value);
-    public static implicit operator BitCascadingValue((BitDir value, string name) tuple) => new(tuple.value, tuple.name);
-    public static implicit operator BitCascadingValue(BitDir? value) => new(value, typeof(BitDir?));
-    public static implicit operator BitCascadingValue((BitDir? value, string name) tuple) => new(tuple.value, tuple.name, typeof(BitDir?));
+    public static implicit operator BitCascadingValue(BitDir value) => new BitCascadingValue<BitDir>(value);
+    public static implicit operator BitCascadingValue((BitDir value, string name) tuple) => new BitCascadingValue<BitDir>(tuple.value, tuple.name);
+    public static implicit operator BitCascadingValue(BitDir? value) => new BitCascadingValue<BitDir?>(value);
+    public static implicit operator BitCascadingValue((BitDir? value, string name) tuple) => new BitCascadingValue<BitDir?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(RouteData? value) => new(value, typeof(RouteData));
-    public static implicit operator BitCascadingValue((RouteData? value, string name) tuple) => new(tuple.value, tuple.name, typeof(RouteData));
+    public static implicit operator BitCascadingValue(RouteData? value) => new BitCascadingValue<RouteData?>(value);
+    public static implicit operator BitCascadingValue((RouteData? value, string name) tuple) => new BitCascadingValue<RouteData?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(Uri? value) => new(value, typeof(Uri));
-    public static implicit operator BitCascadingValue((Uri? value, string name) tuple) => new(tuple.value, tuple.name, typeof(Uri));
+    public static implicit operator BitCascadingValue(Uri? value) => new BitCascadingValue<Uri?>(value);
+    public static implicit operator BitCascadingValue((Uri? value, string name) tuple) => new BitCascadingValue<Uri?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(CultureInfo? value) => new(value, typeof(CultureInfo));
-    public static implicit operator BitCascadingValue((CultureInfo? value, string name) tuple) => new(tuple.value, tuple.name, typeof(CultureInfo));
+    public static implicit operator BitCascadingValue(CultureInfo? value) => new BitCascadingValue<CultureInfo?>(value);
+    public static implicit operator BitCascadingValue((CultureInfo? value, string name) tuple) => new BitCascadingValue<CultureInfo?>(tuple.value, tuple.name);
 
-    public static implicit operator BitCascadingValue(TimeZoneInfo? value) => new(value, typeof(TimeZoneInfo));
-    public static implicit operator BitCascadingValue((TimeZoneInfo? value, string name) tuple) => new(tuple.value, tuple.name, typeof(TimeZoneInfo));
+    public static implicit operator BitCascadingValue(TimeZoneInfo? value) => new BitCascadingValue<TimeZoneInfo?>(value);
+    public static implicit operator BitCascadingValue((TimeZoneInfo? value, string name) tuple) => new BitCascadingValue<TimeZoneInfo?>(tuple.value, tuple.name);
 }

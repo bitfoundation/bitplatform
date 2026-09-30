@@ -610,7 +610,7 @@ public partial class BitOtpInputDemo
         new()
         {
             Name = "--bit-OtpInput-label-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
             Description = "Weight of the label above the inputs.",
         },
         new()
