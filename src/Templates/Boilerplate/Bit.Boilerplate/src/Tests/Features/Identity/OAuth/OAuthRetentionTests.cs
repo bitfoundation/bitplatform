@@ -17,7 +17,7 @@ public class OAuthRetentionTests
     public async Task TheRetentionJob_Should_SweepExpiredCodes_AndKeepExchangeableOnes()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);

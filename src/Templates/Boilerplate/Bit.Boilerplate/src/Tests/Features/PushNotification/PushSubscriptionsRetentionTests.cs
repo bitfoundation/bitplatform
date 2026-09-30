@@ -16,7 +16,7 @@ public class PushSubscriptionsRetentionTests
     public async Task EnforceRetention_Should_DeleteExpiredSubscriptions_AndKeepLiveOnes()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // Per-run device ids, so anything left behind is an inert orphan rather than a collision with the shared
         // development database.
@@ -46,9 +46,7 @@ public class PushSubscriptionsRetentionTests
 
     private async Task Subscribe(AppTestServer server, string deviceId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        await scope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+        await server.CreateAppController<IPushNotificationController>()
             .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = $"channel-{deviceId}" }, TestContext.CancellationToken);
     }
 

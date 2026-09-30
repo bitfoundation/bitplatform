@@ -28,8 +28,7 @@ public class GoogleRecaptchaHealthCheckTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
-            configureTestApiAppServices: services =>
+            configureTestServices: services =>
             {
                 services.AddHttpClient<GoogleRecaptchaService>().ConfigurePrimaryHttpMessageHandler(() => handler);
             }).Start(TestContext.CancellationToken);

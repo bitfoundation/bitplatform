@@ -18,7 +18,7 @@ public partial class PushSubscriptionDeviceContextTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // A per-run device id, so leftovers are inert orphans rather than collisions.
         var deviceId = $"push-context-{Guid.NewGuid():N}";
@@ -67,7 +67,7 @@ public partial class PushSubscriptionDeviceContextTests
         // RequestHeadersDelegatingHandler and by the CDN, neither of which is in play here.
         async Task Subscribe(string country, string city, string appVersion, string pushChannel)
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+            using var anonymousClient = server.CreateRawHttpClient();
 
             anonymousClient.DefaultRequestHeaders.Add("cf-ipcountry", country);
             anonymousClient.DefaultRequestHeaders.Add("cf-ipcity", city);

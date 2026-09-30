@@ -45,7 +45,7 @@ public partial class PhoneNumberNormalizationTests
         {
             // Swap the real PhoneService (registered as AddScoped<PhoneService> in Program.Services) for the capturing
             // subclass. IdentityController injects the concrete PhoneService, so the service type stays PhoneService and
-            // only the implementation becomes the fake.
+            // only the implementation becomes the fake. Server.Api's alone: CapturingPhoneService is built from its services.
             services.RemoveAll<PhoneService>();
             services.AddScoped<PhoneService, CapturingPhoneService>();
         }).Start(TestContext.CancellationToken);
@@ -69,8 +69,7 @@ public partial class PhoneNumberNormalizationTests
         // proves the number was normalized (not merely passed through).
         var e164 = new Regex(@"^\+[1-9]\d{6,14}$");
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>();
 
         foreach (var (Typed, Normalized) in attempts)
         {

@@ -59,7 +59,7 @@ public class SigningKeyRotationTests
     public async Task IssuedTokens_Should_CarryTheActiveCertificatesThumbprintAsKid()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -82,7 +82,7 @@ public class SigningKeyRotationTests
     public async Task Jwks_Should_PublishOneKeyPerTrustedCertificate()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var trustedCertificates = AppCertificateService.GetAllAppCertificates(server.WebApp.Configuration);
 
@@ -91,7 +91,7 @@ public class SigningKeyRotationTests
         Assert.IsGreaterThan(1, trustedCertificates.Length,
             $"The staged retired pair ({RetiredCertificateName}.*) should have been loaded alongside the active certificate.");
 
-        using var anonymousHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var anonymousHttpClient = server.CreateRawHttpClient();
         using var response = await anonymousHttpClient.GetAsync(".well-known/jwks", TestContext.CancellationToken);
         response.EnsureSuccessStatusCode();
 
@@ -115,13 +115,13 @@ public class SigningKeyRotationTests
     public async Task ATokenSignedByARetiredCertificate_Should_StillBeAccepted()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
 
         var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
 
         var retired = AppCertificateService.GetAllAppCertificates(server.WebApp.Configuration)
             .Single(cert => cert.Subject.Contains(RetiredCertificateName, StringComparison.Ordinal));
@@ -143,13 +143,13 @@ public class SigningKeyRotationTests
     public async Task ATokenSignedByAnUntrustedKey_Should_BeRejected()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
 
         var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
 
         // Sanity: the real token works, so the failure below is about the signing key and nothing else.
         Assert.AreEqual(TestData.DefaultTestEmail, (await userController.GetCurrentUser(TestContext.CancellationToken)).Email);

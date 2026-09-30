@@ -64,8 +64,7 @@ public class ConfirmPageTwoFactorTests
     /// </summary>
     private async Task<(string email, string token)> CreateUnconfirmedTwoFactorAccount(AppTestServer server)
     {
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scopeWebApp.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 

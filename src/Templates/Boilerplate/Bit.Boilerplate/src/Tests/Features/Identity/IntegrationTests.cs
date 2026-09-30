@@ -10,15 +10,13 @@ public partial class IntegrationTests
 
         /* var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow); // Microsoft.Extensions.TimeProvider.Testing */
 
-        await server.Build(configureTestWebAppServices: services =>
+        await server.Build(configureTestServices: services =>
         {
-            services.AddBrowserlessClientServices();
             // You can override services here for this specific test if needed:
             // services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider));
         }).Start(TestContext.CancellationToken);
 
-        // AuthManager and the typed api clients come from Server.Web's container, so the test calls the api through the
-        // app's whole HttpClient pipeline, error handling included.
+        // The scope is the client: once its AuthManager signs a user in, the controllers created with it call as that user.
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
@@ -29,7 +27,7 @@ public partial class IntegrationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
 
         var user = await userController.GetCurrentUser(TestContext.CancellationToken);
 
@@ -41,11 +39,9 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => userController.GetCurrentUser(TestContext.CancellationToken));
     }

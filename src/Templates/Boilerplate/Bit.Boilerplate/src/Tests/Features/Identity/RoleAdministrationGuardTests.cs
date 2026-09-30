@@ -121,7 +121,7 @@ public class RoleAdministrationGuardTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -136,7 +136,7 @@ public class RoleAdministrationGuardTests
         var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
-        return (scope.ServiceProvider.GetRequiredService<IRoleManagementController>(), userId, grant);
+        return (server.CreateAppController<IRoleManagementController>(scope.ServiceProvider), userId, grant);
     }
 
     private async Task<Guid> CreateRole(IRoleManagementController roleManagementController)

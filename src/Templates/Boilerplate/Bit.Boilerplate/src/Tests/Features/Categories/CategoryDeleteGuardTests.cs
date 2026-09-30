@@ -46,8 +46,8 @@ public partial class CategoryDeleteGuardTests
 
         await SignIn(scope);
 
-        var categories = scope.ServiceProvider.GetRequiredService<ICategoryController>();
-        var products = scope.ServiceProvider.GetRequiredService<IProductController>();
+        var categories = server.CreateAppController<ICategoryController>(scope.ServiceProvider);
+        var products = server.CreateAppController<IProductController>(scope.ServiceProvider);
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
@@ -86,8 +86,8 @@ public partial class CategoryDeleteGuardTests
 
         await SignIn(scopeWebApp);
 
-        var categories = scopeWebApp.ServiceProvider.GetRequiredService<ICategoryController>();
-        var products = scopeWebApp.ServiceProvider.GetRequiredService<IProductController>();
+        var categories = server.CreateAppController<ICategoryController>(scopeWebApp.ServiceProvider);
+        var products = server.CreateAppController<IProductController>(scopeWebApp.ServiceProvider);
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
@@ -136,8 +136,8 @@ public partial class CategoryDeleteGuardTests
 
         await SignIn(scope);
 
-        var categories = scope.ServiceProvider.GetRequiredService<ICategoryController>();
-        var products = scope.ServiceProvider.GetRequiredService<IProductController>();
+        var categories = server.CreateAppController<ICategoryController>(scope.ServiceProvider);
+        var products = server.CreateAppController<IProductController>(scope.ServiceProvider);
 
         var category = await categories.Create(NewCategoryDto(), TestContext.CancellationToken);
         var product = await products.Create(NewProductDto(category.Id), TestContext.CancellationToken);
@@ -166,7 +166,7 @@ public partial class CategoryDeleteGuardTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

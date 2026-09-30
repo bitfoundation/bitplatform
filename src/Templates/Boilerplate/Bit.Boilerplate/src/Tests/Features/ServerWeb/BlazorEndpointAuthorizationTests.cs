@@ -51,7 +51,6 @@ public partial class BlazorEndpointAuthorizationTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestConfigurations: configuration =>
             {
                 configuration["WebAppRender:BlazorMode"] = blazorMode;

@@ -44,22 +44,22 @@ public class ProductImageCacheInvalidationTests
 
         await SignIn(scope);
 
-        var products = scope.ServiceProvider.GetRequiredService<IProductController>();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var products = server.CreateAppController<IProductController>(scope.ServiceProvider);
+        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
         var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Red));
 
         var created = await products.Create(
-            await NewProductDto(scope, productId, $"image-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
+            await NewProductDto(server, scope, productId, $"image-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
 
         try
         {
             // The url a visitor is holding at this point, and the tag the edge stored it under. Anonymous on purpose:
             // an authenticated caller has a tenant claim, and AppResponseCachePolicy switches the edge off for those,
             // so the response would carry no Cache-Tag to compare with.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+            using var visitorHttpClient = server.CreateRawHttpClient();
             var imageUrl = $"/api/v1/Attachment/GetAttachment/{productId}/{AttachmentKind.ProductPrimaryImageMedium}";
 
             using var beforeResponse = await visitorHttpClient.GetAsync($"{imageUrl}?v={created.Version}", TestContext.CancellationToken);
@@ -113,16 +113,16 @@ public class ProductImageCacheInvalidationTests
 
         await SignIn(scope);
 
-        var products = scope.ServiceProvider.GetRequiredService<IProductController>();
-        var attachments = scope.ServiceProvider.GetRequiredService<IAttachmentController>();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var products = server.CreateAppController<IProductController>(scope.ServiceProvider);
+        var attachments = server.CreateAppController<IAttachmentController>(scope.ServiceProvider);
+        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
         var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Green));
 
         var created = await products.Create(
-            await NewProductDto(scope, productId, $"image-delete-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
+            await NewProductDto(server, scope, productId, $"image-delete-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
 
         try
         {
@@ -175,12 +175,6 @@ public class ProductImageCacheInvalidationTests
         var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
-            configureTestConfigurations: configuration =>
-            {
-                configuration["AI:OpenAI:ChatApiKey"] = null;
-                configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
-            },
             // The attachment endpoint and its purge are the api's, and so is the output cache they meet in.
             configureTestApiAppServices: services =>
             {
@@ -188,6 +182,11 @@ public class ProductImageCacheInvalidationTests
                 services.AddSingleton(recorder);
                 services.RemoveAll<IOutputCacheStore>();
                 services.AddSingleton<IOutputCacheStore>(recorder);
+            },
+            configureTestConfigurations: configuration =>
+            {
+                configuration["AI:OpenAI:ChatApiKey"] = null;
+                configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
             }).Start(TestContext.CancellationToken);
 
         return server;
@@ -211,9 +210,9 @@ public class ProductImageCacheInvalidationTests
         Assert.IsFalse(requiresTwoFactor, $"'{TenantAdminEmail}' is not expected to have two factor authentication enabled.");
     }
 
-    private async Task<ProductDto> NewProductDto(AsyncServiceScope scope, Guid id, string name)
+    private async Task<ProductDto> NewProductDto(AppTestServer server, AsyncServiceScope scope, Guid id, string name)
     {
-        var categories = scope.ServiceProvider.GetRequiredService<ICategoryController>();
+        var categories = server.CreateAppController<ICategoryController>(scope.ServiceProvider);
         var categoryId = (await categories.Get(TestContext.CancellationToken)).First().Id;
 
         return new ProductDto

@@ -17,7 +17,6 @@ public partial class ErrorPageStatusCodeTests
         await using var server = new AppTestServer();
         // Prerendered, like the deployments: with it off the server renders no page to redirect to or to take a body from.
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -37,7 +36,6 @@ public partial class ErrorPageStatusCodeTests
         await using var server = new AppTestServer();
         // Prerendered, like the deployments: with it off the server renders no page to redirect to or to take a body from.
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 

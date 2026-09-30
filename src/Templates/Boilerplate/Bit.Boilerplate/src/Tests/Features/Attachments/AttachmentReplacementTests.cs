@@ -36,7 +36,7 @@ public class AttachmentReplacementTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
 
         try
         {
@@ -77,14 +77,14 @@ public class AttachmentReplacementTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
 
         try
         {
             await Upload(httpClient, SolidImage(MagickColors.Red));
             var before = await Download(httpClient, userId);
 
-            // The DI HttpClient turns a non-success response into an exception (See ExceptionDelegatingHandler); the
+            // The rich HttpClient turns a non-success response into an exception (See ExceptionDelegatingHandler); the
             // ImageTooSmall body is plain text, so the status code is what identifies the rejection.
             var rejected = await Assert.ThrowsExactlyAsync<HttpRequestException>(
                 () => Upload(httpClient, SolidImage(MagickColors.Blue, 100)),
@@ -120,7 +120,7 @@ public class AttachmentReplacementTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
 
         try
         {
@@ -128,7 +128,7 @@ public class AttachmentReplacementTests
             var before = await Download(httpClient, userId);
 
             // Deterministic non-image bytes, posted with a spoofed image/png content type: the server must judge the
-            // content, not the caller-controlled header. The DI HttpClient turns the non-success response into an
+            // content, not the caller-controlled header. The rich HttpClient turns the non-success response into an
             // exception (See ExceptionDelegatingHandler); the rejection body is plain text, so the status identifies it.
             var garbageBytes = new byte[1024];
             Array.Fill(garbageBytes, (byte)'x');
@@ -157,7 +157,7 @@ public class AttachmentReplacementTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

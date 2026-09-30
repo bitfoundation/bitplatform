@@ -105,7 +105,7 @@ public partial class HostPageRenderTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -138,7 +138,7 @@ public partial class HostPageRenderTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -163,7 +163,7 @@ public partial class HostPageRenderTests
     public async Task HostPage_Should_AlwaysEmitTheScripts_WhenNothingIsPrerendered()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics())
+        await server.Build(configureTestServices: services => services.FakeExternalStatistics())
                     .Start(TestContext.CancellationToken);
 
         using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
@@ -190,7 +190,7 @@ public partial class HostPageRenderTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:BlazorMode"] = "BlazorSsr")
             .Start(TestContext.CancellationToken);
 
@@ -228,7 +228,7 @@ public partial class HostPageRenderTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
@@ -273,7 +273,7 @@ public partial class HostPageRenderTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["ResponseCaching:EnableOutputCaching"] = "true";
@@ -304,7 +304,7 @@ public partial class HostPageRenderTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:BlazorMode"] = "BlazorServer")
             .Start(TestContext.CancellationToken);
 

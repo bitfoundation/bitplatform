@@ -36,7 +36,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_AcceptOurAccessToken_UsingOnlyTheDiscoveryDocument()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -65,7 +65,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_RejectAnAnonymousCallAndAForgedToken()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -94,7 +94,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_AcceptATokenSignedByARetiredCertificate()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var activeThumbprint = AppCertificateService.GetActiveAppCertificate(server.WebApp.Configuration).Thumbprint;
         var retired = AppCertificateService.GetAllAppCertificates(server.WebApp.Configuration)
@@ -131,7 +131,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task TheDiscoveryDocument_Should_PublishTheSameIssuerTheTokensCarry()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await SignIn(scope);
@@ -139,7 +139,7 @@ public class OpenIdConfigurationIntegrationTests
         var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
         var mintedIssuer = new JwtSecurityToken(accessToken).Issuer;
 
-        using var anonymousHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var anonymousHttpClient = server.CreateRawHttpClient();
         using var document = JsonDocument.Parse(
             await anonymousHttpClient.GetStringAsync(".well-known/openid-configuration", TestContext.CancellationToken));
 

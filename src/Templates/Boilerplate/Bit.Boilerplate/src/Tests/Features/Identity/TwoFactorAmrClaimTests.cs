@@ -18,7 +18,7 @@ public class TwoFactorAmrClaimTests
     public async Task TheAmrClaim_Should_SurviveARefresh_SoAPolicyCanRelyOnIt()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
 
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
@@ -33,7 +33,7 @@ public class TwoFactorAmrClaimTests
             await dbContext.SaveChangesAsync(TestContext.CancellationToken);
         }
 
-        var userController = scopeWebApp.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider);
         var enrolment = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
         var sharedKey = enrolment.SharedKey!.Replace(" ", "");
 

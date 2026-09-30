@@ -13,7 +13,7 @@ public class DevMcpHangfireTests
     public async Task HangfireTools_Should_ReportStats_ListRecurringJobs_AndFindAMailJobByRecipient()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;
@@ -51,7 +51,7 @@ public class DevMcpHangfireTests
     public async Task HangfireTools_Should_RefuseUnknownState_AndReportMissingJobs()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
         await using var _ = grant;

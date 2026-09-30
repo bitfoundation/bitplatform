@@ -29,7 +29,7 @@ public class EmailUniquenessIndexTests
     public async Task TheUserUniquenessIndex_Should_CoverTheColumnLookupsActuallyUse()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();

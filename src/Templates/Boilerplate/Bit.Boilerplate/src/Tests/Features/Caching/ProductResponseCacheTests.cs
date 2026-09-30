@@ -49,7 +49,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 // Pre-rendering makes the server produce the product page's HTML itself, so the page is a cacheable
@@ -75,14 +75,14 @@ public partial class ProductResponseCacheTests
             // The signed-in tenant-user reads it through the public (UserAgnostic) product view API.
             await using var scopeWebAppTenantUser = server.WebApp.Services.CreateAsyncScope();
             await SignIn(scopeWebAppTenantUser, TenantUserEmail);
-            var tenantUserProductView = scopeWebAppTenantUser.ServiceProvider.GetRequiredService<IProductViewController>();
+            var tenantUserProductView = server.CreateAppController<IProductViewController>(scopeWebAppTenantUser.ServiceProvider);
 
             var seenByTenantUser = await tenantUserProductView.Get(productShortId, TestContext.CancellationToken);
             Assert.AreEqual(productName, seenByTenantUser.Name);
             Assert.AreEqual(originalDescription, seenByTenantUser.DescriptionText);
 
             // ...and an anonymous visitor reads the pre-rendered public product page. A bare HttpClient - rather than the
-            // app's own one from DI - keeps this reader free of any access token and of the client-side message handlers
+            // rich one - keeps this reader free of any access token and of the client-side message handlers
             // (retry, client caching, exception translation) that would sit between the assertions and what the server
             // actually returned.
             using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
@@ -121,7 +121,7 @@ public partial class ProductResponseCacheTests
 
                 // A real authenticated PUT, so the purge under test is the one the endpoint itself performs after saving
                 // (See ProductController.Update) - including running it under a genuine HttpContext.
-                var products = scopeWebAppTenantAdmin.ServiceProvider.GetRequiredService<IProductController>();
+                var products = server.CreateAppController<IProductController>(scopeWebAppTenantAdmin.ServiceProvider);
 
                 var toUpdate = await products.Get(productId, TestContext.CancellationToken);
                 toUpdate.DescriptionText = updatedDescription;
@@ -209,7 +209,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
@@ -221,9 +221,9 @@ public partial class ProductResponseCacheTests
         try
         {
 
-            // A bare HttpClient keeps the client-side message handlers out of the way, so the headers asserted below are
+            // A raw HttpClient keeps the client-side message handlers out of the way, so the headers asserted below are
             // the ones the server actually wrote.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+            using var visitorHttpClient = server.CreateRawHttpClient();
 
             var requestPath = $"/api/v1/ProductView/Get/{productShortId}";
             using var response = await visitorHttpClient.GetAsync($"{requestPath}?utm_source=test", TestContext.CancellationToken);
@@ -288,7 +288,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
@@ -355,7 +355,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -365,10 +365,10 @@ public partial class ProductResponseCacheTests
 
         try
         {
-            // One bare HttpClient for both reads, so the ONLY difference between the two requests is the token: any other
-            // difference (a header the DI client adds, for instance) would split the cache key on its own and the test
+            // One raw HttpClient for both reads, so the ONLY difference between the two requests is the token: any other
+            // difference (a header the rich client adds, for instance) would split the cache key on its own and the test
             // would pass for the wrong reason.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+            using var visitorHttpClient = server.CreateRawHttpClient();
 
             var requestPath = $"/api/v1/ProductView/Get/{productShortId}";
 
@@ -426,7 +426,7 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -472,7 +472,9 @@ public partial class ProductResponseCacheTests
         var replays = new ReplayCountingOutputCacheStore.Counter();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics().CountOutputCacheReplays(replays),
+            configureTestServices: services => services.FakeExternalStatistics(),
+            // products.xml is Server.Web's, and so is the output cache that replays it.
+            configureTestWebAppServices: services => services.CountOutputCacheReplays(replays),
             configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -497,7 +499,7 @@ public partial class ProductResponseCacheTests
         {
             await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
             await SignIn(scopeWebApp, TenantAdminEmail);
-            var products = scopeWebApp.ServiceProvider.GetRequiredService<IProductController>();
+            var products = server.CreateAppController<IProductController>(scopeWebApp.ServiceProvider);
 
             // IgnoreQueryFilters because a bare DI scope has no HttpContext for TenantProvider to read the tenant from.
             await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
@@ -637,7 +639,7 @@ public partial class ProductResponseCacheTests
     }
 
     /// <summary>
-    /// Fetches the pre-rendered public product page. A raw HttpClient is used rather than Playwright so that what gets
+    /// Fetches the pre-rendered public product page. A bare HttpClient is used rather than Playwright so that what gets
     /// asserted is the exact HTML the server produced (or replayed from the output cache), with no client-side
     /// re-rendering on top of it.
     /// </summary>

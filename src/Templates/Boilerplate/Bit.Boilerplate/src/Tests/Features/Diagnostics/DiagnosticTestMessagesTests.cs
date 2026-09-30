@@ -23,9 +23,9 @@ public partial class DiagnosticTestMessagesTests
     public async Task EmailAndSms_Should_RejectAnonymousCallers(string action)
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var anonymousClient = server.CreateRawHttpClient();
         using var response = await anonymousClient.PostAsync($"api/v1/Diagnostic/{action}", null, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -40,15 +40,14 @@ public partial class DiagnosticTestMessagesTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
-            configureTestApiAppServices: services =>
+            configureTestServices: services =>
             {
                 services.Replace(ServiceDescriptor.Transient(_ => fluentEmail));
             }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var diagnosticController = scope.ServiceProvider.GetRequiredService<IDiagnosticController>();
+        var diagnosticController = server.CreateAppController<IDiagnosticController>(scope.ServiceProvider);
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(() => diagnosticController.SendTestEmail(TestContext.CancellationToken),
             "Sending needs the health checks feature.");
@@ -68,7 +67,7 @@ public partial class DiagnosticTestMessagesTests
     public async Task TestPushNotification_Should_ReportWhetherTheDeviceIsSubscribed_AndKeepToTheCallersOwnDevice()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var deviceId = $"push-test-{Guid.NewGuid():N}";
 
@@ -77,11 +76,11 @@ public partial class DiagnosticTestMessagesTests
             await using (var scopeWebAppOwner = server.WebApp.Services.CreateAsyncScope())
             {
                 await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOwner, TestContext.CancellationToken);
-                var diagnosticController = scopeWebAppOwner.ServiceProvider.GetRequiredService<IDiagnosticController>();
+                var diagnosticController = server.CreateAppController<IDiagnosticController>(scopeWebAppOwner.ServiceProvider);
 
                 Assert.IsFalse(await diagnosticController.SendTestPushNotification(deviceId, TestContext.CancellationToken));
 
-                await scopeWebAppOwner.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await server.CreateAppController<IPushNotificationController>(scopeWebAppOwner.ServiceProvider)
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "test-channel" }, TestContext.CancellationToken);
 
                 Assert.IsTrue(await diagnosticController.SendTestPushNotification(deviceId, TestContext.CancellationToken));
@@ -91,7 +90,7 @@ public partial class DiagnosticTestMessagesTests
             {
                 await TestAccountUtils.CreateAndSignIn(server, scopeWebAppOther, TestContext.CancellationToken);
 
-                await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(() => scopeWebAppOther.ServiceProvider.GetRequiredService<IDiagnosticController>()
+                await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(() => server.CreateAppController<IDiagnosticController>(scopeWebAppOther.ServiceProvider)
                     .SendTestPushNotification(deviceId, TestContext.CancellationToken), "Another session's device must not be reachable.");
             }
         }

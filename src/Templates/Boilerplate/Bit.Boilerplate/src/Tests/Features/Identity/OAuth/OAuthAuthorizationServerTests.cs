@@ -43,7 +43,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheFullFlow_Should_IssueATokenScopedToTheResourceAndToTheGrantedScope()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -53,7 +53,7 @@ public class OAuthAuthorizationServerTests
         var (verifier, challenge) = GeneratePkcePair();
         var request = BuildRequest(server, challenge);
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                   .Approve(request, TestContext.CancellationToken);
 
         var code = QueryValueOf(approval.RedirectUrl, "code");
@@ -96,7 +96,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnUnregisteredRedirectUri_Should_NeverBeRedirectedTo()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         const string attackerUri = "https://attacker.example/steal";
@@ -114,10 +114,7 @@ public class OAuthAuthorizationServerTests
             ["resource"] = $"{Issuer(server)}/dev-mcp"
         });
 
-        using var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
-        {
-            BaseAddress = server.ApiServerAddress
-        };
+        using var httpClient = server.CreateRawHttpClient(new HttpClientHandler { AllowAutoRedirect = false });
 
         using var response = await httpClient.GetAsync(authorizeUrl, TestContext.CancellationToken);
 
@@ -139,7 +136,7 @@ public class OAuthAuthorizationServerTests
     public async Task AReplayedCode_Should_BeRefused_AndRevokeWhatTheFirstExchangeIssued()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
@@ -148,7 +145,7 @@ public class OAuthAuthorizationServerTests
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scopeWebApp.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scopeWebApp.ServiceProvider)
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var code = QueryValueOf(approval.RedirectUrl, "code")!;
@@ -184,7 +181,7 @@ public class OAuthAuthorizationServerTests
     public async Task ACodeVerifierThatDoesNotMatchTheChallenge_Should_BeRefused()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -194,7 +191,7 @@ public class OAuthAuthorizationServerTests
         var (_, challenge) = GeneratePkcePair();
         var (wrongVerifier, _) = GeneratePkcePair();
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var (status, body) = await PostToken(server, new()
@@ -216,9 +213,9 @@ public class OAuthAuthorizationServerTests
     public async Task TheAuthorizationServerMetadata_Should_DescribeWhatThisServerActuallyDoes()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
         using var document = JsonDocument.Parse(
             await httpClient.GetStringAsync(".well-known/oauth-authorization-server", TestContext.CancellationToken));
 
@@ -247,7 +244,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOAuthToken_Should_ReachDevMcp_AndNothingElse()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -256,18 +253,18 @@ public class OAuthAuthorizationServerTests
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var token = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
         var oauthAccessToken = token.GetProperty("access_token").GetString()!;
 
         Assert.AreNotEqual(HttpStatusCode.Unauthorized,
-            await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "dev-mcp", oauthAccessToken, TestContext.CancellationToken),
+            await DevMcpTestUtils.ProbeInitialize(server, "dev-mcp", oauthAccessToken, TestContext.CancellationToken),
             "The token was issued for /dev-mcp, so /dev-mcp has to accept it - otherwise the whole flow issues " +
             "credentials that nothing in this app will honour.");
 
-        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
         using var apiRequest = new HttpRequestMessage(HttpMethod.Get, "api/v1/User/GetCurrentUser");
         apiRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", oauthAccessToken);
 
@@ -286,9 +283,9 @@ public class OAuthAuthorizationServerTests
     public async Task AnUnauthenticatedDevMcpCall_Should_PointAtTheProtectedResourceMetadata()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
         using var request = new HttpRequestMessage(HttpMethod.Post, "dev-mcp");
         request.Content = new StringContent("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}""", Encoding.UTF8, "application/json");
         request.Headers.Accept.ParseAdd("application/json");
@@ -312,9 +309,9 @@ public class OAuthAuthorizationServerTests
     public async Task TheProtectedResourceMetadata_Should_NameThisServerAsItsOwnAuthorizationServer()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
         using var document = JsonDocument.Parse(
             await httpClient.GetStringAsync(".well-known/oauth-protected-resource/dev-mcp", TestContext.CancellationToken));
 
@@ -334,7 +331,7 @@ public class OAuthAuthorizationServerTests
     public async Task ALoopbackRedirectUri_Should_BeAcceptedOnAnyPort()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -346,13 +343,13 @@ public class OAuthAuthorizationServerTests
         var request = BuildRequest(server, challenge);
         request.RedirectUri = "http://127.0.0.1:62435/callback"; // ConfigureTestClient registers the same path on :33418.
 
-        var consent = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var consent = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                  .Review(request, TestContext.CancellationToken);
 
         Assert.AreEqual(request.RedirectUri, consent.RedirectUri,
             "A loopback redirect uri must be matched on everything except its port.");
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                   .Approve(request, TestContext.CancellationToken);
 
         Assert.StartsWith(request.RedirectUri, approval.RedirectUrl,
@@ -364,7 +361,7 @@ public class OAuthAuthorizationServerTests
         wrongPath.RedirectUri = "http://127.0.0.1:62435/somewhere-else";
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
-            () => scope.ServiceProvider.GetRequiredService<IOAuthController>().Review(wrongPath, TestContext.CancellationToken),
+            () => server.CreateAppController<IOAuthController>(scope.ServiceProvider).Review(wrongPath, TestContext.CancellationToken),
             "Only the port may differ - a different path on the same loopback host is still an unregistered uri.");
     }
 
@@ -376,7 +373,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOmittedScope_Should_DefaultToWhatTheResourceIsFor()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -388,7 +385,7 @@ public class OAuthAuthorizationServerTests
         var request = BuildRequest(server, challenge);
         request.Scope = null;
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                   .Approve(request, TestContext.CancellationToken);
 
         var token = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
@@ -406,11 +403,9 @@ public class OAuthAuthorizationServerTests
     public async Task TheOAuthScheme_Should_NotAppearAsAnExternalSignInProvider()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var providers = await scope.ServiceProvider.GetRequiredService<IIdentityController>()
+        var providers = await server.CreateAppController<IIdentityController>()
                                                    .GetSupportedExternalAuthSchemes(TestContext.CancellationToken);
 
         Assert.DoesNotContain(AppAuthSchemes.OAUTH_BEARER, providers,
@@ -425,7 +420,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnAuthorizedApplication_Should_AppearInTheUsersSessionsWithItsClientId()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
@@ -434,12 +429,12 @@ public class OAuthAuthorizationServerTests
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scopeWebApp.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scopeWebApp.ServiceProvider)
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
 
-        var sessions = await scopeWebApp.ServiceProvider.GetRequiredService<IUserController>()
+        var sessions = await server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider)
                                                   .GetUserSessions(TestContext.CancellationToken);
 
         var grantedSession = sessions.SingleOrDefault(session => session.OAuthClientId is not null);
@@ -480,7 +475,7 @@ public class OAuthAuthorizationServerTests
     public async Task AReusedRefreshToken_Should_BeRefusedImmediately_AndRevokeTheGrant()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
@@ -489,7 +484,7 @@ public class OAuthAuthorizationServerTests
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scopeWebApp.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scopeWebApp.ServiceProvider)
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var granted = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
@@ -532,7 +527,7 @@ public class OAuthAuthorizationServerTests
     public async Task AUserWithoutTheFeature_Should_BeRefusedAtConsent()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -541,7 +536,7 @@ public class OAuthAuthorizationServerTests
         var (_, challenge) = GeneratePkcePair();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
-            () => scope.ServiceProvider.GetRequiredService<IOAuthController>()
+            () => server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                        .Review(BuildRequest(server, challenge), TestContext.CancellationToken),
             "An account without System.DevMcp has nothing to grant for this scope, so consent must refuse rather than " +
             "present a screen whose only outcome is an empty grant.");
@@ -556,7 +551,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnAdminWithoutTwoFactor_Should_BeRefusedAtConsent()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -564,7 +559,7 @@ public class OAuthAuthorizationServerTests
         await using var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
 
         var (_, challenge) = GeneratePkcePair();
-        var oauthController = scope.ServiceProvider.GetRequiredService<IOAuthController>();
+        var oauthController = server.CreateAppController<IOAuthController>(scope.ServiceProvider);
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => oauthController.Review(BuildRequest(server, challenge), TestContext.CancellationToken),
@@ -584,7 +579,7 @@ public class OAuthAuthorizationServerTests
     public async Task AnOrdinaryUser_Should_BeAbleToGrantTheChatScope()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -593,7 +588,7 @@ public class OAuthAuthorizationServerTests
         var (verifier, challenge) = GeneratePkcePair();
         var request = BuildRequest(server, challenge, OAuthScopes.Chat, "/mcp");
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                   .Approve(request, TestContext.CancellationToken);
 
         var accessToken = (await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier))
@@ -602,7 +597,7 @@ public class OAuthAuthorizationServerTests
         Assert.AreEqual($"{Issuer(server)}/mcp", new JwtSecurityToken(accessToken).Audiences.Single(),
             "The audience is the resource asked for, which is what keeps this token away from every other one.");
 
-        var status = await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "mcp", accessToken, TestContext.CancellationToken);
+        var status = await DevMcpTestUtils.ProbeInitialize(server, "mcp", accessToken, TestContext.CancellationToken);
 
         Assert.IsFalse(status is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden,
             $"/mcp must accept a token granted for it, but answered {status}.");
@@ -616,7 +611,7 @@ public class OAuthAuthorizationServerTests
     public async Task AChatToken_Should_NotReachDevMcp()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -625,14 +620,14 @@ public class OAuthAuthorizationServerTests
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
             .Approve(BuildRequest(server, challenge, OAuthScopes.Chat, "/mcp"), TestContext.CancellationToken);
 
         var accessToken = (await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier))
             .GetProperty("access_token").GetString()!;
 
         Assert.AreEqual(HttpStatusCode.Unauthorized,
-            await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "dev-mcp", accessToken, TestContext.CancellationToken),
+            await DevMcpTestUtils.ProbeInitialize(server, "dev-mcp", accessToken, TestContext.CancellationToken),
             "Even held by a global admin, a token whose audience is /mcp must not authenticate at /dev-mcp.");
     }
 
@@ -644,7 +639,7 @@ public class OAuthAuthorizationServerTests
     public async Task ADevMcpToken_Should_NotReachTheChatbot()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -653,14 +648,14 @@ public class OAuthAuthorizationServerTests
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var accessToken = (await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier))
             .GetProperty("access_token").GetString()!;
 
         Assert.AreEqual(HttpStatusCode.Unauthorized,
-            await DevMcpTestUtils.ProbeInitialize(server.ApiServerAddress, "mcp", accessToken, TestContext.CancellationToken),
+            await DevMcpTestUtils.ProbeInitialize(server, "mcp", accessToken, TestContext.CancellationToken),
             "/mcp would otherwise accept it: the token authenticates and /mcp asks for nothing more.");
     }
     //#endif
@@ -673,7 +668,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheTokenEndpoint_Should_NormalizeTheResourceTheWayTheAuthorizationEndpointDid()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -682,7 +677,7 @@ public class OAuthAuthorizationServerTests
 
         var (verifier, challenge) = GeneratePkcePair();
 
-        var approval = await scope.ServiceProvider.GetRequiredService<IOAuthController>()
+        var approval = await server.CreateAppController<IOAuthController>(scope.ServiceProvider)
                                                   .Approve(BuildRequest(server, challenge), TestContext.CancellationToken);
 
         var (status, body) = await PostToken(server, new()
@@ -707,7 +702,7 @@ public class OAuthAuthorizationServerTests
     public async Task TheAuthorizeEndpoint_Should_ForwardTheQueryStringAsItArrived()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         var (_, challenge) = GeneratePkcePair();
@@ -724,10 +719,7 @@ public class OAuthAuthorizationServerTests
             ["resource"] = $"{Issuer(server)}/dev-mcp"
         });
 
-        using var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
-        {
-            BaseAddress = server.ApiServerAddress
-        };
+        using var httpClient = server.CreateRawHttpClient(new HttpClientHandler { AllowAutoRedirect = false });
 
         using var response = await httpClient.GetAsync(authorizeUrl, TestContext.CancellationToken);
 
@@ -749,7 +741,7 @@ public class OAuthAuthorizationServerTests
     public async Task AFirstPartyRefreshToken_Should_BeRefusedAtTheTokenEndpoint()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices(), configureTestConfigurations: ConfigureTestClient)
+        await server.Build(configureTestConfigurations: ConfigureTestClient)
                     .Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -804,7 +796,7 @@ public class OAuthAuthorizationServerTests
 
     private async Task<(HttpStatusCode Status, string Body)> PostToken(AppTestServer server, Dictionary<string, string> form)
     {
-        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
 
         // Form encoded with no Authorization header - what AutoCsrfProtectionFilter rejects, which is why the token
         // endpoint is a minimal api.

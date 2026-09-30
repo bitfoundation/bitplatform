@@ -17,9 +17,9 @@ public partial class DeploymentConfigurationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        using (var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress })
+        using (var anonymousClient = server.CreateRawHttpClient())
         using (var anonymousResponse = await anonymousClient.GetAsync(Url, TestContext.CancellationToken))
         {
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode, "An anonymous caller must not read the configuration.");
@@ -30,7 +30,7 @@ public partial class DeploymentConfigurationTests
         await TestAccountUtils.CreateAndSignIn(server, userScope, TestContext.CancellationToken);
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
-            () => userScope.ServiceProvider.GetRequiredService<HttpClient>().GetAsync(Url, TestContext.CancellationToken),
+            () => server.CreateRichHttpClient(userScope.ServiceProvider).GetAsync(Url, TestContext.CancellationToken),
             "A signed-in user without the feature must not read the configuration.");
     }
 
@@ -43,7 +43,7 @@ public partial class DeploymentConfigurationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var adminScope = server.WebApp.Services.CreateAsyncScope();
 
@@ -53,7 +53,7 @@ public partial class DeploymentConfigurationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await adminScope.ServiceProvider.GetRequiredService<HttpClient>().GetAsync(Url, TestContext.CancellationToken);
+        using var response = await server.CreateRichHttpClient(adminScope.ServiceProvider).GetAsync(Url, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 

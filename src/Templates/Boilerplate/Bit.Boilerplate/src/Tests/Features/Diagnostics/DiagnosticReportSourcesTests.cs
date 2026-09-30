@@ -27,7 +27,7 @@ public class DiagnosticReportSourcesTests
     public async Task EveryWayIn_Should_AnswerAboutItsOwnRequest()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         // Only /dev-mcp needs this; the other two are anonymous, and the report is the caller's own either way.
@@ -37,7 +37,7 @@ public class DiagnosticReportSourcesTests
 
         // The typed client goes over http, which is the same call the /diagnostic page makes. Both ids are null, so
         // none of the endpoint's side effects run.
-        var http = string.Join(Environment.NewLine, await scope.ServiceProvider.GetRequiredService<IDiagnosticController>()
+        var http = string.Join(Environment.NewLine, await server.CreateAppController<IDiagnosticController>(scope.ServiceProvider)
             .PerformDiagnostic(signalRConnectionId: null, pushNotificationSubscriptionDeviceId: null, TestContext.CancellationToken)
             .ToArrayAsync(TestContext.CancellationToken));
 

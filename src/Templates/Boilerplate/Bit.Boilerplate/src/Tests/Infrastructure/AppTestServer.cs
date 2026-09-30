@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
+using Boilerplate.Shared.Infrastructure.Services.Contracts;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Tests.Infrastructure;
 
@@ -16,6 +18,8 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 {
     private WebApplication? webApp;
     private WebApplicationBuilder? webAppBuilder;
+    /// <summary>The scopes of the clients that call anonymously (See <see cref="CreateClientScope"/>).</summary>
+    private readonly List<AsyncServiceScope> clientScopes = [];
     //#if (api == "Standalone")
     //#if (IsInsideProjectTemplate)
     /*
@@ -87,12 +91,17 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     public Uri ApiServerAddress => WebAppServerAddress;
     //#endif
 
+    /// <param name="configureTestServices">
+    /// Overrides the services of Server.Web and Server.Api alike, so the test does not have to know which of the two a
+    /// service lives in. Prefer it to the two below.
+    /// </param>
     /// <param name="configureTestWebAppServices">Overrides Server.Web's services, the client services it hosts included.</param>
-    /// <param name="configureTestConfigurations">Overrides Server.Web's and Server.Api's configuration.</param>
     /// <param name="configureTestApiAppServices">Overrides Server.Api's services.</param>
-    public AppTestServer Build(Action<IServiceCollection>? configureTestWebAppServices = null,
-        Action<ConfigurationManager>? configureTestConfigurations = null,
-        Action<IServiceCollection>? configureTestApiAppServices = null)
+    /// <param name="configureTestConfigurations">Overrides Server.Web's and Server.Api's configuration.</param>
+    public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,
+        Action<IServiceCollection>? configureTestWebAppServices = null,
+        Action<IServiceCollection>? configureTestApiAppServices = null,
+        Action<ConfigurationManager>? configureTestConfigurations = null)
     {
         if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
@@ -101,7 +110,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         //#if (IsInsideProjectTemplate)
         /*
         //#endif
-        apiApp = BuildApi(configureTestConfigurations, configureTestApiAppServices);
+        apiApp = BuildApi(configureTestServices, configureTestApiAppServices, configureTestConfigurations);
 
         //#if (IsInsideProjectTemplate)
         */
@@ -130,7 +139,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         // reads its discovery document there, and /api and /hangfire are forwarded to it.
         //#endif
         webAppBuilder.Configuration["ServerAddress"] = ApiServerAddress.ToString();
-        // The test HttpClient's base address and X-Origin (See AddTestProjectServices), which a test may override.
         webAppBuilder.Configuration["WebAppUrl"] = WebAppServerAddress.ToString();
         webAppBuilder.WebHost.UseUrls(WebAppServerAddress.ToString());
 
@@ -142,6 +150,16 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
         webAppBuilder.AddTestProjectServices();
 
+        // The HttpClient the app's services get here, the typed api clients among them (See CreateRichHttpClient).
+        webAppBuilder.Services.AddTransient(BuildRichHttpClient);
+
+        if (ClientBrowserContext is null)
+        {
+            // No browser signs in on this server, so the test does it through AuthManager (See AddBrowserlessClientServices).
+            webAppBuilder.Services.AddBrowserlessClientServices();
+        }
+
+        configureTestServices?.Invoke(webAppBuilder.Services);
         configureTestWebAppServices?.Invoke(webAppBuilder.Services);
         //#if (api == "Integrated")
         configureTestApiAppServices?.Invoke(webAppBuilder.Services);
@@ -162,7 +180,9 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     /// Builds Server.Api the way its own Program.Main does, minus Sentry and the database initialization
     /// (See <see cref="TestsAssemblyInitializer"/>).
     /// </summary>
-    private WebApplication BuildApi(Action<ConfigurationManager>? configureTestConfigurations, Action<IServiceCollection>? configureTestApiAppServices)
+    private WebApplication BuildApi(Action<IServiceCollection>? configureTestServices,
+        Action<IServiceCollection>? configureTestApiAppServices,
+        Action<ConfigurationManager>? configureTestConfigurations)
     {
         var apiAppBuilder = WebApplication.CreateBuilder(options: new()
         {
@@ -188,6 +208,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         Server.Api.Program.AddServerApiProjectServices(apiAppBuilder);
         apiAppBuilder.AddTestApiProjectServices();
 
+        configureTestServices?.Invoke(apiAppBuilder.Services);
         configureTestApiAppServices?.Invoke(apiAppBuilder.Services);
 
         var app = apiAppBuilder.Build();
@@ -275,6 +296,77 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         }
     }
 
+    //#if (api == "Standalone")
+    /// <summary>
+    /// An HttpClient that works exactly like the one in the app: a test that calls the api through it tests not only the
+    /// api's logic, but also the way the client connects to it, only without the UI. ExceptionDelegatingHandler turns an
+    /// error response into the exception the app would get, for example, and the request goes to Server.Web first, which
+    /// forwards it to Server.Api through YARP.
+    /// </summary>
+    //#else
+    /// <summary>
+    /// An HttpClient that works exactly like the one in the app: a test that calls the api through it tests not only the
+    /// api's logic, but also the way the client connects to it, only without the UI. ExceptionDelegatingHandler turns an
+    /// error response into the exception the app would get, for example.
+    /// </summary>
+    //#endif
+    /// <param name="clientServices">
+    /// The client to call as: a scope of <see cref="WebApp"/>'s services whose <see cref="AuthManager"/> signed a user in.
+    /// A scope of its own when null, which calls anonymously. What this creates is disposed along with that scope.
+    /// </param>
+    public HttpClient CreateRichHttpClient(IServiceProvider? clientServices = null)
+    {
+        return (clientServices ?? CreateClientScope()).GetRequiredService<HttpClient>();
+    }
+
+    /// <summary>
+    /// An HttpClient that sends its requests straight to Server.Api, with no handler of the app's in between: an error
+    /// response stays a response, nothing is retried and no header is added. The caller disposes it.
+    /// </summary>
+    /// <param name="handler">
+    /// The transport, such as an <see cref="HttpClientHandler"/> that does not follow redirects. A plain one when null.
+    /// </param>
+    public HttpClient CreateRawHttpClient(HttpMessageHandler? handler = null)
+    {
+        return new HttpClient(handler ?? new HttpClientHandler()) { BaseAddress = ApiServerAddress };
+    }
+
+    /// <summary>
+    /// Creates the app's client of the api controller <typeparamref name="T"/> - <see cref="IUserController"/> and the
+    /// rest - connected to <see cref="CreateRichHttpClient"/>.
+    /// </summary>
+    /// <param name="clientServices"><inheritdoc cref="CreateRichHttpClient" path="/param[@name='clientServices']"/></param>
+    public T CreateAppController<T>(IServiceProvider? clientServices = null)
+        where T : class, IAppController
+    {
+        return (clientServices ?? CreateClientScope()).GetRequiredService<T>();
+    }
+
+    private IServiceProvider CreateClientScope()
+    {
+        var scope = WebApp.Services.CreateAsyncScope();
+
+        lock (clientScopes)
+        {
+            clientScopes.Add(scope);
+        }
+
+        return scope.ServiceProvider;
+    }
+
+    private HttpClient BuildRichHttpClient(IServiceProvider services)
+    {
+        var httpClient = new HttpClient(services.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke())
+        {
+            BaseAddress = WebAppServerAddress
+        };
+
+        // The origin the api builds its links for (e-mail confirmation and the rest), which the app's clients send as well.
+        httpClient.DefaultRequestHeaders.Add("X-Origin", WebAppServerAddress.ToString());
+
+        return httpClient;
+    }
+
     /// <summary>
     /// Creates a bUnit <see cref="BunitContext"/> for rendering the client app's pages/components in-memory
     /// (no browser and no WebAssembly runtime) while still talking to this running test server for real HTTP calls,
@@ -316,6 +408,11 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
     public async ValueTask DisposeAsync()
     {
+        foreach (var scope in clientScopes)
+        {
+            await scope.DisposeAsync();
+        }
+
         await StopAndDispose(webApp);
         //#if (api == "Standalone")
         //#if (IsInsideProjectTemplate)

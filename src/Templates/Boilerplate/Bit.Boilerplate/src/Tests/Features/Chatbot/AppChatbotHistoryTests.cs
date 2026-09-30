@@ -632,7 +632,8 @@ public partial class AppChatbotHistoryTests
         var chatClient = new TestChatClient();
 
         // Only the environment is swapped, not the way the server is hosted: the test server is built as Development
-        // (See AppTestServer) and everything else about it should stay that way.
+        // (See AppTestServer) and everything else about it should stay that way. Server.Api's alone, as Server.Web would
+        // otherwise serve its files from this content root.
         var hostEnvironment = A.Fake<IHostEnvironment>();
         A.CallTo(() => hostEnvironment.EnvironmentName).Returns(Environments.Production);
         A.CallTo(() => hostEnvironment.ApplicationName).Returns(typeof(AppChatbot).Assembly.GetName().Name);
@@ -680,20 +681,18 @@ public partial class AppChatbotHistoryTests
     private static AppTestServer BuildServerWith(TestChatClient chatClient, Action<IServiceCollection>? configureTestApiAppServices = null)
     {
         return new AppTestServer().Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
-            configureTestConfigurations: configuration =>
-            {
-                // Without a chat api key neither AddChatClient nor AddAppAIAgents runs, and the keyed "SupportAgent"
-                // would not exist at all. The value itself is never used: the client it builds is replaced below.
-                configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-these-tests";
-            },
-            configureTestApiAppServices: services =>
+            configureTestServices: services =>
             {
                 // Every agent is built on the DI IChatClient (See AddAppAIAgents), so this single replacement removes the
                 // network, the api key and the non-determinism while leaving the agent itself untouched.
                 services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
-
-                configureTestApiAppServices?.Invoke(services);
+            },
+            configureTestApiAppServices: configureTestApiAppServices,
+            configureTestConfigurations: configuration =>
+            {
+                // Without a chat api key neither AddChatClient nor AddAppAIAgents runs, and the keyed "SupportAgent"
+                // would not exist at all. The value itself is never used: the client it builds is replaced above.
+                configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-these-tests";
             });
     }
 

@@ -86,7 +86,7 @@ public class RoleQuotaClaimLifecycleTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -102,7 +102,7 @@ public class RoleQuotaClaimLifecycleTests
         var grant = await TestAccountUtils.MakeGlobalAdmin(server, scope, userId, TestContext.CancellationToken);
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
-        return (scope.ServiceProvider.GetRequiredService<IRoleManagementController>(), grant);
+        return (server.CreateAppController<IRoleManagementController>(scope.ServiceProvider), grant);
     }
 
     private async Task<Guid> CreateRole(IRoleManagementController roleManagementController)

@@ -37,7 +37,7 @@ public partial class AiChatPanelThemeUITests : AiChatPanelTestBase
 
         await using var server = new AppTestServer(Context);
 
-        await server.Build(configureTestApiAppServices: services =>
+        await server.Build(configureTestServices: services =>
         {
             // The one and only fake in this test. See TestChatClient for why this seam - and not one of the
             // template's own interfaces - is the right place to cut.

@@ -29,7 +29,7 @@ public partial class TenantInvitationEmailCultureTests
         }
 
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // A per-run recipient, so nothing another test does to the shared seeded account's sessions can shadow the
         // culture arranged here (See TestAccountUtils' rationale).
@@ -38,7 +38,7 @@ public partial class TenantInvitationEmailCultureTests
 
         // The recipient's client reports fa-IR through the real write path (See UserController.UpdateSession and
         // AppClientCoordinator.UpdateUserSession).
-        await scopeWebApp.ServiceProvider.GetRequiredService<IUserController>().UpdateSession(new()
+        await server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider).UpdateSession(new()
         {
             CultureName = "fa-IR",
             AppVersion = "1.0.0-test",

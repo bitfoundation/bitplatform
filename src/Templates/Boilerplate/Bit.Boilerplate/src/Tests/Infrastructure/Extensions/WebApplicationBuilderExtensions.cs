@@ -1,6 +1,5 @@
 //+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Identity.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 using Hangfire;
 using Hangfire.EntityFrameworkCore;
 
@@ -15,32 +14,12 @@ public static partial class WebApplicationBuilderExtensions
         /// </summary>
         public void AddTestProjectServices()
         {
-            var services = builder.Services;
-
             builder.AddServerWebProjectServices();
             //#if (api == "Integrated")
             builder.AddTestApiProjectServices(); // The api is integrated into this host.
             //#endif
 
             // Register test-specific services for all tests here
-
-            services.AddTransient<HttpClient>(sp =>
-            {
-                var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
-                // Read on every resolve, so a test that overrides WebAppUrl is heard (See AppTestServer.Build).
-                var webAppUrl = new Uri(sp.GetRequiredService<IConfiguration>()["WebAppUrl"]
-                    ?? throw new InvalidOperationException("WebAppUrl is not configured."), UriKind.Absolute);
-                var httpClient = new HttpClient(handlerFactory.Invoke())
-                {
-                    //#if (api == "Standalone")
-                    // Server.Web accepts the api requests and forwards them to Server.Api through YARP (See its
-                    // Program.Middlewares.cs).
-                    //#endif
-                    BaseAddress = webAppUrl
-                };
-                httpClient.DefaultRequestHeaders.Add("X-Origin", webAppUrl.ToString());
-                return httpClient;
-            });
         }
 
         /// <summary>

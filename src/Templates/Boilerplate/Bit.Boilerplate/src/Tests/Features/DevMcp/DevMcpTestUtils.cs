@@ -39,7 +39,7 @@ internal static class DevMcpTestUtils
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var userController = scopeWebApp.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scopeWebApp.ServiceProvider);
         var enrolment = await userController.TwoFactorAuth(new(), cancellationToken);
         var sharedKey = enrolment.SharedKey!.Replace(" ", "");
 
@@ -84,9 +84,9 @@ internal static class DevMcpTestUtils
         return await McpClient.CreateAsync(transport, cancellationToken: cancellationToken);
     }
 
-    public static async Task<HttpStatusCode> ProbeInitialize(Uri baseAddress, string path, string? accessToken, CancellationToken cancellationToken)
+    public static async Task<HttpStatusCode> ProbeInitialize(AppTestServer server, string path, string? accessToken, CancellationToken cancellationToken)
     {
-        using var httpClient = new HttpClient { BaseAddress = baseAddress };
+        using var httpClient = server.CreateRawHttpClient();
         using var request = new HttpRequestMessage(HttpMethod.Post, path);
         request.Content = new StringContent("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}""",
             Encoding.UTF8, "application/json");

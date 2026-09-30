@@ -15,8 +15,8 @@ namespace Boilerplate.Tests.Features.ErrorHandling;
 /// collision check) shipped on 100% of error responses and nothing noticed, because nothing pinned the format.
 /// </para>
 /// <para>
-/// The requests below are deliberately issued with a bare <see cref="HttpClient"/> rather than the DI one: the client
-/// pipeline turns an error response into a typed exception, which is exactly the layer that hides this.
+/// The requests below are deliberately issued with a raw HttpClient (See <see cref="AppTestServer.CreateRawHttpClient"/>)
+/// rather than the rich one: the client pipeline turns an error response into a typed exception, which is exactly the layer that hides this.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
@@ -31,7 +31,7 @@ public class ProblemDetailsWireContractTests
     public async Task AKnownExceptionResponse_Should_CarryEveryMemberExactlyOnce()
     {
         await using var server = await StartServer();
-        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
 
         // Anonymous, and nothing is stored under a random attachment id, so this is a deterministic ResourceNotFoundException.
         using var response = await httpClient.GetAsync($"api/v1/Attachment/GetAttachment/{Guid.NewGuid()}/UserProfileImageSmall", TestContext.CancellationToken);
@@ -58,7 +58,7 @@ public class ProblemDetailsWireContractTests
     public async Task AValidationFailureResponse_Should_CarryExactlyOnePopulatedPayload()
     {
         await using var server = await StartServer();
-        using var httpClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
 
         // Neither a password nor an otp: SignInRequestDto.Validate rejects it, so InvalidModelStateResponseFactory
         // throws a ResourceValidationException. A JSON content type also satisfies AutoCsrfProtectionFilter.
@@ -120,7 +120,7 @@ public class ProblemDetailsWireContractTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

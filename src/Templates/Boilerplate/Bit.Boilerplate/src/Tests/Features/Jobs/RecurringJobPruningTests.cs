@@ -21,7 +21,7 @@ public class RecurringJobPruningTests
     public async Task Startup_Should_RemoveARecurringJobItNoLongerRegisters()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var storage = server.ApiApp.Services.GetRequiredService<JobStorage>();
         var recurringJobManager = server.ApiApp.Services.GetRequiredService<IRecurringJobManager>();
@@ -33,7 +33,7 @@ public class RecurringJobPruningTests
 
         Assert.Contains(orphanId, ReadRecurringJobIds(storage), "The orphan has to exist before there is anything to prune.");
 
-        Boilerplate.Server.Api.Program.ScheduleAppRecurringJobs(server.WebApp);
+        Boilerplate.Server.Api.Program.ScheduleAppRecurringJobs(server.ApiApp);
 
         var afterPrune = ReadRecurringJobIds(storage);
 

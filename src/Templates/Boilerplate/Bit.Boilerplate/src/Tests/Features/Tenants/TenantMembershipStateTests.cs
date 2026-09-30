@@ -39,7 +39,7 @@ public class TenantMembershipStateTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scopeWebAppStranger = server.WebApp.Services.CreateAsyncScope();
         await using var scopeWebAppAdmin = server.WebApp.Services.CreateAsyncScope();
@@ -49,7 +49,7 @@ public class TenantMembershipStateTests
         var (strangerEmail, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppStranger, TestContext.CancellationToken);
         await TestAccountUtils.Elevate(server, scopeWebAppStranger, strangerEmail, TestContext.CancellationToken);
 
-        var foreignTenant = await scopeWebAppStranger.ServiceProvider.GetRequiredService<ITenantController>()
+        var foreignTenant = await server.CreateAppController<ITenantController>(scopeWebAppStranger.ServiceProvider)
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         // The caller: a global admin, so GetTenants returns every active tenant to her, including foreignTenant.
@@ -58,13 +58,13 @@ public class TenantMembershipStateTests
         await TestAccountUtils.Elevate(server, scopeWebAppAdmin, adminEmail, TestContext.CancellationToken);
 
         // Her own tenant, accepted, because creating one makes the creator its t-admin.
-        var ownTenant = await scopeWebAppAdmin.ServiceProvider.GetRequiredService<ITenantController>()
+        var ownTenant = await server.CreateAppController<ITenantController>(scopeWebAppAdmin.ServiceProvider)
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         // And a genuine pending invitation from a third tenant, which is the value the null must not look like.
         var invitedTenant = await CreateTenantAndInvite(server, adminEmail, TestContext.CancellationToken);
 
-        var tenants = await scopeWebAppAdmin.ServiceProvider.GetRequiredService<IUserController>()
+        var tenants = await server.CreateAppController<IUserController>(scopeWebAppAdmin.ServiceProvider)
             .GetTenants(TestContext.CancellationToken);
 
         var foreign = tenants.SingleOrDefault(t => t.Id == foreignTenant.Id);
@@ -98,7 +98,7 @@ public class TenantMembershipStateTests
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, cancellationToken);
         await TestAccountUtils.Elevate(server, scope, email, cancellationToken);
 
-        var tenantController = scope.ServiceProvider.GetRequiredService<ITenantController>();
+        var tenantController = server.CreateAppController<ITenantController>(scope.ServiceProvider);
         var tenant = await tenantController.Create(new() { Name = $"t{Guid.NewGuid():N}" }, cancellationToken);
 
         // InviteUser targets the caller's CURRENT tenant, so she has to be signed into the one she just made.

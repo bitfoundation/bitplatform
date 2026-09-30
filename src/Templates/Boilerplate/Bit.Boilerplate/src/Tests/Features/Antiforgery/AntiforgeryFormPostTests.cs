@@ -114,16 +114,13 @@ public partial class AntiforgeryFormPostTests
     /// <summary>The cookies are this test's to send by hand, and a redirect is an answer of its own.</summary>
     private static HttpClient CreateClient(AppTestServer server)
     {
-        return new HttpClient(new HttpClientHandler { UseCookies = false, AllowAutoRedirect = false })
-        {
-            BaseAddress = server.ApiServerAddress
-        };
+        return server.CreateRawHttpClient(new HttpClientHandler { UseCookies = false, AllowAutoRedirect = false });
     }
 
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

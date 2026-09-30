@@ -30,7 +30,7 @@ public partial class ChatbotConversationMetricsTests
     public async Task OngoingConversationsCount_Should_RiseForAnOpenChat_AndFallBackWhenItEnds()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         long ongoing = 0;
 

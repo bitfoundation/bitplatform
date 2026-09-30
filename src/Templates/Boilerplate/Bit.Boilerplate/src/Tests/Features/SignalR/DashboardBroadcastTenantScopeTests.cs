@@ -29,7 +29,7 @@ public partial class DashboardBroadcastTenantScopeTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // IStorageService is registered per scope, so each scope holds its own signed-in identity and every typed API
         // client resolved from it calls the server as that user (See TenantInvitationIsolationTests).
@@ -47,7 +47,7 @@ public partial class DashboardBroadcastTenantScopeTests
 
         await TestAccountUtils.Elevate(server, scopeWebAppOther, otherEmail, TestContext.CancellationToken);
 
-        var otherTenant = await scopeWebAppOther.ServiceProvider.GetRequiredService<ITenantController>()
+        var otherTenant = await server.CreateAppController<ITenantController>(scopeWebAppOther.ServiceProvider)
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         Assert.IsTrue(await scopeWebAppOther.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(otherTenant.Id, TestContext.CancellationToken),
@@ -58,8 +58,8 @@ public partial class DashboardBroadcastTenantScopeTests
         await using var storeClient = await ConnectAsSignedInClient(server, scopeWebAppStore);
         await using var otherClient = await ConnectAsSignedInClient(server, scopeWebAppOther);
 
-        var storeCategories = scopeWebAppStore.ServiceProvider.GetRequiredService<ICategoryController>();
-        var otherCategories = scopeWebAppOther.ServiceProvider.GetRequiredService<ICategoryController>();
+        var storeCategories = server.CreateAppController<ICategoryController>(scopeWebAppStore.ServiceProvider);
+        var otherCategories = server.CreateAppController<ICategoryController>(scopeWebAppOther.ServiceProvider);
 
         CategoryDto? createdInOther = null, createdInStore = null;
 

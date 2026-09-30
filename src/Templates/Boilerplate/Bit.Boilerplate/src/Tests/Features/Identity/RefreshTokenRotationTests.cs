@@ -32,7 +32,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
         var (sessionId, firstRefreshToken) = await ReadSession(scope);
 
         var (startedOn, renewedOnBefore) = await ReadSessionTimestamps(server, sessionId);
@@ -64,7 +64,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
         var (sessionId, supersededToken) = await ReadSession(scope);
 
         // A legitimate rotation: `supersededToken` is spent here and replaced by the one in the response.
@@ -93,7 +93,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
         var (sessionId, refreshToken) = await ReadSession(scope);
 
         await using (var dbScope = server.ApiApp.Services.CreateAsyncScope())
@@ -127,7 +127,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
         var (_, refreshToken) = await ReadSession(scope);
 
         // The rotation the client never sees the response of: the reply is simply discarded here.
@@ -164,7 +164,7 @@ public partial class RefreshTokenRotationTests
         await using var _ = server;
         await using var __ = scope;
 
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
         var (_, oldestToken) = await ReadSession(scope);
 
         // Both rotations happen inside the 30-second tolerance of when `oldestToken` was minted - the shape produced by
@@ -194,13 +194,7 @@ public partial class RefreshTokenRotationTests
         var server = new AppTestServer();
 
         // The clock is the api's, which issues, rotates and expires the tokens, and the client's, which judges when to refresh them.
-        await server.Build(
-            configureTestWebAppServices: services =>
-            {
-                services.AddBrowserlessClientServices();
-                services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider));
-            },
-            configureTestApiAppServices: services => services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider)))
+        await server.Build(configureTestServices: services => services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider)))
             .Start(TestContext.CancellationToken);
 
         var scope = server.WebApp.Services.CreateAsyncScope();

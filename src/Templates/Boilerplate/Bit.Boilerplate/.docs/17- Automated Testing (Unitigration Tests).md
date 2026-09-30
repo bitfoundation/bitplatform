@@ -74,9 +74,10 @@ public partial class AppTestServer : IAsyncDisposable
     public Uri ApiServerAddress { get; } // The address ApiApp listens on
 
     public AppTestServer Build(
+        Action<IServiceCollection>? configureTestServices = null,
         Action<IServiceCollection>? configureTestWebAppServices = null,
-        Action<ConfigurationManager>? configureTestConfigurations = null,
-        Action<IServiceCollection>? configureTestApiAppServices = null)
+        Action<IServiceCollection>? configureTestApiAppServices = null,
+        Action<ConfigurationManager>? configureTestConfigurations = null)
     {
         // Builds the app under test with test-specific configuration
         // Allows overriding services and configuration
@@ -87,6 +88,10 @@ public partial class AppTestServer : IAsyncDisposable
     {
         // Starts the app under test
     }
+
+    public HttpClient CreateRichHttpClient(IServiceProvider? clientServices = null); // Works exactly like the app's own
+    public HttpClient CreateRawHttpClient(HttpMessageHandler? handler = null); // Straight to Server.Api, none of the app's handlers
+    public T CreateAppController<T>(IServiceProvider? clientServices = null); // IUserController and the rest, on the rich one
 }
 ```
 
@@ -96,16 +101,25 @@ public partial class AppTestServer : IAsyncDisposable
 - **Configuration Overriding**: Modify appsettings for test scenarios
 - **Full Application Stack**: All middleware, authentication, authorization, etc. work exactly as in production
 
-**Which host?** Pick by what the code under test runs in, and pass every lambda by name:
-- `WebApp`, `configureTestWebAppServices` and `WebAppServerAddress`: pages, pre-rendering and the typed API clients a test calls through (`AddBrowserlessClientServices()` belongs here).
-- `ApiApp`, `configureTestApiAppServices` and `ApiServerAddress`: controllers, `AppDbContext`, Hangfire, and the endpoints only Server.Api serves, such as `/healthz`.
+**Overriding services.** Pass every lambda by name. `configureTestServices` overrides the services of Server.Web and Server.Api alike, so the test does not have to know which of the two a service lives in: prefer it. Reach for one host only when a registration makes sense there alone, such as a type built from that host's own services:
+- `configureTestWebAppServices`: Server.Web's services, the client services it hosts included.
+- `configureTestApiAppServices`: Server.Api's services.
 - `configureTestConfigurations`: Server.Web's and Server.Api's configuration alike.
 
+**Calling the api.**
+- `CreateAppController<T>()`: the app's own client of an api controller, `IUserController` and the rest. Prefer it.
+- `CreateRichHttpClient()`: the HttpClient those clients are built on, which works exactly like the app's own. The test reaches the api the way the client does, only without the UI: `ExceptionDelegatingHandler` turns an error response into the exception the app would get, for example.
+- `CreateRawHttpClient()`: straight to Server.Api, with none of the app's handlers, for a test about the response itself: a status code, a header, a redirect.
+
+The first two call anonymously, unless they are given a scope of `WebApp`'s services whose `AuthManager` signed a user in (See the example below). No browser signs in on a server built without one, so `AppTestServer` keeps `AuthManager`'s tokens in memory there (See `AddBrowserlessClientServices`).
+
+**Which host?** Resolve what runs in Server.Web - pages, pre-rendering, `AuthManager` - from `WebApp.Services`, and what runs in Server.Api - `AppDbContext`, Hangfire, the captured e-mails - from `ApiApp.Services`.
+
 <!--#if (api == "Standalone")-->
-The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. The typed API clients call `WebAppServerAddress`, and `WebApp` forwards `/api` and `/hangfire` to `ApiApp` using `Yarp`; everything else Server.Api serves is only on `ApiServerAddress`.
+The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. The rich HttpClient calls `WebAppServerAddress`, and `WebApp` forwards `/api` and `/hangfire` to `ApiApp` through YARP; everything else Server.Api serves, such as `/healthz`, is only on `ApiServerAddress`.
 <!--#endif-->
 <!--#if (api == "Integrated")-->
-The api is integrated into Server.Web, so `ApiApp` is `WebApp` itself, `ApiServerAddress` is `WebAppServerAddress`, and `configureTestApiAppServices` runs on the same host, right after `configureTestWebAppServices`.
+The api is integrated into Server.Web, so `ApiApp` is `WebApp` itself, `ApiServerAddress` is `WebAppServerAddress`, and all three service lambdas run on that one host, in the order they are declared.
 <!--#endif-->
 
 A method that holds more than one DI scope names each one after its host - `scopeWebApp`, `scopeApiApp` - adding a role when one host has several, such as `scopeWebAppAdmin`.
@@ -152,12 +166,13 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services =>
+        await server.Build(configureTestServices: services =>
         {
             // Replace production services with test doubles
             services.Replace(ServiceDescriptor.Scoped<IExampleService, TestExampleService>());
         }).Start(TestContext.CancellationToken);
 
+        // The scope is the client: once its AuthManager signs a user in, the controllers created with it call as that user.
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
@@ -169,7 +184,7 @@ public partial class IntegrationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
 
         // Verify the signed-in user
         var user = await userController.GetCurrentUser(TestContext.CancellationToken);
@@ -183,10 +198,11 @@ public partial class IntegrationTests
 
 ### Service Replacement
 ```csharp
-services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
+services.AddScoped<IStorageService, TestStorageService>();
 ```
 - **Why?** Browser storage doesn't exist in API tests, so we use an in-memory implementation
 - **TestStorageService**: Simple `Dictionary<string, string?>` that mimics browser storage
+- **Automatic**: `AppTestServer` registers it on every server built without a browser (See `AddBrowserlessClientServices`), so a test never does
 - **Selective Mocking**: Only mock what's necessary; everything else is real
 
 ### Service Resolution

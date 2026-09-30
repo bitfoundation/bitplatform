@@ -90,10 +90,9 @@ public class ReturnUrlHardeningTests
     public async Task SendOtp_Should_NotPutAnOffOriginReturnUrlIntoTheConfirmationEmail()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -125,10 +124,9 @@ public class ReturnUrlHardeningTests
     public async Task SendResetPasswordToken_Should_OnlyEmailAnAppRelativeReturnUrl(string requested, string expected, string because)
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>();
 
         // A per-run account, not the seeded one: SendResetPasswordToken is throttled per user for the token's whole
         // lifetime, so sharing an account across these rows (they run in parallel) would fail on the resend delay.

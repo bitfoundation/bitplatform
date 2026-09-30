@@ -32,10 +32,9 @@ public class OneTimeTokenTests
     public async Task ReplayingAConsumedConfirmationToken_Should_NotChargeAFailedAccessAttempt()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -69,10 +68,9 @@ public class OneTimeTokenTests
     public async Task ConfirmingAPhoneWithNoOutstandingToken_Should_ReportExpiredRatherThanInvalid()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>();
 
         var exception = await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => identityController.ConfirmPhone(new() { PhoneNumber = SeededTestPhoneNumber, Token = "123456" }, TestContext.CancellationToken),
@@ -92,10 +90,9 @@ public class OneTimeTokenTests
     public async Task ConfirmEmail_Should_AcceptACaseVariantOfTheRegisteredAddress()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scopeWebApp = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scopeWebApp.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>();
 
         var email = $"Mixed.Case.{Guid.NewGuid()}@BitPlatform.dev";
 
@@ -127,10 +124,9 @@ public class OneTimeTokenTests
     public async Task AnUnparsablePhoneNumber_Should_BeABadRequestRatherThanAServerFault(string phoneNumber)
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => identityController.SendConfirmPhoneToken(new() { PhoneNumber = phoneNumber }, TestContext.CancellationToken),

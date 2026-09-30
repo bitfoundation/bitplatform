@@ -38,11 +38,9 @@ public class WebAppUrlOriginHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>()
+        var identityController = server.CreateAppController<IIdentityController>()
             .WithQueryIf(origin is not null, "origin", origin);
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()
@@ -64,11 +62,9 @@ public class WebAppUrlOriginHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>()
+        var identityController = server.CreateAppController<IIdentityController>()
             .WithQuery("origin", "https://evil.example");
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()
@@ -93,11 +89,9 @@ public class WebAppUrlOriginHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>()
+        var identityController = server.CreateAppController<IIdentityController>()
             .WithQuery("origin", origin);
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()

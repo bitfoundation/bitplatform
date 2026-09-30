@@ -192,7 +192,7 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
         // Disposed with the test rather than with a using in each method, so the page outlives the arrangement.
         TestCleanup.Add(server);
 
-        await server.Build(configureTestApiAppServices: services =>
+        await server.Build(configureTestServices: services =>
         {
             services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
         },

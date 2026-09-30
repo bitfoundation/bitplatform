@@ -47,7 +47,7 @@ public class WebAuthnElevatedAccessTests
 
         var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
         var refreshToken = await storageService.GetItem("refresh_token");
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
 
         await Assert.ThrowsAsync<Exception>(
             () => identityController.Refresh(new()
@@ -84,7 +84,7 @@ public class WebAuthnElevatedAccessTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

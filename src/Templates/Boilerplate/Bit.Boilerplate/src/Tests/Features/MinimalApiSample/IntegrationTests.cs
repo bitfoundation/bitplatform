@@ -19,11 +19,9 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: s => s.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var minimalApiSampleController = scope.ServiceProvider.GetRequiredService<IMinimalApiSampleController>();
+        var minimalApiSampleController = server.CreateAppController<IMinimalApiSampleController>();
 
         var routeParameter = "sample-route";
         var queryStringParameter = "sample-query";

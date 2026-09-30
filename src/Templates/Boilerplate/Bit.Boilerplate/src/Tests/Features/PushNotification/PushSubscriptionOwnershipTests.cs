@@ -41,7 +41,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // A per-run device id, so anything this test leaves behind is an inert orphan rather than a collision with
         // the shared development database.
@@ -55,7 +55,7 @@ public partial class PushSubscriptionOwnershipTests
             {
                 await TestAccountUtils.CreateAndSignIn(server, scopeWebAppFirstUser, TestContext.CancellationToken);
 
-                await scopeWebAppFirstUser.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await server.CreateAppController<IPushNotificationController>(scopeWebAppFirstUser.ServiceProvider)
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "first-user-channel" }, TestContext.CancellationToken);
             }
 
@@ -69,7 +69,7 @@ public partial class PushSubscriptionOwnershipTests
             {
                 await TestAccountUtils.CreateAndSignIn(server, scopeWebAppSecondUser, TestContext.CancellationToken);
 
-                await scopeWebAppSecondUser.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await server.CreateAppController<IPushNotificationController>(scopeWebAppSecondUser.ServiceProvider)
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "second-user-channel" }, TestContext.CancellationToken);
             }
 
@@ -117,7 +117,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var deviceId = $"push-resignin-{Guid.NewGuid():N}";
 
@@ -130,7 +130,7 @@ public partial class PushSubscriptionOwnershipTests
             {
                 (email, _) = await TestAccountUtils.CreateAndSignIn(server, scopeWebAppFirst, TestContext.CancellationToken);
 
-                await scopeWebAppFirst.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await server.CreateAppController<IPushNotificationController>(scopeWebAppFirst.ServiceProvider)
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-before" }, TestContext.CancellationToken);
             }
 
@@ -141,9 +141,9 @@ public partial class PushSubscriptionOwnershipTests
             // Step one of the real sequence, and the one that fails first: the tokens are gone, so the app reloads
             // ANONYMOUS and AppClientCoordinator propagates that state before anything else - which calls Subscribe
             // with no identity at all, for a device whose row is still bound to the surviving first session. A raw
-            // HttpClient because the DI one and the typed proxy both attach a bearer token through
+            // HttpClient because the rich one and the app's controllers both attach a bearer token through
             // AuthDelegatingHandler, and the whole point here is a request carrying none.
-            using (var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress })
+            using (var anonymousClient = server.CreateRawHttpClient())
             {
                 var anonymousPropagation = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
                     new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-anonymous" },
@@ -160,7 +160,7 @@ public partial class PushSubscriptionOwnershipTests
             // leaves behind. Nothing signs the first session out, so its UserSession row survives on the server.
             await using (var scopeWebAppSecond = server.WebApp.Services.CreateAsyncScope())
             {
-                var identityController = scopeWebAppSecond.ServiceProvider.GetRequiredService<IIdentityController>();
+                var identityController = server.CreateAppController<IIdentityController>(scopeWebAppSecond.ServiceProvider);
 
                 await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 
@@ -171,7 +171,7 @@ public partial class PushSubscriptionOwnershipTests
                 await scopeWebAppSecond.ServiceProvider.GetRequiredService<AuthManager>().StoreTokens(tokens);
 
                 // This is the call the shipped client makes on the very first auth-state propagation after signing in.
-                await scopeWebAppSecond.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await server.CreateAppController<IPushNotificationController>(scopeWebAppSecond.ServiceProvider)
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-after" }, TestContext.CancellationToken);
             }
 
@@ -208,10 +208,9 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var pushNotificationController = scope.ServiceProvider.GetRequiredService<IPushNotificationController>();
+        var pushNotificationController = server.CreateAppController<IPushNotificationController>();
 
         // A device token platform with no token at all.
         await Assert.ThrowsExactlyAsync<BadRequestException>(() => pushNotificationController.Subscribe(
@@ -233,13 +232,13 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var deviceId = $"push-anon-{Guid.NewGuid():N}";
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+            using var anonymousClient = server.CreateRawHttpClient();
 
             for (var attempt = 1; attempt <= 2; attempt++)
             {
@@ -276,7 +275,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -327,8 +326,7 @@ public partial class PushSubscriptionOwnershipTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices(),
-            configureTestApiAppServices: services =>
+            configureTestServices: services =>
             {
                 services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider));
             }).Start(TestContext.CancellationToken);
@@ -337,7 +335,7 @@ public partial class PushSubscriptionOwnershipTests
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+            using var anonymousClient = server.CreateRawHttpClient();
 
             async Task Subscribe(string pushChannel)
             {
@@ -393,7 +391,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var firstDeviceId = $"push-two-rows-a-{Guid.NewGuid():N}";
         var secondDeviceId = $"push-two-rows-b-{Guid.NewGuid():N}";
@@ -401,7 +399,7 @@ public partial class PushSubscriptionOwnershipTests
         try
         {
             // An unowned row for the second device, the way an anonymous visit leaves one behind.
-            using (var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress })
+            using (var anonymousClient = server.CreateRawHttpClient())
             {
                 var response = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
                     new PushNotificationSubscriptionDto { DeviceId = secondDeviceId, Platform = "fcmV1", PushChannel = "anonymous-channel" },
@@ -414,7 +412,7 @@ public partial class PushSubscriptionOwnershipTests
 
             await TestAccountUtils.CreateAndSignIn(server, scopeWebApp, TestContext.CancellationToken);
 
-            var pushNotificationController = scopeWebApp.ServiceProvider.GetRequiredService<IPushNotificationController>();
+            var pushNotificationController = server.CreateAppController<IPushNotificationController>(scopeWebApp.ServiceProvider);
 
             // This session takes the first device...
             await pushNotificationController.Subscribe(
@@ -461,13 +459,13 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var deviceId = $"push-unsub-{Guid.NewGuid():N}";
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.ApiServerAddress };
+            using var anonymousClient = server.CreateRawHttpClient();
 
             // A JSON body rather than a bare route value, because AutoCsrfProtectionFilter only lets an anonymous
             // (no Authorization header) unsafe request through when it is JSON - which is also why the shipped

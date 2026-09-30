@@ -47,7 +47,7 @@ public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
 
         await using var server = new AppTestServer(Context);
 
-        await server.Build(configureTestApiAppServices: services =>
+        await server.Build(configureTestServices: services =>
         {
             services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
         },

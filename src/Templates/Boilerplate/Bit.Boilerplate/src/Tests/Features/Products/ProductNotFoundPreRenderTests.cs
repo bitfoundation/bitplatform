@@ -27,7 +27,7 @@ public partial class ProductNotFoundPreRenderTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestWebAppServices: services => services.AddBrowserlessClientServices().FakeExternalStatistics(),
+            configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";

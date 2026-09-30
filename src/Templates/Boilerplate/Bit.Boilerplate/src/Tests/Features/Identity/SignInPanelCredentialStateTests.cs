@@ -131,10 +131,10 @@ public class SignInPanelCredentialStateTests
     public async Task MagicLink_Should_IdentifyTheRecipientByEmail_NotByUserName()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
 
         // A per-run account, not the shared seeded one. SendOtp stamps OtpRequestedOn on whoever it is called for and
         // that state outlives the run, so issuing a code for test@bitplatform.dev here would leave a live magic link

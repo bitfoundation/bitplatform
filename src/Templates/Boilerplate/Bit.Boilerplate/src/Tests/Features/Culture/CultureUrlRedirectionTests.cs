@@ -220,14 +220,14 @@ public partial class CultureUrlRedirectionTests
 
         var server = new AppTestServer();
 
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         return server;
     }
 
     /// <summary>
-    /// A `new HttpClient` rather than the DI one, for two stated reasons: the redirect IS the subject, so following it
-    /// automatically (every default handler does) would hide the very response under test - and the DI client's
+    /// A `new HttpClient` rather than the rich one, for two stated reasons: the redirect IS the subject, so following it
+    /// automatically (every default handler does) would hide the very response under test - and the rich client's
     /// <c>RequestHeadersDelegatingHandler</c> adds an <c>Accept-Language</c> of its own from the test process's
     /// culture, which would shadow the header each test sends deliberately. Cookies are off for the same reason: the
     /// culture cookie every pre-rendered response writes must not leak from one request into the next assertion.

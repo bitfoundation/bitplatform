@@ -19,7 +19,7 @@ public class AttachmentMetadataStrippingTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
 
         var uploaded = JpegWithExif();
 
@@ -57,7 +57,7 @@ public class AttachmentMetadataStrippingTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
 
         try
         {
@@ -77,7 +77,7 @@ public class AttachmentMetadataStrippingTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

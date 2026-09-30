@@ -17,10 +17,10 @@ public partial class MagicLinkReplayTests
     public async Task ReplayingAConsumedMagicLinkCode_Should_BeRejectedAsExpired()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
 
         // A confirmed, per-run account. Confirming already signs it in once, which leaves no outstanding code behind.
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
@@ -64,10 +64,10 @@ public partial class MagicLinkReplayTests
     public async Task RequestingANewCode_Should_BeAllowedRightAfterAConsumedOne()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = server.CreateAppController<IIdentityController>(scope.ServiceProvider);
 
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 

@@ -29,7 +29,7 @@ public class TwoFactorSharedKeyExposureTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
 
         // Enrol for real: read the key while 2fa is off, compute a live code from it, and turn 2fa on with that code.
         // Enable is deliberately not gated by elevated access - it already requires a valid code, which is stronger proof.
@@ -66,7 +66,7 @@ public class TwoFactorSharedKeyExposureTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
 
         var read = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
 
@@ -88,7 +88,7 @@ public class TwoFactorSharedKeyExposureTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = server.CreateAppController<IUserController>(scope.ServiceProvider);
 
         var before = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
 
@@ -117,7 +117,7 @@ public class TwoFactorSharedKeyExposureTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

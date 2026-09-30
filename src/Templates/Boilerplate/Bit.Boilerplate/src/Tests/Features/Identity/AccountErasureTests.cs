@@ -41,7 +41,7 @@ public class AccountErasureTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var httpClient = server.CreateRichHttpClient(scope.ServiceProvider);
 
         await UploadProfilePicture(httpClient);
 
@@ -56,7 +56,7 @@ public class AccountErasureTests
 
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
-        await scope.ServiceProvider.GetRequiredService<IUserController>().Delete(TestContext.CancellationToken);
+        await server.CreateAppController<IUserController>(scope.ServiceProvider).Delete(TestContext.CancellationToken);
 
         Assert.IsFalse(await UserExists(server, userId), "The account itself must be gone.");
 
@@ -89,14 +89,14 @@ public class AccountErasureTests
 
         var deviceId = Guid.CreateVersion7().ToString();
 
-        await scope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+        await server.CreateAppController<IPushNotificationController>(scope.ServiceProvider)
             .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = Guid.CreateVersion7().ToString() }, TestContext.CancellationToken);
 
         Assert.IsTrue(await PushSubscriptionExists(server, deviceId), "The subscription should have been stored; without it the assertion below proves nothing.");
 
         await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
 
-        await scope.ServiceProvider.GetRequiredService<IUserController>().Delete(TestContext.CancellationToken);
+        await server.CreateAppController<IUserController>(scope.ServiceProvider).Delete(TestContext.CancellationToken);
 
         Assert.IsFalse(await PushSubscriptionExists(server, deviceId),
             "The subscription outlived the account. Its foreign key to UserSession is SetNull, and RequestPush reads a null UserSessionId as an anonymous visitor's device - so an erased account's phone stays in the audience of every broadcast.");
@@ -107,7 +107,7 @@ public class AccountErasureTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(configureTestWebAppServices: services => services.AddBrowserlessClientServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

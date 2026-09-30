@@ -33,8 +33,8 @@ public static class TestServiceCollectionExtensions
         /// <see cref="IStorageService"/>, and <c>AuthDelegatingHandler</c> attaches them to every request through
         /// <see cref="IAuthTokenProvider"/>. The real implementations need a browser (local storage through JS interop) or the
         /// request's cookies, and a test has neither, so this swaps both for in-memory ones: once <see cref="AuthManager"/>
-        /// signs a user in, every client resolved from the same scope calls the api as that user. These are client-side
-        /// services, so register them in <c>configureTestWebAppServices</c>.
+        /// signs a user in, every client resolved from the same scope calls the api as that user.
+        /// <see cref="AppTestServer"/> registers them itself on a server no browser drives.
         /// </summary>
         public IServiceCollection AddBrowserlessClientServices()
         {
