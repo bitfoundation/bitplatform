@@ -10,7 +10,7 @@
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           CssVariables="componentCssVariables"
-          GitHubUrl="Utilities/MediaQuery/BitMediaQuery.razor"
+          GitHubUrl="Utilities/MediaQuery/BitMediaQuery.cs"
           GitHubDemoUrl="Utilities/MediaQuery/BitMediaQueryDemo.razor">
     <NotesTemplate>
         <BitText>
@@ -173,13 +173,22 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="NoWrapper" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Element & NoWrapper" RazorCode="@example7RazorCode" Id="example7">
             <div>
-                <b>NoWrapper</b> renders the content without the root div, for a parent that lays out its own children (a flex
-                row, a list, a table). A theme's breakpoints still apply; the parameters that describe an element do not.
+                The root is a div. <b>Element</b> renders another tag where a div is not allowed: a <b>span</b> in a paragraph or
+                a button, an <b>li</b> in a list. <b>NoWrapper</b> renders no root at all, for a parent that lays out its own
+                children, and gives up what the root carries: class, style, dir, name and keeping the focus across a flip.
             </div>
             <br /><br />
             <div class="example-content">
+                <p>
+                    Your order ships
+                    <BitMediaQuery Element="span" ScreenQuery="BitScreenQuery.GtSm">
+                        <Matched><b>Wednesday, October 7</b></Matched>
+                        <NotMatched><b>Oct 7</b></NotMatched>
+                    </BitMediaQuery>
+                    by express courier.
+                </p>
                 <div class="toolbar">
                     <BitButton IconName="@BitIconName.Add">New</BitButton>
                     <BitMediaQuery NoWrapper ScreenQuery="BitScreenQuery.GtSm">
@@ -247,7 +256,7 @@
             <div>
                 <b>BitParams</b> with a <b>BitMediaQueryParams</b> sets defaults for every media query under it; a component's own
                 value wins. <b>Query</b> and <b>ScreenQuery</b> count as one: neither is cascaded to a component that sets either.
-                Here the labels hide below Md, except Delete's, which sets its own query.
+                Here the labels, spans inside the buttons, hide below Md, except Delete's, which sets its own query.
             </div>
             <br /><br />
             <div class="example-content">

@@ -27,6 +27,11 @@ public class BitMediaQueryParams : BitComponentBaseParams, IBitComponentParams
     public bool? DefaultMatched { get; set; }
 
     /// <summary>
+    /// The custom html element used for the root node.
+    /// </summary>
+    public string? Element { get; set; }
+
+    /// <summary>
     /// Renders the active content directly, without the wrapping root element.
     /// </summary>
     public bool? NoWrapper { get; set; }
@@ -72,6 +77,11 @@ public class BitMediaQueryParams : BitComponentBaseParams, IBitComponentParams
         if (DefaultMatched.HasValue && bitMediaQuery.HasNotBeenSet(nameof(DefaultMatched)))
         {
             bitMediaQuery.DefaultMatched = DefaultMatched.Value;
+        }
+
+        if (Element.HasValue() && bitMediaQuery.HasNotBeenSet(nameof(Element)))
+        {
+            bitMediaQuery.Element = Element;
         }
 
         if (NoWrapper.HasValue && bitMediaQuery.HasNotBeenSet(nameof(NoWrapper)))

@@ -128,6 +128,15 @@ private readonly BitTheme breakpointsTheme = new()
     }
 </style>
 
+<p>
+    Your order ships
+    <BitMediaQuery Element=""span"" ScreenQuery=""BitScreenQuery.GtSm"">
+        <Matched><b>Wednesday, October 7</b></Matched>
+        <NotMatched><b>Oct 7</b></NotMatched>
+    </BitMediaQuery>
+    by express courier.
+</p>
+
 <div class=""toolbar"">
     <BitButton IconName=""@BitIconName.Add"">New</BitButton>
     <BitMediaQuery NoWrapper ScreenQuery=""BitScreenQuery.GtSm"">
@@ -199,7 +208,7 @@ private readonly BitMediaQueryParams[] mediaQueryParams =
     new()
     {
         ScreenQuery = BitScreenQuery.GtSm,
-        NoWrapper = true,
+        Element = ""span"",
     }
 ];";
 

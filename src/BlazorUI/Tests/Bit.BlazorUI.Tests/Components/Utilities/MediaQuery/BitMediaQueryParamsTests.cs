@@ -249,4 +249,38 @@ public class BitMediaQueryParamsTests : BunitTestContext
         Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.Template)));
         Assert.IsNull(typeof(BitMediaQueryParams).GetProperty(nameof(BitMediaQuery.OnChange)));
     }
+
+    [TestMethod]
+    public void BitMediaQueryShouldTakeACascadedElement()
+    {
+        var component = RenderWithParams(new BitMediaQueryParams { ScreenQuery = BitScreenQuery.Md, Element = "span" });
+
+        Assert.AreEqual("SPAN", component.Find(".bit-mdq").TagName);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldKeepItsOwnElement()
+    {
+        var component = RenderWithParams(new BitMediaQueryParams { ScreenQuery = BitScreenQuery.Md, Element = "span" }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitMediaQuery.Element), "li");
+        });
+
+        Assert.AreEqual("LI", component.Find(".bit-mdq").TagName);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldGiveBackACascadedElementWhenTheCascadeStopsCarryingIt()
+    {
+        var component = RenderWithParams(new BitMediaQueryParams { ScreenQuery = BitScreenQuery.Md, Element = "span" });
+
+        var instance = component.FindComponent<BitMediaQuery>().Instance;
+        Assert.AreEqual("span", instance.Element);
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitMediaQueryParams { ScreenQuery = BitScreenQuery.Md } }));
+
+        Assert.AreSame(instance, component.FindComponent<BitMediaQuery>().Instance);
+        Assert.IsNull(instance.Element);
+        Assert.AreEqual("DIV", component.Find(".bit-mdq").TagName);
+    }
 }

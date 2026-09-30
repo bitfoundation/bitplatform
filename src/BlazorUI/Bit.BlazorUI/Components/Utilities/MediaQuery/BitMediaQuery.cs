@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
 
@@ -31,6 +32,7 @@ public partial class BitMediaQuery : BitComponentBase
     private bool _isSeeded;
     private bool _queryFromCascade;
     private bool _noWrapperFromCascade;
+    private bool _elementFromCascade;
     private DotNetObjectReference<BitMediaQuery>? _dotnetObj;
 
 
@@ -82,6 +84,23 @@ public partial class BitMediaQuery : BitComponentBase
     [Parameter] public bool DefaultMatched { get; set; }
 
     /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    /// <remarks>
+    /// A div is block content, which HTML does not allow where only phrasing content may go - inside a
+    /// button, a link, a label or a paragraph - and which breaks the line of text it lands in. A "span"
+    /// is the wrapper for those places, and an "li" or a "td" the one for a list or a table row, while
+    /// the component keeps everything its element does for it: the focus kept across a flip, the
+    /// themed scope the breakpoints are read from, the class, the style and the accessible name - all of
+    /// which <see cref="NoWrapper"/> gives up.
+    /// <br />
+    /// The name is used as written, but only while it is a name a tag can have and one that may hold
+    /// content; anything else (a name carrying whitespace or a "&lt;", a void element such as "br")
+    /// falls back to the default tag.
+    /// </remarks>
+    [Parameter] public string? Element { get; set; }
+
+    /// <summary>
     /// Gets or sets the current matched state of the provided query.
     /// </summary>
     /// <remarks>
@@ -115,6 +134,9 @@ public partial class BitMediaQuery : BitComponentBase
     /// <see cref="BitVisibility.Collapsed"/> <see cref="BitComponentBase.Visibility"/>, which asks
     /// for the component to be out of the DOM and needs no element of its own to say so: nothing is
     /// rendered at all, not even the content.
+    /// <br />
+    /// Where only the div is in the way - inside a button, a paragraph or a list - an
+    /// <see cref="Element"/> of the right kind keeps all of that instead.
     /// <br />
     /// A <see cref="ScreenQuery"/> is unaffected: with no element to read the <c>--bit-bp-*</c>
     /// variables from, the breakpoints of an enclosing <see cref="BitThemeProvider"/> are taken from
@@ -204,6 +226,41 @@ public partial class BitMediaQuery : BitComponentBase
 
     protected override string RootElementClass => "bit-mdq";
 
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (_HasContent is false || NoWrapper)
+        {
+            // No element is rendered any more, so the reference a previous render captured is stale.
+            RootElement = default;
+
+            // A collapsed component is asked to be out of the DOM, which still means something without an element of
+            // its own: the content it would have wrapped goes with it.
+            if (_HasContent && Visibility is not BitVisibility.Collapsed)
+            {
+                BuildContent(builder, 0);
+            }
+
+            return;
+        }
+
+        var element = _Element;
+
+        builder.OpenElement(10, element);
+        // The splatted attributes come first so everything the component builds itself is written over them. The values
+        // it would otherwise write as null are resolved against them, since a null written over a splatted attribute
+        // does not leave that attribute alone - it removes it.
+        builder.AddMultipleAttributes(11, RuntimeHelpers.TypeCheck(HtmlAttributes));
+        builder.AddAttribute(12, "id", _RootId);
+        builder.AddAttribute(13, "role", _GetRole(element));
+        builder.AddAttribute(14, "aria-label", _AriaLabel);
+        builder.AddAttribute(15, "style", JoinStyles(GetSplattedAttribute("style"), StyleBuilder.Value));
+        builder.AddAttribute(16, "class", JoinClasses(ClassBuilder.Value, GetSplattedAttribute("class")));
+        builder.AddAttribute(17, "dir", Dir?.ToString().ToLowerInvariant() ?? GetSplattedAttribute("dir"));
+        builder.AddElementReferenceCapture(18, v => RootElement = v);
+        BuildContent(builder, 19);
+        builder.CloseElement();
+    }
+
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMediaQueryParams))]
     protected override void OnParametersSet()
     {
@@ -221,8 +278,14 @@ public partial class BitMediaQuery : BitComponentBase
             NoWrapper = false;
         }
 
+        if (_elementFromCascade && HasNotBeenSet(nameof(Element)))
+        {
+            Element = null;
+        }
+
         _queryFromCascade = CascadingParameters?.AppliesQuery(this) is true;
         _noWrapperFromCascade = CascadingParameters?.NoWrapper.HasValue is true && HasNotBeenSet(nameof(NoWrapper));
+        _elementFromCascade = CascadingParameters?.Element.HasValue() is true && HasNotBeenSet(nameof(Element));
 
         CascadingParameters?.UpdateParameters(this);
 
@@ -339,16 +402,61 @@ public partial class BitMediaQuery : BitComponentBase
     // nothing at all to render. The id is not the listener key: any other element that happens to
     // carry the same id (the rendered content itself, in no-wrapper mode) is not this component's
     // element and is deliberately not read.
-    private string? _ElementId => NoWrapper is false && _HasContent ? _Id : null;
+    private string? _ElementId => NoWrapper is false && _HasContent ? _RootId : null;
+
+    // The id the root element is rendered with: an id splatted in an attribute dictionary is kept
+    // rather than written over, and the JS side looks the element up by whichever it is.
+    private string _RootId => Id.HasValue() ? Id! : (GetSplattedAttribute("id") ?? _Id);
+
+    // The tag the root element is rendered as. A name no tag can have would write markup of its own,
+    // and a void element holds no content, so both fall back to the default.
+    private string _Element
+    {
+        get
+        {
+            var element = Element?.Trim();
+
+            return element.HasValue() && IsValidElement(element!) && IsVoidElement(element!) is false ? element! : "div";
+        }
+    }
 
     // A splatted aria-label is resolved here rather than written over: the null a markup attribute
     // written after the splat carries would otherwise remove it, since it binds no parameter.
     private string? _AriaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
 
-    // ARIA prohibits naming an element with no role, so a named wrapper is a group - the generic
-    // container a name can be given to - unless the page gives it a role of its own.
-    private string? _Role => GetSplattedAttribute("role")
-        ?? (_AriaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null);
+    // ARIA prohibits naming an element with no role, so a named div or span - the two generic
+    // wrappers - is a group, the generic container a name can be given to, unless the page gives it a
+    // role of its own. Any other tag keeps its native role (a list item, a navigation landmark), which
+    // a group would only overwrite.
+    private string? _GetRole(string element)
+    {
+        var role = GetSplattedAttribute("role");
+        if (role is not null) return role;
+
+        if (element.Equals("div", StringComparison.OrdinalIgnoreCase) is false
+            && element.Equals("span", StringComparison.OrdinalIgnoreCase) is false) return null;
+
+        return _AriaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
+    }
+
+    // One fragment for both states when there is a Template, so its content keeps its place in the
+    // render tree across a flip of the query and is updated rather than built again; the two sides of
+    // Matched and NotMatched sit at sequences of their own, so a flip replaces one with the other.
+    private void BuildContent(RenderTreeBuilder builder, int sequence)
+    {
+        if (Template is not null)
+        {
+            builder.AddContent(sequence, Template(IsMatched));
+        }
+        else if (IsMatched)
+        {
+            builder.AddContent(sequence + 1, Matched ?? ChildContent);
+        }
+        else
+        {
+            builder.AddContent(sequence + 2, NotMatched);
+        }
+    }
 
     private bool _HasContent => Template is not null || Matched is not null || ChildContent is not null || NotMatched is not null;
 

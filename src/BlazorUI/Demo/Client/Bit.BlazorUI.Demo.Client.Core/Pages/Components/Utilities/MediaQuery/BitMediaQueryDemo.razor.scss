@@ -23,6 +23,12 @@
         gap: 1rem;
     }
 
+    // The container's gap already spaces the lines, so the paragraph of the "Element & NoWrapper" example keeps none of
+    // its own.
+    > p {
+        margin: 0;
+    }
+
     // The class handed to a BitMediaQuery in the "Style & Class" example. It lands on a component, and the
     // scope attribute of this stylesheet only lands on the plain elements written in this page, so it is
     // reached through the container that carries it.

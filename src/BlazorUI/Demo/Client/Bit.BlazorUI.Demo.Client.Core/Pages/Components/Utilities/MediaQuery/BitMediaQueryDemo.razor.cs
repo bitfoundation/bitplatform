@@ -27,6 +27,13 @@ public partial class BitMediaQueryDemo
         },
         new()
         {
+            Name = "Element",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom html element used for the root node (div by default): a span where only inline content is allowed, an li in a list. A void element or an invalid name falls back to div.",
+        },
+        new()
+        {
             Name = "IsMatched",
             Type = "bool",
             DefaultValue = "false",
@@ -51,7 +58,7 @@ public partial class BitMediaQueryDemo
             Name = "NoWrapper",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the active content without the wrapping root element, so what describes an element (class, style, id, dir, aria-label, ...) is ignored.",
+            Description = "Renders the active content without the wrapping root element, so what describes an element (class, style, id, dir, aria-label, ...) is ignored and the focus is not kept across a flip. See Element for when only the div is in the way.",
         },
         new()
         {
@@ -262,7 +269,7 @@ public partial class BitMediaQueryDemo
         new()
         {
             ScreenQuery = BitScreenQuery.GtSm,
-            NoWrapper = true,
+            Element = "span",
         }
     ];
 }
