@@ -888,10 +888,8 @@ public partial class BitSplitter : BitComponentBase
                                     || IsSetByMarkup(nameof(FirstPanelSize))
                                     || IsSetByMarkup(nameof(SecondPanelSize));
 
-    // The splitter's own parameters are tracked by the generated SetParametersAsync, and the ones it inherits by
-    // the base class's; a name belongs to exactly one of the two, so either one having seen it means the markup
-    // set it.
-    private bool IsSetByMarkup(string name) => HasNotBeenSet(name) is false || base.HasNotBeenSet(name) is false;
+    // The splitter puts back what its cascade stops supplying itself, with the value each parameter held before.
+    private protected override bool RestoresCascadeItself => true;
 
     // A value written by the cascade is not a parameter the markup passes again on the next render, so Blazor
     // never overwrites it: a cascade that stops supplying it - the setting cleared, or the cascade gone - would

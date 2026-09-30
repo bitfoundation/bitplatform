@@ -3,7 +3,6 @@
 public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 {
     private BitDir? _dir;
-    private bool _isDisabledByScope;
     private readonly string _uniqueId = BitShortId.NewId();
     private readonly HashSet<string> _assignedParameters = [];
 
@@ -46,11 +45,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// If not set, the component may use a default direction or inherit from a higher-level ancestor.
     /// </remarks>
     [CascadingParameter] protected BitDir? CascadingDir { get; set; }
-
-    /// <summary>
-    /// What the nearest <see cref="BitParams"/> ancestor sets for every component under it.
-    /// </summary>
-    [CascadingParameter(Name = BitParams.ScopeName)] private BitParamsScope? ParamsScope { get; set; }
 
 
 
@@ -193,11 +187,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
-                case nameof(ParamsScope):
-                    ParamsScope = (BitParamsScope?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
                 case nameof(AriaLabel):
                     _assignedParameters.Add(nameof(AriaLabel));
                     AriaLabel = (string?)parameter.Value;
@@ -273,41 +262,9 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
         ParametersCache = null;
 
-        ApplyScopeParameters(ParamsScope);
+        RestoreDroppedCascadeParameters();
 
         return base.SetParametersAsync(ParameterView.Empty);
-    }
-
-
-
-    /// <summary>
-    /// Applies what a <see cref="BitParams"/> ancestor sets for every component under it to the parameters the
-    /// markup left unset. Runs before the component's own params object is applied, which therefore wins.
-    /// </summary>
-    private protected virtual void ApplyScopeParameters(BitParamsScope? scope)
-    {
-        _isDisabledByScope = ApplyScopeParameter(scope?.IsEnabled is false,
-                                                 _isDisabledByScope,
-                                                 HasNotBeenSet(nameof(IsEnabled)),
-                                                 static (c, isDisabled) => c.IsEnabled = isDisabled is false);
-    }
-
-    /// <summary>
-    /// Turns on a boolean state a <see cref="BitParams"/> ancestor asks for, and turns it back off once it stops
-    /// asking - a value the cascade wrote is not one the markup passes again, so nothing else would undo it.
-    /// Returns whether the state is now held by the cascade.
-    /// </summary>
-    private protected bool ApplyScopeParameter(bool isRequested, bool isHeld, bool isUnset, Action<BitComponentBase, bool> set)
-    {
-        if (isUnset is false) return false;
-
-        if (isRequested == isHeld) return isHeld;
-
-        set(this, isRequested);
-
-        ClassBuilder.Reset();
-
-        return isRequested;
     }
 
 

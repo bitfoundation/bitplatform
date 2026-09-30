@@ -13,24 +13,10 @@ public partial class BitParamsDemo
         },
         new()
         {
-            Name = "Dir",
-            Type = "BitDir?",
-            DefaultValue = "null",
-            Description = "The text direction of every component below, whatever its type. A component that sets its own Dir, or whose params object does, keeps it. Null leaves it to the ancestors.",
-        },
-        new()
-        {
-            Name = "IsEnabled",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Disables every component below when false, whatever its type. A component that sets its own IsEnabled keeps it; a nested BitParams can enable a part again with true. Null leaves it to the ancestors.",
-        },
-        new()
-        {
             Name = "Isolated",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Ignores everything the BitParams ancestors provide (params objects, Dir, IsEnabled and ReadOnly), so the components below take their defaults from this one alone.",
+            Description = "Ignores the params objects the BitParams ancestors provide, so the components below take their defaults from this one alone.",
         },
         new()
         {
@@ -40,13 +26,6 @@ public partial class BitParamsDemo
             Description = "The params objects to provide, one per component type (BitButtonParams, BitTagParams, ...). A later or nested object of the same type only replaces the parameters it sets.",
             LinkType = LinkType.Link,
             Href = "#component-params",
-        },
-        new()
-        {
-            Name = "ReadOnly",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Makes every input below read-only when true, whatever its type. An input that sets its own ReadOnly keeps it; a nested BitParams can make a part editable again with false. Null leaves it to the ancestors.",
         },
     ];
 
@@ -80,7 +59,7 @@ public partial class BitParamsDemo
                     Name = "AriaLabel",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Gets or sets the accessible label for the component, used by assistive technologies.",
+                    Description = "Gets or sets the accessible label for the component, used by assistive technologies. Every component that reads it is announced by the same name, so share it only between components that do the same thing.",
                 },
                 new()
                 {
@@ -191,11 +170,4 @@ public partial class BitParamsDemo
     [
         new BitButtonParams { Color = BitColor.Error },
     ];
-
-    private bool isSaving;
-    private bool isViewOnly;
-    private bool isRtl;
-    private string? formName = "Ada";
-    private int formQuantity = 1;
-    private bool formGiftWrap;
 }

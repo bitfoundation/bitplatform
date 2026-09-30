@@ -20,18 +20,12 @@ internal sealed class BitParamsScope
                            List<KeyValuePair<BitParamsKey, IBitComponentParams>> own,
                            List<BitParamsKey> hidden,
                            Dictionary<BitParamsKey, IBitComponentParams> all,
-                           bool? isEnabled,
-                           bool? readOnly,
-                           BitDir? dir,
                            bool isIsolated)
     {
         IsPassThrough = isPassThrough;
         Own = own;
         Hidden = hidden;
         All = all;
-        IsEnabled = isEnabled;
-        ReadOnly = readOnly;
-        Dir = dir;
         IsIsolated = isIsolated;
     }
 
@@ -58,23 +52,7 @@ internal sealed class BitParamsScope
     public IReadOnlyDictionary<BitParamsKey, IBitComponentParams> All { get; }
 
     /// <summary>
-    /// Whether every component under the <see cref="BitParams"/> is enabled, when it or an ancestor says so.
-    /// </summary>
-    public bool? IsEnabled { get; }
-
-    /// <summary>
-    /// Whether every input under the <see cref="BitParams"/> is read-only, when it or an ancestor says so.
-    /// </summary>
-    public bool? ReadOnly { get; }
-
-    /// <summary>
-    /// The direction the <see cref="BitParams"/> itself sets for every component under it; an inherited one
-    /// already reaches them from the ancestor that set it.
-    /// </summary>
-    public BitDir? Dir { get; }
-
-    /// <summary>
-    /// Whether the <see cref="BitParams"/> ignores everything its ancestors provide.
+    /// Whether the <see cref="BitParams"/> ignores the params objects its ancestors provide.
     /// </summary>
     public bool IsIsolated { get; }
 
@@ -82,10 +60,7 @@ internal sealed class BitParamsScope
 
     public static BitParamsScope Create(BitParamsScope? parent,
                                         IEnumerable<IBitComponentParams>? parameters,
-                                        bool isolated,
-                                        bool? isEnabled,
-                                        bool? readOnly,
-                                        BitDir? dir)
+                                        bool isolated)
     {
         var inherited = isolated ? null : parent?.All;
         var own = new List<KeyValuePair<BitParamsKey, IBitComponentParams>>();
@@ -119,16 +94,9 @@ internal sealed class BitParamsScope
             }
         }
 
-        if (isolated is false)
-        {
-            isEnabled ??= parent?.IsEnabled;
-            readOnly ??= parent?.ReadOnly;
-        }
-
         // The ancestors' scope holds everything in effect above, so with nothing to add and nothing to hide the
         // content is left to it.
-        var isPassThrough = isolated is false && own.Count == 0 && dir is null
-                         && isEnabled == parent?.IsEnabled && readOnly == parent?.ReadOnly;
+        var isPassThrough = isolated is false && own.Count == 0;
 
         var all = inherited is null ? [] : new Dictionary<BitParamsKey, IBitComponentParams>(inherited);
 
@@ -137,7 +105,7 @@ internal sealed class BitParamsScope
             all[key] = value;
         }
 
-        return new(isPassThrough, own, hidden, all, isEnabled, readOnly, dir, isolated);
+        return new(isPassThrough, own, hidden, all, isolated);
     }
 
     /// <summary>
@@ -149,8 +117,7 @@ internal sealed class BitParamsScope
         if (other is null) return false;
         if (IsPassThrough && other.IsPassThrough) return true;
         if (IsPassThrough != other.IsPassThrough) return false;
-        if (IsEnabled != other.IsEnabled || ReadOnly != other.ReadOnly) return false;
-        if (Dir != other.Dir || IsIsolated != other.IsIsolated) return false;
+        if (IsIsolated != other.IsIsolated) return false;
 
         if (Own.Count != other.Own.Count) return false;
         if (Hidden.Count != other.Hidden.Count) return false;

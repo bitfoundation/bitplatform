@@ -413,6 +413,11 @@ public abstract class BitLoadingBase : BitComponentBase
     /// </summary>
     internal bool HasNotBeenSetOnLoading(string name) => _assignedLoadingParameters.Contains(name) is false;
 
+    private protected override bool IsSetByMarkup(string name) => _assignedLoadingParameters.Contains(name) || base.IsSetByMarkup(name);
+
+    // The loaders put back what their cascade stops supplying themselves - see _cascadeRestorers.
+    private protected override bool RestoresCascadeItself => true;
+
     /// <summary>
     /// Fills in the named parameter from a <see cref="BitLoadingParams"/> cascade, and records the value it held
     /// before the cascade first wrote it, which is what it is put back to once the cascade stops setting it.

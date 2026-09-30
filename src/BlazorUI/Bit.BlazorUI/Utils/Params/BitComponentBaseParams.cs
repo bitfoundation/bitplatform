@@ -7,6 +7,8 @@ public abstract class BitComponentBaseParams
 {
     /// <summary>
     /// Gets or sets the accessible label for the component, used by assistive technologies.
+    /// Every component that reads this params object is announced by the same name, so only share it between
+    /// components that do the same thing.
     /// <br />
     /// <see cref="BitComponentBase.AriaLabel"/>.
     /// </summary>

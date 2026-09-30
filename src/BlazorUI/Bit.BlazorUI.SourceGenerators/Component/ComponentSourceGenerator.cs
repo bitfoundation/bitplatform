@@ -82,6 +82,7 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             componentBaseType is not null &&
             SymbolEqualityComparer.Default.Equals(containingType.BaseType, componentBaseType);
         var inheritsFromBit = InheritsFromBitComponentBase(containingType, bitComponentBaseType);
+        var tracksSetByMarkup = inheritsFromBit && CanOverrideIsSetByMarkup(containingType, compilation, bitComponentBaseType!);
 
         return new BlazorParameter(
             ContainingTypeFullName: containingType.ToDisplayString(),
@@ -96,7 +97,19 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             ResetStyleBuilder: resetStyleBuilder,
             IsTwoWayBound: isTwoWayBound,
             CallOnSetMethodName: callOnSetName,
-            CallOnSetAsyncMethodName: callOnSetAsyncName);
+            CallOnSetAsyncMethodName: callOnSetAsyncName,
+            TracksSetByMarkup: tracksSetByMarkup);
+    }
+
+    /// <summary>
+    /// Whether the class can add its own parameters to the IsSetByMarkup answer of BitComponentBase, which it only
+    /// can from inside the assemblies that see that internal member.
+    /// </summary>
+    private static bool CanOverrideIsSetByMarkup(INamedTypeSymbol type, Compilation compilation, INamedTypeSymbol bitComponentBaseType)
+    {
+        var member = bitComponentBaseType.GetMembers("IsSetByMarkup").FirstOrDefault();
+
+        return member is not null && compilation.IsSymbolAccessibleWithin(member, type);
     }
 
     private static void Execute(SourceProductionContext spc, ImmutableArray<BlazorParameter> parameters)
@@ -237,6 +250,17 @@ namespace {namespaceName}
         {{");
         builder.AppendLine("            return __assignedParameters.Contains(name) is false;");
         builder.AppendLine("        }");
+
+        if (classInfo.TracksSetByMarkup)
+        {
+            builder.AppendLine("");
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        private protected override bool IsSetByMarkup(string name)
+        {{
+            return __assignedParameters.Contains(name) || base.IsSetByMarkup(name);
+        }}");
+        }
 
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         foreach (var par in twoWayParameters)

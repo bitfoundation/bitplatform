@@ -24,7 +24,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     private bool _parsingFailed;
     private bool _isUnderlyingTypeNullable;
     private bool _hasInitializedParameters;
-    private bool _isReadOnlyByScope;
     private bool _previousParsingAttemptFailed;
     private string? _incomingValueBeforeParsing;
     private ValidationMessageStore? _parsingValidationMessages;
@@ -163,6 +162,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// </summary>
     protected internal bool HasNotBeenSetOnInput(string name) => _assignedInputParameters.Contains(name) is false;
 
+    private protected override bool IsSetByMarkup(string name) => _assignedInputParameters.Contains(name) || base.IsSetByMarkup(name);
+
 
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -283,16 +284,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
-    }
-
-    private protected override void ApplyScopeParameters(BitParamsScope? scope)
-    {
-        base.ApplyScopeParameters(scope);
-
-        _isReadOnlyByScope = ApplyScopeParameter(scope?.ReadOnly is true,
-                                                 _isReadOnlyByScope,
-                                                 HasNotBeenSetOnInput(nameof(ReadOnly)),
-                                                 static (c, isReadOnly) => ((BitInputBase<TValue>)c).ReadOnly = isReadOnly);
     }
 
     protected override void OnInitialized()

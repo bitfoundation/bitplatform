@@ -25,8 +25,8 @@ private readonly List<IBitComponentParams> basicParams =
     private readonly string example2RazorCode = @"
 <BitToggle @bind-Value=""isCompact"" Label=""Compact"" Inline />
 
-<BitParams Parameters=""@([new BitButtonParams { Size = isCompact ? BitSize.Small : BitSize.Large },
-                         new BitTagParams { Size = isCompact ? BitSize.Small : BitSize.Large }])"">
+<BitParams Parameters=""@([new BitButtonParams { Size = isCompact ? BitSize.Small : null },
+                         new BitTagParams { Size = isCompact ? BitSize.Small : null }])"">
     <BitStack Horizontal Wrap VerticalAlign=""BitAlignment.Center"">
         <BitButton>Accept</BitButton>
         <BitButton Variant=""BitVariant.Outline"">Decline</BitButton>
@@ -71,28 +71,4 @@ private readonly List<IBitComponentParams> dangerParams =
 [
     new BitButtonParams { Color = BitColor.Error },
 ];";
-
-    private readonly string example4RazorCode = @"
-<BitToggle @bind-Value=""isSaving"" Label=""Saving"" Inline />
-<BitToggle @bind-Value=""isViewOnly"" Label=""View only"" Inline />
-<BitToggle @bind-Value=""isRtl"" Label=""RTL"" Inline />
-
-<BitParams Dir=""@(isRtl ? BitDir.Rtl : null)"" IsEnabled=""@(isSaving is false)"" ReadOnly=""isViewOnly"">
-    <BitStack Gap=""0.75rem"" Style=""max-width: 20rem"">
-        <BitTextField Label=""Name"" @bind-Value=""formName"" />
-        <BitNumberField Label=""Quantity"" @bind-Value=""formQuantity"" Mode=""BitSpinButtonMode.Inline"" />
-        <BitCheckbox Label=""Gift wrap"" @bind-Value=""formGiftWrap"" />
-        <BitStack Horizontal>
-            <BitButton>Submit</BitButton>
-            <BitButton IsEnabled Variant=""BitVariant.Outline"" OnClick=""() => isSaving = false"">Cancel</BitButton>
-        </BitStack>
-    </BitStack>
-</BitParams>";
-    private readonly string example4CsharpCode = @"
-private bool isSaving;
-private bool isViewOnly;
-private bool isRtl;
-private string? formName = ""Ada"";
-private int formQuantity = 1;
-private bool formGiftWrap;";
 }

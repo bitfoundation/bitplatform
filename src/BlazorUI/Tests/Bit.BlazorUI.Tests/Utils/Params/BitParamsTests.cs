@@ -366,128 +366,91 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void IsEnabledShouldDisableEveryComponentAndGiveItBack()
+    public void AParameterTheParamsObjectStopsSupplyingShouldGoBack()
     {
         var component = RenderComponent<BitParams>(builder =>
         {
-            builder.Add(p => p.IsEnabled, false);
-            builder.AddChildContent<StaticFormHost>();
+            builder.Add(p => p.Parameters, [new BitButtonParams { Variant = BitVariant.Outline, Class = "shared", IsEnabled = false, Dir = BitDir.Rtl }]);
+            builder.AddChildContent<StaticButtonHost>();
         });
 
-        Assert.IsFalse(component.FindComponent<BitButton>().Instance.IsEnabled);
-        Assert.IsFalse(component.FindComponent<BitCheckbox>().Instance.IsEnabled);
-        Assert.IsTrue(component.FindComponent<BitNumberField<int>>().Instance.IsEnabled, "its own IsEnabled wins");
-        Assert.IsTrue(component.Find("button").ClassList.Contains("bit-dis"));
+        var button = component.FindComponent<BitButton>().Instance;
 
-        component.Render(builder => builder.Add(p => p.IsEnabled, null));
-
-        Assert.IsTrue(component.FindComponent<BitButton>().Instance.IsEnabled);
-        Assert.IsTrue(component.FindComponent<BitCheckbox>().Instance.IsEnabled);
-        Assert.IsFalse(component.Find("button").ClassList.Contains("bit-dis"));
-    }
-
-    [TestMethod]
-    public void ReadOnlyShouldLockEveryInputAndGiveItBack()
-    {
-        var component = RenderComponent<BitParams>(builder =>
-        {
-            builder.Add(p => p.ReadOnly, true);
-            builder.AddChildContent<StaticFormHost>();
-        });
-
-        Assert.IsTrue(component.FindComponent<BitCheckbox>().Instance.ReadOnly);
-        Assert.IsFalse(component.FindComponent<BitNumberField<int>>().Instance.ReadOnly, "its own ReadOnly wins");
-
-        component.Render(builder => builder.Add(p => p.ReadOnly, false));
-
-        Assert.IsFalse(component.FindComponent<BitCheckbox>().Instance.ReadOnly);
-    }
-
-    [TestMethod]
-    public void ANestedScopeShouldEnableAPartAgain()
-    {
-        var component = RenderComponent<BitParams>(builder =>
-        {
-            builder.Add(p => p.IsEnabled, false);
-            builder.AddChildContent<BitParams>(inner =>
-            {
-                inner.Add(p => p.IsEnabled, true);
-                inner.AddChildContent<StaticFormHost>();
-            });
-        });
-
-        Assert.IsTrue(component.FindComponent<BitButton>().Instance.IsEnabled);
-    }
-
-    [TestMethod]
-    public void ANestedScopeShouldInheritIsEnabledUnlessIsolated()
-    {
-        var inherited = RenderComponent<BitParams>(builder =>
-        {
-            builder.Add(p => p.IsEnabled, false);
-            builder.AddChildContent<BitParams>(inner =>
-            {
-                inner.Add(p => p.Parameters, [new FakeParamsB()]);
-                inner.AddChildContent<StaticFormHost>();
-            });
-        });
-
-        Assert.IsFalse(inherited.FindComponent<BitButton>().Instance.IsEnabled);
-
-        var isolated = RenderComponent<BitParams>(builder =>
-        {
-            builder.Add(p => p.IsEnabled, false);
-            builder.AddChildContent<BitParams>(inner =>
-            {
-                inner.Add(p => p.Isolated, true);
-                inner.AddChildContent<StaticFormHost>();
-            });
-        });
-
-        Assert.IsTrue(isolated.FindComponent<BitButton>().Instance.IsEnabled);
-    }
-
-    [TestMethod]
-    public void DirShouldReachEveryComponentUnlessIsolated()
-    {
-        var component = RenderComponent<BitParams>(builder =>
-        {
-            builder.Add(p => p.Dir, BitDir.Rtl);
-            builder.AddChildContent<StaticFormHost>();
-        });
-
-        Assert.AreEqual(BitDir.Rtl, component.FindComponent<BitButton>().Instance.Dir);
+        Assert.AreEqual(BitVariant.Outline, button.Variant);
+        Assert.IsFalse(button.IsEnabled);
+        Assert.IsTrue(component.Find("button").ClassList.Contains("shared"));
         Assert.IsTrue(component.Find("button").ClassList.Contains("bit-rtl"));
 
-        component.Render(builder => builder.Add(p => p.Dir, BitDir.Ltr));
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams { Class = "shared" }]));
 
-        Assert.AreEqual(BitDir.Ltr, component.FindComponent<BitButton>().Instance.Dir);
-
-        var isolated = RenderComponent<BitParams>(builder =>
-        {
-            builder.Add(p => p.Dir, BitDir.Rtl);
-            builder.AddChildContent<BitParams>(inner =>
-            {
-                inner.Add(p => p.Isolated, true);
-                inner.AddChildContent<StaticFormHost>();
-            });
-        });
-
-        Assert.IsNull(isolated.FindComponent<BitButton>().Instance.Dir);
+        Assert.IsNull(button.Variant);
+        Assert.IsTrue(button.IsEnabled);
+        Assert.IsNull(button.Dir);
+        Assert.IsTrue(component.Find("button").ClassList.Contains("shared"), "a parameter still supplied stays");
+        Assert.IsFalse(component.Find("button").ClassList.Contains("bit-dis"));
+        Assert.IsFalse(component.Find("button").ClassList.Contains("bit-rtl"));
     }
 
     [TestMethod]
-    public void AComponentParamsObjectShouldWinOverTheScope()
+    public void EveryParameterShouldGoBackOnceTheParamsObjectIsGone()
     {
         var component = RenderComponent<BitParams>(builder =>
         {
-            builder.Add(p => p.IsEnabled, false);
-            builder.Add(p => p.Parameters, [new BitButtonParams { IsEnabled = true }]);
-            builder.AddChildContent<StaticFormHost>();
+            builder.Add(p => p.Parameters, [new BitButtonParams { Variant = BitVariant.Outline, Class = "shared" },
+                                            new BitCheckboxParams { Size = BitSize.Large },
+                                            new BitNumberFieldParams { Size = BitSize.Large }]);
+            builder.AddChildContent<StaticInputsHost>();
         });
 
-        Assert.IsTrue(component.FindComponent<BitButton>().Instance.IsEnabled);
-        Assert.IsFalse(component.FindComponent<BitCheckbox>().Instance.IsEnabled);
+        Assert.AreEqual(BitSize.Large, component.FindComponent<BitCheckbox>().Instance.Size);
+        Assert.AreEqual(BitSize.Large, component.FindComponent<BitNumberField<int>>().Instance.Size);
+
+        component.Render(builder => builder.Add(p => p.Parameters, null));
+
+        Assert.AreEqual(BitVariant.Text, component.FindComponent<BitButton>().Instance.Variant);
+        Assert.IsNull(component.FindComponent<BitButton>().Instance.Class);
+        Assert.IsNull(component.FindComponent<BitCheckbox>().Instance.Size);
+        Assert.IsNull(component.FindComponent<BitNumberField<int>>().Instance.Size);
+    }
+
+    [TestMethod]
+    public void AnIsolatedScopeShouldPutBackWhatTheOuterOneSupplied()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitButtonParams { Variant = BitVariant.Outline }]);
+            builder.AddChildContent<BitParams>(inner =>
+            {
+                inner.Add(p => p.Isolated, false);
+                inner.AddChildContent<StaticButtonHost>();
+            });
+        });
+
+        Assert.AreEqual(BitVariant.Outline, component.FindComponent<BitButton>().Instance.Variant);
+
+        component.FindComponent<BitParams>().Render(inner => inner.Add(p => p.Isolated, true));
+
+        Assert.IsNull(component.FindComponent<BitButton>().Instance.Variant);
+    }
+
+    [TestMethod]
+    public void AParameterTheMarkupSetsShouldNotBePutBack()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitButtonParams { Variant = BitVariant.Outline, Color = BitColor.Error }]);
+            builder.AddChildContent<StaticInputsHost>();
+        });
+
+        var button = component.FindComponent<BitButton>().Instance;
+
+        Assert.AreEqual(BitVariant.Text, button.Variant, "its own Variant wins");
+        Assert.AreEqual(BitColor.Error, button.Color);
+
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams()]));
+
+        Assert.AreEqual(BitVariant.Text, button.Variant);
+        Assert.IsNull(button.Color);
     }
 
 
@@ -507,21 +470,18 @@ public class BitParamsTests : BunitTestContext
         }
     }
 
-    private sealed class StaticFormHost : ComponentBase
+    private sealed class StaticInputsHost : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<BitButton>(0);
-            builder.AddComponentParameter(1, nameof(BitButton.Title), "Save");
+            builder.AddComponentParameter(1, nameof(BitButton.Variant), BitVariant.Text);
             builder.CloseComponent();
 
             builder.OpenComponent<BitCheckbox>(2);
-            builder.AddComponentParameter(3, nameof(BitCheckbox.Label), "Agree");
             builder.CloseComponent();
 
-            builder.OpenComponent<BitNumberField<int>>(4);
-            builder.AddComponentParameter(5, nameof(BitNumberField<int>.IsEnabled), true);
-            builder.AddComponentParameter(6, nameof(BitNumberField<int>.ReadOnly), false);
+            builder.OpenComponent<BitNumberField<int>>(3);
             builder.CloseComponent();
         }
     }

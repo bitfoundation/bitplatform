@@ -6,7 +6,7 @@
 
 <DemoPage Name="Params"
           Description="BitParams cascades shared default parameters to every bit BlazorUI component in a subtree, so a toolbar, a form or a whole app sets them once. Each component reads the params object of its own type (BitButtonParams, BitTagParams, ...), and a parameter it sets itself always wins."
-          Notes="A params object fills in only what a component leaves unset, one parameter at a time. BitParams re-reads its objects on every render and tells the components below only when a value actually changed, so rebuilding the list inline or changing a property of one of its objects is fine. For values of your own, use BitCascadingValueProvider."
+          Notes="A params object fills in only what a component leaves unset, one parameter at a time. BitParams re-reads its objects on every render and tells the components below only when a value actually changed, so rebuilding the list inline or changing a property of one of its objects is fine; a parameter an object stops setting goes back to what the component held before. For values of your own, use BitCascadingValueProvider."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           GitHubUrl="../Utils/Params/BitParams.cs"
@@ -29,12 +29,12 @@
     </DemoExample>
 
     <DemoExample Title="Changing values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>The list can be written inline and rebuilt from state; every component below follows the new values.</div>
+        <div>The list can be written inline and rebuilt from state. Every component below follows the new values, and a value set back to null returns to the component's own.</div>
         <br />
         <BitToggle @bind-Value="isCompact" Label="Compact" Inline />
         <br />
-        <BitParams Parameters="@([new BitButtonParams { Size = isCompact ? BitSize.Small : BitSize.Large },
-                                 new BitTagParams { Size = isCompact ? BitSize.Small : BitSize.Large }])">
+        <BitParams Parameters="@([new BitButtonParams { Size = isCompact ? BitSize.Small : null },
+                                 new BitTagParams { Size = isCompact ? BitSize.Small : null }])">
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
                 <BitButton>Accept</BitButton>
                 <BitButton Variant="BitVariant.Outline">Decline</BitButton>
@@ -71,31 +71,6 @@
                         <BitButton>Defaults</BitButton>
                     </BitStack>
                 </BitParams>
-            </BitStack>
-        </BitParams>
-    </DemoExample>
-
-    <DemoExample Title="Scope-wide parameters" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>
-            <b>Dir</b>, <b>IsEnabled</b> and <b>ReadOnly</b> reach every component below, whatever its type.
-            A component that sets its own value keeps it, like the Cancel button.
-        </div>
-        <br />
-        <BitStack Horizontal Wrap>
-            <BitToggle @bind-Value="isSaving" Label="Saving" Inline />
-            <BitToggle @bind-Value="isViewOnly" Label="View only" Inline />
-            <BitToggle @bind-Value="isRtl" Label="RTL" Inline />
-        </BitStack>
-        <br />
-        <BitParams Dir="@(isRtl ? BitDir.Rtl : null)" IsEnabled="@(isSaving is false)" ReadOnly="isViewOnly">
-            <BitStack Gap="0.75rem" Style="max-width: 20rem">
-                <BitTextField Label="Name" @bind-Value="formName" />
-                <BitNumberField Label="Quantity" @bind-Value="formQuantity" Mode="BitSpinButtonMode.Inline" />
-                <BitCheckbox Label="Gift wrap" @bind-Value="formGiftWrap" />
-                <BitStack Horizontal>
-                    <BitButton>Submit</BitButton>
-                    <BitButton IsEnabled Variant="BitVariant.Outline" OnClick="() => isSaving = false">Cancel</BitButton>
-                </BitStack>
             </BitStack>
         </BitParams>
     </DemoExample>
