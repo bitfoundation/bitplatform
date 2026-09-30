@@ -114,6 +114,12 @@ public partial class BitLink : BitComponentBase
     /// <summary>
     /// The general color of the link.
     /// </summary>
+    /// <remarks>
+    /// <see cref="BitColor.Primary"/> when not set. A link is text read on the page, so an accent color other than
+    /// the primary one is painted in the foreground shade of its role, the one picked to be read as text rather
+    /// than to fill a surface - a warning main falls under 2:1 as text on white. The <c>--bit-Link-*</c> color
+    /// variables win over it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 

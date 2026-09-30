@@ -2,9 +2,6 @@
 
 public partial class BitLinkDemo
 {
-    [Inject] private NavigationManager Navigation { get; set; } = default!;
-
-
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -49,7 +46,7 @@ public partial class BitLinkDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the link.",
+            Description = "The general color of the link, Primary when not set. Accent colors other than Primary use the role's readable text shade.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -181,6 +178,94 @@ public partial class BitLinkDemo
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Link-color",
+            DefaultValue = "from the Color role",
+            Description = "Text color at rest. Wins over the Color parameter.",
+        },
+        new()
+        {
+            Name = "--bit-Link-hover-color",
+            DefaultValue = "from the Color role",
+            Description = "Text color under the pointer and while focused from the keyboard.",
+        },
+        new()
+        {
+            Name = "--bit-Link-active-color",
+            DefaultValue = "from the Color role",
+            Description = "Text color while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-Link-visited-color",
+            DefaultValue = "--bit-Link-color",
+            Description = "Text color of a link whose destination was already visited.",
+        },
+        new()
+        {
+            Name = "--bit-Link-disabled-color",
+            DefaultValue = "from the Color role",
+            Description = "Text color and focus ring color of a disabled link.",
+        },
+        new()
+        {
+            Name = "--bit-Link-focus-color",
+            DefaultValue = "from the Color role",
+            Description = "Color of the keyboard focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-Link-font-family",
+            DefaultValue = "--bit-tpg-font-family",
+            Description = "Typeface of the text. Set it to inherit where a link has to match the typeface around it.",
+        },
+        new()
+        {
+            Name = "--bit-Link-font-size",
+            DefaultValue = "inherit",
+            Description = "Size of the text. Wins over the Size parameter.",
+        },
+        new()
+        {
+            Name = "--bit-Link-font-weight",
+            DefaultValue = "inherit",
+            Description = "Weight of the text.",
+        },
+        new()
+        {
+            Name = "--bit-Link-underline-color",
+            DefaultValue = "currentColor",
+            Description = "Color of the underline.",
+        },
+        new()
+        {
+            Name = "--bit-Link-underline-thickness",
+            DefaultValue = "auto",
+            Description = "Thickness of the underline.",
+        },
+        new()
+        {
+            Name = "--bit-Link-underline-offset",
+            DefaultValue = "auto",
+            Description = "Gap between the text and its underline.",
+        },
+        new()
+        {
+            Name = "--bit-Link-icon-gap",
+            DefaultValue = "spacing(0.375) (3px)",
+            Description = "Room between the icon and the text.",
+        },
+        new()
+        {
+            Name = "--bit-Link-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the focus ring.",
+        },
+    ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
@@ -253,7 +338,7 @@ public partial class BitLinkDemo
                 new()
                 {
                     Name= "Primary",
-                    Description="Info Primary general color.",
+                    Description="Primary general color.",
                     Value="0",
                 },
                 new()
@@ -574,15 +659,24 @@ public partial class BitLinkDemo
 
 
 
-    private int clickCount;
-    private int linkClickCount;
+    private int buttonClickCount;
+    private int anchorClickCount;
+    private int innerClickCount;
     private int containerClickCount;
     private string? guardMessage;
 
-    private void HandleOnClick()
-    {
-        Navigation.NavigateTo("https://github.com/bitfoundation/bitplatform");
-    }
+    private BitLink focusTargetRef = default!;
+
+    private readonly BitLinkParams[] linkParams =
+    [
+        new()
+        {
+            Underlined = true,
+            Target = BitLinkTarget.Blank,
+            IconName = BitIconName.OpenInNewWindow,
+            IconPosition = BitIconPosition.End,
+        }
+    ];
 
     private void HandleGuardedClick()
     {

@@ -6,446 +6,314 @@
 
 <DemoPage Name="Link"
           SecondaryNames="@(["Anchor"])"
-          Description="Links lead to another part of an app, other pages, or help articles. They can also be used to initiate commands. BitLink renders an anchor when an Href is given and a button when it is not, so a link that runs a command still answers the keyboard like a button while keeping the link look. An Href starting with # is the third case: an in-page link that scrolls its target into view and moves the focus with it. A new-tab link is hardened on its own, with a noopener rel and an announcement that it opens a new tab."
+          Description="BitLink renders an anchor when it has an Href and a button when it does not, so a link that runs a command still answers the keyboard like a button. An Href starting with # scrolls to its target and moves the focus there. A new-tab link gets a noopener rel and an announcement that it opens a new tab. It is restyled through its parameters, its public CSS variables or a BitParams cascade."
+          Notes="A link goes somewhere and a button does something: reach for BitButton or BitActionButton when the action changes the page rather than leaving it. Inside a sentence, keep a link Underlined - color alone does not tell every reader it is a link."
           Parameters="componentParameters"
+          CssVariables="componentCssVariables"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubUrl="Utilities/Link/BitLink.razor"
           GitHubDemoUrl="Utilities/Link/BitLinkDemo.razor">
+
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            A link only needs an <b>Href</b> and its text, and it takes the font of whatever it sits in, so a link
-            inside a sentence stays the same size and weight as the words around it. A disabled link keeps its
-            place in the layout but loses its href, so it can no longer be navigated or clicked.
+            An <b>Href</b> and a text are all a link needs. It takes the size and weight of whatever it sits in, so inside a
+            sentence it matches the words around it. A disabled link loses its href and can no longer be followed.
         </div>
         <br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform">Basic Link</BitLink>
-        <br /><br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">Disabled Link</BitLink>
-    </DemoExample>
-
-    <DemoExample Title="Underlined" RazorCode="@example2RazorCode" Id="example2">
-        <div>
-            By default the underline only appears on hover. The <b>Underlined</b> parameter keeps it visible at all
-            states, maximizing the visual cue that the text is interactive, especially when the link sits inside body text.
-        </div>
-        <br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform" Underlined>Underlined link</BitLink>
-    </DemoExample>
-
-    <DemoExample Title="NoUnderline" RazorCode="@example3RazorCode" Id="example3">
-        <div>
-            The <b>NoUnderline</b> parameter removes the underline at every state, including hover and active, and
-            wins over <b>Underlined</b> when both are set. Reserve it for places where the surrounding context
-            already marks the text as a link (like a navigation menu), since inside body text color alone is not
-            enough of a cue for every reader.
-        </div>
-        <br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform" NoUnderline>NoUnderline link</BitLink>
-    </DemoExample>
-
-    <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
-        <div>
-            The <b>IconName</b> parameter puts a glyph beside the link text, normalized back to the size of that
-            text so the two sit on the same line. <b>IconPosition</b> moves it from the front of the text to after
-            it, which is where the two glyphs a link carries most often, the arrow of a link opening a new tab and
-            the tray of a download, belong. The glyph is drawn as decoration and hidden from screen readers, so
-            whatever it says has to be in the link text as well.
-        </div>
-        <br />
-        <BitLink IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">Link with a leading icon</BitLink>
-        <br /><br />
-        <BitLink IconName="@BitIconName.NavigateExternalInline" IconPosition="BitIconPosition.End" Href="https://github.com/bitfoundation/bitplatform">Link with a trailing icon</BitLink>
-        <br /><br />
-        <BitLink IconName="@BitIconName.Download" Underlined Href="https://github.com/bitfoundation/bitplatform">Icon on an underlined link</BitLink>
-    </DemoExample>
-
-    <DemoExample Title="Target" RazorCode="@example5RazorCode" Id="example5">
-        <div>
-            The <b>Target</b> parameter controls the browsing context the link opens in; the <code>BitLinkTarget</code>
-            class provides the standard values, but any plain string (like a frame name) works too. A <code>_blank</code>
-            target is hardened twice over: it automatically gets a <code>noopener</code> rel attribute so the opened
-            page cannot reach back into the app (see the Rel section below), and it announces that it opens in a new
-            tab (see the next section).
-        </div>
-        <br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="@BitLinkTarget.Blank">Blank target link</BitLink>
-        <br /><br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="@BitLinkTarget.Parent">Parent target link</BitLink>
-        <br /><br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="@BitLinkTarget.Self">Self target link</BitLink>
-        <br /><br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="@BitLinkTarget.Top">Top target link</BitLink>
-    </DemoExample>
-
-    <DemoExample Title="New tab announcement" RazorCode="@example6RazorCode" Id="example6">
-        <div>
-            A new tab is a change of context nothing on the page predicts, and the back button no longer returns
-            from it, so a <code>_blank</code> link carries the sentence saying so as visually hidden text after its
-            content. Nothing changes on screen; a screen reader reads "opens in a new tab" with the link.
-            <b>NewTabHint</b> replaces that sentence, for translating it or wording it another way, and
-            <b>NoNewTabHint</b> takes it off where the page already says it, next to a visible label of your own or
-            a trailing icon whose meaning the text already carries. When an <b>AriaLabel</b> is set, the sentence is
-            appended to it instead, since an aria-label replaces the content rather than adding to it. An app that
-            is not written in English says the sentence once for all of its links, by cascading a
-            <code>BitLinkParams</code> with a <b>NewTabHint</b> of its own through <b>BitParams</b>.
-        </div>
-        <br />
-        <BitLink Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Announced as opening in a new tab</BitLink>
-        <br /><br />
-        <BitLink Target="_blank" NewTabHint="(در زبانه جدید باز می‌شود)" Href="https://github.com/bitfoundation/bitplatform">Announced with a translated sentence</BitLink>
-        <br /><br />
-        <BitLink Target="_blank" NoNewTabHint IconName="@BitIconName.OpenInNewWindow" IconPosition="BitIconPosition.End" Href="https://github.com/bitfoundation/bitplatform">
-            Opens in a new tab (said in the text already)
-        </BitLink>
-    </DemoExample>
-
-    <DemoExample Title="Download" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            When the link points to a file, the <b>Download</b> parameter tells the browser to save it instead of
-            navigating to it. Pass an empty string to keep the server-provided file name, or a value to suggest your own.
-            Browsers honor this only for same-origin, <code>blob:</code>, and <code>data:</code> URLs, so a cross-origin
-            link will simply navigate as usual.
-        </div>
-        <br />
-        <BitLink Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Download="">Download the bit logo</BitLink>
-        <br /><br />
-        <BitLink IconName="@BitIconName.Download" Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Download="bit-platform-logo.svg">Download with a custom file name</BitLink>
-    </DemoExample>
-
-    <DemoExample Title="Title" RazorCode="@example8RazorCode" Id="example8">
-        <div>
-            The <b>Title</b> parameter is the browser's own tooltip, shown after a hover long enough to count as one.
-            Neither touch nor the keyboard reaches it, so nothing the reader has to have belongs only here: it is the
-            place for what a full URL, or a longer wording of the link text, adds to the words already on screen.
-        </div>
-        <br />
-        <BitLink Title="github.com/bitfoundation/bitplatform" Href="https://github.com/bitfoundation/bitplatform">Hover to see the full address</BitLink>
-    </DemoExample>
-
-    <DemoExample Title="AriaDescription" RazorCode="@example9RazorCode" Id="example9">
-        <div>
-            <b>AriaDescription</b> is a longer sentence about the link, rendered as visually hidden text the link
-            points at through <code>aria-describedby</code>. A description is read out after the name and is not
-            part of it, which makes it the place for what the reader would want to know before following the link
-            but not in the words on the page: the size of a file, the format it is in, what the page it leads to
-            will ask for. Unlike a <b>Title</b>, which the browser only ever shows to a mouse, this reaches
-            everyone a screen reader is reading to.
-        </div>
-        <br />
-        <BitLink IconName="@BitIconName.Download"
-                 AriaDescription="PDF, 2.4 megabytes"
-                 Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"
-                 Download="">
-            Download the brand guidelines
-        </BitLink>
-    </DemoExample>
-
-    <DemoExample Title="OnClick" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <div>
-            Without an <b>Href</b>, the link renders as a button styled like a link and <b>OnClick</b> is its whole action.
-            With an <b>Href</b>, <b>OnClick</b> still fires alongside the navigation, which is handy for tracking or
-            for extra work right before leaving. The <b>StopPropagation</b> parameter keeps the click from bubbling up
-            to clickable containers around the link.
-        </div>
-        <br />
-        <BitLink OnClick="HandleOnClick">Click to navigate to the bit platform GitHub repo!</BitLink>
-        <br /><br />
-        <BitLink OnClick="() => clickCount++" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Link with both Href and OnClick</BitLink>
-        <div>OnClick count: @clickCount</div>
-        <br />
-        <div class="clickable-container" @onclick="() => containerClickCount++">
-            A clickable container (clicked @containerClickCount times):
-            <BitLink StopPropagation OnClick="() => linkClickCount++">Link with StopPropagation (clicked @linkClickCount times)</BitLink>
+        <div class="example-content">
+            <div>Read the <BitLink Href="https://github.com/bitfoundation/bitplatform">bit platform source</BitLink> on GitHub.</div>
+            <BitLink Href="https://github.com/bitfoundation/bitplatform">Basic link</BitLink>
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">Disabled link</BitLink>
         </div>
     </DemoExample>
 
-    <DemoExample Title="PreventDefault" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Underline" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            <b>PreventDefault</b> suppresses the navigation a click would otherwise perform, leaving <b>OnClick</b> as
-            the whole of what the click does. The anchor keeps its <b>Href</b>, so the destination is still what the
-            status bar shows, what a middle click opens in a new tab and what "copy link address" copies, which is
-            what separates this from a link with no href at all. That is what a link needs to confirm before leaving,
-            or to save a draft first and navigate from the handler afterwards.
+            The underline appears under the pointer by default. <b>Underlined</b> keeps it at every state - the right
+            choice inside body text. <b>NoUnderline</b> removes it at every state and wins when both are set; keep it for
+            places that already read as links, such as a menu.
         </div>
         <br />
-        <BitLink PreventDefault OnClick="HandleGuardedClick" Href="https://github.com/bitfoundation/bitplatform">Ask before leaving</BitLink>
-        <div>@guardMessage</div>
+        <div class="example-content">
+            <BitLink Href="https://github.com/bitfoundation/bitplatform">Underlined on hover (default)</BitLink>
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" Underlined>Always underlined</BitLink>
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" NoUnderline>Never underlined</BitLink>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Navigate to elements" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Icon" RazorCode="@example3RazorCode" Id="example3">
         <div>
-            An <b>Href</b> starting with the <code>#</code> character smooth-scrolls the element with that id into
-            view and moves the keyboard focus to it, so the next Tab carries on from the destination rather than from
-            the link, without pushing the fragment into the browser's address bar. The scroll drops to an instant jump
-            for a reader who has asked for reduced motion, and a <code>scroll-margin</code> style on the target element
-            keeps it clear of any fixed header once it arrives.
+            <b>IconName</b> adds a glyph sized to the text beside it; <b>IconPosition</b> moves it after the text. The
+            icon is hidden from screen readers, so the text has to say what it says.
         </div>
         <br />
-        <BitLink Style="scroll-margin: 110px" Id="start-article" Href="#end-article">Go To End of this Article</BitLink>
-        <br />
-        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-        <br />
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-        <br />
-        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-        shaped into meaning, and the emotions ready to resonate with every reader.
-        <br />
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-        each word has the power to transform into something extraordinary. Here lies the start of something new-an
-        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-        begins here, in this quiet moment where everything is possible.
-        <br />
-        Imagine this space as a window into the future empty yet alive with the energy of endless possibilities.
-        These words stand as temporary guides, placeholders that whisper of what is to come.
-        They hold the promise of stories waiting to unfold, ideas eager to take shape, and
-        connections that will soon emerge to inspire and resonate. This is not an empty page;
-        it is a canvas, rich with potential and ready to transform into something meaningful.
-        <br />
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
-        the foundation upon which your creativity will build. Soon, this space will hold your thoughts, your visions,
-        and your voice a reflection of who you are and what you wish to share with the world. Every sentence will carry
-        purpose, every word will invite others to connect, to think, to feel. So take a moment to dream, to imagine
-        what this blank slate can become. Whether it’s a story, an idea, or a message that matters, this is your
-        starting point. The possibilities are endless, and the journey begins now.
-        <br />
-        <BitLink Style="scroll-margin: 110px" Id="end-article" Href="#start-article">Go To Start of this Article</BitLink>
+        <div class="example-content">
+            <BitLink IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">Leading icon</BitLink>
+            <BitLink IconName="@BitIconName.ChevronRight" IconPosition="BitIconPosition.End" Href="https://github.com/bitfoundation/bitplatform">Trailing icon</BitLink>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Rel" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="New tab" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            The <b>Rel</b> parameter describes the relationship between the current document and the linked one, using
-            the <code>BitLinkRels</code> flags enum, so multiple values combine with the <code>|</code> operator. It
-            covers the full set of HTML rel values, including the newer <code>sponsored</code>, <code>ugc</code>,
-            <code>opener</code>, <code>privacy-policy</code> and <code>terms-of-service</code>.
-            When the <b>Target</b> is <code>_blank</code> and no opener-related rel (<code>NoOpener</code>,
-            <code>NoReferrer</code> or <code>Opener</code>) is provided, <code>noopener</code> is added automatically
-            to keep the opened page from reaching back into the app.
+            <b>Target</b> takes any browsing context (<b>BitLinkTarget</b> names the standard ones). A <b>_blank</b> link
+            gets <b>rel="noopener"</b> and a visually hidden "(opens in a new tab)" for screen readers. <b>NewTabHint</b>
+            rewords or translates it; <b>NoNewTabHint</b> drops it where the page already says so.
         </div>
         <br />
-        <BitLink Rel="BitLinkRels.NoFollow" Href="https://github.com/bitfoundation/bitplatform">Link with a rel attribute (nofollow)</BitLink>
-        <br /><br />
-        <BitLink Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" Href="https://github.com/bitfoundation/bitplatform">Link with a rel attribute (nofollow & noreferrer)</BitLink>
-        <br /><br />
-        <BitLink Rel="BitLinkRels.Sponsored | BitLinkRels.Ugc" Href="https://github.com/bitfoundation/bitplatform">Link with a rel attribute (sponsored & ugc)</BitLink>
-        <br /><br />
-        <BitLink Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Blank target link with an automatic noopener rel</BitLink>
+        <div class="example-content">
+            <BitLink Target="@BitLinkTarget.Blank" Href="https://github.com/bitfoundation/bitplatform">Opens in a new tab</BitLink>
+            <BitLink Target="@BitLinkTarget.Blank" NewTabHint="(در زبانه جدید باز می‌شود)" Href="https://github.com/bitfoundation/bitplatform">Announced with a translated hint</BitLink>
+            <BitLink Target="@BitLinkTarget.Blank" NoNewTabHint IconName="@BitIconName.OpenInNewWindow" IconPosition="BitIconPosition.End" Href="https://github.com/bitfoundation/bitplatform">
+                GitHub (opens in a new tab)
+            </BitLink>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="AllowDisabledFocus" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Download" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            A disabled link is normally removed from the tab order, which means keyboard and screen reader users can miss
-            that it exists at all. Setting <b>AllowDisabledFocus</b> conveys the disabled state through
-            <code>aria-disabled</code> instead, so the link stays focusable and discoverable while its navigation and
-            click action remain suppressed. Tab through the two links below to feel the difference.
+            <b>Download</b> saves the file instead of opening it: empty keeps the server's file name, a value suggests one.
+            Browsers honor it for same-origin, <b>blob:</b> and <b>data:</b> URLs only.
         </div>
         <br />
-        <BitLink IsEnabled="false" Href="https://github.com/bitfoundation/bitplatform">Disabled link (skipped by Tab)</BitLink>
-        <br /><br />
-        <BitLink IsEnabled="false" AllowDisabledFocus Href="https://github.com/bitfoundation/bitplatform">Disabled link with AllowDisabledFocus (focusable)</BitLink>
+        <div class="example-content">
+            <BitLink Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Download="">Download the bit logo</BitLink>
+            <BitLink IconName="@BitIconName.Download" Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Download="bit-platform-logo.svg">Download with a custom file name</BitLink>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="AriaCurrent" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Rel" RazorCode="@example6RazorCode" Id="example6">
         <div>
-            In a set of links, exactly one of them leads to where the reader already is, and drawing it
-            differently says so only to whoever is looking at it. The <b>AriaCurrent</b> parameter says the same
-            thing in a way a screen reader announces, through the <code>aria-current</code> attribute: use
-            <code>Page</code> in a navigation menu, <code>Step</code> in a wizard, <code>Location</code> in a
-            breadcrumb, and <code>True</code> where the kind of set does not have a name. Only one link of a set
-            is ever the current one.
+            <b>Rel</b> combines <b>BitLinkRels</b> flags with <b>|</b>. It stays on a disabled link, since it describes the
+            link rather than how it behaves; an in-page (#) link ignores it.
         </div>
         <br />
-        <BitLink AriaCurrent="BitNavAriaCurrent.Page" Underlined Href="/components/link">Link (this page)</BitLink>
-        <br /><br />
-        <BitLink Href="/components/button">Button</BitLink>
-        <br /><br />
-        <BitLink Href="/components/image">Image</BitLink>
+        <div class="example-content">
+            <BitLink Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" Href="https://github.com/bitfoundation/bitplatform">nofollow noreferrer</BitLink>
+            <BitLink Rel="BitLinkRels.Sponsored | BitLinkRels.Ugc" Href="https://github.com/bitfoundation/bitplatform">sponsored ugc</BitLink>
+            <BitLink Rel="BitLinkRels.Opener" Target="@BitLinkTarget.Blank" Href="https://github.com/bitfoundation/bitplatform">opener (no automatic noopener)</BitLink>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="NoColor" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
-            The <b>NoColor</b> parameter stops the link from applying any foreground color, letting the content keep
-            its own color, useful when the link wraps rich content that brings its own styling.
+            Without an <b>Href</b> the link is a button and <b>OnClick</b> is its action; with one, <b>OnClick</b> runs
+            alongside the navigation. <b>StopPropagation</b> keeps the click from a clickable container, and
+            <b>PreventDefault</b> cancels the navigation but keeps the href for a middle click or "copy link address".
         </div>
         <br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform">
-            <BitText Typography="BitTypography.H4">Link with default color!</BitText>
-            <BitText Typography="BitTypography.Subtitle1">this text color is coming from the link itself.</BitText>
-        </BitLink>
-        <br /><br />
-        <BitLink Href="https://github.com/bitfoundation/bitplatform" NoColor>
-            <BitText>Link with NoColor!</BitText>
-        </BitLink>
-    </DemoExample>
-
-    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
-        <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
-        <br />
-        <div>
-            <BitLink Color="BitColor.Primary" Href="https://github.com/bitfoundation/bitplatform">Primary Color Link (default)</BitLink>
-            <br /><br />
-            <BitLink Color="BitColor.Secondary" Href="https://github.com/bitfoundation/bitplatform">Secondary Color Link</BitLink>
-            <br /><br />
-            <BitLink Color="BitColor.Tertiary" Href="https://github.com/bitfoundation/bitplatform">Tertiary Color Link</BitLink>
-            <br /><br />
-            <BitLink Color="BitColor.Info" Href="https://github.com/bitfoundation/bitplatform">Info Color Link</BitLink>
-            <br /><br />
-            <BitLink Color="BitColor.Success" Href="https://github.com/bitfoundation/bitplatform">Success Color Link</BitLink>
-            <br /><br />
-            <BitLink Color="BitColor.Warning" Href="https://github.com/bitfoundation/bitplatform">Warning Color Link</BitLink>
-            <br /><br />
-            <BitLink Color="BitColor.SevereWarning" Href="https://github.com/bitfoundation/bitplatform">SevereWarning Color Link</BitLink>
-            <br /><br />
-            <BitLink Color="BitColor.Error" Href="https://github.com/bitfoundation/bitplatform">Error Color Link</BitLink>
-            <br /><br />
-            <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-                <BitLink Color="BitColor.PrimaryBackground" Href="https://github.com/bitfoundation/bitplatform">PrimaryBackground Color Link</BitLink>
-                <br /><br />
-                <BitLink Color="BitColor.SecondaryBackground" Href="https://github.com/bitfoundation/bitplatform">SecondaryBackground Color Link</BitLink>
-                <br /><br />
-                <BitLink Color="BitColor.TertiaryBackground" Href="https://github.com/bitfoundation/bitplatform">TertiaryBackground Color Link</BitLink>
+        <div class="example-content">
+            <BitLink OnClick="() => buttonClickCount++">A button link (clicked @buttonClickCount times)</BitLink>
+            <BitLink OnClick="() => anchorClickCount++" Target="@BitLinkTarget.Blank" Href="https://github.com/bitfoundation/bitplatform">
+                An anchor with OnClick (clicked @anchorClickCount times)
+            </BitLink>
+            <div class="clickable-container" @onclick="() => containerClickCount++">
+                A clickable container (clicked @containerClickCount times):
+                <BitLink StopPropagation OnClick="() => innerClickCount++">StopPropagation (clicked @innerClickCount times)</BitLink>
             </div>
-            <br />
-            <div style="padding:1rem">
-                <BitLink Color="BitColor.PrimaryForeground" Href="https://github.com/bitfoundation/bitplatform">PrimaryForeground Color Link</BitLink>
-                <br /><br />
-                <BitLink Color="BitColor.SecondaryForeground" Href="https://github.com/bitfoundation/bitplatform">SecondaryForeground Color Link</BitLink>
-                <br /><br />
-                <BitLink Color="BitColor.TertiaryForeground" Href="https://github.com/bitfoundation/bitplatform">TertiaryForeground Color Link</BitLink>
+            <BitLink PreventDefault OnClick="HandleGuardedClick" Href="https://github.com/bitfoundation/bitplatform">Ask before leaving</BitLink>
+            <div>@guardMessage</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="In-page links" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            An <b>Href</b> starting with <b>#</b> smooth-scrolls the element with that id into view and moves the focus
+            there, without touching the address bar. The scroll jumps instead under reduced motion; a
+            <b>scroll-margin</b> on the target element keeps it clear of a fixed header.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitLink Href="#article-end">Go to the end of the article</BitLink>
+            <div class="article">
+                <p id="article-start" style="scroll-margin: 110px">
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions and
+                    dreams. These placeholder words stand for the beginning, a moment where everything is still to come.
+                </p>
+                <p>
+                    Soon these lines will turn into narratives that provoke thought and resonate with those who read them.
+                    Until then they are the scaffolding of something remarkable, a bridge between the empty page of now
+                    and the stories of tomorrow.
+                </p>
+                <p id="article-end" style="scroll-margin: 110px">
+                    In this space potential reigns: each word can still become something extraordinary. Whether it is a
+                    tale of adventure, a reflection of truth or an idea that sparks change, these lines are yours to fill.
+                </p>
             </div>
-            <br />
-            <div style="padding:1rem">
-                <BitLink Color="BitColor.PrimaryBorder" Href="https://github.com/bitfoundation/bitplatform">PrimaryBorder Color Link</BitLink>
-                <br /><br />
-                <BitLink Color="BitColor.SecondaryBorder" Href="https://github.com/bitfoundation/bitplatform">SecondaryBorder Color Link</BitLink>
-                <br /><br />
-                <BitLink Color="BitColor.TertiaryBorder" Href="https://github.com/bitfoundation/bitplatform">TertiaryBorder Color Link</BitLink>
+            <BitLink Href="#article-start">Back to the start of the article</BitLink>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>Title</b> is a hover-only tooltip, so it only adds to what the text says. <b>AriaDescription</b> is read after
+            the link's name - the place for a file's size or format.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitLink Title="github.com/bitfoundation/bitplatform" Href="https://github.com/bitfoundation/bitplatform">Hover for the full address</BitLink>
+            <BitLink IconName="@BitIconName.Download" AriaDescription="SVG, 12 kilobytes" Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Download="">
+                Download the brand guidelines
+            </BitLink>
+        </div>
+        <br /><br />
+        <div>
+            <b>AriaCurrent</b> announces the link to where the reader already is: <b>Page</b> in a menu, <b>Step</b> in a
+            wizard, <b>Location</b> in a breadcrumb.
+        </div>
+        <br />
+        <nav aria-label="Components" class="example-row">
+            <BitLink AriaCurrent="BitNavAriaCurrent.Page" Underlined Href="/components/link">Link</BitLink>
+            <BitLink Href="/components/button">Button</BitLink>
+            <BitLink Href="/components/image">Image</BitLink>
+        </nav>
+        <br /><br />
+        <div>
+            A disabled link leaves the tab order. <b>AllowDisabledFocus</b> keeps it focusable with <b>aria-disabled</b>, so
+            keyboard and screen reader users still find it. <b>FocusAsync</b> moves the focus onto a link from code, and
+            <b>AutoFocus</b> does it on the first render.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitLink IsEnabled="false" Href="https://github.com/bitfoundation/bitplatform">Disabled (skipped by Tab)</BitLink>
+            <BitLink IsEnabled="false" AllowDisabledFocus Href="https://github.com/bitfoundation/bitplatform">Disabled (still focusable)</BitLink>
+            <BitLink OnClick="() => focusTargetRef.FocusAsync()">Focus the link below</BitLink>
+            <BitLink @ref="focusTargetRef" Href="https://github.com/bitfoundation/bitplatform">The focus lands here</BitLink>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="CSS variables" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            The public <b>--bit-Link-*</b> variables inherit, so one set on <b>:root</b> or a container restyles every link
+            inside it, and one set in <b>Style</b> restyles that link. They win over <b>Color</b> and <b>Size</b>.
+        </div>
+        <br />
+        <div class="example-content">
+            <div style="--bit-Link-underline-offset: 0.25em; --bit-Link-underline-thickness: 2px; --bit-Link-underline-color: var(--bit-clr-sec); --bit-Link-visited-color: var(--bit-clr-ter);">
+                Set on the container: <BitLink Underlined Href="https://github.com/bitfoundation/bitplatform">an offset, thicker underline</BitLink>,
+                and <BitLink Underlined Href="/components/link">a visited link</BitLink> in its own color.
             </div>
-            <br /><br />
-            <div><b>Disabled</b>:</div>
-            <br />
-            <BitLink IsEnabled="false" Href="https://github.com/bitfoundation/bitplatform">Primary (default)</BitLink>
-            <br /><br />
+            <BitLink Style="--bit-Link-color: var(--bit-clr-fg-pri); --bit-Link-hover-color: var(--bit-clr-sec-fg); --bit-Link-font-weight: 600; --bit-Link-icon-gap: 8px;"
+                     IconName="@BitIconName.ChevronRight"
+                     IconPosition="BitIconPosition.End"
+                     Href="https://github.com/bitfoundation/bitplatform">
+                Set on one link
+            </BitLink>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>BitParams</b> with a <b>BitLinkParams</b> sets defaults for every link under it - say, a translated
+            <b>NewTabHint</b> for a whole app. A link's own value wins (the last one opts out of <b>Underlined</b>).
+        </div>
+        <br />
+        <div class="example-content">
+            <BitParams Parameters="linkParams">
+                <BitLink Href="https://bitplatform.dev">bit platform</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform">bit platform on GitHub</BitLink>
+                <BitLink Underlined="false" Href="https://github.com/bitfoundation/bitplatform/issues">Its own Underlined, the cascaded rest</BitLink>
+            </BitParams>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            <b>Color</b> picks a role, <b>Primary</b> by default. Accent roles use the role's readable text shade, so every
+            color keeps its contrast on the page. <b>NoColor</b> drops the link color for content that brings its own.
+        </div>
+        <br />
+        <div class="color-grid">
+            <BitLink Color="BitColor.Primary" Href="https://github.com/bitfoundation/bitplatform">Primary</BitLink>
+            <BitLink Color="BitColor.Secondary" Href="https://github.com/bitfoundation/bitplatform">Secondary</BitLink>
+            <BitLink Color="BitColor.Tertiary" Href="https://github.com/bitfoundation/bitplatform">Tertiary</BitLink>
+            <BitLink Color="BitColor.Info" Href="https://github.com/bitfoundation/bitplatform">Info</BitLink>
+            <BitLink Color="BitColor.Success" Href="https://github.com/bitfoundation/bitplatform">Success</BitLink>
+            <BitLink Color="BitColor.Warning" Href="https://github.com/bitfoundation/bitplatform">Warning</BitLink>
+            <BitLink Color="BitColor.SevereWarning" Href="https://github.com/bitfoundation/bitplatform">SevereWarning</BitLink>
+            <BitLink Color="BitColor.Error" Href="https://github.com/bitfoundation/bitplatform">Error</BitLink>
+        </div>
+        <br />
+        <div class="color-grid" style="background:var(--bit-clr-fg-sec);padding:1rem">
+            <BitLink Color="BitColor.PrimaryBackground" Href="https://github.com/bitfoundation/bitplatform">PrimaryBackground</BitLink>
+            <BitLink Color="BitColor.SecondaryBackground" Href="https://github.com/bitfoundation/bitplatform">SecondaryBackground</BitLink>
+            <BitLink Color="BitColor.TertiaryBackground" Href="https://github.com/bitfoundation/bitplatform">TertiaryBackground</BitLink>
+        </div>
+        <br />
+        <div class="color-grid">
+            <BitLink Color="BitColor.PrimaryForeground" Href="https://github.com/bitfoundation/bitplatform">PrimaryForeground</BitLink>
+            <BitLink Color="BitColor.SecondaryForeground" Href="https://github.com/bitfoundation/bitplatform">SecondaryForeground</BitLink>
+            <BitLink Color="BitColor.TertiaryForeground" Href="https://github.com/bitfoundation/bitplatform">TertiaryForeground</BitLink>
+            <BitLink Color="BitColor.PrimaryBorder" Href="https://github.com/bitfoundation/bitplatform">PrimaryBorder</BitLink>
+            <BitLink Color="BitColor.SecondaryBorder" Href="https://github.com/bitfoundation/bitplatform">SecondaryBorder</BitLink>
+            <BitLink Color="BitColor.TertiaryBorder" Href="https://github.com/bitfoundation/bitplatform">TertiaryBorder</BitLink>
+        </div>
+        <br />
+        <div>Disabled:</div>
+        <br />
+        <div class="color-grid">
+            <BitLink IsEnabled="false" Color="BitColor.Primary" Href="https://github.com/bitfoundation/bitplatform">Primary</BitLink>
             <BitLink IsEnabled="false" Color="BitColor.Secondary" Href="https://github.com/bitfoundation/bitplatform">Secondary</BitLink>
-            <br /><br />
-            <BitLink IsEnabled="false" Color="BitColor.Tertiary" Href="https://github.com/bitfoundation/bitplatform">Tertiary</BitLink>
-            <br /><br />
-            <BitLink IsEnabled="false" Color="BitColor.Info" Href="https://github.com/bitfoundation/bitplatform">Info</BitLink>
-            <br /><br />
-            <BitLink IsEnabled="false" Color="BitColor.Success" Href="https://github.com/bitfoundation/bitplatform">Success</BitLink>
-            <br /><br />
             <BitLink IsEnabled="false" Color="BitColor.Warning" Href="https://github.com/bitfoundation/bitplatform">Warning</BitLink>
-            <br /><br />
-            <BitLink IsEnabled="false" Color="BitColor.SevereWarning" Href="https://github.com/bitfoundation/bitplatform">SevereWarning</BitLink>
-            <br /><br />
             <BitLink IsEnabled="false" Color="BitColor.Error" Href="https://github.com/bitfoundation/bitplatform">Error</BitLink>
-            <br /><br />
-            <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-                <BitLink IsEnabled="false" Color="BitColor.PrimaryBackground" Href="https://github.com/bitfoundation/bitplatform">PrimaryBackground</BitLink>
-                <br /><br />
-                <BitLink IsEnabled="false" Color="BitColor.SecondaryBackground" Href="https://github.com/bitfoundation/bitplatform">SecondaryBackground</BitLink>
-                <br /><br />
-                <BitLink IsEnabled="false" Color="BitColor.TertiaryBackground" Href="https://github.com/bitfoundation/bitplatform">TertiaryBackground</BitLink>
-            </div>
-            <br />
-            <div style="padding:1rem">
-                <BitLink IsEnabled="false" Color="BitColor.PrimaryForeground" Href="https://github.com/bitfoundation/bitplatform">PrimaryForeground</BitLink>
-                <br /><br />
-                <BitLink IsEnabled="false" Color="BitColor.SecondaryForeground" Href="https://github.com/bitfoundation/bitplatform">SecondaryForeground</BitLink>
-                <br /><br />
-                <BitLink IsEnabled="false" Color="BitColor.TertiaryForeground" Href="https://github.com/bitfoundation/bitplatform">TertiaryForeground</BitLink>
-            </div>
-            <br />
-            <div style="padding:1rem">
-                <BitLink IsEnabled="false" Color="BitColor.PrimaryBorder" Href="https://github.com/bitfoundation/bitplatform">PrimaryBorder</BitLink>
-                <br /><br />
-                <BitLink IsEnabled="false" Color="BitColor.SecondaryBorder" Href="https://github.com/bitfoundation/bitplatform">SecondaryBorder</BitLink>
-                <br /><br />
-                <BitLink IsEnabled="false" Color="BitColor.TertiaryBorder" Href="https://github.com/bitfoundation/bitplatform">TertiaryBorder</BitLink>
-            </div>
+            <BitLink IsEnabled="false" Color="BitColor.PrimaryForeground" Href="https://github.com/bitfoundation/bitplatform">PrimaryForeground</BitLink>
         </div>
+        <br />
+        <div>NoColor:</div>
+        <br />
+        <BitLink NoColor Href="https://github.com/bitfoundation/bitplatform">
+            <BitText Typography="BitTypography.H6">A card-like link</BitText>
+            <BitText Typography="BitTypography.Body2">Its text keeps the colors BitText gives it.</BitText>
+        </BitLink>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
         <div>
-            Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter and
-            <b>BitIconInfo</b>. Whatever type scale the set came with, the glyph is normalized back to the size of the
-            link text beside it, so it sits on the same line as the words and follows the link's own color.
+            <b>Icon</b> takes a <b>BitIconInfo</b> for external sets like FontAwesome and Bootstrap Icons, sized and
+            colored like the link text.
         </div>
-
         <br />
-
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
-        <div>FontAwesome:</div>
-        <br />
-        <BitLink Icon="@BitIconInfo.Fa("brands github")" Href="https://github.com/bitfoundation/bitplatform">bit platform on GitHub</BitLink>
-        <br /><br />
-        <BitLink Icon="@BitIconInfo.Fa("solid arrow-up-right-from-square")" IconPosition="BitIconPosition.End" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Opens in a new tab</BitLink>
-
-        <br /><br /><br />
-
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
-        <div>Bootstrap:</div>
-        <br />
-        <BitLink Icon="@BitIconInfo.Bi("github")" Href="https://github.com/bitfoundation/bitplatform">bit platform on GitHub</BitLink>
-        <br /><br />
-        <BitLink Icon="@BitIconInfo.Bi("box-arrow-up-right")" IconPosition="BitIconPosition.End" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Opens in a new tab</BitLink>
+        <div class="example-content">
+            <BitLink Icon="@BitIconInfo.Fa("brands github")" Href="https://github.com/bitfoundation/bitplatform">FontAwesome</BitLink>
+            <BitLink Icon="@BitIconInfo.Fa("solid arrow-up-right-from-square")" IconPosition="BitIconPosition.End" Target="@BitLinkTarget.Blank" Href="https://github.com/bitfoundation/bitplatform">FontAwesome, trailing</BitLink>
+            <BitLink Icon="@BitIconInfo.Bi("github")" Href="https://github.com/bitfoundation/bitplatform">Bootstrap</BitLink>
+            <BitLink Icon="@BitIconInfo.Bi("box-arrow-up-right")" IconPosition="BitIconPosition.End" Target="@BitLinkTarget.Blank" Href="https://github.com/bitfoundation/bitplatform">Bootstrap, trailing</BitLink>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
         <div>
-            With nothing set, a link takes the font size of whatever it sits in, which is what keeps a link inside a
-            paragraph the same size as the sentence around it. The <b>Size</b> parameter is for the link that stands
-            on its own, where there is no surrounding text to take a size from.
+            Unset, a link takes the font size around it. <b>Size</b> is for a link that stands on its own; the icon follows it.
         </div>
         <br />
-        <BitLink Size="BitSize.Small" Href="https://github.com/bitfoundation/bitplatform">Small link</BitLink>
-        <br /><br />
-        <BitLink Size="BitSize.Medium" Href="https://github.com/bitfoundation/bitplatform">Medium link</BitLink>
-        <br /><br />
-        <BitLink Size="BitSize.Large" Href="https://github.com/bitfoundation/bitplatform">Large link</BitLink>
-        <br /><br />
-        <BitLink Size="BitSize.Large" IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">The icon follows the size</BitLink>
+        <div class="example-content">
+            <BitLink Size="BitSize.Small" IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">Small</BitLink>
+            <BitLink Size="BitSize.Medium" IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">Medium</BitLink>
+            <BitLink Size="BitSize.Large" IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">Large</BitLink>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
         <div>
-            The link is one element - the anchor or the button it renders as - so the root-level <b>Style</b> and
-            <b>Class</b> parameters are all it takes to restyle it, on top of the theme tokens it reads its colors
-            from. An icon inside it follows the color and the size the link is given, since it is drawn in the
-            link's own type.
+            The link is one element, so <b>Style</b> and <b>Class</b> are all it takes to restyle it.
         </div>
         <br />
-        <BitLink Style="color: goldenrod; font-weight:bold" Href="https://github.com/bitfoundation/bitplatform">Link with style</BitLink>
-        <br /><br />
-        <BitLink Class="custom-class" Href="https://github.com/bitfoundation/bitplatform">Link with class</BitLink>
+        <div class="example-content">
+            <BitLink Style="color: goldenrod; font-weight: bold" Href="https://github.com/bitfoundation/bitplatform">Link with style</BitLink>
+            <BitLink Class="custom-class" Href="https://github.com/bitfoundation/bitplatform">Link with class</BitLink>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
         <div>
-            Use the <b>Dir</b> parameter to render the link in right-to-left direction for RTL languages. An icon
-            follows the direction too, so a leading glyph stays on the leading side of the text.
+            <b>Dir</b> set to <b>BitDir.Rtl</b> lays the link out right to left; a leading icon stays on the leading side.
         </div>
         <br />
-        <div dir="rtl">
+        <div dir="rtl" class="example-content">
             <BitLink Dir="BitDir.Rtl" Href="https://github.com/bitfoundation/bitplatform">پیوند راست به چپ</BitLink>
-            <br /><br />
             <BitLink Dir="BitDir.Rtl" IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">پیوند راست به چپ با آیکن</BitLink>
         </div>
     </DemoExample>

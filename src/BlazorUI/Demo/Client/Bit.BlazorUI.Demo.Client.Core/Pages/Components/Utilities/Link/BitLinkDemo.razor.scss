@@ -1,9 +1,22 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
+﻿.example-content {
+    gap: 0.75rem;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+}
 
-::deep .custom-class {
-    padding: 0.5rem;
-    border: 1px solid red;
-    max-width: max-content;
+.example-row,
+.color-grid {
+    gap: 0.75rem 1.5rem;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: baseline;
+}
+
+.article {
+    p {
+        margin: 0 0 0.75rem;
+    }
 }
 
 .clickable-container {
@@ -11,4 +24,10 @@
     cursor: pointer;
     max-width: max-content;
     border: 1px dashed gray;
+}
+
+::deep .custom-class {
+    padding: 0.5rem;
+    border: 1px solid red;
+    max-width: max-content;
 }
