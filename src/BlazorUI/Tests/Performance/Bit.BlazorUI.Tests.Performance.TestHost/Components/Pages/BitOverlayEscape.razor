@@ -5,7 +5,7 @@
 @* Escape is the keyboard's equivalent of a click on the layer of a BitOverlay. The Overlay does not take the
    focus when it opens, so the key is watched for on the window: it has to reach an Overlay opened from a button
    that still holds the focus, close only the topmost of two open Overlays, and never fall through a blocking
-   Overlay to a lighter one underneath it. *@
+   Overlay to a lighter one underneath it - not even with the focus inside the lighter one. *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>BitOverlay Escape Regression</h3>
     <div style="margin-bottom: 10px;">
@@ -21,7 +21,7 @@
 </div>
 
 <BitOverlay @bind-IsOpen="_lowerIsOpen" ModeFull>
-    <div id="lower-content">Lower</div>
+    <div id="lower-content">Lower <input id="lower-input" /></div>
 </BitOverlay>
 
 <BitOverlay @bind-IsOpen="_upperIsOpen" Blocking="_upperBlocking">

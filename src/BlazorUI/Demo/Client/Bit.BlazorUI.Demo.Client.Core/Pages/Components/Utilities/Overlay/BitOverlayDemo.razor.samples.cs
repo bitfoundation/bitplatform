@@ -273,12 +273,17 @@ private void HandleOverlayClose() => eventsClosed++;";
 </BitOverlay>";
     private readonly string example7CsharpCode = @"
 private BitOverlay overlayRef = default!;
+private int openCount;
 
 private async Task OpenAndCloseLater()
 {
+    var current = ++openCount;
     await overlayRef.Open();
     await Task.Delay(3000);
-    await overlayRef.Close();
+    if (current == openCount)
+    {
+        await overlayRef.Close();
+    }
 }";
 
     private readonly string example8RazorCode = @"

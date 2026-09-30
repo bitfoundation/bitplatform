@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// </summary>
 [TestClass]
 [TestCategory("Browser")]
-[Ignore("Browser tests must be run explicitly. Use: dotnet test --filter FullyQualifiedName~BitOverlayBrowserTests")]
+[RequiresBrowser] // opt-in: RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~BitOverlayBrowserTests
 public class BitOverlayBrowserTests : PerformanceTestBase
 {
     [TestMethod]
@@ -64,6 +64,31 @@ public class BitOverlayBrowserTests : PerformanceTestBase
         await Page.Locator("#btn-open-both").ClickAsync();
         await WaitForStatus("Both open");
         await Expect(Page.Locator(".bit-ovl-opn")).ToHaveCountAsync(2);
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        // Give a wrongly routed press the time to have closed something.
+        await Page.WaitForTimeoutAsync(300);
+
+        await Expect(Page.Locator("#upper-state")).ToHaveTextAsync("open");
+        await Expect(Page.Locator("#lower-state")).ToHaveTextAsync("open");
+    }
+
+    [TestMethod]
+    public async Task BitOverlay_Escape_NeverFallsThroughABlockingOverlayToTheOneHoldingTheFocus()
+    {
+        await Page.GotoAsync($"{BaseUrl}/regression/overlay-escape");
+        await WaitForStatus("Ready");
+
+        await Page.Locator("#chk-upper-blocking").CheckAsync();
+        await Page.Locator("#btn-open-both").ClickAsync();
+        await WaitForStatus("Both open");
+        await Expect(Page.Locator(".bit-ovl-opn")).ToHaveCountAsync(2);
+
+        // The focus is inside the lower Overlay, which the upper one covers.
+        var input = Page.Locator("#lower-input");
+        await input.FocusAsync();
+        await Expect(input).ToBeFocusedAsync();
 
         await Page.Keyboard.PressAsync("Escape");
 
