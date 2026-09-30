@@ -63,8 +63,14 @@
 // over the chrome of the page the way a screen-level one is meant to. The root itself must stay out of the
 // way of the clicks that container keeps while the panel is closed, so the pointer is handed back to the two
 // parts that are meant to take it.
+// The root clips the panel parked beyond its edge, and clips rather than hides: a hidden root is still a
+// scroller, and one that clips nothing leaves the parked panel overflowing the container. Either is scrolled
+// by the browser when the focus moves into the panel as it starts to slide in, so the content of the
+// container (or the panel with its overlay) slides away and back instead of the panel sliding in. A clip is
+// no scroller, and what it clips adds nothing to the overflow of the container around it.
 .bit-pnl-abs {
     inset: 0;
+    overflow: clip;
     position: absolute;
     pointer-events: none;
     // Laid out inside a box of the page, so there is no device edge beside it and no safe area to make

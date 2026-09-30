@@ -175,7 +175,6 @@ html, body, .site-content, pre, .table-view, .side-rail {
     // of stretching it and pushing the rail off screen.
     min-width: 0;
     flex: 1 1 auto;
-    isolation: isolate;
     padding: $doc-space-xl $doc-space-lg $doc-space-3xl;
 
     @include lt-lg {
