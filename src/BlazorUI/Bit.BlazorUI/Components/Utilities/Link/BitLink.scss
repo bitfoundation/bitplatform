@@ -82,15 +82,16 @@
         }
     }
 
-    &:active {
-        text-decoration-line: var(--bit-lnk-deco-hover, underline);
-        color: var(--bit-Link-active-color, var(--bit-lnk-clr-active));
-    }
-
     // Only the keyboard focus: a link that stays in its hover color after a mouse click reads as stuck.
     &:focus-visible {
         color: var(--bit-Link-hover-color, var(--bit-lnk-clr-hover));
         @include focus-ring(var(--bit-Link-focus-color, var(--bit-lnk-clr-focus)));
+    }
+
+    // Declared after the focus, so a link pressed from the keyboard shows the press color inside its ring.
+    &:active {
+        text-decoration-line: var(--bit-lnk-deco-hover, underline);
+        color: var(--bit-Link-active-color, var(--bit-lnk-clr-active));
     }
 
     &.bit-dis {
