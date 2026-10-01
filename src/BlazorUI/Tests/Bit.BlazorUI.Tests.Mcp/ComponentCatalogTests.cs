@@ -363,6 +363,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitLabel", "BitLabelParams")]
     [DataRow("BitPullToRefresh", "BitPullToRefreshParams")]
     [DataRow("BitLink", "BitLinkParams")]
+    [DataRow("BitSticky", "BitStickyParams")]
     [DataRow("BitImage", "BitImageParams")]
     [DataRow("BitShimmer", "BitShimmerParams")]
     [DataRow("BitTooltip", "BitTooltipParams")]

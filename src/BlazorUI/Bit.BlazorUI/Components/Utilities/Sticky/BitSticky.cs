@@ -21,10 +21,15 @@ namespace Bit.BlazorUI;
 /// <see cref="OnStuckChanged"/> reports the flips, <see cref="OnStuckEdgesChanged"/> the edge that
 /// holds it, <see cref="IsStuck"/> and <see cref="StuckEdges"/> hold the current state, and
 /// <see cref="StuckClass"/> / <see cref="StuckStyle"/> are applied only while stuck - which is what
-/// a header that casts a shadow only once content passes under it needs. An element that has not
-/// moved is never reported as pinned, however exactly it happens to rest on an edge, so the header of
-/// a container nobody has scrolled yet is not stuck. The detection is only wired up when one of those
-/// members is used, so a sticky that does not ask for it stays pure CSS.
+/// a header that casts a shadow only once content passes under it needs, and what
+/// <see cref="ElevateOnStuck"/> does out of the box with the theme's surface and shadows. An element
+/// that has not moved is never reported as pinned, however exactly it happens to rest on an edge, so
+/// the header of a container nobody has scrolled yet is not stuck. The detection is only wired up when
+/// one of those members is used, so a sticky that does not ask for it stays pure CSS.
+/// <br />
+/// A pinned element covers what scrolls under it, focused controls included;
+/// <see cref="ScrollPadding"/> reserves that room on its scrolling container so the browser never
+/// scrolls a control into view behind it (WCAG 2.4.11).
 /// <br />
 /// Two things decide whether a sticky element has anywhere to stick at all, and both belong to the
 /// markup around it rather than to the component: it pins within its nearest scrolling ancestor
@@ -38,7 +43,7 @@ public partial class BitSticky : BitComponentBase
     private bool _settingUp;
     private bool _setupPending;
     private string? _attachedId;
-    private string? _attachedElement;
+    private string? _attachedSignature;
     private BitStickyEdges _edges;
     private DotNetObjectReference<BitSticky>? _dotnetObj;
 
@@ -89,9 +94,28 @@ public partial class BitSticky : BitComponentBase
     /// The name is used as written, but only while it is a name a tag can have - a letter followed by
     /// letters, digits and the "-", "_", "." and ":" that join them. Anything else falls back to the
     /// default tag, since a name carrying whitespace or a "&lt;" would be a way to write markup rather
-    /// than to name an element.
+    /// than to name an element. A void element (an "hr", an "img") is rendered without the
+    /// <see cref="ChildContent"/>, which it cannot hold.
     /// </remarks>
     [Parameter] public string? Element { get; set; }
+
+    /// <summary>
+    /// Gives the component a surface and a theme shadow, cast away from the edge holding it, only while it is
+    /// stuck - the cue that content is passing underneath.
+    /// </summary>
+    /// <remarks>
+    /// A pinned bar that is shadowed from the start looks detached from content nobody has scrolled yet, and one
+    /// with no shadow at all gives no hint that content is passing behind it. The shadow of a top or bottom pin is
+    /// the theme's app-bar shadow (<c>--bit-Sticky-shadow-top</c> / <c>--bit-Sticky-shadow-bottom</c>), that of a
+    /// side pin the card shadow (<c>--bit-Sticky-shadow-left</c> / <c>--bit-Sticky-shadow-right</c>), and the
+    /// surface is the primary background (<c>--bit-Sticky-background</c>), which a background brought by
+    /// <see cref="BitComponentBase.Class"/> or <see cref="BitComponentBase.Style"/> still wins over. Forced
+    /// colors mode, which drops every shadow, draws an outline instead.
+    /// <br />
+    /// Using it attaches the stuck detection that drives <see cref="OnStuckChanged"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ElevateOnStuck { get; set; }
 
     /// <summary>
     /// Specifying the horizontal position of a positioned element from left.
@@ -112,8 +136,8 @@ public partial class BitSticky : BitComponentBase
     /// <remarks>
     /// CSS itself has no such event, so the state is derived by a small script watching the scroll.
     /// The script is only attached while this callback, <see cref="OnStuckEdgesChanged"/>,
-    /// <see cref="StuckClass"/> or <see cref="StuckStyle"/> is used, and only while the component is
-    /// enabled.
+    /// <see cref="StuckClass"/>, <see cref="StuckStyle"/> or <see cref="ElevateOnStuck"/> is used, and
+    /// only while the component is enabled.
     /// <br />
     /// This reports only that the element is pinned, not to what: an element that moves from one edge
     /// of a pair to the other stays stuck throughout and raises nothing here.
@@ -158,6 +182,32 @@ public partial class BitSticky : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Right { get; set; }
+
+    /// <summary>
+    /// Reserves the room the component covers as the scroll padding of its scrolling container, so nothing
+    /// scrolled into view ever lands underneath it.
+    /// </summary>
+    /// <remarks>
+    /// A pinned element covers the content passing under it, and a browser bringing something into view -
+    /// the next control the focus moves to, an anchor followed, a call to scrollIntoView - stops with that
+    /// thing hidden behind it (WCAG 2.4.11, Focus Not Obscured). This sets the scroll padding of the
+    /// container on every edge the element can pin to, to its offset plus its size there, and keeps it in
+    /// step while either changes. An edge is claimed only where the element can actually be pinned: one it
+    /// has an offset on and room in its parent to travel toward - so a TopAndBottom bar at the top of a pane
+    /// claims no room at the bottom, which it can never reach. Several stickies of one container share it:
+    /// each edge carries the largest claim, the scroll padding the container already has (from a stylesheet,
+    /// an inline style, or a BitHeader or BitFooter reserving its own) is kept wherever it is the larger one,
+    /// and it is all that is left once the last of them lets go.
+    /// <br />
+    /// It needs no stuck detection, so it attaches nothing on the scroll, and it is released while the
+    /// component is disabled. The claim is made again whenever the element changes size or anything that
+    /// moves its edges or offsets changes on it (<see cref="Position"/>, the offsets,
+    /// <see cref="BitComponentBase.Dir"/>, <see cref="BitComponentBase.Class"/>,
+    /// <see cref="BitComponentBase.Style"/>); one moved from outside it - a <c>--bit-Sticky-offset-*</c>
+    /// variable set on an ancestor, a stylesheet - is picked up by <see cref="RefreshAsync"/>.
+    /// </remarks>
+    [Parameter]
+    public bool ScrollPadding { get; set; }
 
     /// <summary>
     /// The CSS class applied to the root element only while the component is stuck.
@@ -205,8 +255,8 @@ public partial class BitSticky : BitComponentBase
     /// When not set, the component keeps a z-index of 1 - enough to stay above the plain flowing
     /// content it sticks over without covering the popups and overlays of the rest of the page.
     /// Raise it where positioned content in the same stacking context has to pass underneath. The
-    /// same default is also the <c>--bit-stk-zin</c> custom property, for setting it from a
-    /// stylesheet rather than per component.
+    /// <c>--bit-Sticky-z-index</c> custom property sets the same default from a stylesheet, for a whole
+    /// region at once; the parameter wins over it.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? ZIndex { get; set; }
@@ -216,8 +266,8 @@ public partial class BitSticky : BitComponentBase
     /// <summary>
     /// Gets a value indicating whether the component is currently stuck to an edge of its scrolling
     /// container. It is always false unless <see cref="OnStuckChanged"/>,
-    /// <see cref="OnStuckEdgesChanged"/>, <see cref="StuckClass"/> or <see cref="StuckStyle"/> is
-    /// used, since those are what attach the stuck detection.
+    /// <see cref="OnStuckEdgesChanged"/>, <see cref="StuckClass"/>, <see cref="StuckStyle"/> or
+    /// <see cref="ElevateOnStuck"/> is used, since those are what attach the stuck detection.
     /// </summary>
     public bool IsStuck => _stuck;
 
@@ -239,9 +289,11 @@ public partial class BitSticky : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The state settles itself: it is read on every scroll of the container, and again whenever the
-    /// element, its parent, the scrolling container or the page changes size. What is left over is a
-    /// layout change none of those can see - content moved around inside the container without any of
-    /// the watched boxes changing size - and this is what such a change is answered with. It does
+    /// element, its parent, the scrolling container or the page changes size, and whenever a parameter
+    /// that moves the edges or the offsets changes. What is left over is a layout change none of those
+    /// can see - content moved around inside the container without any of the watched boxes changing
+    /// size, a stylesheet or a <c>--bit-Sticky-offset-*</c> variable changed - and this is what such a
+    /// change is answered with. It does
     /// nothing while the detection is not attached, and nothing before the first render.
     /// </remarks>
     public async ValueTask RefreshAsync()
@@ -294,6 +346,8 @@ public partial class BitSticky : BitComponentBase
                     : string.Empty
         });
 
+        ClassBuilder.Register(() => ElevateOnStuck ? "bit-stk-elv" : string.Empty);
+
         ClassBuilder.Register(() => _stuck ? "bit-stk-stc" : string.Empty);
 
         // One class per edge that holds the element, so a pinned look can be told apart by the side it
@@ -326,27 +380,36 @@ public partial class BitSticky : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, GetElement());
-        builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
-        builder.AddAttribute(2, "id", _Id);
+        var element = GetElement();
+
+        builder.OpenElement(0, element);
+        // Written before the splatted attributes, so a role the page writes itself wins over it.
+        builder.AddAttribute(1, "role", GetRole(element));
+        builder.AddMultipleAttributes(2, RuntimeHelpers.TypeCheck(HtmlAttributes));
+        builder.AddAttribute(3, "id", _Id);
         // A null value here is not the same as nothing at all: the builder still records the name and
         // drops the attribute of the same name that came out of HtmlAttributes, so the two that are
         // not always written are only added while the parameter itself carries a value, and the
         // splatted one is left alone otherwise.
         if (AriaLabel is not null)
         {
-            builder.AddAttribute(3, "aria-label", AriaLabel);
+            builder.AddAttribute(4, "aria-label", AriaLabel);
         }
         if (Dir is not null)
         {
-            builder.AddAttribute(4, "dir", Dir.Value.ToString().ToLowerInvariant());
+            builder.AddAttribute(5, "dir", Dir.Value.ToString().ToLowerInvariant());
         }
         // The stuck style is appended after every other inline style, since the later declaration of
         // the same property is the one an inline style resolves to.
-        builder.AddAttribute(5, "style", _stuck ? JoinStyles(StyleBuilder.Value, StuckStyle) : StyleBuilder.Value);
-        builder.AddAttribute(6, "class", ClassBuilder.Value);
-        builder.AddElementReferenceCapture(7, v => RootElement = v);
-        builder.AddContent(8, ChildContent);
+        builder.AddAttribute(6, "style", _stuck ? JoinStyles(StyleBuilder.Value, StuckStyle) : StyleBuilder.Value);
+        builder.AddAttribute(7, "class", ClassBuilder.Value);
+        builder.AddElementReferenceCapture(8, v => RootElement = v);
+        // A void element (a sticky hr, an img) holds no content, and the static renderer drops whatever
+        // follows its tag anyway.
+        if (IsVoidElement(element) is false)
+        {
+            builder.AddContent(9, ChildContent);
+        }
         builder.CloseElement();
 
         base.BuildRenderTree(builder);
@@ -392,31 +455,28 @@ public partial class BitSticky : BitComponentBase
 
     // The tag the root element is rendered as. A name that is not one a tag can have is not used at
     // all, since a name carrying whitespace or a "<" would write markup of its own rather than name
-    // an element, and one carrying another symbol is a name document.createElement may refuse, which
-    // throws where the renderer builds the element and takes the whole render batch with it.
+    // an element, and one document.createElement refuses throws where the renderer builds the
+    // element and takes the whole render batch with it.
     private string GetElement()
     {
         var element = Element?.Trim();
 
-        if (element.HasNoValue()) return "div";
+        return element.HasValue() && IsValidElement(element!) ? element! : "div";
+    }
 
-        if (char.IsAsciiLetter(element![0]) is false) return "div";
+    // A div or a span is a generic element, which ARIA prohibits naming, so a name given to one - the
+    // AriaLabel, or an aria-label or aria-labelledby written on the tag - would be dropped by assistive
+    // technologies. Such a sticky is announced as a group instead; every other tag keeps its own role.
+    private string? GetRole(string element)
+    {
+        if (element.Equals("div", StringComparison.OrdinalIgnoreCase) is false &&
+            element.Equals("span", StringComparison.OrdinalIgnoreCase) is false) return null;
 
-        foreach (var @char in element)
-        {
-            if (char.IsAsciiLetterOrDigit(@char)) continue;
+        var named = AriaLabel.HasValue() ||
+                    GetSplattedAttribute("aria-label").HasValue() ||
+                    GetSplattedAttribute("aria-labelledby").HasValue();
 
-            if (@char is '-' or '_' or '.' or ':') continue;
-
-            // Everything outside ASCII that is a letter or a digit is a name of some alphabet; the
-            // rest of it - the separators, the punctuation, the C1 controls - is refused along with
-            // the ASCII symbols and whitespace.
-            if (char.IsAscii(@char) is false && char.IsLetterOrDigit(@char)) continue;
-
-            return "div";
-        }
-
-        return element;
+        return named ? "group" : null;
     }
 
     // The one place the derived state is written, so the boolean, the edges, the classes and the two
@@ -447,21 +507,31 @@ public partial class BitSticky : BitComponentBase
 
     private async Task SetupStuckDetection()
     {
-        // The script only earns its scroll listener where something observes the state it derives,
-        // and a disabled sticky is not sticky at all, so there is no state left to derive.
-        var shouldAttach = IsEnabled && (OnStuckChanged.HasDelegate ||
-                                         OnStuckEdgesChanged.HasDelegate ||
-                                         StuckClass.HasValue() ||
-                                         StuckStyle.HasValue());
+        // The script only earns its scroll listener where something observes the state it derives, and
+        // its resize observer where the scroll padding has to follow the size of the element. A disabled
+        // sticky is not sticky at all, so there is neither a state to derive nor a room to reserve.
+        var report = IsEnabled && (OnStuckChanged.HasDelegate ||
+                                   OnStuckEdgesChanged.HasDelegate ||
+                                   StuckClass.HasValue() ||
+                                   StuckStyle.HasValue() ||
+                                   ElevateOnStuck);
 
-        var attachId = shouldAttach ? _Id : null;
+        var scrollPadding = IsEnabled && ScrollPadding;
 
-        // The script holds the element it found under that id, and a change of tag does not change
-        // the element - it replaces it, leaving the registration watching a node that is not in the
-        // document anymore. So the tag is half of what the registration is keyed by.
-        var attachElement = shouldAttach ? GetElement() : null;
+        var shouldAttach = report || scrollPadding;
 
-        if (attachId == _attachedId && attachElement == _attachedElement) return;
+        // The script holds the element it found under that id, and a change of tag does not change the
+        // element - it replaces it, leaving the registration watching a node that is not in the document
+        // anymore. So the tag is part of what the registration is keyed by, along with what it does.
+        var signature = shouldAttach
+            ? $"{_Id}|{GetElement()}|{report}|{scrollPadding}"
+            : null;
+
+        // What moves the edges and the insets the element pins at without resizing anything - a Position,
+        // an offset, a Dir, a Class or a Style of its own, and the stuck class and style as well - is
+        // written on the element itself, so the script watches its attributes for it rather than being
+        // told about it on every render.
+        if (signature == _attachedSignature) return;
 
         if (_attachedId is not null)
         {
@@ -474,14 +544,14 @@ public partial class BitSticky : BitComponentBase
             if (IsDisposed) return;
 
             _attachedId = null;
-            _attachedElement = null;
+            _attachedSignature = null;
         }
 
         if (shouldAttach)
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            await _js.BitStickiesSetup(_Id, _dotnetObj);
+            await _js.BitStickiesSetup(_Id, _dotnetObj, report, scrollPadding);
 
             if (IsDisposed)
             {
@@ -499,13 +569,14 @@ public partial class BitSticky : BitComponentBase
             }
 
             _attachedId = _Id;
-            _attachedElement = attachElement;
+            _attachedSignature = signature;
         }
-        else if (_edges != BitStickyEdges.None)
+
+        if (report is false && _edges != BitStickyEdges.None)
         {
-            // The element is no longer watched, so it must not stay stuck in a state nothing is left
-            // to update. The state flipped, so whoever is watching it hears about it the same way
-            // they hear about a flip the script reported - the detachment is not a reason to leave an
+            // The state is no longer derived, so it must not stay stuck in a state nothing is left to
+            // update. The state flipped, so whoever is watching it hears about it the same way they
+            // hear about a flip the script reported - the detachment is not a reason to leave an
             // observer holding a stuck state the component does not have anymore.
             await SetStuckEdges(BitStickyEdges.None);
         }
