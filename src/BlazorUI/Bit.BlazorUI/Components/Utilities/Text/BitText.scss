@@ -20,9 +20,11 @@
     color: var(--bit-Text-color, currentcolor);
     font-family: var(--bit-Text-font-family, #{$tg-font-family});
 
-    // A run of text only takes the focus where a page made it focusable - a skip link rendered as an anchor, a message
-    // the validation of a form moves the focus to - and it is then drawn with the ring every other control uses.
-    &:focus-visible {
+    // A run of text only takes the focus where a page made it focusable, and one the keyboard can tab to is drawn
+    // with the ring every other control uses. A tabindex of -1 is a text focused only by script - the heading
+    // FocusOnNavigate moves the focus to after a navigation, a message a form's validation points at - which gets
+    // no ring of its own, so the outline the app already resets on those elements stays its decision.
+    &:focus-visible:not([tabindex="-1"]) {
         @include focus-ring;
     }
 }
@@ -410,9 +412,11 @@
 
 // Out of the page but still in the accessibility tree: a zero-sized box would be dropped from it by some screen
 // readers, so the text keeps a pixel of its own and is clipped away from it. Declared last so that it wins over
-// the display of the block and of the clamp above. It comes back into view while it or anything inside it holds
-// the focus, so that a skip link is never focused while drawn nowhere (WCAG 2.4.7).
-.bit-txt-vhd:not(:focus):not(:focus-within) {
+// the display of the block and of the clamp above. It comes back into view while the keyboard focus is on it or on
+// anything inside it, so that a skip link is never focused while drawn nowhere (WCAG 2.4.7). A tabindex of -1 is
+// focus moved there by script - FocusOnNavigate landing on a visually hidden page title - and keeps it hidden. The
+// condition sits in :where so the rule weighs no more than the one class a page overrides it with.
+.bit-txt-vhd:where(:not(:focus-visible:not([tabindex="-1"]), :has(:focus-visible:not([tabindex="-1"])))) {
     padding: 0;
     width: 1px;
     height: 1px;

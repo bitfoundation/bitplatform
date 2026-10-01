@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -77,14 +77,15 @@ public class BitTextStylesheetTests
         Assert.IsTrue(parameter > variable, $"\"{parameterRule.Trim()}\" is declared before the root and loses to its variable.");
     }
 
-    // A visually hidden text that takes the focus - a skip link - has to be drawn while it holds it (WCAG 2.4.7), so
-    // the hiding rules are scoped away from the focused state rather than applying unconditionally.
+    // A visually hidden text the keyboard lands on - a skip link, or one inside it - has to be drawn while it holds
+    // the focus (WCAG 2.4.7), while one focused by script (tabindex -1, as FocusOnNavigate leaves a page's title)
+    // stays hidden. The condition sits in :where, so the rule weighs one class and a page's own class overrides it.
     [TestMethod]
-    public void BitTextShouldRevealAVisuallyHiddenTextWhileItHoldsTheFocus()
+    public void BitTextShouldRevealAVisuallyHiddenTextWhileItHoldsTheKeyboardFocus()
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "\n.bit-txt-vhd:not(:focus):not(:focus-within) {");
+        StringAssert.Contains(stylesheet, "\n.bit-txt-vhd:where(:not(:focus-visible:not([tabindex=\"-1\"]), :has(:focus-visible:not([tabindex=\"-1\"])))) {");
         Assert.IsFalse(stylesheet.Contains("\n.bit-txt-vhd {", StringComparison.Ordinal), "The visually hidden rules apply to a focused text as well.");
     }
 
@@ -103,6 +104,9 @@ public class BitTextStylesheetTests
         StringAssert.Contains(disabled, "color: GrayText;");
     }
 
+    // The ring is for a text the keyboard can tab to; a text focused only by script (tabindex -1, as FocusOnNavigate
+    // leaves a page's title) keeps whatever outline the app gives the element, so its "h1:focus { outline: none }"
+    // still removes it.
     [TestMethod]
     public void BitTextShouldDrawTheSharedFocusRing()
     {
@@ -111,8 +115,9 @@ public class BitTextStylesheetTests
         var root = stylesheet[stylesheet.IndexOf("\n.bit-txt {", StringComparison.Ordinal)..];
         root = root[..root.IndexOf("\n}", StringComparison.Ordinal)];
 
-        StringAssert.Contains(root, "&:focus-visible {");
+        StringAssert.Contains(root, "&:focus-visible:not([tabindex=\"-1\"]) {");
         StringAssert.Contains(root, "@include focus-ring;");
+        Assert.IsFalse(root.Contains("&:focus-visible {", StringComparison.Ordinal), "A text focused by script is drawn with the ring.");
     }
 
 

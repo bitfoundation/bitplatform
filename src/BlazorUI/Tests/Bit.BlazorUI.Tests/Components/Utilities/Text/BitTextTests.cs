@@ -21,10 +21,10 @@ public class BitTextTests : BunitTestContext
         { BitTypography.H4, "h4" },
         { BitTypography.H5, "h5" },
         { BitTypography.H6, "h6" },
-        { BitTypography.Inherit, "span" },
+        { BitTypography.Inherit, "p" },
         { BitTypography.Overline, "span" },
-        { BitTypography.Subtitle1, "p" },
-        { BitTypography.Subtitle2, "p" }
+        { BitTypography.Subtitle1, "div" },
+        { BitTypography.Subtitle2, "div" }
     };
 
     [TestMethod]
@@ -32,7 +32,7 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -97,7 +97,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = noWrap ? " bit-txt-nowrap" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -105,14 +105,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.NoWrap, true);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-nowrap"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-nowrap"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -128,7 +128,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = gutter ? " bit-txt-gutter" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -136,14 +136,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Gutter, true);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-gutter"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-gutter"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -159,7 +159,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = isEnabled ? null : " bit-dis";
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -167,14 +167,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-dis"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-dis"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -191,11 +191,11 @@ public class BitTextTests : BunitTestContext
 
         if (style.HasValue())
         {
-            component.MarkupMatches(@$"<p style=""{style}"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
         }
         else
         {
-            component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+            component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
         }
     }
 
@@ -204,14 +204,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Style, "padding: 1rem;");
         });
 
-        component.MarkupMatches(@$"<p style=""padding: 1rem;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@$"<div style=""padding: 1rem;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
 
@@ -228,7 +228,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = @class.HasValue() ? $" {@class}" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -236,14 +236,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Class, "test-class");
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 test-class"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 test-class"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -259,7 +259,7 @@ public class BitTextTests : BunitTestContext
 
         var expectedId = id.HasValue() ? id : component.Instance.UniqueId.ToString();
 
-        component.MarkupMatches(@$"<p id=""{expectedId}"" class=""bit-txt bit-txt-subtitle1""></p>");
+        component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-txt bit-txt-subtitle1""></div>");
     }
 
     [TestMethod,
@@ -278,11 +278,11 @@ public class BitTextTests : BunitTestContext
         if (dir.HasValue)
         {
             var cssClass = dir is BitDir.Rtl ? " bit-rtl" : null;
-            component.MarkupMatches(@$"<p dir=""{dir.Value.ToString().ToLower()}"" class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+            component.MarkupMatches(@$"<div dir=""{dir.Value.ToString().ToLower()}"" class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
         }
         else
         {
-            component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+            component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
         }
     }
 
@@ -291,14 +291,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
 
-        component.MarkupMatches(@"<p dir=""ltr"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div dir=""ltr"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -316,13 +316,13 @@ public class BitTextTests : BunitTestContext
         switch (visibility)
         {
             case BitVisibility.Visible:
-                component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+                component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
                 break;
             case BitVisibility.Hidden:
-                component.MarkupMatches(@"<p style=""visibility: hidden;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+                component.MarkupMatches(@"<div style=""visibility: hidden;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
                 break;
             case BitVisibility.Collapsed:
-                component.MarkupMatches(@"<p style=""display: none;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+                component.MarkupMatches(@"<div style=""display: none;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
                 break;
         }
     }
@@ -332,14 +332,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
 
-        component.MarkupMatches(@"<p style=""display: none;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div style=""display: none;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -355,11 +355,11 @@ public class BitTextTests : BunitTestContext
 
         if (ariaLabel.HasValue())
         {
-            component.MarkupMatches(@$"<p aria-label=""{ariaLabel}"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+            component.MarkupMatches(@$"<div aria-label=""{ariaLabel}"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
         }
         else
         {
-            component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+            component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
         }
     }
 
@@ -375,7 +375,7 @@ public class BitTextTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1"" id:ignore>{childContent}</p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1"" id:ignore>{childContent}</div>");
     }
 
     [TestMethod]
@@ -383,7 +383,7 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitTextHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<p data-val-test=""bit"" class=""bit-txt bit-txt-subtitle1"" id:ignore>I'm a text</p>");
+        component.MarkupMatches(@"<div data-val-test=""bit"" class=""bit-txt bit-txt-subtitle1"" id:ignore>I'm a text</div>");
     }
 
 
@@ -405,7 +405,7 @@ public class BitTextTests : BunitTestContext
 
         var expected = cssClass is null ? null : $" {cssClass}";
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -413,14 +413,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Weight, BitFontWeight.Bold);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-fwb"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-fwb"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -439,7 +439,7 @@ public class BitTextTests : BunitTestContext
 
         var expected = cssClass is null ? null : $" {cssClass}";
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -459,7 +459,7 @@ public class BitTextTests : BunitTestContext
 
         var expected = cssClass is null ? null : $" {cssClass}";
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -475,7 +475,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = italic ? " bit-txt-itl" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -491,7 +491,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = underline ? " bit-txt-und" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -507,7 +507,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = strikethrough ? " bit-txt-stk" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -519,7 +519,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Strikethrough, true);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-und bit-txt-stk"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-und bit-txt-stk"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -535,7 +535,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = numeric ? " bit-txt-num" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -551,7 +551,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = monospace ? " bit-txt-mno" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -559,14 +559,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Monospace, true);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-mno"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-mno"" id:ignore></div>");
     }
 
     // The family and the figures are two decisions: the monospaced family draws every character at one width, and
@@ -580,7 +580,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Numeric, true);
         });
 
-        var classList = component.Find("p").ClassList;
+        var classList = component.Find("div").ClassList;
 
         Assert.IsTrue(classList.Contains("bit-txt-mno"));
         Assert.IsTrue(classList.Contains("bit-txt-num"));
@@ -599,7 +599,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = noSelect ? " bit-txt-nsl" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -615,7 +615,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = block ? " bit-txt-blk" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -631,7 +631,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = breakWord ? " bit-txt-brw" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -647,7 +647,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = forceBreak ? " bit-txt-fbr" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -663,7 +663,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = hyphenate ? " bit-txt-hyp" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -679,7 +679,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = preserveWhitespace ? " bit-txt-pws" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -687,14 +687,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.PreserveWhitespace, true);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-pws"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-pws"" id:ignore></div>");
     }
 
     // The whitespace and what may be broken in the middle of a word are two decisions, so asking for one of them
@@ -709,7 +709,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.BreakWord, true);
         });
 
-        var classList = component.Find("p").ClassList;
+        var classList = component.Find("div").ClassList;
 
         Assert.IsTrue(classList.Contains("bit-txt-pws"));
         Assert.IsTrue(classList.Contains("bit-txt-fbr"));
@@ -732,7 +732,7 @@ public class BitTextTests : BunitTestContext
 
         var @class = cssClass is null ? null : $" {cssClass}";
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -743,14 +743,14 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Trim, BitTextTrim.Start);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-tms"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-tms"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Trim, BitTextTrim.Both);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-tmb"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-tmb"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -766,7 +766,7 @@ public class BitTextTests : BunitTestContext
 
         var cssClass = visuallyHidden ? " bit-txt-vhd" : null;
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -774,14 +774,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.VisuallyHidden, true);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-vhd"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-vhd"" id:ignore></div>");
     }
 
 
@@ -798,7 +798,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.LineClamp, lineClamp);
         });
 
-        var element = component.Find("p");
+        var element = component.Find("div");
 
         StringAssert.Contains(element.GetAttribute("class"), "bit-txt-clp");
         Assert.AreEqual($"-webkit-line-clamp:{lineClamp};line-clamp:{lineClamp}", element.GetAttribute("style"));
@@ -818,7 +818,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.LineClamp, lineClamp);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -826,14 +826,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.LineClamp, 3);
         });
 
-        var element = component.Find("p");
+        var element = component.Find("div");
 
         StringAssert.Contains(element.GetAttribute("class"), "bit-txt-clp");
         Assert.AreEqual("-webkit-line-clamp:3;line-clamp:3", element.GetAttribute("style"));
@@ -843,7 +843,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.LineClamp, null);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
     // The two truncations are separate parameters and neither turns the other off, so both land on the element and
@@ -877,7 +877,7 @@ public class BitTextTests : BunitTestContext
 
         var @class = cssClass is null ? null : $" {cssClass}";
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -888,14 +888,14 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Color, BitColor.Info);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-inf"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-inf"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Color, BitColor.Error);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-err"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-err"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -914,7 +914,7 @@ public class BitTextTests : BunitTestContext
 
         var @class = cssClass is null ? null : $" {cssClass}";
 
-        component.MarkupMatches(@$"<p class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></p>");
+        component.MarkupMatches(@$"<div class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -925,14 +925,14 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Foreground, BitColorKind.Secondary);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-sfg"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-sfg"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Foreground, BitColorKind.Transparent);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1 bit-txt-rfg"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-rfg"" id:ignore></div>");
     }
 
     // A color role and a foreground kind are two registrations of their own, so the two are written side by side
@@ -946,7 +946,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Foreground, BitColorKind.Tertiary);
         });
 
-        var classList = component.Find("p").ClassList;
+        var classList = component.Find("div").ClassList;
 
         Assert.IsTrue(classList.Contains("bit-txt-suc"));
         Assert.IsTrue(classList.Contains("bit-txt-tfg"));
@@ -962,7 +962,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Gradient, "linear-gradient(90deg, red, blue)");
         });
 
-        var element = component.Find("p");
+        var element = component.Find("div");
 
         Assert.IsTrue(element.ClassList.Contains("bit-txt-grd"));
         Assert.AreEqual("background-image:linear-gradient(90deg, red, blue)", element.GetAttribute("style"));
@@ -982,7 +982,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Gradient, gradient);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -990,14 +990,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
         });
 
-        var element = component.Find("p");
+        var element = component.Find("div");
 
         Assert.IsTrue(element.ClassList.Contains("bit-txt-grd"));
         Assert.AreEqual("background-image:linear-gradient(red, blue)", element.GetAttribute("style"));
@@ -1016,7 +1016,7 @@ public class BitTextTests : BunitTestContext
         });
 
         Assert.AreEqual("text-align:center;background-image:linear-gradient(red, blue);-webkit-line-clamp:2;line-clamp:2",
-                        component.Find("p").GetAttribute("style"));
+                        component.Find("div").GetAttribute("style"));
     }
 
 
@@ -1030,7 +1030,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.LineClamp, 2);
         });
 
-        var element = component.Find("p");
+        var element = component.Find("div");
 
         Assert.IsTrue(element.ClassList.Contains("bit-txt-nowrap"));
         Assert.IsTrue(element.ClassList.Contains("bit-txt-clp"));
@@ -1086,7 +1086,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Style, "color:red");
         });
 
-        Assert.AreEqual("-webkit-line-clamp:2;line-clamp:2;color:red", component.Find("p").GetAttribute("style"));
+        Assert.AreEqual("-webkit-line-clamp:2;line-clamp:2;color:red", component.Find("div").GetAttribute("style"));
     }
 
 
@@ -1113,7 +1113,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Align, align);
         });
 
-        Assert.AreEqual($"text-align:{expected}", component.Find("p").GetAttribute("style"));
+        Assert.AreEqual($"text-align:{expected}", component.Find("div").GetAttribute("style"));
     }
 
     [TestMethod]
@@ -1121,14 +1121,14 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Align, BitTextAlign.Center);
         });
 
-        Assert.AreEqual("text-align:center", component.Find("p").GetAttribute("style"));
+        Assert.AreEqual("text-align:center", component.Find("div").GetAttribute("style"));
     }
 
 
@@ -1141,7 +1141,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Lang, "fa");
         });
 
-        component.MarkupMatches(@"<p lang=""fa"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div lang=""fa"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -1149,7 +1149,7 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        Assert.IsFalse(component.Find("p").HasAttribute("lang"));
+        Assert.IsFalse(component.Find("div").HasAttribute("lang"));
     }
 
     [TestMethod,
@@ -1166,11 +1166,11 @@ public class BitTextTests : BunitTestContext
 
         if (tabIndex is null)
         {
-            Assert.IsFalse(component.Find("p").HasAttribute("tabindex"));
+            Assert.IsFalse(component.Find("div").HasAttribute("tabindex"));
         }
         else
         {
-            component.MarkupMatches(@$"<p tabindex=""{tabIndex}"" class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+            component.MarkupMatches(@$"<div tabindex=""{tabIndex}"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
         }
     }
 
@@ -1264,7 +1264,7 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.Element, element);
         });
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -1284,7 +1284,7 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitText>();
 
-        component.MarkupMatches(@"<p class=""bit-txt bit-txt-subtitle1"" id:ignore></p>");
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
 
         component.Render(parameters =>
         {
@@ -1424,17 +1424,30 @@ public class BitTextTests : BunitTestContext
         StringAssert.Contains(ownStyle, "background-image:linear-gradient(green, yellow)");
     }
 
-    // A skip link is the one visually hidden text that takes the focus: the anchor comes from Element, the target
-    // from a splatted href, and the stylesheet draws it again while it holds the focus.
+    // Element renders the anchor and the href, not being a parameter of the text, is splatted onto it.
+    [TestMethod]
+    public void BitTextShouldRenderAnAnchorWithASplattedHref()
+    {
+        var component = RenderComponent<BitTextSplattedAttributesTest>();
+
+        var link = component.Find("a.bit-txt");
+
+        Assert.AreEqual("/getting-started", link.GetAttribute("href"));
+        Assert.AreEqual("Getting started", link.TextContent);
+    }
+
+    // A skip link is a BitLink inside a visually hidden text: the link scrolls to its in-page target itself, and the
+    // stylesheet draws the text again while the link holds the keyboard focus.
     [TestMethod]
     public void BitTextShouldRenderAVisuallyHiddenSkipLink()
     {
         var component = RenderComponent<BitTextSplattedAttributesTest>();
 
-        var link = component.Find("a");
+        var text = component.Find(".bit-txt-vhd");
+        var link = text.QuerySelector("a.bit-lnk");
 
+        Assert.IsNotNull(link);
         Assert.AreEqual("#main", link.GetAttribute("href"));
-        Assert.IsTrue(link.ClassList.Contains("bit-txt-vhd"));
-        Assert.AreEqual("Skip to content", link.TextContent);
+        Assert.AreEqual("Skip to content", link.TextContent.Trim());
     }
 }

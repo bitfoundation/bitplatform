@@ -202,8 +202,8 @@ public partial class BitText : BitComponentBase
     /// The margin is set in "em", so it follows the size of the variant: the gap under a heading comes out larger
     /// than the one under a caption without either of them naming a length.
     /// <br />
-    /// A vertical margin does nothing on an inline box, so an inline variant - a caption, the overline, the inherit
-    /// one - needs <see cref="Block"/> before it has a gutter to show.
+    /// A vertical margin does nothing on an inline box, so an inline variant - a caption, the overline - needs
+    /// <see cref="Block"/> before it has a gutter to show.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Gutter { get; set; }
@@ -392,19 +392,21 @@ public partial class BitText : BitComponentBase
     /// <remarks>
     /// The variant decides the size, the weight, the line height and the tracking of the text, all of them read from
     /// the theme, and - unless <see cref="Element"/> says otherwise - the tag it is rendered in: the six heading
-    /// variants render their own heading tag, the two subtitles and the two body variants a "p", and the button, the
-    /// two captions, the overline and the inherit one a "span".
+    /// variants render their own heading tag, the two subtitles a "div", the two body variants and the inherit one a
+    /// "p", and the button, the two captions and the overline a "span".
     /// <br />
     /// Only the six heading variants are headings. A subtitle is the line under a heading rather than one of its own
-    /// (the HTML standard says as much of the h1 to h6 tags), so it is a paragraph, and so is a text left at the
-    /// default variant - a heading the outline does not mean to have is a stop a screen reader user lands on for
-    /// nothing. Where a subtitle-sized line really is the heading of a section, <see cref="Element"/> or
-    /// <see cref="AriaLevel"/> says so.
+    /// (the HTML standard says as much of the h1 to h6 tags), and neither is a text left at the default variant - a
+    /// heading the outline does not mean to have is a stop a screen reader user lands on for nothing. The subtitles
+    /// render a "div" rather than a "p" because a block written inside one - a stack, a div - would otherwise be split
+    /// out of it by the HTML parser of a prerendered page, which an "h6" never did. Where a subtitle-sized line really
+    /// is the heading of a section, <see cref="Element"/> or <see cref="AriaLevel"/> says so.
     /// <br />
     /// <see cref="BitTypography.Inherit"/> takes every one of those from the element around it instead, which is what
     /// a run of text inside an already styled block needs to keep the look of its surroundings while still taking the
-    /// colors, the wrapping and the rest of the parameters of the component. It renders a "span", the one tag that is
-    /// valid inside a paragraph, a heading or a label alike.
+    /// colors, the wrapping and the rest of the parameters of the component. It renders a "p", a block of its own; a
+    /// run of text inside a sentence, a heading or a label sets <see cref="Element"/> to "span", the one tag the HTML
+    /// parser lets sit inside a paragraph.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitTypography? Typography { get; set; }
@@ -433,8 +435,10 @@ public partial class BitText : BitComponentBase
     /// a sighted reader and that a screen reader would otherwise miss - the heading of a section whose meaning its
     /// layout carries, the unit of a figure, an "opens in a new window" after a link.
     /// <br />
-    /// The text comes back into view while it, or anything inside it, holds the focus, so a focusable text - a
-    /// "skip to content" link rendered through <see cref="Element"/> - is never focused while drawn nowhere.
+    /// The text comes back into view while the keyboard focus is on it or on anything inside it, so a skip link - a
+    /// <see cref="BitLink"/> with an in-page Href written inside a visually hidden text - is never focused while
+    /// drawn nowhere. A text focused only by script (a tabindex of -1, as FocusOnNavigate gives a page's title) stays
+    /// hidden.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool VisuallyHidden { get; set; }
@@ -655,7 +659,7 @@ public partial class BitText : BitComponentBase
     // than throwing where the element is built.
     private static string GetVariantElement(BitTypography typography)
     {
-        return _VariantMapping.TryGetValue(typography, out var element) ? element : "p";
+        return _VariantMapping.TryGetValue(typography, out var element) ? element : "div";
     }
 
 
@@ -668,14 +672,14 @@ public partial class BitText : BitComponentBase
         { BitTypography.H4, "h4" },
         { BitTypography.H5, "h5" },
         { BitTypography.H6, "h6" },
-        { BitTypography.Subtitle1, "p" },
-        { BitTypography.Subtitle2, "p" },
+        { BitTypography.Subtitle1, "div" },
+        { BitTypography.Subtitle2, "div" },
         { BitTypography.Body1, "p" },
         { BitTypography.Body2, "p" },
         { BitTypography.Button, "span" },
         { BitTypography.Caption1, "span" },
         { BitTypography.Caption2, "span" },
         { BitTypography.Overline, "span" },
-        { BitTypography.Inherit, "span" },
+        { BitTypography.Inherit, "p" },
     };
 }

@@ -54,6 +54,10 @@
     I'm an overriding text
 </BitText>
 
-@* A skip link: an anchor kept out of view until it takes the focus, whose href is not a parameter and so is
-   splatted onto the rendered tag. *@
-<BitText Element="a" VisuallyHidden href="#main">Skip to content</BitText>
+@* An anchor rendered through Element, whose href is not a parameter and so is splatted onto the rendered tag. *@
+<BitText Element="a" href="/getting-started">Getting started</BitText>
+
+@* A skip link: an in-page BitLink kept out of view inside a visually hidden text until it takes the focus. The
+   link answers its own click and scrolls; a plain anchor's "#main" would be resolved against the base href of the
+   page and navigate away from any route but the root. *@
+<BitText VisuallyHidden><BitLink Href="#main">Skip to content</BitLink></BitText>

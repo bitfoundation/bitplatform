@@ -1,4 +1,4 @@
-@page "/components/text"
+﻿@page "/components/text"
 @page "/components/typography"
 
 <PageOutlet Url="components/text"
@@ -15,9 +15,9 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div class="example-desc">
             <b>Typography</b> picks a step of the theme's type ramp - size, weight, line height and tracking - and the
-            tag: the headings render <code>h1</code>-<code>h6</code>, the subtitles and body variants a <code>p</code>,
-            the rest a <code>span</code>. The default is <code>Subtitle1</code>; <code>Inherit</code> takes everything
-            from the element around it.
+            tag: the headings render <code>h1</code>-<code>h6</code>, the subtitles a <code>div</code> - they are not
+            headings - the body variants and <code>Inherit</code> a <code>p</code>, the rest a <code>span</code>. The
+            default is <code>Subtitle1</code>; <code>Inherit</code> takes everything from the element around it.
         </div>
         <br />
         <div class="example-content">
@@ -37,7 +37,7 @@
             <BitText Typography="BitTypography.Caption2">Caption2. Hello world!</BitText>
             <BitText Typography="BitTypography.Overline">Overline. This is overline text</BitText>
             <div style="font-style:italic;font-size:1.25rem;color:tomato">
-                Around it, <BitText Typography="BitTypography.Inherit">Inherit</BitText> keeps the paragraph's look.
+                <BitText Typography="BitTypography.Inherit">Inherit. Takes the size, the weight and the family of the element around it.</BitText>
             </div>
         </div>
     </DemoExample>
@@ -94,18 +94,18 @@
         </div>
         <br />
         <div class="example-content">
-            <div class="demo-row">
-                <div class="demo-figures">
+            <div style="display:flex;flex-wrap:wrap;gap:2rem">
+                <div style="display:flex;flex-flow:column;gap:0.25rem">
                     <BitText Typography="BitTypography.Caption1">Default</BitText>
                     <BitText Typography="BitTypography.Body1">1,111.11</BitText>
                     <BitText Typography="BitTypography.Body1">8,888.88</BitText>
                 </div>
-                <div class="demo-figures">
+                <div style="display:flex;flex-flow:column;gap:0.25rem">
                     <BitText Typography="BitTypography.Caption1">Numeric</BitText>
                     <BitText Typography="BitTypography.Body1" Numeric>1,111.11</BitText>
                     <BitText Typography="BitTypography.Body1" Numeric>8,888.88</BitText>
                 </div>
-                <div class="demo-figures">
+                <div style="display:flex;flex-flow:column;gap:0.25rem">
                     <BitText Typography="BitTypography.Caption1">Monospace</BitText>
                     <BitText Typography="BitTypography.Body1" Monospace>1,111.11</BitText>
                     <BitText Typography="BitTypography.Body1" Monospace>8,888.88</BitText>
@@ -143,8 +143,8 @@
         <div class="example-desc">
             <b>BreakWord</b> breaks only a word that cannot fit - a URL, a path - and lets a flex or grid item shrink
             below its longest word; <b>ForceBreak</b> breaks anywhere. <b>Wrap</b> picks how lines break:
-            <code>Balance</code> for short headings, <code>Pretty</code> for body copy. <b>Hyphenate</b> needs a
-            <b>Lang</b> the browser has a dictionary for. <b>PreserveWhitespace</b> keeps written line breaks and spaces.
+            <code>Balance</code> for short headings, <code>Pretty</code> for body copy. <b>Hyphenate</b> needs a page
+            language the browser has a dictionary for. <b>PreserveWhitespace</b> keeps written line breaks and spaces.
         </div>
         <br />
         <div class="example-content">
@@ -162,7 +162,7 @@
             </div>
             <div style="width:250px">
                 <BitText Typography="BitTypography.Caption1">Hyphenate</BitText>
-                <BitText Lang="en" Hyphenate>An incomprehensibly complicated internationalization responsibility.</BitText>
+                <BitText Hyphenate>An incomprehensibly complicated internationalization responsibility.</BitText>
             </div>
             <div style="width:250px">
                 <BitText Typography="BitTypography.Caption1">PreserveWhitespace</BitText>
@@ -236,15 +236,15 @@
         <div class="example-desc">
             <b>AriaLevel</b> sets the announced heading level without changing the tag or the look, adding
             <code>role="heading"</code> to a non-heading tag. <b>VisuallyHidden</b> hides text from view but not from
-            screen readers, and shows it again while focused - tab to the skip link below. <b>Lang</b> switches the
-            screen reader's voice. <b>NoSelect</b> is for chrome text, not content.
+            screen readers, and shows it again while the keyboard focus is in it - tab to the skip link below, a
+            <code>BitLink</code> inside a visually hidden text. <b>Lang</b> switches the screen reader's voice. <b>NoSelect</b> is for chrome text, not content.
         </div>
         <br />
         <div class="example-content">
             <BitText Element="div" Typography="BitTypography.H5" AriaLevel="3">A div announced as a level 3 heading</BitText>
             <BitText Element="h2" Typography="BitTypography.H5" AriaLevel="4">An h2 announced as a level 4 heading</BitText>
             <BitText VisuallyHidden>Read out by a screen reader, drawn nowhere.</BitText>
-            <BitText Element="a" VisuallyHidden href="#example11">Skip to the next example</BitText>
+            <BitText VisuallyHidden><BitLink Href="#example11">Skip to the next example</BitLink></BitText>
             <BitText Lang="fr">Bonjour tout le monde</BitText>
             <BitText NoSelect>This text cannot be selected</BitText>
         </div>
@@ -258,9 +258,9 @@
         </div>
         <br />
         <div class="example-content">
-            <div>Visible: [<BitText Typography="BitTypography.Inherit" Visibility="BitVisibility.Visible">Visible text</BitText>]</div>
-            <div>Hidden: [<BitText Typography="BitTypography.Inherit" Visibility="BitVisibility.Hidden">Hidden text</BitText>]</div>
-            <div>Collapsed: [<BitText Typography="BitTypography.Inherit" Visibility="BitVisibility.Collapsed">Collapsed text</BitText>]</div>
+            <div>Visible: [<BitText Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Visible">Visible text</BitText>]</div>
+            <div>Hidden: [<BitText Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Hidden">Hidden text</BitText>]</div>
+            <div>Collapsed: [<BitText Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Collapsed">Collapsed text</BitText>]</div>
             <BitText IsEnabled="false">Disabled text</BitText>
             <BitText IsEnabled="false" Gradient="linear-gradient(90deg, #7c3aed, #06b6d4)">Disabled text, keeping its gradient</BitText>
         </div>

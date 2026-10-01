@@ -21,20 +21,6 @@
     }
 }
 
-// The two columns of figures sit side by side so that the ragged edge of the proportional ones and the aligned
-// edge of the tabular ones can be compared at a glance. The container is a column, so the row is one of its own.
-.demo-row {
-    gap: 2rem;
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.demo-figures {
-    gap: 0.25rem;
-    display: flex;
-    flex-flow: column;
-}
-
 // The class the Style & Class example applies through its Class parameter and through a splatted attribute.
 ::deep .custom-class {
     padding: 0.5rem;

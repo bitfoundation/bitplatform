@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Text;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Text;
 
 public partial class BitTextDemo
 {
@@ -24,7 +24,7 @@ public partial class BitTextDemo
 <BitText Typography=""BitTypography.Overline"">Overline. This is overline text</BitText>
 
 <div style=""font-style:italic;font-size:1.25rem;color:tomato"">
-    Around it, <BitText Typography=""BitTypography.Inherit"">Inherit</BitText> keeps the paragraph's look.
+    <BitText Typography=""BitTypography.Inherit"">Inherit. Takes the size, the weight and the family of the element around it.</BitText>
 </div>";
 
     private readonly string example2RazorCode = @"
@@ -53,17 +53,23 @@ public partial class BitTextDemo
 <BitText Typography=""BitTypography.Overline"" Transform=""BitTextTransform.None"">None, undoing the overline's uppercase</BitText>";
 
     private readonly string example4RazorCode = @"
-<BitText Typography=""BitTypography.Caption1"">Default</BitText>
-<BitText Typography=""BitTypography.Body1"">1,111.11</BitText>
-<BitText Typography=""BitTypography.Body1"">8,888.88</BitText>
-
-<BitText Typography=""BitTypography.Caption1"">Numeric</BitText>
-<BitText Typography=""BitTypography.Body1"" Numeric>1,111.11</BitText>
-<BitText Typography=""BitTypography.Body1"" Numeric>8,888.88</BitText>
-
-<BitText Typography=""BitTypography.Caption1"">Monospace</BitText>
-<BitText Typography=""BitTypography.Body1"" Monospace>1,111.11</BitText>
-<BitText Typography=""BitTypography.Body1"" Monospace>8,888.88</BitText>
+<div style=""display:flex;flex-wrap:wrap;gap:2rem"">
+    <div style=""display:flex;flex-flow:column;gap:0.25rem"">
+        <BitText Typography=""BitTypography.Caption1"">Default</BitText>
+        <BitText Typography=""BitTypography.Body1"">1,111.11</BitText>
+        <BitText Typography=""BitTypography.Body1"">8,888.88</BitText>
+    </div>
+    <div style=""display:flex;flex-flow:column;gap:0.25rem"">
+        <BitText Typography=""BitTypography.Caption1"">Numeric</BitText>
+        <BitText Typography=""BitTypography.Body1"" Numeric>1,111.11</BitText>
+        <BitText Typography=""BitTypography.Body1"" Numeric>8,888.88</BitText>
+    </div>
+    <div style=""display:flex;flex-flow:column;gap:0.25rem"">
+        <BitText Typography=""BitTypography.Caption1"">Monospace</BitText>
+        <BitText Typography=""BitTypography.Body1"" Monospace>1,111.11</BitText>
+        <BitText Typography=""BitTypography.Body1"" Monospace>8,888.88</BitText>
+    </div>
+</div>
 
 <BitText Element=""code"" Typography=""BitTypography.Body2"" Monospace>var text = new BitText { Monospace = true };</BitText>";
 
@@ -101,7 +107,7 @@ public partial class BitTextDemo
 
 <div style=""width:250px"">
     <BitText Typography=""BitTypography.Caption1"">Hyphenate</BitText>
-    <BitText Lang=""en"" Hyphenate>An incomprehensibly complicated internationalization responsibility.</BitText>
+    <BitText Hyphenate>An incomprehensibly complicated internationalization responsibility.</BitText>
 </div>
 
 <div style=""width:250px"">
@@ -148,16 +154,16 @@ public partial class BitTextDemo
 <BitText Element=""h2"" Typography=""BitTypography.H5"" AriaLevel=""4"">An h2 announced as a level 4 heading</BitText>
 
 <BitText VisuallyHidden>Read out by a screen reader, drawn nowhere.</BitText>
-<BitText Element=""a"" VisuallyHidden href=""#example11"">Skip to the next example</BitText>
+<BitText VisuallyHidden><BitLink Href=""#example11"">Skip to the next example</BitLink></BitText>
 
 <BitText Lang=""fr"">Bonjour tout le monde</BitText>
 
 <BitText NoSelect>This text cannot be selected</BitText>";
 
     private readonly string example11RazorCode = @"
-<div>Visible: [<BitText Typography=""BitTypography.Inherit"" Visibility=""BitVisibility.Visible"">Visible text</BitText>]</div>
-<div>Hidden: [<BitText Typography=""BitTypography.Inherit"" Visibility=""BitVisibility.Hidden"">Hidden text</BitText>]</div>
-<div>Collapsed: [<BitText Typography=""BitTypography.Inherit"" Visibility=""BitVisibility.Collapsed"">Collapsed text</BitText>]</div>
+<div>Visible: [<BitText Element=""span"" Typography=""BitTypography.Inherit"" Visibility=""BitVisibility.Visible"">Visible text</BitText>]</div>
+<div>Hidden: [<BitText Element=""span"" Typography=""BitTypography.Inherit"" Visibility=""BitVisibility.Hidden"">Hidden text</BitText>]</div>
+<div>Collapsed: [<BitText Element=""span"" Typography=""BitTypography.Inherit"" Visibility=""BitVisibility.Collapsed"">Collapsed text</BitText>]</div>
 
 <BitText IsEnabled=""false"">Disabled text</BitText>
 <BitText IsEnabled=""false"" Gradient=""linear-gradient(90deg, #7c3aed, #06b6d4)"">Disabled text, keeping its gradient</BitText>";

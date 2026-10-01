@@ -454,15 +454,15 @@ public partial class BitTextDemo
                 new() { Name = "H4", Description = "Renders an h4.", Value = "3" },
                 new() { Name = "H5", Description = "Renders an h5.", Value = "4" },
                 new() { Name = "H6", Description = "Renders an h6.", Value = "5" },
-                new() { Name = "Subtitle1", Description = "Renders a p. The default variant.", Value = "6" },
-                new() { Name = "Subtitle2", Description = "Renders a p.", Value = "7" },
+                new() { Name = "Subtitle1", Description = "Renders a div - not a heading. The default variant.", Value = "6" },
+                new() { Name = "Subtitle2", Description = "Renders a div - not a heading.", Value = "7" },
                 new() { Name = "Body1", Description = "Renders a p.", Value = "8" },
                 new() { Name = "Body2", Description = "Renders a p.", Value = "9" },
                 new() { Name = "Button", Description = "Renders a span.", Value = "10" },
                 new() { Name = "Caption1", Description = "Renders a span.", Value = "11" },
                 new() { Name = "Caption2", Description = "Renders a span.", Value = "12" },
                 new() { Name = "Overline", Description = "Renders a span.", Value = "13" },
-                new() { Name = "Inherit", Description = "Renders a span, taking every typographic declaration from the element around it.", Value = "14" },
+                new() { Name = "Inherit", Description = "Renders a p, taking every typographic declaration from the element around it.", Value = "14" },
             ]
         }
     ];
