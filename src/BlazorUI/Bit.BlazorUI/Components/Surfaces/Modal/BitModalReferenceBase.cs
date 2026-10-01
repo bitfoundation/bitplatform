@@ -248,6 +248,27 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
     }
 
     /// <summary>
+    /// Changes some of the parameters the modal is shown with and re-renders it, leaving the others as they are:
+    /// <c>await modal.Update(p =&gt; p.HeaderText = "Step 2 of 3");</c>
+    /// </summary>
+    /// <remarks>
+    /// The counterpart of <see cref="Update(TParameters)"/> for the code that knows only what it changes - the
+    /// content of the modal, which never saw the set its caller showed it with. The change is applied to a copy of
+    /// the current set (an empty one for a modal shown without any), which then replaces it: a set shared between
+    /// showings is never changed under the other modals.
+    /// </remarks>
+    public Task Update(Action<TParameters> change)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+
+        var parameters = Parameters is null ? new TParameters() : _modalService.CopyParameters(Parameters);
+
+        change(parameters);
+
+        return Update(parameters);
+    }
+
+    /// <summary>
     /// The result the modal was closed with, cast to <typeparamref name="T"/>, or <c>default</c> for a modal
     /// that was dismissed or answered with something else.
     /// </summary>
