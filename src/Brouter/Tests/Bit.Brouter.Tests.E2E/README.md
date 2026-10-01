@@ -75,7 +75,7 @@ Run a harness host by hand with one of its launch profiles (`ssr`, `server`, `wa
 | `BROUTER_E2E_CONFIGURATION` | Build configuration of the hosts; defaults to the test assembly's. |
 | `BROUTER_E2E_SKIP_BUILD=1` | Do not build the hosts before the run. |
 | `BROUTER_E2E_PUBLISHED_HOST` | Run a `dotnet publish` output of the web host instead of the build output. |
-| `BROUTER_E2E_CHANNEL` / `BROUTER_E2E_EXECUTABLE` | Use an installed Chrome/Edge or a specific Chromium binary. |
+| `BROUTER_E2E_CHANNEL` / `BROUTER_E2E_EXECUTABLE` | Use an installed Chrome/Edge or a specific Chromium binary. The channel defaults to `chromium`, Playwright's bundled Chromium in its new headless mode, not the headless shell. |
 | `BROUTER_E2E_HEADED=1` | Show the browser. |
 
 ### Publish gate (trimming / AOT)
