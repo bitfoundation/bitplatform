@@ -28,10 +28,9 @@ public partial class OpenApiScalarIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        using var httpClient = server.CreateRawHttpClient();
 
         // 1) The generated OpenAPI document must be valid JSON describing the API surface.
         using var openApiResponse = await httpClient.GetAsync("openapi/v1.json", TestContext.CancellationToken);
