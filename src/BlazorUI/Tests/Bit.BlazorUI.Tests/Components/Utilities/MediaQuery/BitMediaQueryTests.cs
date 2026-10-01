@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -584,7 +584,7 @@ public class BitMediaQueryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMediaQueryShouldNotReSetupWhenOnlyTheIdChangesForACustomQuery()
+    public void BitMediaQueryShouldSendTheNewElementIdForACustomQueryWhenTheIdChanges()
     {
         var component = RenderComponent<BitMediaQuery>(parameters =>
         {
@@ -598,10 +598,83 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.Id, "second-id");
         });
 
-        // The listener is keyed by the component's own unique id, and a verbatim query is resolved
-        // without reading anything off the element, so the new id changes nothing about it.
-        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+        // The element is where the focus is kept across a flip, so the JS side is told the new id -
+        // under the same key and without a teardown, since the query itself has not changed.
+        var setups = Setups(Context.JSInterop);
+        Assert.AreEqual(2, setups.Count);
+        Assert.AreEqual("second-id", setups[1].Arguments[ElementIdArg]);
+        Assert.AreEqual(component.Instance.UniqueId, setups[1].Arguments[KeyArg]);
         Assert.AreEqual(0, Disposals(Context.JSInterop).Count);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldNotReSetupAnUnchangedCustomQueryWithAnUnchangedElement()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.Id, "same-id");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Class, "another-class");
+        });
+
+        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldSendTheElementIdForACustomQueryOnceContentAppears()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.Id, "late-id");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        var setups = Setups(Context.JSInterop);
+        Assert.AreEqual(2, setups.Count);
+        Assert.IsNull(setups[0].Arguments[ElementIdArg]);
+        Assert.AreEqual("late-id", setups[1].Arguments[ElementIdArg]);
+    }
+
+    [TestMethod]
+    [DataRow("@media (max-width: 600px)", "(max-width: 600px)")]
+    [DataRow("@media screen and (min-width: 960px)", "screen and (min-width: 960px)")]
+    [DataRow("  @MEDIA   print  ", "print")]
+    [DataRow("@media(orientation: portrait)", "(orientation: portrait)")]
+    [DataRow("@mediafoo", "@mediafoo")]
+    public void BitMediaQueryShouldDropALeadingMediaKeyword(string query, string expected)
+    {
+        RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, query);
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        Assert.AreEqual(expected, Setups(Context.JSInterop)[0].Arguments[QueryArg]);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldTreatABareMediaKeywordAsNoQuery()
+    {
+        RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "@media ");
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.Md);
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        var invocation = Setups(Context.JSInterop)[0];
+        Assert.IsNull(invocation.Arguments[QueryArg]);
+        Assert.AreEqual("Md", invocation.Arguments[ScreenQueryArg]);
     }
 
     [TestMethod]
@@ -828,6 +901,68 @@ public class BitMediaQueryTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMediaQueryShouldMakeANamedWrapperAGroup()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.AriaLabel, "Compact layout");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        // ARIA prohibits naming an element with no role, so the name would otherwise go unread.
+        Assert.AreEqual("group", component.Find(".bit-mdq").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldRenderNoRoleForAnUnnamedWrapper()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.IsFalse(root.HasAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldKeepASplattedAriaLabel()
+    {
+        var component = RenderComponent<BitMediaQueryAriaLabelTest>();
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.AreEqual("Compact layout", root.GetAttribute("aria-label"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldMakeAWrapperLabelledByAnotherElementAGroup()
+    {
+        var component = RenderComponent<BitMediaQueryLabelledByTest>();
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.AreEqual("compact-title", root.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldKeepASplattedRole()
+    {
+        var component = RenderComponent<BitMediaQueryRoleTest>();
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.AreEqual("region", root.GetAttribute("role"));
+        Assert.AreEqual("Compact layout", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitMediaQueryShouldRespectClassStyleIdAndDir()
     {
         var component = RenderComponent<BitMediaQuery>(parameters =>
@@ -969,5 +1104,106 @@ public class BitMediaQueryTests : BunitTestContext
 
         var root = component.Find(".bit-mdq");
         StringAssert.Contains(root.GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldRenderTheRootAsTheGivenElement()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.Md);
+            parameters.Add(p => p.Element, "span");
+            parameters.Add(p => p.Id, "inline-mdq");
+            parameters.Add(p => p.Matched, Markup("<b class=\"matched\">Matched</b>"));
+            parameters.Add(p => p.NotMatched, Markup("<b class=\"notmatched\">NotMatched</b>"));
+        });
+
+        var root = component.Find(".bit-mdq");
+        Assert.AreEqual("SPAN", root.TagName);
+        Assert.AreEqual("inline-mdq", root.Id);
+        Assert.AreEqual(1, root.QuerySelectorAll(".notmatched").Length);
+
+        component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
+
+        root = component.Find(".bit-mdq");
+        Assert.AreEqual("SPAN", root.TagName);
+        Assert.AreEqual(1, root.QuerySelectorAll(".matched").Length);
+        // The element is still the one the focus is kept in and the breakpoints are read from.
+        Assert.AreEqual("inline-mdq", Setups(Context.JSInterop).Last().Arguments[ElementIdArg]);
+    }
+
+    [TestMethod]
+    [DataRow("br")]
+    [DataRow("IMG")]
+    [DataRow("div onclick=alert(1)")]
+    [DataRow("<script>")]
+    [DataRow("1st")]
+    [DataRow("   ")]
+    public void BitMediaQueryShouldFallBackToADivForAnElementThatCannotHoldItsContent(string element)
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.DefaultMatched, true);
+            parameters.AddChildContent("<span class=\"content\">content</span>");
+        });
+
+        var root = component.Find(".bit-mdq");
+        Assert.AreEqual("DIV", root.TagName);
+        Assert.AreEqual(1, root.QuerySelectorAll(".content").Length);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldMakeANamedSpanAGroup()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.Element, "span");
+            parameters.Add(p => p.AriaLabel, "Compact layout");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        Assert.AreEqual("group", component.Find(".bit-mdq").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    [DataRow("li")]
+    [DataRow("nav")]
+    [DataRow("section")]
+    public void BitMediaQueryShouldKeepTheNativeRoleOfANamedSemanticElement(string element)
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.AriaLabel, "Compact layout");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        var root = component.Find(".bit-mdq");
+
+        // A group would overwrite what the tag already says (a list item, a landmark), and the tag can be named as it is.
+        Assert.IsFalse(root.HasAttribute("role"));
+        Assert.AreEqual("Compact layout", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldKeepASplattedIdStyleClassAndDir()
+    {
+        var component = RenderComponent<BitMediaQuerySplatTest>();
+
+        var root = component.Find(".bit-mdq");
+
+        Assert.AreEqual("splatted-id", root.Id);
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 0");
+        // Joined with what the component writes itself rather than written over by it.
+        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.IsTrue(root.ClassList.Contains("splatted-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-mdq"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        // The JS side looks the element up by the id it is actually rendered with.
+        Assert.AreEqual("splatted-id", Setups(Context.JSInterop)[0].Arguments[ElementIdArg]);
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.Playwright.TestAdapter;
 
 namespace Boilerplate.Tests.Infrastructure;
 
+[DoNotParallelize]
 public class AppPageTest : PageTest
 {
     /// <summary>
@@ -42,6 +43,12 @@ public class AppPageTest : PageTest
 
         await context.AddInitScriptAsync($"localStorage.setItem('{ConsentService.StorageKey}', '{refusals}');");
     }
+
+    /// <summary>
+    /// <see cref="NewBrowserContext(Uri)"/> pointed at <paramref name="server"/>'s api, as <see cref="AppTestServer.Start"/>
+    /// points the first browser.
+    /// </summary>
+    protected Task<IBrowserContext> NewBrowserContext(AppTestServer server) => NewBrowserContext(server.ApiAppAddress);
 
     /// <summary>
     /// Opens a second browser - an isolated context, i.e. its own storage and its own session - already carrying this

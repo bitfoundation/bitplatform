@@ -59,16 +59,11 @@ public static class MagicLinkSignInUtils
             capturedEmail => capturedEmail.Kind is CapturedEmailKind.EmailToken, cancellationToken);
 
         // The rebuild below discards the origin the server actually embedded, so a host-header-derived wrong-origin
-        // link would otherwise be invisible to every magic-link test. Assert loopback + this server's port rather
-        // than strict equality: WebAuthnPasswordlessUITests legitimately rebases ServerAddress onto the "localhost"
-        // alias, so the emailed authority can be localhost:<port> while WebAppServerAddress is 127.0.0.1:<port>.
-        var linkHost = captured.Link!.Host;
-        Assert.IsTrue(linkHost is "localhost" || (IPAddress.TryParse(linkHost, out var linkIp) && IPAddress.IsLoopback(linkIp)),
-            $"The emailed link must carry a loopback origin, but was '{captured.Link.GetLeftPart(UriPartial.Authority)}'.");
-        Assert.AreEqual(server.WebAppServerAddress.Port, captured.Link.Port,
-            $"The emailed link must carry this server's own port, but was '{captured.Link.GetLeftPart(UriPartial.Authority)}'.");
+        // link would otherwise be invisible to every magic-link test.
+        Assert.AreEqual(server.WebAppAddress.GetLeftPart(UriPartial.Authority), captured.Link!.GetLeftPart(UriPartial.Authority),
+            "The emailed link must point at this server's web app.");
 
-        var confirmUrl = new Uri(server.WebAppServerAddress, captured.Link.PathAndQuery).ToString();
+        var confirmUrl = new Uri(server.WebAppAddress, captured.Link.PathAndQuery).ToString();
         return (confirmUrl, captured.Token!);
     }
 
@@ -78,14 +73,14 @@ public static class MagicLinkSignInUtils
     /// </summary>
     public static async Task SignInViaMagicLinkOtp(IPage page, AppTestServer server, string email, CancellationToken cancellationToken)
     {
-        await RequestMagicLinkAndOtp(page, server.WebAppServerAddress, email);
+        await RequestMagicLinkAndOtp(page, server.WebAppAddress, email);
 
         var (_, otpCode) = await ReadConfirmationEmail(server, email, cancellationToken);
 
         await BitOtpInputUtils.FillOtpInputs(page, otpCode);
 
         // Filling the last digit confirms the e-mail, signs the user in and redirects to the home page.
-        await page.WaitForURLAsync(server.WebAppServerAddress.ToString());
+        await page.WaitForURLAsync(server.WebAppAddress.ToString());
     }
 
     /// <summary>
@@ -97,7 +92,7 @@ public static class MagicLinkSignInUtils
     /// </summary>
     public static async Task SignInAgainViaMagicLinkOtp(IPage page, AppTestServer server, string email, CancellationToken cancellationToken)
     {
-        await RequestMagicLinkAndOtp(page, server.WebAppServerAddress, email);
+        await RequestMagicLinkAndOtp(page, server.WebAppAddress, email);
 
         // Waiting for the OTP panel above guarantees SendOtp has already finished (and captured this e-mail), so the
         // newest captured OTP is the code this sign-in just triggered, not a leftover one from an earlier sign-in.
@@ -107,6 +102,6 @@ public static class MagicLinkSignInUtils
         await BitOtpInputUtils.FillOtpInputs(page, captured.Token!);
 
         // Filling the last digit signs the account in and redirects to the home page.
-        await page.WaitForURLAsync(server.WebAppServerAddress.ToString());
+        await page.WaitForURLAsync(server.WebAppAddress.ToString());
     }
 }

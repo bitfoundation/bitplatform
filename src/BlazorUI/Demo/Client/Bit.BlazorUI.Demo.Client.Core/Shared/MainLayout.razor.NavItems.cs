@@ -146,7 +146,7 @@ public partial class MainLayout
                 new() { Text = "Image", Url = "/components/image", Description = "Img, Picture", Data = "Photo, Figure, Thumbnail, Lazy, Srcset, AspectRatio, Placeholder, Fallback" },
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
-                new() { Text = "MediaQuery", Url = "/components/mediaquery" },
+                new() { Text = "MediaQuery", Url = "/components/mediaquery", Description = "Breakpoint, Responsive", Data = "matchMedia, Hidden, Show, Hide, useMediaQuery" },
                 new() { Text = "Overlay", Url = "/components/overlay", Description = "Backdrop, Scrim", Data = "Mask, Dim, BlockUI, ClickCatcher" },
                 new() { Text = "Params", Url = "/components/params" },
                 new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },

@@ -485,6 +485,18 @@ public static class BlazorUIMarkdown
         var inherits = baseName is null ? string.Empty : $" - its own and the `{baseName}` ones alike";
 
         builder.AppendLine("## Cascading parameters").AppendLine();
+
+        // A service has no markup of its own to put a BitParams around: the component it shows is what takes the
+        // cascade, from around the container that renders it - and what one showing is given beats it.
+        if (component.ShownComponentType is { } shown)
+        {
+            var shownName = BlazorUITypeNames.Of(shown);
+
+            builder.AppendLine($"Every `{shownName}` this service shows takes the defaults of `{name}` from a `BitParams` around the container that renders it: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">` wrapping the container in the layout. They are defaults rather than overrides: what the container's own parameters and what one showing is given win over them, parameter by parameter - and the same `BitParams` reaches every `{shownName}` written in markup below it too. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+
+            return;
+        }
+
         builder.AppendLine($"`{name}` carries {carried.Count} of this component's parameters again as nullables{inherits} - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else, and a nested `BitParams` likewise replaces only the parameters its own `{name}` sets. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
 
         if (missing.Length > 0)
@@ -524,6 +536,18 @@ public static class BlazorUIMarkdown
     /// </summary>
     private static void AppendCssVariables(StringBuilder builder, BlazorUIComponent component)
     {
+        // A service has no root of its own: the variables are those of the component it shows, pointed at rather
+        // than tabulated a second time - with where a service's modals take a Style from, which that page cannot say.
+        if (component.CssVariables.Count == 0 &&
+            component.ShownComponentType is { } shown &&
+            BlazorUIComponentCatalog.Find(shown.Name) is { CssVariables.Count: > 0 } shownComponent)
+        {
+            builder.AppendLine("## CSS variables").AppendLine();
+            builder.AppendLine($"Every `{shownComponent.Name}` this service shows reads the {shownComponent.CssVariables.Count} public CSS variables `GetBitBlazorUIComponent(name: \"{shownComponent.Name}\")` lists (`{shownComponent.CssVariables[0].Name}`, ...). They inherit: set them on the `Style` of the parameters one showing is given to restyle that one, on the `Style` of the container's parameters to restyle every one it renders, or on `:root` to restyle every `{shownComponent.Name}` in the app.").AppendLine();
+
+            return;
+        }
+
         if (component.CssVariables.Count == 0) return;
 
         builder.AppendLine("## CSS variables").AppendLine();

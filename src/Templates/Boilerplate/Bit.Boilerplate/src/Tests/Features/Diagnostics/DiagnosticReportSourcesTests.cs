@@ -27,22 +27,22 @@ public class DiagnosticReportSourcesTests
     public async Task EveryWayIn_Should_AnswerAboutItsOwnRequest()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await server.Build().Start(TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
 
         // Only /dev-mcp needs this; the other two are anonymous, and the report is the caller's own either way.
-        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, scope, TestContext.CancellationToken);
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
         await using var _ = grant;
-        var accessToken = await DevMcpTestUtils.AccessToken(scope);
+        var accessToken = await DevMcpTestUtils.AccessToken(client);
 
         // The typed client goes over http, which is the same call the /diagnostic page makes. Both ids are null, so
         // none of the endpoint's side effects run.
-        var http = string.Join(Environment.NewLine, await scope.ServiceProvider.GetRequiredService<IDiagnosticController>()
+        var http = string.Join(Environment.NewLine, await client.GetController<IDiagnosticController>()
             .PerformDiagnostic(signalRConnectionId: null, pushNotificationSubscriptionDeviceId: null, TestContext.CancellationToken)
             .ToArrayAsync(TestContext.CancellationToken));
 
         await using var hubConnection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.WebAppServerAddress, "app-hub"), options =>
+            .WithUrl(new Uri(server.ApiAppAddress, "app-hub"), options =>
             {
                 // The upgrade is the whole point: long polling would travel the same path as the http call above.
                 options.Transports = HttpTransportType.WebSockets;
