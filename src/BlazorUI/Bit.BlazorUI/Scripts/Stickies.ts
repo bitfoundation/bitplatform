@@ -17,17 +17,53 @@ namespace BitBlazorUI {
             // is not always the one the scroll events come from, and it is re-resolved just as often.
             scope: { current: HTMLElement | Window },
             observer?: ResizeObserver,
+            // Gives up the claim of this element on the scroll padding of its scrollport, whichever box is
+            // carrying it at that moment.
+            clearPadding: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
             frame: { handle: number }
         }>();
+
+        // The scroll padding of a box is shared ground: two stickies of the same scrollport (a header and
+        // a sub-header, a frozen header row and a frozen first column) would each otherwise capture the
+        // write of the other as "the value it had before". The value found before any of them touched the
+        // box is kept here instead, with the room each sticky claims on each edge: every edge carries the
+        // largest claim on it, and an edge nobody claims anymore gets its own value back.
+        private static _paddings = new WeakMap<HTMLElement, {
+            previous: { top: string, bottom: string, left: string, right: string },
+            owners: Map<string, { top: number, bottom: number, left: number, right: number }>
+        }>();
+
+        private static writePadding(box: HTMLElement) {
+            const shared = Stickies._paddings.get(box);
+            if (!shared) return;
+
+            const side = (pick: (claim: { top: number, bottom: number, left: number, right: number }) => number, previous: string) => {
+                let max = 0;
+
+                shared.owners.forEach(claim => max = Math.max(max, pick(claim)));
+
+                return max > 0 ? `${max}px` : previous;
+            };
+
+            box.style.scrollPaddingTop = side(c => c.top, shared.previous.top);
+            box.style.scrollPaddingBottom = side(c => c.bottom, shared.previous.bottom);
+            box.style.scrollPaddingLeft = side(c => c.left, shared.previous.left);
+            box.style.scrollPaddingRight = side(c => c.right, shared.previous.right);
+        }
 
         // Watches a position:sticky element for the moment it actually pins to an edge of its
         // scrolling container and reports the flips of that state back to .NET. CSS has no event for
         // it, so the state is derived from two readings that together say what the browser itself
         // would: where the element is, and where it would be with nothing pinning it. The state only
         // crosses the interop boundary when it flips, so a scroll never costs more than a comparison.
-        public static setup(id: string, dotnetObj: DotNetObject) {
+        //
+        // With scrollPadding it also reserves the room the element covers as the scroll padding of its
+        // scrollport, so a control the browser brings into view as the focus moves on (or an anchor, or
+        // scrollIntoView) never lands underneath it (WCAG 2.4.11). That half needs no scroll listener at
+        // all, so a sticky that only asks for it (report false) attaches none.
+        public static setup(id: string, dotnetObj: DotNetObject, report: boolean = true, scrollPadding: boolean = false) {
             Stickies.dispose(id);
 
             const element = document.getElementById(id);
@@ -59,6 +95,8 @@ namespace BitBlazorUI {
             const evaluate = () => {
                 frame.handle = 0;
 
+                if (!report) return;
+
                 if (flow === null) {
                     flow = Stickies.flowPosition(element, scope.current);
                 }
@@ -87,7 +125,7 @@ namespace BitBlazorUI {
 
             // rAF coalescing keeps a burst of scroll events down to one evaluation per painted frame.
             const scrollHandler = () => {
-                if (frame.handle) return;
+                if (!report || frame.handle) return;
 
                 frame.handle = requestAnimationFrame(evaluate);
             };
@@ -97,6 +135,63 @@ namespace BitBlazorUI {
             // as its content outgrows it, and the other way round. The scroller is re-resolved
             // whenever the layout moves, and the scroll listener follows it. The scrollport is
             // re-resolved with it, since a stylesheet can give an ancestor an overflow it did not have.
+            // The box this element is reserving scroll padding on, if it is reserving any.
+            let padded: HTMLElement | undefined;
+
+            const clearPadding = () => {
+                if (!padded) return;
+
+                const shared = Stickies._paddings.get(padded);
+
+                if (shared) {
+                    shared.owners.delete(id);
+
+                    Stickies.writePadding(padded);
+
+                    if (shared.owners.size === 0) {
+                        Stickies._paddings.delete(padded);
+                    }
+                }
+
+                padded = undefined;
+            };
+
+            // The claim is read off the layout alone and the write changes nothing a layout depends on, so
+            // this is safe to run from the resize observer below.
+            const applyPadding = () => {
+                if (!scrollPadding) return;
+
+                const box = scope.current === window
+                    ? document.documentElement
+                    : scope.current as HTMLElement;
+
+                if (padded && padded !== box) {
+                    clearPadding();
+                }
+
+                let shared = Stickies._paddings.get(box);
+
+                if (!shared) {
+                    shared = {
+                        previous: {
+                            top: box.style.scrollPaddingTop,
+                            bottom: box.style.scrollPaddingBottom,
+                            left: box.style.scrollPaddingLeft,
+                            right: box.style.scrollPaddingRight
+                        },
+                        owners: new Map()
+                    };
+
+                    Stickies._paddings.set(box, shared);
+                }
+
+                shared.owners.set(id, Stickies.paddingClaim(element, scope.current));
+
+                padded = box;
+
+                Stickies.writePadding(box);
+            };
+
             const layoutHandler = () => {
                 const next = Stickies.scrollSource(element);
                 const nextScope = Stickies.stickyParent(element);
@@ -107,13 +202,17 @@ namespace BitBlazorUI {
 
                         target.current = next;
 
-                        next.addEventListener('scroll', scrollHandler, { passive: true });
+                        if (report) {
+                            next.addEventListener('scroll', scrollHandler, { passive: true });
+                        }
                     }
 
                     scope.current = nextScope;
 
                     observe();
                 }
+
+                applyPadding();
 
                 // Content that moved is content the flow position was read before, so the reading is
                 // owed again. It is left to the frame the scroll handler below schedules rather than
@@ -124,7 +223,9 @@ namespace BitBlazorUI {
                 scrollHandler();
             };
 
-            target.current.addEventListener('scroll', scrollHandler, { passive: true });
+            if (report) {
+                target.current.addEventListener('scroll', scrollHandler, { passive: true });
+            }
             window.addEventListener('resize', layoutHandler, { passive: true });
 
             let observer: ResizeObserver | undefined;
@@ -171,7 +272,9 @@ namespace BitBlazorUI {
                 observe();
             }
 
-            Stickies._entries.set(id, { scrollHandler, layoutHandler, target, scope, observer, frame });
+            Stickies._entries.set(id, { scrollHandler, layoutHandler, target, scope, observer, clearPadding, frame });
+
+            applyPadding();
 
             // The scroller can already be scrolled when the element arrives, so the state is settled
             // once up front instead of waiting for a scroll that may never come.
@@ -194,6 +297,8 @@ namespace BitBlazorUI {
             window.removeEventListener('resize', entry.layoutHandler);
 
             entry.observer?.disconnect();
+
+            entry.clearPadding();
 
             // A frame scheduled by the last scroll before the disposal would still evaluate and call
             // back into a component that is on its way out, so it is dropped along with the listeners.
@@ -285,6 +390,55 @@ namespace BitBlazorUI {
             }
 
             return edges;
+        }
+
+        // The room the element covers on each edge of its scrollport while pinned there, measured from the
+        // edge of the scrollport the way scroll padding is: the padding of the box, the inset, and the size
+        // of the element. An edge it has no inset on is never one it pins to, and an element that is not
+        // rendered (display:none, a collapsed ancestor) covers nothing.
+        private static paddingClaim(element: HTMLElement, scope: HTMLElement | Window): { top: number, bottom: number, left: number, right: number } {
+            const none = { top: 0, bottom: 0, left: 0, right: 0 };
+
+            const style = getComputedStyle(element);
+
+            if (style.position !== 'sticky' && style.position !== '-webkit-sticky') return none;
+
+            const rect = element.getBoundingClientRect();
+
+            if (rect.width === 0 && rect.height === 0) return none;
+
+            let width = document.documentElement.clientWidth;
+            let height = document.documentElement.clientHeight;
+            let pad = { top: 0, bottom: 0, left: 0, right: 0 };
+
+            if (scope !== window) {
+                const box = scope as HTMLElement;
+                const boxStyle = getComputedStyle(box);
+
+                pad = {
+                    top: parseFloat(boxStyle.paddingTop) || 0,
+                    bottom: parseFloat(boxStyle.paddingBottom) || 0,
+                    left: parseFloat(boxStyle.paddingLeft) || 0,
+                    right: parseFloat(boxStyle.paddingRight) || 0
+                };
+
+                width = box.clientWidth - pad.left - pad.right;
+                height = box.clientHeight - pad.top - pad.bottom;
+            }
+
+            const inset = (value: string, size: number) =>
+                value.endsWith('%') ? (parseFloat(value) || 0) * size / 100 : (parseFloat(value) || 0);
+
+            // Rounded up, so a sub-pixel element never leaves a hairline of the next control under it.
+            const claim = (value: string, padding: number, size: number, extent: number) =>
+                value === 'auto' ? 0 : Math.ceil(padding + inset(value, size) + extent);
+
+            return {
+                top: claim(style.top, pad.top, height, rect.height),
+                bottom: claim(style.bottom, pad.bottom, height, rect.height),
+                left: claim(style.left, pad.left, width, rect.width),
+                right: claim(style.right, pad.right, width, rect.width)
+            };
         }
 
         // Where the element sits in the flow of its scrollport, which is the one thing about a pinned
