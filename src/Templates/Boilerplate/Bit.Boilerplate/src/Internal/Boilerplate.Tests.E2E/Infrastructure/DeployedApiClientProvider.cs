@@ -179,7 +179,7 @@ public static class DeployedApiClientProvider
         var connectionString = configuration.GetRequiredConnectionString("postgresdb");
 
         services.AddClientCoreProjectServices(configuration);
-        services.AddIntegrationApiOnlyTestsServices();
+        services.AddBrowserlessClientServices();
         services.AddSingleton<IJSRuntime, TestJsRuntime>();
         services.AddSingleton<NavigationManager, TestNavigationManager>();
         services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();

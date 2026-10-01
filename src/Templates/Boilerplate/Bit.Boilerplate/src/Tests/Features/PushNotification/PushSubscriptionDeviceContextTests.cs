@@ -18,7 +18,7 @@ public partial class PushSubscriptionDeviceContextTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // A per-run device id, so leftovers are inert orphans rather than collisions.
         var deviceId = $"push-context-{Guid.NewGuid():N}";
@@ -58,7 +58,7 @@ public partial class PushSubscriptionDeviceContextTests
         }
         finally
         {
-            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
+            await using var cleanupScope = server.ApiApp.Services.CreateAsyncScope();
             var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
@@ -67,7 +67,7 @@ public partial class PushSubscriptionDeviceContextTests
         // RequestHeadersDelegatingHandler and by the CDN, neither of which is in play here.
         async Task Subscribe(string country, string city, string appVersion, string pushChannel)
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var anonymousClient = server.CreateRawHttpClient();
 
             anonymousClient.DefaultRequestHeaders.Add("cf-ipcountry", country);
             anonymousClient.DefaultRequestHeaders.Add("cf-ipcity", city);
@@ -83,7 +83,7 @@ public partial class PushSubscriptionDeviceContextTests
 
     private static async Task<PushNotificationSubscription?> ReadSubscription(AppTestServer server, string deviceId, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.PushNotificationSubscriptions.AsNoTracking()
