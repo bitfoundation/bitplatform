@@ -13,4 +13,6 @@ internal readonly record struct BlazorParameter(
     bool ResetStyleBuilder,
     bool IsTwoWayBound,
     string? CallOnSetMethodName,
-    string? CallOnSetAsyncMethodName);
+    string? CallOnSetAsyncMethodName,
+    bool TracksSetByMarkup,
+    bool IsCascadedParams);
