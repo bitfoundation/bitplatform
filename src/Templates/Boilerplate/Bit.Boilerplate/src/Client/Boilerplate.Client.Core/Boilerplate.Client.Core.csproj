@@ -66,10 +66,15 @@
         <TypeScriptFiles Include="**\*.ts" Exclude="node_modules\**\*.ts" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+    <!-- Before the static web assets and the scoped css are resolved, which look for these files among the Content items:
+         the files are generated, so a fresh clone has none of them when the project is evaluated. -->
+    <Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
         <CallTarget Targets="BuildCssFiles" />
+        <ItemGroup>
+            <Content Include="**\*.razor.css;wwwroot\scripts\app.js;wwwroot\styles\app.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+        </ItemGroup>
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
