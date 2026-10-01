@@ -331,12 +331,10 @@ public static partial class Program
         //#endif
         else
         {
-            // Use Redis as SignalR backplane for scaling out across multiple server instances.
-            // It gets a connection of its own rather than the shared redis-cache one (See AppRedisCacheConfigurator).
-            signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
+            // Use Redis as SignalR backplane for scaling out across multiple server instances
+            signalRBuilder.AddStackExchangeRedis(options =>
             {
                 options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
-                options.Configuration.AbortOnConnectFail = false;
             });
         }
         //#if (IsInsideProjectTemplate == true)
