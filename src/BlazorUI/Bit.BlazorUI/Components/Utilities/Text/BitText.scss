@@ -428,4 +428,11 @@
 // given and only reads as unavailable. It is not interactive to begin with, so there is nothing else to turn off.
 .bit-txt.bit-dis {
     opacity: var(--bit-Text-disabled-opacity, #{$opa-dis});
+
+    // A forced-colors mode repaints every color role, and a gradient, in the ordinary text color, which takes away
+    // what the dimming was saying, so a disabled text is painted in GrayText, the system color for it, the way a
+    // disabled label or link is. The gradient classes give the glyph fill back to currentcolor, so this reaches them.
+    @media (forced-colors: active) {
+        color: GrayText;
+    }
 }

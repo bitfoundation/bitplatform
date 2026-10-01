@@ -88,6 +88,21 @@ public class BitTextStylesheetTests
         Assert.IsFalse(stylesheet.Contains("\n.bit-txt-vhd {", StringComparison.Ordinal), "The visually hidden rules apply to a focused text as well.");
     }
 
+    // A forced-colors mode paints every text in CanvasText, so the dimming alone would be all that says a text is
+    // disabled; GrayText is the system color for it, as on a disabled label or link. The rule sits inside the
+    // disabled one, which outranks the forced-colors rules of the gradient classes by specificity.
+    [TestMethod]
+    public void BitTextShouldPaintADisabledTextInGrayTextInForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var disabled = stylesheet[stylesheet.IndexOf("\n.bit-txt.bit-dis {", StringComparison.Ordinal)..];
+        disabled = disabled[..disabled.IndexOf("\n}", StringComparison.Ordinal)];
+
+        StringAssert.Contains(disabled, "@media (forced-colors: active) {");
+        StringAssert.Contains(disabled, "color: GrayText;");
+    }
+
     [TestMethod]
     public void BitTextShouldDrawTheSharedFocusRing()
     {
