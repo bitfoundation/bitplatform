@@ -628,6 +628,7 @@ public partial class BitModal : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+        ClassBuilder.Register(() => _params.Class);
         ClassBuilder.Register(() => _params.Classes?.Root);
 
         ClassBuilder.Register(() => IsFullHeight ? "bit-mdl-fhe" : string.Empty);
@@ -659,6 +660,7 @@ public partial class BitModal : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+        StyleBuilder.Register(() => _params.Style);
         StyleBuilder.Register(() => _params.Styles?.Root);
 
         StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
@@ -735,6 +737,7 @@ public partial class BitModal : BitComponentBase
             previous.NoBorder != _params.NoBorder ||
             previous.AbsolutePosition != _params.AbsolutePosition ||
             previous.Position != _params.Position ||
+            previous.Class != _params.Class ||
             _lastClassesRoot != classesRoot ||
             _lastParamsClassesRoot != paramsClassesRoot)
         {
@@ -746,6 +749,7 @@ public partial class BitModal : BitComponentBase
         var stylesRoot = Styles?.Root;
         var paramsStylesRoot = _params.Styles?.Root;
         if (previous.Visibility != _params.Visibility ||
+            previous.Style != _params.Style ||
             _lastStylesRoot != stylesRoot ||
             _lastParamsStylesRoot != paramsStylesRoot)
         {
@@ -1685,6 +1689,9 @@ public partial class BitModal : BitComponentBase
             // A guard of the Modal's own is asked instead of the one the service was given, the same way a Modal
             // shown through the service is asked its own guard instead of the container-level one.
             CanClose = CanClose ?? p.CanClose,
+            // Added to the Modal's own Class and Style rather than merged with them, the way the Root of Classes
+            // and Styles is: the root carries both.
+            Class = p.Class,
             // Service-level knobs the Modal itself has no say in: carried through the merge so that the
             // effective parameters stay a faithful picture of what the Modal was shown with.
             Classes = p.Classes,
@@ -1722,6 +1729,7 @@ public partial class BitModal : BitComponentBase
             ScrollerElement = ScrollerElement ?? p.ScrollerElement,
             ScrollerSelector = Merge(nameof(ScrollerSelector), ScrollerSelector, p.ScrollerSelector),
             ShowCloseButton = Merge(nameof(ShowCloseButton), On(ShowCloseButton), p.ShowCloseButton),
+            Style = p.Style,
             Styles = p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,

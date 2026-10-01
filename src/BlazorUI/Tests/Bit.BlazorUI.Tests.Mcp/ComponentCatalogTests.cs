@@ -389,6 +389,66 @@ public class ComponentCatalogTests : McpTestBase
     }
 
     /// <summary>
+    /// A service named after the component it shows says that component's params object reaches the
+    /// modals it shows: the service has no markup of its own and no <c>[CascadingParameter]</c> to read
+    /// it off, so without this an agent has no way to learn that one <c>BitParams</c> around the
+    /// container sets the defaults of every modal the service opens - or that a showing's own
+    /// parameters still win over them.
+    /// </summary>
+    [TestMethod]
+    public async Task A_service_names_the_params_object_of_the_component_it_shows()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## Cascading parameters", "BitModalService no longer says the modals it shows take a params object.");
+        StringAssert.Contains(answer, "`BitModalParams`", "BitModalService does not name the type the cascade carries.");
+        StringAssert.Contains(answer, "Every `BitModal` this service shows", "BitModalService does not say which component takes the cascade.");
+        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitModalParams\")", "BitModalService does not say where BitModalParams's members are listed.");
+    }
+
+    /// <summary>
+    /// A service has no root of its own, so its demo page lists no CSS variables - but the modals it
+    /// shows read BitModal's, and the <c>Style</c> of the parameters is where a service sets them. The
+    /// answer points at them rather than leaving an agent to conclude there is nothing to set.
+    /// </summary>
+    [TestMethod]
+    public async Task A_service_points_at_the_css_variables_of_the_component_it_shows()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## CSS variables", "BitModalService does not say the modals it shows read CSS variables.");
+        StringAssert.Contains(answer, "GetBitBlazorUIComponent(name: \"BitModal\")", "BitModalService does not say where the variables are listed.");
+        StringAssert.Contains(answer, "`--bit-Modal-", "BitModalService does not name a variable of the modals it shows.");
+    }
+
+    /// <summary>
+    /// A service's types are named after the component it shows, not after the service, yet the service's
+    /// page is the only one documenting them. Treated as shared, they were cut down to a one-line list of
+    /// the member names in their table - <c>BitModalParameters: CanClose, CloseOnNavigation</c> - which
+    /// reads as if those two were all a modal could be shown with.
+    /// </summary>
+    [TestMethod]
+    public async Task A_service_documents_its_own_types_in_full()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## BitModalReference (class)", "BitModalService does not document its reference in full.");
+        StringAssert.Contains(answer, "## BitModalParameters (class)", "BitModalService does not document its parameters in full.");
+        StringAssert.Contains(answer, "Every parameter of BitModal", "BitModalService does not say its parameters carry every parameter of BitModal.");
+        StringAssert.Contains(answer, "## BitModalContentParameters<TComponent> (class)", "BitModalService does not document its typed content parameters.");
+        Assert.DoesNotContain("- `BitModalParameters` (class)", answer, "BitModalService still lists its parameters as a one-liner.");
+        StringAssert.Contains(answer, "Action<BitModalParameters>", "BitModalService does not document the Update that changes some of the parameters.");
+        StringAssert.Contains(answer, "## BitModalContainer (component)", "BitModalService does not document its container.");
+        StringAssert.Contains(answer, "BitModalService?", "BitModalService does not document the Service a container can be handed.");
+    }
+
+    /// <summary>
     /// What a params object does NOT carry, which is the half of the cascade a reader cannot infer.
     /// <para>
     /// Every <c>...Params</c> derives from <c>BitComponentBaseParams</c>, so it carries that half of
@@ -450,7 +510,10 @@ public class ComponentCatalogTests : McpTestBase
     {
         var answers = await AnswersAsync();
 
-        var documented = answers.Where(a => a.Value.Contains("## CSS variables", StringComparison.Ordinal)).ToArray();
+        // A service's section is a pointer at the component it shows rather than a table of its own (see
+        // A_service_points_at_the_css_variables_of_the_component_it_shows).
+        var documented = answers.Where(a => a.Value.Contains("## CSS variables", StringComparison.Ordinal) &&
+                                            a.Value.Contains("| Variable | Default | Description |", StringComparison.Ordinal)).ToArray();
 
         using var scope = Assert.Scope();
 
