@@ -10,10 +10,6 @@
         <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
         <StartupObject>Boilerplate.Client.Windows.Program</StartupObject>
         <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
-        <ResolveStaticWebAssetsInputsDependsOn>
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
         <NoWarn>$(NoWarn);WFO5001</NoWarn>
     </PropertyGroup>
 

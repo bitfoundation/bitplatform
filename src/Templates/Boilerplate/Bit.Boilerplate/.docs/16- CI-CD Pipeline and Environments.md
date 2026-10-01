@@ -283,9 +283,6 @@ This is the **core deployment workflow** that handles building and deploying all
    # Install WebAssembly tools
    dotnet workload install wasm-tools
    
-   # Generate CSS/JS from TypeScript and SCSS
-   dotnet build -t:BeforeBuildTasks -c Release -p:Version="1.0.0"
-   
    # Publish self-contained Linux binary (Using Linux is optional)
    dotnet publish -c Release --self-contained -r linux-x64 \
      -p:Version="1.0.0" -p:Environment=Production
@@ -348,9 +345,6 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Build & Package with Velopack**
    ```bash
-   # Generate CSS/JS files
-   dotnet build -t:BeforeBuildTasks -c Release
-   
    # Publish for Windows x86 (32-bit for wider compatibility)
    dotnet publish -c Release -r win-x86 --self-contained \
      -p:Version="1.0.0" -p:Environment=Production
@@ -403,9 +397,6 @@ dotnet workload install maui-android
 # Install Android SDK platform tools
 ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
   --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-   
-# Generate CSS/JS files
-dotnet build -t:BeforeBuildTasks -c Release
    
 # Publish signed AAB (Or APK if needed)
 dotnet publish -c Release \
@@ -468,9 +459,6 @@ dotnet publish -c Release \
    ```bash
    # Install MAUI workload (includes iOS support)
    dotnet workload install maui
-   
-   # Generate CSS/JS files
-   dotnet build -t:BeforeBuildTasks -c Release
    
    # Publish and sign IPA
    dotnet publish \
