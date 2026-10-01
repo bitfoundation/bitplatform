@@ -33,17 +33,17 @@
     <ItemGroup>
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-        <PackageReference Include="Bit.Bswup" Version="11.0.0-pre-02" />
-        <PackageReference Include="Bit.Butil" Version="11.0.0-pre-02" />
-        <PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-02" />
-        <PackageReference Include="Bit.BlazorUI.Extras" Version="11.0.0-pre-02" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="11.0.0-pre-02" />
-        <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-02" PrivateAssets="all" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-02">
+        <PackageReference Include="Bit.Bswup" Version="11.0.0-pre-03" />
+        <PackageReference Include="Bit.Butil" Version="11.0.0-pre-03" />
+        <PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-03" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="11.0.0-pre-03" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="11.0.0-pre-03" />
+        <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-03" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
