@@ -17,7 +17,7 @@ public partial class BitSeparatorDemo
         align-items: center;
     }
 
-    .tall {
+    .medium {
         height: 6rem;
     }
 </style>
@@ -31,7 +31,7 @@ public partial class BitSeparatorDemo
     <span>Item 3</span>
 </div>
 
-<div class=""row tall"">
+<div class=""row medium"">
     <span>Sign in with a password</span>
     <BitSeparator Vertical>OR</BitSeparator>
     <span>Sign in with a passkey</span>
@@ -42,9 +42,15 @@ public partial class BitSeparatorDemo
     private readonly string example3RazorCode = @"
 <style>
     .row {
+        gap: 1rem;
+        display: flex;
+        white-space: nowrap;
+        align-items: center;
+    }
+
+    .taller {
         gap: 2rem;
         height: 12rem;
-        display: flex;
     }
 </style>
 
@@ -55,7 +61,7 @@ public partial class BitSeparatorDemo
 <BitSeparator AlignContent=""BitSeparatorAlignContent.Start"" ContentOffset=""2rem"">Start, 2rem</BitSeparator>
 <BitSeparator AlignContent=""BitSeparatorAlignContent.End"" ContentOffset=""10%"">End, 10%</BitSeparator>
 
-<div class=""row"">
+<div class=""row taller"">
     <BitSeparator Vertical AlignContent=""BitSeparatorAlignContent.Start"">Start</BitSeparator>
     <BitSeparator Vertical AlignContent=""BitSeparatorAlignContent.Center"">Center</BitSeparator>
     <BitSeparator Vertical AlignContent=""BitSeparatorAlignContent.End"">End</BitSeparator>
@@ -66,10 +72,13 @@ public partial class BitSeparatorDemo
 <style>
     .row {
         gap: 1rem;
-        height: 3rem;
         display: flex;
         white-space: nowrap;
         align-items: center;
+    }
+
+    .tall {
+        height: 3rem;
     }
 </style>
 
@@ -78,24 +87,27 @@ public partial class BitSeparatorDemo
 <BitSeparator Inset=""2rem"">Inset 2rem</BitSeparator>
 <BitSeparator Inset=""25% 0"">Inset 25% at the start</BitSeparator>
 
-<div class=""row"">
+<div class=""row tall"">
     <span>Item 1</span>
     <BitSeparator Vertical />
     <span>Item 2</span>
     <BitSeparator Vertical Inset=""0.75rem"" />
     <span>Item 3</span>
-</div>
-
-<BitSeparator AutoSize Style=""margin-inline: 4rem"">AutoSize, with a margin</BitSeparator>";
+    <BitSeparator Vertical AutoSize />
+    <span>Item 4</span>
+</div>";
 
     private readonly string example5RazorCode = @"
 <style>
     .row {
         gap: 1rem;
-        height: 3rem;
         display: flex;
         white-space: nowrap;
         align-items: center;
+    }
+
+    .tall {
+        height: 3rem;
     }
 </style>
 
@@ -106,7 +118,7 @@ public partial class BitSeparatorDemo
 <BitSeparator LineStyle=""BitSeparatorLineStyle.Double"" Thickness=""4px"">Double, 4px</BitSeparator>
 <BitSeparator Thickness=""0.5rem"">Solid, 0.5rem</BitSeparator>
 
-<div class=""row"">
+<div class=""row tall"">
     <span>Item 1</span>
     <BitSeparator Vertical LineStyle=""BitSeparatorLineStyle.Dashed"" />
     <span>Item 2</span>
@@ -152,9 +164,9 @@ public partial class BitSeparatorDemo
     <BitSeparator LineStyle=""BitSeparatorLineStyle.Solid"">LineStyle wins over the variable</BitSeparator>
 </div>
 
-<BitSeparator Style=""--bit-Separator-thickness: 4px; --bit-Separator-spacing: 1rem; --bit-Separator-content-gap: 0.25rem; --bit-Separator-content-font-weight: 600;"">
-    Set on one separator
-</BitSeparator>";
+<div style=""--bit-Separator-thickness: 4px; --bit-Separator-spacing: 1rem; --bit-Separator-content-gap: 0.25rem; --bit-Separator-content-font-weight: 600;"">
+    <BitSeparator>Set around one separator</BitSeparator>
+</div>";
 
     private readonly string example9RazorCode = @"
 <BitParams Parameters=""separatorParams"">
@@ -197,10 +209,13 @@ private readonly BitSeparatorParams[] separatorParams =
 <style>
     .row {
         gap: 1rem;
-        height: 3rem;
         display: flex;
         white-space: nowrap;
         align-items: center;
+    }
+
+    .tall {
+        height: 3rem;
     }
 </style>
 
@@ -209,7 +224,7 @@ private readonly BitSeparatorParams[] separatorParams =
 <BitSeparator Size=""BitSize.Medium"">Medium</BitSeparator>
 <BitSeparator Size=""BitSize.Large"">Large</BitSeparator>
 
-<div class=""row"">
+<div class=""row tall"">
     <span>Small</span>
     <BitSeparator Vertical Size=""BitSize.Small"" />
     <span>Medium</span>

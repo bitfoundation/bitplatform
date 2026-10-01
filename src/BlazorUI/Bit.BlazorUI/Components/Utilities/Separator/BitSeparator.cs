@@ -29,6 +29,8 @@ public partial class BitSeparator : BitComponentBase
 
 
 
+    private string _element = DefaultElement;
+
     private string _contentId => $"{_Id}-cnt";
 
     private string? _role => Decorative ? "none" : "separator";
@@ -319,34 +321,36 @@ public partial class BitSeparator : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
+        // The element only changes with the parameters, so it is resolved here rather than on every render.
+        _element = ResolveContentElement(Element, DefaultElement);
+
         base.OnParametersSet();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var element = Element?.Trim();
-        if (element.HasNoValue() || IsValidElement(element!) is false || IsVoidElement(element!))
-        {
-            element = DefaultElement;
-        }
+        var ariaLabel = GetAriaLabel();
 
-        builder.OpenElement(0, element!);
+        builder.OpenElement(0, _element);
+        // The splatted attributes come first so everything the component builds itself is written over them. The values
+        // it would otherwise write as null are resolved against them, since a null written over a splatted attribute
+        // does not leave that attribute alone - it removes it.
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
-        builder.AddAttribute(2, "id", _Id);
+        builder.AddAttribute(2, "id", Id.HasValue() ? Id : (GetSplattedAttribute("id") ?? _Id));
         builder.AddAttribute(3, "role", _role);
         // An empty decorative separator has nothing to say at all, so it is hidden outright rather than only stripped
         // of its role: that also keeps it out of what a list owns when it stands as an "li" between the list's items.
         // One with content keeps the content readable, and an aria-hidden the page splats on is kept as written.
-        if (Decorative && ChildContent is null && HtmlAttributes.ContainsKey("aria-hidden") is false)
+        if (Decorative && ChildContent is null && GetSplattedAttribute("aria-hidden") is null)
         {
             builder.AddAttribute(4, "aria-hidden", "true");
         }
-        builder.AddAttribute(5, "aria-label", Decorative ? null : AriaLabel);
-        builder.AddAttribute(6, "aria-labelledby", GetAriaLabelledby());
-        builder.AddAttribute(7, "aria-orientation", _ariaOrientation);
-        builder.AddAttribute(8, "style", StyleBuilder.Value);
-        builder.AddAttribute(9, "class", ClassBuilder.Value);
-        builder.AddAttribute(10, "dir", Dir?.ToString().ToLower(CultureInfo.InvariantCulture));
+        builder.AddAttribute(5, "aria-label", ariaLabel);
+        builder.AddAttribute(6, "aria-labelledby", GetAriaLabelledby(ariaLabel));
+        builder.AddAttribute(7, "aria-orientation", _ariaOrientation ?? (Decorative ? null : GetSplattedAttribute("aria-orientation")));
+        builder.AddAttribute(8, "style", JoinStyles(GetSplattedAttribute("style"), StyleBuilder.Value));
+        builder.AddAttribute(9, "class", JoinClasses(ClassBuilder.Value, GetSplattedAttribute("class")));
+        builder.AddAttribute(10, "dir", Dir?.ToString().ToLower(CultureInfo.InvariantCulture) ?? GetSplattedAttribute("dir"));
         builder.AddElementReferenceCapture(11, v => RootElement = v);
 
         if (ChildContent is not null)
@@ -366,19 +370,25 @@ public partial class BitSeparator : BitComponentBase
 
 
 
-    // The children of a separator are presentational to assistive technologies, so the content names the
-    // separator through aria-labelledby rather than being read out of it - unless an AriaLabel already does.
-    // An aria-labelledby the page splats on names it after something elsewhere on the page, and is kept as
-    // written, while a decorative separator is not a separator to name at all.
-    private string? GetAriaLabelledby()
+    // A name splatted on as a plain aria-label is kept as written, whichever way the page cased it, while a decorative
+    // separator is not a separator to name at all.
+    private string? GetAriaLabel()
     {
         if (Decorative) return null;
 
-        if (HtmlAttributes.TryGetValue("aria-labelledby", out var labelledby) && labelledby?.ToString() is { Length: > 0 } ids)
-        {
-            return ids;
-        }
+        return AriaLabel ?? GetSplattedAttribute("aria-label");
+    }
 
-        return ChildContent is not null && AriaLabel.HasNoValue() ? _contentId : null;
+    // The children of a separator are presentational to assistive technologies, so the content names the
+    // separator through aria-labelledby rather than being read out of it - unless an aria-label already does.
+    // An aria-labelledby the page splats on names it after something elsewhere on the page, and is kept as
+    // written, while a decorative separator is not a separator to name at all.
+    private string? GetAriaLabelledby(string? ariaLabel)
+    {
+        if (Decorative) return null;
+
+        if (GetSplattedAttribute("aria-labelledby") is { Length: > 0 } ids) return ids;
+
+        return ChildContent is not null && ariaLabel.HasNoValue() ? _contentId : null;
     }
 }

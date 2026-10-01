@@ -77,8 +77,8 @@
     <DemoExample Title="Length" RazorCode="@example4RazorCode" Id="example4">
         <div>
             <b>Inset</b> holds the line off both ends of its container by any CSS length, or off the start and the end given
-            two. <b>AutoSize</b> drops the full width (the stretch of a vertical one) and lets the container size the
-            separator, so a margin fits inside it instead of overflowing it.
+            two. <b>AutoSize</b> drops the full width of a horizontal separator and the stretch of a vertical one, so it
+            sizes to its content instead - the last one below is as tall as a line of text rather than as the row.
         </div>
         <br />
         <div class="example-content">
@@ -91,8 +91,9 @@
                 <span>Item 2</span>
                 <BitSeparator Vertical Inset="0.75rem" />
                 <span>Item 3</span>
+                <BitSeparator Vertical AutoSize />
+                <span>Item 4</span>
             </div>
-            <BitSeparator AutoSize Style="margin-inline: 4rem">AutoSize, with a margin</BitSeparator>
         </div>
     </DemoExample>
 
@@ -156,7 +157,7 @@
     <DemoExample Title="CSS variables" RazorCode="@example8RazorCode" Id="example8">
         <div>
             The public <b>--bit-Separator-*</b> variables inherit, so one set on <b>:root</b> or a container restyles every
-            separator inside it, and one set in <b>Style</b> restyles that separator. A parameter wins over its variable.
+            separator inside it - a container of one restyles that separator alone. A parameter wins over its variable.
         </div>
         <br />
         <div class="example-content">
@@ -165,9 +166,9 @@
                 <BitSeparator AlignContent="BitSeparatorAlignContent.Start">for every separator inside it</BitSeparator>
                 <BitSeparator LineStyle="BitSeparatorLineStyle.Solid">LineStyle wins over the variable</BitSeparator>
             </div>
-            <BitSeparator Style="--bit-Separator-thickness: 4px; --bit-Separator-spacing: 1rem; --bit-Separator-content-gap: 0.25rem; --bit-Separator-content-font-weight: 600;">
-                Set on one separator
-            </BitSeparator>
+            <div style="--bit-Separator-thickness: 4px; --bit-Separator-spacing: 1rem; --bit-Separator-content-gap: 0.25rem; --bit-Separator-content-font-weight: 600;">
+                <BitSeparator>Set around one separator</BitSeparator>
+            </div>
         </div>
     </DemoExample>
 

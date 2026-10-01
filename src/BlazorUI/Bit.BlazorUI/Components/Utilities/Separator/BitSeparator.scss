@@ -1,12 +1,5 @@
 @import "../../../Styles/functions.scss";
 
-// The gap between start- or end-aligned content and the edge it is aligned to. Content offset by nothing has no
-// segment there to keep its distance from, so it sits flush with the edge, the way a section title leads its rule;
-// any other offset keeps the full gap. min() cannot test for zero, so the offset is scaled until any positive length
-// outgrows the gap, and a zero - which, unitless, is no length at all - leaves the padding at its initial zero.
-// Content painted on a Background is a chip, whose padding is the inside of the chip, so it keeps the gap regardless.
-$spr-edge-gap: min(var(--bit-Separator-content-gap, #{spacing(1.5)}), calc(var(--bit-spr-ofs, var(--bit-Separator-content-offset, 0px)) * 10000));
-
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // separator, one set on an ancestor every separator inside it, and one set on the Style of an instance that one:
 //   --bit-Separator-color                 color of the line                              (default: $clr-brd-sec)
@@ -95,7 +88,6 @@ $spr-edge-gap: min(var(--bit-Separator-content-gap, #{spacing(1.5)}), calc(var(-
     // its container; it may shrink instead, and breaks a word that does not fit on a line of its own.
     min-width: 0;
     overflow-wrap: break-word;
-    font-family: $tg-font-family;
     font-size: var(--bit-Separator-content-font-size, inherit);
     font-weight: var(--bit-Separator-content-font-weight, inherit);
     color: var(--bit-spr-dis-fg, var(--bit-Separator-content-color, #{$clr-fg-pri}));
@@ -119,21 +111,10 @@ $spr-edge-gap: min(var(--bit-Separator-content-gap, #{spacing(1.5)}), calc(var(-
     > .bit-spr-cnt {
         padding: 0 var(--bit-Separator-content-gap, #{spacing(1.5)});
     }
-
-    &.bit-spr-srt:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {
-        padding-inline-start: $spr-edge-gap;
-    }
-
-    &.bit-spr-end:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {
-        padding-inline-end: $spr-edge-gap;
-    }
 }
 
 .bit-spr-vrt {
     height: inherit;
-    // Between runs of text, or sized to its content without any, the line would otherwise collapse to nothing;
-    // it is at least as tall as the text it stands beside, and a flex row or a container height still stretches it.
-    min-height: 1em;
     align-self: stretch;
     align-items: center;
     display: inline-flex;
@@ -150,16 +131,16 @@ $spr-edge-gap: min(var(--bit-Separator-content-gap, #{spacing(1.5)}), calc(var(-
         border-left-width: var(--bit-spr-siz, var(--bit-Separator-thickness, #{$siz-divider}));
     }
 
+    // Between runs of text, or sized to its content without any, the line would otherwise collapse to nothing, so it
+    // is at least as tall as the text it stands beside, and a flex row or a container height still stretches it. The
+    // minimum is the line's own rather than the root's: the root is border-box, so the padding an Inset adds would
+    // eat a minimum set there, and the line would be gone again.
+    &:not(:has(> .bit-spr-cnt))::before {
+        min-height: 1em;
+    }
+
     > .bit-spr-cnt {
         padding: var(--bit-Separator-content-gap, #{spacing(1.5)}) 0;
-    }
-
-    &.bit-spr-srt:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {
-        padding-top: $spr-edge-gap;
-    }
-
-    &.bit-spr-end:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {
-        padding-bottom: $spr-edge-gap;
     }
 }
 

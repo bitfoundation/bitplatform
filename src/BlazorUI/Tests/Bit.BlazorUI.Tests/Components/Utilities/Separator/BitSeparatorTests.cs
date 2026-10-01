@@ -1070,4 +1070,27 @@ public class BitSeparatorTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-spr").HasAttribute("aria-hidden"));
     }
+
+    [TestMethod]
+    public void BitSeparatorShouldKeepTheAttributesThePageSplatsOn()
+    {
+        var component = RenderComponent<BitSeparatorSplattedAttributesTest>();
+
+        var separators = component.FindAll(".bit-spr");
+
+        // A plain aria-label names the separator rather than being written over with the null of the parameter...
+        Assert.AreEqual("End of shipping", separators[0].GetAttribute("aria-label"));
+        // ...and wins over the content, which then does not name it as well.
+        Assert.AreEqual("End of shipping", separators[1].GetAttribute("aria-label"));
+        Assert.IsFalse(separators[1].HasAttribute("aria-labelledby"));
+        // Attribute names are case insensitive, so a differently cased one is the same attribute, kept as written.
+        Assert.AreEqual("shipping-heading", separators[2].GetAttribute("aria-labelledby"));
+        Assert.AreEqual("false", separators[3].GetAttribute("aria-hidden"));
+        // The root attributes the component builds itself are joined with, or yield to, the splatted ones.
+        Assert.IsTrue(separators[4].ClassList.Contains("bit-spr"));
+        Assert.IsTrue(separators[4].ClassList.Contains("page-class"));
+        StringAssert.Contains(separators[4].GetAttribute("style"), "margin: 0");
+        Assert.AreEqual("rtl", separators[4].GetAttribute("dir"));
+        Assert.AreEqual("page-id", separators[4].GetAttribute("id"));
+    }
 }

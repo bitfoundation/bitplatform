@@ -133,26 +133,33 @@ public partial class BitSeparatorStylesheetTests
     [TestMethod]
     public void BitSeparatorShouldKeepAVerticalSeparatorAtLeastALineOfTextTall()
     {
+        var stylesheet = ReadStylesheet();
+
         // Between runs of text, or sized to the content it does not have, the line would otherwise collapse to nothing.
-        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-spr-vrt {"), "min-height: 1em;");
+        // The minimum sits on the line rather than on the border-box root, whose Inset padding would otherwise eat it.
+        StringAssert.Contains(Block(stylesheet, "\n    &:not(:has(> .bit-spr-cnt))::before {"), "min-height: 1em;");
+        Assert.IsFalse(Block(stylesheet, "\n.bit-spr-vrt {").Contains("\n    min-height:"), "The minimum is on the root, where an Inset eats it.");
     }
 
     [TestMethod]
-    public void BitSeparatorShouldSitContentOffsetByNothingFlushWithItsEdge()
+    public void BitSeparatorShouldKeepTheContentGapAtBothEnds()
     {
         var stylesheet = ReadStylesheet();
 
-        // A zero offset leaves no segment to keep the gap from; any other offset keeps the whole gap, and so does the
-        // content painted on a Background, whose padding is the inside of its chip.
-        StringAssert.Contains(stylesheet, "$spr-edge-gap: min(var(--bit-Separator-content-gap, #{spacing(1.5)}), calc(var(--bit-spr-ofs, var(--bit-Separator-content-offset, 0px)) * 10000));");
+        // Start- and end-aligned content keeps the same gap from the edge as from the line, however it is painted and
+        // whatever its offset, so upgrading leaves an existing aligned label where it was.
+        StringAssert.Contains(Block(stylesheet, "\n.bit-spr-hrz {"), "padding: 0 var(--bit-Separator-content-gap, #{spacing(1.5)});");
+        StringAssert.Contains(Block(stylesheet, "\n.bit-spr-vrt {"), "padding: var(--bit-Separator-content-gap, #{spacing(1.5)}) 0;");
+        Assert.IsFalse(stylesheet.Contains("padding-inline-start"), "The content is held flush with its edge.");
+        Assert.IsFalse(stylesheet.Contains("padding-top"), "The content is held flush with its edge.");
+    }
 
-        var horizontal = Block(stylesheet, "\n.bit-spr-hrz {");
-        StringAssert.Contains(horizontal, "&.bit-spr-srt:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {\n        padding-inline-start: $spr-edge-gap;");
-        StringAssert.Contains(horizontal, "&.bit-spr-end:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {\n        padding-inline-end: $spr-edge-gap;");
-
-        var vertical = Block(stylesheet, "\n.bit-spr-vrt {");
-        StringAssert.Contains(vertical, "&.bit-spr-srt:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {\n        padding-top: $spr-edge-gap;");
-        StringAssert.Contains(vertical, "&.bit-spr-end:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {\n        padding-bottom: $spr-edge-gap;");
+    [TestMethod]
+    public void BitSeparatorShouldLetTheContentInheritTheFontOfItsSurroundings()
+    {
+        // The size and the weight inherit, so the family does too: a label inside a heading or a monospace panel
+        // matches the text around it.
+        Assert.IsFalse(Block(ReadStylesheet(), "\n.bit-spr-cnt {").Contains("font-family"), "The content forces a font family.");
     }
 
     private static string Block(string stylesheet, string opening)

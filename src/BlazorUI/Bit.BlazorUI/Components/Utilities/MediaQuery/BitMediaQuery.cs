@@ -410,15 +410,7 @@ public partial class BitMediaQuery : BitComponentBase
 
     // The tag the root element is rendered as. A name no tag can have would write markup of its own,
     // and a void element holds no content, so both fall back to the default.
-    private string _Element
-    {
-        get
-        {
-            var element = Element?.Trim();
-
-            return element.HasValue() && IsValidElement(element!) && IsVoidElement(element!) is false ? element! : "div";
-        }
-    }
+    private string _Element => ResolveContentElement(Element, "div");
 
     // A splatted aria-label is resolved here rather than written over: the null a markup attribute
     // written after the splat carries would otherwise remove it, since it binds no parameter.
