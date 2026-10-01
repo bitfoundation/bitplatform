@@ -48,7 +48,7 @@ public partial class BitPullToRefreshDemo
             Name = "CompleteDelay",
             Type = "int",
             DefaultValue = "0",
-            Description = "The duration in milliseconds to keep the complete indicator visible after a successful refresh before snapping back (0 disables the complete state).",
+            Description = "The duration in milliseconds to keep the complete indicator visible after a successful refresh before snapping back (0 disables the complete state). It is skipped when OnRefresh throws.",
         },
         new()
         {
@@ -83,7 +83,7 @@ public partial class BitPullToRefreshDemo
             Name = "Loading",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom loading template to replace the default loading svg. It is what the indicator shows while the pull is under way and while the refresh is running, so it covers every state that Release and Complete do not take over.",
+            Description = "The custom loading template to replace the default loading svg. It is what the indicator shows while the pull is under way and while the refresh is running, so it covers every state that Release and Complete do not take over. It scales with the pull, so size it in relative units.",
         },
         new()
         {
@@ -131,6 +131,15 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Name = "OnStateChange",
+            Type = "EventCallback<BitPullToRefreshState>",
+            DefaultValue = "",
+            Description = "The callback for when the gesture moves on to another stage, reported once per change. It is the one callback that hears the refresh end, since the parent re-renders for OnRefresh before the indicator closes.",
+            LinkType = LinkType.Link,
+            Href = "#state-enum",
+        },
+        new()
+        {
             Name = "OnPullCancel",
             Type = "EventCallback<decimal>",
             DefaultValue = "",
@@ -148,7 +157,7 @@ public partial class BitPullToRefreshDemo
             Name = "Release",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to replace the default svg while the pull has passed the trigger and releasing starts the refresh.",
+            Description = "The custom template to replace the glyph while the pull has passed the trigger and releasing starts the refresh. Without it, the Loading glyph is drawn there at full strength instead of faded.",
         },
         new()
         {
@@ -169,7 +178,7 @@ public partial class BitPullToRefreshDemo
             Name = "ScrollerSelector",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS selector of the element that is the scroller in the anchor to control the behavior of the pull to refresh. It is looked up inside the anchor first and in the document afterwards; left unset, the first element of the anchor is taken as the scroller.",
+            Description = "The CSS selector of the element that is the scroller in the anchor to control the behavior of the pull to refresh. It is looked up inside the anchor first and in the document afterwards, so \"body\" hangs the gesture off the page; left unset, the first element of the anchor is taken as the scroller.",
         },
         new()
         {
@@ -214,14 +223,132 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Name = "State",
+            Type = "BitPullToRefreshState",
+            DefaultValue = "Idle",
+            Description = "The stage of the gesture the component is at: idle, pulling, past the trigger, refreshing or complete. OnStateChange reports every change of it.",
+            LinkType = LinkType.Link,
+            Href = "#state-enum",
+        },
+        new()
+        {
             Name = "RefreshAsync",
             Type = "Task",
             Description = "Starts the refresh process programmatically, showing the loading indicator and invoking the OnRefresh callback. It has no effect while the component is disabled, a refresh is already in progress or the complete state is visible.",
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-PullToRefresh-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the glyph. The Color and CustomColor parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-pull-opacity",
+            DefaultValue = "0.6",
+            Description = "Opacity of the glyph while the pull falls short of the trigger; it is full once releasing would refresh.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-indicator-size",
+            DefaultValue = "2.1875rem",
+            Description = "Diameter of the indicator's disc at the trigger; below it, the disc is drawn at the fraction of it the pull has come.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-glyph-size",
+            DefaultValue = "1.5rem",
+            Description = "Size of the glyph inside the disc at the trigger, scaled with the pull the same way.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-indicator-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Fill of the disc.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-indicator-shadow",
+            DefaultValue = "--bit-shd-popup",
+            Description = "Elevation of the disc.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-indicator-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corners of the disc.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-refreshing-background",
+            DefaultValue = "--bit-clr-bg-ter",
+            Description = "Fill of the disc while the refresh runs.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-complete-background",
+            DefaultValue = "--bit-PullToRefresh-refreshing-background",
+            Description = "Fill of the disc in the complete state.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-strip-background",
+            DefaultValue = "transparent",
+            Description = "Fill of the strip the pull opens over the top of the anchor.",
+        },
+        new()
+        {
+            Name = "--bit-PullToRefresh-z-index",
+            DefaultValue = "1",
+            Description = "Layer of the strip over the anchor's content, to lift it above a sticky header inside it.",
+        },
+    ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "state-enum",
+            Name = "BitPullToRefreshState",
+            Description = "The stage of the gesture a BitPullToRefresh is at.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Idle",
+                    Description = "Nothing is being pulled and no refresh is running.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Pulling",
+                    Description = "A pull is under way but has not reached the trigger, so letting go drops it.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "CanRelease",
+                    Description = "The pull has passed the trigger, so letting go starts the refresh.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Refreshing",
+                    Description = "The refresh is running: the OnRefresh callback has not returned yet.",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Complete",
+                    Description = "The refresh has finished and the complete indicator is held open for the CompleteDelay.",
+                    Value = "4",
+                },
+            ]
+        },
         new()
         {
             Id = "color-enum",
@@ -450,48 +577,6 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         basicItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
-    }
-
-    private (int, int)[] customItems = GenerateRandomNumbers(1, 51);
-    private async Task HandleOnRefreshCustom()
-    {
-        await Task.Delay(2000);
-        customItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
-    }
-
-    private (int, int)[] multiItems1 = GenerateRandomNumbers(0, 50);
-    private async Task HandleOnRefresh1()
-    {
-        await Task.Delay(2000);
-        multiItems1 = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
-    }
-
-    private (int, int)[] multiItems2 = GenerateRandomNumbers(51, 101);
-    private async Task HandleOnRefresh2()
-    {
-        await Task.Delay(2000);
-        multiItems2 = GenerateRandomNumbers(51, 101);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
-    }
-
-    private (int, int)[] advancedItems = GenerateRandomNumbers(1, 51);
-    private async Task HandleOnRefreshAdvanced()
-    {
-        await Task.Delay(2000);
-        advancedItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
-    }
-
-    private bool isEnabled = true;
-    private (int, int)[] disabledItems = GenerateRandomNumbers(1, 51);
-    private async Task HandleOnRefreshDisabled()
-    {
-        await Task.Delay(2000);
-        disabledItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
     private double trigger = 80;
@@ -504,28 +589,53 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         behaviorItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
-    private BitPullToRefresh pullToRefreshRef = default!;
+    private (int, int)[] scrollerItems = GenerateRandomNumbers(1, 51);
+    private async Task HandleOnRefreshScroller()
+    {
+        await Task.Delay(2000);
+        scrollerItems = GenerateRandomNumbers(1, 51);
+    }
+
+    private (int, int)[] completeItems = GenerateRandomNumbers(1, 51);
+    private async Task HandleOnRefreshComplete()
+    {
+        await Task.Delay(2000);
+        completeItems = GenerateRandomNumbers(1, 51);
+    }
+
+    private (int, int)[] templateItems = GenerateRandomNumbers(51, 101);
+    private async Task HandleOnRefreshTemplates()
+    {
+        await Task.Delay(2000);
+        templateItems = GenerateRandomNumbers(51, 101);
+    }
+
+    private BitPullToRefresh? programmaticRef;
     private (int, int)[] programmaticItems = GenerateRandomNumbers(1, 51);
     private async Task RefreshProgrammatically()
     {
-        await pullToRefreshRef.RefreshAsync();
+        await programmaticRef!.RefreshAsync();
     }
     private async Task HandleOnRefreshProgrammatic()
     {
         await Task.Delay(2000);
         programmaticItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
+    private BitPullToRefresh? eventsRef;
+    private BitPullToRefreshState pullState;
     private int refreshCount;
     private decimal pullMoveDiff;
     private decimal pullEndDiff;
     private decimal pullCancelDiff;
     private BitPullToRefreshPullStartArgs? pullStartArgs;
     private (int, int)[] eventsItems = GenerateRandomNumbers(1, 51);
+    private void HandleOnStateChange(BitPullToRefreshState state)
+    {
+        pullState = state;
+    }
     private void HandleOnPullStart(BitPullToRefreshPullStartArgs args)
     {
         pullStartArgs = args;
@@ -547,39 +657,37 @@ public partial class BitPullToRefreshDemo
         refreshCount++;
         await Task.Delay(2000);
         eventsItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
-    private (int, int)[] completeItems = GenerateRandomNumbers(1, 51);
-    private async Task HandleOnRefreshComplete()
+    private bool isEnabled = true;
+    private (int, int)[] disabledItems = GenerateRandomNumbers(1, 51);
+    private async Task HandleOnRefreshDisabled()
     {
         await Task.Delay(2000);
-        completeItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+        disabledItems = GenerateRandomNumbers(1, 51);
     }
 
-    private (int, int)[] completeCustomItems = GenerateRandomNumbers(51, 101);
-    private async Task HandleOnRefreshCompleteCustom()
+    private readonly BitPullToRefreshParams[] pullToRefreshParams =
+    [
+        new()
+        {
+            Trigger = 120,
+            CompleteDelay = 1000,
+            MaxPull = 160,
+            ReleaseLabel = "Let go to refresh",
+        }
+    ];
+    private (int, int)[] cascadedItems = GenerateRandomNumbers(1, 51);
+    private async Task HandleOnRefreshCascaded()
     {
         await Task.Delay(2000);
-        completeCustomItems = GenerateRandomNumbers(51, 101);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+        cascadedItems = GenerateRandomNumbers(1, 51);
     }
-
-    private (int, int)[] styleItems = GenerateRandomNumbers(1, 51);
-    private async Task HandleOnRefreshStyle()
+    private (int, int)[] overridingItems = GenerateRandomNumbers(51, 101);
+    private async Task HandleOnRefreshOverriding()
     {
         await Task.Delay(2000);
-        styleItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
-    }
-
-    private (int, int)[] releaseItems = GenerateRandomNumbers(1, 51);
-    private async Task HandleOnRefreshRelease()
-    {
-        await Task.Delay(2000);
-        releaseItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+        overridingItems = GenerateRandomNumbers(51, 101);
     }
 
     private (int, int)[] colorItems = GenerateRandomNumbers(1, 51);
@@ -587,7 +695,6 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         colorItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
     private (int, int)[] customColorItems = GenerateRandomNumbers(51, 101);
@@ -595,7 +702,13 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         customColorItems = GenerateRandomNumbers(51, 101);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+    }
+
+    private (int, int)[] styleItems = GenerateRandomNumbers(1, 51);
+    private async Task HandleOnRefreshStyle()
+    {
+        await Task.Delay(2000);
+        styleItems = GenerateRandomNumbers(1, 51);
     }
 
     private (int, int)[] classItems = GenerateRandomNumbers(51, 101);
@@ -603,7 +716,13 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         classItems = GenerateRandomNumbers(51, 101);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+    }
+
+    private (int, int)[] cssVariablesItems = GenerateRandomNumbers(101, 151);
+    private async Task HandleOnRefreshCssVariables()
+    {
+        await Task.Delay(2000);
+        cssVariablesItems = GenerateRandomNumbers(101, 151);
     }
 
     private (int, int)[] rtlItems = GenerateRandomNumbers(1, 51);
@@ -611,7 +730,6 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         rtlItems = GenerateRandomNumbers(1, 51);
-        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
 

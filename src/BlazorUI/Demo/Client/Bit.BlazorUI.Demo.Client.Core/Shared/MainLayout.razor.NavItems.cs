@@ -149,7 +149,7 @@ public partial class MainLayout
                 new() { Text = "MediaQuery", Url = "/components/mediaquery" },
                 new() { Text = "Overlay", Url = "/components/overlay", Description = "Backdrop, Scrim", Data = "Mask, Dim, BlockUI, ClickCatcher" },
                 new() { Text = "Params", Url = "/components/params" },
-                new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
+                new() { Text = "PullToRefresh", Url = "/components/pulltorefresh", Description = "RefreshView, Refresher" },
                 new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
                 new() { Text = "SwipeTrap", Url = "/components/swipetrap" },

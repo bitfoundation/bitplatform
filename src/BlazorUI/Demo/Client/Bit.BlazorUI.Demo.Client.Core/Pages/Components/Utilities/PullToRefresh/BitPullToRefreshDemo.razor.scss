@@ -3,6 +3,7 @@
 .example-content {
     gap: 1rem;
     display: flex;
+    flex-wrap: wrap;
 }
 
 .anchor {
@@ -31,7 +32,7 @@
     }
 }
 
-.advanced-anchor {
+.scroller {
     cursor: grab;
     height: 490px;
     overflow: auto;

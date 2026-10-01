@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -28,7 +29,11 @@ public class BitPullToRefreshTests : BunitTestContext
         Assert.IsNotNull(spinnerWrapper);
         Assert.IsNotNull(spinner);
 
-        Assert.AreEqual("status", loading.GetAttribute("role"));
+        // The live region is the screen reader text alone, so whatever a template draws in the indicator is never
+        // read out with it; the indicator is the picture of what that text says.
+        Assert.IsNull(loading.GetAttribute("role"));
+        Assert.AreEqual("status", component.Find(".bit-ptr-vhd").GetAttribute("role"));
+        Assert.AreEqual("true", spinnerWrapper.GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -81,8 +86,8 @@ public class BitPullToRefreshTests : BunitTestContext
         var spinnerWrapper = component.Find(".bit-ptr-spw");
         Assert.IsTrue(spinnerWrapper.ClassList.Contains("bit-ptr-swr"));
         StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "margin-top:0px");
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:35px");
-        StringAssert.Contains(spinner.GetAttribute("style"), "width:24px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:1");
+        StringAssert.Contains(spinner.GetAttribute("style"), "rotate(0deg)");
 
         tcs.SetResult();
         refreshTask.GetAwaiter().GetResult();
@@ -92,7 +97,7 @@ public class BitPullToRefreshTests : BunitTestContext
 
         spinnerWrapper = component.Find(".bit-ptr-spw");
         Assert.IsFalse(spinnerWrapper.ClassList.Contains("bit-ptr-swr"));
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:0px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:0");
     }
 
     [TestMethod]
@@ -120,7 +125,7 @@ public class BitPullToRefreshTests : BunitTestContext
         Assert.IsFalse(spinner.ClassList.Contains("bit-ptr-spin"));
 
         var spinnerWrapper = component.Find(".bit-ptr-spw");
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:0px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:0");
     }
 
     [TestMethod]
@@ -165,12 +170,15 @@ public class BitPullToRefreshTests : BunitTestContext
 
         component.Instance._OnMove(40m).GetAwaiter().GetResult();
 
+        // The sizes themselves are the stylesheet's (the public indicator and glyph size variables); the component
+        // only writes how far the pull has come, which the disc hands down to the glyph.
         var spinnerWrapper = component.Find(".bit-ptr-spw");
         StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "margin-top:20px");
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:17.5px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:0.5");
+        Assert.IsFalse(spinnerWrapper.GetAttribute("style")!.Contains("width:"));
 
         var spinner = component.Find(".bit-ptr-spn");
-        StringAssert.Contains(spinner.GetAttribute("style"), "width:12px");
+        Assert.IsFalse(spinner.GetAttribute("style")!.Contains("width:"));
         StringAssert.Contains(spinner.GetAttribute("style"), "rotate(-80deg)");
     }
 
@@ -253,7 +261,7 @@ public class BitPullToRefreshTests : BunitTestContext
         component.Instance._OnEnd(40m).GetAwaiter().GetResult();
 
         var spinnerWrapper = component.Find(".bit-ptr-spw");
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:0px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:0");
     }
 
     [TestMethod]
@@ -267,7 +275,7 @@ public class BitPullToRefreshTests : BunitTestContext
         component.Instance._OnEnd(80m).GetAwaiter().GetResult();
 
         var spinnerWrapper = component.Find(".bit-ptr-spw");
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:35px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:1");
     }
 
     [TestMethod]
@@ -281,7 +289,7 @@ public class BitPullToRefreshTests : BunitTestContext
         component.Instance._OnCancel(40m).GetAwaiter().GetResult();
 
         var spinnerWrapper = component.Find(".bit-ptr-spw");
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:0px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:0");
     }
 
     [TestMethod]
@@ -573,7 +581,7 @@ public class BitPullToRefreshTests : BunitTestContext
             Assert.IsFalse(sw.ClassList.Contains("bit-ptr-swr"));
             Assert.IsFalse(sw.ClassList.Contains("bit-ptr-crl"));
             StringAssert.Contains(sw.GetAttribute("style"), "margin-top:0px");
-            StringAssert.Contains(sw.GetAttribute("style"), "width:35px");
+            StringAssert.Contains(sw.GetAttribute("style"), "--bit-ptr-prg:1");
 
             var checkmark = component.Find(".bit-ptr-spn svg path");
             StringAssert.Contains(checkmark.GetAttribute("d"), "16.17");
@@ -586,7 +594,7 @@ public class BitPullToRefreshTests : BunitTestContext
 
         spinnerWrapper = component.Find(".bit-ptr-spw");
         Assert.IsFalse(spinnerWrapper.ClassList.Contains("bit-ptr-cmp"));
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:0px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:0");
     }
 
     [TestMethod]
@@ -648,7 +656,7 @@ public class BitPullToRefreshTests : BunitTestContext
 
         var spinnerWrapper = component.Find(".bit-ptr-spw");
         Assert.IsFalse(spinnerWrapper.ClassList.Contains("bit-ptr-cmp"));
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:0px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:0");
     }
 
     [TestMethod]
@@ -967,7 +975,7 @@ public class BitPullToRefreshTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPullToRefreshShouldMarkTheRootBusyWhileRefreshing()
+    public void BitPullToRefreshShouldNotMarkTheRootBusyWhileRefreshing()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
 
@@ -979,8 +987,11 @@ public class BitPullToRefreshTests : BunitTestContext
 
         Assert.IsNull(component.Find(".bit-ptr").GetAttribute("aria-busy"));
 
+        // The live region is inside the root, and a screen reader holds back what changes inside a busy element
+        // until it is no longer busy - which would swallow the very announcement the refresh makes.
         var refreshTask = component.Instance._Refresh();
-        Assert.AreEqual("true", component.Find(".bit-ptr").GetAttribute("aria-busy"));
+        Assert.IsNull(component.Find(".bit-ptr").GetAttribute("aria-busy"));
+        Assert.AreEqual("Refreshing", component.Find(".bit-ptr-vhd").TextContent);
 
         tcs.SetResult();
         refreshTask.GetAwaiter().GetResult();
@@ -1076,7 +1087,7 @@ public class BitPullToRefreshTests : BunitTestContext
         component.Instance._OnMove(10m).GetAwaiter().GetResult();
 
         var spinnerWrapper = component.Find(".bit-ptr-spw");
-        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "width:35px");
+        StringAssert.Contains(spinnerWrapper.GetAttribute("style"), "--bit-ptr-prg:1");
         Assert.AreEqual(1m, component.Instance.PullProgress);
     }
 
@@ -1154,14 +1165,14 @@ public class BitPullToRefreshTests : BunitTestContext
         var component = RenderComponent<BitPullToRefresh>();
 
         component.Instance._OnMove(80m).GetAwaiter().GetResult();
-        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "width:35px");
+        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "--bit-ptr-prg:1");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
 
-        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "width:0px");
+        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "--bit-ptr-prg:0");
         Assert.IsFalse(component.Find(".bit-ptr-spw").ClassList.Contains("bit-ptr-crl"));
     }
     [TestMethod]
@@ -1222,15 +1233,13 @@ public class BitPullToRefreshTests : BunitTestContext
 
         component.Instance._OnMove(80m).GetAwaiter().GetResult();
         var atTrigger = component.Find(".bit-ptr-spw").GetAttribute("style");
-        StringAssert.Contains(atTrigger, "width:35px");
-        StringAssert.Contains(component.Find(".bit-ptr-spn").GetAttribute("style"), "width:24px");
+        StringAssert.Contains(atTrigger, "--bit-ptr-prg:1");
         StringAssert.Contains(component.Find(".bit-ptr-spn").GetAttribute("style"), "rotate(0deg)");
 
         // Past the trigger only the strip keeps growing: the disc, the glyph and the rotation are all held
         // where the trigger left them, and the release state stays on.
         component.Instance._OnMove(120m).GetAwaiter().GetResult();
-        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "width:35px");
-        StringAssert.Contains(component.Find(".bit-ptr-spn").GetAttribute("style"), "width:24px");
+        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "--bit-ptr-prg:1");
         StringAssert.Contains(component.Find(".bit-ptr-spn").GetAttribute("style"), "rotate(0deg)");
         Assert.IsTrue(component.Find(".bit-ptr-spw").ClassList.Contains("bit-ptr-crl"));
         Assert.AreEqual(1m, component.Instance.PullProgress);
@@ -1258,7 +1267,130 @@ public class BitPullToRefreshTests : BunitTestContext
         // js is about to ask for holds it, rather than being dropped the way a short pull is.
         Assert.IsTrue(component.Find(".bit-ptr-spw").ClassList.Contains("bit-ptr-crl"));
         StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "margin-top:40px");
-        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "width:35px");
+        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "--bit-ptr-prg:1");
         Assert.AreEqual(1m, component.Instance.PullProgress);
+    }
+    [TestMethod]
+    public void BitPullToRefreshShouldReportEachStateOfAPullOnce()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var states = new List<BitPullToRefreshState>();
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.Trigger, 80);
+            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => states.Add(s));
+        });
+
+        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
+
+        component.Instance._OnMove(10m).GetAwaiter().GetResult();
+        component.Instance._OnMove(40m).GetAwaiter().GetResult();
+        Assert.AreEqual(BitPullToRefreshState.Pulling, component.Instance.State);
+
+        component.Instance._OnMove(80m).GetAwaiter().GetResult();
+        component.Instance._OnMove(90m).GetAwaiter().GetResult();
+        Assert.AreEqual(BitPullToRefreshState.CanRelease, component.Instance.State);
+
+        component.Instance._OnMove(50m).GetAwaiter().GetResult();
+        component.Instance._OnCancel(50m).GetAwaiter().GetResult();
+        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
+
+        // Many moves, one report per change.
+        CollectionAssert.AreEqual(new[]
+        {
+            BitPullToRefreshState.Pulling,
+            BitPullToRefreshState.CanRelease,
+            BitPullToRefreshState.Pulling,
+            BitPullToRefreshState.Idle,
+        }, states);
+    }
+
+    [TestMethod]
+    public async Task BitPullToRefreshShouldReportTheRefreshAndItsEnd()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var states = new List<BitPullToRefreshState>();
+        var tcs = new TaskCompletionSource();
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.CompleteDelay, 1);
+            parameters.Add(p => p.OnRefresh, EventCallback.Factory.Create(this, () => tcs.Task));
+            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => states.Add(s));
+        });
+
+        var refreshTask = component.Instance._Refresh();
+        Assert.AreEqual(BitPullToRefreshState.Refreshing, component.Instance.State);
+        Assert.IsTrue(component.Instance.IsRefreshing);
+
+        tcs.SetResult();
+        await refreshTask;
+
+        // The end of the refresh - here the end of the complete state too - is reported, which is what lets a parent
+        // that rendered for OnRefresh while IsRefreshing was still true catch up.
+        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
+        Assert.IsFalse(component.Instance.IsRefreshing);
+        CollectionAssert.AreEqual(new[]
+        {
+            BitPullToRefreshState.Refreshing,
+            BitPullToRefreshState.Complete,
+            BitPullToRefreshState.Idle,
+        }, states);
+    }
+
+    [TestMethod]
+    public async Task BitPullToRefreshShouldReportIdleWhenOnRefreshThrows()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var states = new List<BitPullToRefreshState>();
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.OnRefresh, EventCallback.Factory.Create(this, () => throw new InvalidOperationException("refresh failed")));
+            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => states.Add(s));
+        });
+
+        try { await component.Instance._Refresh(); } catch (InvalidOperationException) { }
+
+        CollectionAssert.AreEqual(new[] { BitPullToRefreshState.Refreshing, BitPullToRefreshState.Idle }, states);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldReportIdleWhenAPullIsDroppedByDisabling()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
+
+        var states = new List<BitPullToRefreshState>();
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => states.Add(s));
+        });
+
+        component.Instance._OnMove(30m).GetAwaiter().GetResult();
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        CollectionAssert.AreEqual(new[] { BitPullToRefreshState.Pulling, BitPullToRefreshState.Idle }, states);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldNotReportASettledReleaseAsAChange()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var states = new List<BitPullToRefreshState>();
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.Trigger, 80);
+            parameters.Add(p => p.MaxPull, 120);
+            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => states.Add(s));
+        });
+
+        component.Instance._OnMove(120m).GetAwaiter().GetResult();
+        component.Instance._OnEnd(120m).GetAwaiter().GetResult();
+
+        // Settled at the trigger, the release still stands until the refresh js is about to ask for takes over.
+        CollectionAssert.AreEqual(new[] { BitPullToRefreshState.CanRelease }, states);
     }
 }

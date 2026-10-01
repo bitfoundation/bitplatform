@@ -7,20 +7,21 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      role="group"
-     aria-busy="@(_refreshing ? "true" : null)"
      aria-label="@AriaLabel">
 
     @(Anchor ?? ChildContent)
 
     <div @ref="_loadingRef"
-         role="status"
          style="@Styles?.Loading"
          class="bit-ptr-lod @Classes?.Loading">
         @* The one thing on the component a screen reader reads. It is on the page from the first render rather
            than being inserted with its text already in it - a live region only announces what changes inside
-           it - so the swap to the refreshing text is what gets announced. *@
-        <span class="bit-ptr-vhd">@GetScreenReaderText()</span>
-        <div style="@GetSpinnerWrapperCssStyles()"
+           it - so the swap to the refreshing text is what gets announced. The live region is this span alone:
+           on the strip it would also read out whatever a Loading, Release or Complete template draws. *@
+        <span role="status" class="bit-ptr-vhd">@GetScreenReaderText()</span>
+        @* The indicator is a picture of the state the span above puts into words. *@
+        <div aria-hidden="true"
+             style="@GetSpinnerWrapperCssStyles()"
              class="@GetSpinnerWrapperCssClasses()">
             <div style="@GetSpinnerCssStyles()"
                  class="@GetSpinnerCssClasses()">
