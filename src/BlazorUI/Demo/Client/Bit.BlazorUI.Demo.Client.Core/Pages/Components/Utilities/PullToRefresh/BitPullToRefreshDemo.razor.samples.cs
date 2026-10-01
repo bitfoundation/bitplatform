@@ -178,6 +178,15 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         user-select: none;
         border: 1px gray solid;
     }
+
+    .text-indicator {
+        white-space: nowrap;
+        font-size: 0.875rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--bit-shp-radius-full);
+        box-shadow: var(--bit-shd-popup);
+        background-color: var(--bit-clr-bg-pri);
+    }
 </style>
 
 <div style=""display:flex; gap:1rem;"">
@@ -212,6 +221,28 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         </Release>
         <Complete>🎉</Complete>
     </BitPullToRefresh>
+
+    <BitPullToRefresh OnRefresh=""HandleOnRefreshIndicator"" CompleteDelay=""1000"">
+        <Anchor>
+            <div class=""anchor"">
+                @foreach (var (idx, i) in indicatorItems)
+                {
+                    <div @key=""idx"">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                }
+            </div>
+        </Anchor>
+        <IndicatorTemplate>
+            <div class=""text-indicator"">
+                @(context.State switch
+                {
+                    BitPullToRefreshState.CanRelease => ""Release to refresh"",
+                    BitPullToRefreshState.Refreshing => ""Refreshing..."",
+                    BitPullToRefreshState.Complete => ""Up to date"",
+                    _ => $""Pull to refresh {context.Progress:P0}""
+                })
+            </div>
+        </IndicatorTemplate>
+    </BitPullToRefresh>
 </div>";
     private readonly string example4CsharpCode = @"
 private (int, int)[] completeItems = GenerateRandomNumbers(1, 51);
@@ -226,6 +257,13 @@ private async Task HandleOnRefreshTemplates()
 {
     await Task.Delay(2000);
     templateItems = GenerateRandomNumbers(51, 101);
+}
+
+private (int, int)[] indicatorItems = GenerateRandomNumbers(101, 151);
+private async Task HandleOnRefreshIndicator()
+{
+    await Task.Delay(2000);
+    indicatorItems = GenerateRandomNumbers(101, 151);
 }
 
 private static (int, int)[] GenerateRandomNumbers(int min, int max)

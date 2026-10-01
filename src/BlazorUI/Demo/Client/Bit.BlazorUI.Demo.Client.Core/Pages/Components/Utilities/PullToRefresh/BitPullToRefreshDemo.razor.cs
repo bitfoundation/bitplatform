@@ -80,6 +80,15 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Name = "IndicatorTemplate",
+            Type = "RenderFragment<BitPullToRefreshIndicatorContext>?",
+            DefaultValue = "null",
+            Description = "The custom template to replace the whole indicator - the disc and the glyph inside it. It gets the State and the PullProgress of the gesture, is drawn unscaled and unturned in the middle of the strip (which makes it the one for a text indicator), and takes over from Loading, Release and Complete. While it is set, the component re-renders for every pixel of a pull.",
+            LinkType = LinkType.Link,
+            Href = "#indicator-context",
+        },
+        new()
+        {
             Name = "Loading",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -492,6 +501,28 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Id = "indicator-context",
+            Title = "BitPullToRefreshIndicatorContext",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "State",
+                   Type = "BitPullToRefreshState",
+                   Description = "The stage of the gesture the component is at: idle, pulling, past the trigger, refreshing or complete.",
+                   LinkType = LinkType.Link,
+                   Href = "#state-enum",
+               },
+               new()
+               {
+                   Name = "Progress",
+                   Type = "decimal",
+                   Description = "How far the pull has come as a fraction of the trigger: 0 while nothing is being pulled, and 1 once releasing would start a refresh, for the whole of the refresh and in the complete state.",
+               },
+            ]
+        },
+        new()
+        {
             Id = "class-styles",
             Title = "BitPullToRefreshClassStyles",
             Parameters =
@@ -610,6 +641,13 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         templateItems = GenerateRandomNumbers(51, 101);
+    }
+
+    private (int, int)[] indicatorItems = GenerateRandomNumbers(101, 151);
+    private async Task HandleOnRefreshIndicator()
+    {
+        await Task.Delay(2000);
+        indicatorItems = GenerateRandomNumbers(101, 151);
     }
 
     private BitPullToRefresh? programmaticRef;

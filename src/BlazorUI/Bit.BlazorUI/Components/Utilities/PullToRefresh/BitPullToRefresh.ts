@@ -194,14 +194,12 @@
 
             try {
                 this.syncWidth();
-                this.loadingEl.classList.add('bit-ptr-rtn');
-                void this.loadingEl.offsetHeight;
-                this.loadingEl.style.minHeight = `${this.pullHeight(this.options.trigger)}px`;
+                this.hold();
 
                 await this.dotnetObj.invokeMethodAsync('Refresh');
             } finally {
                 this.refreshing = false;
-                this.loadingEl.style.minHeight = '0';
+                this.snapBack();
             }
         }
 
@@ -327,6 +325,7 @@
                 if (this.diff !== 0) {
                     this.diff = 0;
                     this.loadingEl.style.minHeight = '0';
+                    this.paint(0);
                     this.queueMove(0);
                 }
                 return;
@@ -343,6 +342,7 @@
             const limit = Math.max(this.options.maxPull, this.options.trigger);
             this.diff = Math.min((dy - this.options.threshold) / this.options.factor, limit);
             this.loadingEl.style.minHeight = `${this.pullHeight(this.diff)}px`;
+            this.paint(this.diff);
 
             this.queueMove(this.diff);
         }
@@ -358,6 +358,10 @@
             // of the gesture is still being reported would otherwise start a second pull on top of the refresh
             // this one is about to run.
             this.refreshing = willRefresh;
+
+            if (willRefresh) {
+                this.hold();
+            }
 
             try {
                 await this.invoke('OnEnd', diff);
@@ -418,8 +422,34 @@
 
         private snapBack() {
             this.loadingEl.classList.add('bit-ptr-rtn');
+            this.loadingEl.classList.remove('bit-ptr-hld');
             void this.loadingEl.offsetHeight;
             this.loadingEl.style.minHeight = '0';
+            this.paint(0);
+        }
+
+        // Holds the indicator for a refresh that is about to run: the strip settles at the trigger's height - an
+        // overpull is let go of - and the indicator is drawn at its full size whatever the managed side has
+        // rendered so far. It is the strip that holds it, not the component's own refreshing class, so neither
+        // round trip - the one that starts the refresh and the one that ends it - leaves a frame in which the
+        // indicator is drawn at the size the pull last had.
+        private hold() {
+            this.loadingEl.classList.add('bit-ptr-rtn', 'bit-ptr-hld');
+            void this.loadingEl.offsetHeight;
+            this.loadingEl.style.minHeight = `${this.pullHeight(this.options.trigger)}px`;
+        }
+
+        // Draws the indicator for a pull of the given (already damped) distance through three properties on the
+        // strip that the stylesheet sizes, offsets and turns it with. They are written here rather than rendered
+        // by the component, so that following the finger never re-renders it - and the whole anchor with it.
+        private paint(diff: number) {
+            const trigger = this.options.trigger;
+            const visual = Math.min(diff, trigger);
+            const style = this.loadingEl.style;
+
+            style.setProperty('--bit-ptr-prg', `${Math.round(visual / trigger * 10000) / 10000}`);
+            style.setProperty('--bit-ptr-off', `${diff / 2}px`);
+            style.setProperty('--bit-ptr-rot', `${(visual - trigger) * 2}deg`);
         }
 
         // The height the strip is drawn at for a pull of the given (already damped) distance: the raw finger

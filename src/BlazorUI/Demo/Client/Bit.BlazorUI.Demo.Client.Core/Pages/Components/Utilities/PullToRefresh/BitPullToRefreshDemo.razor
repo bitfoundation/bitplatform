@@ -109,7 +109,8 @@
             Past the trigger the glyph comes up to full strength: releasing now refreshes. <b>CompleteDelay</b> holds a
             checkmark open for that many milliseconds after the refresh (0 skips it). <b>Loading</b>, <b>Release</b>
             and <b>Complete</b> replace the glyph of each stage; they scale with the pull, so size them in relative
-            units.
+            units. <b>IndicatorTemplate</b> replaces the whole indicator, unscaled - a text one here - and gets the
+            <b>State</b> and <b>Progress</b> of the pull.
         </div>
         <br />
         <div class="example-content">
@@ -143,6 +144,28 @@
                     </svg>
                 </Release>
                 <Complete>🎉</Complete>
+            </BitPullToRefresh>
+
+            <BitPullToRefresh OnRefresh="HandleOnRefreshIndicator" CompleteDelay="1000">
+                <Anchor>
+                    <div class="anchor">
+                        @foreach (var (idx, i) in indicatorItems)
+                        {
+                            <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                        }
+                    </div>
+                </Anchor>
+                <IndicatorTemplate>
+                    <div class="text-indicator">
+                        @(context.State switch
+                        {
+                            BitPullToRefreshState.CanRelease => "Release to refresh",
+                            BitPullToRefreshState.Refreshing => "Refreshing...",
+                            BitPullToRefreshState.Complete => "Up to date",
+                            _ => $"Pull to refresh {context.Progress:P0}"
+                        })
+                    </div>
+                </IndicatorTemplate>
             </BitPullToRefresh>
         </div>
     </DemoExample>

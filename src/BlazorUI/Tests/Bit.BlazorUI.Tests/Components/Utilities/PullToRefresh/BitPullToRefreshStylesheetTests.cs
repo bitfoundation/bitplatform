@@ -78,6 +78,23 @@ public partial class BitPullToRefreshStylesheetTests
     }
 
     [TestMethod]
+    public void BitPullToRefreshShouldDrawThePullFromWhatTheScriptWrites()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The script writes the offset and the turn on the strip as the finger moves; the parts only read them.
+        StringAssert.Contains(Block(stylesheet, "\n.bit-ptr-spw {"), "margin-top: var(--bit-ptr-off, 0px);");
+        StringAssert.Contains(Block(stylesheet, "\n.bit-ptr-spn {"), "transform: rotate(var(--bit-ptr-rot, 0deg));");
+
+        // A released pull (held by the script) and a running or complete refresh (rendered by the component) both pin
+        // the indicator at its full size, so neither round trip in between draws it at the size the pull last had.
+        var held = Block(stylesheet, "\n.bit-ptr-hld .bit-ptr-spw,\n.bit-ptr-swr,\n.bit-ptr-cmp {");
+        StringAssert.Contains(held, "--bit-ptr-prg: 1;");
+        StringAssert.Contains(held, "--bit-ptr-off: 0px;");
+        StringAssert.Contains(held, "--bit-ptr-rot: 0deg;");
+    }
+
+    [TestMethod]
     public void BitPullToRefreshShouldFadeTheGlyphUntilReleasingWouldRefresh()
     {
         var stylesheet = ReadStylesheet();

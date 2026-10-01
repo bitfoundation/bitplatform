@@ -135,6 +135,21 @@ public class BitPullToRefreshParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPullToRefreshShouldApplyACascadedIndicatorTemplate()
+    {
+        var component = RenderWithParams(new BitPullToRefreshParams
+        {
+            IndicatorTemplate = ctx => b => b.AddMarkupContent(0, $"<span class=\"cascaded-indicator\">{ctx.State}</span>"),
+        });
+
+        var ptr = component.FindComponent<BitPullToRefresh>();
+        ptr.InvokeAsync(() => ptr.Instance._OnMove(80m)).GetAwaiter().GetResult();
+
+        Assert.AreEqual("CanRelease", component.Find(".bit-ptr-ind .cascaded-indicator").TextContent);
+        Assert.IsEmpty(component.FindAll(".bit-ptr-spw"));
+    }
+
+    [TestMethod]
     public void BitPullToRefreshShouldApplyCascadedCompleteDelay()
     {
         var component = RenderWithParams(new BitPullToRefreshParams { CompleteDelay = 5000, CompleteLabel = "Done" });

@@ -54,7 +54,7 @@ public partial class BitPullToRefresh : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It colors the glyph inside the indicator's disc, which is what the pull, the refresh and the complete
-    /// states all draw. Leave it unset to take the --bit-PullToRefresh-color CSS variable (the theme's primary
+    /// states all draw, and is the text color an <see cref="IndicatorTemplate"/> inherits. Leave it unset to take the --bit-PullToRefresh-color CSS variable (the theme's primary
     /// foreground color by default), or to let <see cref="CustomColor"/> apply - a theme role always wins over a
     /// literal color.
     /// </remarks>
@@ -103,6 +103,21 @@ public partial class BitPullToRefresh : BitComponentBase
     /// phone - needs the component around it to fill it too, which is what this does.
     /// </remarks>
     [Parameter, ResetClassBuilder] public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// The custom template to replace the whole indicator - the disc and the glyph inside it - with markup of its own.
+    /// </summary>
+    /// <remarks>
+    /// It is handed the <see cref="State"/> of the gesture and its <see cref="PullProgress"/>, and is drawn as it is
+    /// in the middle of the strip the pull opens, neither scaled nor turned with the pull. That makes it the one for a
+    /// text indicator ("Pull to refresh", "Release to refresh", ...), which <see cref="Loading"/>,
+    /// <see cref="Release"/> and <see cref="Complete"/> - glyphs inside the disc - cannot draw. It takes over from
+    /// all three.
+    /// <br />
+    /// The component re-renders for every pixel of a pull while it is set, so that the template can follow the
+    /// progress; without it, a pull re-renders it only when the state changes.
+    /// </remarks>
+    [Parameter] public RenderFragment<BitPullToRefreshIndicatorContext>? IndicatorTemplate { get; set; }
 
     /// <summary>
     /// The custom loading template to replace the default loading svg.
@@ -328,10 +343,7 @@ public partial class BitPullToRefresh : BitComponentBase
     [JSInvokable("OnMove")]
     public async Task _OnMove(decimal diff)
     {
-        // Only what the indicator is actually drawn from decides whether a re-render is worth it. A move that
-        // lands on the same whole pixel and the same release state renders identically, and re-rendering the
-        // component means re-rendering the whole anchor with it.
-        var changed = Math.Round(diff) != Math.Round(_diff) || CanReleaseAt(diff) != CanReleaseAt(_diff);
+        var changed = ChangesWhatIsRendered(diff);
 
         _diff = diff;
 
@@ -349,13 +361,14 @@ public partial class BitPullToRefresh : BitComponentBase
     public async Task _OnEnd(decimal diff)
     {
         // A pull that fell short is dropped; one that made it is settled at the trigger, which is where the
-        // refresh about to be asked for holds it. Settling it here rather than leaving it standing is what
-        // keeps an overpull - see MaxPull - from being drawn for the round trip in between.
+        // refresh about to be asked for holds it - an overpull (see MaxPull) included.
         var settled = diff < _Trigger ? 0 : _Trigger;
+        var changed = ChangesWhatIsRendered(settled);
 
-        if (_diff != settled)
+        _diff = settled;
+
+        if (changed)
         {
-            _diff = settled;
             await InvokeAsync(StateHasChanged);
         }
 
@@ -481,11 +494,16 @@ public partial class BitPullToRefresh : BitComponentBase
     private int _Threshold => Threshold < 0 ? 0 : Threshold;
     private int _MaxPull => MaxPull < 0 ? 0 : MaxPull;
 
-    // The pull height the indicator is drawn from, which stops at the trigger even where the pull itself is
-    // allowed past it: over that stretch the indicator holds its full size and the strip alone keeps growing.
-    private decimal _VisualDiff => _diff > _Trigger ? _Trigger : _diff;
-
     private bool CanRelease => CanReleaseAt(_diff);
+
+    // The script draws the pull itself, so a new pull height re-renders the component - and the whole anchor with
+    // it - only where what the component renders changes: the stage of the gesture, or an IndicatorTemplate that
+    // follows the progress, which a height landing on the same whole pixel still draws the same.
+    private bool ChangesWhatIsRendered(decimal diff)
+    {
+        return CanReleaseAt(diff) != CanRelease || (diff > 0) != (_diff > 0) ||
+               (IndicatorTemplate is not null && Math.Round(diff) != Math.Round(_diff));
+    }
 
     // Reports the stage the gesture is at whenever it differs from the one last reported, so a handler hears each
     // change once however many moves or renders it took.
@@ -554,15 +572,11 @@ public partial class BitPullToRefresh : BitComponentBase
         return string.Join(' ', classes);
     }
 
-    // The indicator is sized in the stylesheet, from the public --bit-PullToRefresh-indicator-size and
-    // --bit-PullToRefresh-glyph-size, times this fraction of the way to the trigger; the disc hands it down to the
-    // glyph inside it. That keeps the size themable while the indicator still grows into place along with the
-    // pull rather than appearing at full size.
+    // The indicator is sized, offset and turned in the stylesheet, from properties the script writes on the strip as
+    // the pull moves, so only the parts' own styles are rendered here.
     private string? GetSpinnerWrapperCssStyles()
     {
-        var progress = Math.Round(_VisualDiff / _Trigger, 4);
-
-        List<string> styles = [FormattableString.Invariant($"margin-top:{(_refreshing || _completed ? 0 : _diff / 2)}px;--bit-ptr-prg:{progress}")];
+        List<string> styles = [];
 
         if (Styles?.SpinnerWrapper?.HasValue() ?? false)
         {
@@ -584,7 +598,7 @@ public partial class BitPullToRefresh : BitComponentBase
             styles.Add(Styles.SpinnerWrapperComplete.Trim(';'));
         }
 
-        return string.Join(';', styles);
+        return styles.Count > 0 ? string.Join(';', styles) : null;
     }
 
     private string? GetSpinnerCssClasses()
@@ -621,7 +635,7 @@ public partial class BitPullToRefresh : BitComponentBase
 
     private string? GetSpinnerCssStyles()
     {
-        List<string> styles = [FormattableString.Invariant($"transform:rotate({(_VisualDiff - _Trigger) * 2}deg)")];
+        List<string> styles = [];
 
         if (Styles?.Spinner?.HasValue() ?? false)
         {
@@ -643,7 +657,7 @@ public partial class BitPullToRefresh : BitComponentBase
             styles.Add(Styles.SpinnerComplete.Trim(';'));
         }
 
-        return string.Join(';', styles);
+        return styles.Count > 0 ? string.Join(';', styles) : null;
     }
 
 

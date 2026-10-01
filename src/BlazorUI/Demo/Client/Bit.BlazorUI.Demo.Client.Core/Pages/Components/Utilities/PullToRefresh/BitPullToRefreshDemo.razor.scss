@@ -40,6 +40,15 @@
 }
 
 ::deep {
+    .text-indicator {
+        white-space: nowrap;
+        font-size: 0.875rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--bit-shp-radius-full);
+        box-shadow: var(--bit-shd-popup);
+        background-color: var(--bit-clr-bg-pri);
+    }
+
     .custom-loading {
         background-color: rgb(255, 106, 0, 0.1);
     }

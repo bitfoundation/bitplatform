@@ -47,13 +47,16 @@
     transition: min-height $mot-duration-short $mot-easing;
 }
 
-// --bit-ptr-prg is the fraction of the way to the trigger the pull has come, written inline by the component.
+// The pull is drawn from three properties the script writes on the strip as the finger moves, so following it never
+// re-renders the component: --bit-ptr-prg, the fraction of the way to the trigger the pull has come; --bit-ptr-off,
+// how far the indicator has travelled down with it; and --bit-ptr-rot, how far the glyph has turned on the way.
 .bit-ptr-spw {
     display: flex;
     flex-shrink: 0;
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
+    margin-top: var(--bit-ptr-off, 0px);
     width: calc(var(--bit-PullToRefresh-indicator-size, 2.1875rem) * var(--bit-ptr-prg, 0));
     height: calc(var(--bit-PullToRefresh-indicator-size, 2.1875rem) * var(--bit-ptr-prg, 0));
     border-radius: var(--bit-PullToRefresh-indicator-radius, #{$shp-radius-full});
@@ -61,9 +64,20 @@
     box-shadow: var(--bit-PullToRefresh-indicator-shadow, #{$box-shadow-popup});
 }
 
+// A released pull and a running refresh hold the indicator at its full size, settled at the top of the strip. The
+// script holds it from the moment the pull is let go (.bit-ptr-hld on the strip) until the strip has closed again,
+// the component for as long as it renders the refresh, so neither round trip in between draws it at another size.
+.bit-ptr-hld .bit-ptr-spw,
+.bit-ptr-swr,
+.bit-ptr-cmp {
+    --bit-ptr-prg: 1;
+    --bit-ptr-off: 0px;
+    --bit-ptr-rot: 0deg;
+    transition: margin-top $mot-duration-short $mot-easing;
+}
+
 .bit-ptr-swr {
     background-color: var(--bit-PullToRefresh-refreshing-background, #{$clr-bg-ter});
-    transition: margin-top $mot-duration-short $mot-easing;
 }
 
 .bit-ptr-cmp {
@@ -80,7 +94,17 @@
     height: calc(var(--bit-PullToRefresh-glyph-size, 1.5rem) * var(--bit-ptr-prg, 0));
     opacity: var(--bit-PullToRefresh-pull-opacity, 0.6);
     color: var(--bit-ptr-color, var(--bit-PullToRefresh-color, #{$clr-fg-pri}));
+    transform: rotate(var(--bit-ptr-rot, 0deg));
     transition: opacity $mot-duration-short $mot-easing;
+}
+
+// An IndicatorTemplate replaces the disc and the glyph with markup of its own, drawn as it is - neither scaled nor
+// turned with the pull - in the middle of the strip.
+.bit-ptr-ind {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-ptr-color, var(--bit-PullToRefresh-color, #{$clr-fg-pri}));
 }
 
 .bit-ptr-crl,

@@ -62,6 +62,11 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
     public bool? FullWidth { get; set; }
 
     /// <summary>
+    /// The custom template to replace the whole indicator, handed the state and the progress of the gesture.
+    /// </summary>
+    public RenderFragment<BitPullToRefreshIndicatorContext>? IndicatorTemplate { get; set; }
+
+    /// <summary>
     /// The custom template to replace the default loading glyph.
     /// </summary>
     public RenderFragment? Loading { get; set; }
@@ -171,6 +176,11 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
             bitPullToRefresh.FullWidth = FullWidth.Value;
 
             bitPullToRefresh.ClassBuilder.Reset();
+        }
+
+        if (IndicatorTemplate is not null && bitPullToRefresh.HasNotBeenSet(nameof(IndicatorTemplate)))
+        {
+            bitPullToRefresh.IndicatorTemplate = IndicatorTemplate;
         }
 
         if (Loading is not null && bitPullToRefresh.HasNotBeenSet(nameof(Loading)))
