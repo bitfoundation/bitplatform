@@ -1,5 +1,14 @@
-﻿.bit-stp {
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a SwipeTrap inherits down to whatever reads it:
+//   --bit-SwipeTrap-cursor             pointer cursor over the trap at rest              (default: inherited)
+//   --bit-SwipeTrap-swiping-cursor     pointer cursor while a swipe is being trapped     (default: grabbing)
+//   --bit-SwipeTrap-focus-color        focus ring color of a KeyboardTrigger trap        (default: $clr-pri-focus)
+
+.bit-stp {
     width: fit-content;
+    cursor: var(--bit-SwipeTrap-cursor, inherit);
 
     // A trapped axis is declared to the browser as a touch-action: without it a native scroll the browser
     // has already started stops sending cancelable events, and trapping that axis becomes a race the trap
@@ -7,6 +16,11 @@
     // takes, and taking it away would cost the page its zoom.
     // With no orientation lock both axes belong to the trap, so neither is left to the browser.
     touch-action: pinch-zoom;
+
+    // Only a trap the keyboard can reach (KeyboardTrigger, or a TabIndex of the page's own) is ever focused.
+    &:focus-visible {
+        @include focus-ring(var(--bit-SwipeTrap-focus-color, #{$clr-pri-focus}));
+    }
 
     // The locked axis is the trap's, the free axis stays the browser's.
     &.bit-stp-hrz {
@@ -22,10 +36,17 @@
         touch-action: pinch-zoom;
     }
 
-    // While a swipe is trapped: a mouse swipe would otherwise paint a text selection along the way.
-    // Also serves as a styling hook for the actively-swiping state.
+    // While a swipe is trapped: a mouse swipe would otherwise paint a text selection along the way, and the
+    // cursor says the surface is being held. Also serves as a styling hook for the actively-swiping state.
     &.bit-stp-swp {
         user-select: none;
         -webkit-user-select: none;
+        cursor: var(--bit-SwipeTrap-swiping-cursor, grabbing);
+    }
+
+    // A disabled trap takes no gesture, so it gives both axes back to the browser: the page has to scroll
+    // over it as if it were not there.
+    &.bit-dis {
+        touch-action: auto;
     }
 }

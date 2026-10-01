@@ -177,10 +177,9 @@ namespace BitBlazorUI {
         private dotnetObj: DotNetObject;
         private disposed: boolean = false;
         private observer: ResizeObserver | null = null;
-        private scrollHandler: (() => void) | null = null;
+        private scrollHandler: ((() => void) & { cancel(): void }) | null = null;
         private wheelHandler: ((e: WheelEvent) => void) | null = null;
         private dragStartHandler: ((e: DragEvent) => void) | null = null;
-        private slideTimer: number | null = null;
         private lastOverflow: string = '';
         private lastSlideState: string = '';
 
@@ -216,11 +215,10 @@ namespace BitBlazorUI {
                 this.observer.observe(observed);
 
                 if (this.isSlide) {
-                    const throttled = Utils.throttle(() => this.updateSlide(), 100) as () => void;
-                    // the throttle only calls on its leading edge, so a scroll that comes to rest inside
-                    // its window would otherwise leave the buttons reporting the state the header was in
-                    // on the way rather than the one it ended up in.
-                    this.scrollHandler = () => { throttled(); this.scheduleSlideUpdate(); };
+                    // the throttle calls on both edges, so a scroll that comes to rest inside its window
+                    // leaves the buttons reporting the state the header ended up in rather than the one it
+                    // was in on the way - which also covers the smooth scroll a slide() starts.
+                    this.scrollHandler = Utils.throttle(() => this.updateSlide(), 100, { trailing: true });
                     this.header.addEventListener('scroll', this.scrollHandler, { passive: true });
 
                     if (!this.isVertical) {
@@ -381,22 +379,6 @@ namespace BitBlazorUI {
             }
         }
 
-        // A final read of the header once it has come to rest, which is what the leading-edge throttle
-        // of the scroll handler cannot give on its own.
-        private scheduleSlideUpdate() {
-            if (this.disposed) return;
-
-            if (this.slideTimer !== null) {
-                clearTimeout(this.slideTimer);
-            }
-
-            this.slideTimer = setTimeout(() => {
-                this.slideTimer = null;
-                if (this.disposed) return;
-                this.updateSlide();
-            }, 150) as unknown as number;
-        }
-
         private updateSlide() {
             try {
                 let atStart: boolean;
@@ -449,10 +431,6 @@ namespace BitBlazorUI {
                     const sign = this.isRtl ? -1 : 1;
                     this.header.scrollBy({ left: direction * sign * amount, behavior });
                 }
-
-                // the smooth scroll above lands after the last scroll event the throttle let through,
-                // so the buttons are asked to read the header again once it has come to rest.
-                this.scheduleSlideUpdate();
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.slide:', e);
             }
@@ -473,15 +451,12 @@ namespace BitBlazorUI {
                 }
                 if (this.scrollHandler) {
                     this.header.removeEventListener('scroll', this.scrollHandler);
+                    this.scrollHandler.cancel();
                     this.scrollHandler = null;
                 }
                 if (this.wheelHandler) {
                     this.header.removeEventListener('wheel', this.wheelHandler);
                     this.wheelHandler = null;
-                }
-                if (this.slideTimer !== null) {
-                    clearTimeout(this.slideTimer);
-                    this.slideTimer = null;
                 }
                 if (this.dragStartHandler) {
                     this.header.removeEventListener('dragstart', this.dragStartHandler);
