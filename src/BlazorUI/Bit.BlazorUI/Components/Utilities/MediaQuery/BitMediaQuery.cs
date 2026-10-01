@@ -1,4 +1,7 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.CompilerServices;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A component to render content based on CSS media queries, using the browser's matchMedia API.
@@ -13,11 +16,23 @@
 /// keeps its content across the flip. The state itself is readable from <see cref="IsMatched"/>,
 /// bindable with <c>@bind-IsMatched</c>, and reported through <see cref="OnChange"/>, so a page can
 /// take the answer without rendering anything through the component at all.
+/// <br />
+/// A flip that removes the focused element (zooming in crosses breakpoints for a keyboard user too)
+/// hands the focus to the content that replaced it - the element with the same id, else the first
+/// focusable one - instead of leaving it to fall back to the top of the page, and scrolls it into
+/// view when the new layout has put it out of sight. That takes the root
+/// element, so it is not done with <see cref="NoWrapper"/>; a <see cref="Template"/> keeps the focused
+/// element itself.
 /// </remarks>
 public partial class BitMediaQuery : BitComponentBase
 {
     private string? _query;
+    private string? _elementId;
     private bool _isSetup;
+    private bool _isSeeded;
+    private bool _queryFromCascade;
+    private bool _noWrapperFromCascade;
+    private bool _elementFromCascade;
     private DotNetObjectReference<BitMediaQuery>? _dotnetObj;
 
 
@@ -37,6 +52,19 @@ public partial class BitMediaQuery : BitComponentBase
     /// </remarks>
     [CascadingParameter] public BitTheme? CascadingTheme { get; set; }
 
+    /// <summary>
+    /// Gets or sets the cascading parameters for the media query component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple media query components through the <see cref="BitParams"/> component.
+    /// <see cref="Query"/> and <see cref="ScreenQuery"/> are one decision there: neither is cascaded to a media query
+    /// that sets either of them itself.
+    /// </remarks>
+    [CascadingParameter(Name = BitMediaQueryParams.ParamName)]
+    public BitMediaQueryParams? CascadingParameters { get; set; }
+
 
 
     /// <summary>
@@ -54,6 +82,23 @@ public partial class BitMediaQuery : BitComponentBase
     /// state already.
     /// </remarks>
     [Parameter] public bool DefaultMatched { get; set; }
+
+    /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    /// <remarks>
+    /// A div is block content, which HTML does not allow where only phrasing content may go - inside a
+    /// button, a link, a label or a paragraph - and which breaks the line of text it lands in. A "span"
+    /// is the wrapper for those places, and an "li" or a "td" the one for a list or a table row, while
+    /// the component keeps everything its element does for it: the focus kept across a flip, the
+    /// themed scope the breakpoints are read from, the class, the style and the accessible name - all of
+    /// which <see cref="NoWrapper"/> gives up.
+    /// <br />
+    /// The name is used as written, but only while it is a name a tag can have and one that may hold
+    /// content; anything else (a name carrying whitespace or a "&lt;", a void element such as "br")
+    /// falls back to the default tag.
+    /// </remarks>
+    [Parameter] public string? Element { get; set; }
 
     /// <summary>
     /// Gets or sets the current matched state of the provided query.
@@ -90,9 +135,12 @@ public partial class BitMediaQuery : BitComponentBase
     /// for the component to be out of the DOM and needs no element of its own to say so: nothing is
     /// rendered at all, not even the content.
     /// <br />
+    /// Where only the div is in the way - inside a button, a paragraph or a list - an
+    /// <see cref="Element"/> of the right kind keeps all of that instead.
+    /// <br />
     /// A <see cref="ScreenQuery"/> is unaffected: with no element to read the <c>--bit-bp-*</c>
     /// variables from, the breakpoints of an enclosing <see cref="BitThemeProvider"/> are taken from
-    /// the cascading theme (see <see cref="CascadingTheme"/>) and the document root answers for the
+    /// the cascading theme (see <see cref="CascadingTheme"/>) and the document body answers for the
     /// rest, so a scoped theme is honored here as it is anywhere else.
     /// </remarks>
     [Parameter] public bool NoWrapper { get; set; }
@@ -109,6 +157,9 @@ public partial class BitMediaQuery : BitComponentBase
     /// non-viewport features such as orientation, pointer, or prefers-color-scheme.
     /// Takes precedence over <see cref="ScreenQuery"/> when both are provided.
     /// </summary>
+    /// <remarks>
+    /// A leading <c>@media</c> keyword is dropped, so a query copied out of a stylesheet works as is.
+    /// </remarks>
     [Parameter] public string? Query { get; set; }
 
     /// <summary>
@@ -175,17 +226,90 @@ public partial class BitMediaQuery : BitComponentBase
 
     protected override string RootElementClass => "bit-mdq";
 
-    protected override async Task OnInitializedAsync()
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (_HasContent is false || NoWrapper)
+        {
+            // No element is rendered any more, so the reference a previous render captured is stale.
+            RootElement = default;
+
+            // A collapsed component is asked to be out of the DOM, which still means something without an element of
+            // its own: the content it would have wrapped goes with it.
+            if (_HasContent && Visibility is not BitVisibility.Collapsed)
+            {
+                BuildContent(builder, 0);
+            }
+
+            return;
+        }
+
+        var element = _Element;
+
+        builder.OpenElement(10, element);
+        // The splatted attributes come first so everything the component builds itself is written over them. The values
+        // it would otherwise write as null are resolved against them, since a null written over a splatted attribute
+        // does not leave that attribute alone - it removes it.
+        builder.AddMultipleAttributes(11, RuntimeHelpers.TypeCheck(HtmlAttributes));
+        builder.AddAttribute(12, "id", _RootId);
+        builder.AddAttribute(13, "role", _GetRole(element));
+        builder.AddAttribute(14, "aria-label", _AriaLabel);
+        builder.AddAttribute(15, "style", JoinStyles(GetSplattedAttribute("style"), StyleBuilder.Value));
+        builder.AddAttribute(16, "class", JoinClasses(ClassBuilder.Value, GetSplattedAttribute("class")));
+        builder.AddAttribute(17, "dir", Dir?.ToString().ToLowerInvariant() ?? GetSplattedAttribute("dir"));
+        builder.AddElementReferenceCapture(18, v => RootElement = v);
+        BuildContent(builder, 19);
+        builder.CloseElement();
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMediaQueryParams))]
+    protected override void OnParametersSet()
+    {
+        // A value the cascade handed down is not one the component keeps once the cascade stops carrying it: it goes
+        // back to its default. A value assigned on the component is left alone. The two are cleared one by one: a
+        // ScreenQuery the component now sets itself must not be left behind a cascaded Query that would outrank it.
+        if (_queryFromCascade)
+        {
+            if (HasNotBeenSet(nameof(Query))) Query = null;
+            if (HasNotBeenSet(nameof(ScreenQuery))) ScreenQuery = null;
+        }
+
+        if (_noWrapperFromCascade && HasNotBeenSet(nameof(NoWrapper)))
+        {
+            NoWrapper = false;
+        }
+
+        if (_elementFromCascade && HasNotBeenSet(nameof(Element)))
+        {
+            Element = null;
+        }
+
+        _queryFromCascade = CascadingParameters?.AppliesQuery(this) is true;
+        _noWrapperFromCascade = CascadingParameters?.NoWrapper.HasValue is true && HasNotBeenSet(nameof(NoWrapper));
+        _elementFromCascade = CascadingParameters?.Element.HasValue() is true && HasNotBeenSet(nameof(Element));
+
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
     {
         // Render with the DefaultMatched state until the browser reports the actual result of the
         // query (e.g. during prerendering); the first JS notification then takes over. A bound
         // IsMatched hands its own initial value over and owns this instead.
-        if (IsMatchedHasBeenSet is false && DefaultMatched)
+        // Seeded here rather than on initialization, so a DefaultMatched a BitParams cascades is
+        // already in place: the cascade is applied with the rest of the parameters, after it.
+        if (_isSeeded is false)
         {
-            await AssignIsMatched(true);
+            _isSeeded = true;
+
+            if (IsMatchedHasBeenSet is false && DefaultMatched)
+            {
+                await AssignIsMatched(true);
+            }
         }
 
-        await base.OnInitializedAsync();
+        await base.OnParametersSetAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -202,9 +326,10 @@ public partial class BitMediaQuery : BitComponentBase
         // media query is built on the JS side from the live theme breakpoints so a customized
         // BitTheme.Layout.Breakpoints is honored (rather than baking fixed px here).
         // A blank Query is treated as absent so a bound-but-empty value still lets ScreenQuery win.
-        var customQuery = Query.HasValue() ? Query!.Trim() : null;
+        var customQuery = NormalizeQuery(Query);
         var screenQuery = customQuery is null ? ScreenQuery?.ToString() : null;
         var effectiveKey = customQuery ?? screenQuery;
+        var elementId = _ElementId;
 
         if (effectiveKey.HasValue())
         {
@@ -213,16 +338,19 @@ public partial class BitMediaQuery : BitComponentBase
             // same (e.g. after new breakpoints are applied, or when the element the tokens are read
             // from moves into another themed scope). Re-invoke setup on every render in that case
             // and let the JS side reuse the existing listener when the resolved expression is
-            // unchanged; a custom Query is verbatim, so the key comparison suffices. The listener is
-            // keyed by the component's own unique id, so nothing else here depends on the Id.
-            if (effectiveKey != _query || _isSetup is false || screenQuery is not null)
+            // unchanged; a custom Query is verbatim, so the key comparison suffices - plus the
+            // element, which is where the focus is kept across a flip: a new Id, a NoWrapper toggle
+            // or content that appears later changes it, and the JS side takes the new one in without
+            // rebuilding the listener. The listener itself is keyed by the component's unique id.
+            if (effectiveKey != _query || elementId != _elementId || _isSetup is false || screenQuery is not null)
             {
                 _query = effectiveKey;
+                _elementId = elementId;
                 _isSetup = true;
 
                 try
                 {
-                    await _js.BitMediaQuerySetup(UniqueId, _ElementId, customQuery, screenQuery, _ThemeBreakpoints, _dotnetObj);
+                    await _js.BitMediaQuerySetup(UniqueId, elementId, customQuery, screenQuery, _ThemeBreakpoints, _dotnetObj);
                 }
                 catch (JSDisconnectedException)
                 {
@@ -238,6 +366,7 @@ public partial class BitMediaQuery : BitComponentBase
             // Neither a Query nor a ScreenQuery resolves anymore: tear down the previous listener
             // and reset so a later (re)assignment sets up cleanly.
             _query = null;
+            _elementId = null;
             _isSetup = false;
             try
             {
@@ -249,12 +378,85 @@ public partial class BitMediaQuery : BitComponentBase
 
 
 
-    // The id of the element the theme breakpoints are read from, or null when this component renders
-    // no element of its own - in no-wrapper mode, and when there is nothing at all to render. The id
-    // is not the listener key, so nothing but the breakpoint lookup depends on it: any other element
-    // that happens to carry the same id (the rendered content itself, in no-wrapper mode) is not this
-    // component's themed scope and is deliberately not read.
-    private string? _ElementId => NoWrapper is false && _HasContent ? _Id : null;
+    // A query is written the way a stylesheet writes it more often than not - the "@media" at-rule
+    // keyword included, as the BitScreenQuery docs show theirs - and matchMedia rejects that keyword
+    // (the query then silently never matches), so it is dropped here rather than left to trip over.
+    private static string? NormalizeQuery(string? query)
+    {
+        if (query.HasValue() is false) return null;
+
+        var normalized = query!.Trim();
+
+        const string atRule = "@media";
+        if (normalized.StartsWith(atRule, StringComparison.OrdinalIgnoreCase)
+            && (normalized.Length == atRule.Length || char.IsWhiteSpace(normalized[atRule.Length]) || normalized[atRule.Length] == '('))
+        {
+            normalized = normalized[atRule.Length..].TrimStart();
+        }
+
+        return normalized.HasValue() ? normalized : null;
+    }
+
+    // The id of the element the theme breakpoints are read from and the focus is kept in, or null
+    // when this component renders no element of its own - in no-wrapper mode, and when there is
+    // nothing at all to render. The id is not the listener key: any other element that happens to
+    // carry the same id (the rendered content itself, in no-wrapper mode) is not this component's
+    // element and is deliberately not read.
+    private string? _ElementId => NoWrapper is false && _HasContent ? _RootId : null;
+
+    // The id the root element is rendered with: an id splatted in an attribute dictionary is kept
+    // rather than written over, and the JS side looks the element up by whichever it is.
+    private string _RootId => Id.HasValue() ? Id! : (GetSplattedAttribute("id") ?? _Id);
+
+    // The tag the root element is rendered as. A name no tag can have would write markup of its own,
+    // and a void element holds no content, so both fall back to the default.
+    private string _Element
+    {
+        get
+        {
+            var element = Element?.Trim();
+
+            return element.HasValue() && IsValidElement(element!) && IsVoidElement(element!) is false ? element! : "div";
+        }
+    }
+
+    // A splatted aria-label is resolved here rather than written over: the null a markup attribute
+    // written after the splat carries would otherwise remove it, since it binds no parameter.
+    private string? _AriaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+
+    // ARIA prohibits naming an element with no role, so a named div or span - the two generic
+    // wrappers - is a group, the generic container a name can be given to, unless the page gives it a
+    // role of its own. Any other tag keeps its native role (a list item, a navigation landmark), which
+    // a group would only overwrite.
+    private string? _GetRole(string element)
+    {
+        var role = GetSplattedAttribute("role");
+        if (role is not null) return role;
+
+        if (element.Equals("div", StringComparison.OrdinalIgnoreCase) is false
+            && element.Equals("span", StringComparison.OrdinalIgnoreCase) is false) return null;
+
+        return _AriaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
+    }
+
+    // One fragment for both states when there is a Template, so its content keeps its place in the
+    // render tree across a flip of the query and is updated rather than built again; the two sides of
+    // Matched and NotMatched sit at sequences of their own, so a flip replaces one with the other.
+    private void BuildContent(RenderTreeBuilder builder, int sequence)
+    {
+        if (Template is not null)
+        {
+            builder.AddContent(sequence, Template(IsMatched));
+        }
+        else if (IsMatched)
+        {
+            builder.AddContent(sequence + 1, Matched ?? ChildContent);
+        }
+        else
+        {
+            builder.AddContent(sequence + 2, NotMatched);
+        }
+    }
 
     private bool _HasContent => Template is not null || Matched is not null || ChildContent is not null || NotMatched is not null;
 
