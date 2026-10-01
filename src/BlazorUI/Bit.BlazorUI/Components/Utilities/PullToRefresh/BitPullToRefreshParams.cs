@@ -82,6 +82,11 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
     public int? MaxPull { get; set; }
 
     /// <summary>
+    /// Leaves the mouse out of the gesture, so that only touch and pen pull to refresh.
+    /// </summary>
+    public bool? NoMouse { get; set; }
+
+    /// <summary>
     /// The text that gets announced to screen readers while the refresh is in progress.
     /// </summary>
     public string? RefreshingLabel { get; set; }
@@ -196,6 +201,11 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
         if (MaxPull.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(MaxPull)))
         {
             bitPullToRefresh.MaxPull = MaxPull.Value;
+        }
+
+        if (NoMouse.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(NoMouse)))
+        {
+            bitPullToRefresh.NoMouse = NoMouse.Value;
         }
 
         if (RefreshingLabel is not null && bitPullToRefresh.HasNotBeenSet(nameof(RefreshingLabel)))

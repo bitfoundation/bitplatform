@@ -457,6 +457,7 @@ public class BitPullToRefreshTests : BunitTestContext
         Assert.AreEqual(10, setup.Arguments[8]);
         Assert.AreEqual(0, setup.Arguments[9]);
         Assert.AreEqual(false, setup.Arguments[10]);
+        Assert.AreEqual(false, setup.Arguments[11]);
     }
 
     [TestMethod]
@@ -518,6 +519,29 @@ public class BitPullToRefreshTests : BunitTestContext
 
         var update = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.update"].Single();
         Assert.AreEqual(false, update.Arguments[8]);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldPassNoMouseToJs()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
+
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.NoMouse, true);
+        });
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.setup"].Single();
+        Assert.AreEqual(true, setup.Arguments[11]);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.NoMouse, false);
+        });
+
+        var update = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.update"].Single();
+        Assert.AreEqual(false, update.Arguments[9]);
     }
 
     [TestMethod]

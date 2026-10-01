@@ -9,10 +9,8 @@
 .anchor {
     width: 150px;
     padding: 4px;
-    cursor: grab;
     height: 300px;
     overflow: auto;
-    user-select: none;
     border: 1px gray solid;
 }
 
@@ -33,10 +31,8 @@
 }
 
 .scroller {
-    cursor: grab;
     height: 490px;
     overflow: auto;
-    user-select: none;
 }
 
 ::deep {

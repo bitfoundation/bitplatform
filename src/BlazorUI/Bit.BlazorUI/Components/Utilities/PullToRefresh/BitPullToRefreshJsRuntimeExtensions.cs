@@ -14,9 +14,10 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     int threshold,
                                                                     int maxPull,
                                                                     bool enabled,
+                                                                    bool noMouse,
                                                                     DotNetObjectReference<BitPullToRefresh>? dotnetObjectReference)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, dotnetObjectReference);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, noMouse, dotnetObjectReference);
     }
 
     internal static ValueTask BitPullToRefreshUpdate(this IJSRuntime jsRuntime,
@@ -28,9 +29,10 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     int margin,
                                                                     int threshold,
                                                                     int maxPull,
-                                                                    bool enabled)
+                                                                    bool enabled,
+                                                                    bool noMouse)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.update", id, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.update", id, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, noMouse);
     }
 
     internal static ValueTask BitPullToRefreshRefresh(this IJSRuntime jsRuntime, string id)

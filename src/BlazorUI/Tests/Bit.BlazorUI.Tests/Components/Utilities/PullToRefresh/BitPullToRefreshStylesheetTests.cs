@@ -133,6 +133,26 @@ public partial class BitPullToRefreshStylesheetTests
         StringAssert.Contains(block, ".bit-ptr-crl {\n        border-color: Highlight;");
     }
 
+    [TestMethod]
+    public void BitPullToRefreshShouldListEveryPublicVariableOnItsDemoPage()
+    {
+        var demo = ReadDemoPage();
+
+        var listed = Regex.Matches(demo, @"Name = ""(--bit-PullToRefresh-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
+
+        CollectionAssert.AreEquivalent(DocumentedVariables(ReadStylesheet()), listed);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldKeepAMousePullFromSelectingText()
+    {
+        var block = Block(ReadStylesheet(), "\n.bit-ptr-drg {");
+
+        StringAssert.Contains(block, "user-select: none;");
+        StringAssert.Contains(block, "-webkit-user-select: none;");
+        StringAssert.Contains(block, "cursor: grabbing;");
+    }
+
     private static string Block(string stylesheet, string opening)
     {
         var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
@@ -163,6 +183,17 @@ public partial class BitPullToRefreshStylesheetTests
         Assert.IsTrue(File.Exists(path), $"Missing {path}.");
 
         return File.ReadAllText(path).Replace("\r\n", "\n");
+    }
+
+    private static string ReadDemoPage([CallerFilePath] string thisFile = "")
+    {
+        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
+                                                 "Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components",
+                                                 "Utilities", "PullToRefresh", "BitPullToRefreshDemo.razor.cs"));
+
+        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
+
+        return File.ReadAllText(path);
     }
 
     [GeneratedRegex(@"^//\s+(--bit-PullToRefresh-[a-z-]+)\s", RegexOptions.Multiline)]

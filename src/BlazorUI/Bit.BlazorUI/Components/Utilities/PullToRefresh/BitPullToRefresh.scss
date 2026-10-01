@@ -30,6 +30,18 @@
     width: 100%;
 }
 
+// A mouse pull is a drag, and a drag over text selects it, so for as long as one runs (.bit-ptr-drg, written by the
+// script once the drag is claimed) the content is not selectable and the pointer says what is being done.
+.bit-ptr-drg {
+    user-select: none;
+    -webkit-user-select: none;
+
+    &,
+    * {
+        cursor: grabbing;
+    }
+}
+
 .bit-ptr-lod {
     top: 0;
     height: 0;

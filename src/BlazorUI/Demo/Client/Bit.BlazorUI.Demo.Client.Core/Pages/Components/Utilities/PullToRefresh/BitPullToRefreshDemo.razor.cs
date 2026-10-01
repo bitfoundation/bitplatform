@@ -110,10 +110,31 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
-            Name = "OnRefresh",
-            Type = "EventCallback",
+            Name = "NoMouse",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Leaves the mouse out of the gesture, so that only touch and pen pull to refresh. A mouse or pen drag that starts on a form field or editable content is left to it either way.",
+        },
+        new()
+        {
+            Name = "OnPullCancel",
+            Type = "EventCallback<decimal>",
             DefaultValue = "",
-            Description = "The callback for when the trigger condition of the pull-down happens.",
+            Description = "The callback for when the pull-down gets canceled before release, providing the last pull height.",
+        },
+        new()
+        {
+            Name = "OnPullEnd",
+            Type = "EventCallback<decimal>",
+            DefaultValue = "",
+            Description = "The callback for the ending of the pull-down.",
+        },
+        new()
+        {
+            Name = "OnPullMove",
+            Type = "EventCallback<decimal>",
+            DefaultValue = "",
+            Description = "The callback for when the pull-down is in progress, reporting the pull height in pixels, which is capped at Trigger - or at MaxPull where the pull is allowed past it. The reports are coalesced to at most one per frame and never repeat a whole pixel.",
         },
         new()
         {
@@ -126,17 +147,10 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
-            Name = "OnPullMove",
-            Type = "EventCallback<decimal>",
+            Name = "OnRefresh",
+            Type = "EventCallback",
             DefaultValue = "",
-            Description = "The callback for when the pull-down is in progress, reporting the pull height in pixels, which is capped at Trigger - or at MaxPull where the pull is allowed past it. The reports are coalesced to at most one per frame and never repeat a whole pixel.",
-        },
-        new()
-        {
-            Name = "OnPullEnd",
-            Type = "EventCallback<decimal>",
-            DefaultValue = "",
-            Description = "The callback for the ending of the pull-down.",
+            Description = "The callback for when the trigger condition of the pull-down happens.",
         },
         new()
         {
@@ -146,13 +160,6 @@ public partial class BitPullToRefreshDemo
             Description = "The callback for when the gesture moves on to another stage, reported once per change. It is the one callback that hears the refresh end, since the parent re-renders for OnRefresh before the indicator closes.",
             LinkType = LinkType.Link,
             Href = "#state-enum",
-        },
-        new()
-        {
-            Name = "OnPullCancel",
-            Type = "EventCallback<decimal>",
-            DefaultValue = "",
-            Description = "The callback for when the pull-down gets canceled before release, providing the last pull height.",
         },
         new()
         {
@@ -698,6 +705,7 @@ public partial class BitPullToRefreshDemo
     }
 
     private bool isEnabled = true;
+    private bool noMouse;
     private (int, int)[] disabledItems = GenerateRandomNumbers(1, 51);
     private async Task HandleOnRefreshDisabled()
     {

@@ -18,6 +18,7 @@ public partial class BitPullToRefresh : BitComponentBase
     private int _lastMaxPull;
     private decimal _lastFactor;
     private bool _lastIsEnabled;
+    private bool _lastNoMouse;
     private string? _lastScrollerSelector;
     private ElementReference? _lastScrollerElement;
     private ElementReference _loadingRef = default!;
@@ -150,6 +151,18 @@ public partial class BitPullToRefresh : BitComponentBase
     /// which is what it does by default.
     /// </remarks>
     [Parameter] public int MaxPull { get; set; }
+
+    /// <summary>
+    /// Leaves the mouse out of the gesture, so that only touch and pen pull to refresh.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A mouse pull is a drag, which on a desktop is how text gets selected and things get moved, and a desktop
+    /// usually offers a refresh button or a key of its own anyway. Whatever the setting, a mouse or pen drag that
+    /// starts on a form field or editable content is left to it.
+    /// </remarks>
+    [Parameter] public bool NoMouse { get; set; }
 
     /// <summary>
     /// The callback for when the trigger condition of the pull-down happens.
@@ -456,7 +469,7 @@ public partial class BitPullToRefresh : BitComponentBase
         if (IsRendered is false) return;
 
         if (_lastTrigger != Trigger || _lastFactor != Factor || _lastMargin != Margin || _lastThreshold != Threshold ||
-            _lastMaxPull != MaxPull || _lastIsEnabled != IsEnabled || _lastScrollerSelector != ScrollerSelector ||
+            _lastMaxPull != MaxPull || _lastIsEnabled != IsEnabled || _lastNoMouse != NoMouse || _lastScrollerSelector != ScrollerSelector ||
             !Nullable.Equals(_lastScrollerElement, ScrollerElement))
         {
             // js drops the pull height of an idle component when it gets disabled, so the managed
@@ -467,7 +480,7 @@ public partial class BitPullToRefresh : BitComponentBase
             }
 
             CacheJsParameters();
-            await _js.BitPullToRefreshUpdate(UniqueId, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled);
+            await _js.BitPullToRefreshUpdate(UniqueId, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse);
 
             // A pull dropped by the disabling, or one a new Trigger has moved across the release line.
             await NotifyStateChange();
@@ -480,7 +493,7 @@ public partial class BitPullToRefresh : BitComponentBase
         {
             CacheJsParameters();
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, dotnetObj);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -494,6 +507,7 @@ public partial class BitPullToRefresh : BitComponentBase
         _lastThreshold = Threshold;
         _lastMaxPull = MaxPull;
         _lastIsEnabled = IsEnabled;
+        _lastNoMouse = NoMouse;
         _lastScrollerSelector = ScrollerSelector;
         _lastScrollerElement = ScrollerElement;
     }

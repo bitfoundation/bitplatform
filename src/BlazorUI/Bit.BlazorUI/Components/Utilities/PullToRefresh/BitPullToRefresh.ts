@@ -14,6 +14,7 @@
             threshold: number,
             maxPull: number,
             enabled: boolean,
+            noMouse: boolean,
             dotnetObj: DotNetObject) {
             // An id that is already registered would otherwise leave the previous refresher's listeners on the
             // anchor forever, so a component re-created against the same id keeps a single live gesture.
@@ -25,7 +26,7 @@
                 loadingEl,
                 scrollerElement,
                 scrollerSelector,
-                { trigger, factor, margin, threshold, maxPull, enabled },
+                { trigger, factor, margin, threshold, maxPull, enabled, noMouse },
                 dotnetObj);
         }
 
@@ -38,11 +39,12 @@
             margin: number,
             threshold: number,
             maxPull: number,
-            enabled: boolean) {
+            enabled: boolean,
+            noMouse: boolean) {
             PullToRefresh._refreshers[id]?.update(
                 scrollerElement,
                 scrollerSelector,
-                { trigger, factor, margin, threshold, maxPull, enabled });
+                { trigger, factor, margin, threshold, maxPull, enabled, noMouse });
         }
 
         public static async refresh(id: string) {
@@ -65,12 +67,18 @@
         threshold: number;
         maxPull: number;
         enabled: boolean;
+        noMouse: boolean;
     }
 
     // How far the finger travels before the gesture decides whether it is a pull or a sideways swipe. Below
     // it nothing is reported and nothing is prevented, so the few pixels a horizontal scroller or a carousel
     // needs to claim the gesture are left to the browser.
     const AXIS_SLOP = 8;
+
+    // What a mouse or a pen drags across to select text or to move a caret: a pull started there would take the
+    // drag away from the field, so it is never claimed for one. A finger on a field at the top of the list still
+    // pulls, the way it does in a native app.
+    const EDITABLE = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
 
     // A pull is one pointer travelling down. 0 while that is still undecided, 1 once it is a pull, -1 once the
     // gesture has been given up on - a sideways swipe, a second finger, a scroller that is no longer at its top.
@@ -221,6 +229,7 @@
             this.releasePointer();
 
             this.anchorEl.style.touchAction = this.anchorTouchAction;
+            this.anchorEl.classList.remove('bit-ptr-drg');
             this.loadingEl.style.minHeight = '';
 
             this.dotnetObj?.dispose();
@@ -234,7 +243,7 @@
             // Anything but a single finger is a pinch or a two-finger scroll, never a pull.
             if (e.touches.length !== 1) return this.abandon();
 
-            this.start(e.touches[0].screenX, e.touches[0].screenY);
+            this.start(e.touches[0].screenX, e.touches[0].screenY, e.target);
         };
 
         private onTouchMove = (e: TouchEvent) => {
@@ -250,9 +259,11 @@
         private onPointerDown = (e: PointerEvent) => {
             // A touch pointer is already covered by the touch listeners above.
             if (e.pointerType === 'touch' || e.button !== 0) return;
+            if (e.pointerType === 'mouse' && this.options.noMouse) return;
+            if (e.target instanceof Element && e.target.closest(EDITABLE)) return;
 
             this.pointerId = e.pointerId;
-            this.start(e.screenX, e.screenY);
+            this.start(e.screenX, e.screenY, e.target);
         };
 
         private onPointerMove = (e: PointerEvent) => {
@@ -275,8 +286,10 @@
             void this.cancel();
         };
 
-        private start(x: number, y: number) {
-            if (!this.options.enabled || this.refreshing || this.getScrollTop() > 0) return this.abandon();
+        private start(x: number, y: number, target: EventTarget | null) {
+            if (!this.options.enabled || this.refreshing || this.getScrollTop() > 0 || this.isNestedScrollerAway(target)) {
+                return this.abandon();
+            }
 
             this.startX = x;
             this.startY = y;
@@ -314,6 +327,11 @@
                 // anchor, which used to cancel it.
                 if (this.pointerId !== -1 && 'pointerId' in e) {
                     try { this.anchorEl.setPointerCapture(this.pointerId); } catch { /* the pointer is already gone */ }
+
+                    // A mouse pull is a drag, and a drag over text selects it. What the slop above already
+                    // selected is dropped, and the stylesheet keeps the rest of the pull from selecting more.
+                    this.anchorEl.classList.add('bit-ptr-drg');
+                    window.getSelection()?.removeAllRanges();
                 }
             }
 
@@ -406,6 +424,7 @@
             this.pendingDiff = -1;
             this.reportedDiff = -1;
             this.releasePointer();
+            this.anchorEl.classList.remove('bit-ptr-drg');
         }
 
         private releasePointer() {
@@ -545,6 +564,24 @@
                 : el.scrollTop;
         }
 
+        // A scrollable element between the pointer and the scroller that is not at its own top - a nested list, a
+        // code block, a text area - takes a downward drag for its own scrolling, the way the browser hands a scroll to
+        // the innermost scroller first; pulling there would refresh the page instead of scrolling it back up.
+        private isNestedScrollerAway(target: EventTarget | null) {
+            let el = target instanceof Element ? target : null;
+
+            while (el && el !== this.scrollerEl && el !== this.anchorEl) {
+                if (el.scrollTop > 0) {
+                    const overflowY = getComputedStyle(el).overflowY;
+                    if (overflowY === 'auto' || overflowY === 'scroll') return true;
+                }
+
+                el = el.parentElement;
+            }
+
+            return false;
+        }
+
         private bindScroller() {
             this.scrollerEl.addEventListener('scroll', this.onScroll, { passive: true });
             this.syncScrollStyles();
@@ -590,6 +627,7 @@
                 threshold: Math.max(options.threshold || 0, 0),
                 maxPull: Math.max(options.maxPull || 0, 0),
                 enabled: options.enabled,
+                noMouse: options.noMouse,
             };
         }
     }

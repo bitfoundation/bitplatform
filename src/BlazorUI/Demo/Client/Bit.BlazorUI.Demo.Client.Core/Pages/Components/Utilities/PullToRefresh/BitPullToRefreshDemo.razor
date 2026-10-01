@@ -72,8 +72,8 @@
         <div>
             <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) names the element that actually scrolls, so the pull
             engages only while it is at its top - left unset, the anchor's first element is used, and <code>body</code>
-            hangs the gesture off the page. <b>FullWidth</b> fills the layout region instead of shrink-wrapping the
-            content.
+            hangs the gesture off the page. A nested scroller that is not at its own top keeps the drag for itself.
+            <b>FullWidth</b> fills the layout region instead of shrink-wrapping the content.
         </div>
         <br />
         <div class="mobile-frame">
@@ -236,15 +236,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Disabled and touch only" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             <b>IsEnabled="false"</b> turns the gesture off and gives scrolling back to the browser; the content stays
-            interactive.
+            interactive. <b>NoMouse</b> keeps it for touch and pen, leaving a mouse drag to select text. A mouse drag
+            that starts in a form field is always left to the field.
         </div>
         <br />
         <BitToggle @bind-Value="isEnabled" Label="Enabled" />
+        <BitToggle @bind-Value="noMouse" Label="NoMouse" />
         <br />
-        <BitPullToRefresh IsEnabled="isEnabled" OnRefresh="HandleOnRefreshDisabled">
+        <BitPullToRefresh IsEnabled="isEnabled" NoMouse="noMouse" OnRefresh="HandleOnRefreshDisabled">
             <div class="anchor">
                 @foreach (var (idx, i) in disabledItems)
                 {

@@ -107,7 +107,7 @@ public class BitPullToRefreshParamsTests : BunitTestContext
     [TestMethod]
     public void BitPullToRefreshShouldPassCascadedGestureNumbersToJs()
     {
-        RenderWithParams(new BitPullToRefreshParams { Trigger = 120, Factor = 2m, Margin = 10, Threshold = 5, MaxPull = 160 });
+        RenderWithParams(new BitPullToRefreshParams { Trigger = 120, Factor = 2m, Margin = 10, Threshold = 5, MaxPull = 160, NoMouse = true });
 
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.PullToRefresh.setup");
 
@@ -116,6 +116,7 @@ public class BitPullToRefreshParamsTests : BunitTestContext
         Assert.AreEqual(10, setup.Arguments[7]);
         Assert.AreEqual(5, setup.Arguments[8]);
         Assert.AreEqual(160, setup.Arguments[9]);
+        Assert.AreEqual(true, setup.Arguments[11]);
     }
 
     [TestMethod]
@@ -224,5 +225,6 @@ public class BitPullToRefreshParamsTests : BunitTestContext
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.PullToRefresh.setup");
         Assert.AreEqual(80, setup.Arguments[5]);
         Assert.AreEqual(1.5m, setup.Arguments[6]);
+        Assert.AreEqual(false, setup.Arguments[11]);
     }
 }

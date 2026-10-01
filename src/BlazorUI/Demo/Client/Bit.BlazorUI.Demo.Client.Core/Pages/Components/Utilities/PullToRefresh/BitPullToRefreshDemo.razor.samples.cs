@@ -7,10 +7,8 @@ public partial class BitPullToRefreshDemo
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 </style>
@@ -42,10 +40,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 </style>
@@ -114,10 +110,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     }
 
     .scroller {
-        cursor: grab;
         height: 490px;
         overflow: auto;
-        user-select: none;
     }
 
     .row {
@@ -172,10 +166,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 
@@ -277,10 +269,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 </style>
@@ -325,10 +315,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 </style>
@@ -405,16 +393,15 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 </style>
 
 <BitToggle @bind-Value=""isEnabled"" Label=""Enabled"" />
-<BitPullToRefresh IsEnabled=""isEnabled"" OnRefresh=""HandleOnRefreshDisabled"">
+<BitToggle @bind-Value=""noMouse"" Label=""NoMouse"" />
+<BitPullToRefresh IsEnabled=""isEnabled"" NoMouse=""noMouse"" OnRefresh=""HandleOnRefreshDisabled"">
     <div class=""anchor"">
         @foreach (var (idx, i) in disabledItems)
         {
@@ -424,6 +411,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
 </BitPullToRefresh>";
     private readonly string example7CsharpCode = @"
 private bool isEnabled = true;
+private bool noMouse;
 private (int, int)[] disabledItems = GenerateRandomNumbers(1, 51);
 private async Task HandleOnRefreshDisabled()
 {
@@ -442,10 +430,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 </style>
@@ -508,10 +494,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 </style>
@@ -561,10 +545,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 
@@ -647,10 +629,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     .anchor {
         width: 150px;
         padding: 4px;
-        cursor: grab;
         height: 300px;
         overflow: auto;
-        user-select: none;
         border: 1px gray solid;
     }
 </style>
