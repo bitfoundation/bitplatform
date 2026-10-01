@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitProgress"/> component.
@@ -210,9 +210,7 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
 
         if (Dir.HasValue)
         {
-            // Dir reads through to the cascading direction while it has no value of its own, so it goes back to no
-            // value rather than to the direction it happened to read, which would pin that direction in its place.
-            bitProgress.TakeFromCascade(nameof(Dir), Dir, static p => p.Dir, static (p, v) => p.Dir = v, original: null);
+            bitProgress.TakeFromCascade(nameof(Dir), Dir, static p => p.Dir, static (p, v) => p.Dir = v);
         }
 
         if (ForceAnimation.HasValue)

@@ -15,8 +15,6 @@ public partial class BitProgress : BitComponentBase
     private string? _announcement;
     private int _announcementGeneration;
     private bool _cascadeChanged;
-    private readonly HashSet<string> _cascadeSupplied = [];
-    private readonly Dictionary<string, Action> _cascadeRestores = [];
     private bool _delayDecided;
     private bool _isDelaying;
     private bool _holdsForInteractivity;
@@ -414,31 +412,12 @@ public partial class BitProgress : BitComponentBase
     }
 
     /// <summary>
-    /// Supplies a parameter from the cascade, unless the markup has set it. The value it held before the cascade
-    /// first supplied it is remembered, so it can be put back once the cascade stops giving one.
+    /// Supplies a parameter from the cascade, unless the markup has set it. BitComponentBase remembers the value it
+    /// held before the cascade first supplied it, and puts it back once the cascade stops giving one.
     /// </summary>
     internal void TakeFromCascade<T>(string name, T value, Func<BitProgress, T> get, Action<BitProgress, T> set)
     {
-        TakeFromCascade(name, value, get, set, get(this));
-    }
-
-    /// <summary>
-    /// Supplies a parameter from the cascade, unless the markup has set it, and puts <paramref name="original"/>
-    /// back once the cascade stops giving one - for a parameter whose getter reads through to something other than
-    /// the value it was given, which would otherwise be pinned in place of it.
-    /// </summary>
-    internal void TakeFromCascade<T>(string name, T value, Func<BitProgress, T> get, Action<BitProgress, T> set, T original)
-    {
         if (IsSetByMarkup(name)) return;
-
-        _cascadeSupplied.Add(name);
-
-        // Checked before the closure is built, rather than left to TryAdd, so a value the cascade keeps supplying
-        // allocates nothing on the renders after the first.
-        if (_cascadeRestores.ContainsKey(name) is false)
-        {
-            _cascadeRestores.Add(name, () => set(this, original));
-        }
 
         // A value the cascade supplies again unchanged is no change: the class and style strings built from it the
         // last time still hold, so they are only rebuilt when something the cascade gives actually moves.
@@ -449,47 +428,20 @@ public partial class BitProgress : BitComponentBase
         _cascadeChanged = true;
     }
 
-    // The progress's own parameters are tracked by the generated SetParametersAsync, and the ones it inherits by
-    // the base class's; a name belongs to exactly one of the two, so either one having seen it means the markup
-    // set it.
-    private bool IsSetByMarkup(string name) => HasNotBeenSet(name) is false || base.HasNotBeenSet(name) is false;
-
-    // A value written by the cascade is not a parameter the markup passes again on the next render, so Blazor
-    // never overwrites it: a cascade that stops supplying it - the setting cleared, or the cascade gone - would
-    // otherwise leave it in place for good. So the cascade is applied first, and whatever it supplied last time but
-    // not this time goes back to the value it replaced; a parameter the markup now sets already holds its own.
     private void ApplyCascade()
     {
-        if (CascadingParameters is null && _cascadeRestores.Count == 0) return;
+        if (CascadingParameters is null) return;
 
-        _cascadeSupplied.Clear();
         _cascadeChanged = false;
 
-        CascadingParameters?.UpdateParameters(this);
-
-        if (_cascadeRestores.Count > _cascadeSupplied.Count)
-        {
-            // Removing the current entry while enumerating a Dictionary is allowed, and leaves the enumeration intact.
-            foreach (var (name, restore) in _cascadeRestores)
-            {
-                if (_cascadeSupplied.Contains(name)) continue;
-
-                if (IsSetByMarkup(name) is false)
-                {
-                    restore();
-
-                    _cascadeChanged = true;
-                }
-
-                _cascadeRestores.Remove(name);
-            }
-        }
+        CascadingParameters.UpdateParameters(this);
 
         if (_cascadeChanged is false) return;
 
         ClassBuilder.Reset();
         StyleBuilder.Reset();
     }
+
 
     // The window is decided on the first pass, once the cascade has had its say, and only ever closed after that.
     // Opening it again later would hide a progress the reader is already watching; and since the stylesheet's

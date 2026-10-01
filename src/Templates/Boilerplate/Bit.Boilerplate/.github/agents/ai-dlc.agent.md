@@ -75,7 +75,7 @@ The features below were switched **off** when this project was generated from th
 *   **Multi-tenancy** (`multitenant`): tenant entity and management UI, tenant resolution, and tenant-aware EF Core global query filters.
 <!--#endif-->
 <!--#if (aspire != true)-->
-*   **.NET Aspire** (`aspire`): the `AppHost` orchestration project, service discovery, dev tunnels and the Aspire dashboard wiring.
+*   **.NET Aspire** (`aspire`): the `AppHost` orchestration project, service discovery and the Aspire dashboard wiring.
 <!--#endif-->
 <!--#if (redis != true)-->
 *   **Redis** (`redis`): distributed cache, Hangfire job storage, SignalR backplane and distributed lock.

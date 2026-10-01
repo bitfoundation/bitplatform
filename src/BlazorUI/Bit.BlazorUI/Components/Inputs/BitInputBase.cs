@@ -162,6 +162,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// </summary>
     protected internal bool HasNotBeenSetOnInput(string name) => _assignedInputParameters.Contains(name) is false;
 
+    private protected override bool IsSetByMarkup(string name) => _assignedInputParameters.Contains(name) || base.IsSetByMarkup(name);
+
 
 
     public override Task SetParametersAsync(ParameterView parameters)
