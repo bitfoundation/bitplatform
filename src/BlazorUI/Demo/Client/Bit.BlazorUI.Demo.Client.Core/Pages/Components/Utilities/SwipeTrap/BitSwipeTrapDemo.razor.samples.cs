@@ -623,6 +623,9 @@ private void ResetList()
             </div>
             <div class=""main"">
                 <BitSwipeTrap Style=""width:100%;height:100%""
+                              KeyboardTrigger
+                              AriaLabel=""Screen. Swipe, or press the arrow keys, to open and close the side menus.""
+                              OrientationLock=""BitSwipeOrientation.Horizontal""
                               OnMove=""HandleOnMovePanelAdvanced""
                               OnEnd=""HandleOnEndPanelAdvanced""
                               OnTrigger=""HandleOnTriggerPanelAdvanced"">
@@ -866,4 +869,39 @@ private void HandleOnTriggerCascadedOwn(BitSwipeTrapTriggerArgs args)
         <div class=""box"">CSS variables (hover, swipe, Tab)</div>
     </BitSwipeTrap>
 </div>";
+
+    private readonly string example11RazorCode = @"
+<style>
+    .box {
+        width: 100%;
+        height: 160px;
+        display: flex;
+        user-select: none;
+        border-radius: 0.5rem;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+</style>
+
+<div dir=""rtl"">
+    <BitSwipeTrap Dir=""BitDir.Rtl""
+                  KeyboardTrigger
+                  AriaLabel=""کارت پیام. برای بایگانی به چپ بکشید یا کلید جهت چپ را بزنید، برای تعویق به راست.""
+                  OrientationLock=""BitSwipeOrientation.Horizontal""
+                  OnTrigger=""HandleOnTriggerRtl"">
+        <div class=""box"">
+            <div><b>راست: تعویق - چپ: بایگانی</b></div>
+            <div aria-live=""polite"">آخرین اقدام: @rtlCardAction</div>
+        </div>
+    </BitSwipeTrap>
+</div>";
+    private readonly string example11CsharpCode = @"
+private string? rtlCardAction;
+private void HandleOnTriggerRtl(BitSwipeTrapTriggerArgs args)
+{
+    // The directions are physical, so in a right-to-left layout the end of the line is on the left.
+    rtlCardAction = args.Direction == BitSwipeDirection.Left ? ""بایگانی شد"" : ""به تعویق افتاد"";
+}";
 }

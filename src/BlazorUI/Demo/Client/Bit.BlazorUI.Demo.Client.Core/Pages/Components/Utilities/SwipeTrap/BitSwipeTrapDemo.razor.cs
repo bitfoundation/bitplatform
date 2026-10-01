@@ -669,4 +669,12 @@ public partial class BitSwipeTrapDemo
     {
         triggerArgsCascadedOwn = args;
     }
+
+
+    private string? rtlCardAction;
+    private void HandleOnTriggerRtl(BitSwipeTrapTriggerArgs args)
+    {
+        // The directions are physical, so in a right-to-left layout the end of the line is on the left.
+        rtlCardAction = args.Direction == BitSwipeDirection.Left ? "بایگانی شد" : "به تعویق افتاد";
+    }
 }
