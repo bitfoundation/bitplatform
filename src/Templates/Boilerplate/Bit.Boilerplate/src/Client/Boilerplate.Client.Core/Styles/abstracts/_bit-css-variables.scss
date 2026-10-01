@@ -256,6 +256,10 @@ $bit-color-border-disabled: var(--bit-clr-brd-dis);
 //required
 $bit-color-required: var(--bit-clr-req);
 
+//tooltip
+$bit-color-tooltip-background: var(--bit-clr-tooltip-bg);
+$bit-color-tooltip-foreground: var(--bit-clr-tooltip-fg);
+
 //neutrals
 $bit-color-neutrals-white: var(--bit-clr-ntr-white);
 $bit-color-neutrals-black: var(--bit-clr-ntr-black);
@@ -288,6 +292,7 @@ $bit-box-shadow-callout2: var(--bit-shd-cal2);
 
 //shadows-surface (per surface family)
 $bit-box-shadow-card: var(--bit-shd-card);
+$bit-box-shadow-card-hover: var(--bit-shd-card-hover);
 $bit-box-shadow-popup: var(--bit-shd-popup);
 $bit-box-shadow-dialog: var(--bit-shd-dialog);
 $bit-box-shadow-sheet: var(--bit-shd-sheet);
@@ -334,6 +339,10 @@ $bit-box-shadow-24: var(--bit-shd-24);
 
 //spacing
 $bit-spacing-scaling-factor: var(--bit-spa-scaling-factor);
+$bit-spacing-dialog: var(--bit-spa-dialog);
+$bit-spacing-card-sm: var(--bit-spa-card-sm);
+$bit-spacing-card-md: var(--bit-spa-card-md);
+$bit-spacing-card-lg: var(--bit-spa-card-lg);
 
 //z-index
 $bit-zindex-snackbar: var(--bit-zin-snackbar);
@@ -361,20 +370,61 @@ $bit-shape-radius-control: var(--bit-shp-radius-control);
 $bit-shape-radius-surface: var(--bit-shp-radius-surface);
 $bit-shape-radius-popup: var(--bit-shp-radius-popup);
 $bit-shape-radius-dialog: var(--bit-shp-radius-dialog);
+$bit-shape-radius-sheet: var(--bit-shp-radius-sheet);
 $bit-shape-radius-button: var(--bit-shp-radius-button);
 $bit-shape-radius-chip: var(--bit-shp-radius-chip);
 $bit-shape-radius-selection: var(--bit-shp-radius-selection);
+$bit-shape-radius-tab-indicator: var(--bit-shp-radius-tab-indicator);
+$bit-shape-radius-tab-indicator-base: var(--bit-shp-radius-tab-indicator-base);
 
 //size
 $bit-size-control-sm: var(--bit-siz-ctrl-sm);
 $bit-size-control-md: var(--bit-siz-ctrl-md);
 $bit-size-control-lg: var(--bit-siz-ctrl-lg);
+$bit-size-control-padding-x-sm: var(--bit-siz-ctrl-pad-x-sm);
+$bit-size-control-padding-x-md: var(--bit-siz-ctrl-pad-x-md);
+$bit-size-control-padding-x-lg: var(--bit-siz-ctrl-pad-x-lg);
+$bit-size-control-padding-y-sm: var(--bit-siz-ctrl-pad-y-sm);
+$bit-size-control-padding-y-md: var(--bit-siz-ctrl-pad-y-md);
+$bit-size-control-padding-y-lg: var(--bit-siz-ctrl-pad-y-lg);
+$bit-size-control-min-width: var(--bit-siz-ctrl-min-width);
+$bit-size-item-sm: var(--bit-siz-item-sm);
+$bit-size-item-md: var(--bit-siz-item-md);
+$bit-size-item-lg: var(--bit-siz-item-lg);
+$bit-size-tab: var(--bit-siz-tab);
+$bit-size-tab-indicator: var(--bit-siz-tab-indicator);
+$bit-size-tab-divider: var(--bit-siz-tab-divider);
+$bit-size-divider: var(--bit-siz-divider);
+$bit-size-track-sm: var(--bit-siz-track-sm);
+$bit-size-track-md: var(--bit-siz-track-md);
+$bit-size-track-lg: var(--bit-siz-track-lg);
 $bit-size-icon-sm: var(--bit-siz-icon-sm);
 $bit-size-icon-md: var(--bit-siz-icon-md);
 $bit-size-icon-lg: var(--bit-siz-icon-lg);
 $bit-size-selection-sm: var(--bit-siz-sel-sm);
 $bit-size-selection-md: var(--bit-siz-sel-md);
 $bit-size-selection-lg: var(--bit-siz-sel-lg);
+$bit-size-switch-width-sm: var(--bit-siz-switch-w-sm);
+$bit-size-switch-width-md: var(--bit-siz-switch-w-md);
+$bit-size-switch-width-lg: var(--bit-siz-switch-w-lg);
+$bit-size-switch-height-sm: var(--bit-siz-switch-h-sm);
+$bit-size-switch-height-md: var(--bit-siz-switch-h-md);
+$bit-size-switch-height-lg: var(--bit-siz-switch-h-lg);
+$bit-size-switch-thumb-sm: var(--bit-siz-switch-thumb-sm);
+$bit-size-switch-thumb-md: var(--bit-siz-switch-thumb-md);
+$bit-size-switch-thumb-lg: var(--bit-siz-switch-thumb-lg);
+$bit-size-slider-thumb-sm: var(--bit-siz-slider-thumb-sm);
+$bit-size-slider-thumb-md: var(--bit-siz-slider-thumb-md);
+$bit-size-slider-thumb-lg: var(--bit-siz-slider-thumb-lg);
+$bit-size-badge-sm: var(--bit-siz-badge-sm);
+$bit-size-badge-md: var(--bit-siz-badge-md);
+$bit-size-badge-lg: var(--bit-siz-badge-lg);
+$bit-size-badge-dot-sm: var(--bit-siz-badge-dot-sm);
+$bit-size-badge-dot-md: var(--bit-siz-badge-dot-md);
+$bit-size-badge-dot-lg: var(--bit-siz-badge-dot-lg);
+$bit-size-chip-sm: var(--bit-siz-chip-sm);
+$bit-size-chip-md: var(--bit-siz-chip-md);
+$bit-size-chip-lg: var(--bit-siz-chip-lg);
 $bit-size-spinner-stroke: var(--bit-siz-spinner-stroke);
 $bit-size-popup-max-height: var(--bit-siz-popup-max-height);
 $bit-size-dialog-max-width: var(--bit-siz-dialog-max-width);
@@ -408,6 +458,10 @@ $bit-motion-loop-factor: var(--bit-mot-loop-factor);
 
 //layout
 $bit-layout-density-scale: var(--bit-layout-density-scale);
+$bit-layout-dialog-actions-direction: var(--bit-layout-dialog-actions-direction);
+$bit-layout-dialog-actions-justify: var(--bit-layout-dialog-actions-justify);
+$bit-layout-dialog-actions-align: var(--bit-layout-dialog-actions-align);
+$bit-layout-dialog-text-align: var(--bit-layout-dialog-text-align);
 
 //breakpoints
 $bit-breakpoint-xs: var(--bit-bp-xs);
@@ -419,6 +473,7 @@ $bit-breakpoint-xxl: var(--bit-bp-xxl);
 
 /*---- Typography ----*/
 $bit-typography-font-family: var(--bit-tpg-font-family);
+$bit-typography-font-family-mono: var(--bit-tpg-font-family-mono);
 $bit-typography-font-weight: var(--bit-tpg-font-weight);
 $bit-typography-line-height: var(--bit-tpg-line-height);
 $bit-typography-gutter-size: var(--bit-tpg-gutter-size);
@@ -448,6 +503,9 @@ $bit-typography-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
 // dialog typography
 $bit-typography-dialog-title-font-size: var(--bit-tpg-dialog-title-font-size);
 $bit-typography-dialog-title-font-weight: var(--bit-tpg-dialog-title-font-weight);
+
+// field-label typography
+$bit-typography-field-label-font-weight: var(--bit-tpg-field-label-font-weight);
 
 // h1
 $bit-typography-h1-margin: var(--bit-tpg-h1-margin);
