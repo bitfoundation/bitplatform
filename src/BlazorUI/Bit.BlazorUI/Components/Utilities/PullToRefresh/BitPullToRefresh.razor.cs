@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 
 namespace Bit.BlazorUI;
 
@@ -307,10 +308,13 @@ public partial class BitPullToRefresh : BitComponentBase
     {
         _diff = _Trigger;
         _refreshing = true;
-        await InvokeAsync(StateHasChanged);
+
+        ExceptionDispatchInfo? error = null;
         try
         {
-            await NotifyStateChange();
+            await InvokeAsync(StateHasChanged);
+
+            error = await RunStep(NotifyStateChange, error);
 
             await OnRefresh.InvokeAsync();
 
@@ -319,18 +323,22 @@ public partial class BitPullToRefresh : BitComponentBase
                 _completed = true;
                 _refreshing = false;
                 await InvokeAsync(StateHasChanged);
-                await NotifyStateChange();
+                error = await RunStep(NotifyStateChange, error);
                 await Task.Delay(CompleteDelay);
             }
         }
-        finally
+        catch (Exception ex)
         {
-            _diff = 0;
-            _completed = false;
-            _refreshing = false;
-            await InvokeAsync(StateHasChanged);
-            await NotifyStateChange();
+            error ??= ExceptionDispatchInfo.Capture(ex);
         }
+
+        _diff = 0;
+        _completed = false;
+        _refreshing = false;
+        error = await RunStep(() => InvokeAsync(StateHasChanged), error);
+        error = await RunStep(NotifyStateChange, error);
+
+        error?.Throw();
     }
 
     [JSInvokable("OnStart")]
@@ -352,9 +360,10 @@ public partial class BitPullToRefresh : BitComponentBase
             await InvokeAsync(StateHasChanged);
         }
 
-        await NotifyStateChange();
+        var error = await RunStep(NotifyStateChange, null);
+        error = await RunStep(() => OnPullMove.InvokeAsync(diff), error);
 
-        await OnPullMove.InvokeAsync(diff);
+        error?.Throw();
     }
 
     [JSInvokable("OnEnd")]
@@ -372,9 +381,10 @@ public partial class BitPullToRefresh : BitComponentBase
             await InvokeAsync(StateHasChanged);
         }
 
-        await NotifyStateChange();
+        var error = await RunStep(NotifyStateChange, null);
+        error = await RunStep(() => OnPullEnd.InvokeAsync(diff), error);
 
-        await OnPullEnd.InvokeAsync(diff);
+        error?.Throw();
     }
 
     [JSInvokable("OnCancel")]
@@ -382,8 +392,10 @@ public partial class BitPullToRefresh : BitComponentBase
     {
         _diff = 0;
         await InvokeAsync(StateHasChanged);
-        await NotifyStateChange();
-        await OnPullCancel.InvokeAsync(diff);
+        var error = await RunStep(NotifyStateChange, null);
+        error = await RunStep(() => OnPullCancel.InvokeAsync(diff), error);
+
+        error?.Throw();
     }
 
 
@@ -515,6 +527,22 @@ public partial class BitPullToRefresh : BitComponentBase
         _notifiedState = state;
 
         await OnStateChange.InvokeAsync(state);
+    }
+
+    // Runs one step of a gesture's lifecycle, keeping the first exception any step throws, so the steps after
+    // it - the callbacks a handler is waiting on, the cleanup - still run and a later failure never hides it.
+    private static async Task<ExceptionDispatchInfo?> RunStep(Func<Task> step, ExceptionDispatchInfo? error)
+    {
+        try
+        {
+            await step();
+        }
+        catch (Exception ex)
+        {
+            error ??= ExceptionDispatchInfo.Capture(ex);
+        }
+
+        return error;
     }
 
     private bool CanReleaseAt(decimal diff) => _refreshing is false && _completed is false && diff > 0 && diff >= _Trigger;

@@ -1444,4 +1444,77 @@ public class BitPullToRefreshTests : BunitTestContext
         // Settled at the trigger, the release still stands until the refresh js is about to ask for takes over.
         CollectionAssert.AreEqual(new[] { BitPullToRefreshState.CanRelease }, states);
     }
+
+    [TestMethod]
+    public async Task BitPullToRefreshShouldStillRefreshAndResetWhenOnStateChangeThrows()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var refreshed = false;
+        var calls = 0;
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.OnRefresh, () => refreshed = true);
+            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => throw new InvalidOperationException($"state change {++calls}"));
+        });
+
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._Refresh());
+
+        // The first failure is the one reported, the later notification throwing again does not replace it.
+        Assert.AreEqual("state change 1", error.Message);
+        Assert.AreEqual(2, calls);
+        Assert.IsTrue(refreshed);
+        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
+        Assert.IsFalse(component.Instance.IsRefreshing);
+    }
+
+    [TestMethod]
+    public async Task BitPullToRefreshShouldKeepTheOnRefreshExceptionWhenTheCleanupNotificationThrows()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.OnRefresh, EventCallback.Factory.Create(this, () => throw new InvalidOperationException("refresh failed")));
+            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) =>
+            {
+                if (s == BitPullToRefreshState.Idle) throw new InvalidOperationException("idle failed");
+            });
+        });
+
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._Refresh());
+
+        Assert.AreEqual("refresh failed", error.Message);
+        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
+    }
+
+    [TestMethod]
+    public async Task BitPullToRefreshShouldStillInvokeThePullCallbacksWhenOnStateChangeThrows()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        decimal? moved = null;
+        decimal? ended = null;
+        decimal? canceled = null;
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.OnPullMove, (decimal d) => moved = d);
+            parameters.Add(p => p.OnPullEnd, (decimal d) => ended = d);
+            parameters.Add(p => p.OnPullCancel, (decimal d) => canceled = d);
+            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => throw new InvalidOperationException(s.ToString()));
+        });
+
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._OnMove(40m));
+        Assert.AreEqual(nameof(BitPullToRefreshState.Pulling), error.Message);
+        Assert.AreEqual(40m, moved);
+
+        error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._OnEnd(40m));
+        Assert.AreEqual(nameof(BitPullToRefreshState.Idle), error.Message);
+        Assert.AreEqual(40m, ended);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._OnMove(30m));
+        error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._OnCancel(30m));
+        Assert.AreEqual(nameof(BitPullToRefreshState.Idle), error.Message);
+        Assert.AreEqual(30m, canceled);
+    }
 }
