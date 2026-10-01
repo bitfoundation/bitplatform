@@ -19,8 +19,8 @@ permissions:
 
 jobs:
 
-  build_and_test:
-    name: build and test
+  build:
+    name: build
     runs-on: ubuntu-24.04
 
     steps:
@@ -47,6 +47,29 @@ jobs:
 
     - name: Build
       run: dotnet build Boilerplate.slnx -p:EnforceCodeStyleInBuild=true
+
+  test:
+    name: test
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Build
+      run: dotnet build Boilerplate.Web.slnf
 
     - name: Install Playwright
       run: pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps
