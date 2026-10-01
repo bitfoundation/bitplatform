@@ -368,6 +368,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitTooltip", "BitTooltipParams")]
     [DataRow("BitProgress", "BitProgressParams")]
     [DataRow("BitSplitter", "BitSplitterParams")]
+    [DataRow("BitSeparator", "BitSeparatorParams")]
     [DataRow("BitOverlay", "BitOverlayParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
