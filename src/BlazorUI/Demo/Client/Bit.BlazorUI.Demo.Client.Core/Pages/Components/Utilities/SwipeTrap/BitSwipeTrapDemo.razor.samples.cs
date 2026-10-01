@@ -335,7 +335,7 @@ private void HandleOnEndThrottle(BitSwipeTrapEventArgs args)
             <div><b>SkipSelector</b></div>
             <div>DiffX: @diffXSkip</div>
             <div>DiffY: @diffYSkip</div>
-            <input class=""no-swipe"" placeholder=""No swipe starts here"" aria-label=""Not a swipe area"" />
+            <input class=""no-swipe"" placeholder=""Swipes skip this field"" aria-label=""Note"" />
         </div>
     </BitSwipeTrap>
     <BitSwipeTrap IsEnabled=""false"" OnMove=""HandleOnMoveDisabled"">
@@ -451,9 +451,12 @@ private void HandleOnEndKeyboard(BitSwipeTrapEventArgs args)
     .list-container .row-trap {
         width: 100%;
         height: 100%;
-        padding: 4px;
+        display: flex;
         position: absolute;
+        align-items: center;
         box-sizing: border-box;
+        padding: 0 0.25rem 0 0.5rem;
+        justify-content: space-between;
         background-color: var(--bit-clr-bg-ter);
     }
 </style>
@@ -467,14 +470,19 @@ private void HandleOnEndKeyboard(BitSwipeTrapEventArgs args)
             <BitSwipeTrap Style=""width:100%;height:100%""
                           Trigger=""60m""
                           Threshold=""10""
-                          KeyboardTrigger
-                          AriaLabel=""@($""Item{i + 1}. Swipe right, or press the right arrow key, to delete."")""
                           OrientationLock=""BitSwipeOrientation.Horizontal""
                           OnMove=""args => HandleOnMoveList(args, i)""
                           OnEnd=""args => HandleOnEndList(args, i)""
                           OnTrigger=""args => HandleOnTriggerList(args, i)"">
                 <div class=""row-trap"" style=""@GetRowStyle(i)"">
                     <div>Item@(i + 1)</div>
+                    <BitButton IconOnly
+                               Size=""BitSize.Small""
+                               Variant=""BitVariant.Text""
+                               IconName=""@BitIconName.Delete""
+                               Title=""Delete""
+                               AriaLabel=""@($""Delete Item{i + 1}"")""
+                               OnClick=""() => ConfirmDeleteList(i)"" />
                 </div>
             </BitSwipeTrap>
         </div>
@@ -507,14 +515,18 @@ private async Task HandleOnTriggerList(BitSwipeTrapTriggerArgs args, int index)
 {
     if (args.Direction == BitSwipeDirection.Right)
     {
-        deletingIndex = index;
-        listTcs = new();
-        isListDialogOpen = true;
-        await listTcs.Task;
-        isListDialogOpen = false;
-        diffXList[index] = 0;
-        deletingIndex = -1;
+        await ConfirmDeleteList(index);
     }
+}
+private async Task ConfirmDeleteList(int index)
+{
+    deletingIndex = index;
+    listTcs = new();
+    isListDialogOpen = true;
+    await listTcs.Task;
+    isListDialogOpen = false;
+    diffXList[index] = 0;
+    deletingIndex = -1;
 }
 private string GetRowStyle(int index)
 {
@@ -563,13 +575,20 @@ private void ResetList()
     }
 
     .mobile-frame .header {
-        gap: 1rem;
         width: 100%;
         height: 66px;
         display: flex;
+        padding: 0 0.5rem;
         align-items: center;
-        justify-content: center;
+        box-sizing: border-box;
+        justify-content: space-between;
         background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mobile-frame .brand {
+        gap: 1rem;
+        display: flex;
+        align-items: center;
     }
 
     .mobile-frame .main {
@@ -616,10 +635,24 @@ private void ResetList()
     <div class=""screen"">
         <div class=""layout"">
             <div class=""header"">
-                <BitImage Src=""/images/bit-logo.svg"" Width=""50"" />
-                <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
-                    bit BlazorUI
-                </BitText>
+                <BitButton IconOnly
+                           Variant=""BitVariant.Text""
+                           IconName=""@BitIconName.GlobalNavButton""
+                           AriaLabel=""Left menu""
+                           aria-expanded=""@IsPanelOpenAdvanced(BitSwipeDirection.Left)""
+                           OnClick=""() => TogglePanelAdvanced(BitSwipeDirection.Left)"" />
+                <div class=""brand"">
+                    <BitImage Src=""/images/bit-logo.svg"" Width=""50"" />
+                    <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
+                        bit BlazorUI
+                    </BitText>
+                </div>
+                <BitButton IconOnly
+                           Variant=""BitVariant.Text""
+                           IconName=""@BitIconName.More""
+                           AriaLabel=""Right menu""
+                           aria-expanded=""@IsPanelOpenAdvanced(BitSwipeDirection.Right)""
+                           OnClick=""() => TogglePanelAdvanced(BitSwipeDirection.Right)"" />
             </div>
             <div class=""main"">
                 <BitSwipeTrap Style=""width:100%;height:100%""
@@ -635,7 +668,7 @@ private void ResetList()
                         </BitText>
                     </div>
 
-                    <div class=""panel left"" style=""@GetLeftPanelAdvancedStyle()"">
+                    <div class=""panel left"" style=""@GetLeftPanelAdvancedStyle()"" inert=""@(panelOpen != BitSwipeDirection.Left)"">
                         <div class=""panel-trap"">
                             <h3>Left Menu</h3>
                             <div>Item1</div>
@@ -643,7 +676,7 @@ private void ResetList()
                             <div>Item3</div>
                         </div>
                     </div>
-                    <div class=""panel right"" style=""@GetRightPanelAdvancedStyle()"">
+                    <div class=""panel right"" style=""@GetRightPanelAdvancedStyle()"" inert=""@(panelOpen != BitSwipeDirection.Right)"">
                         <div class=""panel-trap"">
                             <h3>Right Menu</h3>
                             <div>Item1</div>
@@ -673,6 +706,18 @@ private void ClosePanelAdvanced()
     panelOpen = null;
     diffXPanelAdvanced = null;
 }
+private void TogglePanelAdvanced(BitSwipeDirection side)
+{
+    if (panelOpen == side)
+    {
+        ClosePanelAdvanced();
+    }
+    else
+    {
+        OpenPanelAdvanced(side);
+    }
+}
+private string IsPanelOpenAdvanced(BitSwipeDirection side) => panelOpen == side ? ""true"" : ""false"";
 private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
 {
     diffXPanelAdvanced = args.DiffX;

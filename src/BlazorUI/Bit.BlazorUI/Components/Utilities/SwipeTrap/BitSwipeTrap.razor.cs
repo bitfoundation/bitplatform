@@ -57,6 +57,8 @@ public partial class BitSwipeTrap : BitComponentBase
     /// zero distances and a <c>PointerType</c> of "keyboard"; a held key does not repeat it, a key combined with a modifier
     /// is left to the browser, and a key pressed on a descendant (an input, a button) is that descendant's.
     /// Give the trap an <see cref="BitComponentBase.AriaLabel"/> that says what the keys do.
+    /// The keys complement a control that needs no dragging (a button) rather than replace it: a screen reader in
+    /// browse mode keeps the arrow keys for itself, so that control is what its users reach.
     /// </remarks>
     [Parameter] public bool KeyboardTrigger { get; set; }
 
@@ -113,6 +115,10 @@ public partial class BitSwipeTrap : BitComponentBase
     /// <summary>
     /// The throttle time in milliseconds to apply a delay between periodic calls to raise the OnMove event (default is 0, meaning no throttling).
     /// </summary>
+    /// <remarks>
+    /// The latest move of each window is still delivered when the window closes, so a pointer that comes to rest is
+    /// reported where it rests. A move still held when the gesture ends is dropped: OnEnd carries the final position.
+    /// </remarks>
     [Parameter] public int? Throttle { get; set; }
 
     /// <summary>

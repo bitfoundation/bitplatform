@@ -40,7 +40,47 @@ namespace BitBlazorUI {
             // is registered would otherwise be weighed against a box it no longer has.
             let bcr = element.getBoundingClientRect();
             const hasTouch = Utils.isTouchDevice();
-            const throttledMove = Utils.throttle((sx: number, sy: number, dx: number, dy: number, vx: number, vy: number, pt: string, dur: number) => dotnetObj.invokeMethodAsync('OnMove', sx, sy, dx, dy, vx, vy, pt, dur), throttle);
+
+            // OnMove is throttled on both edges: the first move of a window goes at once and the latest one is held
+            // for the end of the window, so a pointer that comes to rest is reported where it rests rather than where
+            // the last window began. The held move belongs to its gesture alone - reset() drops it, since OnEnd
+            // carries the final position anyway - and a new gesture starts with a fresh window.
+            let lastMoveTime = -Infinity;
+            let pendingMove: any[] | null = null;
+            let moveTimer = 0;
+            const sendMove = (args: any[]) => dotnetObj.invokeMethodAsync('OnMove', ...args);
+            const flushMove = () => {
+                moveTimer = 0;
+                if (!pendingMove) return;
+                const args = pendingMove;
+                pendingMove = null;
+                lastMoveTime = performance.now();
+                sendMove(args);
+            };
+            const dropPendingMove = () => {
+                if (moveTimer) clearTimeout(moveTimer);
+                moveTimer = 0;
+                pendingMove = null;
+                lastMoveTime = -Infinity;
+            };
+            const throttledMove = (...args: any[]) => {
+                if (throttle <= 0) {
+                    sendMove(args);
+                    return;
+                }
+
+                const wait = throttle - (performance.now() - lastMoveTime);
+                if (wait <= 0) {
+                    if (moveTimer) clearTimeout(moveTimer);
+                    moveTimer = 0;
+                    pendingMove = null;
+                    lastMoveTime = performance.now();
+                    sendMove(args);
+                } else {
+                    pendingMove = args;
+                    if (!moveTimer) moveTimer = setTimeout(flushMove, wait);
+                }
+            };
 
             const isTouchEvent = (e: TouchEvent | PointerEvent): e is TouchEvent => 'changedTouches' in e;
 
@@ -94,16 +134,30 @@ namespace BitBlazorUI {
                 pointerType = '';
                 samples = [];
                 orientation = BitSwipeOrientation.None;
+                dropPendingMove();
                 element.classList.remove('bit-stp-swp');
                 window.removeEventListener('keydown', onEscape, true);
             };
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
+                if (active) {
+                    // A second finger must not restart an in-progress gesture. But a gesture whose end never reached
+                    // the trap - the element under the finger was removed from the page, so its touchend went with it
+                    // - would hold the trap forever, so a press that proves it over calls it off instead: the tracked
+                    // pointer pressed again (a mouse is not pressed twice without a release in between), or a touch
+                    // list the tracked finger is no longer in.
+                    const stale = isTouchEvent(e)
+                        ? activeTouch && !Array.prototype.some.call(e.touches, (t: Touch) => t.identifier === touchId)
+                        : !activeTouch && e.pointerId === pointerId;
+                    if (!stale) return;
+
+                    void cancelGesture(e);
+                }
+
                 // A gesture that was trapped arms a click suppressor; a new press means the click it was
                 // waiting for never came, and the press's own click must not be the one that is swallowed.
                 suppressNextClick = false;
 
-                if (active) return; // a second finger must not restart an in-progress gesture
                 if (element.classList.contains('bit-dis')) return;
 
                 // A gesture that starts on an opted-out descendant (an input, a nested slider) is the
@@ -365,6 +419,15 @@ namespace BitBlazorUI {
                 await onCancel(e);
             };
 
+            // A capture taken away while its gesture is still on - the trap was hidden, or a script released it - is
+            // followed by no release the trap would see, so the gesture is called off here. The capture a release ends
+            // is lost after that release, when there is no gesture left to call off.
+            const onLostCapture = async (e: PointerEvent): Promise<void> => {
+                if (!active || activeTouch || e.pointerId !== pointerId) return;
+
+                await cancelGesture(e);
+            };
+
             // The browser's own drag-and-drop takes the gesture over when it starts on an image, a link or
             // selected text, and the pointer stream stops mid-swipe - so while a gesture is being tracked
             // the native drag is declined.
@@ -397,6 +460,7 @@ namespace BitBlazorUI {
             element.addEventListener('pointerup', onEnd);
             element.addEventListener('pointercancel', onCancel);
             element.addEventListener('pointerleave', onLeave);
+            element.addEventListener('lostpointercapture', onLostCapture);
             element.addEventListener('dragstart', onDragStart);
             element.addEventListener('keydown', onKeyDown);
             // The click is swallowed in the capture phase so it never reaches the child it was aimed at.
@@ -417,6 +481,7 @@ namespace BitBlazorUI {
                 element.removeEventListener('pointerup', onEnd);
                 element.removeEventListener('pointercancel', onCancel);
                 element.removeEventListener('pointerleave', onLeave);
+                element.removeEventListener('lostpointercapture', onLostCapture);
                 element.removeEventListener('dragstart', onDragStart);
                 element.removeEventListener('keydown', onKeyDown);
                 element.removeEventListener('click', onClick, true);

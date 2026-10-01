@@ -3,14 +3,17 @@
 <PageTitle>BitSwipeTrap Keyboard Regression</PageTitle>
 
 @* What a bUnit render cannot see of BitSwipeTrap: the arrow keys a KeyboardTrigger trap answers to (only its own,
-   only along its locked axis), the Escape that cancels a mouse swipe in progress, and the touch-action a disabled
-   trap gives back to the browser. *@
+   only along its locked axis), the Escape that cancels a mouse swipe in progress, the touch-action a disabled
+   trap gives back to the browser, the gesture a lost end or a lost capture would otherwise leave stuck, and the
+   latest move a throttle still delivers. *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>BitSwipeTrap Keyboard Regression</h3>
     <div id="metrics" style="font-family: monospace;">
         <p>Trigger: <span id="trigger">@_trigger</span></p>
         <p>Triggers: <span id="triggers">@_triggers</span></p>
         <p>End: <span id="end">@_end</span></p>
+        <p>Starts: <span id="starts">@_starts</span></p>
+        <p>Throttled move: <span id="throttled-move">@_throttledMove</span></p>
         <p>Status: <span id="status">@_status</span></p>
     </div>
 </div>
@@ -20,6 +23,7 @@
               AriaLabel="Keyboard trap"
               Trigger="50m"
               OrientationLock="BitSwipeOrientation.Horizontal"
+              OnStart="HandleOnStart"
               OnEnd="HandleOnEnd"
               OnTrigger="HandleOnTrigger">
     <div style="width: 300px; height: 200px; border: 1px solid gray;">
@@ -31,10 +35,16 @@
     <div style="width: 300px; height: 100px; border: 1px solid gray;">disabled</div>
 </BitSwipeTrap>
 
+<BitSwipeTrap Id="throttled-trap" Throttle="300" OnMove="HandleOnThrottledMove">
+    <div style="width: 300px; height: 100px; border: 1px solid gray;">throttled</div>
+</BitSwipeTrap>
+
 @code {
     private string _trigger = "none";
     private int _triggers;
     private string _end = "none";
+    private int _starts;
+    private string _throttledMove = "none";
     // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
     // interactive render moves it on, which is what the test waits for before it drives the page.
     private string _status = "Loading";
@@ -56,5 +66,15 @@
     private void HandleOnEnd(BitSwipeTrapEventArgs args)
     {
         _end = args.IsCanceled ? "canceled" : "released";
+    }
+
+    private void HandleOnStart(BitSwipeTrapEventArgs args)
+    {
+        _starts++;
+    }
+
+    private void HandleOnThrottledMove(BitSwipeTrapEventArgs args)
+    {
+        _throttledMove = args.DiffX.ToString("0");
     }
 }

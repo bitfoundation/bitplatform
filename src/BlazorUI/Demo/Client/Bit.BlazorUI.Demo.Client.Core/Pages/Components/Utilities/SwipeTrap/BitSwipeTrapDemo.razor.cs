@@ -82,7 +82,7 @@ public partial class BitSwipeTrapDemo
             Name = "Throttle",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The least time in milliseconds between two OnMove events. Defaults to 0 (no throttling)."
+            Description = "The least time in milliseconds between two OnMove events; the latest move of a window still arrives when it closes. Defaults to 0 (no throttling)."
         },
         new()
         {
@@ -516,14 +516,18 @@ public partial class BitSwipeTrapDemo
     {
         if (args.Direction == BitSwipeDirection.Right)
         {
-            deletingIndex = index;
-            listTcs = new();
-            isListDialogOpen = true;
-            await listTcs.Task;
-            isListDialogOpen = false;
-            diffXList[index] = 0;
-            deletingIndex = -1;
+            await ConfirmDeleteList(index);
         }
+    }
+    private async Task ConfirmDeleteList(int index)
+    {
+        deletingIndex = index;
+        listTcs = new();
+        isListDialogOpen = true;
+        await listTcs.Task;
+        isListDialogOpen = false;
+        diffXList[index] = 0;
+        deletingIndex = -1;
     }
     private string GetRowStyle(int index)
     {
@@ -564,6 +568,18 @@ public partial class BitSwipeTrapDemo
         panelOpen = null;
         diffXPanelAdvanced = null;
     }
+    private void TogglePanelAdvanced(BitSwipeDirection side)
+    {
+        if (panelOpen == side)
+        {
+            ClosePanelAdvanced();
+        }
+        else
+        {
+            OpenPanelAdvanced(side);
+        }
+    }
+    private string IsPanelOpenAdvanced(BitSwipeDirection side) => panelOpen == side ? "true" : "false";
     private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
     {
         diffXPanelAdvanced = args.DiffX;
