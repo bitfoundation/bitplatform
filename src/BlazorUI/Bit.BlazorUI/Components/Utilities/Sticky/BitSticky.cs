@@ -44,6 +44,7 @@ public partial class BitSticky : BitComponentBase
     private bool _setupPending;
     private string? _attachedId;
     private string? _attachedSignature;
+    private string? _attachedGeometry;
     private BitStickyEdges _edges;
     private DotNetObjectReference<BitSticky>? _dotnetObj;
 
@@ -196,8 +197,10 @@ public partial class BitSticky : BitComponentBase
     /// and the value the container had before is put back once the last of them lets go.
     /// <br />
     /// It needs no stuck detection, so it attaches nothing on the scroll, and it is released while the
-    /// component is disabled. The claim is made again whenever the edges or offsets set by parameter
-    /// change; one moved by a <c>--bit-Sticky-offset-*</c> variable is picked up by <see cref="RefreshAsync"/>.
+    /// component is disabled. The claim is made again whenever a parameter that moves the edges or the
+    /// offsets changes (<see cref="Position"/>, the offsets, <see cref="BitComponentBase.Dir"/>,
+    /// <see cref="BitComponentBase.Class"/>, <see cref="BitComponentBase.Style"/>); one moved by a
+    /// <c>--bit-Sticky-offset-*</c> variable or a stylesheet is picked up by <see cref="RefreshAsync"/>.
     /// The scroll padding a BitHeader or BitFooter reserves is a claim of its own, so a container keeps
     /// the room of one of the two kinds - with both, the one written last is what the browser follows.
     /// </remarks>
@@ -284,9 +287,11 @@ public partial class BitSticky : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The state settles itself: it is read on every scroll of the container, and again whenever the
-    /// element, its parent, the scrolling container or the page changes size. What is left over is a
-    /// layout change none of those can see - content moved around inside the container without any of
-    /// the watched boxes changing size - and this is what such a change is answered with. It does
+    /// element, its parent, the scrolling container or the page changes size, and whenever a parameter
+    /// that moves the edges or the offsets changes. What is left over is a layout change none of those
+    /// can see - content moved around inside the container without any of the watched boxes changing
+    /// size, a stylesheet or a <c>--bit-Sticky-offset-*</c> variable changed - and this is what such a
+    /// change is answered with. It does
     /// nothing while the detection is not attached, and nothing before the first render.
     /// </remarks>
     public async ValueTask RefreshAsync()
@@ -515,13 +520,29 @@ public partial class BitSticky : BitComponentBase
 
         // The script holds the element it found under that id, and a change of tag does not change the
         // element - it replaces it, leaving the registration watching a node that is not in the document
-        // anymore. So the tag is part of what the registration is keyed by, along with what it does - and,
-        // for the scroll padding, the edges and offsets it reserves, which no resize ever announces.
+        // anymore. So the tag is part of what the registration is keyed by, along with what it does.
         var signature = shouldAttach
-            ? $"{_Id}|{GetElement()}|{report}|{scrollPadding}|{(scrollPadding ? $"{Position}|{Top}|{Bottom}|{Left}|{Right}" : null)}"
+            ? $"{_Id}|{GetElement()}|{report}|{scrollPadding}"
             : null;
 
-        if (signature == _attachedSignature) return;
+        // What decides the edges and the insets the element pins at - and so both the state and the room
+        // it claims - without resizing anything: no observer announces it, so the change is read again
+        // here instead of waiting for a scroll that may never come.
+        var geometry = shouldAttach
+            ? $"{Position}|{Top}|{Bottom}|{Left}|{Right}|{Dir}|{Class}|{Style}"
+            : null;
+
+        if (signature == _attachedSignature)
+        {
+            if (_attachedId is not null && geometry != _attachedGeometry)
+            {
+                _attachedGeometry = geometry;
+
+                await _js.BitStickiesRefresh(_attachedId);
+            }
+
+            return;
+        }
 
         if (_attachedId is not null)
         {
@@ -535,6 +556,7 @@ public partial class BitSticky : BitComponentBase
 
             _attachedId = null;
             _attachedSignature = null;
+            _attachedGeometry = null;
         }
 
         if (shouldAttach)
@@ -560,6 +582,7 @@ public partial class BitSticky : BitComponentBase
 
             _attachedId = _Id;
             _attachedSignature = signature;
+            _attachedGeometry = geometry;
         }
 
         if (report is false && _edges != BitStickyEdges.None)

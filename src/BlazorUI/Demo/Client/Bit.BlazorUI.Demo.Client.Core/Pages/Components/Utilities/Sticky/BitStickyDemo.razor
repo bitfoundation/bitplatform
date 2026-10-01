@@ -97,9 +97,8 @@
         <div>
             CSS has no event for the moment an element pins, so BitSticky derives one: <b>OnStuckChanged</b> reports each flip,
             <b>IsStuck</b> holds the state, and <b>StuckClass</b> / <b>StuckStyle</b> apply only while stuck (with the
-            <code>bit-stk-stc</code> class). Stuck means moved off its place in the flow, so an unscrolled bar is not stuck.
-            The detection attaches only when one of these is used and re-reads itself on every scroll and resize;
-            <b>RefreshAsync</b> covers a layout change no resize reports.
+            <code>bit-stk-stc</code> class). An unscrolled bar is not stuck. The detection attaches only when one of these is
+            used; <b>RefreshAsync</b> re-reads it after a layout change nothing reports.
         </div>
         <br />
         <div>Stuck: <b>@isStuck</b></div>

@@ -221,7 +221,7 @@ public partial class BitStickyDemo
             Name = "RefreshAsync",
             Type = "ValueTask",
             DefaultValue = "",
-            Description = "Reads the stuck state and the scroll padding claim again, along with everything they are derived from. Both settle themselves on every scroll and on every resize of the element, its parent, the container or the page, so this is only for a change none of those can see - content moved around inside the container, or a --bit-Sticky-offset-* variable changed."
+            Description = "Reads the stuck state and the scroll padding claim again, along with everything they are derived from. Both settle themselves on every scroll, on every resize of the element, its parent, the container or the page, and on a change of Position, the offsets, Dir, Class or Style, so this is only for a change none of those can see - content moved around inside the container, a stylesheet or a --bit-Sticky-offset-* variable changed."
         }
     ];
 
