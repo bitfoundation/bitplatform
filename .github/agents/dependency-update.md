@@ -37,7 +37,7 @@ Work the surfaces in this order. Each is independent; batch the network lookups.
 
 1. NuGet (`*.csproj`, `Directory.Packages.props`)
 2. npm (`package.json`, then `npm install` to refresh `package-lock.json`)
-3. GitHub Actions (`.github/workflows/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`, `src/Butil/tests/Bit.Butil.Tests.E2E/ci/`)
+3. GitHub Actions (`.github/workflows/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`)
 4. Azure DevOps tasks (`src/Templates/Boilerplate/Bit.Boilerplate/.azure-devops/workflows/`)
 5. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
 6. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
@@ -118,6 +118,11 @@ graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
 `Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
 the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
 
+**Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
+`ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
+10 accepts up to 21 (`LatestSupportedJavaVersion` 21.0.99), so every Android build there fails. .NET 11
+raises the limit to 25.0.99; move the runners together with the .NET 11 move.
+
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
 
@@ -193,7 +198,8 @@ A task can change name across majors while keeping its id: `NodeTool@1` resolves
 `AzureRmWebAppDeployment@5` passes `DeploymentTypeLinux: 'zipDeploy'` on purpose. For `webAppLinux` @5
 defaults to `oneDeploy` with `CleanDeploymentFlag: true`, which deletes every file the package does not
 carry, the template's `App_Data` (SQLite database, local file storage, Hangfire jobs) included.
-`zipDeploy` keeps them, as @4 did. Keep that input on any later major.
+`zipDeploy` keeps them, as @4 did. Keep that input on any later major. The GitHub CD's
+`azure/webapps-deploy` steps pass `clean: false` for the same reason: that action always uses OneDeploy.
 
 ### devcontainers
 

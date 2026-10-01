@@ -1,86 +1,77 @@
-@page "/components/params"
+﻿@page "/components/params"
 
 <PageOutlet Url="components/params"
             Title="Params"
-            Description="BitParams lets you cascade shared parameter objects to compatible components so you can define common defaults once." />
+            Description="BitParams cascades shared default parameters to every bit BlazorUI component in a subtree, so a toolbar, a form or a whole app sets them once." />
 
 <DemoPage Name="Params"
-          Description="BitParams lets you cascade shared parameter objects to compatible components so you can define common defaults once."
+          Description="BitParams cascades shared default parameters to every bit BlazorUI component in a subtree, so a toolbar, a form or a whole app sets them once. Each component reads the params object of its own type (BitButtonParams, BitTagParams, ...), and a parameter it sets itself always wins."
+          Notes="A params object fills in only what a component leaves unset, one parameter at a time. BitParams re-reads its objects on every render and tells the components below only when a value actually changed, so rebuilding the list inline or changing a property of one of its objects is fine; a parameter an object stops setting goes back to what the component held before. For values of your own, use BitCascadingValueProvider."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           GitHubUrl="../Utils/Params/BitParams.cs"
           GitHubDemoUrl="Utilities/Params/BitParamsDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <div>Use BitParams to share parameters between child components.</div>
-
+        <div>Every button and tag below takes its look from the params objects; the last button sets its own Variant, which wins.</div>
         <br />
-
         <BitParams Parameters="basicParams">
-            <BitCard>
-                <BitText>BitText with provided parameters</BitText>
-                <br />
-                <BitTag>BitTag with provided parameters</BitTag>
-            </BitCard>
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton IconName="@BitIconName.Save">Save</BitButton>
+                <BitButton IconName="@BitIconName.Share">Share</BitButton>
+                <BitButton IconName="@BitIconName.Delete" Variant="BitVariant.Text">Delete</BitButton>
+            </BitStack>
+            <br />
+            <BitStack Horizontal Wrap>
+                <BitTag Text="Draft" />
+                <BitTag Text="Internal" />
+            </BitStack>
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Overriding cascaded values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>You can override cascaded parameters by setting them directly on the component.</div>
-
+    <DemoExample Title="Changing values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>The list can be written inline and rebuilt from state. Every component below follows the new values, and a value set back to null returns to the component's own.</div>
         <br />
-
-        <BitParams Parameters="basicParams">
-            <BitCard Style="padding:1rem">
-                <BitText Color="BitColor.Primary">
-                    BitText with provided and overriden parameters
-                </BitText>
-                <br />
-                <BitTag Color="BitColor.Secondary">
-                    BitTag with provided and overriden parameters
-                </BitTag>
-            </BitCard>
+        <BitToggle @bind-Value="isCompact" Label="Compact" Inline />
+        <br />
+        <BitParams Parameters="@([new BitButtonParams { Size = isCompact ? BitSize.Small : null },
+                                 new BitTagParams { Size = isCompact ? BitSize.Small : null }])">
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton>Accept</BitButton>
+                <BitButton Variant="BitVariant.Outline">Decline</BitButton>
+                <BitTag Text="Pending" Color="BitColor.Warning" />
+            </BitStack>
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Changing parameter values" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>You can change provided cascading values at runtime.</div>
-
+    <DemoExample Title="Nesting" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            A nested BitParams only replaces the parameters it sets and keeps the rest from its ancestors.
+            <b>Isolated</b> ignores the ancestors altogether.
+        </div>
         <br />
+        <BitParams Parameters="outerParams">
+            <BitStack Gap="1rem">
+                <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                    <BitText>Outer:</BitText>
+                    <BitButton>Edit</BitButton>
+                    <BitButton>Copy</BitButton>
+                </BitStack>
 
-        <BitToggle @bind-Value="useAltParameters" Text="Use alternate parameters" />
-
-        <br />
-
-        <BitParams Parameters="@(useAltParameters? altParams : basicParams)">
-            <BitCard>
-                <BitText>BitText with provided parameters</BitText>
-                <br />
-                <BitTag>BitTag with provided parameters</BitTag>
-            </BitCard>
-        </BitParams>
-    </DemoExample>
-
-    <DemoExample Title="Nesting Params" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>Inner BitParams can override or extend outer defaults for a scoped area.</div>
-
-        <br />
-
-        <BitParams Parameters="nestedParentParams">
-            <BitCard Style="padding:1rem">
-                <BitText Typography="BitTypography.H6">Outer defaults</BitText>
-                <BitText>These tags use the parent BitParams values.</BitText>
-                <BitTag IconName="@BitIconName.Globe">Global</BitTag>
-                <BitTag IconName="@BitIconName.People">Team</BitTag>
-
-                <BitParams Parameters="nestedChildParams">
-                    <BitCard Style="margin-top: 0.75rem; padding: 0.75rem">
-                        <BitText Typography="BitTypography.H6">Nested overrides</BitText>
-                        <BitText>Inner BitParams changes colors and variants for this scope.</BitText>
-                        <BitTag IconName="@BitIconName.Warning">Alert</BitTag>
-                        <BitTag IconName="@BitIconName.FavoriteStar">Highlight</BitTag>
-                    </BitCard>
+                <BitParams Parameters="dangerParams">
+                    <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                        <BitText>Nested (Color only):</BitText>
+                        <BitButton>Delete</BitButton>
+                        <BitButton>Purge</BitButton>
+                    </BitStack>
                 </BitParams>
-            </BitCard>
+
+                <BitParams Isolated>
+                    <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                        <BitText>Isolated:</BitText>
+                        <BitButton>Defaults</BitButton>
+                    </BitStack>
+                </BitParams>
+            </BitStack>
         </BitParams>
     </DemoExample>
 </DemoPage>
