@@ -138,9 +138,9 @@ public partial class BitSeparator : BitComponentBase
     /// </summary>
     /// <remarks>
     /// A page can carry many rules that mean nothing - each announced as "separator" is noise to a screen
-    /// reader. A decorative separator keeps its looks and reports itself as none; one that genuinely splits
-    /// content into groups is left announced, and content given to a decorative separator is read as plain
-    /// text in the flow rather than as the name of anything.
+    /// reader. A decorative separator keeps its looks and reports itself as none - hidden outright while it has
+    /// no content; one that genuinely splits content into groups is left announced, and content given to a
+    /// decorative separator is read as plain text in the flow rather than as the name of anything.
     /// </remarks>
     [Parameter] public bool Decorative { get; set; }
 
@@ -150,9 +150,10 @@ public partial class BitSeparator : BitComponentBase
     /// <remarks>
     /// A list or a menu may only hold its items, so the separator between two of them has to be one: an "li"
     /// is what keeps a <c>ul</c> valid, and it still reports itself as a separator rather than as an item, so
-    /// a screen reader neither counts it nor announces it as one. The value is used as written and only while
-    /// it is a name a tag can have and one that can hold content; anything else - a void element such as "hr"
-    /// included - falls back to "div".
+    /// a screen reader never counts it as one. A menu or a toolbar owns separators, so one there stays
+    /// announced, while a plain list owns nothing but items, so one there is <see cref="Decorative"/>.
+    /// The value is used as written and only while it is a name a tag can have and one that can hold content;
+    /// anything else - a void element such as "hr" included - falls back to "div".
     /// </remarks>
     [Parameter] public string? Element { get; set; }
 
@@ -333,21 +334,28 @@ public partial class BitSeparator : BitComponentBase
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
         builder.AddAttribute(3, "role", _role);
-        builder.AddAttribute(4, "aria-label", Decorative ? null : AriaLabel);
-        builder.AddAttribute(5, "aria-labelledby", GetAriaLabelledby());
-        builder.AddAttribute(6, "aria-orientation", _ariaOrientation);
-        builder.AddAttribute(7, "style", StyleBuilder.Value);
-        builder.AddAttribute(8, "class", ClassBuilder.Value);
-        builder.AddAttribute(9, "dir", Dir?.ToString().ToLower(CultureInfo.InvariantCulture));
-        builder.AddElementReferenceCapture(10, v => RootElement = v);
+        // An empty decorative separator has nothing to say at all, so it is hidden outright rather than only stripped
+        // of its role: that also keeps it out of what a list owns when it stands as an "li" between the list's items.
+        // One with content keeps the content readable, and an aria-hidden the page splats on is kept as written.
+        if (Decorative && ChildContent is null && HtmlAttributes.ContainsKey("aria-hidden") is false)
+        {
+            builder.AddAttribute(4, "aria-hidden", "true");
+        }
+        builder.AddAttribute(5, "aria-label", Decorative ? null : AriaLabel);
+        builder.AddAttribute(6, "aria-labelledby", GetAriaLabelledby());
+        builder.AddAttribute(7, "aria-orientation", _ariaOrientation);
+        builder.AddAttribute(8, "style", StyleBuilder.Value);
+        builder.AddAttribute(9, "class", ClassBuilder.Value);
+        builder.AddAttribute(10, "dir", Dir?.ToString().ToLower(CultureInfo.InvariantCulture));
+        builder.AddElementReferenceCapture(11, v => RootElement = v);
 
         if (ChildContent is not null)
         {
-            builder.OpenElement(11, "div");
-            builder.AddAttribute(12, "id", _contentId);
-            builder.AddAttribute(13, "style", Styles?.Content);
-            builder.AddAttribute(14, "class", $"bit-spr-cnt {Classes?.Content}".TrimEnd());
-            builder.AddContent(15, ChildContent);
+            builder.OpenElement(12, "div");
+            builder.AddAttribute(13, "id", _contentId);
+            builder.AddAttribute(14, "style", Styles?.Content);
+            builder.AddAttribute(15, "class", $"bit-spr-cnt {Classes?.Content}".TrimEnd());
+            builder.AddContent(16, ChildContent);
             builder.CloseElement();
         }
 

@@ -117,6 +117,12 @@ public partial class BitSeparatorDemo
 </div>";
 
     private readonly string example6RazorCode = @"
+<BitSeparator>Named by its content</BitSeparator>
+<BitSeparator AriaLabel=""End of the shipping details"" />
+<BitSeparator Decorative />
+<BitSeparator Decorative>Read as plain text</BitSeparator>";
+
+    private readonly string example7RazorCode = @"
 <style>
     .list {
         margin: 0;
@@ -133,17 +139,11 @@ public partial class BitSeparatorDemo
 
 <ul class=""list"" aria-label=""Contacts"">
     <li><BitPersona PrimaryText=""Annie Lindqvist"" Size=""BitPersonaSize.Size32"" /></li>
-    <BitSeparator Element=""li"" Inset=""2.5rem 0"" />
+    <BitSeparator Element=""li"" Inset=""2.5rem 0"" Decorative />
     <li><BitPersona PrimaryText=""Aaron Reid"" Size=""BitPersonaSize.Size32"" /></li>
-    <BitSeparator Element=""li"" Inset=""2.5rem 0"" />
+    <BitSeparator Element=""li"" Inset=""2.5rem 0"" Decorative />
     <li><BitPersona PrimaryText=""Alex Lundberg"" Size=""BitPersonaSize.Size32"" /></li>
 </ul>";
-
-    private readonly string example7RazorCode = @"
-<BitSeparator>Named by its content</BitSeparator>
-<BitSeparator AriaLabel=""End of the shipping details"" />
-<BitSeparator Decorative />
-<BitSeparator Decorative>Read as plain text</BitSeparator>";
 
     private readonly string example8RazorCode = @"
 <div style=""--bit-Separator-color: var(--bit-clr-pri); --bit-Separator-line-style: dashed; --bit-Separator-content-color: var(--bit-clr-fg-sec); --bit-Separator-content-font-size: 0.75rem;"">

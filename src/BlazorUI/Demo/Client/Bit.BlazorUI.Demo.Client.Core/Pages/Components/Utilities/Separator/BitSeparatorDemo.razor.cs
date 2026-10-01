@@ -25,7 +25,7 @@ public partial class BitSeparatorDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of the patch the content of the separator sits on. Defaults to transparent.",
+            Description = "The color kind of the background behind the content of the separator. Defaults to transparent.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -75,14 +75,14 @@ public partial class BitSeparatorDemo
             Name = "Decorative",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the separator from the accessibility tree, for a separator that is purely visual and should not be announced."
+            Description = "Removes the separator from the accessibility tree, for a separator that is purely visual and should not be announced. Its content, if any, is then read as plain text."
         },
         new()
         {
             Name = "Element",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom html element used for the root node, such as \"li\" between the items of a list. A tag that cannot hold content falls back to the default \"div\"."
+            Description = "The custom html element used for the root node, such as \"li\" between the items of a list or a menu. A tag that cannot hold content falls back to the default \"div\"."
         },
         new()
         {

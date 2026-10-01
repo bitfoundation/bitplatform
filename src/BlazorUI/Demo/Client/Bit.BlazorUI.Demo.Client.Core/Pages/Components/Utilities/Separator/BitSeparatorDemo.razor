@@ -7,7 +7,7 @@
 <DemoPage Name="Separator"
           SecondaryNames="@(["Divider"])"
           Description="BitSeparator splits content into groups with a horizontal or vertical line. Content given to it - a label, an icon - sits between the two segments of the line, so it reads on any surface, and names the separator to screen readers. It is restyled through its parameters, its public CSS variables or a BitParams cascade."
-          Notes="A separator is announced by screen readers, so mark a purely visual one Decorative. Its content is presentational: keep links and buttons out of it. Between the items of a list or a menu, render it as one with Element='li'."
+          Notes="A separator is announced by screen readers, so mark a purely visual one Decorative. Its content is presentational: keep links and buttons out of it. Between the items of a list or a menu, render it as one with Element='li', and mark it Decorative in a plain list, which owns nothing but items."
           Parameters="componentParameters"
           CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
@@ -120,24 +120,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Lists & menus" RazorCode="@example6RazorCode" Id="example6">
-        <div>
-            A list may only hold its items, so <b>Element</b> <b>li</b> makes the separator one. It is still announced as a
-            separator, not counted as an item. A tag that cannot hold content, such as <b>hr</b>, falls back to <b>div</b>.
-        </div>
-        <br />
-        <div class="example-content">
-            <ul class="list" aria-label="Contacts">
-                <li><BitPersona PrimaryText="Annie Lindqvist" Size="BitPersonaSize.Size32" /></li>
-                <BitSeparator Element="li" Inset="2.5rem 0" />
-                <li><BitPersona PrimaryText="Aaron Reid" Size="BitPersonaSize.Size32" /></li>
-                <BitSeparator Element="li" Inset="2.5rem 0" />
-                <li><BitPersona PrimaryText="Alex Lundberg" Size="BitPersonaSize.Size32" /></li>
-            </ul>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Accessibility" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Accessibility" RazorCode="@example6RazorCode" Id="example6">
         <div>
             A separator has the <b>separator</b> role, named by its content or by <b>AriaLabel</b>; a vertical one also says
             so through <b>aria-orientation</b>. <b>Decorative</b> takes a purely visual one out of the accessibility tree,
@@ -149,6 +132,24 @@
             <BitSeparator AriaLabel="End of the shipping details" />
             <BitSeparator Decorative />
             <BitSeparator Decorative>Read as plain text</BitSeparator>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Lists & menus" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            A <b>ul</b> may only hold <b>li</b>s, so <b>Element</b> <b>li</b> makes the separator one. A list owns nothing
+            but items, so its separators are <b>Decorative</b>; in a <b>menu</b> or a <b>toolbar</b>, which own separators,
+            leave them announced. A tag that cannot hold content, such as <b>hr</b>, falls back to <b>div</b>.
+        </div>
+        <br />
+        <div class="example-content">
+            <ul class="list" aria-label="Contacts">
+                <li><BitPersona PrimaryText="Annie Lindqvist" Size="BitPersonaSize.Size32" /></li>
+                <BitSeparator Element="li" Inset="2.5rem 0" Decorative />
+                <li><BitPersona PrimaryText="Aaron Reid" Size="BitPersonaSize.Size32" /></li>
+                <BitSeparator Element="li" Inset="2.5rem 0" Decorative />
+                <li><BitPersona PrimaryText="Alex Lundberg" Size="BitPersonaSize.Size32" /></li>
+            </ul>
         </div>
     </DemoExample>
 

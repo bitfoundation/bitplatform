@@ -381,9 +381,9 @@ public class BitSeparatorTests : BunitTestContext
             parameters.Add(p => p.Decorative, decorative);
         });
 
-        var role = decorative ? "none" : "separator";
+        var aria = decorative ? @"role=""none"" aria-hidden=""true""" : @"role=""separator""";
 
-        component.MarkupMatches(@$"<div role=""{role}"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+        component.MarkupMatches(@$"<div {aria} class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -1034,5 +1034,40 @@ public class BitSeparatorTests : BunitTestContext
         Assert.AreEqual("shipping-heading", separators[0].GetAttribute("aria-labelledby"));
         // ...while a decorative separator is not a separator to name at all.
         Assert.IsFalse(separators[1].HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldHideOnlyAnEmptyDecorativeSeparator()
+    {
+        var component = RenderComponent<BitSeparatorAriaHiddenTest>();
+
+        var separators = component.FindAll(".bit-spr");
+
+        // An empty decorative separator is hidden outright...
+        Assert.AreEqual("true", separators[0].GetAttribute("aria-hidden"));
+        // ...one with content keeps the content readable...
+        Assert.IsFalse(separators[1].HasAttribute("aria-hidden"));
+        // ...an announced one is never hidden...
+        Assert.IsFalse(separators[2].HasAttribute("aria-hidden"));
+        // ...and an aria-hidden the page splats on is kept as written.
+        Assert.AreEqual("false", separators[3].GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldUnhideADecorativeSeparatorGivenContentAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Decorative, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-spr").GetAttribute("aria-hidden"));
+
+        component.Render(parameters =>
+        {
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        Assert.IsFalse(component.Find(".bit-spr").HasAttribute("aria-hidden"));
     }
 }
