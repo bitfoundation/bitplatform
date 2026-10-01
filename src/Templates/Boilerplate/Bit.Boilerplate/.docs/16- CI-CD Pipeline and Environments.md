@@ -563,8 +563,8 @@ build_api_blazor:
   runs-on: ubuntu-24.04
   steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-dotnet@v5
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-dotnet@v6
+    - uses: actions/setup-node@v7
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
 
