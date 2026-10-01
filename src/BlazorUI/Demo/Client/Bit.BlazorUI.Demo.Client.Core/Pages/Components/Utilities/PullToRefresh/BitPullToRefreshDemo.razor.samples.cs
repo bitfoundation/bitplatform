@@ -93,6 +93,39 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
 
     private readonly string example3RazorCode = @"
 <style>
+    .anchor {
+        width: 150px;
+        padding: 4px;
+        height: 300px;
+        overflow: auto;
+        border: 1px gray solid;
+    }
+</style>
+
+<BitPullToRefresh Direction=""BitPullToRefreshDirection.Up"" OnRefresh=""HandleOnRefreshUp"">
+    <div class=""anchor"">
+        @foreach (var (idx, i) in upItems)
+        {
+            <div @key=""idx"">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+        }
+    </div>
+</BitPullToRefresh>";
+    private readonly string example3CsharpCode = @"
+private (int, int)[] upItems = GenerateRandomNumbers(1, 21);
+private async Task HandleOnRefreshUp()
+{
+    await Task.Delay(2000);
+    upItems = [.. upItems, .. GenerateRandomNumbers(upItems.Length + 1, upItems.Length + 11)];
+}
+
+private static (int, int)[] GenerateRandomNumbers(int min, int max)
+{
+    var random = new Random();
+    return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
+}";
+
+    private readonly string example4RazorCode = @"
+<style>
     .mobile-frame {
         width: 300px;
         height: 600px;
@@ -147,7 +180,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         </BitLayout>
     </div>
 </div>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private (int, int)[] scrollerItems = GenerateRandomNumbers(1, 51);
 private async Task HandleOnRefreshScroller()
 {
@@ -161,7 +194,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
 }";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .anchor {
         width: 150px;
@@ -236,7 +269,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         </IndicatorTemplate>
     </BitPullToRefresh>
 </div>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private (int, int)[] completeItems = GenerateRandomNumbers(1, 51);
 private async Task HandleOnRefreshComplete()
 {
@@ -264,7 +297,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .anchor {
         width: 150px;
@@ -290,7 +323,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         }
     </div>
 </BitPullToRefresh>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private BitPullToRefresh? programmaticRef;
 private async Task RefreshProgrammatically()
 {
@@ -310,7 +343,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .anchor {
         width: 150px;
@@ -346,7 +379,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         <div>Refresh count: @refreshCount</div>
     </div>
 </div>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private BitPullToRefresh? eventsRef;
 private BitPullToRefreshState pullState;
 private int refreshCount;
@@ -388,7 +421,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .anchor {
         width: 150px;
@@ -409,7 +442,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         }
     </div>
 </BitPullToRefresh>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isEnabled = true;
 private bool noMouse;
 private (int, int)[] disabledItems = GenerateRandomNumbers(1, 51);
@@ -425,7 +458,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
 }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .anchor {
         width: 150px;
@@ -457,7 +490,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         </BitPullToRefresh>
     </div>
 </BitParams>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private readonly BitPullToRefreshParams[] pullToRefreshParams =
 [
     new()
@@ -481,39 +514,6 @@ private async Task HandleOnRefreshOverriding()
 {
     await Task.Delay(2000);
     overridingItems = GenerateRandomNumbers(51, 101);
-}
-
-private static (int, int)[] GenerateRandomNumbers(int min, int max)
-{
-    var random = new Random();
-    return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
-}";
-
-    private readonly string example9RazorCode = @"
-<style>
-    .anchor {
-        width: 150px;
-        padding: 4px;
-        height: 300px;
-        overflow: auto;
-        border: 1px gray solid;
-    }
-</style>
-
-<BitPullToRefresh Direction=""BitPullToRefreshDirection.Up"" OnRefresh=""HandleOnRefreshUp"">
-    <div class=""anchor"">
-        @foreach (var (idx, i) in upItems)
-        {
-            <div @key=""idx"">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-        }
-    </div>
-</BitPullToRefresh>";
-    private readonly string example9CsharpCode = @"
-private (int, int)[] upItems = GenerateRandomNumbers(1, 21);
-private async Task HandleOnRefreshUp()
-{
-    await Task.Delay(2000);
-    upItems = [.. upItems, .. GenerateRandomNumbers(upItems.Length + 1, upItems.Length + 11)];
 }
 
 private static (int, int)[] GenerateRandomNumbers(int min, int max)

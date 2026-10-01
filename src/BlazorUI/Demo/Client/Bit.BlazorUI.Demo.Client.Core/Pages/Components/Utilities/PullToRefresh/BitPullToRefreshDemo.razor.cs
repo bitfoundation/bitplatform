@@ -659,6 +659,13 @@ public partial class BitPullToRefreshDemo
         behaviorItems = GenerateRandomNumbers(1, 51);
     }
 
+    private (int, int)[] upItems = GenerateRandomNumbers(1, 21);
+    private async Task HandleOnRefreshUp()
+    {
+        await Task.Delay(2000);
+        upItems = [.. upItems, .. GenerateRandomNumbers(upItems.Length + 1, upItems.Length + 11)];
+    }
+
     private (int, int)[] scrollerItems = GenerateRandomNumbers(1, 51);
     private async Task HandleOnRefreshScroller()
     {
@@ -764,13 +771,6 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         overridingItems = GenerateRandomNumbers(51, 101);
-    }
-
-    private (int, int)[] upItems = GenerateRandomNumbers(1, 21);
-    private async Task HandleOnRefreshUp()
-    {
-        await Task.Delay(2000);
-        upItems = [.. upItems, .. GenerateRandomNumbers(upItems.Length + 1, upItems.Length + 11)];
     }
 
     private (int, int)[] colorItems = GenerateRandomNumbers(1, 51);

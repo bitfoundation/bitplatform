@@ -68,7 +68,26 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Scroller and full width" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Direction" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            <b>Direction</b> sets the way the pull travels. <b>Up</b> engages once the scroller has reached its bottom
+            and opens the strip over the bottom of the anchor - the gesture of a chat or a feed that loads more at its
+            end. Scroll to the end of the list, then drag it up past the end: each refresh here appends ten more items.
+            Everything else - the trigger, the factor, the margin, the threshold and the overpull - works the same
+            either way.
+        </div>
+        <br />
+        <BitPullToRefresh Direction="BitPullToRefreshDirection.Up" OnRefresh="HandleOnRefreshUp">
+            <div class="anchor">
+                @foreach (var (idx, i) in upItems)
+                {
+                    <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                }
+            </div>
+        </BitPullToRefresh>
+    </DemoExample>
+
+    <DemoExample Title="Scroller and full width" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
             <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) names the element that actually scrolls, so the pull
             engages only while it is at its top - left unset, the anchor's first element is used, and <code>body</code>
@@ -104,7 +123,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="States and templates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="States and templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
             Past the trigger the glyph comes up to full strength: releasing now refreshes. <b>CompleteDelay</b> holds a
             checkmark open for that many milliseconds after the refresh (0 skips it). <b>Loading</b>, <b>Release</b>
@@ -170,7 +189,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Programmatic refresh" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Programmatic refresh" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             <b>RefreshAsync</b> runs a refresh from code exactly as a released pull does, and completes with it (so an
             <b>AutoLoading</b> button stays busy for the whole refresh); <b>IsRefreshing</b> says one is running. A
@@ -200,7 +219,7 @@
         </BitPullToRefresh>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             <b>OnPullStart</b> hands over the anchor's position and width, <b>OnPullMove</b> streams the pull height
             (one report per frame), <b>OnPullEnd</b> fires on release, <b>OnPullCancel</b> when the gesture is taken
@@ -236,7 +255,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Disabled and touch only" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Disabled and touch only" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             <b>IsEnabled="false"</b> turns the gesture off and gives scrolling back to the browser; the content stays
             interactive. <b>NoMouse</b> keeps it for touch and pen, leaving a mouse drag to select text. A mouse drag
@@ -256,7 +275,7 @@
         </BitPullToRefresh>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Cascading parameters" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>BitParams</b> hands a <b>BitPullToRefreshParams</b> to every pull to refresh under it, so an app sets the
             feel, the states and the labels of its refreshers once. They are defaults: a component's own parameters
@@ -284,24 +303,6 @@
                 </BitPullToRefresh>
             </div>
         </BitParams>
-    </DemoExample>
-
-    <DemoExample Title="Direction" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>
-            <b>Direction</b> sets the way the pull travels. <b>Up</b> engages once the scroller has reached its bottom
-            and opens the strip over the bottom of the anchor - the gesture of a chat or a feed that loads more at its
-            end. Scroll to the end of the list, then drag it up past the end: each refresh here appends ten more items.
-            Everything else - the trigger, the threshold, the templates and the events - works the same either way.
-        </div>
-        <br />
-        <BitPullToRefresh Direction="BitPullToRefreshDirection.Up" OnRefresh="HandleOnRefreshUp">
-            <div class="anchor">
-                @foreach (var (idx, i) in upItems)
-                {
-                    <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                }
-            </div>
-        </BitPullToRefresh>
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
