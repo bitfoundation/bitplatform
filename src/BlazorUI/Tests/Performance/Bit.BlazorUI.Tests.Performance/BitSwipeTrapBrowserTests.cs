@@ -72,6 +72,28 @@ public class BitSwipeTrapBrowserTests : PerformanceTestBase
     }
 
     [TestMethod]
+    public async Task BitSwipeTrap_Escape_IsLeftToThePageForAPressThatNeverMoved()
+    {
+        await GoToThePage();
+
+        await Page.EvaluateAsync("() => { window.__escapes = 0; window.addEventListener('keydown', e => { if (e.key === 'Escape') window.__escapes++; }); }");
+
+        var box = await Page.Locator("#trap").BoundingBoxAsync();
+        Assert.IsNotNull(box);
+
+        // A press is no swipe until it moves: the Escape pressed while it is held is the page's (a dialog's, an
+        // overlay's), so it reaches the window's own listener and the press is not reported as a canceled swipe.
+        await Page.Mouse.MoveAsync(box.X + 20, box.Y + box.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.Keyboard.PressAsync("Escape");
+
+        Assert.AreEqual(1, await Page.EvaluateAsync<int>("() => window.__escapes"));
+
+        await Page.Mouse.UpAsync();
+        await Expect(Page.Locator("#end")).ToHaveTextAsync("released");
+    }
+
+    [TestMethod]
     public async Task BitSwipeTrap_MouseSwipe_TriggersPastTheTriggerPoint()
     {
         await GoToThePage();
@@ -149,6 +171,27 @@ public class BitSwipeTrapBrowserTests : PerformanceTestBase
         await Page.Mouse.UpAsync();
         await Page.WaitForTimeoutAsync(300);
         await Expect(Page.Locator("#triggers")).ToHaveTextAsync("0");
+    }
+
+    [TestMethod]
+    public async Task BitSwipeTrap_LostPointerCaptureOfADescendant_LeavesTheSwipeAlone()
+    {
+        await GoToThePage();
+        await Page.WaitForFunctionAsync("() => BitBlazorUI.SwipeTrap._swipeTraps.some(t => t.element.id === 'trap')");
+
+        // A pen's press is captured to the child it lands on, and that capture is lost the moment the trap takes
+        // the pointer over. The loss bubbles up to the trap, which must not take it for the loss of its own capture.
+        await Page.EvaluateAsync(@"() => {
+            const trap = document.getElementById('trap');
+            const content = document.getElementById('trap-content');
+            const box = trap.getBoundingClientRect();
+            const init = { pointerId: 7, pointerType: 'pen', button: 0, isPrimary: true, bubbles: true, cancelable: true, clientX: box.x + 20, clientY: box.y + 20 };
+            content.dispatchEvent(new PointerEvent('pointerdown', init));
+            content.dispatchEvent(new PointerEvent('lostpointercapture', init));
+            content.dispatchEvent(new PointerEvent('pointerup', init));
+        }");
+
+        await Expect(Page.Locator("#end")).ToHaveTextAsync("released");
     }
 
     [TestMethod]

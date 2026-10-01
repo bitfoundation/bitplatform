@@ -874,8 +874,6 @@ private void HandleOnTriggerCascadedOwn(BitSwipeTrapTriggerArgs args)
     }
 
     .box {
-        width: 200px;
-        height: 120px;
         display: flex;
         user-select: none;
         border-radius: 0.5rem;
@@ -883,6 +881,11 @@ private void HandleOnTriggerCascadedOwn(BitSwipeTrapTriggerArgs args)
         justify-content: center;
         border: 1px solid var(--bit-clr-brd-sec);
         background-color: var(--bit-clr-bg-pri);
+    }
+
+    .box.small {
+        width: 200px;
+        height: 120px;
     }
 
     .custom-trap {
@@ -901,17 +904,17 @@ private void HandleOnTriggerCascadedOwn(BitSwipeTrapTriggerArgs args)
 
 <div class=""boxes"">
     <BitSwipeTrap Style=""padding: 0.5rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-sec);"">
-        <div class=""box"">Style</div>
+        <div class=""box small"">Style</div>
     </BitSwipeTrap>
 
     <BitSwipeTrap Class=""custom-trap"">
-        <div class=""box"">Class (swipe me)</div>
+        <div class=""box small"">Class (swipe me)</div>
     </BitSwipeTrap>
 
     <BitSwipeTrap KeyboardTrigger
                   AriaLabel=""Styled by CSS variables""
                   Style=""--bit-SwipeTrap-cursor: grab; --bit-SwipeTrap-swiping-cursor: move; --bit-SwipeTrap-focus-color: var(--bit-clr-ter);"">
-        <div class=""box"">CSS variables (hover, swipe, Tab)</div>
+        <div class=""box small"">CSS variables (hover, swipe, Tab)</div>
     </BitSwipeTrap>
 </div>";
 

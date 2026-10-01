@@ -73,7 +73,8 @@ public class BitSwipeTrapParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     /// <remarks>
     /// Only properties that have a value set and have not already been set on the <paramref name="bitSwipeTrap"/> will be updated.
-    /// This method does not overwrite existing values on <paramref name="bitSwipeTrap"/>.
+    /// This method does not overwrite existing values on <paramref name="bitSwipeTrap"/>. What it supplies is recorded on
+    /// the component, which puts back the value it replaced once this object stops supplying one.
     /// </remarks>
     /// <param name="bitSwipeTrap">
     /// The <see cref="BitSwipeTrap"/> instance whose properties will be updated. Cannot be null.
@@ -82,48 +83,102 @@ public class BitSwipeTrapParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitSwipeTrap is null) return;
 
-        UpdateBaseParameters(bitSwipeTrap);
-
-        if (KeyboardTrigger.HasValue && bitSwipeTrap.HasNotBeenSet(nameof(KeyboardTrigger)))
+        // The inherited parameters go through the same bookkeeping as the swipe trap's own rather than through
+        // UpdateBaseParameters, which rebuilds the class and style strings on every render it supplies one, even
+        // an unchanged one - and a swipe trap re-renders on every OnMove a handler answers.
+        if (AriaLabel.HasValue())
         {
-            bitSwipeTrap.KeyboardTrigger = KeyboardTrigger.Value;
+            bitSwipeTrap.TakeFromCascade(nameof(AriaLabel), AriaLabel, static s => s.AriaLabel, static (s, v) => s.AriaLabel = v);
         }
 
-        if (OrientationLock.HasValue && bitSwipeTrap.HasNotBeenSet(nameof(OrientationLock)))
+        if (Class.HasValue())
         {
-            bitSwipeTrap.OrientationLock = OrientationLock.Value;
-
-            bitSwipeTrap.ClassBuilder.Reset();
+            bitSwipeTrap.TakeFromCascade(nameof(Class), Class, static s => s.Class, static (s, v) => s.Class = v);
         }
 
-        if (SkipSelector.HasValue() && bitSwipeTrap.HasNotBeenSet(nameof(SkipSelector)))
+        if (Dir.HasValue)
         {
-            bitSwipeTrap.SkipSelector = SkipSelector;
+            bitSwipeTrap.TakeFromCascade(nameof(Dir), Dir, static s => s.Dir, static (s, v) => s.Dir = v);
         }
 
-        if (Threshold.HasValue && bitSwipeTrap.HasNotBeenSet(nameof(Threshold)))
+        if (ForceAnimation.HasValue)
         {
-            bitSwipeTrap.Threshold = Threshold.Value;
+            bitSwipeTrap.TakeFromCascade(nameof(ForceAnimation), ForceAnimation.Value, static s => s.ForceAnimation, static (s, v) => s.ForceAnimation = v);
         }
 
-        if (Throttle.HasValue && bitSwipeTrap.HasNotBeenSet(nameof(Throttle)))
+        // The attributes are gathered again from the markup on every render, so what the cascade adds to them is
+        // gone the moment it stops adding it; there is nothing to take back.
+        if (HtmlAttributes is not null)
         {
-            bitSwipeTrap.Throttle = Throttle.Value;
+            foreach (var attr in HtmlAttributes)
+            {
+                bitSwipeTrap.HtmlAttributes.TryAdd(attr.Key, attr.Value);
+            }
         }
 
-        if (TouchOnly.HasValue && bitSwipeTrap.HasNotBeenSet(nameof(TouchOnly)))
+        if (Id.HasValue())
         {
-            bitSwipeTrap.TouchOnly = TouchOnly.Value;
+            bitSwipeTrap.TakeFromCascade(nameof(Id), Id, static s => s.Id, static (s, v) => s.Id = v);
         }
 
-        if (Trigger.HasValue && bitSwipeTrap.HasNotBeenSet(nameof(Trigger)))
+        if (IsEnabled.HasValue)
         {
-            bitSwipeTrap.Trigger = Trigger.Value;
+            bitSwipeTrap.TakeFromCascade(nameof(IsEnabled), IsEnabled.Value, static s => s.IsEnabled, static (s, v) => s.IsEnabled = v);
         }
 
-        if (TriggerVelocity.HasValue && bitSwipeTrap.HasNotBeenSet(nameof(TriggerVelocity)))
+        if (Style.HasValue())
         {
-            bitSwipeTrap.TriggerVelocity = TriggerVelocity.Value;
+            bitSwipeTrap.TakeFromCascade(nameof(Style), Style, static s => s.Style, static (s, v) => s.Style = v);
+        }
+
+        if (TabIndex.HasValue())
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(TabIndex), TabIndex, static s => s.TabIndex, static (s, v) => s.TabIndex = v);
+        }
+
+        if (Visibility.HasValue)
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(Visibility), Visibility.Value, static s => s.Visibility, static (s, v) => s.Visibility = v);
+        }
+
+        if (KeyboardTrigger.HasValue)
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(KeyboardTrigger), KeyboardTrigger.Value, static s => s.KeyboardTrigger, static (s, v) => s.KeyboardTrigger = v);
+        }
+
+        if (OrientationLock.HasValue)
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(OrientationLock), OrientationLock, static s => s.OrientationLock, static (s, v) => s.OrientationLock = v);
+        }
+
+        if (SkipSelector.HasValue())
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(SkipSelector), SkipSelector, static s => s.SkipSelector, static (s, v) => s.SkipSelector = v);
+        }
+
+        if (Threshold.HasValue)
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(Threshold), Threshold, static s => s.Threshold, static (s, v) => s.Threshold = v);
+        }
+
+        if (Throttle.HasValue)
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(Throttle), Throttle, static s => s.Throttle, static (s, v) => s.Throttle = v);
+        }
+
+        if (TouchOnly.HasValue)
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(TouchOnly), TouchOnly.Value, static s => s.TouchOnly, static (s, v) => s.TouchOnly = v);
+        }
+
+        if (Trigger.HasValue)
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(Trigger), Trigger, static s => s.Trigger, static (s, v) => s.Trigger = v);
+        }
+
+        if (TriggerVelocity.HasValue)
+        {
+            bitSwipeTrap.TakeFromCascade(nameof(TriggerVelocity), TriggerVelocity, static s => s.TriggerVelocity, static (s, v) => s.TriggerVelocity = v);
         }
     }
 }
