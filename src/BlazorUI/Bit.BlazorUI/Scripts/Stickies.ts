@@ -426,18 +426,28 @@ namespace BitBlazorUI {
                 height = box.clientHeight - pad.top - pad.bottom;
             }
 
+            // Scroll padding only shapes the scrolling of an axis that has something to scroll, so an axis
+            // without overflow claims nothing and leaves the page's own value on it: a full-width header
+            // pinned top and left of a pane that only scrolls vertically would otherwise claim its whole
+            // width as left padding. Read off the scrollable box itself, whatever its overflow style says,
+            // since an overflow:hidden pane is still scrolled by scrollIntoView. The claim is recomputed on
+            // every layout change, so an axis that starts overflowing takes its full claim from then on.
+            const scroller = scope === window ? document.documentElement : scope as HTMLElement;
+            const overflowsY = scroller.scrollHeight > scroller.clientHeight;
+            const overflowsX = scroller.scrollWidth > scroller.clientWidth;
+
             const inset = (value: string, size: number) =>
                 value.endsWith('%') ? (parseFloat(value) || 0) * size / 100 : (parseFloat(value) || 0);
 
             // Rounded up, so a sub-pixel element never leaves a hairline of the next control under it.
-            const claim = (value: string, padding: number, size: number, extent: number) =>
-                value === 'auto' ? 0 : Math.ceil(padding + inset(value, size) + extent);
+            const claim = (value: string, padding: number, size: number, extent: number, overflows: boolean) =>
+                !overflows || value === 'auto' ? 0 : Math.ceil(padding + inset(value, size) + extent);
 
             return {
-                top: claim(style.top, pad.top, height, rect.height),
-                bottom: claim(style.bottom, pad.bottom, height, rect.height),
-                left: claim(style.left, pad.left, width, rect.width),
-                right: claim(style.right, pad.right, width, rect.width)
+                top: claim(style.top, pad.top, height, rect.height, overflowsY),
+                bottom: claim(style.bottom, pad.bottom, height, rect.height, overflowsY),
+                left: claim(style.left, pad.left, width, rect.width, overflowsX),
+                right: claim(style.right, pad.right, width, rect.width, overflowsX)
             };
         }
 

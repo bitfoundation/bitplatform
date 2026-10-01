@@ -193,7 +193,8 @@ public partial class BitSticky : BitComponentBase
     /// the next control the focus moves to, an anchor followed, a call to scrollIntoView - stops with that
     /// thing hidden behind it (WCAG 2.4.11, Focus Not Obscured). This sets the scroll padding of the
     /// container on every edge the element pins to, to its offset plus its size there, and keeps it in step
-    /// while either changes. Several stickies of one container share it: each edge carries the largest claim,
+    /// while either changes. Only an axis the container has content overflowing on is claimed, so the room
+    /// is reserved from the moment there is something to scroll there. Several stickies of one container share it: each edge carries the largest claim,
     /// and the value the container had before is put back once the last of them lets go.
     /// <br />
     /// It needs no stuck detection, so it attaches nothing on the scroll, and it is released while the
