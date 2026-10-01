@@ -15,6 +15,7 @@
             maxPull: number,
             enabled: boolean,
             noMouse: boolean,
+            direction: BitPullToRefreshDirection,
             dotnetObj: DotNetObject) {
             // An id that is already registered would otherwise leave the previous refresher's listeners on the
             // anchor forever, so a component re-created against the same id keeps a single live gesture.
@@ -26,7 +27,7 @@
                 loadingEl,
                 scrollerElement,
                 scrollerSelector,
-                { trigger, factor, margin, threshold, maxPull, enabled, noMouse },
+                { trigger, factor, margin, threshold, maxPull, enabled, noMouse, direction },
                 dotnetObj);
         }
 
@@ -40,11 +41,12 @@
             threshold: number,
             maxPull: number,
             enabled: boolean,
-            noMouse: boolean) {
+            noMouse: boolean,
+            direction: BitPullToRefreshDirection) {
             PullToRefresh._refreshers[id]?.update(
                 scrollerElement,
                 scrollerSelector,
-                { trigger, factor, margin, threshold, maxPull, enabled, noMouse });
+                { trigger, factor, margin, threshold, maxPull, enabled, noMouse, direction });
         }
 
         public static async refresh(id: string) {
@@ -72,7 +74,11 @@
         maxPull: number;
         enabled: boolean;
         noMouse: boolean;
+        direction: BitPullToRefreshDirection;
     }
+
+    // Mirrors the managed BitPullToRefreshDirection, which crosses the interop as its number.
+    const enum BitPullToRefreshDirection { Down = 0, Up = 1 }
 
     // How far the finger travels before the gesture decides whether it is a pull or a sideways swipe. Below
     // it nothing is reported and nothing is prevented, so the few pixels a horizontal scroller or a carousel
@@ -84,8 +90,9 @@
     // pulls, the way it does in a native app.
     const EDITABLE = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
 
-    // A pull is one pointer travelling down. 0 while that is still undecided, 1 once it is a pull, -1 once the
-    // gesture has been given up on - a sideways swipe, a second finger, a scroller that is no longer at its top.
+    // A pull is one pointer travelling in the pull's direction. 0 while that is still undecided, 1 once it is a pull,
+    // -1 once the gesture has been given up on - a sideways swipe, a second finger, a scroller that has left the edge
+    // the pull starts at.
     const enum BitPullAxis { Undecided = 0, Vertical = 1, Abandoned = -1 }
 
     class BitPullRefresher {
@@ -175,6 +182,7 @@
         }
 
         public update(scrollerElement: HTMLElement | undefined, scrollerSelector: string | undefined, options: BitPullToRefreshOptions) {
+            const direction = this.options.direction;
             this.options = BitPullRefresher.normalize(options);
 
             if (scrollerElement !== this.scrollerElement || scrollerSelector !== this.scrollerSelector) {
@@ -191,7 +199,9 @@
                 }
             }
 
-            if (!this.options.enabled && !this.refreshing) {
+            // A pull under way when the direction turns around was travelling the wrong way for the new one, so it is
+            // dropped the way a disabling drops it; the managed side drops its pull height alongside.
+            if ((!this.options.enabled || this.options.direction !== direction) && !this.refreshing) {
                 this.reset();
                 this.snapBack();
             }
@@ -311,7 +321,7 @@
         };
 
         private start(x: number, y: number, target: EventTarget | null) {
-            if (!this.options.enabled || this.refreshing || this.getScrollTop() > 0 || this.isNestedScrollerAway(target)) {
+            if (!this.options.enabled || this.refreshing || this.isAwayFromEdge() || this.isNestedScrollerAway(target)) {
                 return this.abandon();
             }
 
@@ -331,12 +341,14 @@
         private move(e: TouchEvent | PointerEvent, x: number, y: number) {
             if (this.startY === -1 || this.axis === BitPullAxis.Abandoned || this.refreshing) return;
 
-            // A scroller that has left its top while the finger is down means the gesture belongs to the
-            // scroller, not to the pull.
-            if (this.getScrollTop() > 0) return this.abandon();
+            // A scroller that has left the edge the pull starts at while the finger is down means the gesture
+            // belongs to the scroller, not to the pull.
+            if (this.isAwayFromEdge()) return this.abandon();
 
+            // The travel is measured along the pull's direction, so from here on a pull up reads exactly as a pull
+            // down does: a positive dy is the finger going the way that refreshes.
             const dx = x - this.startX;
-            const dy = y - this.startY;
+            const dy = (y - this.startY) * (this.options.direction === BitPullToRefreshDirection.Up ? -1 : 1);
 
             if (this.axis === BitPullAxis.Undecided) {
                 // Nothing is claimed until the finger has moved far enough to say which way it is going, so a
@@ -598,26 +610,37 @@
             return (first && first !== this.loadingEl) ? first as HTMLElement : this.anchorEl;
         }
 
-        // The document's scroll offset does not live on the element that is styled as the scroller: in
-        // standards mode body.scrollTop stays 0 however far the page is scrolled, which used to leave a
-        // whole-page pull to refresh permanently at "the top". A rubber-banding iOS scroller also reports a
-        // negative offset, which is still the top as far as the pull is concerned.
-        private getScrollTop() {
+        // Whether the scroller has left the edge the pull starts at - its top for a pull down, its bottom for a pull
+        // up - which hands the gesture to the scroller.
+        private isAwayFromEdge() {
             const el = this.scrollerEl;
 
+            // The document's scroll offset does not live on the element that is styled as the scroller: in
+            // standards mode body.scrollTop stays 0 however far the page is scrolled, which used to leave a
+            // whole-page pull to refresh permanently at "the top".
             return (el === document.body || el === document.documentElement)
-                ? (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop)
-                : el.scrollTop;
+                ? this.isScrolledAway(document.scrollingElement ?? document.documentElement,
+                                      window.scrollY || document.documentElement.scrollTop || document.body.scrollTop)
+                : this.isScrolledAway(el, el.scrollTop);
         }
 
-        // A scrollable element between the pointer and the scroller that is not at its own top - a nested list, a
-        // code block, a text area - takes a downward drag for its own scrolling, the way the browser hands a scroll to
-        // the innermost scroller first; pulling there would refresh the page instead of scrolling it back up.
+        // A rubber-banding iOS scroller reports an offset past either end, which is still the edge as far as the pull
+        // is concerned. The bottom is allowed a pixel of slack: a zoomed or high-density screen scrolls by fractions
+        // of a pixel, and stops a fraction short of the whole-pixel scrollHeight.
+        private isScrolledAway(el: Element, scrollTop: number) {
+            return this.options.direction === BitPullToRefreshDirection.Up
+                ? el.scrollHeight - el.clientHeight - scrollTop > 1
+                : scrollTop > 0;
+        }
+
+        // A scrollable element between the pointer and the scroller that has not reached its own edge - a nested
+        // list, a code block, a text area - takes the drag for its own scrolling, the way the browser hands a scroll
+        // to the innermost scroller first; pulling there would refresh the page instead of scrolling it to its end.
         private isNestedScrollerAway(target: EventTarget | null) {
             let el = target instanceof Element ? target : null;
 
             while (el && el !== this.scrollerEl && el !== this.anchorEl) {
-                if (el.scrollTop > 0) {
+                if (this.isScrolledAway(el, el.scrollTop)) {
                     const overflowY = getComputedStyle(el).overflowY;
                     if (overflowY === 'auto' || overflowY === 'scroll') return true;
                 }
@@ -642,8 +665,11 @@
 
         // Written only when the value actually changes: a scroll handler that assigns an inline style on every
         // event makes the browser recalculate styles for the whole subtree at scroll speed.
+        // At the edge the pull starts at, the browser keeps the panning that scrolls back into the content - pan-down
+        // at the top, pan-up at the bottom - and leaves the opposite drag, the pull, to the gesture.
         private syncScrollStyles() {
-            const touchAction = (this.options.enabled && this.getScrollTop() <= 0) ? 'pan-x pan-down pinch-zoom' : this.anchorTouchAction;
+            const panning = this.options.direction === BitPullToRefreshDirection.Up ? 'pan-x pan-up pinch-zoom' : 'pan-x pan-down pinch-zoom';
+            const touchAction = (this.options.enabled && !this.isAwayFromEdge()) ? panning : this.anchorTouchAction;
             if (touchAction !== this.touchActionInEffect) {
                 this.touchActionInEffect = touchAction;
                 this.anchorEl.style.touchAction = touchAction;
@@ -663,7 +689,7 @@
 
 
         // A factor of zero divides the pull distance by nothing and a negative one pulls the indicator
-        // upwards, so the numbers the managed side sends are held inside the range the gesture can draw. The
+        // the wrong way, so the numbers the managed side sends are held inside the range the gesture can draw. The
         // same clamps are applied there, so the height js draws and the size the component renders agree.
         private static normalize(options: BitPullToRefreshOptions): BitPullToRefreshOptions {
             return {
@@ -674,6 +700,7 @@
                 maxPull: Math.max(options.maxPull || 0, 0),
                 enabled: options.enabled,
                 noMouse: options.noMouse,
+                direction: options.direction === BitPullToRefreshDirection.Up ? BitPullToRefreshDirection.Up : BitPullToRefreshDirection.Down,
             };
         }
     }

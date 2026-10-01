@@ -107,7 +107,16 @@ public class BitPullToRefreshParamsTests : BunitTestContext
     [TestMethod]
     public void BitPullToRefreshShouldPassCascadedGestureNumbersToJs()
     {
-        RenderWithParams(new BitPullToRefreshParams { Trigger = 120, Factor = 2m, Margin = 10, Threshold = 5, MaxPull = 160, NoMouse = true });
+        var component = RenderWithParams(new BitPullToRefreshParams
+        {
+            Trigger = 120,
+            Factor = 2m,
+            Margin = 10,
+            Threshold = 5,
+            MaxPull = 160,
+            NoMouse = true,
+            Direction = BitPullToRefreshDirection.Up,
+        });
 
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.PullToRefresh.setup");
 
@@ -117,6 +126,10 @@ public class BitPullToRefreshParamsTests : BunitTestContext
         Assert.AreEqual(5, setup.Arguments[8]);
         Assert.AreEqual(160, setup.Arguments[9]);
         Assert.AreEqual(true, setup.Arguments[11]);
+        Assert.AreEqual(BitPullToRefreshDirection.Up, setup.Arguments[12]);
+
+        // The cascaded direction also turns the strip, which the stylesheet reads off the root's class.
+        Assert.IsTrue(component.Find(".bit-ptr").ClassList.Contains("bit-ptr-up"));
     }
 
     [TestMethod]
@@ -193,20 +206,24 @@ public class BitPullToRefreshParamsTests : BunitTestContext
             Color = BitColor.Error,
             FullWidth = true,
             ReleaseLabel = "Cascaded",
+            Direction = BitPullToRefreshDirection.Up,
         }, builder =>
         {
             builder.AddAttribute(1, nameof(BitPullToRefresh.Trigger), 60);
             builder.AddAttribute(2, nameof(BitPullToRefresh.Color), (BitColor?)BitColor.Success);
             builder.AddAttribute(3, nameof(BitPullToRefresh.FullWidth), false);
             builder.AddAttribute(4, nameof(BitPullToRefresh.ReleaseLabel), "Own");
+            builder.AddAttribute(5, nameof(BitPullToRefresh.Direction), BitPullToRefreshDirection.Down);
         });
 
         var root = component.Find(".bit-ptr");
         StringAssert.Contains(root.GetAttribute("style"), "--bit-ptr-color:var(--bit-clr-suc)");
         Assert.IsFalse(root.ClassList.Contains("bit-ptr-flw"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ptr-up"));
 
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.PullToRefresh.setup");
         Assert.AreEqual(60, setup.Arguments[5]);
+        Assert.AreEqual(BitPullToRefreshDirection.Down, setup.Arguments[12]);
 
         var ptr = component.FindComponent<BitPullToRefresh>();
         ptr.InvokeAsync(() => ptr.Instance._OnMove(60m)).GetAwaiter().GetResult();

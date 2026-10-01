@@ -52,6 +52,11 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
     public string? CustomColor { get; set; }
 
     /// <summary>
+    /// The direction the pull travels in to refresh: down from the top of the scroller, or up from its bottom.
+    /// </summary>
+    public BitPullToRefreshDirection? Direction { get; set; }
+
+    /// <summary>
     /// The factor the pull-down distance gets divided by; higher values make the pull feel heavier.
     /// </summary>
     public decimal? Factor { get; set; }
@@ -169,6 +174,13 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
             bitPullToRefresh.CustomColor = CustomColor;
 
             bitPullToRefresh.StyleBuilder.Reset();
+        }
+
+        if (Direction.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Direction)))
+        {
+            bitPullToRefresh.Direction = Direction.Value;
+
+            bitPullToRefresh.ClassBuilder.Reset();
         }
 
         if (Factor.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Factor)))

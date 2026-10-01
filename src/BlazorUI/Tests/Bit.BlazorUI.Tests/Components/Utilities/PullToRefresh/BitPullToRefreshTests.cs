@@ -845,6 +845,83 @@ public class BitPullToRefreshTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPullToRefreshShouldApplyTheUpDirectionClass()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
+
+        var component = RenderComponent<BitPullToRefresh>();
+        Assert.AreEqual(BitPullToRefreshDirection.Down, component.Instance.Direction);
+        Assert.IsFalse(component.Find(".bit-ptr").ClassList.Contains("bit-ptr-up"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Direction, BitPullToRefreshDirection.Up);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ptr").ClassList.Contains("bit-ptr-up"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Direction, BitPullToRefreshDirection.Down);
+        });
+
+        Assert.IsFalse(component.Find(".bit-ptr").ClassList.Contains("bit-ptr-up"));
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldPassTheDirectionToJs()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
+
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.Direction, BitPullToRefreshDirection.Up);
+        });
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.setup"].Single();
+        Assert.AreEqual(BitPullToRefreshDirection.Up, setup.Arguments[12]);
+        Assert.IsInstanceOfType<Microsoft.JSInterop.DotNetObjectReference<BitPullToRefresh>>(setup.Arguments[13]);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Direction, BitPullToRefreshDirection.Down);
+        });
+
+        var update = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.update"].Single();
+        Assert.AreEqual(BitPullToRefreshDirection.Down, update.Arguments[10]);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Direction, BitPullToRefreshDirection.Down);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.update"].Count);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldDropThePullHeightWhenTheDirectionTurnsWhileIdle()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
+
+        var component = RenderComponent<BitPullToRefresh>();
+
+        component.Instance._OnMove(80m).GetAwaiter().GetResult();
+        Assert.AreEqual(BitPullToRefreshState.CanRelease, component.Instance.State);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Direction, BitPullToRefreshDirection.Up);
+        });
+
+        Assert.AreEqual(0m, component.Instance.PullProgress);
+        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
+        Assert.IsFalse(component.Find(".bit-ptr-spw").ClassList.Contains("bit-ptr-crl"));
+    }
+
+    [TestMethod]
     [DataRow(BitColor.Primary, "var(--bit-clr-pri)")]
     [DataRow(BitColor.Info, "var(--bit-clr-inf)")]
     [DataRow(BitColor.Error, "var(--bit-clr-err)")]

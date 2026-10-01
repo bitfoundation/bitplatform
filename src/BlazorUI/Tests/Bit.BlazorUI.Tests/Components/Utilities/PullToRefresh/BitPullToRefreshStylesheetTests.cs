@@ -95,6 +95,20 @@ public partial class BitPullToRefreshStylesheetTests
     }
 
     [TestMethod]
+    public void BitPullToRefreshShouldOpenAnUpwardPullFromTheBottomEdge()
+    {
+        var stylesheet = ReadStylesheet();
+        var up = Block(stylesheet, "\n.bit-ptr-up {");
+
+        // Child combinators only, so a pull to refresh nested in the anchor of an upward one keeps its own direction.
+        StringAssert.Contains(up, "> .bit-ptr-lod {\n        top: auto;\n        bottom: 0;");
+        StringAssert.Contains(up, "> .bit-ptr-lod > .bit-ptr-spw {\n        margin-top: 0;\n        margin-bottom: var(--bit-ptr-off, 0px);");
+
+        // The settle transitions the whole margin, which is what lets the bottom offset of an upward pull ease back too.
+        StringAssert.Contains(Block(stylesheet, "\n.bit-ptr-hld .bit-ptr-spw,"), "transition: margin $mot-duration-short $mot-easing;");
+    }
+
+    [TestMethod]
     public void BitPullToRefreshShouldFadeTheGlyphUntilReleasingWouldRefresh()
     {
         var stylesheet = ReadStylesheet();

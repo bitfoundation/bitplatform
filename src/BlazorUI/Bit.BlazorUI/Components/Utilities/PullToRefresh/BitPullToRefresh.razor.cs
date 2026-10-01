@@ -4,7 +4,7 @@ using System.Runtime.ExceptionServices;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// The PullToRefresh component is used to add the pull down to refresh feature to a page or a specific element.
+/// The PullToRefresh component is used to add the pull to refresh feature - down from the top, or up from the bottom - to a page or a specific element.
 /// </summary>
 public partial class BitPullToRefresh : BitComponentBase
 {
@@ -20,6 +20,7 @@ public partial class BitPullToRefresh : BitComponentBase
     private decimal _lastFactor;
     private bool _lastIsEnabled;
     private bool _lastNoMouse;
+    private BitPullToRefreshDirection _lastDirection;
     private string? _lastScrollerSelector;
     private ElementReference? _lastScrollerElement;
     private ElementReference _loadingRef = default!;
@@ -86,6 +87,21 @@ public partial class BitPullToRefresh : BitComponentBase
     /// color of the content it sits over. It only applies while <see cref="Color"/> is left unset.
     /// </remarks>
     [Parameter, ResetStyleBuilder] public string? CustomColor { get; set; }
+
+    /// <summary>
+    /// The direction the pull travels in to refresh.
+    /// <br />
+    /// The default value is <strong>Down</strong>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="BitPullToRefreshDirection.Down"/> engages while the scroller is at its top and opens the strip over
+    /// the top of the anchor; <see cref="BitPullToRefreshDirection.Up"/> engages while the scroller is at its bottom and
+    /// opens the strip over the bottom of the anchor instead - the gesture of a chat or a feed that loads more at its
+    /// end. The rest of the gesture reads the same either way: the trigger, the factor, the margin, the threshold and
+    /// the overpull are all measured along the chosen direction, and the pull height the callbacks report is the
+    /// distance travelled in it, so it is never negative.
+    /// </remarks>
+    [Parameter, ResetClassBuilder] public BitPullToRefreshDirection Direction { get; set; }
 
     /// <summary>
     /// The factor to balance the pull height out. The pull-down distance gets divided by it, so higher values make the pull feel heavier.
@@ -431,6 +447,8 @@ public partial class BitPullToRefresh : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => FullWidth ? "bit-ptr-flw" : string.Empty);
+
+        ClassBuilder.Register(() => Direction == BitPullToRefreshDirection.Up ? "bit-ptr-up" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -480,20 +498,21 @@ public partial class BitPullToRefresh : BitComponentBase
         if (IsRendered is false) return;
 
         if (_lastTrigger != Trigger || _lastFactor != Factor || _lastMargin != Margin || _lastThreshold != Threshold ||
-            _lastMaxPull != MaxPull || _lastIsEnabled != IsEnabled || _lastNoMouse != NoMouse || _lastScrollerSelector != ScrollerSelector ||
-            !Nullable.Equals(_lastScrollerElement, ScrollerElement))
+            _lastMaxPull != MaxPull || _lastIsEnabled != IsEnabled || _lastNoMouse != NoMouse || _lastDirection != Direction ||
+            _lastScrollerSelector != ScrollerSelector || !Nullable.Equals(_lastScrollerElement, ScrollerElement))
         {
-            // js drops the pull height of an idle component when it gets disabled, so the managed
-            // side does the same, otherwise the indicator keeps rendering at the height it had.
-            if (IsEnabled is false && _refreshing is false && _completed is false)
+            // js drops the pull height of an idle component when it gets disabled, or when the direction it is
+            // pulled in turns around under it, so the managed side does the same, otherwise the indicator keeps
+            // rendering at the height it had.
+            if ((IsEnabled is false || _lastDirection != Direction) && _refreshing is false && _completed is false)
             {
                 _diff = 0;
             }
 
             CacheJsParameters();
-            await _js.BitPullToRefreshUpdate(UniqueId, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse);
+            await _js.BitPullToRefreshUpdate(UniqueId, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse, Direction);
 
-            // A pull dropped by the disabling, or one a new Trigger has moved across the release line.
+            // A pull dropped by the disabling or the turn, or one a new Trigger has moved across the release line.
             NotifyStateChange();
         }
     }
@@ -504,7 +523,7 @@ public partial class BitPullToRefresh : BitComponentBase
         {
             CacheJsParameters();
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse, dotnetObj);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse, Direction, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -519,6 +538,7 @@ public partial class BitPullToRefresh : BitComponentBase
         _lastMaxPull = MaxPull;
         _lastIsEnabled = IsEnabled;
         _lastNoMouse = NoMouse;
+        _lastDirection = Direction;
         _lastScrollerSelector = ScrollerSelector;
         _lastScrollerElement = ScrollerElement;
     }

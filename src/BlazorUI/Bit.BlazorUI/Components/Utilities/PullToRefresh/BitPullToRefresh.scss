@@ -84,7 +84,22 @@
     --bit-ptr-prg: 1;
     --bit-ptr-off: 0px;
     --bit-ptr-rot: 0deg;
-    transition: margin-top $mot-duration-short $mot-easing;
+    // The whole margin rather than its top, so an upward pull, which offsets the bottom instead, settles the same way.
+    transition: margin $mot-duration-short $mot-easing;
+}
+
+// An upward pull (Direction="Up") opens the strip from the bottom edge of the anchor, and the indicator travels up
+// with the finger. Only the component's own strip is turned: a pull to refresh inside the anchor keeps its own way.
+.bit-ptr-up {
+    > .bit-ptr-lod {
+        top: auto;
+        bottom: 0;
+    }
+
+    > .bit-ptr-lod > .bit-ptr-spw {
+        margin-top: 0;
+        margin-bottom: var(--bit-ptr-off, 0px);
+    }
 }
 
 .bit-ptr-swr {

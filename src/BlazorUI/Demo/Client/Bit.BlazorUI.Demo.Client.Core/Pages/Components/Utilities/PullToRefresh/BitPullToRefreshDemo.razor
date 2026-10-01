@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/pulltorefresh"
             Title="PullToRefresh"
-            Description="The PullToRefresh component adds the pull down to refresh gesture to a page or any scrollable element, for touch and mouse alike, with a tunable trigger distance and resistance, templates for every stage of the pull, and a refresh that can also be started from code." />
+            Description="The PullToRefresh component adds the pull to refresh gesture - down from the top, or up from the bottom - to a page or any scrollable element, for touch and mouse alike, with a tunable trigger distance and resistance, templates for every stage of the pull, and a refresh that can also be started from code." />
 
 <DemoPage Name="PullToRefresh"
-          Description="PullToRefresh adds the pull down to refresh gesture to a page or any scrollable element. It engages only while the scroller is at its top, damps the pull, and holds an indicator open until the refresh is done - by touch, by mouse, or from code."
+          Description="PullToRefresh adds the pull to refresh gesture to a page or any scrollable element. It engages only while the scroller is at its top - or at its bottom, for a pull up - damps the pull, and holds an indicator open until the refresh is done - by touch, by mouse, or from code."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           CssVariables="componentCssVariables"
@@ -286,7 +286,25 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Direction" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>Direction</b> sets the way the pull travels. <b>Up</b> engages once the scroller has reached its bottom
+            and opens the strip over the bottom of the anchor - the gesture of a chat or a feed that loads more at its
+            end. Scroll to the end of the list, then drag it up past the end: each refresh here appends ten more items.
+            Everything else - the trigger, the threshold, the templates and the events - works the same either way.
+        </div>
+        <br />
+        <BitPullToRefresh Direction="BitPullToRefreshDirection.Up" OnRefresh="HandleOnRefreshUp">
+            <div class="anchor">
+                @foreach (var (idx, i) in upItems)
+                {
+                    <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                }
+            </div>
+        </BitPullToRefresh>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>Color</b> paints the glyph with a theme color; <b>CustomColor</b> takes any CSS color and applies only
             while <b>Color</b> is unset.
@@ -313,7 +331,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             <b>Styles</b> and <b>Classes</b> reach the strip, the disc and the glyph, each with a release, refreshing
             and complete variant - pull past the trigger to see the release one.
@@ -358,7 +376,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             The pull is vertical, so <b>Dir</b> leaves it as it is; it flips the content and pins the strip to the
             start edge.

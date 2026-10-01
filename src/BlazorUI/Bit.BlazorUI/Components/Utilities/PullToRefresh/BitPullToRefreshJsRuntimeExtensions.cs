@@ -15,9 +15,10 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     int maxPull,
                                                                     bool enabled,
                                                                     bool noMouse,
+                                                                    BitPullToRefreshDirection direction,
                                                                     DotNetObjectReference<BitPullToRefresh>? dotnetObjectReference)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, noMouse, dotnetObjectReference);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, noMouse, direction, dotnetObjectReference);
     }
 
     internal static ValueTask BitPullToRefreshUpdate(this IJSRuntime jsRuntime,
@@ -30,9 +31,10 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     int threshold,
                                                                     int maxPull,
                                                                     bool enabled,
-                                                                    bool noMouse)
+                                                                    bool noMouse,
+                                                                    BitPullToRefreshDirection direction)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.update", id, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, noMouse);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.update", id, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, noMouse, direction);
     }
 
     internal static ValueTask BitPullToRefreshRefresh(this IJSRuntime jsRuntime, string id)

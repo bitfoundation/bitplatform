@@ -66,6 +66,15 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Name = "Direction",
+            Type = "BitPullToRefreshDirection",
+            DefaultValue = "BitPullToRefreshDirection.Down",
+            Description = "The direction the pull travels in to refresh. Down engages while the scroller is at its top and opens the strip over the top of the anchor; Up engages while it is at its bottom and opens the strip over the bottom of the anchor. The trigger, factor, margin, threshold and overpull are measured along the chosen direction, and the reported pull height is never negative.",
+            LinkType = LinkType.Link,
+            Href = "#direction-enum",
+        },
+        new()
+        {
             Name = "Factor",
             Type = "decimal",
             DefaultValue = "1.5",
@@ -362,6 +371,27 @@ public partial class BitPullToRefreshDemo
                     Name = "Complete",
                     Description = "The refresh has finished and the complete indicator is held open for the CompleteDelay.",
                     Value = "4",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "direction-enum",
+            Name = "BitPullToRefreshDirection",
+            Description = "The direction a BitPullToRefresh is pulled in to refresh.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Down",
+                    Description = "Pulled down while the scroller is at its top, opening the strip over the top of the anchor.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Up",
+                    Description = "Pulled up while the scroller is at its bottom, opening the strip over the bottom of the anchor.",
+                    Value = "1",
                 },
             ]
         },
@@ -734,6 +764,13 @@ public partial class BitPullToRefreshDemo
     {
         await Task.Delay(2000);
         overridingItems = GenerateRandomNumbers(51, 101);
+    }
+
+    private (int, int)[] upItems = GenerateRandomNumbers(1, 21);
+    private async Task HandleOnRefreshUp()
+    {
+        await Task.Delay(2000);
+        upItems = [.. upItems, .. GenerateRandomNumbers(upItems.Length + 1, upItems.Length + 11)];
     }
 
     private (int, int)[] colorItems = GenerateRandomNumbers(1, 51);
