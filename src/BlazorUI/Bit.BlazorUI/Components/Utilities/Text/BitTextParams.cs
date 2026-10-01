@@ -52,7 +52,7 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
     public string? Element { get; set; }
 
     /// <summary>
-    /// Forces the text to always break at the end.
+    /// Breaks the text wherever the line runs out, even in the middle of a word.
     /// </summary>
     public bool? ForceBreak { get; set; }
 
@@ -102,8 +102,7 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoSelect { get; set; }
 
     /// <summary>
-    /// If true, the text will not wrap, but instead will truncate with a text overflow ellipsis.
-    /// Note that text overflow can only happen with block or inline-block level elements(the element needs to have a width in order to overflow).
+    /// Keeps the text on a single line and ends it with an ellipsis where it does not fit.
     /// </summary>
     public bool? NoWrap { get; set; }
 
