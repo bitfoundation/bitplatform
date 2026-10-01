@@ -121,7 +121,8 @@ the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinni
 **Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
 `ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
 10 accepts up to 21 (`LatestSupportedJavaVersion` 21.0.99), so every Android build there fails. .NET 11
-raises the limit to 25.0.99; move the runners together with the .NET 11 move.
+RC1 still says 21.0.99 and RC2 raises it to 25.0.99 (`Xamarin.Android.Common.props.in` on dotnet/android's
+`release/11.0.1xx-rc*` branches); move the runners once the Android workload in use accepts 25.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.

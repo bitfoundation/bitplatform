@@ -392,7 +392,7 @@ jobs:
 
     - name: Optimize DbContext
       run: |
-          cd TodoSample/src/Server/TodoSample.Server.Web && dotnet build -c Release && dnx dotnet-ef@10.0.12 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
+          cd TodoSample/src/Server/TodoSample.Server.Web && dotnet build -c Release && dnx dotnet-ef@11.0.0-rc.1.26425.128 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
 
     - name: Publish
       run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
