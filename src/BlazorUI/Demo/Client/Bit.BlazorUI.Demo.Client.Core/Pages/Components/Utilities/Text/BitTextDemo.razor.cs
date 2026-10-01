@@ -485,6 +485,12 @@ public partial class BitTextDemo
         },
         new()
         {
+            Name = "--bit-Text-heading-font-family",
+            DefaultValue = "--bit-Text-font-family",
+            Description = "Font family of the H1 to H6 variants, for a display face beside the text face.",
+        },
+        new()
+        {
             Name = "--bit-Text-monospace-font-family",
             DefaultValue = "--bit-tpg-font-family-mono",
             Description = "Font family of a Monospace text.",

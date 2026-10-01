@@ -223,10 +223,12 @@ private readonly BitTextParams[] textParams =
 </BitText>
 
 <div style=""--bit-Text-color: #0f766e;
+            --bit-Text-heading-font-family: Georgia, serif;
             --bit-Text-decoration-color: #f59e0b;
             --bit-Text-decoration-thickness: 2px;
             --bit-Text-underline-offset: 0.3em;
             --bit-Text-monospace-font-family: 'Courier New', monospace;"">
+    <BitText Typography=""BitTypography.H5"">A heading in a family of its own</BitText>
     <BitText>Color from --bit-Text-color</BitText>
     <BitText Underline>Underline restyled through the decoration variables</BitText>
     <BitText Monospace>Monospace in another family</BitText>

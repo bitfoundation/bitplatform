@@ -19,6 +19,7 @@ public class BitTextStylesheetTests
     [
         "--bit-Text-color",
         "--bit-Text-font-family",
+        "--bit-Text-heading-font-family",
         "--bit-Text-monospace-font-family",
         "--bit-Text-gutter",
         "--bit-Text-decoration-color",
@@ -62,7 +63,8 @@ public class BitTextStylesheetTests
         DataRow("color: var(--bit-Text-color", "\n.bit-txt-rfg {"),
         DataRow("color: var(--bit-Text-color", "\n.bit-txt-grd {"),
         DataRow("font-family: var(--bit-Text-font-family", "\n.bit-txt-inherit {"),
-        DataRow("font-family: var(--bit-Text-font-family", "\n.bit-txt-mno {")]
+        DataRow("font-family: var(--bit-Text-font-family", "\n.bit-txt-mno {"),
+        DataRow("font-family: var(--bit-Text-heading-font-family", "\n.bit-txt-mno {")]
     public void BitTextShouldLetAParameterWinOverItsPublicVariable(string variableRule, string parameterRule)
     {
         var stylesheet = ReadStylesheet();

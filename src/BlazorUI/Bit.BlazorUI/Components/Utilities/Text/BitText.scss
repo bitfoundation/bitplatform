@@ -3,9 +3,10 @@
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every text and
 // one set on the Style of an instance - or of any element around a group of them - re-skins those alone. A parameter
 // always wins over its variable: Color and Foreground over the color, Typography="Inherit" and Monospace over the
-// family.
+// families.
 //   --bit-Text-color                     text color when no Color or Foreground is set   (default: the color around it)
 //   --bit-Text-font-family               font family of every variant but Inherit        (default: $tg-font-family)
+//   --bit-Text-heading-font-family       font family of the H1 to H6 variants            (default: --bit-Text-font-family)
 //   --bit-Text-monospace-font-family     font family of a Monospace text                 (default: $tg-font-family-mono)
 //   --bit-Text-gutter                    bottom margin of a Gutter text                  (default: $tg-gutter-size)
 //   --bit-Text-decoration-color          color of the Underline and Strikethrough lines  (default: the text color)
@@ -72,6 +73,18 @@
     font-weight: $tg-h6-font-weight;
     line-height: $tg-h6-line-height;
     letter-spacing: $tg-h6-letter-spacing;
+}
+
+// The heading variants can be set in a family of their own - a display face over a text face is the commonest pairing
+// a brand asks for - and otherwise keep the one every other variant is set in. The variant decides it, not the tag:
+// an h2 drawn as Body1 reads like body copy, and a span drawn as H1 like a heading.
+.bit-txt-h1,
+.bit-txt-h2,
+.bit-txt-h3,
+.bit-txt-h4,
+.bit-txt-h5,
+.bit-txt-h6 {
+    font-family: var(--bit-Text-heading-font-family, var(--bit-Text-font-family, #{$tg-font-family}));
 }
 
 .bit-txt-subtitle1 {
