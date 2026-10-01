@@ -40,6 +40,11 @@ internal static class BitPullToRefreshJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.refresh", id);
     }
 
+    internal static ValueTask BitPullToRefreshRelease(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.release", id);
+    }
+
     internal static ValueTask BitPullToRefreshDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.dispose", id);

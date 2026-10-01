@@ -69,12 +69,12 @@ public partial class BitPullToRefreshStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var disc = Block(stylesheet, "\n.bit-ptr-spw {");
-        StringAssert.Contains(disc, "width: calc(var(--bit-PullToRefresh-indicator-size, 2.1875rem) * var(--bit-ptr-prg, 0));");
-        StringAssert.Contains(disc, "height: calc(var(--bit-PullToRefresh-indicator-size, 2.1875rem) * var(--bit-ptr-prg, 0));");
+        StringAssert.Contains(disc, "width: calc(var(--bit-PullToRefresh-indicator-size, #{$siz-ctrl-md}) * var(--bit-ptr-prg, 0));");
+        StringAssert.Contains(disc, "height: calc(var(--bit-PullToRefresh-indicator-size, #{$siz-ctrl-md}) * var(--bit-ptr-prg, 0));");
 
         var glyph = Block(stylesheet, "\n.bit-ptr-spn {");
-        StringAssert.Contains(glyph, "width: calc(var(--bit-PullToRefresh-glyph-size, 1.5rem) * var(--bit-ptr-prg, 0));");
-        StringAssert.Contains(glyph, "height: calc(var(--bit-PullToRefresh-glyph-size, 1.5rem) * var(--bit-ptr-prg, 0));");
+        StringAssert.Contains(glyph, "width: calc(var(--bit-PullToRefresh-glyph-size, #{$siz-icon-lg}) * var(--bit-ptr-prg, 0));");
+        StringAssert.Contains(glyph, "height: calc(var(--bit-PullToRefresh-glyph-size, #{$siz-icon-lg}) * var(--bit-ptr-prg, 0));");
     }
 
     [TestMethod]
@@ -129,7 +129,7 @@ public partial class BitPullToRefreshStylesheetTests
     {
         var block = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(block, ".bit-ptr-spw {\n        border: 1px solid CanvasText;");
+        StringAssert.Contains(block, ".bit-ptr-spw {\n        border: calc(1px * var(--bit-ptr-prg, 0)) solid CanvasText;");
         StringAssert.Contains(block, ".bit-ptr-crl {\n        border-color: Highlight;");
     }
 

@@ -157,7 +157,7 @@ public partial class BitPullToRefreshDemo
             Name = "OnStateChange",
             Type = "EventCallback<BitPullToRefreshState>",
             DefaultValue = "",
-            Description = "The callback for when the gesture moves on to another stage, reported once per change. It is the one callback that hears the refresh end, since the parent re-renders for OnRefresh before the indicator closes.",
+            Description = "The callback for when the gesture moves on to another stage, reported once per change. It is the one callback that hears the refresh end, since the parent re-renders for OnRefresh before the indicator closes. The gesture does not wait for it, so a slow handler never holds up the refresh; an exception it throws goes to the error boundary.",
             LinkType = LinkType.Link,
             Href = "#state-enum",
         },
@@ -271,13 +271,13 @@ public partial class BitPullToRefreshDemo
         new()
         {
             Name = "--bit-PullToRefresh-indicator-size",
-            DefaultValue = "2.1875rem",
+            DefaultValue = "--bit-siz-ctrl-md",
             Description = "Diameter of the indicator's disc at the trigger; below it, the disc is drawn at the fraction of it the pull has come.",
         },
         new()
         {
             Name = "--bit-PullToRefresh-glyph-size",
-            DefaultValue = "1.5rem",
+            DefaultValue = "--bit-siz-icon-lg",
             Description = "Size of the glyph inside the disc at the trigger, scaled with the pull the same way.",
         },
         new()

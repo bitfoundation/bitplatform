@@ -55,6 +55,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldInvokeOnRefresh()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var refreshed = false;
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -71,6 +72,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldShowRefreshingStateDuringOnRefresh()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -102,6 +104,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public async Task BitPullToRefreshShouldResetStateWhenOnRefreshThrows()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var component = RenderComponent<BitPullToRefresh>(parameters =>
         {
@@ -182,6 +185,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldApplyCanReleaseStateAtTrigger()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var classes = new BitPullToRefreshClassStyles
         {
@@ -229,6 +233,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldNotApplyCanReleaseStateWhileRefreshing()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -292,6 +297,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldNotThrowWhenTriggerIsZero()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var component = RenderComponent<BitPullToRefresh>(parameters =>
         {
@@ -352,6 +358,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldRespectRefreshingClassesAndStyles()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var classes = new BitPullToRefreshClassStyles
         {
@@ -578,6 +585,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public async Task BitPullToRefreshShouldShowCompleteStateAfterRefreshWhenCompleteDelayIsSet()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -621,6 +629,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public async Task BitPullToRefreshShouldRenderCompleteTemplateAndRespectCompleteClassesAndStyles()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -664,6 +673,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldNotShowCompleteStateWhenCompleteDelayIsZero()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var component = RenderComponent<BitPullToRefresh>(parameters =>
         {
@@ -683,6 +693,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldAnnounceRefreshingLabelWhileRefreshing()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -709,6 +720,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldAnnounceCustomRefreshingLabel()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -928,6 +940,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldNotRenderReleaseTemplateWhileRefreshing()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -998,6 +1011,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldNotMarkTheRootBusyWhileRefreshing()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -1035,6 +1049,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldReportIsRefreshing()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -1079,6 +1094,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldReportFullPullProgressWhileRefreshing()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -1122,20 +1138,41 @@ public class BitPullToRefreshTests : BunitTestContext
 
         var renderCount = component.RenderCount;
 
-        // Idle to pulling is a change of state, and so is reaching the trigger; every move in between is drawn by
-        // the script alone, so re-rendering the component - and the whole anchor with it - is skipped.
+        // Idle and pulling render alike, so starting a pull renders nothing, and neither does any move short of the
+        // trigger: the script draws them alone, so re-rendering the component - and the whole anchor with it - is
+        // skipped. Crossing the release line either way is what changes the markup.
         component.Instance._OnMove(10m).GetAwaiter().GetResult();
-        Assert.AreEqual(renderCount + 1, component.RenderCount);
-
         component.Instance._OnMove(40m).GetAwaiter().GetResult();
         component.Instance._OnMove(79m).GetAwaiter().GetResult();
-        Assert.AreEqual(renderCount + 1, component.RenderCount);
+        Assert.AreEqual(renderCount, component.RenderCount);
 
         component.Instance._OnMove(80m).GetAwaiter().GetResult();
-        Assert.AreEqual(renderCount + 2, component.RenderCount);
+        Assert.AreEqual(renderCount + 1, component.RenderCount);
 
         component.Instance._OnMove(79m).GetAwaiter().GetResult();
-        Assert.AreEqual(renderCount + 3, component.RenderCount);
+        Assert.AreEqual(renderCount + 2, component.RenderCount);
+
+        // Neither does dropping a pull that never reached the trigger.
+        component.Instance._OnCancel(79m).GetAwaiter().GetResult();
+        Assert.AreEqual(renderCount + 2, component.RenderCount);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldRenderTheStartAndDropOfAPullForAnIndicatorTemplate()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.IndicatorTemplate, ctx => $"<span class=\"state\">{ctx.State}</span>");
+        });
+
+        // The template is handed the state, so for it idle and pulling do differ.
+        component.Instance._OnMove(0.2m).GetAwaiter().GetResult();
+        Assert.AreEqual("Pulling", component.Find(".state").TextContent);
+
+        component.Instance._OnCancel(0.2m).GetAwaiter().GetResult();
+        Assert.AreEqual("Idle", component.Find(".state").TextContent);
     }
 
     [TestMethod]
@@ -1164,6 +1201,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public void BitPullToRefreshShouldReplaceTheIndicatorWithTheIndicatorTemplate()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var tcs = new TaskCompletionSource();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -1385,6 +1423,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public async Task BitPullToRefreshShouldReportTheRefreshAndItsEnd()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var states = new List<BitPullToRefreshState>();
         var tcs = new TaskCompletionSource();
@@ -1418,6 +1457,7 @@ public class BitPullToRefreshTests : BunitTestContext
     public async Task BitPullToRefreshShouldReportIdleWhenOnRefreshThrows()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
 
         var states = new List<BitPullToRefreshState>();
         var component = RenderComponent<BitPullToRefresh>(parameters =>
@@ -1473,72 +1513,202 @@ public class BitPullToRefreshTests : BunitTestContext
     public async Task BitPullToRefreshShouldStillRefreshAndResetWhenOnStateChangeThrows()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.dispose").SetVoidResult();
 
+        var errors = new List<Exception>();
         var refreshed = false;
         var calls = 0;
-        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        var host = RenderComponent<BitErrorBoundary>(parameters =>
         {
-            parameters.Add(p => p.OnRefresh, () => refreshed = true);
-            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => throw new InvalidOperationException($"state change {++calls}"));
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<Exception>(this, ex => errors.Add(ex)));
+            parameters.AddChildContent<BitPullToRefresh>(ptr =>
+            {
+                ptr.Add(p => p.OnRefresh, () => refreshed = true);
+                ptr.Add(p => p.OnStateChange, (BitPullToRefreshState s) => throw new InvalidOperationException($"state change {++calls}"));
+            });
         });
+        // Read up front: the boundary takes the component out of the tree once it is handed the failure.
+        var ptr = host.FindComponent<BitPullToRefresh>().Instance;
 
-        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._Refresh());
+        // The notification is not a step of the refresh: nothing is thrown back over the interop call, and the
+        // refresh runs and resets as if the handler had not failed.
+        await host.InvokeAsync(() => ptr._Refresh());
 
-        // The first failure is the one reported, the later notification throwing again does not replace it.
-        Assert.AreEqual("state change 1", error.Message);
-        Assert.AreEqual(2, calls);
         Assert.IsTrue(refreshed);
-        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
-        Assert.IsFalse(component.Instance.IsRefreshing);
+        Assert.AreEqual(2, calls);
+        Assert.AreEqual(BitPullToRefreshState.Idle, ptr.State);
+        Assert.IsFalse(ptr.IsRefreshing);
+
+        // ... and the failure is where the framework puts an unhandled one, rather than swallowed.
+        Assert.IsNotEmpty(errors);
+        Assert.AreEqual("state change 1", errors[0].Message);
     }
 
     [TestMethod]
     public async Task BitPullToRefreshShouldKeepTheOnRefreshExceptionWhenTheCleanupNotificationThrows()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.dispose").SetVoidResult();
 
-        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        Exception? dispatched = null;
+        var host = RenderComponent<BitErrorBoundary>(parameters =>
         {
-            parameters.Add(p => p.OnRefresh, EventCallback.Factory.Create(this, () => throw new InvalidOperationException("refresh failed")));
-            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) =>
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<Exception>(this, ex => dispatched ??= ex));
+            parameters.AddChildContent<BitPullToRefresh>(ptr =>
             {
-                if (s == BitPullToRefreshState.Idle) throw new InvalidOperationException("idle failed");
+                ptr.Add(p => p.OnRefresh, EventCallback.Factory.Create(this, () => throw new InvalidOperationException("refresh failed")));
+                ptr.Add(p => p.OnStateChange, (BitPullToRefreshState s) =>
+                {
+                    if (s == BitPullToRefreshState.Idle) throw new InvalidOperationException("idle failed");
+                });
             });
         });
+        var ptr = host.FindComponent<BitPullToRefresh>().Instance;
 
-        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._Refresh());
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => host.InvokeAsync(() => ptr._Refresh()));
 
         Assert.AreEqual("refresh failed", error.Message);
-        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
+        Assert.AreEqual(BitPullToRefreshState.Idle, ptr.State);
+        Assert.AreEqual("idle failed", dispatched?.Message);
     }
 
     [TestMethod]
     public async Task BitPullToRefreshShouldStillInvokeThePullCallbacksWhenOnStateChangeThrows()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.dispose").SetVoidResult();
 
+        var errors = new List<Exception>();
         decimal? moved = null;
-        decimal? ended = null;
-        decimal? canceled = null;
+        var host = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<Exception>(this, ex => errors.Add(ex)));
+            parameters.AddChildContent<BitPullToRefresh>(ptr =>
+            {
+                ptr.Add(p => p.OnPullMove, (decimal d) => moved = d);
+                ptr.Add(p => p.OnStateChange, (BitPullToRefreshState s) => throw new InvalidOperationException(s.ToString()));
+            });
+        });
+        var component = host.FindComponent<BitPullToRefresh>();
+
+        // Nothing is thrown back over the interop call, which the script would only log, and the move is still
+        // reported; the failure goes to the error boundary instead.
+        await host.InvokeAsync(() => component.Instance._OnMove(40m));
+
+        Assert.AreEqual(40m, moved);
+        Assert.AreEqual(nameof(BitPullToRefreshState.Pulling), errors.Single().Message);
+    }
+
+    [TestMethod]
+    public async Task BitPullToRefreshShouldNotWaitForOnStateChangeToRefresh()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
+
+        var handler = new TaskCompletionSource();
+        var states = new List<BitPullToRefreshState>();
+        var refreshed = false;
         var component = RenderComponent<BitPullToRefresh>(parameters =>
         {
-            parameters.Add(p => p.OnPullMove, (decimal d) => moved = d);
-            parameters.Add(p => p.OnPullEnd, (decimal d) => ended = d);
-            parameters.Add(p => p.OnPullCancel, (decimal d) => canceled = d);
-            parameters.Add(p => p.OnStateChange, (BitPullToRefreshState s) => throw new InvalidOperationException(s.ToString()));
+            parameters.Add(p => p.OnRefresh, () => refreshed = true);
+            parameters.Add(p => p.OnStateChange, EventCallback.Factory.Create<BitPullToRefreshState>(this, async s =>
+            {
+                states.Add(s);
+                await handler.Task;
+            }));
         });
 
-        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._OnMove(40m));
-        Assert.AreEqual(nameof(BitPullToRefreshState.Pulling), error.Message);
-        Assert.AreEqual(40m, moved);
+        // A handler still busy with the first change holds up neither the refresh nor the pull callbacks.
+        await component.InvokeAsync(() => component.Instance._Refresh());
+        Assert.IsTrue(refreshed);
+        Assert.AreEqual(BitPullToRefreshState.Idle, component.Instance.State);
 
-        error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._OnEnd(40m));
-        Assert.AreEqual(nameof(BitPullToRefreshState.Idle), error.Message);
-        Assert.AreEqual(40m, ended);
+        // The changes after it wait their turn, so they still arrive one at a time and in order.
+        CollectionAssert.AreEqual(new[] { BitPullToRefreshState.Refreshing }, states);
 
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._OnMove(30m));
-        error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Instance._OnCancel(30m));
-        Assert.AreEqual(nameof(BitPullToRefreshState.Idle), error.Message);
-        Assert.AreEqual(30m, canceled);
+        handler.SetResult();
+
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { BitPullToRefreshState.Refreshing, BitPullToRefreshState.Idle }, states));
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldNotWaitForOnStateChangeToReportAMove()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var handler = new TaskCompletionSource();
+        var moves = new List<decimal>();
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.OnPullMove, (decimal d) => moves.Add(d));
+            parameters.Add(p => p.OnStateChange, EventCallback.Factory.Create<BitPullToRefreshState>(this, _ => handler.Task));
+        });
+
+        // The handler never completes, yet the move - which the script waits on before it reports the next one - does.
+        var move = component.InvokeAsync(() => component.Instance._OnMove(40m));
+
+        Assert.IsTrue(move.Wait(TimeSpan.FromSeconds(5)));
+        CollectionAssert.AreEqual(new[] { 40m }, moves);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldHandAnOnStateChangeExceptionOfAParameterChangeToTheErrorBoundary()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.dispose").SetVoidResult();
+
+        Exception? captured = null;
+        var host = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<Exception>(this, ex => captured = ex));
+            parameters.AddChildContent<BitPullToRefresh>(ptr =>
+            {
+                ptr.Add(p => p.OnStateChange, (BitPullToRefreshState s) =>
+                {
+                    if (s == BitPullToRefreshState.Idle) throw new InvalidOperationException("idle failed");
+                });
+            });
+        });
+        var component = host.FindComponent<BitPullToRefresh>();
+
+        component.InvokeAsync(() => component.Instance._OnMove(30m)).GetAwaiter().GetResult();
+
+        // Disabling drops the pull; the handler failing on that change does not fail the parameter update, it
+        // reaches the error boundary the way a click handler's exception does.
+        var ptr = component.Instance;
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        Assert.AreEqual(BitPullToRefreshState.Idle, ptr.State);
+        Assert.AreEqual("idle failed", captured?.Message);
+    }
+
+    [TestMethod]
+    public async Task BitPullToRefreshShouldLetGoOfTheHeldIndicatorBeforeRenderingTheEndOfARefresh()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.release").SetVoidResult();
+
+        // Each render notes how many times the script had been told to let go by then.
+        var renders = new List<(BitPullToRefreshState State, int Releases)>();
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.IndicatorTemplate, ctx => builder =>
+                renders.Add((ctx.State, Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.release"].Count)));
+        });
+        renders.Clear();
+
+        await component.InvokeAsync(() => component.Instance._Refresh());
+
+        // The script is told to let go of its hold while the refreshing indicator is still what is rendered, so the
+        // strip never closes on the idle one drawn at full size.
+        CollectionAssert.AreEqual(new[]
+        {
+            (BitPullToRefreshState.Refreshing, 0),
+            (BitPullToRefreshState.Idle, 1),
+        }, renders);
+        Assert.AreEqual(component.Instance.UniqueId, Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.release"].Single().Arguments[0]);
     }
 }

@@ -51,6 +51,10 @@
             await PullToRefresh._refreshers[id]?.refresh();
         }
 
+        public static release(id: string) {
+            PullToRefresh._refreshers[id]?.release();
+        }
+
         public static dispose(id: string) {
             const refresher = PullToRefresh._refreshers[id];
             if (!refresher) return;
@@ -154,6 +158,7 @@
             this.anchorEl.addEventListener('pointerup', this.onPointerUp);
             this.anchorEl.addEventListener('pointercancel', this.onPointerCancel);
             this.anchorEl.addEventListener('lostpointercapture', this.onPointerCancel);
+            this.anchorEl.addEventListener('selectstart', this.onSelectStart);
 
             this.bindScroller();
 
@@ -202,13 +207,25 @@
 
             try {
                 this.syncWidth();
-                this.hold();
+                // Nothing was pulled, so there is no indicator to keep at the size it had: the strip opens and the
+                // indicator appears with the refreshing state the managed side renders, rather than first showing
+                // the idle one at full size while that render is on its way.
+                this.hold(false);
 
                 await this.dotnetObj.invokeMethodAsync('Refresh');
             } finally {
                 this.refreshing = false;
                 this.snapBack();
             }
+        }
+
+        // Lets go of a refresh the managed side is done with, which calls it just before it renders the idle state:
+        // the strip starts closing while the indicator still shows the refreshing or complete state it ended on,
+        // instead of the hold keeping the idle one at full size until the refresh call has made it back here.
+        public release() {
+            if (!this.refreshing) return;
+
+            this.snapBack();
         }
 
         public dispose() {
@@ -223,6 +240,7 @@
             this.anchorEl.removeEventListener('pointerup', this.onPointerUp);
             this.anchorEl.removeEventListener('pointercancel', this.onPointerCancel);
             this.anchorEl.removeEventListener('lostpointercapture', this.onPointerCancel);
+            this.anchorEl.removeEventListener('selectstart', this.onSelectStart);
 
             this.unbindScroller();
             this.resizeObserver?.disconnect();
@@ -286,6 +304,12 @@
             void this.cancel();
         };
 
+        // A selection the browser tries to start once a mouse pull has been claimed is refused outright: the
+        // stylesheet alone does not stop a selection drag that was already under way when it took effect.
+        private onSelectStart = (e: Event) => {
+            if (this.isMousePull()) e.preventDefault();
+        };
+
         private start(x: number, y: number, target: EventTarget | null) {
             if (!this.options.enabled || this.refreshing || this.getScrollTop() > 0 || this.isNestedScrollerAway(target)) {
                 return this.abandon();
@@ -328,11 +352,16 @@
                 if (this.pointerId !== -1 && 'pointerId' in e) {
                     try { this.anchorEl.setPointerCapture(this.pointerId); } catch { /* the pointer is already gone */ }
 
-                    // A mouse pull is a drag, and a drag over text selects it. What the slop above already
-                    // selected is dropped, and the stylesheet keeps the rest of the pull from selecting more.
+                    // A mouse pull is a drag, and a drag over text selects it. The stylesheet and the selectstart
+                    // listener keep the pull from starting a new selection.
                     this.anchorEl.classList.add('bit-ptr-drg');
-                    window.getSelection()?.removeAllRanges();
                 }
+            }
+
+            // What the slop above already selected is dropped, and so is whatever a selection drag the browser
+            // had already begun goes on to extend while the pull runs.
+            if (this.isMousePull()) {
+                this.clearSelection();
             }
 
             if (dy <= 0) return this.abandon();
@@ -439,6 +468,20 @@
             } catch { /* the pointer is already gone */ }
         }
 
+        private isMousePull() {
+            return this.axis === BitPullAxis.Vertical && this.pointerId !== -1;
+        }
+
+        // Only a selection inside the anchor is the pull's doing; one elsewhere on the page is left alone.
+        private clearSelection() {
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
+
+            if (selection.getRangeAt(0).intersectsNode(this.anchorEl)) {
+                selection.removeAllRanges();
+            }
+        }
+
         private snapBack() {
             this.loadingEl.classList.add('bit-ptr-rtn');
             this.loadingEl.classList.remove('bit-ptr-hld');
@@ -447,13 +490,16 @@
             this.paint(0);
         }
 
-        // Holds the indicator for a refresh that is about to run: the strip settles at the trigger's height - an
-        // overpull is let go of - and the indicator is drawn at its full size whatever the managed side has
-        // rendered so far. It is the strip that holds it, not the component's own refreshing class, so neither
-        // round trip - the one that starts the refresh and the one that ends it - leaves a frame in which the
-        // indicator is drawn at the size the pull last had.
-        private hold() {
-            this.loadingEl.classList.add('bit-ptr-rtn', 'bit-ptr-hld');
+        // Holds the strip open for a refresh that is about to run, settled at the trigger's height - an overpull is
+        // let go of. For a released pull the indicator is also drawn at its full size whatever the managed side has
+        // rendered so far: it is the strip that holds it, not the component's own refreshing class, so the round
+        // trip that starts the refresh leaves no frame in which the indicator is drawn at the size the pull last
+        // had. The managed side lets go of it (release) before it renders the end of the refresh.
+        private hold(indicator = true) {
+            this.loadingEl.classList.add('bit-ptr-rtn');
+            if (indicator) {
+                this.loadingEl.classList.add('bit-ptr-hld');
+            }
             void this.loadingEl.offsetHeight;
             this.loadingEl.style.minHeight = `${this.pullHeight(this.options.trigger)}px`;
         }

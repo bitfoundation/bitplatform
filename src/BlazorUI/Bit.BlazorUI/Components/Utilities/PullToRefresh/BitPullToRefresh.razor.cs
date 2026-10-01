@@ -12,6 +12,7 @@ public partial class BitPullToRefresh : BitComponentBase
     private bool _completed;
     private bool _refreshing;
     private BitPullToRefreshState _notifiedState;
+    private Task _stateNotification = Task.CompletedTask;
     private int _lastTrigger;
     private int _lastMargin;
     private int _lastThreshold;
@@ -206,6 +207,10 @@ public partial class BitPullToRefresh : BitComponentBase
     /// from the gesture: a visible status text, a busy indicator elsewhere on the page. It is also the one callback
     /// that hears the refresh end, since the parent re-renders for <see cref="OnRefresh"/> before the indicator
     /// closes, and the complete state ends on a timer nothing else reports.
+    /// <br />
+    /// It is a notification: the gesture does not wait for it, so a slow handler never holds up the refresh or the
+    /// pull. The changes still reach it one at a time and in order, and an exception it throws is handed to the
+    /// component's error boundary, the way one thrown by a click handler is.
     /// </remarks>
     [Parameter] public EventCallback<BitPullToRefreshState> OnStateChange { get; set; }
 
@@ -322,12 +327,10 @@ public partial class BitPullToRefresh : BitComponentBase
         _diff = _Trigger;
         _refreshing = true;
 
-        ExceptionDispatchInfo? error = null;
-        try
+        var error = await RunStep(async () =>
         {
             await InvokeAsync(StateHasChanged);
-
-            error = await RunStep(NotifyStateChange, error);
+            NotifyStateChange();
 
             await OnRefresh.InvokeAsync();
 
@@ -336,20 +339,24 @@ public partial class BitPullToRefresh : BitComponentBase
                 _completed = true;
                 _refreshing = false;
                 await InvokeAsync(StateHasChanged);
-                error = await RunStep(NotifyStateChange, error);
+                NotifyStateChange();
                 await Task.Delay(CompleteDelay);
             }
-        }
-        catch (Exception ex)
+        }, null);
+
+        // The script holds the indicator at full size until the strip has closed, so it is let go of before the idle
+        // state is rendered: the strip closes on the refreshing or complete indicator it ended on, rather than on
+        // the idle one drawn at full size until this call has made it back to the script.
+        if (IsDisposed is false)
         {
-            error ??= ExceptionDispatchInfo.Capture(ex);
+            error = await RunStep(() => _js.BitPullToRefreshRelease(UniqueId).AsTask(), error);
         }
 
         _diff = 0;
         _completed = false;
         _refreshing = false;
         error = await RunStep(() => InvokeAsync(StateHasChanged), error);
-        error = await RunStep(NotifyStateChange, error);
+        NotifyStateChange();
 
         error?.Throw();
     }
@@ -373,10 +380,9 @@ public partial class BitPullToRefresh : BitComponentBase
             await InvokeAsync(StateHasChanged);
         }
 
-        var error = await RunStep(NotifyStateChange, null);
-        error = await RunStep(() => OnPullMove.InvokeAsync(diff), error);
+        NotifyStateChange();
 
-        error?.Throw();
+        await OnPullMove.InvokeAsync(diff);
     }
 
     [JSInvokable("OnEnd")]
@@ -394,21 +400,26 @@ public partial class BitPullToRefresh : BitComponentBase
             await InvokeAsync(StateHasChanged);
         }
 
-        var error = await RunStep(NotifyStateChange, null);
-        error = await RunStep(() => OnPullEnd.InvokeAsync(diff), error);
+        NotifyStateChange();
 
-        error?.Throw();
+        await OnPullEnd.InvokeAsync(diff);
     }
 
     [JSInvokable("OnCancel")]
     public async Task _OnCancel(decimal diff)
     {
-        _diff = 0;
-        await InvokeAsync(StateHasChanged);
-        var error = await RunStep(NotifyStateChange, null);
-        error = await RunStep(() => OnPullCancel.InvokeAsync(diff), error);
+        var changed = ChangesWhatIsRendered(0);
 
-        error?.Throw();
+        _diff = 0;
+
+        if (changed)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+
+        NotifyStateChange();
+
+        await OnPullCancel.InvokeAsync(diff);
     }
 
 
@@ -483,7 +494,7 @@ public partial class BitPullToRefresh : BitComponentBase
             await _js.BitPullToRefreshUpdate(UniqueId, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse);
 
             // A pull dropped by the disabling, or one a new Trigger has moved across the release line.
-            await NotifyStateChange();
+            NotifyStateChange();
         }
     }
 
@@ -523,28 +534,49 @@ public partial class BitPullToRefresh : BitComponentBase
     private bool CanRelease => CanReleaseAt(_diff);
 
     // The script draws the pull itself, so a new pull height re-renders the component - and the whole anchor with
-    // it - only where what the component renders changes: the stage of the gesture, or an IndicatorTemplate that
-    // follows the progress, which a height landing on the same whole pixel still draws the same.
+    // it - only where what the component renders changes: crossing the release line, or an IndicatorTemplate, the
+    // one part that is handed the state and the progress, which a height landing on the same whole pixel still
+    // draws the same. Without one, idle and pulling render alike, so starting or dropping a pull renders nothing.
     private bool ChangesWhatIsRendered(decimal diff)
     {
-        return CanReleaseAt(diff) != CanRelease || (diff > 0) != (_diff > 0) ||
-               (IndicatorTemplate is not null && Math.Round(diff) != Math.Round(_diff));
+        return CanReleaseAt(diff) != CanRelease ||
+               (IndicatorTemplate is not null && ((diff > 0) != (_diff > 0) || Math.Round(diff) != Math.Round(_diff)));
     }
 
     // Reports the stage the gesture is at whenever it differs from the one last reported, so a handler hears each
-    // change once however many moves or renders it took.
-    private async Task NotifyStateChange()
+    // change once however many moves or renders it took. The report is started rather than awaited, so a slow
+    // handler never holds up the refresh or the pull reporting; each one is chained after the last, so they still
+    // arrive one at a time and in order.
+    private void NotifyStateChange()
     {
         var state = State;
         if (state == _notifiedState) return;
 
         _notifiedState = state;
 
-        await OnStateChange.InvokeAsync(state);
+        _stateNotification = ReportStateChange(_stateNotification, state);
     }
 
-    // Runs one step of a gesture's lifecycle, keeping the first exception any step throws, so the steps after
-    // it - the callbacks a handler is waiting on, the cleanup - still run and a later failure never hides it.
+    private async Task ReportStateChange(Task previous, BitPullToRefreshState state)
+    {
+        // A failed report has already been handed on below, so the next one only waits for it to be over.
+        await previous;
+
+        try
+        {
+            await OnStateChange.InvokeAsync(state);
+        }
+        catch (Exception ex)
+        {
+            // Nothing awaits the report, so an exception out of the handler has no caller to surface on. It is
+            // handed to the component's error boundary instead, the way an exception out of a click handler is -
+            // unless the component is already gone, where there is no longer a boundary to hand it to.
+            if (IsDisposed is false) await DispatchExceptionAsync(ex);
+        }
+    }
+
+    // Runs one step of a refresh, keeping the first exception any step throws, so the steps after it - the
+    // cleanup - still run and a later failure never hides it.
     private static async Task<ExceptionDispatchInfo?> RunStep(Func<Task> step, ExceptionDispatchInfo? error)
     {
         try

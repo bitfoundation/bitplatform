@@ -4,8 +4,8 @@
 // to refresh, one set on an ancestor every one inside it, and one set on the Style of an instance that one:
 //   --bit-PullToRefresh-color                     glyph of the indicator              (default: $clr-fg-pri)
 //   --bit-PullToRefresh-pull-opacity              glyph while the pull falls short    (default: 0.6)
-//   --bit-PullToRefresh-indicator-size            diameter of the indicator's disc    (default: 2.1875rem)
-//   --bit-PullToRefresh-glyph-size                size of the glyph inside the disc   (default: 1.5rem)
+//   --bit-PullToRefresh-indicator-size            diameter of the indicator's disc    (default: $siz-ctrl-md)
+//   --bit-PullToRefresh-glyph-size                size of the glyph inside the disc   (default: $siz-icon-lg)
 //   --bit-PullToRefresh-indicator-background      fill of the disc                    (default: $clr-bg-pri)
 //   --bit-PullToRefresh-indicator-shadow          elevation of the disc               (default: $box-shadow-popup)
 //   --bit-PullToRefresh-indicator-radius          corners of the disc                 (default: $shp-radius-full)
@@ -66,11 +66,10 @@
     display: flex;
     flex-shrink: 0;
     align-items: center;
-    box-sizing: border-box;
     justify-content: center;
     margin-top: var(--bit-ptr-off, 0px);
-    width: calc(var(--bit-PullToRefresh-indicator-size, 2.1875rem) * var(--bit-ptr-prg, 0));
-    height: calc(var(--bit-PullToRefresh-indicator-size, 2.1875rem) * var(--bit-ptr-prg, 0));
+    width: calc(var(--bit-PullToRefresh-indicator-size, #{$siz-ctrl-md}) * var(--bit-ptr-prg, 0));
+    height: calc(var(--bit-PullToRefresh-indicator-size, #{$siz-ctrl-md}) * var(--bit-ptr-prg, 0));
     border-radius: var(--bit-PullToRefresh-indicator-radius, #{$shp-radius-full});
     background-color: var(--bit-PullToRefresh-indicator-background, #{$clr-bg-pri});
     box-shadow: var(--bit-PullToRefresh-indicator-shadow, #{$box-shadow-popup});
@@ -102,8 +101,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: calc(var(--bit-PullToRefresh-glyph-size, 1.5rem) * var(--bit-ptr-prg, 0));
-    height: calc(var(--bit-PullToRefresh-glyph-size, 1.5rem) * var(--bit-ptr-prg, 0));
+    width: calc(var(--bit-PullToRefresh-glyph-size, #{$siz-icon-lg}) * var(--bit-ptr-prg, 0));
+    height: calc(var(--bit-PullToRefresh-glyph-size, #{$siz-icon-lg}) * var(--bit-ptr-prg, 0));
     opacity: var(--bit-PullToRefresh-pull-opacity, 0.6);
     color: var(--bit-ptr-color, var(--bit-PullToRefresh-color, #{$clr-fg-pri}));
     transform: rotate(var(--bit-ptr-rot, 0deg));
@@ -148,10 +147,11 @@
 
 // A forced-colors mode strips the shadow and repaints the fill in the page's own Canvas, which leaves the disc
 // with no edge at all, so it is given one; the edge turns Highlight once releasing would refresh, the system
-// color for a state the user is about to commit to.
+// color for a state the user is about to commit to. The edge is scaled with the pull like the disc itself, so an
+// idle disc drawn at no size leaves no dot of border behind, and any non-zero fraction still draws a whole pixel.
 @media (forced-colors: active) {
     .bit-ptr-spw {
-        border: 1px solid CanvasText;
+        border: calc(1px * var(--bit-ptr-prg, 0)) solid CanvasText;
     }
 
     .bit-ptr-crl {
