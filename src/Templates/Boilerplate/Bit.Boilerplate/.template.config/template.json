@@ -754,6 +754,7 @@
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
+                        "src/Tests/Infrastructure/Components/AppMenuUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",

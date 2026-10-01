@@ -19,10 +19,12 @@ public partial class WebContentSecurityPolicyTests : AppTestBase
     [DataRow(App.TodoAot, DisplayName = "TodoAot (Static Web App)")]
     public async Task App_Should_BootWithoutAnyCspViolation(App app)
     {
-        // Before any page script, so a violation during boot is caught too.
+        // Before any page script, so a violation during boot is caught too. Enforced ones only: Cloudflare's script
+        // monitoring adds a report-only policy to a sample of the responses, which reports every script and every
+        // connection of the page without blocking any of them.
         await Page.AddInitScriptAsync("""
             window.__cspViolations = [];
-            document.addEventListener('securitypolicyviolation', e => window.__cspViolations.push(`${e.effectiveDirective} blocked ${e.blockedURI} (${e.sourceFile}:${e.lineNumber})`));
+            document.addEventListener('securitypolicyviolation', e => e.disposition === 'enforce' && window.__cspViolations.push(`${e.effectiveDirective} blocked ${e.blockedURI} (${e.sourceFile}:${e.lineNumber})`));
             """);
 
         var page = await OpenApp(app);
