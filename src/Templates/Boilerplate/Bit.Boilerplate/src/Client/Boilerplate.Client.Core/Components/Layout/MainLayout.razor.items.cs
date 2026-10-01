@@ -237,5 +237,27 @@ public partial class MainLayout
                 ]
             });
         }
+
+        AddCultureUrls(navPanelItems);
+    }
+
+    /// <summary>
+    /// The items link to the culture-less urls the client-side router navigates to (<c>/about</c>), while a full page
+    /// load serves the same page under its culture (<c>/en-US/about</c>). BitNav marks the current page by comparing
+    /// the url with each item's urls, so without the culture-prefixed forms nothing is marked after a refresh or a deep
+    /// link.
+    /// </summary>
+    private static void AddCultureUrls(List<BitNavItem> items)
+    {
+        foreach (var item in items)
+        {
+            if (item.Url is not null)
+            {
+                string[] urls = [item.Url, .. item.AdditionalUrls ?? []];
+                item.AdditionalUrls = [.. item.AdditionalUrls ?? [], .. urls.SelectMany(CultureInfoManager.GetCultureUrls)];
+            }
+
+            AddCultureUrls(item.ChildItems);
+        }
     }
 }
