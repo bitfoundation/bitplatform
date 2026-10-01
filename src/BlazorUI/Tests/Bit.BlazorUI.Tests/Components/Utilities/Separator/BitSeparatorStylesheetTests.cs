@@ -130,6 +130,31 @@ public partial class BitSeparatorStylesheetTests
         StringAssert.Contains(block, "overflow-wrap: break-word;");
     }
 
+    [TestMethod]
+    public void BitSeparatorShouldKeepAVerticalSeparatorAtLeastALineOfTextTall()
+    {
+        // Between runs of text, or sized to the content it does not have, the line would otherwise collapse to nothing.
+        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-spr-vrt {"), "min-height: 1em;");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldSitContentOffsetByNothingFlushWithItsEdge()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A zero offset leaves no segment to keep the gap from; any other offset keeps the whole gap, and so does the
+        // content painted on a Background, whose padding is the inside of its chip.
+        StringAssert.Contains(stylesheet, "$spr-edge-gap: min(var(--bit-Separator-content-gap, #{spacing(1.5)}), calc(var(--bit-spr-ofs, var(--bit-Separator-content-offset, 0px)) * 10000));");
+
+        var horizontal = Block(stylesheet, "\n.bit-spr-hrz {");
+        StringAssert.Contains(horizontal, "&.bit-spr-srt:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {\n        padding-inline-start: $spr-edge-gap;");
+        StringAssert.Contains(horizontal, "&.bit-spr-end:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {\n        padding-inline-end: $spr-edge-gap;");
+
+        var vertical = Block(stylesheet, "\n.bit-spr-vrt {");
+        StringAssert.Contains(vertical, "&.bit-spr-srt:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {\n        padding-top: $spr-edge-gap;");
+        StringAssert.Contains(vertical, "&.bit-spr-end:not(.bit-spr-bpg, .bit-spr-bsg, .bit-spr-btg) > .bit-spr-cnt {\n        padding-bottom: $spr-edge-gap;");
+    }
+
     private static string Block(string stylesheet, string opening)
     {
         var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);

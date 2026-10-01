@@ -213,8 +213,9 @@ public partial class BitSeparator : BitComponentBase
     /// Whether the element is a vertical separator.
     /// </summary>
     /// <remarks>
-    /// A vertical separator stretches to the height of the flex row it stands in, and takes it from its
-    /// container anywhere else - so outside a flex row, give the container a height.
+    /// A vertical separator stretches to the height of the flex row it stands in and takes it from its
+    /// container anywhere else, but is never shorter than a line of text - so it stands between runs of text
+    /// as readily as between the items of a toolbar.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Vertical { get; set; }

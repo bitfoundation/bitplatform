@@ -35,7 +35,9 @@ public partial class BitSeparatorDemo
     <span>Sign in with a password</span>
     <BitSeparator Vertical>OR</BitSeparator>
     <span>Sign in with a passkey</span>
-</div>";
+</div>
+
+<div>Docs <BitSeparator Vertical /> Blog <BitSeparator Vertical /> GitHub</div>";
 
     private readonly string example3RazorCode = @"
 <style>
@@ -147,7 +149,7 @@ public partial class BitSeparatorDemo
 <div style=""--bit-Separator-color: var(--bit-clr-pri); --bit-Separator-line-style: dashed; --bit-Separator-content-color: var(--bit-clr-fg-sec); --bit-Separator-content-font-size: 0.75rem;"">
     <BitSeparator>Set on the container</BitSeparator>
     <BitSeparator AlignContent=""BitSeparatorAlignContent.Start"">for every separator inside it</BitSeparator>
-    <BitSeparator Color=""BitColor.Error"">Color wins over the variable</BitSeparator>
+    <BitSeparator LineStyle=""BitSeparatorLineStyle.Solid"">LineStyle wins over the variable</BitSeparator>
 </div>
 
 <BitSeparator Style=""--bit-Separator-thickness: 4px; --bit-Separator-spacing: 1rem; --bit-Separator-content-gap: 0.25rem; --bit-Separator-content-font-weight: 600;"">
@@ -158,14 +160,14 @@ public partial class BitSeparatorDemo
 <BitParams Parameters=""separatorParams"">
     <BitSeparator>Account</BitSeparator>
     <BitSeparator>Billing</BitSeparator>
-    <BitSeparator Color=""BitColor.Error"" LineStyle=""BitSeparatorLineStyle.Solid"">Danger zone</BitSeparator>
+    <BitSeparator LineStyle=""BitSeparatorLineStyle.Solid"">Danger zone</BitSeparator>
 </BitParams>";
     private readonly string example9CsharpCode = @"
 private readonly BitSeparatorParams[] separatorParams =
 [
     new()
     {
-        Color = BitColor.Primary,
+        Thickness = ""2px"",
         LineStyle = BitSeparatorLineStyle.Dashed,
         AlignContent = BitSeparatorAlignContent.Start,
     }

@@ -130,7 +130,7 @@ public partial class BitSeparatorDemo
             Name = "Vertical",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the element is a vertical separator. A vertical separator stretches to the height of the flex row it stands in, and takes it from its container anywhere else."
+            Description = "Whether the element is a vertical separator. It stretches to the height of the flex row it stands in and takes it from its container anywhere else, but is never shorter than a line of text."
         }
     ];
 
@@ -472,7 +472,7 @@ public partial class BitSeparatorDemo
     [
         new()
         {
-            Color = BitColor.Primary,
+            Thickness = "2px",
             LineStyle = BitSeparatorLineStyle.Dashed,
             AlignContent = BitSeparatorAlignContent.Start,
         }

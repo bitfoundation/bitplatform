@@ -32,7 +32,7 @@
     <DemoExample Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
         <div>
             <b>Vertical</b> stands the line up between items side by side. In a flex row it stretches to the height of the
-            row; anywhere else its container needs a height.
+            row, between runs of text it is as tall as the text, and a container with a height sets its own.
         </div>
         <br />
         <div class="example-content">
@@ -48,6 +48,7 @@
                 <BitSeparator Vertical>OR</BitSeparator>
                 <span>Sign in with a passkey</span>
             </div>
+            <div>Docs <BitSeparator Vertical /> Blog <BitSeparator Vertical /> GitHub</div>
         </div>
     </DemoExample>
 
@@ -161,7 +162,7 @@
             <div style="--bit-Separator-color: var(--bit-clr-pri); --bit-Separator-line-style: dashed; --bit-Separator-content-color: var(--bit-clr-fg-sec); --bit-Separator-content-font-size: 0.75rem;">
                 <BitSeparator>Set on the container</BitSeparator>
                 <BitSeparator AlignContent="BitSeparatorAlignContent.Start">for every separator inside it</BitSeparator>
-                <BitSeparator Color="BitColor.Error">Color wins over the variable</BitSeparator>
+                <BitSeparator LineStyle="BitSeparatorLineStyle.Solid">LineStyle wins over the variable</BitSeparator>
             </div>
             <BitSeparator Style="--bit-Separator-thickness: 4px; --bit-Separator-spacing: 1rem; --bit-Separator-content-gap: 0.25rem; --bit-Separator-content-font-weight: 600;">
                 Set on one separator
@@ -172,14 +173,14 @@
     <DemoExample Title="Cascading parameters" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>BitParams</b> with a <b>BitSeparatorParams</b> sets defaults for every separator under it; a separator's own
-            value wins (the last one keeps its own <b>Color</b> and <b>LineStyle</b>). The content is not cascaded.
+            value wins (the last one keeps its own <b>LineStyle</b>). The content is not cascaded.
         </div>
         <br />
         <div class="example-content">
             <BitParams Parameters="separatorParams">
                 <BitSeparator>Account</BitSeparator>
                 <BitSeparator>Billing</BitSeparator>
-                <BitSeparator Color="BitColor.Error" LineStyle="BitSeparatorLineStyle.Solid">Danger zone</BitSeparator>
+                <BitSeparator LineStyle="BitSeparatorLineStyle.Solid">Danger zone</BitSeparator>
             </BitParams>
         </div>
     </DemoExample>
