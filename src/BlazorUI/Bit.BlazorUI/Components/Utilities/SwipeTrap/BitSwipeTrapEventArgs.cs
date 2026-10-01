@@ -50,8 +50,8 @@ public class BitSwipeTrapEventArgs(
     public string? PointerType { get; set; } = pointerType;
 
     /// <summary>
-    /// Whether the swipe action ended by being canceled (e.g. the browser took the gesture over)
-    /// instead of a normal release. Only meaningful in the OnEnd event.
+    /// Whether the swipe action ended by being canceled (the browser took the gesture over, the pointer left the
+    /// trap before it was trapped, or Escape was pressed) instead of a normal release. Only meaningful in the OnEnd event.
     /// </summary>
     public bool IsCanceled { get; set; } = isCanceled;
 

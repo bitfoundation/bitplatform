@@ -7,19 +7,47 @@
             return document.body.offsetWidth;
         }
 
-        public static throttle(fn: Function, delay: number) {
-            let timeoutItd: number | null = null;
+        // Calls fn at most once per delay. The first call of a window goes at once; with trailing, the latest call
+        // made during the window is held and made when the window closes (opening a new one), so a value that comes
+        // to rest is reported where it rests rather than where the window began. cancel() drops a held call and
+        // closes the window, so the next call goes at once again.
+        public static throttle(fn: Function, delay: number, options?: { trailing?: boolean }) {
+            const trailing = options?.trailing === true;
+            let timeoutId: number | null = null;
+            let pendingArgs: any[] | null = null;
 
-            return (...args: any[]) => {
-                if (timeoutItd === null) {
-                    try { fn(...args); } catch (e) { console.error("BitBlazorUI.Utils.throttle:", e); }
-                    if (delay > 0) {
-                        timeoutItd = setTimeout(() => {
-                            timeoutItd = null;
-                        }, delay);
-                    }
+            const call = (args: any[]) => {
+                try { fn(...args); } catch (e) { console.error("BitBlazorUI.Utils.throttle:", e); }
+            };
+
+            const openWindow = () => {
+                timeoutId = setTimeout(() => {
+                    timeoutId = null;
+                    if (!pendingArgs) return;
+
+                    const args = pendingArgs;
+                    pendingArgs = null;
+                    openWindow();
+                    call(args);
+                }, delay);
+            };
+
+            const throttled = (...args: any[]) => {
+                if (timeoutId === null) {
+                    if (delay > 0) openWindow();
+                    call(args);
+                } else if (trailing) {
+                    pendingArgs = args;
                 }
             };
+
+            throttled.cancel = () => {
+                if (timeoutId !== null) clearTimeout(timeoutId);
+                timeoutId = null;
+                pendingArgs = null;
+            };
+
+            return throttled;
         }
 
         public static isTouchDevice() {
