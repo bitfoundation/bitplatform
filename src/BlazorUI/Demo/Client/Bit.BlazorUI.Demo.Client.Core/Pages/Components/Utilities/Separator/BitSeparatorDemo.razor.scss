@@ -1,16 +1,38 @@
-.custom-auto-layout {
-    gap: 1rem;
+.example-content {
+    gap: 0.75rem;
     display: flex;
-    padding: 1rem 0;
-    white-space: nowrap;
+    flex-flow: column nowrap;
 }
 
-.custom-horizontal-layout {
+.row {
     gap: 1rem;
-    height: 3rem;
     display: flex;
     white-space: nowrap;
     align-items: center;
+}
+
+.tall {
+    height: 3rem;
+}
+
+.medium {
+    height: 6rem;
+}
+
+.taller {
+    gap: 2rem;
+    height: 12rem;
+}
+
+.list {
+    margin: 0;
+    padding: 0;
+    max-width: 20rem;
+    list-style: none;
+
+    > li:not([role]) {
+        padding: 0.5rem 0;
+    }
 }
 
 // The classes below are passed to the component as parameters and land on markup the component itself

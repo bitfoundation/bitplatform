@@ -1,3 +1,7 @@
+using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.CompilerServices;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -12,6 +16,8 @@ namespace Bit.BlazorUI;
 /// The line itself is drawn by the theme and restyled through <see cref="LineStyle"/>, <see cref="Size"/>,
 /// <see cref="Thickness"/> and <see cref="Color"/>, while <see cref="Background"/> and <see cref="Border"/>
 /// keep it on the neutral surface tiers and <see cref="Inset"/> holds it off the ends of its container.
+/// The public <c>--bit-Separator-*</c> CSS variables re-skin what the theme would otherwise decide, and a
+/// <see cref="BitParams"/> ancestor sets the defaults of every separator under it.
 /// <br />
 /// To assistive technologies the root reports itself as a separator, named by its content or by an
 /// <see cref="BitComponentBase.AriaLabel"/>; a separator that is only visual sugar opts out of being
@@ -19,6 +25,10 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitSeparator : BitComponentBase
 {
+    private const string DefaultElement = "div";
+
+
+
     private string _contentId => $"{_Id}-cnt";
 
     private string? _role => Decorative ? "none" : "separator";
@@ -26,9 +36,19 @@ public partial class BitSeparator : BitComponentBase
     // aria-orientation implicitly defaults to horizontal on the separator role, so only vertical needs saying.
     private string? _ariaOrientation => Decorative is false && Vertical ? "vertical" : null;
 
-    // The children of a separator are presentational to assistive technologies, so the content names the
-    // separator through aria-labelledby rather than being read out of it - unless an AriaLabel already does.
-    private string? _ariaLabelledby => ChildContent is not null && Decorative is false && AriaLabel.HasNoValue() ? _contentId : null;
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the separator component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple separator components
+    /// through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSeparatorParams.ParamName)]
+    public BitSeparatorParams? CascadingParameters { get; set; }
 
 
 
@@ -125,14 +145,28 @@ public partial class BitSeparator : BitComponentBase
     [Parameter] public bool Decorative { get; set; }
 
     /// <summary>
-    /// Holds the separator off both ends of its container by this length, as any CSS length.
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    /// <remarks>
+    /// A list or a menu may only hold its items, so the separator between two of them has to be one: an "li"
+    /// is what keeps a <c>ul</c> valid, and it still reports itself as a separator rather than as an item, so
+    /// a screen reader neither counts it nor announces it as one. The value is used as written and only while
+    /// it is a name a tag can have and one that can hold content; anything else - a void element such as "hr"
+    /// included - falls back to "div".
+    /// </remarks>
+    [Parameter] public string? Element { get; set; }
+
+    /// <summary>
+    /// Holds the separator off the ends of its container: one CSS length for both ends, or two for the start
+    /// and the end.
     /// </summary>
     /// <remarks>
     /// An inset rule is what separates the rows of a list without cutting across the gutter the rows are
-    /// indented by - the divider under an avatar row starts where the text does. It shortens a horizontal
-    /// separator at both ends and a vertical one at the top and the bottom. It is padding, so a percentage
-    /// measures against the width of the container whichever way the separator runs, which is what CSS does
-    /// with every percentage padding; a vertical separator wants an absolute length.
+    /// indented by - the divider under an avatar row starts where the text does, which is "3rem 0". It
+    /// shortens a horizontal separator at its start and its end, which follow the reading direction, and a
+    /// vertical one at the top and the bottom. It is padding, so a percentage measures against the width of
+    /// the container whichever way the separator runs, which is what CSS does with every percentage padding;
+    /// a vertical separator wants an absolute length.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Inset { get; set; }
@@ -245,6 +279,7 @@ public partial class BitSeparator : BitComponentBase
 
         ClassBuilder.Register(() => LineStyle switch
         {
+            BitSeparatorLineStyle.Solid => "bit-spr-sld",
             BitSeparatorLineStyle.Dashed => "bit-spr-dsh",
             BitSeparatorLineStyle.Dotted => "bit-spr-dot",
             BitSeparatorLineStyle.Double => "bit-spr-dbl",
@@ -275,5 +310,66 @@ public partial class BitSeparator : BitComponentBase
         StyleBuilder.Register(() => ContentOffset.HasNoValue() ? null : $"--bit-spr-ofs:{ContentOffset}");
 
         StyleBuilder.Register(() => Inset.HasNoValue() ? null : $"--bit-spr-ins:{Inset}");
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSeparatorParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var element = Element?.Trim();
+        if (element.HasNoValue() || IsValidElement(element!) is false || IsVoidElement(element!))
+        {
+            element = DefaultElement;
+        }
+
+        builder.OpenElement(0, element!);
+        builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
+        builder.AddAttribute(2, "id", _Id);
+        builder.AddAttribute(3, "role", _role);
+        builder.AddAttribute(4, "aria-label", Decorative ? null : AriaLabel);
+        builder.AddAttribute(5, "aria-labelledby", GetAriaLabelledby());
+        builder.AddAttribute(6, "aria-orientation", _ariaOrientation);
+        builder.AddAttribute(7, "style", StyleBuilder.Value);
+        builder.AddAttribute(8, "class", ClassBuilder.Value);
+        builder.AddAttribute(9, "dir", Dir?.ToString().ToLower(CultureInfo.InvariantCulture));
+        builder.AddElementReferenceCapture(10, v => RootElement = v);
+
+        if (ChildContent is not null)
+        {
+            builder.OpenElement(11, "div");
+            builder.AddAttribute(12, "id", _contentId);
+            builder.AddAttribute(13, "style", Styles?.Content);
+            builder.AddAttribute(14, "class", $"bit-spr-cnt {Classes?.Content}".TrimEnd());
+            builder.AddContent(15, ChildContent);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+
+        base.BuildRenderTree(builder);
+    }
+
+
+
+    // The children of a separator are presentational to assistive technologies, so the content names the
+    // separator through aria-labelledby rather than being read out of it - unless an AriaLabel already does.
+    // An aria-labelledby the page splats on names it after something elsewhere on the page, and is kept as
+    // written, while a decorative separator is not a separator to name at all.
+    private string? GetAriaLabelledby()
+    {
+        if (Decorative) return null;
+
+        if (HtmlAttributes.TryGetValue("aria-labelledby", out var labelledby) && labelledby?.ToString() is { Length: > 0 } ids)
+        {
+            return ids;
+        }
+
+        return ChildContent is not null && AriaLabel.HasNoValue() ? _contentId : null;
     }
 }

@@ -1,22 +1,49 @@
 @import "../../../Styles/functions.scss";
 
-/*
- * The rule is drawn by the two pseudo elements of the root, laid out as flex items beside the content:
- * a separator with content flanks it with two segments rather than running one line behind it and
- * masking the middle with an opaque patch. That is what keeps a labeled separator right on a gradient,
- * a picture or a surface tier other than the one it was configured for, and what lets the offset of a
- * start- or end-aligned label be a percentage of the length of the line whichever way it runs.
- */
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// separator, one set on an ancestor every separator inside it, and one set on the Style of an instance that one:
+//   --bit-Separator-color                 color of the line                              (default: $clr-brd-sec)
+//   --bit-Separator-thickness             weight of the line                             (default: $siz-divider)
+//   --bit-Separator-line-style            style of the line: solid, dashed, dotted, ...  (default: solid)
+//   --bit-Separator-spacing               room on either side of the line, across it     (default: spacing(0.5))
+//   --bit-Separator-inset                 room held off both ends of the line, or off
+//                                         the start and the end given two lengths        (default: 0)
+//   --bit-Separator-content-gap           room between the content and the line          (default: spacing(1.5))
+//   --bit-Separator-content-offset        length of the segment before a start- or
+//                                         end-aligned content                            (default: 0)
+//   --bit-Separator-content-color         text color of the content                      (default: $clr-fg-pri)
+//   --bit-Separator-content-background    background of the content                      (default: transparent)
+//   --bit-Separator-content-font-size     text size of the content                       (default: inherit)
+//   --bit-Separator-content-font-weight   text weight of the content                     (default: inherit)
+//
+// A parameter set on the separator itself wins over the variable standing for the same thing - Color and Border
+// over the color, Size and Thickness over the thickness, LineStyle, Inset, ContentOffset and Background - since it
+// is the more specific ask; the variables re-skin what the theme would otherwise decide. A disabled separator keeps
+// the disabled colors of the theme whatever the colors above say.
+//
+// The rule is drawn by the two pseudo elements of the root, laid out as flex items beside the content: a separator
+// with content flanks it with two segments rather than running one line behind it and masking the middle with an
+// opaque patch. That is what keeps a labeled separator right on a gradient, a picture or a surface tier other than
+// the one it was configured for, and what lets the offset of a start- or end-aligned label be a percentage of the
+// length of the line whichever way it runs.
+//
+// Every rule below reads the separator's own private variables, which the parameter classes set on the root and the
+// length parameters write onto its style. Custom properties inherit, which would hand the line of a separator to one
+// nested in its content, so each root starts them out unset - which leaves every var() reading them to its fallback.
 .bit-spr {
+    --bit-spr-brd: initial;
+    --bit-spr-siz: initial;
+    --bit-spr-stl: initial;
+    --bit-spr-bg: initial;
+    --bit-spr-ofs: initial;
+    --bit-spr-ins: initial;
+    --bit-spr-dis-brd: initial;
+    --bit-spr-dis-fg: initial;
     display: flex;
     position: relative;
     // The inset is padding, and a separator is sized against its container, so the two have to add up
     // rather than stack: an inset horizontal separator is still exactly as wide as what it separates.
     box-sizing: border-box;
-    --bit-spr-stl: solid;
-    --bit-spr-siz: #{$siz-divider};
-    --bit-spr-bg: transparent;
-    --bit-spr-brd: #{$clr-brd-sec};
 
     &::before,
     &::after {
@@ -24,6 +51,7 @@
         flex-shrink: 1;
         flex-basis: 0;
         align-self: center;
+        border: 0 var(--bit-spr-stl, var(--bit-Separator-line-style, solid)) var(--bit-spr-dis-brd, var(--bit-spr-brd, var(--bit-Separator-color, #{$clr-brd-sec})));
     }
 
     &::before {
@@ -43,29 +71,46 @@
         &.bit-spr-end::after {
             flex-grow: 0;
             flex-shrink: 0;
-            flex-basis: var(--bit-spr-ofs, 0);
+            flex-basis: var(--bit-spr-ofs, var(--bit-Separator-content-offset, 0));
         }
+    }
+
+    // A separator is never disabled of itself, but one standing in a disabled group dims with it: the line and the
+    // content take the disabled colors of the theme, whatever the color parameters and variables ask for.
+    &.bit-dis {
+        --bit-spr-dis-brd: #{$clr-brd-dis};
+        --bit-spr-dis-fg: #{$clr-fg-dis};
     }
 }
 
 .bit-spr-cnt {
-    color: $clr-fg-pri;
-    background: var(--bit-spr-bg);
+    // A flex item does not shrink below its longest word, so a label without room enough would push the line out of
+    // its container; it may shrink instead, and breaks a word that does not fit on a line of its own.
+    min-width: 0;
+    overflow-wrap: break-word;
+    font-family: $tg-font-family;
+    font-size: var(--bit-Separator-content-font-size, inherit);
+    font-weight: var(--bit-Separator-content-font-weight, inherit);
+    color: var(--bit-spr-dis-fg, var(--bit-Separator-content-color, #{$clr-fg-pri}));
+    background: var(--bit-spr-bg, var(--bit-Separator-content-background, transparent));
 }
 
 .bit-spr-hrz {
     width: 100%;
     align-items: center;
     flex-direction: row;
-    padding: spacing(0.5) var(--bit-spr-ins, 0);
+    // The inset is logical padding, so one length holds the line off both ends and two hold it off the start and
+    // the end - which follow the reading direction, as the gutter of an indented list row does.
+    padding-block: var(--bit-Separator-spacing, #{spacing(0.5)});
+    padding-inline: var(--bit-spr-ins, var(--bit-Separator-inset, 0));
 
     &::before,
     &::after {
-        border-top: var(--bit-spr-siz) var(--bit-spr-stl) var(--bit-spr-brd);
+        border-top-width: var(--bit-spr-siz, var(--bit-Separator-thickness, #{$siz-divider}));
     }
 
     > .bit-spr-cnt {
-        padding: 0 spacing(1.5);
+        padding: 0 var(--bit-Separator-content-gap, #{spacing(1.5)});
     }
 }
 
@@ -79,18 +124,23 @@
     // tall as its container past the bottom of it; centering it on the line keeps it where it belongs
     // both on its own and between runs of text. In a flex row the box is blockified and this is moot.
     vertical-align: middle;
-    padding: var(--bit-spr-ins, 0) spacing(0.5);
+    padding-block: var(--bit-spr-ins, var(--bit-Separator-inset, 0));
+    padding-inline: var(--bit-Separator-spacing, #{spacing(0.5)});
 
     &::before,
     &::after {
-        border-left: var(--bit-spr-siz) var(--bit-spr-stl) var(--bit-spr-brd);
+        border-left-width: var(--bit-spr-siz, var(--bit-Separator-thickness, #{$siz-divider}));
     }
 
     > .bit-spr-cnt {
-        padding: spacing(1.5) 0;
+        padding: var(--bit-Separator-content-gap, #{spacing(1.5)}) 0;
     }
 }
 
+
+.bit-spr-sld {
+    --bit-spr-stl: solid;
+}
 
 .bit-spr-dsh {
     --bit-spr-stl: dashed;
@@ -218,4 +268,20 @@
 
 .bit-spr-tbr {
     --bit-spr-brd: #{$clr-brd-ter};
+}
+
+
+// A forced-colors mode repaints the line and the content in the ordinary system colors, which takes away the one
+// thing that says the group a separator stands in is disabled, so it is re-established in GrayText.
+@media (forced-colors: active) {
+    .bit-spr.bit-dis {
+        &::before,
+        &::after {
+            border-color: GrayText;
+        }
+
+        > .bit-spr-cnt {
+            color: GrayText;
+        }
+    }
 }
