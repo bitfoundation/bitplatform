@@ -131,7 +131,7 @@ jobs:
       run: |
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
+        dnx dotnet-ef@11.0.0-rc.1.26425.128 -- migrations add Initial --verbose
 
     - name: Trust dotnet cert
       continue-on-error: true
@@ -240,7 +240,7 @@ jobs:
       run: |
         cd TestMySql/src/Server/TestMySql.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
+        dnx dotnet-ef@11.0.0-rc.1.26425.128 -- migrations add Initial --verbose
 
     - name: Trust dotnet cert
       continue-on-error: true
@@ -349,7 +349,7 @@ jobs:
       run: |
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
+        dnx dotnet-ef@11.0.0-rc.1.26425.128 -- migrations add Initial --verbose
 
     - name: Install sql server
       uses: potatoqualitee/mssqlsuite@bc850f242e5fe551e36cea6fa4bed608c58fa489 # v2
