@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -15,51 +15,38 @@ internal sealed class BitParamsScope
     // How deep a value is taken apart for its snapshot; anything deeper is compared as it is.
     private const int MaxSnapshotDepth = 16;
 
-    private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> _propertiesCache = new();
+    private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> _copyablePropertiesCache = new();
+    private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> _snapshotPropertiesCache = new();
 
-    private readonly Dictionary<BitParamsKey, object?> _snapshots;
+    private readonly BitParamsScope? _parent;
+
+    // What each params object the scope was created from held then, in the order they were listed. A merged copy is
+    // only shallow, so a nested object - a ClassStyles, an icon, a list - is the very one the markup holds, and a
+    // change made to it in place shows in the copy too. What every params object held is therefore taken apart now,
+    // while it can still be told apart from what it holds later.
+    private readonly List<object?> _inputs;
 
 
 
-    private BitParamsScope(bool isPassThrough,
+    private BitParamsScope(BitParamsScope? parent,
+                           List<object?> inputs,
                            List<KeyValuePair<BitParamsKey, IBitComponentParams>> own,
-                           List<BitParamsKey> hidden,
                            Dictionary<BitParamsKey, IBitComponentParams> all,
                            bool isIsolated)
     {
-        IsPassThrough = isPassThrough;
+        _parent = parent;
+        _inputs = inputs;
         Own = own;
-        Hidden = hidden;
         All = all;
         IsIsolated = isIsolated;
-
-        // A merged copy is only shallow, so a nested object - a ClassStyles, an icon, a list - is the very one the
-        // markup holds, and a change made to it in place shows in the previous scope too. What every params object
-        // held is therefore taken apart now, while it can still be told apart from what it holds later.
-        _snapshots = new(all.Count);
-
-        foreach (var (key, value) in all)
-        {
-            _snapshots[key] = TakeSnapshot(value, 0);
-        }
     }
 
 
 
     /// <summary>
-    /// Whether the <see cref="BitParams"/> has nothing to add to what its ancestors carry, so it cascades nothing.
-    /// </summary>
-    public bool IsPassThrough { get; }
-
-    /// <summary>
     /// The params objects to cascade, in the order they were first listed.
     /// </summary>
     public IReadOnlyList<KeyValuePair<BitParamsKey, IBitComponentParams>> Own { get; }
-
-    /// <summary>
-    /// The params objects of the ancestors that an isolated <see cref="BitParams"/> hides from its content.
-    /// </summary>
-    public IReadOnlyList<BitParamsKey> Hidden { get; }
 
     /// <summary>
     /// Every params object in effect under the <see cref="BitParams"/>.
@@ -78,11 +65,14 @@ internal sealed class BitParamsScope
                                         bool isolated)
     {
         var inherited = isolated ? null : parent?.All;
+        var inputs = new List<object?>();
         var own = new List<KeyValuePair<BitParamsKey, IBitComponentParams>>();
 
         foreach (var item in parameters ?? [])
         {
             if (item is null) continue;
+
+            inputs.Add(TakeSnapshot(item, 0));
 
             var key = BitParamsKey.From(item);
             var index = own.FindIndex(o => o.Key == key);
@@ -97,22 +87,6 @@ internal sealed class BitParamsScope
             }
         }
 
-        var hidden = new List<BitParamsKey>();
-
-        if (isolated && parent is not null)
-        {
-            foreach (var key in parent.All.Keys)
-            {
-                if (own.Exists(o => o.Key == key)) continue;
-
-                hidden.Add(key);
-            }
-        }
-
-        // The ancestors' scope holds everything in effect above, so with nothing to add and nothing to hide the
-        // content is left to it.
-        var isPassThrough = isolated is false && own.Count == 0;
-
         var all = inherited is null ? [] : new Dictionary<BitParamsKey, IBitComponentParams>(inherited);
 
         foreach (var (key, value) in own)
@@ -120,57 +94,66 @@ internal sealed class BitParamsScope
             all[key] = value;
         }
 
-        return new(isPassThrough, own, hidden, all, isolated);
+        return new(parent, inputs, own, all, isolated);
     }
 
     /// <summary>
-    /// Whether this scope carries exactly what the other one does, parameter by parameter and down into every
-    /// nested object, as each held it when its scope was created, so that nothing would change for the components
-    /// under it.
+    /// Whether a scope created from the given ancestors' scope and params objects would carry exactly what this one
+    /// does, parameter by parameter and down into every nested object, so that nothing would change for the
+    /// components under it. Only the params objects listed are taken apart for it, and nothing is merged: the
+    /// ancestors' scope stays the very same object for as long as what it carries stays the same.
     /// </summary>
-    public bool IsEquivalentTo(BitParamsScope? other)
+    public bool IsCreatedFrom(BitParamsScope? parent, IEnumerable<IBitComponentParams>? parameters, bool isolated)
     {
-        if (other is null) return false;
-        if (IsPassThrough && other.IsPassThrough) return true;
-        if (IsPassThrough != other.IsPassThrough) return false;
-        if (IsIsolated != other.IsIsolated) return false;
+        if (isolated != IsIsolated) return false;
 
-        if (Own.Count != other.Own.Count) return false;
-        if (Hidden.Count != other.Hidden.Count) return false;
-        if (All.Count != other.All.Count) return false;
+        // An isolated scope takes nothing from its ancestors but the params objects it hides from its content.
+        if (ReferenceEquals(parent, _parent) is false && (isolated is false || HaveTheSameKeys(parent, _parent) is false)) return false;
 
-        for (int i = 0; i < Own.Count; i++)
+        var index = 0;
+
+        foreach (var item in parameters ?? [])
         {
-            if (Own[i].Key != other.Own[i].Key) return false;
+            if (item is null) continue;
+
+            if (index == _inputs.Count) return false;
+
+            if (AreEqual(TakeSnapshot(item, 0), _inputs[index]) is false) return false;
+
+            index++;
         }
 
-        for (int i = 0; i < Hidden.Count; i++)
-        {
-            if (Hidden[i] != other.Hidden[i]) return false;
-        }
+        return index == _inputs.Count;
+    }
 
-        foreach (var (key, snapshot) in _snapshots)
+
+
+    private static bool HaveTheSameKeys(BitParamsScope? first, BitParamsScope? second)
+    {
+        var firstCount = first?.All.Count ?? 0;
+        var secondCount = second?.All.Count ?? 0;
+
+        if (firstCount != secondCount) return false;
+        if (firstCount == 0) return true;
+
+        foreach (var key in first!.All.Keys)
         {
-            if (other._snapshots.TryGetValue(key, out var otherSnapshot) is false) return false;
-            if (AreEqual(snapshot, otherSnapshot) is false) return false;
+            if (second!.All.ContainsKey(key) is false) return false;
         }
 
         return true;
     }
 
-
-
     /// <summary>
     /// Creates a copy of <paramref name="overlay"/> in which every parameter it leaves unset is taken from
-    /// <paramref name="basis"/>, a params object of the same type, if there is one. The copy is also what makes a
-    /// later change to a property of <paramref name="overlay"/> something that can be told apart from its previous
-    /// value. A type that cannot be copied - one without a public parameterless constructor - is used as is.
+    /// <paramref name="basis"/>, a params object of the same type, if there is one. A type that cannot be copied -
+    /// one without a public parameterless constructor - is used as is.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Every params type is preserved by the DynamicDependency of the component that reads it.")]
     private static IBitComponentParams Merge(IBitComponentParams? basis, IBitComponentParams overlay)
     {
         var type = overlay.GetType();
-        var properties = GetProperties(type);
+        var properties = GetCopyableProperties(type);
 
         if (properties is null) return overlay;
 
@@ -186,8 +169,8 @@ internal sealed class BitParamsScope
             var value = property.GetValue(overlay);
             var basisValue = basis is null ? null : property.GetValue(basis);
 
-            // A dictionary is copied even without one to merge into, so that an entry added to it later is
-            // still a change to compare against.
+            // A dictionary is merged entry by entry, so that a nested params object only adds to the attributes of
+            // the one around it.
             if (value is IDictionary<string, object> dictionary && property.PropertyType.IsAssignableFrom(typeof(Dictionary<string, object>)))
             {
                 var merged = basisValue is IDictionary<string, object> basisDictionary
@@ -214,11 +197,12 @@ internal sealed class BitParamsScope
 
     /// <summary>
     /// Takes a value apart down to its leaves, so that it can be compared with what it holds later even when it is
-    /// changed in place: an object with public read-write properties and a public parameterless constructor - a
-    /// params object, a ClassStyles, an icon - property by property, a dictionary entry by entry and any other
-    /// sequence item by item. Everything else - a string, a value type, a delegate, an object of any other kind, or
-    /// one nested too deep - is a leaf, compared as it is. A params type that cannot be copied is cascaded as is, so
-    /// it is a leaf too, and the same only when it is the same object.
+    /// changed in place: an object with public properties and a public parameterless constructor - a params object,
+    /// a ClassStyles, an icon - property by property, a dictionary entry by entry and a collection that already
+    /// holds its items item by item. Everything else - a string, a value type, a delegate, a sequence that is only
+    /// produced as it is enumerated, an object of any other kind, or one nested too deep - is a leaf, compared as it
+    /// is. A params type that cannot be copied is cascaded as is, so it is a leaf too, and the same only when it is
+    /// the same object.
     /// </summary>
     private static object? TakeSnapshot(object? value, int depth)
     {
@@ -240,6 +224,10 @@ internal sealed class BitParamsScope
 
         if (value is IEnumerable sequence)
         {
+            // A LINQ query or an iterator runs again on every enumeration - reading a file or a database again, or
+            // using up a sequence that can only be read once - so only a collection that holds its items is read.
+            if (IsMaterialized(value) is false) return value;
+
             var items = new List<object?>();
 
             foreach (var item in sequence)
@@ -251,7 +239,7 @@ internal sealed class BitParamsScope
         }
 
         var type = value.GetType();
-        var properties = GetProperties(type);
+        var properties = GetSnapshotProperties(type);
 
         if (properties is null || properties.Length == 0) return value;
 
@@ -263,6 +251,12 @@ internal sealed class BitParamsScope
         }
 
         return new ObjectSnapshot(type, values);
+    }
+
+    private static bool IsMaterialized(object sequence)
+    {
+        return sequence is Array or ICollection
+            || sequence.GetType().Namespace?.StartsWith("System.Collections", StringComparison.Ordinal) is true;
     }
 
     private static bool AreEqual(object? first, object? second)
@@ -311,9 +305,9 @@ internal sealed class BitParamsScope
     /// The public read-write properties of a params type, or null when the type cannot be copied.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Every params type is preserved by the DynamicDependency of the component that reads it.")]
-    private static PropertyInfo[]? GetProperties(Type type)
+    private static PropertyInfo[]? GetCopyableProperties(Type type)
     {
-        return _propertiesCache.GetOrAdd(type, static t =>
+        return _copyablePropertiesCache.GetOrAdd(type, static t =>
         {
             if (t.IsAbstract || t.GetConstructor(Type.EmptyTypes) is null) return null;
 
@@ -322,6 +316,39 @@ internal sealed class BitParamsScope
                              && p.GetMethod!.IsPublic && p.SetMethod!.IsPublic)
                     .ToArray();
         });
+    }
+
+    /// <summary>
+    /// The properties a value of a type that can be copied is taken apart by: the read-write ones, and the read-only
+    /// ones holding a collection, which is changed through what it holds rather than by being assigned.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Every params type is preserved by the DynamicDependency of the component that reads it.")]
+    private static PropertyInfo[]? GetSnapshotProperties(Type type)
+    {
+        return _snapshotPropertiesCache.GetOrAdd(type, static t =>
+        {
+            var copyable = GetCopyableProperties(t);
+
+            if (copyable is null) return null;
+
+            var collections = t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                               .Where(p => p.CanRead && p.GetIndexParameters().Length == 0 && p.GetMethod!.IsPublic
+                                        && (p.CanWrite is false || p.SetMethod!.IsPublic is false)
+                                        && IsCollectionType(p.PropertyType));
+
+            return [.. copyable, .. collections];
+        });
+
+        [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Only the interfaces of a property type are read, which the trimmer keeps.")]
+        static bool IsCollectionType(Type type)
+        {
+            if (type.IsArray || typeof(ICollection).IsAssignableFrom(type)) return true;
+
+            return type.GetInterfaces()
+                       .Append(type)
+                       .Any(i => i.IsGenericType && (i.GetGenericTypeDefinition() == typeof(ICollection<>)
+                                                  || i.GetGenericTypeDefinition() == typeof(IReadOnlyCollection<>)));
+        }
     }
 
 

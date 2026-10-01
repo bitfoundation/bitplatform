@@ -19,16 +19,6 @@ public abstract class BitLoadingBase : BitComponentBase
     // a Color or a Size that was written on the loader by hand.
     private readonly HashSet<string> _assignedLoadingParameters = [];
 
-    // How to put back each parameter a cascade has filled in, keyed by its name: the value it held before the
-    // cascade first wrote it, captured then. Nothing else would ever take a cascaded value back out: a parameter
-    // that was never written on the loader is absent from every ParameterView, so a value the cascade has since
-    // dropped - or a cascade that is gone altogether - would otherwise stay on the loader.
-    private readonly Dictionary<string, Action> _cascadeRestorers = [];
-
-    // The parameters the cascade filled in on the current pass; any other entry of _cascadeRestorers is one it
-    // has dropped since, and is put back once the cascade has been applied.
-    private readonly HashSet<string> _cascadedLoadingParameters = [];
-
 
 
     /// <summary>
@@ -415,34 +405,30 @@ public abstract class BitLoadingBase : BitComponentBase
 
     private protected override bool IsSetByMarkup(string name) => _assignedLoadingParameters.Contains(name) || base.IsSetByMarkup(name);
 
-    // The loaders put back what their cascade stops supplying themselves - see _cascadeRestorers.
-    private protected override bool RestoresCascadeItself => true;
+    // Read straight off the property rather than through reflection, as the generated code of a component does.
+    private protected override IBitComponentParams? CascadedParams => CascadingParameters;
 
     /// <summary>
-    /// Fills in the named parameter from a <see cref="BitLoadingParams"/> cascade, and records the value it held
-    /// before the cascade first wrote it, which is what it is put back to once the cascade stops setting it.
+    /// Fills in a parameter from a <see cref="BitLoadingParams"/> cascade. BitComponentBase remembers the value it
+    /// held before the cascade first wrote it, and puts it back once the cascade stops setting it.
     /// </summary>
     /// <remarks>
     /// The class and style builders are only reset when the value actually changes, so a loader under a cascade
     /// that re-renders with the same parameters rebuilds neither string. The accessors are taken as static
-    /// lambdas, so that applying a cascade on every render allocates nothing past the first pass.
+    /// lambdas, so that applying a cascade on every render allocates nothing.
     /// </remarks>
-    internal void Cascade<T>(string name,
-                             T value,
+    internal void Cascade<T>(T value,
                              Func<BitLoadingBase, T> get,
                              Action<BitLoadingBase, T> set,
                              bool resetClass = false,
                              bool resetStyle = false)
     {
-        _cascadedLoadingParameters.Add(name);
+        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
 
-        if (_cascadeRestorers.ContainsKey(name) is false)
-        {
-            var preCascade = get(this);
-            _cascadeRestorers[name] = () => Assign(preCascade, get, set, resetClass, resetStyle);
-        }
+        set(this, value);
 
-        Assign(value, get, set, resetClass, resetStyle);
+        if (resetClass) ClassBuilder.Reset();
+        if (resetStyle) StyleBuilder.Reset();
     }
 
     /// <summary>
@@ -520,39 +506,6 @@ public abstract class BitLoadingBase : BitComponentBase
         return HtmlAttributes.TryGetValue(attribute, out var value) ? value?.ToString() : null;
     }
 
-    private void Assign<T>(T value, Func<BitLoadingBase, T> get, Action<BitLoadingBase, T> set, bool resetClass, bool resetStyle)
-    {
-        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
-
-        set(this, value);
-
-        if (resetClass) ClassBuilder.Reset();
-        if (resetStyle) StyleBuilder.Reset();
-    }
-
-    private void ApplyCascadingParameters()
-    {
-        _cascadedLoadingParameters.Clear();
-
-        CascadingParameters?.UpdateParameters(this);
-
-        // Every parameter the cascade filled in on this pass has a restorer, so equal counts mean it dropped none.
-        if (_cascadeRestorers.Count == _cascadedLoadingParameters.Count) return;
-
-        foreach (var name in _cascadeRestorers.Keys.ToArray())
-        {
-            if (_cascadedLoadingParameters.Contains(name)) continue;
-
-            // One now written on the loader itself already holds the value it was given, which is the one to keep.
-            if (HasNotBeenSetOnLoading(name))
-            {
-                _cascadeRestorers[name]();
-            }
-
-            _cascadeRestorers.Remove(name);
-        }
-    }
-
 
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitLoadingParams))]
@@ -560,7 +513,7 @@ public abstract class BitLoadingBase : BitComponentBase
     {
         // Applied before anything below reads the parameters, so that a Delay handed down by a cascade opens
         // its window exactly as one written on the loader does.
-        ApplyCascadingParameters();
+        CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
 

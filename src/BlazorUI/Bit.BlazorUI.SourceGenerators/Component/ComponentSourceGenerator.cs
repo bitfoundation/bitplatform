@@ -83,6 +83,7 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             SymbolEqualityComparer.Default.Equals(containingType.BaseType, componentBaseType);
         var inheritsFromBit = InheritsFromBitComponentBase(containingType, bitComponentBaseType);
         var tracksSetByMarkup = inheritsFromBit && CanOverrideIsSetByMarkup(containingType, compilation, bitComponentBaseType!);
+        var isCascadedParams = tracksSetByMarkup && IsCascadedParams(prop, compilation);
 
         return new BlazorParameter(
             ContainingTypeFullName: containingType.ToDisplayString(),
@@ -98,7 +99,8 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             IsTwoWayBound: isTwoWayBound,
             CallOnSetMethodName: callOnSetName,
             CallOnSetAsyncMethodName: callOnSetAsyncName,
-            TracksSetByMarkup: tracksSetByMarkup);
+            TracksSetByMarkup: tracksSetByMarkup,
+            IsCascadedParams: isCascadedParams);
     }
 
     /// <summary>
@@ -110,6 +112,21 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var member = bitComponentBaseType.GetMembers("IsSetByMarkup").FirstOrDefault();
 
         return member is not null && compilation.IsSymbolAccessibleWithin(member, type);
+    }
+
+    /// <summary>
+    /// Whether the property is the cascading parameter a component takes its params object by, which the restore of
+    /// BitComponentBase then reads directly rather than through reflection on every render.
+    /// </summary>
+    private static bool IsCascadedParams(IPropertySymbol prop, Compilation compilation)
+    {
+        var paramsType = compilation.GetTypeByMetadataName("Bit.BlazorUI.IBitComponentParams");
+
+        if (paramsType is null) return false;
+
+        var isCascading = prop.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute");
+
+        return isCascading && prop.Type.AllInterfaces.Contains(paramsType, SymbolEqualityComparer.Default);
     }
 
     private static void Execute(SourceProductionContext spc, ImmutableArray<BlazorParameter> parameters)
@@ -260,6 +277,18 @@ namespace {namespaceName}
         {{
             return __assignedParameters.Contains(name) || base.IsSetByMarkup(name);
         }}");
+        }
+
+        var cascadedParams = parameters.Where(p => p.IsCascadedParams).ToArray();
+
+        // A class that reads more than one params object is left to the reflection of BitComponentBase, which then
+        // reads none of them.
+        if (cascadedParams.Length == 1)
+        {
+            builder.AppendLine("");
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        private protected override global::Bit.BlazorUI.IBitComponentParams? CascadedParams => {cascadedParams[0].PropertyName};");
         }
 
         if (twoWayParameters.Length > 0) builder.AppendLine("");

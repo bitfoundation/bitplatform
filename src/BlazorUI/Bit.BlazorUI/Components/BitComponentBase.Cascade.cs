@@ -6,7 +6,14 @@ namespace Bit.BlazorUI;
 
 public abstract partial class BitComponentBase
 {
+    private const string CallOnSetAttributeName = "Bit.BlazorUI.CallOnSetAttribute";
+    private const string CallOnSetAsyncAttributeName = "Bit.BlazorUI.CallOnSetAsyncAttribute";
+
     private static readonly ConcurrentDictionary<Type, CascadeMap?> _cascadeMaps = new();
+
+    // The map of this component's type, looked up once rather than on every render.
+    private CascadeMap? _cascadeMap;
+    private bool _isCascadeMapResolved;
 
     // The params object this component took its defaults from the last time, and the value each parameter it has
     // supplied since held before it first did. A value written by the params object is not one the markup passes
@@ -14,6 +21,10 @@ public abstract partial class BitComponentBase
     // property cleared, the object removed, an isolated BitParams put in between - it is put back from here.
     private IBitComponentParams? _cascadedParams;
     private Dictionary<string, object?>? _cascadeOriginals;
+
+    // The parameters the params object supplies while the markup sets them, so that there is no value of the
+    // component's own to record for them yet: the moment the markup lets go of one, the value it leaves behind is.
+    private HashSet<string>? _cascadeSetByMarkup;
 
 
 
@@ -24,10 +35,10 @@ public abstract partial class BitComponentBase
     private protected virtual bool IsSetByMarkup(string name) => _assignedParameters.Contains(name);
 
     /// <summary>
-    /// Whether the component puts back the parameters its params object stops supplying on its own, and so opts
-    /// out of the shared restore.
+    /// The params object cascaded to this component, if it reads one. The generated code of a component reads its
+    /// cascading parameter directly; any other one is read through reflection.
     /// </summary>
-    private protected virtual bool RestoresCascadeItself => false;
+    private protected virtual IBitComponentParams? CascadedParams => GetCascadeMap()?.GetParams(this);
 
 
 
@@ -36,57 +47,153 @@ public abstract partial class BitComponentBase
     /// remembers the value each newly supplied one replaces. Runs once every parameter is assigned and before the
     /// params object is applied, which is when a parameter still holds the value it had before the cascade.
     /// </summary>
-    private void RestoreDroppedCascadeParameters()
+    /// <returns>
+    /// The setup hooks of the restored parameters that run asynchronously, or a completed task when there are none.
+    /// </returns>
+    private Task RestoreDroppedCascadeParameters()
     {
-        if (RestoresCascadeItself) return;
+        var current = CascadedParams;
 
-        var map = GetCascadeMap(GetType());
+        // Nothing supplied now and nothing before, which is where every component outside a BitParams stays.
+        if (current is null && _cascadedParams is null) return Task.CompletedTask;
 
-        if (map is null) return;
+        var map = GetCascadeMap();
 
-        var current = map.GetParams(this);
+        if (map is null) return Task.CompletedTask;
 
-        // BitParams hands down a new object whenever what it carries changes, so the same object means nothing to do.
-        if (ReferenceEquals(current, _cascadedParams)) return;
+        List<CascadeParameter>? restored = null;
 
-        _cascadedParams = current;
-
-        var isChanged = false;
-
-        if (_cascadeOriginals is { Count: > 0 })
+        // BitParams hands down a new object whenever what it carries changes, so the same object supplies the same
+        // parameters, and only what the markup took over or let go of since is left to keep track of.
+        if (ReferenceEquals(current, _cascadedParams) is false)
         {
-            foreach (var (name, original) in _cascadeOriginals.ToArray())
+            _cascadedParams = current;
+
+            if (_cascadeOriginals is { Count: > 0 })
             {
-                var parameter = map.Parameters[name];
+                List<string>? dropped = null;
 
-                if (current is not null && parameter.GetFromParams(current) is not null) continue;
+                foreach (var name in _cascadeOriginals.Keys)
+                {
+                    if (current is not null && map.Parameters[name].GetFromParams(current) is not null) continue;
 
-                _cascadeOriginals.Remove(name);
+                    (dropped ??= []).Add(name);
+                }
 
-                if (IsSetByMarkup(name)) continue;
+                foreach (var name in dropped ?? [])
+                {
+                    var original = _cascadeOriginals[name];
 
-                parameter.SetOnComponent(this, original);
+                    _cascadeOriginals.Remove(name);
 
-                isChanged = true;
+                    if (IsSetByMarkup(name)) continue;
+
+                    var parameter = map.Parameters[name];
+
+                    if (parameter.SetOnComponent(this, original) is false) continue;
+
+                    (restored ??= []).Add(parameter);
+                }
+            }
+
+            if (_cascadeSetByMarkup is { Count: > 0 })
+            {
+                _cascadeSetByMarkup.RemoveWhere(name => current is null || map.Parameters[name].GetFromParams(current) is null);
+            }
+
+            if (current is not null)
+            {
+                foreach (var (name, parameter) in map.Parameters)
+                {
+                    if (parameter.GetFromParams(current) is null) continue;
+                    if (_cascadeOriginals?.ContainsKey(name) is true) continue;
+                    if (_cascadeSetByMarkup?.Contains(name) is true) continue;
+
+                    if (IsSetByMarkup(name))
+                    {
+                        (_cascadeSetByMarkup ??= []).Add(name);
+                    }
+                    else
+                    {
+                        (_cascadeOriginals ??= []).Add(name, parameter.GetFromComponent(this));
+                    }
+                }
             }
         }
 
-        if (current is not null)
-        {
-            foreach (var (name, parameter) in map.Parameters)
-            {
-                if (parameter.GetFromParams(current) is null) continue;
-                if (_cascadeOriginals?.ContainsKey(name) is true) continue;
-                if (IsSetByMarkup(name)) continue;
+        TrackMarkupChanges(map);
 
-                (_cascadeOriginals ??= []).Add(name, parameter.GetFromComponent(this));
-            }
-        }
-
-        if (isChanged is false) return;
+        if (restored is null) return Task.CompletedTask;
 
         ClassBuilder.Reset();
         StyleBuilder.Reset();
+
+        // The hooks keep the state derived from a parameter in step with it, exactly as they do when the markup or
+        // the params object sets one, so they run once every parameter is back.
+        List<Task>? pending = null;
+
+        foreach (var parameter in restored)
+        {
+            var task = parameter.RunSetupHooks(this);
+
+            if (task.IsCompletedSuccessfully) continue;
+
+            (pending ??= []).Add(task);
+        }
+
+        return pending is null ? Task.CompletedTask : Task.WhenAll(pending);
+    }
+
+    /// <summary>
+    /// Moves a supplied parameter the markup has started to set out of the recorded ones, since what the markup
+    /// gives it is what it holds of its own now, and records one the markup has stopped setting with the value it
+    /// left behind, which is what goes back once the params object stops supplying it too.
+    /// </summary>
+    private void TrackMarkupChanges(CascadeMap map)
+    {
+        if (_cascadeOriginals is { Count: > 0 })
+        {
+            List<string>? takenOver = null;
+
+            foreach (var name in _cascadeOriginals.Keys)
+            {
+                if (IsSetByMarkup(name)) (takenOver ??= []).Add(name);
+            }
+
+            foreach (var name in takenOver ?? [])
+            {
+                _cascadeOriginals.Remove(name);
+
+                (_cascadeSetByMarkup ??= []).Add(name);
+            }
+        }
+
+        if (_cascadeSetByMarkup is { Count: > 0 })
+        {
+            List<string>? letGo = null;
+
+            foreach (var name in _cascadeSetByMarkup)
+            {
+                if (IsSetByMarkup(name) is false) (letGo ??= []).Add(name);
+            }
+
+            foreach (var name in letGo ?? [])
+            {
+                _cascadeSetByMarkup.Remove(name);
+
+                (_cascadeOriginals ??= []).Add(name, map.Parameters[name].GetFromComponent(this));
+            }
+        }
+    }
+
+    private CascadeMap? GetCascadeMap()
+    {
+        if (_isCascadeMapResolved) return _cascadeMap;
+
+        _cascadeMap = GetCascadeMap(GetType());
+        _isCascadeMapResolved = true;
+
+        return _cascadeMap;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "The public properties of a component type are preserved for its parameters, and every params type by the DynamicDependency of the component that reads it.")]
@@ -156,11 +263,24 @@ public abstract partial class BitComponentBase
     }
 
     /// <summary>
-    /// One parameter a params object can supply: where it is read from on the params object and where it is written
-    /// to on the component.
+    /// One parameter a params object can supply: where it is read from on the params object, where it is written
+    /// to on the component, and the setup hooks the component runs whenever it changes.
     /// </summary>
-    private class CascadeParameter(PropertyInfo source, PropertyInfo target)
+    private class CascadeParameter
     {
+        private readonly PropertyInfo _source;
+        private readonly PropertyInfo _target;
+        private readonly MethodInfo? _onSet;
+        private readonly MethodInfo? _onSetAsync;
+
+        protected CascadeParameter(PropertyInfo source, PropertyInfo target)
+        {
+            _source = source;
+            _target = target;
+            _onSet = FindHook(target, CallOnSetAttributeName);
+            _onSetAsync = FindHook(target, CallOnSetAsyncAttributeName);
+        }
+
         public static CascadeParameter Create(PropertyInfo source, PropertyInfo target)
         {
             // Dir reads through to the direction cascaded from above when it is not set, so what it holds of its own
@@ -170,17 +290,58 @@ public abstract partial class BitComponentBase
                 : new CascadeParameter(source, target);
         }
 
-        public object? GetFromParams(IBitComponentParams parameters) => source.GetValue(parameters);
+        public object? GetFromParams(IBitComponentParams parameters) => _source.GetValue(parameters);
 
-        public virtual object? GetFromComponent(BitComponentBase component) => target.GetValue(component);
+        public virtual object? GetFromComponent(BitComponentBase component) => _target.GetValue(component);
 
-        public virtual void SetOnComponent(BitComponentBase component, object? value) => target.SetValue(component, value);
+        /// <summary>
+        /// Writes the value onto the component, and tells whether that changed what it held.
+        /// </summary>
+        public virtual bool SetOnComponent(BitComponentBase component, object? value)
+        {
+            if (Equals(_target.GetValue(component), value)) return false;
+
+            _target.SetValue(component, value);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Runs what the [CallOnSet] and [CallOnSetAsync] attributes of the parameter name, which the generated
+        /// code runs whenever the markup changes it.
+        /// </summary>
+        public Task RunSetupHooks(BitComponentBase component)
+        {
+            _onSet?.Invoke(component, null);
+
+            return _onSetAsync?.Invoke(component, null) as Task ?? Task.CompletedTask;
+        }
+
+        // The attributes are internal to every assembly that declares components, so they are matched by name.
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "A setup hook is called by the generated code of its component, so it is never trimmed away.")]
+        private static MethodInfo? FindHook(PropertyInfo target, string attributeName)
+        {
+            var attribute = target.GetCustomAttributesData().FirstOrDefault(a => a.AttributeType.FullName == attributeName);
+
+            if (attribute?.ConstructorArguments.FirstOrDefault().Value is not string name) return null;
+
+            return target.DeclaringType?.GetMethod(name,
+                                                   BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                                                   Type.EmptyTypes);
+        }
     }
 
     private sealed class DirParameter(PropertyInfo source, PropertyInfo target) : CascadeParameter(source, target)
     {
         public override object? GetFromComponent(BitComponentBase component) => component._dir;
 
-        public override void SetOnComponent(BitComponentBase component, object? value) => component._dir = (BitDir?)value;
+        public override bool SetOnComponent(BitComponentBase component, object? value)
+        {
+            if (component._dir == (BitDir?)value) return false;
+
+            component._dir = (BitDir?)value;
+
+            return true;
+        }
     }
 }

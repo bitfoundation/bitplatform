@@ -33,6 +33,7 @@ public class BitParams : ComponentBase
     private ContentHost? _contentHost;
     private readonly RenderFragment _renderContent;
     private readonly List<BitCascadingValue> _values = [];
+    private readonly List<BitParamsKey> _cascadedKeys = [];
 
 
 
@@ -90,20 +91,18 @@ public class BitParams : ComponentBase
             }
         }
 
-        var scope = BitParamsScope.Create(ParentScope, Parameters, Isolated);
-
         // What the params objects carry has not changed, so there is nothing to tell the components under this
         // one: only the content is refreshed, and the cascading values keep the instances they already hold.
         // Rendering them again would make every consumer re-render, since a cascaded object always counts as a
         // possible change.
-        if (_contentHost is not null && scope.IsEquivalentTo(_scope))
+        if (_contentHost is not null && _scope is not null && _scope.IsCreatedFrom(ParentScope, Parameters, Isolated))
         {
             _contentHost.Refresh(ChildContent);
 
             return Task.CompletedTask;
         }
 
-        _scope = scope;
+        _scope = BitParamsScope.Create(ParentScope, Parameters, Isolated);
 
         UpdateValues();
 
@@ -129,20 +128,32 @@ public class BitParams : ComponentBase
     {
         _values.Clear();
 
-        if (_scope is null || _scope.IsPassThrough) return;
+        if (_scope is null) return;
 
-        // The scope goes first, so its slot in the render tree stays put while the params objects come and go.
-        _values.Add(new(_scope, ScopeName, false, typeof(BitParamsScope)));
-
-        foreach (var (key, value) in _scope.Own)
+        // The ancestors' params objects are cascaded again here as well, whether this one is isolated or not, so
+        // that becoming isolated, or no longer, changes what the chain carries and never its shape.
+        foreach (var (key, _) in _scope.Own)
         {
-            _values.Add(new(value, key.Name, false, key.Type));
+            if (_cascadedKeys.Contains(key) is false) _cascadedKeys.Add(key);
         }
 
-        // A value of null cascaded under the same type and name hides the ancestor's one from the consumers.
-        foreach (var key in _scope.Hidden)
+        foreach (var key in ParentScope?.All.Keys ?? [])
         {
-            _values.Add(new(null, key.Name, false, key.Type));
+            if (_cascadedKeys.Contains(key) is false) _cascadedKeys.Add(key);
+        }
+
+        // The scope goes first, and is cascaded even when this one adds nothing to it, so that the chain never
+        // goes from no value at all to some.
+        _values.Add(new(_scope, ScopeName, false, typeof(BitParamsScope)));
+
+        // Every value keeps the slot it was first rendered in, and none is ever dropped: the provider renders its
+        // content at the end of the chain, so a chain that changes its length or its order tears down and builds
+        // again every component under it, with all the state they hold. A key this one stops supplying is cascaded
+        // with whatever is in effect for it instead - the ancestors' object, or a null that hides theirs from the
+        // content of an isolated one.
+        foreach (var key in _cascadedKeys)
+        {
+            _values.Add(new(_scope.All.GetValueOrDefault(key), key.Name, false, key.Type));
         }
     }
 

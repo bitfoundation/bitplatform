@@ -262,9 +262,16 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
         ParametersCache = null;
 
-        RestoreDroppedCascadeParameters();
+        var restore = RestoreDroppedCascadeParameters();
 
-        return base.SetParametersAsync(ParameterView.Empty);
+        return restore.IsCompletedSuccessfully ? base.SetParametersAsync(ParameterView.Empty) : SetParametersAfterAsync(restore);
+    }
+
+    private async Task SetParametersAfterAsync(Task restore)
+    {
+        await restore;
+
+        await base.SetParametersAsync(ParameterView.Empty);
     }
 
 

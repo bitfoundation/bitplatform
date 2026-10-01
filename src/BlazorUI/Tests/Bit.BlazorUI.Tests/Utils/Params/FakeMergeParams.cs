@@ -13,6 +13,15 @@ public sealed class FakeMergeParams : IBitComponentParams
     public string? Text { get; set; }
 
     public Dictionary<string, object>? Attributes { get; set; }
+
+    public IEnumerable<int>? Numbers { get; set; }
+
+    public FakeMergeNested? Nested { get; set; }
+}
+
+public sealed class FakeMergeNested
+{
+    public List<string> Tags { get; } = [];
 }
 
 /// <summary>

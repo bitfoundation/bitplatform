@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -425,12 +426,154 @@ public class BitParamsTests : BunitTestContext
         Assert.AreEqual(BitSize.Large, component.FindComponent<BitCheckbox>().Instance.Size);
         Assert.AreEqual(BitSize.Large, component.FindComponent<BitNumberField<int>>().Instance.Size);
 
+        var button = component.FindComponent<BitButton>().Instance;
+        var checkbox = component.FindComponent<BitCheckbox>().Instance;
+        var numberField = component.FindComponent<BitNumberField<int>>().Instance;
+
         component.Render(builder => builder.Add(p => p.Parameters, null));
 
-        Assert.AreEqual(BitVariant.Text, component.FindComponent<BitButton>().Instance.Variant);
-        Assert.IsNull(component.FindComponent<BitButton>().Instance.Class);
-        Assert.IsNull(component.FindComponent<BitCheckbox>().Instance.Size);
-        Assert.IsNull(component.FindComponent<BitNumberField<int>>().Instance.Size);
+        Assert.AreSame(button, component.FindComponent<BitButton>().Instance, "the content is kept, not built again");
+        Assert.AreSame(checkbox, component.FindComponent<BitCheckbox>().Instance);
+        Assert.AreSame(numberField, component.FindComponent<BitNumberField<int>>().Instance);
+        Assert.AreEqual(BitVariant.Text, button.Variant);
+        Assert.IsNull(button.Class);
+        Assert.IsNull(checkbox.Size);
+        Assert.IsNull(numberField.Size);
+    }
+
+    [TestMethod]
+    public void ARestoredParameterShouldRunItsSetupHook()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitNumberFieldParams { Min = "5" }]);
+            builder.AddChildContent<StaticInputsHost>();
+        });
+
+        Assert.AreEqual("5", component.Find("input[role=spinbutton]").GetAttribute("aria-valuemin"));
+
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitNumberFieldParams()]));
+
+        Assert.IsNull(component.FindComponent<BitNumberField<int>>().Instance.Min);
+        Assert.IsFalse(component.Find("input[role=spinbutton]").HasAttribute("aria-valuemin"), "OnSetMin ran again, so the bound is gone");
+    }
+
+    [TestMethod]
+    public void AParameterTheMarkupLetsGoOfShouldGoBackToWhatTheMarkupLeft()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitButtonParams { Color = BitColor.Error }]);
+            builder.AddChildContent<SwitchableButtonHost>(host => host.Add(p => p.Color, BitColor.Tertiary));
+        });
+
+        var button = component.FindComponent<BitButton>().Instance;
+
+        Assert.AreEqual(BitColor.Tertiary, button.Color, "its own Color wins");
+
+        // Only the host renders, so the params object stays the very same one.
+        component.FindComponent<SwitchableButtonHost>().Render(host => host.Add(p => p.Color, null));
+
+        Assert.AreEqual(BitColor.Error, button.Color);
+
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams()]));
+
+        Assert.AreEqual(BitColor.Tertiary, button.Color);
+    }
+
+    [TestMethod]
+    public void TogglingIsolatedShouldKeepTheContent()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitButtonParams { Variant = BitVariant.Outline }]);
+            builder.AddChildContent<BitParams>(inner =>
+            {
+                inner.Add(p => p.Isolated, false);
+                inner.AddChildContent<StaticButtonHost>();
+            });
+        });
+
+        var button = component.FindComponent<BitButton>().Instance;
+        var inner = component.FindComponent<BitParams>();
+
+        inner.Render(builder => builder.Add(p => p.Isolated, true));
+
+        Assert.AreSame(button, component.FindComponent<BitButton>().Instance);
+        Assert.IsNull(button.Variant);
+
+        inner.Render(builder => builder.Add(p => p.Isolated, false));
+
+        Assert.AreSame(button, component.FindComponent<BitButton>().Instance);
+        Assert.AreEqual(BitVariant.Outline, button.Variant);
+    }
+
+    [TestMethod]
+    public void ASequenceProducedOnEnumerationShouldNotBeEnumerated()
+    {
+        var enumerations = 0;
+
+        IEnumerable<int> Numbers()
+        {
+            enumerations++;
+            yield return 1;
+        }
+
+        var @params = new FakeMergeParams { Number = 1, Numbers = Numbers() };
+
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [@params]);
+            builder.AddChildContent<StaticMergeHost>();
+        });
+
+        component.Render(builder => builder.Add(p => p.Parameters, [@params]));
+        component.Render(builder => builder.Add(p => p.Parameters, [@params]));
+
+        Assert.AreEqual(0, enumerations);
+    }
+
+    [TestMethod]
+    public void ACollectionBehindAReadOnlyPropertyChangedInPlaceShouldReachTheConsumers()
+    {
+        var @params = new FakeMergeParams { Number = 1, Nested = new() };
+
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [@params]);
+            builder.AddChildContent<StaticMergeHost>();
+        });
+
+        var consumer = component.FindComponent<MergeConsumer>().Instance;
+        var renders = consumer.RenderCount;
+
+        component.Render(builder => builder.Add(p => p.Parameters, [@params]));
+
+        Assert.AreEqual(renders, consumer.RenderCount);
+
+        @params.Nested.Tags.Add("new");
+        component.Render(builder => builder.Add(p => p.Parameters, [@params]));
+
+        Assert.AreEqual(renders + 1, consumer.RenderCount);
+    }
+
+    [TestMethod]
+    public void TheGeneratedCodeShouldReadTheParamsObjectDirectly()
+    {
+        var property = typeof(BitButton).GetProperty("CascadedParams", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.AreEqual(typeof(BitButton), property?.DeclaringType);
+    }
+
+    [TestMethod]
+    public void TheParametersOfATextInputShouldCountAsSetByTheMarkup()
+    {
+        var component = RenderComponent<BitTextField>(parameters => parameters.Add(p => p.Immediate, true));
+
+        var isSetByMarkup = typeof(BitComponentBase).GetMethod("IsSetByMarkup", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+        Assert.IsTrue((bool)isSetByMarkup.Invoke(component.Instance, [nameof(BitTextField.Immediate)])!);
+        Assert.IsFalse((bool)isSetByMarkup.Invoke(component.Instance, [nameof(BitTextField.DebounceTime)])!);
     }
 
     [TestMethod]
@@ -446,11 +589,13 @@ public class BitParamsTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(BitVariant.Outline, component.FindComponent<BitButton>().Instance.Variant);
+        var button = component.FindComponent<BitButton>().Instance;
+
+        Assert.AreEqual(BitVariant.Outline, button.Variant);
 
         component.FindComponent<BitParams>().Render(inner => inner.Add(p => p.Isolated, true));
 
-        Assert.IsNull(component.FindComponent<BitButton>().Instance.Variant);
+        Assert.IsNull(button.Variant);
     }
 
     [TestMethod]
@@ -502,6 +647,22 @@ public class BitParamsTests : BunitTestContext
             builder.CloseComponent();
 
             builder.OpenComponent<BitNumberField<int>>(3);
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class SwitchableButtonHost : ComponentBase
+    {
+        [Parameter] public BitColor? Color { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitButton>(0);
+            builder.AddComponentParameter(1, nameof(BitButton.Title), "Save");
+            if (Color is not null)
+            {
+                builder.AddComponentParameter(2, nameof(BitButton.Color), Color);
+            }
             builder.CloseComponent();
         }
     }
