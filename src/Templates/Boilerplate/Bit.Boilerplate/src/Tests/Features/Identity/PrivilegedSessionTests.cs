@@ -44,14 +44,14 @@ public partial class PrivilegedSessionTests : AppPageTest
         // right afterwards - the server-side UserSession persists regardless, keeping its privileged slot taken.
         for (var device = 0; device < maxPrivilegedSessions - 1; device++)
         {
-            await using var deviceContext = await NewBrowserContext(serverAddress);
+            await using var deviceContext = await NewBrowserContext(server);
             var devicePage = await deviceContext.NewPageAsync();
             await MagicLinkSignInUtils.SignInAgainViaMagicLinkOtp(devicePage, server, email, TestContext.CancellationToken);
         }
 
         // The final sign-in (a fourth isolated browser): all the allowed privileged sessions already exist, so this
         // newest session is NOT privileged. Keep its browser open to inspect the session's own state below.
-        await using var newestContext = await NewBrowserContext(serverAddress);
+        await using var newestContext = await NewBrowserContext(server);
         var newestPage = await newestContext.NewPageAsync();
         await MagicLinkSignInUtils.SignInAgainViaMagicLinkOtp(newestPage, server, email, TestContext.CancellationToken);
 

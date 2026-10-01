@@ -54,7 +54,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         await SetUserGroupRolesManageFeature(Page, server, userGroupName, granted: true, elevationIsRequired: true);
 
         // ---- Browser 2: the group's member, in her own isolated browser context ----
-        await using var memberContext = await NewBrowserContext(serverAddress);
+        await using var memberContext = await NewBrowserContext(server);
         var memberPage = await memberContext.NewPageAsync();
 
         // Her first sign-in happens after the grant, so her token carries the group's freshly added feature and she

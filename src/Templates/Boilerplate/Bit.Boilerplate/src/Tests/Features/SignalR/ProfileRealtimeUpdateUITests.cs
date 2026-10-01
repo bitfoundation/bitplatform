@@ -36,7 +36,7 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
         await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, email, TestContext.CancellationToken);
 
         // ---- Browser B: a second session of the same user, in its own isolated browser context. ----
-        await using var otherContext = await NewBrowserContext(serverAddress);
+        await using var otherContext = await NewBrowserContext(server);
         var otherPage = await otherContext.NewPageAsync();
 
         // The account is already confirmed now, so this repeat sign-in receives a plain OTP and opens a brand-new session.

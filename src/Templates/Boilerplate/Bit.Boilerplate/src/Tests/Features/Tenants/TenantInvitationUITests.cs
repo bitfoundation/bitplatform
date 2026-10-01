@@ -40,7 +40,7 @@ public partial class TenantInvitationUITests : AppPageTest
         await InviteUserToCurrentTenant(Page, server, invitedEmail);
 
         // ---- Browser 2: the invited user, in her own isolated browser context ----
-        await using var invitedContext = await NewBrowserContext(serverAddress);
+        await using var invitedContext = await NewBrowserContext(server);
         var invitedPage = await invitedContext.NewPageAsync();
 
         // The account the invitation just created signs in for the very first time with the magic link OTP, exactly the
