@@ -154,25 +154,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="CSS variables" RazorCode="@example8RazorCode" Id="example8">
-        <div>
-            The public <b>--bit-Separator-*</b> variables inherit, so one set on <b>:root</b> or a container restyles every
-            separator inside it - a container of one restyles that separator alone. A parameter wins over its variable.
-        </div>
-        <br />
-        <div class="example-content">
-            <div style="--bit-Separator-color: var(--bit-clr-pri); --bit-Separator-line-style: dashed; --bit-Separator-content-color: var(--bit-clr-fg-sec); --bit-Separator-content-font-size: 0.75rem;">
-                <BitSeparator>Set on the container</BitSeparator>
-                <BitSeparator AlignContent="BitSeparatorAlignContent.Start">for every separator inside it</BitSeparator>
-                <BitSeparator LineStyle="BitSeparatorLineStyle.Solid">LineStyle wins over the variable</BitSeparator>
-            </div>
-            <div style="--bit-Separator-thickness: 4px; --bit-Separator-spacing: 1rem; --bit-Separator-content-gap: 0.25rem; --bit-Separator-content-font-weight: 600;">
-                <BitSeparator>Set around one separator</BitSeparator>
-            </div>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Cascading parameters" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Cascading parameters" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             <b>BitParams</b> with a <b>BitSeparatorParams</b> sets defaults for every separator under it; a separator's own
             value wins (the last one keeps its own <b>LineStyle</b>). The content is not cascaded.
@@ -187,7 +169,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Color" RazorCode="@example9RazorCode" Id="example9">
         <div>
             <b>Color</b> paints the line in a role of the theme. <b>Border</b> picks a neutral border tier instead, and
             <b>Color</b> wins where both are set. <b>Background</b> paints behind the content, which is transparent by default.
@@ -215,7 +197,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Size" RazorCode="@example10RazorCode" Id="example10">
         <div>
             <b>Size</b> steps the weight of the line up from the theme's divider hairline. <b>Thickness</b> wins over it.
         </div>
@@ -236,7 +218,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach its parts: <b>Root</b> and
             <b>Content</b>. The line is the <b>::before</b> and <b>::after</b> of the root, which the class below turns into
@@ -253,7 +235,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <div>
             <b>Dir</b> set to <b>BitDir.Rtl</b> lays the separator out right to left, so start-aligned content sits on the right.
         </div>

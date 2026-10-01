@@ -158,23 +158,12 @@ public partial class BitSeparatorDemo
 </ul>";
 
     private readonly string example8RazorCode = @"
-<div style=""--bit-Separator-color: var(--bit-clr-pri); --bit-Separator-line-style: dashed; --bit-Separator-content-color: var(--bit-clr-fg-sec); --bit-Separator-content-font-size: 0.75rem;"">
-    <BitSeparator>Set on the container</BitSeparator>
-    <BitSeparator AlignContent=""BitSeparatorAlignContent.Start"">for every separator inside it</BitSeparator>
-    <BitSeparator LineStyle=""BitSeparatorLineStyle.Solid"">LineStyle wins over the variable</BitSeparator>
-</div>
-
-<div style=""--bit-Separator-thickness: 4px; --bit-Separator-spacing: 1rem; --bit-Separator-content-gap: 0.25rem; --bit-Separator-content-font-weight: 600;"">
-    <BitSeparator>Set around one separator</BitSeparator>
-</div>";
-
-    private readonly string example9RazorCode = @"
 <BitParams Parameters=""separatorParams"">
     <BitSeparator>Account</BitSeparator>
     <BitSeparator>Billing</BitSeparator>
     <BitSeparator LineStyle=""BitSeparatorLineStyle.Solid"">Danger zone</BitSeparator>
 </BitParams>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private readonly BitSeparatorParams[] separatorParams =
 [
     new()
@@ -185,7 +174,7 @@ private readonly BitSeparatorParams[] separatorParams =
     }
 ];";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitSeparator Color=""BitColor.Primary"">Primary</BitSeparator>
 <BitSeparator Color=""BitColor.Secondary"">Secondary</BitSeparator>
 <BitSeparator Color=""BitColor.Tertiary"">Tertiary</BitSeparator>
@@ -205,7 +194,7 @@ private readonly BitSeparatorParams[] separatorParams =
 <BitSeparator Background=""BitColorKind.Tertiary"">Tertiary background</BitSeparator>
 <BitSeparator Background=""BitColorKind.Transparent"">Transparent background</BitSeparator>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .row {
         gap: 1rem;
@@ -234,7 +223,7 @@ private readonly BitSeparatorParams[] separatorParams =
     <span>Item</span>
 </div>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class::before,
     .custom-class::after {
@@ -267,7 +256,7 @@ private readonly BitSeparatorParams[] separatorParams =
 </BitSeparator>
 <BitSeparator Classes=""@(new() { Content = ""custom-content"" })"">Classes</BitSeparator>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitSeparator Dir=""BitDir.Rtl"">جداکننده</BitSeparator>
 <BitSeparator Dir=""BitDir.Rtl"" AlignContent=""BitSeparatorAlignContent.Start"">ابتدا</BitSeparator>
 <BitSeparator Dir=""BitDir.Rtl"" AlignContent=""BitSeparatorAlignContent.End"">انتها</BitSeparator>";
