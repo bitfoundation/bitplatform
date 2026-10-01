@@ -2,18 +2,23 @@
 
 <PageOutlet Url="components/pulltorefresh"
             Title="PullToRefresh"
-            Description="The PullToRefresh component adds the pull down to refresh gesture to a page or any scrollable element, for touch and mouse alike, with a tunable trigger distance and resistance, templates for every stage of the pull, and a refresh that can also be started from code." />
+            Description="The PullToRefresh component adds the pull to refresh gesture - down from the top, or up from the bottom - to a page or any scrollable element, for touch and mouse alike, with a tunable trigger distance and resistance, templates for every stage of the pull, and a refresh that can also be started from code." />
 
 <DemoPage Name="PullToRefresh"
-          Description="The PullToRefresh component adds the pull down to refresh gesture to a page or any scrollable element. It engages only while the scroller sits at its top, damps the pull so it feels like weight rather than a drag, and holds an indicator open until the work is done - by touch, by mouse, or from code."
+          Description="PullToRefresh adds the pull to refresh gesture to a page or any scrollable element. It engages only while the scroller is at its top - or at its bottom, for a pull up - damps the pull, and holds an indicator open until the refresh is done - by touch, by mouse, or from code."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubUrl="Utilities/PullToRefresh/BitPullToRefresh.razor"
           GitHubDemoUrl="Utilities/PullToRefresh/BitPullToRefreshDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <div>Wrap any scrollable element in a BitPullToRefresh and handle OnRefresh. Drag the content down from its top - by touch or by mouse - and release past the trigger distance to start the refresh; the indicator stays open until the OnRefresh callback returns, so an awaited handler is all it takes to show the wait. The gesture only engages while the scroller is at its very top, and a sideways drag is left to whatever is inside the anchor.</div>
+        <div>
+            Wrap a scrollable element and handle <b>OnRefresh</b>. Drag it down from its top - by touch or mouse - and
+            release past the trigger: the indicator stays open until the awaited handler returns. A sideways drag is
+            left to the content.
+        </div>
         <br />
         <BitPullToRefresh OnRefresh="HandleOnRefreshBasic">
             <div class="anchor">
@@ -25,105 +30,15 @@
         </BitPullToRefresh>
     </DemoExample>
 
-    <DemoExample Title="Custom loading" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>Replace the default spinner with any content through the Loading template. It is drawn inside the indicator, so it scales and rotates with the pull exactly as the default glyph does, and it spins on its own once the refresh starts. Size it in relative units - the box it sits in grows with the pull.</div>
-        <br />
-        <BitPullToRefresh OnRefresh="HandleOnRefreshCustom">
-            <Anchor>
-                <div class="anchor">
-                    @foreach (var (idx, i) in customItems)
-                    {
-                        <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                    }
-                </div>
-            </Anchor>
-            <Loading>
-                <svg viewBox="0 0 490 490" fill="currentColor" width="100%" height="100%">
-                    <path d="M112.156,97.111c72.3-65.4,180.5-66.4,253.8-6.7l-58.1,2.2c-7.5,0.3-13.3,6.5-13,14c0.3,7.3,6.3,13,13.5,13 c0.2,0,0.3,0,0.5,0l89.2-3.3c7.3-0.3,13-6.2,13-13.5v-1c0-0.2,0-0.3,0-0.5v-0.1l0,0l-3.3-88.2c-0.3-7.5-6.6-13.3-14-13 c-7.5,0.3-13.3,6.5-13,14l2.1,55.3c-36.3-29.7-81-46.9-128.8-49.3c-59.2-3-116.1,17.3-160,57.1c-60.4,54.7-86,137.9-66.8,217.1 c1.5,6.2,7,10.3,13.1,10.3c1.1,0,2.1-0.1,3.2-0.4c7.2-1.8,11.7-9.1,9.9-16.3C36.656,218.211,59.056,145.111,112.156,97.111z">
-                    </path>
-                    <path d="M462.456,195.511c-1.8-7.2-9.1-11.7-16.3-9.9c-7.2,1.8-11.7,9.1-9.9,16.3c16.9,69.6-5.6,142.7-58.7,190.7 c-37.3,33.7-84.1,50.3-130.7,50.3c-44.5,0-88.9-15.1-124.7-44.9l58.8-5.3c7.4-0.7,12.9-7.2,12.2-14.7s-7.2-12.9-14.7-12.2l-88.9,8 c-7.4,0.7-12.9,7.2-12.2,14.7l8,88.9c0.6,7,6.5,12.3,13.4,12.3c0.4,0,0.8,0,1.2-0.1c7.4-0.7,12.9-7.2,12.2-14.7l-4.8-54.1 c36.3,29.4,80.8,46.5,128.3,48.9c3.8,0.2,7.6,0.3,11.3,0.3c55.1,0,107.5-20.2,148.7-57.4 C456.056,357.911,481.656,274.811,462.456,195.511z">
-                    </path>
-                </svg>
-            </Loading>
-        </BitPullToRefresh>
-    </DemoExample>
-
-    <DemoExample Title="Multiple" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>Any number of instances live side by side on one page, each with its own anchor, its own gesture state and its own OnRefresh handler; pulling one never disturbs another.</div>
-        <br />
-        <div class="example-content">
-            <div>
-                <BitPullToRefresh OnRefresh="HandleOnRefresh1">
-                    <div class="anchor">
-                        @foreach (var (idx, i) in multiItems1)
-                        {
-                            <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                        }
-                    </div>
-                </BitPullToRefresh>
-            </div>
-
-            <div>
-                <BitPullToRefresh OnRefresh="HandleOnRefresh2">
-                    <div class="anchor">
-                        @foreach (var (idx, i) in multiItems2)
-                        {
-                            <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                        }
-                    </div>
-                </BitPullToRefresh>
-            </div>
+    <DemoExample Title="Behavior" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            <b>Trigger</b>: the pull height that refreshes, and the distance the indicator grows over.
+            <b>Factor</b>: divides the finger travel - higher is heavier.
+            <b>Margin</b>: room added above the indicator.
+            <b>Threshold</b>: a dead zone crossed before anything appears.
+            <b>MaxPull</b>: lets the pull go past the trigger instead of stopping there (0 stops it).
+            Changes apply at once.
         </div>
-    </DemoExample>
-
-    <DemoExample Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>The component inside a phone-shaped layout, which is where the gesture belongs. ScrollerSelector points at the element that actually scrolls inside the anchor, so the pull only engages while that list is at its top rather than whenever the anchor is; FullWidth makes the component fill the layout region instead of shrink-wrapping its content, which is what it does by default.</div>
-        <br />
-        <div class="mobile-frame">
-            <div class="screen">
-                <BitLayout>
-                    <Header>
-                        <BitCard FullWidth>
-                            <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
-                                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
-                                <BitText Typography="BitTypography.H4" Color="BitColor.Info">
-                                    BlazorUI
-                                </BitText>
-                            </BitStack>
-                        </BitCard>
-                    </Header>
-                    <Main>
-                        <BitPullToRefresh OnRefresh="HandleOnRefreshAdvanced" ScrollerSelector=".advanced-anchor" FullWidth>
-                            <div class="advanced-anchor">
-                                @foreach (var (idx, i) in advancedItems)
-                                {
-                                    <div class="row" @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                                }
-                            </div>
-                        </BitPullToRefresh>
-                    </Main>
-                </BitLayout>
-            </div>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>IsEnabled set to false turns the gesture off and hands scrolling and overscroll back to the browser, while the anchor content stays fully interactive; an indicator left open by a disabled component snaps away. Flipping it back on re-arms the gesture at once.</div>
-        <br />
-        <BitToggle @bind-Value="isEnabled" Label="Enabled" />
-        <br />
-        <BitPullToRefresh IsEnabled="isEnabled" OnRefresh="HandleOnRefreshDisabled">
-            <div class="anchor">
-                @foreach (var (idx, i) in disabledItems)
-                {
-                    <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                }
-            </div>
-        </BitPullToRefresh>
-    </DemoExample>
-
-    <DemoExample Title="Behavior" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>The five numbers that decide how the pull feels. Trigger is the height that starts the refresh, and also the distance the indicator grows to its full size over. Factor divides the finger travel, so a higher value makes the pull heavier and longer. Margin adds space above the indicator. Threshold is a dead zone the finger crosses before anything appears, which is what keeps an accidental nudge from opening the indicator - come back inside it and the pull resets. MaxPull lets the pull carry on past the trigger instead of going dead there, with the indicator holding its full size over that stretch; at 0 it stops at the trigger. All five take effect the moment they change, long after the component has rendered.</div>
         <br />
         <div class="example-content">
             <BitPullToRefresh OnRefresh="HandleOnRefreshBehavior"
@@ -153,14 +68,18 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Programmatic refresh" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>RefreshAsync starts a refresh from code on a component reference: it opens the indicator, runs OnRefresh and closes the indicator when the callback returns, exactly as a released pull does, and the task it returns completes with it. It is also the keyboard-reachable way to refresh, which a gesture on its own can never be. It does nothing while the component is disabled or a refresh is already running, and IsRefreshing says which.</div>
+    <DemoExample Title="Direction" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            <b>Direction</b> sets the way the pull travels. <b>Up</b> engages once the scroller has reached its bottom
+            and opens the strip over the bottom of the anchor - the gesture of a chat or a feed that loads more at its
+            end. Scroll to the end of the list, then drag it up past the end: each refresh here appends ten more items.
+            Everything else - the trigger, the factor, the margin, the threshold and the overpull - works the same
+            either way.
+        </div>
         <br />
-        <BitButton OnClick="RefreshProgrammatically">Refresh</BitButton>
-        <br /><br />
-        <BitPullToRefresh @ref="pullToRefreshRef" OnRefresh="HandleOnRefreshProgrammatic">
+        <BitPullToRefresh Direction="BitPullToRefreshDirection.Up" OnRefresh="HandleOnRefreshUp">
             <div class="anchor">
-                @foreach (var (idx, i) in programmaticItems)
+                @foreach (var (idx, i) in upItems)
                 {
                     <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
                 }
@@ -168,11 +87,152 @@
         </BitPullToRefresh>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Every stage of the gesture is reported: OnPullStart hands over the anchor's position and width as the pull begins, OnPullMove streams the pull height - coalesced to one report per frame, and capped at Trigger - OnPullEnd fires on release with the final height, OnPullCancel when the gesture is taken away before release, and OnRefresh once a release past the trigger commits to it. PullProgress reads the same pull as a fraction of the trigger.</div>
+    <DemoExample Title="Scroller and full width" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) names the element that actually scrolls, so the pull
+            engages only while it is at its top - left unset, the anchor's first element is used, and <code>body</code>
+            hangs the gesture off the page. A nested scroller that is not at its own top keeps the drag for itself.
+            <b>FullWidth</b> fills the layout region instead of shrink-wrapping the content.
+        </div>
+        <br />
+        <div class="mobile-frame">
+            <div class="screen">
+                <BitLayout>
+                    <Header>
+                        <BitCard FullWidth>
+                            <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
+                                <BitText Typography="BitTypography.H4" Color="BitColor.Info">
+                                    BlazorUI
+                                </BitText>
+                            </BitStack>
+                        </BitCard>
+                    </Header>
+                    <Main>
+                        <BitPullToRefresh OnRefresh="HandleOnRefreshScroller" ScrollerSelector=".scroller" FullWidth>
+                            <div class="scroller">
+                                @foreach (var (idx, i) in scrollerItems)
+                                {
+                                    <div class="row" @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                                }
+                            </div>
+                        </BitPullToRefresh>
+                    </Main>
+                </BitLayout>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="States and templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            Past the trigger the glyph comes up to full strength: releasing now refreshes. <b>CompleteDelay</b> holds a
+            checkmark open for that many milliseconds after the refresh (0 skips it). <b>Loading</b>, <b>Release</b>
+            and <b>Complete</b> replace the glyph of each stage; they scale with the pull, so size them in relative
+            units. <b>IndicatorTemplate</b> replaces the whole indicator, unscaled - a text one here - and gets the
+            <b>State</b> and <b>Progress</b> of the pull.
+        </div>
         <br />
         <div class="example-content">
-            <BitPullToRefresh OnRefresh="HandleOnRefreshEvents"
+            <BitPullToRefresh OnRefresh="HandleOnRefreshComplete" CompleteDelay="1000">
+                <div class="anchor">
+                    @foreach (var (idx, i) in completeItems)
+                    {
+                        <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                    }
+                </div>
+            </BitPullToRefresh>
+
+            <BitPullToRefresh OnRefresh="HandleOnRefreshTemplates" CompleteDelay="1500">
+                <Anchor>
+                    <div class="anchor">
+                        @foreach (var (idx, i) in templateItems)
+                        {
+                            <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                        }
+                    </div>
+                </Anchor>
+                <Loading>
+                    <svg viewBox="0 0 490 490" fill="currentColor" width="100%" height="100%">
+                        <path d="M112.156,97.111c72.3-65.4,180.5-66.4,253.8-6.7l-58.1,2.2c-7.5,0.3-13.3,6.5-13,14c0.3,7.3,6.3,13,13.5,13 c0.2,0,0.3,0,0.5,0l89.2-3.3c7.3-0.3,13-6.2,13-13.5v-1c0-0.2,0-0.3,0-0.5v-0.1l0,0l-3.3-88.2c-0.3-7.5-6.6-13.3-14-13 c-7.5,0.3-13.3,6.5-13,14l2.1,55.3c-36.3-29.7-81-46.9-128.8-49.3c-59.2-3-116.1,17.3-160,57.1c-60.4,54.7-86,137.9-66.8,217.1 c1.5,6.2,7,10.3,13.1,10.3c1.1,0,2.1-0.1,3.2-0.4c7.2-1.8,11.7-9.1,9.9-16.3C36.656,218.211,59.056,145.111,112.156,97.111z" />
+                        <path d="M462.456,195.511c-1.8-7.2-9.1-11.7-16.3-9.9c-7.2,1.8-11.7,9.1-9.9,16.3c16.9,69.6-5.6,142.7-58.7,190.7 c-37.3,33.7-84.1,50.3-130.7,50.3c-44.5,0-88.9-15.1-124.7-44.9l58.8-5.3c7.4-0.7,12.9-7.2,12.2-14.7s-7.2-12.9-14.7-12.2l-88.9,8 c-7.4,0.7-12.9,7.2-12.2,14.7l8,88.9c0.6,7,6.5,12.3,13.4,12.3c0.4,0,0.8,0,1.2-0.1c7.4-0.7,12.9-7.2,12.2-14.7l-4.8-54.1 c36.3,29.4,80.8,46.5,128.3,48.9c3.8,0.2,7.6,0.3,11.3,0.3c55.1,0,107.5-20.2,148.7-57.4 C456.056,357.911,481.656,274.811,462.456,195.511z" />
+                    </svg>
+                </Loading>
+                <Release>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+                        <path d="M12 3a1 1 0 0 1 1 1v11.59l4.3-4.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-1.4 0l-6-6a1 1 0 1 1 1.4-1.42l4.3 4.3V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                </Release>
+                <Complete>🎉</Complete>
+            </BitPullToRefresh>
+
+            <BitPullToRefresh OnRefresh="HandleOnRefreshIndicator" CompleteDelay="1000">
+                <Anchor>
+                    <div class="anchor">
+                        @foreach (var (idx, i) in indicatorItems)
+                        {
+                            <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                        }
+                    </div>
+                </Anchor>
+                <IndicatorTemplate>
+                    <div class="text-indicator">
+                        @(context.State switch
+                        {
+                            BitPullToRefreshState.CanRelease => "Release to refresh",
+                            BitPullToRefreshState.Refreshing => "Refreshing...",
+                            BitPullToRefreshState.Complete => "Up to date",
+                            _ => $"Pull to refresh {context.Progress:P0}"
+                        })
+                    </div>
+                </IndicatorTemplate>
+            </BitPullToRefresh>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Programmatic refresh" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>RefreshAsync</b> runs a refresh from code exactly as a released pull does, and completes with it (so an
+            <b>AutoLoading</b> button stays busy for the whole refresh); <b>IsRefreshing</b> says one is running. A
+            button is the keyboard and single-pointer alternative a drag gesture needs (WCAG 2.5.7).
+        </div>
+        <br />
+        <div>
+            The stages are announced through a live region: <b>ReleaseLabel</b> (an empty string silences it),
+            <b>RefreshingLabel</b> and <b>CompleteLabel</b>; <b>AriaLabel</b> names the region.
+        </div>
+        <br />
+        <BitButton AutoLoading OnClick="RefreshProgrammatically">Refresh messages</BitButton>
+        <br /><br />
+        <BitPullToRefresh @ref="programmaticRef"
+                          OnRefresh="HandleOnRefreshProgrammatic"
+                          CompleteDelay="1000"
+                          AriaLabel="Messages"
+                          ReleaseLabel="Release to load new messages"
+                          RefreshingLabel="Loading new messages"
+                          CompleteLabel="Messages are up to date">
+            <div class="anchor">
+                @foreach (var (idx, i) in programmaticItems)
+                {
+                    <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Message @i</div>
+                }
+            </div>
+        </BitPullToRefresh>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            <b>OnPullStart</b> hands over the anchor's position and width, <b>OnPullMove</b> streams the pull height
+            (one report per frame), <b>OnPullEnd</b> fires on release, <b>OnPullCancel</b> when the gesture is taken
+            away, and <b>OnRefresh</b> once a release commits. <b>OnStateChange</b> reports each change of
+            <b>State</b> - idle, pulling, can release, refreshing, complete - once, which is what drives a status text
+            or a busy indicator elsewhere. <b>PullProgress</b> is the pull as a fraction of the trigger.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitPullToRefresh @ref="eventsRef"
+                              CompleteDelay="1000"
+                              OnRefresh="HandleOnRefreshEvents"
+                              OnStateChange="HandleOnStateChange"
                               OnPullStart="HandleOnPullStart"
                               OnPullMove="HandleOnPullMove"
                               OnPullEnd="HandleOnPullEnd"
@@ -185,64 +245,71 @@
                 </div>
             </BitPullToRefresh>
             <div>
+                <div>State: <b>@pullState</b></div>
                 <div>PullStart: @(pullStartArgs is null ? "-" : $"top:{pullStartArgs.Top:F0}, left:{pullStartArgs.Left:F0}, width:{pullStartArgs.Width:F0}")</div>
-                <div>PullMove diff: @pullMoveDiff.ToString("F1")</div>
-                <div>PullEnd diff: @pullEndDiff.ToString("F1")</div>
-                <div>PullCancel diff: @pullCancelDiff.ToString("F1")</div>
+                <div>PullMove: @pullMoveDiff.ToString("F1") (@((eventsRef?.PullProgress ?? 0).ToString("P0")))</div>
+                <div>PullEnd: @pullEndDiff.ToString("F1")</div>
+                <div>PullCancel: @pullCancelDiff.ToString("F1")</div>
                 <div>Refresh count: @refreshCount</div>
             </div>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Complete state" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>A refresh that closes the instant it finishes leaves nothing to say it worked. CompleteDelay holds a success indicator open for that many milliseconds before the strip snaps back - a checkmark by default, replaced by whatever the Complete template draws, like the emoji on the right - and announces CompleteLabel to screen readers as it appears. Left at 0, the complete state never happens.</div>
+    <DemoExample Title="Disabled and touch only" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <b>IsEnabled="false"</b> turns the gesture off and gives scrolling back to the browser; the content stays
+            interactive. <b>NoMouse</b> keeps it for touch and pen, leaving a mouse drag to select text. A mouse drag
+            that starts in a form field is always left to the field.
+        </div>
         <br />
-        <div class="example-content">
-            <BitPullToRefresh OnRefresh="HandleOnRefreshComplete" CompleteDelay="1000">
-                <div class="anchor">
-                    @foreach (var (idx, i) in completeItems)
-                    {
-                        <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                    }
-                </div>
-            </BitPullToRefresh>
+        <BitToggle @bind-Value="isEnabled" Label="Enabled" />
+        <BitToggle @bind-Value="noMouse" Label="NoMouse" />
+        <br />
+        <BitPullToRefresh IsEnabled="isEnabled" NoMouse="noMouse" OnRefresh="HandleOnRefreshDisabled">
+            <div class="anchor">
+                @foreach (var (idx, i) in disabledItems)
+                {
+                    <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                }
+            </div>
+        </BitPullToRefresh>
+    </DemoExample>
 
-            <BitPullToRefresh OnRefresh="HandleOnRefreshCompleteCustom" CompleteDelay="1500">
-                <Anchor>
+    <DemoExample Title="Cascading parameters" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>BitParams</b> hands a <b>BitPullToRefreshParams</b> to every pull to refresh under it, so an app sets the
+            feel, the states and the labels of its refreshers once. They are defaults: a component's own parameters
+            win, as the Trigger on the right does.
+        </div>
+        <br />
+        <BitParams Parameters="@pullToRefreshParams">
+            <div class="example-content">
+                <BitPullToRefresh OnRefresh="HandleOnRefreshCascaded">
                     <div class="anchor">
-                        @foreach (var (idx, i) in completeCustomItems)
+                        @foreach (var (idx, i) in cascadedItems)
                         {
                             <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
                         }
                     </div>
-                </Anchor>
-                <Complete>🎉</Complete>
-            </BitPullToRefresh>
+                </BitPullToRefresh>
+
+                <BitPullToRefresh OnRefresh="HandleOnRefreshOverriding" Trigger="60">
+                    <div class="anchor">
+                        @foreach (var (idx, i) in overridingItems)
+                        {
+                            <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                        }
+                    </div>
+                </BitPullToRefresh>
+            </div>
+        </BitParams>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>Color</b> paints the glyph with a theme color; <b>CustomColor</b> takes any CSS color and applies only
+            while <b>Color</b> is unset.
         </div>
-    </DemoExample>
-
-    <DemoExample Title="Release state" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <div>Once the pull passes the trigger, releasing starts the refresh, and the Release template replaces the indicator's glyph for exactly that moment so the commitment is visible before the finger lifts; going back below the trigger restores the Loading glyph. The same crossing is announced to screen readers through ReleaseLabel, which an empty string silences.</div>
-        <br />
-        <BitPullToRefresh OnRefresh="HandleOnRefreshRelease" ReleaseLabel="Let go to refresh the list">
-            <Anchor>
-                <div class="anchor">
-                    @foreach (var (idx, i) in releaseItems)
-                    {
-                        <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                    }
-                </div>
-            </Anchor>
-            <Release>
-                <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
-                    <path d="M12 3a1 1 0 0 1 1 1v11.59l4.3-4.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-1.4 0l-6-6a1 1 0 1 1 1.4-1.42l4.3 4.3V4a1 1 0 0 1 1-1z" />
-                </svg>
-            </Release>
-        </BitPullToRefresh>
-    </DemoExample>
-
-    <DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div>The Color parameter paints the indicator's glyph with one of the theme's general colors, so the gesture matches the surface it belongs to; CustomColor takes any CSS color for the cases a theme role does not cover, and stands down as soon as Color is set.</div>
         <br />
         <div class="example-content">
             <BitPullToRefresh OnRefresh="HandleOnRefreshColor" Color="BitColor.Info">
@@ -265,8 +332,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <div>Styles and Classes reach every part of the component - the strip, the indicator's disc and the glyph inside it - and each of those three carries its own release, refreshing and complete variant on top, so one state can be styled without restyling the rest. Pull far enough to see the release variant take over.</div>
+    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>Styles</b> and <b>Classes</b> reach the strip, the disc and the glyph, each with a release, refreshing
+            and complete variant - pull past the trigger to see the release one.
+        </div>
+        <br />
+        <div>
+            The component also reads <BitLink Href="#css-variables-section">CSS variables</BitLink> for the size, fill,
+            shadow and colors of its indicator. They inherit, so a value on <code>:root</code> re-skins every instance
+            and one on <b>Style</b> a single one, like the right-hand one here.
+        </div>
         <br />
         <div class="example-content">
             <BitPullToRefresh OnRefresh="HandleOnRefreshStyle"
@@ -288,11 +364,24 @@
                     }
                 </div>
             </BitPullToRefresh>
+
+            <BitPullToRefresh OnRefresh="HandleOnRefreshCssVariables"
+                              Style="--bit-PullToRefresh-indicator-size: 3rem; --bit-PullToRefresh-glyph-size: 2rem; --bit-PullToRefresh-indicator-background: var(--bit-clr-pri); --bit-PullToRefresh-refreshing-background: var(--bit-clr-pri-hover); --bit-PullToRefresh-color: var(--bit-clr-pri-text); --bit-PullToRefresh-strip-background: var(--bit-clr-bg-sec);">
+                <div class="anchor">
+                    @foreach (var (idx, i) in cssVariablesItems)
+                    {
+                        <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                    }
+                </div>
+            </BitPullToRefresh>
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-        <div>A pull is a vertical gesture, so Dir leaves it exactly as it is; what the direction changes is the content of the anchor and of any custom template, and the loading strip, which is pinned to the start edge and so follows the writing direction across the anchor.</div>
+    <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            The pull is vertical, so <b>Dir</b> leaves it as it is; it flips the content and pins the strip to the
+            start edge.
+        </div>
         <br />
         <div dir="rtl">
             <BitPullToRefresh Dir="BitDir.Rtl" OnRefresh="HandleOnRefreshRtl">
