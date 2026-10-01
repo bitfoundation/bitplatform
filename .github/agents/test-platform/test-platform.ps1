@@ -463,7 +463,7 @@ function Get-WebAppVersions {
         }
 
         if (-not $endpoint) {
-            throw 'Headless Edge did not open its CDP endpoint.'
+            throw ($port ? "Headless Edge did not answer on its CDP port $port." : 'Headless Edge did not write its CDP port to DevToolsActivePort.')
         }
 
         foreach ($app in Get-WebApps) {
