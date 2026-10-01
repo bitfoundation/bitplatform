@@ -1117,7 +1117,7 @@ public class BitStickyTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitStickyShouldReclaimTheScrollPaddingWhenAnOffsetChanges()
+    public void BitStickyShouldLeaveAnOffsetChangeToTheScript()
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
@@ -1125,29 +1125,16 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Top, "10px");
         });
 
+        // A new offset is written on the element, whose attributes the script watches, so the claim is made
+        // again from there - not by attaching a new registration, nor by an interop call on every render.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Top, "20px");
+        });
+
         Assert.HasCount(1, Setups());
         Assert.IsEmpty(Refreshes());
-
-        // No resize announces a new offset, so the claim is made again from the new one - by reading the
-        // layout again on the registration already attached rather than by attaching a new one.
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.ScrollPadding, true);
-            parameters.Add(p => p.Top, "20px");
-        });
-
-        Assert.HasCount(1, Setups());
-        Assert.HasCount(1, Refreshes());
-
-        // Re-rendering with the same parameters claims nothing again.
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.ScrollPadding, true);
-            parameters.Add(p => p.Top, "20px");
-        });
-
-        Assert.HasCount(1, Setups());
-        Assert.HasCount(1, Refreshes());
     }
 
     [TestMethod]
@@ -1169,7 +1156,7 @@ public class BitStickyTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitStickyShouldReadTheStateAgainWhenWhatPinsItChanges()
+    public void BitStickyShouldLeaveWhatPinsItToTheScript()
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
@@ -1177,29 +1164,9 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Position, BitStickyPosition.Top);
         });
 
-        Assert.IsEmpty(Refreshes());
-
-        // A sticky moved from one edge to the other resizes nothing, so no observer would ever see it
-        // let go of the edge it was pinned to.
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.ElevateOnStuck, true);
-            parameters.Add(p => p.Position, BitStickyPosition.Bottom);
-        });
-
-        Assert.HasCount(1, Refreshes());
-
-        // Neither does a change of direction, which swaps the physical side a Start sticky pins to.
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.ElevateOnStuck, true);
-            parameters.Add(p => p.Position, BitStickyPosition.Bottom);
-            parameters.Add(p => p.Dir, BitDir.Rtl);
-        });
-
-        Assert.HasCount(2, Refreshes());
-
-        // Nor a class or a style, either of which can bring insets of its own.
+        // A Position, a Dir and a Style all move what pins the element without resizing anything, and all of
+        // them land on its class, dir and style attributes, which is what the script watches - so none of
+        // them costs a call of its own, nor a new registration.
         component.Render(parameters =>
         {
             parameters.Add(p => p.ElevateOnStuck, true);
@@ -1208,8 +1175,8 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Style, "bottom: 2rem");
         });
 
-        Assert.HasCount(3, Refreshes());
         Assert.HasCount(1, Setups());
+        Assert.IsEmpty(Refreshes());
     }
 
     [TestMethod]

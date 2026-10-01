@@ -44,7 +44,6 @@ public partial class BitSticky : BitComponentBase
     private bool _setupPending;
     private string? _attachedId;
     private string? _attachedSignature;
-    private string? _attachedGeometry;
     private BitStickyEdges _edges;
     private DotNetObjectReference<BitSticky>? _dotnetObj;
 
@@ -192,18 +191,20 @@ public partial class BitSticky : BitComponentBase
     /// A pinned element covers the content passing under it, and a browser bringing something into view -
     /// the next control the focus moves to, an anchor followed, a call to scrollIntoView - stops with that
     /// thing hidden behind it (WCAG 2.4.11, Focus Not Obscured). This sets the scroll padding of the
-    /// container on every edge the element pins to, to its offset plus its size there, and keeps it in step
-    /// while either changes. Only an axis the container has content overflowing on is claimed, so the room
-    /// is reserved from the moment there is something to scroll there. Several stickies of one container share it: each edge carries the largest claim,
-    /// and the value the container had before is put back once the last of them lets go.
+    /// container on every edge the element can pin to, to its offset plus its size there, and keeps it in
+    /// step while either changes. An edge is claimed only where the element can actually be pinned: one it
+    /// has an offset on and room in its parent to travel toward - so a TopAndBottom bar at the top of a pane
+    /// claims no room at the bottom, which it can never reach. Several stickies of one container share it:
+    /// each edge carries the largest claim, the scroll padding the container already has (from a stylesheet,
+    /// an inline style, or a BitHeader or BitFooter reserving its own) is kept wherever it is the larger one,
+    /// and it is all that is left once the last of them lets go.
     /// <br />
     /// It needs no stuck detection, so it attaches nothing on the scroll, and it is released while the
-    /// component is disabled. The claim is made again whenever a parameter that moves the edges or the
-    /// offsets changes (<see cref="Position"/>, the offsets, <see cref="BitComponentBase.Dir"/>,
-    /// <see cref="BitComponentBase.Class"/>, <see cref="BitComponentBase.Style"/>); one moved by a
-    /// <c>--bit-Sticky-offset-*</c> variable or a stylesheet is picked up by <see cref="RefreshAsync"/>.
-    /// The scroll padding a BitHeader or BitFooter reserves is a claim of its own, so a container keeps
-    /// the room of one of the two kinds - with both, the one written last is what the browser follows.
+    /// component is disabled. The claim is made again whenever the element changes size or anything that
+    /// moves its edges or offsets changes on it (<see cref="Position"/>, the offsets,
+    /// <see cref="BitComponentBase.Dir"/>, <see cref="BitComponentBase.Class"/>,
+    /// <see cref="BitComponentBase.Style"/>); one moved from outside it - a <c>--bit-Sticky-offset-*</c>
+    /// variable set on an ancestor, a stylesheet - is picked up by <see cref="RefreshAsync"/>.
     /// </remarks>
     [Parameter]
     public bool ScrollPadding { get; set; }
@@ -526,24 +527,11 @@ public partial class BitSticky : BitComponentBase
             ? $"{_Id}|{GetElement()}|{report}|{scrollPadding}"
             : null;
 
-        // What decides the edges and the insets the element pins at - and so both the state and the room
-        // it claims - without resizing anything: no observer announces it, so the change is read again
-        // here instead of waiting for a scroll that may never come.
-        var geometry = shouldAttach
-            ? $"{Position}|{Top}|{Bottom}|{Left}|{Right}|{Dir}|{Class}|{Style}"
-            : null;
-
-        if (signature == _attachedSignature)
-        {
-            if (_attachedId is not null && geometry != _attachedGeometry)
-            {
-                _attachedGeometry = geometry;
-
-                await _js.BitStickiesRefresh(_attachedId);
-            }
-
-            return;
-        }
+        // What moves the edges and the insets the element pins at without resizing anything - a Position,
+        // an offset, a Dir, a Class or a Style of its own, and the stuck class and style as well - is
+        // written on the element itself, so the script watches its attributes for it rather than being
+        // told about it on every render.
+        if (signature == _attachedSignature) return;
 
         if (_attachedId is not null)
         {
@@ -557,7 +545,6 @@ public partial class BitSticky : BitComponentBase
 
             _attachedId = null;
             _attachedSignature = null;
-            _attachedGeometry = null;
         }
 
         if (shouldAttach)
@@ -583,7 +570,6 @@ public partial class BitSticky : BitComponentBase
 
             _attachedId = _Id;
             _attachedSignature = signature;
-            _attachedGeometry = geometry;
         }
 
         if (report is false && _edges != BitStickyEdges.None)

@@ -53,14 +53,20 @@ public partial class BitStickyStylesheetTests
     }
 
     [TestMethod]
-    public void BitStickyShouldKeepTheLegacyZIndexVariableAheadOfThePublicOne()
+    public void BitStickyShouldReadTheLegacyZIndexVariableOnlyBehindThePublicOne()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-stk {");
+        var stylesheet = ReadStylesheet();
+        var root = Block(stylesheet, "\n.bit-stk {");
 
-        // --bit-stk-zin was documented by earlier versions, so a stylesheet setting it keeps working, and it is no
-        // longer declared on the root, which would shadow the public variable inherited from an ancestor.
-        StringAssert.Contains(root, "z-index: var(--bit-stk-zin, var(--bit-Sticky-z-index, 1));");
+        // --bit-stk-zin was documented by earlier versions, so a stylesheet setting it keeps working, but the public
+        // variable wins over it, and it is no longer declared on the root, which would shadow the public variable
+        // inherited from an ancestor.
+        StringAssert.Contains(root, "z-index: var(--bit-Sticky-z-index, var(--bit-stk-zin, 1));");
         Assert.IsFalse(root.Contains("--bit-stk-zin:"), "The legacy z-index variable is declared on the root.");
+
+        // Declared on the root, it never reached the element from an ancestor; registered as a property that does
+        // not inherit, a stale value left on :root still does not.
+        StringAssert.Contains(Block(stylesheet, "\n@property --bit-stk-zin {"), "inherits: false;");
     }
 
     [TestMethod]

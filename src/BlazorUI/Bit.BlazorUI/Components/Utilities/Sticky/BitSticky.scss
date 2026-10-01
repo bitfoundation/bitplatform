@@ -13,12 +13,21 @@
 //   --bit-Sticky-shadow-left      ... pinned to the left edge                      (default: $box-shadow-card)
 //   --bit-Sticky-shadow-right     ... pinned to the right edge                     (default: $box-shadow-card)
 
+// --bit-stk-zin is the private name earlier versions declared on the root and documented. Declared there, a value
+// only ever took effect set on the element itself - one on an ancestor was shadowed by the declaration - and
+// registering it as a property that does not inherit keeps it exactly that, now that it is not declared anymore:
+// a stale value left on :root or a container cannot reach the element.
+@property --bit-stk-zin {
+    syntax: '*';
+    inherits: false;
+}
+
 .bit-stk {
     position: sticky;
     // Enough to pass over the plain flowing content the element sticks above without covering the popups and
-    // overlays of the rest of the page, which sit far higher up the scale. --bit-stk-zin is the private name
-    // earlier versions declared here and documented, still read first so a stylesheet setting it keeps working.
-    z-index: var(--bit-stk-zin, var(--bit-Sticky-z-index, 1));
+    // overlays of the rest of the page, which sit far higher up the scale. The public variable comes first, and
+    // the legacy one is read only where the public one is set nowhere.
+    z-index: var(--bit-Sticky-z-index, var(--bit-stk-zin, 1));
 
     // A disabled sticky steps back into the normal flow: a static position ignores every inset, so the element
     // scrolls away with its content like any other box - which is what makes IsEnabled the switch that turns the

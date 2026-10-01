@@ -102,7 +102,7 @@ public partial class BitStickyDemo
             Name = "ScrollPadding",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reserves the room the element covers (its offset plus its size) as the scroll padding of its scrolling container on every edge it pins to, so nothing the browser scrolls into view - the focused control, an anchor - lands underneath it (WCAG 2.4.11). Stickies of one container keep the largest claim per edge; released while disabled."
+            Description = "Reserves the room the element covers (its offset plus its size) as the scroll padding of its scrolling container on every edge it can pin to, so nothing the browser scrolls into view - the focused control, an anchor - lands underneath it (WCAG 2.4.11). Stickies of one container keep the largest claim per edge, and a larger scroll padding the container already has is kept; released while disabled."
         },
         new()
         {
