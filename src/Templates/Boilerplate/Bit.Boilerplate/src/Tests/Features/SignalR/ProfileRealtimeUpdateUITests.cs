@@ -26,7 +26,7 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // The very same account signs into two independent browsers, so it owns two distinct sessions. A fresh e-mail
         // keeps this account (and its sessions) isolated from other tests that share the same database.
@@ -36,7 +36,7 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
         await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, email, TestContext.CancellationToken);
 
         // ---- Browser B: a second session of the same user, in its own isolated browser context. ----
-        await using var otherContext = await NewBrowserContext(serverAddress);
+        await using var otherContext = await NewBrowserContext(server);
         var otherPage = await otherContext.NewPageAsync();
 
         // The account is already confirmed now, so this repeat sign-in receives a plain OTP and opens a brand-new session.
@@ -87,7 +87,7 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
 
         while (true)
         {
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
+            await using var scope = server.ApiApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var connectedSessions = await dbContext.UserSessions

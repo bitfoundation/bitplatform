@@ -94,6 +94,14 @@ public sealed record BlazorUIComponent
     /// </summary>
     public Type? CascadingParams { get; init; }
 
+    /// <summary>
+    /// The component a service shows, for a service named after one - <c>BitModal</c> for
+    /// <c>BitModalService</c> - which is where the service's <see cref="CascadingParams"/> come from:
+    /// what it renders is that component, so a <c>BitParams</c> around its container reaches it.
+    /// Null for a component, and for a service that is named after nothing it renders.
+    /// </summary>
+    public Type? ShownComponentType { get; init; }
+
     /// <summary>The classes and enums this component owns, in full - nothing else documents them.</summary>
     public IReadOnlyList<ComponentSubType> OwnTypes { get; init; } = [];
 
@@ -265,8 +273,9 @@ public static class BlazorUIComponentCatalog
             var tables = demoType is null ? null : DemoTables.Read(demoType);
 
             var inherited = InheritedBases(componentType);
+            var shownType = ShownComponentTypeOf(componentType);
             var parameters = MergeParameters(tables?.Parameters, componentType);
-            var (own, shared) = SplitSubTypes(name, tables);
+            var (own, shared) = SplitSubTypes(name, shownType, tables);
 
             return new BlazorUIComponent
             {
@@ -288,7 +297,8 @@ public static class BlazorUIComponentCatalog
                 Parameters = parameters,
                 PublicMembers = MergeMembers(tables?.PublicMembers, componentType, parameters),
                 CssVariables = tables?.CssVariables ?? [],
-                CascadingParams = CascadingParamsOf(componentType),
+                CascadingParams = CascadingParamsOf(shownType ?? componentType),
+                ShownComponentType = shownType,
                 OwnTypes = own,
                 SharedTypes = shared,
                 FamilyMembers = FamilyMembersOf(componentType),
@@ -389,6 +399,22 @@ public static class BlazorUIComponentCatalog
             .Where(p => p.IsDefined(typeof(CascadingParameterAttribute)))
             .Select(p => p.PropertyType)
             .FirstOrDefault(t => typeof(IBitComponentParams).IsAssignableFrom(t));
+    }
+
+    /// <summary>
+    /// The component a service named after one shows - see <see cref="BlazorUIComponent.ShownComponentType"/>.
+    /// </summary>
+    private static Type? ShownComponentTypeOf(Type? componentType)
+    {
+        if (componentType is null || typeof(IComponent).IsAssignableFrom(componentType)) return null;
+
+        const string suffix = "Service";
+
+        if (componentType.Name.EndsWith(suffix, StringComparison.Ordinal) is false) return null;
+
+        var shown = FindType(componentType.Name[..^suffix.Length]);
+
+        return shown is not null && typeof(IComponent).IsAssignableFrom(shown) ? shown : null;
     }
 
     /// <summary>
@@ -582,14 +608,20 @@ public static class BlazorUIComponentCatalog
     /// dropped it from both halves - <c>BitButton</c> never mentioned the <c>BitIconInfo</c> its
     /// own <c>Icon</c> parameter takes.
     /// </para>
+    /// <para>
+    /// A service's types are named after the component it shows rather than after the service -
+    /// <c>BitModalReference</c>, <c>BitModalParameters</c> on the <c>BitModalService</c> page - and that
+    /// page is the only one documenting them, so they are its own too.
+    /// </para>
     /// </summary>
-    private static (ComponentSubType[] Own, ComponentSubType[] Shared) SplitSubTypes(string name, DemoTables? tables)
+    private static (ComponentSubType[] Own, ComponentSubType[] Shared) SplitSubTypes(string name, Type? shownType, DemoTables? tables)
     {
         if (tables is null) return ([], []);
 
         var all = tables.SubClasses.Concat(tables.SubEnums).ToArray();
 
-        var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase));
+        var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase) ||
+                                    (shownType is not null && t.Name.StartsWith(shownType.Name, StringComparison.OrdinalIgnoreCase)));
 
         return ([.. own[true]], [.. own[false]]);
     }

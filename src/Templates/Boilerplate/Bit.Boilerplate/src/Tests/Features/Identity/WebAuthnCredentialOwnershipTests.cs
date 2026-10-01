@@ -31,7 +31,7 @@ public class WebAuthnCredentialOwnershipTests
     public async Task DeleteWebAuthnCredential_Should_RefuseACredentialOwnedByAnotherUser()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
         // The victim is the seeded account; the credential row below is this test's own fixture and is removed again
         // in the finally, so nothing is left behind that would make the app think passwordless is configured.
@@ -41,9 +41,9 @@ public class WebAuthnCredentialOwnershipTests
         try
         {
             // The attacker: an ordinary per-run account, signed in through the shipped endpoints.
-            await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+            await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-            var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+            var userController = client.GetController<IUserController>();
 
             await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(
                 () => userController.DeleteWebAuthnCredential(AssertionFor(credentialId), TestContext.CancellationToken),
@@ -67,14 +67,14 @@ public class WebAuthnCredentialOwnershipTests
     public async Task DeleteWebAuthnCredential_Should_RemoveTheCallersOwnCredential()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
         var credentialId = await AddCredential(server, userId);
 
         try
         {
-            await scope.ServiceProvider.GetRequiredService<IUserController>()
+            await client.GetController<IUserController>()
                        .DeleteWebAuthnCredential(AssertionFor(credentialId), TestContext.CancellationToken);
 
             Assert.IsFalse(await CredentialExists(server, credentialId), "The caller's own credential must be deleted.");
@@ -113,7 +113,7 @@ public class WebAuthnCredentialOwnershipTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -126,7 +126,7 @@ public class WebAuthnCredentialOwnershipTests
     {
         var credentialId = Guid.NewGuid().ToByteArray();
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.WebAuthnCredential.AddAsync(new WebAuthnCredential
@@ -143,7 +143,7 @@ public class WebAuthnCredentialOwnershipTests
 
     private async Task RemoveCredential(AppTestServer server, byte[] credentialId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.WebAuthnCredential.Where(c => c.Id == credentialId).ExecuteDeleteAsync(CancellationToken.None);
@@ -151,7 +151,7 @@ public class WebAuthnCredentialOwnershipTests
 
     private async Task<bool> CredentialExists(AppTestServer server, byte[] credentialId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.WebAuthnCredential.AnyAsync(c => c.Id == credentialId, TestContext.CancellationToken);

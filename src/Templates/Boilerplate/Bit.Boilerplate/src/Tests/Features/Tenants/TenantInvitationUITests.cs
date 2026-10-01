@@ -24,7 +24,7 @@ public partial class TenantInvitationUITests : AppPageTest
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // ---- Browser 1: the tenant admin (the default Page / Context) ----
         await SignInWithPassword(Page, serverAddress, StoreAdminEmail, StoreAdminPassword);
@@ -40,7 +40,7 @@ public partial class TenantInvitationUITests : AppPageTest
         await InviteUserToCurrentTenant(Page, server, invitedEmail);
 
         // ---- Browser 2: the invited user, in her own isolated browser context ----
-        await using var invitedContext = await NewBrowserContext(serverAddress);
+        await using var invitedContext = await NewBrowserContext(server);
         var invitedPage = await invitedContext.NewPageAsync();
 
         // The account the invitation just created signs in for the very first time with the magic link OTP, exactly the

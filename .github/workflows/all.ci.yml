@@ -336,7 +336,7 @@ jobs:
       run: cd src && dotnet workload install wasm-tools
 
     - name: Create project from template with SQL Server
-      run: dotnet new bit-bp --name TestSqlServer --database SqlServer --module Admin --signalR --aspire false --advancedTests
+      run: dotnet new bit-bp --name TestSqlServer --database SqlServer --module Admin --signalR --aspire false --api Standalone --advancedTests
 
     - name: Create appsettings.json for Client.Web
       run: |

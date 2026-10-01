@@ -15,6 +15,10 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     private bool _disposed;
     protected readonly List<TReference> _modalRefs = [];
 
+    // The service this container attached to when it initialized, which is the one it detaches from on dispose
+    // whatever ModalService answers by then.
+    private BitModalServiceBase<TReference, TParameters>? _service;
+
     private TParameters? _lastModalParameters;
     private readonly Dictionary<TReference, TParameters?> _mergedParametersCache = [];
 
@@ -49,6 +53,10 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
 
 
+    /// <summary>
+    /// The defaults of every modal this container renders - the house style: a maximum width, a close button, a
+    /// position. The parameters of one showing win over them.
+    /// </summary>
     [Parameter] public TParameters ModalParameters { get; set; } = new();
 
 
@@ -182,10 +190,12 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     {
         base.OnInitialized();
 
-        ModalService.InitContainer(this);
+        _service = ModalService;
 
-        ModalService.OnAddModal += OnModalAdd;
-        ModalService.OnCloseModal += OnCloseModal;
+        _service.InitContainer(this);
+
+        _service.OnAddModal += OnModalAdd;
+        _service.OnCloseModal += OnCloseModal;
 
         _logger = (_serviceProvider?.GetService(typeof(ILoggerFactory)) as ILoggerFactory)?.CreateLogger(GetType());
 
@@ -195,6 +205,20 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         {
             _currentPath = GetPath(_navigationManager.Uri);
             _navigationManager.LocationChanged += OnLocationChanged;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // The modals rendered here belong to the service they were shown through, and moving them to another one
+        // halfway through their lives is not something either service could make sense of.
+        if (_service is not null && ReferenceEquals(_service, ModalService) is false)
+        {
+            throw new InvalidOperationException(
+                "The modal service of a modal container cannot change after the container has initialized. " +
+                "Give the container a @key of the service to mount a new one for it instead.");
         }
     }
 
@@ -217,7 +241,7 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     {
         // Only the container the service is currently rendering through takes new modals. Mounting more than
         // one container is not supported, and without this every one of them would render the same modal.
-        if (_disposed || ModalService.IsActiveContainer(this) is false) return Task.CompletedTask;
+        if (_disposed || _service?.IsActiveContainer(this) is not true) return Task.CompletedTask;
 
         return InvokeAsync(() =>
         {
@@ -322,7 +346,7 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     {
         try
         {
-            await ModalService.Close(modalRef);
+            await _service!.Close(modalRef);
         }
         catch (ObjectDisposedException) { } // the scope went away with the modal; nothing left to close
         catch (Exception ex)
@@ -353,9 +377,12 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
         _disposed = true;
 
-        ModalService.OnAddModal -= OnModalAdd;
-        ModalService.OnCloseModal -= OnCloseModal;
-        ModalService.RemoveContainer(this);
+        if (_service is not null)
+        {
+            _service.OnAddModal -= OnModalAdd;
+            _service.OnCloseModal -= OnCloseModal;
+            _service.RemoveContainer(this);
+        }
 
         if (_navigationManager is not null)
         {
