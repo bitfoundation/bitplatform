@@ -19,10 +19,10 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
     /// <item>On the sign-in page she clicks the fingerprint (passkey) button, which runs <c>credentials.get()</c> against
     /// the virtual authenticator and signs her straight back in - the home page shows her persona.</item>
     /// </list>
-    /// The whole test runs on the <c>http://localhost:&lt;port&gt;</c> alias of the loopback test server (not its
-    /// <c>127.0.0.1</c> address): Chrome refuses an IP literal as a WebAuthn RP ID, and the server derives its RP ID and
-    /// allowed origin per-request from the Host header (See <c>HttpRequestExtensions.GetWebAppUrl</c>), so a "localhost"
-    /// Host makes the RP ID "localhost" - matching the browser's origin - with no server-side configuration override.
+    /// The web app runs under <c>http://localhost:&lt;port&gt;</c> (See <see cref="AppTestServer.WebAppAddress"/>):
+    /// Chrome refuses an IP literal as a WebAuthn RP ID, and the server derives its RP ID and allowed origin per request
+    /// from the caller's origin (See <c>HttpRequestExtensions.GetWebAppUrl</c>), so the RP ID is "localhost" - matching
+    /// the browser's origin.
     /// </summary>
     [TestMethod]
     public async Task User_Should_EnablePasswordless_AndSignInWithPasskey()
@@ -34,26 +34,8 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
             return;
         }
 
-        // A bare server (no ClientBrowserContext) so that we - not AppTestServer.Start - own the WebAssembly
-        // ServerAddress init script and can point it at the localhost alias below (a single, consistent origin).
-        await using var server = new AppTestServer();
-
-        // Same loopback server, reached through its "localhost" host so the WebAuthn RP ID resolves to "localhost"
-        // (Chrome rejects the raw 127.0.0.1 IP literal as an RP ID). Computed before Build so the ServerAddress override
-        // below can point every internal API call at the same localhost origin.
-        var appBaseUrl = new UriBuilder(server.WebAppServerAddress) { Host = "localhost" }.Uri;
-
-        // The test host runs Blazor Server, so the WebAuthn options (and their RP ID) are produced by a SERVER-SIDE call
-        // to the identity API through the app's internal HttpClient, whose base address is the ServerAddress config
-        // (127.0.0.1 by default). Point that at the localhost origin so the RP ID the server derives from the request
-        // Host (See HttpRequestExtensions.GetWebAppUrl -> Fido2Configuration.RPID) matches the browser's
-        // localhost origin - otherwise credentials.create() fails with "relying party ID is not ... the current domain".
-        await server.Build(configureTestConfigurations: configuration => configuration["ServerAddress"] = appBaseUrl.ToString())
-            .Start(TestContext.CancellationToken);
-
-        // Also feed the localhost origin to the Blazor WebAssembly startup params, so the same holds if the host ever
-        // runs the app in WebAssembly mode (where the API call - and thus the RP ID - comes from the browser instead).
-        await SetBlazorWebAssemblyServerAddress(appBaseUrl, Context);
+        await using var server = new AppTestServer(Context);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // Attach the virtual authenticator before any credential ceremony runs.
         await AddVirtualAuthenticator(Page);
@@ -61,11 +43,11 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
         var email = MagicLinkSignInUtils.NewTestEmail();
 
         // 1. First sign-in with the magic link OTP registers and signs in the brand-new account (no passkey yet).
-        await SignInWithMagicLinkOtp(Page, server, appBaseUrl, email);
+        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, email, TestContext.CancellationToken);
 
         // 2. Enable passwordless sign-in on the account settings page. Navigating to /settings/account expands the
         //    account accordion, whose first (default) pivot tab is Passwordless, so the "Enable" button is already shown.
-        await Page.GotoAsync(new Uri(appBaseUrl, $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}").ToString(),
+        await Page.GotoAsync(new Uri(server.WebAppAddress, $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}").ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
@@ -98,7 +80,7 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
         await SignOut(Page);
 
         // 4. Sign back in with the passkey.
-        await Page.GotoAsync(new Uri(appBaseUrl, PageUrls.SignIn).ToString(),
+        await Page.GotoAsync(new Uri(server.WebAppAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         // The passwordless button is icon-only (BitIconName.Fingerprint); Bit renders the icon as
@@ -111,7 +93,7 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
 
         // credentials.get() against the virtual authenticator completes the sign-in and redirects home as her.
         // The account has no 2FA, so no two-factor panel appears.
-        await Page.WaitForURLAsync(appBaseUrl.ToString());
+        await Page.WaitForURLAsync(server.WebAppAddress.ToString());
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
     }
 
@@ -142,24 +124,6 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
                 ["automaticPresenceSimulation"] = true, // user presence auto-confirmed - no touch needed
             }
         });
-    }
-
-    /// <summary>
-    /// Signs a brand-new account in through the magic link OTP flow against the given (localhost) origin - the same
-    /// steps as <see cref="MagicLinkSignInUtils.SignInViaMagicLinkOtp"/>, but navigating the localhost alias so the
-    /// whole test stays on one origin (and one local-storage partition).
-    /// </summary>
-    private async Task SignInWithMagicLinkOtp(IPage page, AppTestServer server, Uri appBaseUrl, string email)
-    {
-        await MagicLinkSignInUtils.RequestMagicLinkAndOtp(page, appBaseUrl, email);
-
-        // A brand-new account's confirmation e-mail carries the OTP; we only need the code, not the link (which this
-        // test's ServerAddress override makes localhost-based rather than the default 127.0.0.1).
-        var (_, otpCode) = await MagicLinkSignInUtils.ReadConfirmationEmail(server, email, TestContext.CancellationToken);
-        await BitOtpInputUtils.FillOtpInputs(page, otpCode);
-
-        // Filling the last digit confirms the e-mail, signs her in and redirects to the home page.
-        await page.WaitForURLAsync(appBaseUrl.ToString());
     }
 
     /// <summary>Signs the current user out through the header persona menu and its confirmation dialog.</summary>

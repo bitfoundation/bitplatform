@@ -8,10 +8,10 @@ namespace Boilerplate.Tests.Features.ServerWeb;
 /// Pins what Server.Web's own <see cref="HttpClient"/> - the one pre-rendering and Blazor Server circuits call the api
 /// with - is allowed to take from the caller, and how its transport is shared.
 /// <para>
-/// ⚠ <c>AddTestProjectServices</c> re-registers a transient, HttpContext-free <c>HttpClient</c> <i>after</i> calling
+/// ⚠ <c>AppTestServer.Build</c> re-registers a transient, HttpContext-free <c>HttpClient</c> <i>after</i> calling
 /// the real <c>AddServerWebProjectServices</c>, and last registration wins - so by default these tests would assert
 /// against the harness' own client, which reproduces the very defects under test. Each test therefore drops that last
-/// descriptor in <c>configureTestServices</c> (which runs after it), leaving Server.Web's real registration as the one
+/// descriptor in <c>configureTestWebAppServices</c> (which runs after it), leaving Server.Web's real registration as the one
 /// the container resolves.
 /// </para>
 /// </summary>
@@ -35,11 +35,7 @@ public partial class ServerSideHttpClientTests
     public async Task ServerSideHttpClient_Should_SendTheResolvedClientIp_NotTheOneTheCallerSent()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
-                    {
-                        services.AddIntegrationApiOnlyTestsServices();
-                        UseTheRealServerWebHttpClient(services);
-                    }).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: UseTheRealServerWebHttpClient).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
@@ -78,11 +74,7 @@ public partial class ServerSideHttpClientTests
     public async Task ServerSideHttpClient_Should_NotLetTheCallerAddASecondXOrigin()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
-                    {
-                        services.AddIntegrationApiOnlyTestsServices();
-                        UseTheRealServerWebHttpClient(services);
-                    }).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: UseTheRealServerWebHttpClient).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
@@ -111,11 +103,7 @@ public partial class ServerSideHttpClientTests
     public async Task ServerSideHttpClient_Should_ShareOneTransportAcrossScopes()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
-                    {
-                        services.AddIntegrationApiOnlyTestsServices();
-                        UseTheRealServerWebHttpClient(services);
-                    }).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: UseTheRealServerWebHttpClient).Start(TestContext.CancellationToken);
 
         var transports = new List<HttpMessageHandler>();
 
@@ -145,11 +133,7 @@ public partial class ServerSideHttpClientTests
     public async Task PrerenderStateService_Should_BeOneInstancePerScope()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
-                    {
-                        services.AddIntegrationApiOnlyTestsServices();
-                        UseTheRealServerWebHttpClient(services);
-                    }).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: UseTheRealServerWebHttpClient).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
@@ -167,11 +151,7 @@ public partial class ServerSideHttpClientTests
     public async Task ServerWebSettings_Should_BeTheValidatedOptionsInstance()
     {
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
-                    {
-                        services.AddIntegrationApiOnlyTestsServices();
-                        UseTheRealServerWebHttpClient(services);
-                    }).Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: UseTheRealServerWebHttpClient).Start(TestContext.CancellationToken);
 
         Assert.AreSame(server.WebApp.Services.GetRequiredService<IOptions<ServerWebSettings>>().Value,
                        server.WebApp.Services.GetRequiredService<ServerWebSettings>());

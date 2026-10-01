@@ -37,19 +37,19 @@ public partial class AiChatPanelThemeUITests : AiChatPanelTestBase
 
         await using var server = new AppTestServer(Context);
 
-        await server.Build(services =>
+        await server.Build(configureTestServices: services =>
         {
             // The one and only fake in this test. See TestChatClient for why this seam - and not one of the
             // template's own interfaces - is the right place to cut.
             services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
         },
-        configuration =>
+        configureTestConfiguration: configuration =>
         {
             // Without a chat api key the AI agents are never registered and the panel would have nothing to talk to.
             configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-these-tests";
         }).Start(TestContext.CancellationToken);
 
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Home).ToString(),
+        await Page.GotoAsync(new Uri(server.WebAppAddress, PageUrls.Home).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         var htmlElement = Page.Locator("html");

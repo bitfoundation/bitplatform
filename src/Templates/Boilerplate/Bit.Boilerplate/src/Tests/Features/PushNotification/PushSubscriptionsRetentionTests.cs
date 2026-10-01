@@ -16,7 +16,7 @@ public class PushSubscriptionsRetentionTests
     public async Task EnforceRetention_Should_DeleteExpiredSubscriptions_AndKeepLiveOnes()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // Per-run device ids, so anything left behind is an inert orphan rather than a collision with the shared
         // development database.
@@ -46,16 +46,15 @@ public class PushSubscriptionsRetentionTests
 
     private async Task Subscribe(AppTestServer server, string deviceId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        await scope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+        await using var client = server.CreateAppClient();
+        await client.GetController<IPushNotificationController>()
             .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = $"channel-{deviceId}" }, TestContext.CancellationToken);
     }
 
     /// <summary>Backdated rather than waited out: Subscribe stamps an expiry a month ahead.</summary>
     private async Task Expire(AppTestServer server, string deviceId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         var expiredOn = scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow().AddMinutes(-1).ToUnixTimeSeconds();
 
@@ -66,7 +65,7 @@ public class PushSubscriptionsRetentionTests
 
     private async Task EnforceRetention(AppTestServer server)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         await scope.ServiceProvider.GetRequiredService<PushSubscriptionsRetentionJobRunner>()
             .EnforceRetention(TestContext.CancellationToken);
@@ -74,7 +73,7 @@ public class PushSubscriptionsRetentionTests
 
     private async Task<bool> Exists(AppTestServer server, string deviceId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         return await scope.ServiceProvider.GetRequiredService<AppDbContext>().PushNotificationSubscriptions
             .AnyAsync(sub => sub.DeviceId == deviceId, TestContext.CancellationToken);
@@ -84,7 +83,7 @@ public class PushSubscriptionsRetentionTests
     {
         try
         {
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
+            await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
             await scope.ServiceProvider.GetRequiredService<AppDbContext>().PushNotificationSubscriptions
                 .Where(sub => sub.DeviceId == deviceId)
