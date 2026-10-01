@@ -33,10 +33,10 @@ public class AttachmentReplacementTests
     public async Task ReUploadingAProfilePicture_Should_ReplaceItInPlace()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         try
         {
@@ -74,17 +74,17 @@ public class AttachmentReplacementTests
     public async Task AnUploadRejectedAfterValidation_Should_LeaveTheExistingPictureUntouched()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         try
         {
             await Upload(httpClient, SolidImage(MagickColors.Red));
             var before = await Download(httpClient, userId);
 
-            // The DI HttpClient turns a non-success response into an exception (See ExceptionDelegatingHandler); the
+            // The app's HttpClient turns a non-success response into an exception (See ExceptionDelegatingHandler); the
             // ImageTooSmall body is plain text, so the status code is what identifies the rejection.
             var rejected = await Assert.ThrowsExactlyAsync<HttpRequestException>(
                 () => Upload(httpClient, SolidImage(MagickColors.Blue, 100)),
@@ -117,10 +117,10 @@ public class AttachmentReplacementTests
     public async Task AnUndecodableUpload_Should_BeRejectedAsBadRequest_AndLeaveTheExistingPictureUntouched()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         try
         {
@@ -128,7 +128,7 @@ public class AttachmentReplacementTests
             var before = await Download(httpClient, userId);
 
             // Deterministic non-image bytes, posted with a spoofed image/png content type: the server must judge the
-            // content, not the caller-controlled header. The DI HttpClient turns the non-success response into an
+            // content, not the caller-controlled header. The app's HttpClient turns the non-success response into an
             // exception (See ExceptionDelegatingHandler); the rejection body is plain text, so the status identifies it.
             var garbageBytes = new byte[1024];
             Array.Fill(garbageBytes, (byte)'x');
@@ -157,7 +157,7 @@ public class AttachmentReplacementTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -199,7 +199,7 @@ public class AttachmentReplacementTests
 
     private async Task<int> CountAttachments(AppTestServer server, Guid attachmentId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Attachments.CountAsync(att => att.Id == attachmentId, TestContext.CancellationToken);
@@ -207,7 +207,7 @@ public class AttachmentReplacementTests
 
     private async Task<bool> HasProfilePicture(AppTestServer server, Guid userId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Set<User>().Where(u => u.Id == userId).Select(u => u.HasProfilePicture).SingleAsync(TestContext.CancellationToken);

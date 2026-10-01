@@ -29,37 +29,36 @@ public partial class DashboardBroadcastTenantScopeTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        // IStorageService is registered per scope, so each scope holds its own signed-in identity and every typed API
-        // client resolved from it calls the server as that user (See TenantInvitationIsolationTests).
-        await using var storeScope = server.WebApp.Services.CreateAsyncScope();
-        await using var otherScope = server.WebApp.Services.CreateAsyncScope();
+        // Each client holds its own signed-in identity, and every controller created from it calls the api as that user.
+        await using var storeClient = server.CreateAppClient();
+        await using var otherClient = server.CreateAppClient();
 
         // ---- Tenant A: the seeded "store" tenant and its seeded t-admin ----
-        var requiresTwoFactor = await storeScope.ServiceProvider.GetRequiredService<AuthManager>()
+        var requiresTwoFactor = await storeClient.AuthManager
             .SignIn(new() { Email = StoreAdminEmail, Password = Password }, TestContext.CancellationToken);
 
         Assert.IsFalse(requiresTwoFactor, $"'{StoreAdminEmail}' is not expected to have two factor authentication enabled.");
 
         // ---- Tenant B: a per-run tenant, whose creator becomes its t-admin with an accepted membership ----
-        var (otherEmail, _) = await TestAccountUtils.CreateAndSignIn(server, otherScope, TestContext.CancellationToken);
+        var (otherEmail, _) = await TestAccountUtils.CreateAndSignIn(otherClient, TestContext.CancellationToken);
 
-        await TestAccountUtils.Elevate(server, otherScope, otherEmail, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(otherClient, otherEmail, TestContext.CancellationToken);
 
-        var otherTenant = await otherScope.ServiceProvider.GetRequiredService<ITenantController>()
+        var otherTenant = await otherClient.GetController<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
-        Assert.IsTrue(await otherScope.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(otherTenant.Id, TestContext.CancellationToken),
+        Assert.IsTrue(await otherClient.AuthManager.SwitchTenant(otherTenant.Id, TestContext.CancellationToken),
             "The creator must be able to switch into the tenant she just created, otherwise her token carries no tenant and nothing below is tenant scoped.");
 
         // Connected only now, after both identities are final: the group a connection joins comes from the tenant claim
         // of the token it handshakes with.
-        await using var storeClient = await ConnectAsSignedInClient(server, storeScope);
-        await using var otherClient = await ConnectAsSignedInClient(server, otherScope);
+        await using var storeDashboard = await ConnectToTheHub(storeClient);
+        await using var otherDashboard = await ConnectToTheHub(otherClient);
 
-        var storeCategories = storeScope.ServiceProvider.GetRequiredService<ICategoryController>();
-        var otherCategories = otherScope.ServiceProvider.GetRequiredService<ICategoryController>();
+        var storeCategories = storeClient.GetController<ICategoryController>();
+        var otherCategories = otherClient.GetController<ICategoryController>();
 
         CategoryDto? createdInOther = null, createdInStore = null;
 
@@ -68,27 +67,27 @@ public partial class DashboardBroadcastTenantScopeTests
             // ---- Tenant B changes its catalog ----
             createdInOther = await otherCategories.Create(NewCategory(), TestContext.CancellationToken);
 
-            await WaitUntil(() => otherClient.DashboardMessages >= 1,
+            await WaitUntil(() => otherDashboard.Messages >= 1,
                 "The tenant whose own catalog changed never received DASHBOARD_DATA_CHANGED, so its open dashboards keep showing stale numbers until they are reloaded by hand.");
 
             // The two clients are served by one Publish call on one server, so a message for the store client is not
             // still in flight once the other client has its own; this grace period only covers a slower socket.
             await Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
 
-            Assert.AreEqual(0, storeClient.DashboardMessages,
+            Assert.AreEqual(0, storeDashboard.Messages,
                 "A category created inside another tenant reached the store tenant's signed-in client. DASHBOARD_DATA_CHANGED makes every receiver re-query the three dashboard endpoints, so this is a cross-tenant wake-up for data the receiver cannot even see.");
 
-            Assert.AreEqual(1, otherClient.DashboardMessages, "One create must publish exactly one message.");
+            Assert.AreEqual(1, otherDashboard.Messages, "One create must publish exactly one message.");
 
             // ---- And the reverse direction, which is also the non-vacuity check ----
             createdInStore = await storeCategories.Create(NewCategory(), TestContext.CancellationToken);
 
-            await WaitUntil(() => storeClient.DashboardMessages >= 1,
+            await WaitUntil(() => storeDashboard.Messages >= 1,
                 "The store tenant's client received nothing for a change made inside its own tenant - the realtime dashboard is simply broken, which would make the assertion above pass for the wrong reason.");
 
             await Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
 
-            Assert.AreEqual(1, otherClient.DashboardMessages,
+            Assert.AreEqual(1, otherDashboard.Messages,
                 "The other tenant's client must be left alone by the store tenant's change as well; a group that only happens to be right in one direction is not scoping anything.");
         }
         finally
@@ -105,23 +104,23 @@ public partial class DashboardBroadcastTenantScopeTests
     private CategoryDto NewCategory() => new() { Id = Guid.CreateSequentialGuid(), Name = $"dash-cat-{Guid.NewGuid():N}", Color = "#336699" };
 
     /// <summary>
-    /// A real hub connection for <paramref name="scope"/>, counting the <c>DASHBOARD_DATA_CHANGED</c> it receives.
+    /// A real hub connection for <paramref name="client"/>, counting the <c>DASHBOARD_DATA_CHANGED</c> it receives.
     /// </summary>
-    private async Task<SignedInClient> ConnectAsSignedInClient(AppTestServer server, AsyncServiceScope scope)
+    private async Task<DashboardMessages> ConnectToTheHub(AppClient client)
     {
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IAuthTokenProvider>().GetAccessToken();
+        var accessToken = await client.Services.GetRequiredService<IAuthTokenProvider>().GetAccessToken();
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "An anonymous connection joins no group at all, which would make this test assert nothing.");
 
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.WebAppServerAddress, "app-hub"), options =>
+            .WithUrl(new Uri(client.Server.ApiAppAddress, "app-hub"), options =>
             {
                 options.Transports = HttpTransportType.WebSockets;
                 options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
             })
             .Build();
 
-        var client = new SignedInClient(hubConnection);
+        var dashboardMessages = new DashboardMessages(hubConnection);
 
         await hubConnection.StartAsync(TestContext.CancellationToken);
 
@@ -130,7 +129,7 @@ public partial class DashboardBroadcastTenantScopeTests
         // join, so awaiting it is a deterministic gate on group membership rather than a sleep.
         await hubConnection.InvokeAsync(SharedAppMessages.ChangeAuthenticationState, accessToken, TestContext.CancellationToken);
 
-        return client;
+        return dashboardMessages;
     }
 
     private async Task WaitUntil(Func<bool> condition, string message)
@@ -146,13 +145,13 @@ public partial class DashboardBroadcastTenantScopeTests
         }
     }
 
-    /// <summary>A signed-in client's hub connection, with the <c>DASHBOARD_DATA_CHANGED</c> messages it received.</summary>
-    private sealed class SignedInClient : IAsyncDisposable
+    /// <summary>A hub connection, with the <c>DASHBOARD_DATA_CHANGED</c> messages it received.</summary>
+    private sealed class DashboardMessages : IAsyncDisposable
     {
         private readonly HubConnection hubConnection;
-        private int dashboardMessages;
+        private int messages;
 
-        public SignedInClient(HubConnection hubConnection)
+        public DashboardMessages(HubConnection hubConnection)
         {
             this.hubConnection = hubConnection;
 
@@ -161,12 +160,12 @@ public partial class DashboardBroadcastTenantScopeTests
             {
                 if (message is SharedAppMessages.DASHBOARD_DATA_CHANGED)
                 {
-                    Interlocked.Increment(ref dashboardMessages);
+                    Interlocked.Increment(ref messages);
                 }
             });
         }
 
-        public int DashboardMessages => Volatile.Read(ref dashboardMessages);
+        public int Messages => Volatile.Read(ref messages);
 
         public ValueTask DisposeAsync() => hubConnection.DisposeAsync();
     }

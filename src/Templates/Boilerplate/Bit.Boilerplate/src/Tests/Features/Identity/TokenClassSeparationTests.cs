@@ -32,17 +32,17 @@ public class TokenClassSeparationTests
     public async Task AnAccessToken_Should_NotBeAcceptedAtTheRefreshEndpoint()
     {
         await using var server = await StartServerAndSignIn();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+        var storageService = client.Services.GetRequiredService<IStorageService>();
         var accessToken = await storageService.GetItem("access_token");
         Assert.IsNotNull(accessToken, "Signing in should have stored an access token.");
 
         var sessionId = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).GetSessionId();
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(
-            () => scope.ServiceProvider.GetRequiredService<IIdentityController>()
+            () => client.GetController<IIdentityController>()
                        .Refresh(new() { RefreshToken = accessToken }, TestContext.CancellationToken),
             "An access token presented as a refresh token must be rejected. The two JWTs differ only in `aud`.");
 
@@ -61,11 +61,11 @@ public class TokenClassSeparationTests
     public async Task ARefreshToken_Should_NotAuthenticateAnApiCall()
     {
         await using var server = await StartServerAndSignIn();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var storageService = client.Services.GetRequiredService<IStorageService>();
+        var userController = client.GetController<IUserController>();
 
         // Sanity: with the real access token this call succeeds, so a failure below is about the token class and not
         // about the request being malformed or the account being unusable.
@@ -86,13 +86,13 @@ public class TokenClassSeparationTests
     private async Task<AppTestServer> StartServerAndSignIn()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 
-    private Task SignIn(AsyncServiceScope scope)
+    private Task SignIn(AppClient client)
     {
-        return scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        return client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
@@ -101,7 +101,7 @@ public class TokenClassSeparationTests
 
     private async Task<bool> SessionExists(AppTestServer server, Guid sessionId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.UserSessions.AnyAsync(us => us.Id == sessionId, TestContext.CancellationToken);

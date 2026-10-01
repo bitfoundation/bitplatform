@@ -37,6 +37,13 @@ public class BitModalService : BitModalServiceBase<BitModalReference, BitModalPa
         return GetEffectiveParameters(modalReference)?.CanClose;
     }
 
+    protected internal override BitModalParameters CopyParameters(BitModalParameters parameters)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+
+        return parameters.Copy();
+    }
+
     protected override RenderFragment BuildModalFragment(BitModalReference modalReference, RenderFragment content)
     {
         return new RenderFragment(builder =>
