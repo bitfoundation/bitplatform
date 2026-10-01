@@ -93,6 +93,7 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           package: .
+          clean: false
 
 #if (cloudflare == true)
       - name: Purge Cloudflare cache
@@ -159,6 +160,7 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.API_AZURE_PUBLISH_PROFILE }}
           package: .
+          clean: false
 #endif
 
   build_blazor_hybrid_windows:

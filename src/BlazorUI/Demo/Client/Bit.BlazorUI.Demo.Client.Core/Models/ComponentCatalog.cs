@@ -458,7 +458,7 @@ public static class ComponentCatalog
         ["Image"] = "An image with fit, shape and responsive sources, loading states and a fallback.",
         ["Label"] = "Gives a name to a control or a group of controls.",
         ["Link"] = "Navigates elsewhere, inside the app or out of it.",
-        ["MediaQuery"] = "Reports the library's breakpoints to your component as a parameter.",
+        ["MediaQuery"] = "Renders content, or reports a state, by what a media query matches.",
         ["Overlay"] = "Covers the page or a container, catching its clicks to put the emphasis on what it hosts.",
         ["Params"] = "Cascades shared parameter objects so components inherit common defaults.",
         ["PullToRefresh"] = "Adds pull-down-to-refresh to a page or a scrolling element.",

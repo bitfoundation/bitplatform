@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitSplitter"/> component.
@@ -218,9 +218,7 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
 
         if (Dir.HasValue)
         {
-            // Dir reads through to the cascading direction while it has no value of its own, so it goes back to no
-            // value rather than to the direction it happened to read, which would pin that direction in its place.
-            bitSplitter.TakeFromCascade(nameof(Dir), Dir, static s => s.Dir, static (s, v) => s.Dir = v, original: null);
+            bitSplitter.TakeFromCascade(nameof(Dir), Dir, static s => s.Dir, static (s, v) => s.Dir = v);
         }
 
         if (ForceAnimation.HasValue)
