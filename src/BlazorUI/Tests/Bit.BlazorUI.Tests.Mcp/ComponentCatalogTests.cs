@@ -361,6 +361,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitCollapse", "BitCollapseParams")]
     [DataRow("BitMediaQuery", "BitMediaQueryParams")]
     [DataRow("BitLabel", "BitLabelParams")]
+    [DataRow("BitPullToRefresh", "BitPullToRefreshParams")]
     [DataRow("BitLink", "BitLinkParams")]
     [DataRow("BitImage", "BitImageParams")]
     [DataRow("BitShimmer", "BitShimmerParams")]
