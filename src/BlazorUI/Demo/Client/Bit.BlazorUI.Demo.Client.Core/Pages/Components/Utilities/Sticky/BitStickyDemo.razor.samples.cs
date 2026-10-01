@@ -530,33 +530,6 @@ private bool isStickyEnabled = true;";
         border: 1px solid var(--bit-clr-brd-pri);
     }
 
-    .bar {
-        padding: 0.5rem;
-        font-weight: 600;
-    }
-</style>
-
-<div class=""vertical-container""
-     style=""--bit-Sticky-offset-top: 0.5rem; --bit-Sticky-background: var(--bit-clr-bg-sec); --bit-Sticky-shadow-top: 0 6px 12px -4px var(--bit-clr-pri);"">
-    <BitSticky ElevateOnStuck Class=""bar"">Styled by the container</BitSticky>
-    <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
-    <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
-    <BitSticky ElevateOnStuck Class=""bar"">The next section takes over</BitSticky>
-    <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
-    <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
-    <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
-</div>";
-
-    private readonly string example12RazorCode = @"
-<style>
-    .vertical-container {
-        height: 12rem;
-        overflow: auto;
-        padding: 0.5rem;
-        max-width: 32rem;
-        border: 1px solid var(--bit-clr-brd-pri);
-    }
-
     .sticky {
         padding: 0.5rem;
         color: var(--bit-clr-fg-pri);
@@ -584,13 +557,13 @@ private bool isStickyEnabled = true;";
         <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
     </div>
 </BitParams>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private readonly BitStickyParams[] stickyParams =
 [
     new() { ElevateOnStuck = true, Top = ""0.5rem"" }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .vertical-container {
         height: 12rem;
@@ -627,7 +600,7 @@ private readonly BitStickyParams[] stickyParams =
     <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
 </div>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .horizontal-container {
         gap: 1rem;

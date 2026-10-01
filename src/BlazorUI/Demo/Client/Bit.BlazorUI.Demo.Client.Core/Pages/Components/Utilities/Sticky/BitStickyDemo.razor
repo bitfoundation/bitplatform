@@ -282,26 +282,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="CSS variables" RazorCode="@example11RazorCode" Id="example11">
-        <div>
-            The public <code>--bit-Sticky-*</code> variables (listed below) inherit, so one set on a scrolling container - or
-            on <code>:root</code> - re-tunes every sticky inside it: here the gap every Top sticky keeps and the surface and
-            shadow of the elevated ones. A parameter set on the component still wins.
-        </div>
-        <br />
-        <div class="vertical-container"
-             style="--bit-Sticky-offset-top: 0.5rem; --bit-Sticky-background: var(--bit-clr-bg-sec); --bit-Sticky-shadow-top: 0 6px 12px -4px var(--bit-clr-pri);">
-            <BitSticky ElevateOnStuck Class="bar">Styled by the container</BitSticky>
-            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
-            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
-            <BitSticky ElevateOnStuck Class="bar">The next section takes over</BitSticky>
-            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
-            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
-            <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             <b>BitParams</b> with a <b>BitStickyParams</b> sets defaults for every sticky under it - say, elevated section
             headers with the same offset. A sticky's own value wins (the last one opts out of <b>ElevateOnStuck</b>).
@@ -323,7 +304,7 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div>
             <b>Style</b> and <b>Class</b> reach the root, which both sticks and holds the content, so a background, border or
             shadow set here travels and pins with it. For a look that appears only while pinned, use <b>StuckClass</b>,
@@ -349,7 +330,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>
             In a right-to-left container <b>Start</b> is the right edge and <b>End</b> the left one, with nothing about the
             markup changing.
