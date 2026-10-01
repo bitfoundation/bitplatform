@@ -1,80 +1,47 @@
 ﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
-.basic-container {
-    width: 100%;
-    cursor: grab;
-    height: 500px;
+// The surface every example swipes on. The trap paints nothing, so the boxes carry the theme's own colors.
+.box {
+    width: 250px;
+    height: 250px;
     display: flex;
+    padding: 0.5rem;
     user-select: none;
+    text-align: center;
+    border-radius: 0.5rem;
     align-items: center;
+    box-sizing: border-box;
     flex-direction: column;
     justify-content: center;
-    border: 1px solid lightgray;
+    color: $bit-color-foreground-primary;
+    border: 1px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-primary;
+
+    &.tall {
+        width: 100%;
+        height: 500px;
+    }
+
+    &.wide {
+        width: 100%;
+        height: 160px;
+    }
+
+    &.small {
+        width: 200px;
+        height: 120px;
+    }
 }
 
-// bit-stp-swp is put on the trap for as long as a swipe is actually being trapped.
-.bit-stp-swp .basic-container {
-    cursor: grabbing;
-}
-
-.lock-boxes {
+.boxes {
     gap: 1rem;
     display: flex;
     flex-wrap: wrap;
 }
 
-.lock-container {
-    width: 250px;
-    cursor: grab;
-    height: 250px;
-    display: flex;
-    user-select: none;
-    align-items: center;
-    flex-direction: column;
-    justify-content: center;
-    border: 1px solid lightgray;
-}
-
-.panel-container {
-    width: 100%;
-    height: 300px;
-    overflow: hidden;
-    user-select: none;
-    position: relative;
-    border: 1px solid lightgray;
-
-    button {
-        padding: 0.5rem;
-    }
-
-    .panel {
-        left: 0;
-        color: black;
-        width: 200px;
-        cursor: grab;
-        inset-block: 0;
-        position: absolute;
-        background-color: lightgray;
-        transform: translateX(-100%);
-
-        &.open {
-            transform: translateX(0);
-        }
-
-        .panel-trap {
-            gap: 1rem;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background-color: gray;
-        }
-    }
-}
-
 .list-container {
     gap: 4px;
     width: 100%;
-    color: black;
     height: 300px;
     display: flex;
     overflow-y: auto;
@@ -82,7 +49,7 @@
     overflow-x: hidden;
     position: relative;
     flex-direction: column;
-    border: 1px solid lightgray;
+    border: 1px solid $bit-color-border-secondary;
 
     .row {
         min-height: 40px;
@@ -91,20 +58,22 @@
 
     .delete {
         width: 60px;
-        color: white;
         height: 100%;
         padding: 4px;
         position: absolute;
-        background-color: red;
+        box-sizing: border-box;
+        color: $bit-color-error-foreground;
+        background-color: $bit-color-error;
     }
 
     .row-trap {
         width: 100%;
         height: 100%;
-        cursor: grab;
         padding: 4px;
         position: absolute;
-        background-color: gray;
+        box-sizing: border-box;
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-tertiary;
     }
 }
 
@@ -116,7 +85,7 @@
     border-radius: 36px;
     border: 16px solid #333;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    background-color: $bit-color-foreground-secondary;
+    background-color: $bit-color-background-primary;
 
     .screen {
         width: 100%;
@@ -152,22 +121,20 @@
     }
 
     .panel {
-        color: black;
-        cursor: grab;
+        width: 200px;
         inset-block: 0;
         user-select: none;
         position: absolute;
-        background-color: lightgray;
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-tertiary;
 
         &.left {
             left: 0;
-            width: 200px;
             transform: translateX(-100%);
         }
 
         &.right {
             right: 0;
-            width: 200px;
             transform: translateX(100%);
         }
 
@@ -178,7 +145,21 @@
             padding-top: 0.2rem;
             padding-left: 0.8rem;
             flex-direction: column;
-            background-color: gray;
         }
+    }
+}
+
+// The class lands on the trap's root, which this page's scope attribute does not reach - the plain wrapper it
+// sits in anchors the rule. bit-stp-swp is on the root for as long as a swipe is trapped.
+.boxes ::deep .custom-trap {
+    border-radius: 0.5rem;
+    outline: 2px dashed $bit-color-primary;
+
+    &.bit-stp-swp {
+        outline-style: solid;
+    }
+
+    &.bit-stp-swp .box {
+        background-color: $bit-color-primary-tint;
     }
 }

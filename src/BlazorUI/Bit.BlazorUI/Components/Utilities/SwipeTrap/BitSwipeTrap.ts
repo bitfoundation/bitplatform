@@ -12,6 +12,7 @@ namespace BitBlazorUI {
             orientationLock: BitSwipeOrientation,
             touchOnly: boolean,
             skipSelector: string | null,
+            keyboardTrigger: boolean,
             dotnetObj: DotNetObject) {
 
             // A setup for an id that is still registered would leave the previous listeners attached and
@@ -94,6 +95,7 @@ namespace BitBlazorUI {
                 samples = [];
                 orientation = BitSwipeOrientation.None;
                 element.classList.remove('bit-stp-swp');
+                window.removeEventListener('keydown', onEscape, true);
             };
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
@@ -136,6 +138,10 @@ namespace BitBlazorUI {
                 bcr = element.getBoundingClientRect();
 
                 samples = [{ t: startTime, x: startX, y: startY }];
+
+                // Escape puts a swipe back the way it puts back a native drag-and-drop. The key is listened for on
+                // the window, since the focus is wherever it was before the press, and only while a gesture is on.
+                window.addEventListener('keydown', onEscape, true);
 
                 await dotnetObj.invokeMethodAsync('OnStart', startX, startY, pointerType);
             };
@@ -291,6 +297,13 @@ namespace BitBlazorUI {
                 if (isTouchEvent(e)) {
                     if (!getTouch(e)) return; // another finger was canceled, not the tracked one
                 } else if ((e as PointerEvent).pointerId !== pointerId) return;
+
+                await cancelGesture(e);
+            };
+
+            // A gesture that is called off rather than released: the browser took it over, the pointer left the box
+            // before it was trapped, or Escape put it back. Nothing triggers, and OnEnd reports it as canceled.
+            const cancelGesture = async (e: Event): Promise<void> => {
                 const sX = startX;
                 const sY = startY;
                 const dX = diffX;
@@ -303,6 +316,44 @@ namespace BitBlazorUI {
                 reset();
 
                 await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, dX, dY, 0, 0, pT, true, dur);
+            };
+
+            // The press is still down after an Escape, so the release and the click that follow it would land as a
+            // gesture's - the release finds no gesture any more, and the click of a trapped swipe is swallowed as ever.
+            // The key goes no further: it was the swipe's, not the dialog's or the overlay's the trap may sit in.
+            const onEscape = async (e: KeyboardEvent): Promise<void> => {
+                if (e.key !== 'Escape' || !active) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                await cancelGesture(e);
+            };
+
+            // The keyboard's alternative to the swipe: an arrow key pressed on the trap itself triggers in its own
+            // direction. Only the trap's own keys are taken - a key pressed on a descendant is the descendant's, a
+            // modified one is the browser's, a held one is one swipe rather than a stream of them - and only along
+            // an axis a lock leaves to the trap. The direction values are the ones of BitSwipeDirection.
+            const onKeyDown = (e: KeyboardEvent) => {
+                if (!keyboardTrigger || active) return;
+                if (e.target !== element) return;
+                if (e.defaultPrevented || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                if (element.classList.contains('bit-dis')) return;
+
+                const horizontal = orientationLock !== BitSwipeOrientation.Vertical;
+                const vertical = orientationLock !== BitSwipeOrientation.Horizontal;
+
+                let direction = -1;
+                if (horizontal && e.key === 'ArrowRight') direction = 0;
+                else if (horizontal && e.key === 'ArrowLeft') direction = 1;
+                else if (vertical && e.key === 'ArrowUp') direction = 2;
+                else if (vertical && e.key === 'ArrowDown') direction = 3;
+                if (direction < 0) return;
+
+                // The arrow keys scroll the page by default, which is not what a key the trap answers to should do.
+                e.preventDefault();
+
+                dotnetObj.invokeMethodAsync('OnKeyTrigger', direction);
             };
 
             const onLeave = async (e: PointerEvent): Promise<void> => {
@@ -347,6 +398,7 @@ namespace BitBlazorUI {
             element.addEventListener('pointercancel', onCancel);
             element.addEventListener('pointerleave', onLeave);
             element.addEventListener('dragstart', onDragStart);
+            element.addEventListener('keydown', onKeyDown);
             // The click is swallowed in the capture phase so it never reaches the child it was aimed at.
             element.addEventListener('click', onClick, true);
 
@@ -366,6 +418,7 @@ namespace BitBlazorUI {
                 element.removeEventListener('pointercancel', onCancel);
                 element.removeEventListener('pointerleave', onLeave);
                 element.removeEventListener('dragstart', onDragStart);
+                element.removeEventListener('keydown', onKeyDown);
                 element.removeEventListener('click', onClick, true);
 
                 reset(); // a dispose mid-gesture must not leave the swiping class behind

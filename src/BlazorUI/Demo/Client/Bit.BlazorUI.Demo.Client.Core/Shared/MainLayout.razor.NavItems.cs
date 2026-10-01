@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout
 {
@@ -152,7 +152,7 @@ public partial class MainLayout
                 new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
                 new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
-                new() { Text = "SwipeTrap", Url = "/components/swipetrap" },
+                new() { Text = "SwipeTrap", Url = "/components/swipetrap", Description = "Gesture, Swipeable", Data = "Swipe, Drag, Pan, Flick, Touch, Pointer, SwipeArea, Hammer" },
                 new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase" },
             ],
         },
