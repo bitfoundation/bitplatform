@@ -7,7 +7,7 @@
 <DemoPage Name="Sticky"
           SecondaryNames="@(["Affix"])"
           Description="BitSticky keeps its content in the normal flow until the scroll carries it to an edge of its nearest scrolling container, where it stays while the rest passes. The edge is a Position or exact offsets, the root can be any tag, and since CSS has no event for the moment an element pins, the component derives one - for callbacks, stuck-only styling and a theme shadow. ScrollPadding keeps what the browser scrolls into view out from under it."
-          Notes="A sticky pins within its nearest scrolling ancestor and only travels inside its own parent: any ancestor with an overflow other than visible becomes the boundary, even one that does not scroll, and a parent no taller than the element - or a flex parent stretching it - leaves it no room to stick."
+          Notes="A sticky pins within its nearest scrolling ancestor and only travels inside its own parent: any ancestor with an overflow other than visible becomes the boundary, even one that does not scroll, and a parent no taller than the element - or a flex parent stretching it - leaves it no room to stick. For a page app bar that hides while scrolling down and reveals itself on the way back up, use BitHeader (Reveal)."
           Parameters="componentParameters"
           CssVariables="componentCssVariables"
           PublicMembers="componentPublicMembers"
@@ -18,8 +18,7 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             With nothing set, <b>BitSticky</b> pins to the top of its nearest scrolling container - a pane with its own
-            overflow here, or the page itself. It only travels within its own parent, so a parent no taller than the
-            element leaves it no room to stick.
+            overflow here, or the page itself.
         </div>
         <br />
         <div class="vertical-container">

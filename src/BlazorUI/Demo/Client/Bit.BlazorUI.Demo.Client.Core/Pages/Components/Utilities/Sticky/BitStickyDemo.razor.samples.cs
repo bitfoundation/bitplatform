@@ -188,11 +188,11 @@ private bool isStuck;";
     }
 
     .edge-shadow.bit-stk-stc-top {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        box-shadow: var(--bit-shd-appbar-top);
     }
 
     .edge-shadow.bit-stk-stc-btm {
-        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4);
+        box-shadow: var(--bit-shd-appbar-bottom);
     }
 </style>
 
