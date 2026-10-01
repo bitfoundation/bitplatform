@@ -440,21 +440,21 @@ function Get-WebAppVersions {
         throw 'Microsoft Edge is not installed, and it is what reads the web apps'' versions.'
     }
 
-    # A port nothing listens on: Edge starts even when its debugging port is taken, and the endpoint answering on that
-    # port would then be some other browser, with its own cache and service workers.
-    $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
-    $listener.Start()
-    $port = $listener.LocalEndpoint.Port
-    $listener.Stop()
-    $userDataDir = Join-Path ([IO.Path]::GetTempPath()) "test-platform-edge-$PID"
-    Start-Process $edge -ArgumentList '--headless=new', "--remote-debugging-port=$port", "--user-data-dir=`"$userDataDir`"", '--window-size=1440,900', '--no-first-run', 'about:blank'
+    # Unique, so that no other run's folder name starts with it: the browser's processes are found by it below.
+    $userDataDir = Join-Path ([IO.Path]::GetTempPath()) "test-platform-edge-$([guid]::NewGuid().ToString('N'))"
+    # Port 0: Edge picks a free one and writes it to DevToolsActivePort in the profile folder. A fixed port may be held by
+    # a browser left from an earlier run, and Edge starts anyway, so whatever answered there would be that other browser,
+    # with its own cache and service workers.
+    Start-Process $edge -ArgumentList '--headless=new', '--remote-debugging-port=0', "--user-data-dir=`"$userDataDir`"", '--window-size=1440,900', '--no-first-run', 'about:blank'
 
     try {
+        $port = $null
         $endpoint = $null
         $deadline = (Get-Date).AddSeconds(30)
 
         while (-not $endpoint -and (Get-Date) -lt $deadline) {
             try {
+                $port = (Get-Content (Join-Path $userDataDir 'DevToolsActivePort') -TotalCount 1 -ErrorAction Stop).Trim()
                 $endpoint = Invoke-RestMethod "http://localhost:$port/json/version" -TimeoutSec 5
             }
             catch {
@@ -463,7 +463,7 @@ function Get-WebAppVersions {
         }
 
         if (-not $endpoint) {
-            throw "Headless Edge did not open its CDP endpoint on port $port."
+            throw ($port ? "Headless Edge did not answer on its CDP port $port." : 'Headless Edge did not write its CDP port to DevToolsActivePort.')
         }
 
         foreach ($app in Get-WebApps) {
