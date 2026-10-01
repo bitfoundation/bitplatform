@@ -924,6 +924,99 @@
             }
         }
 
+        private static _layerEscapes: { elementId: string, controller: AbortController }[] = [];
+
+        // Dismisses a layer that covers the page (an overlay) on Escape through the OnEscape callback - the
+        // keyboard's way of doing what a click on the layer does. Unlike a dialog, such a layer does not take the
+        // focus when it opens, so the key is listened for on the window rather than on the element: the focus is
+        // most often still on the control that opened it, behind the layer.
+        // A press is the layer's only when nothing had the better claim to it: an input method composing, an open
+        // callout anywhere in the page (a dropdown or a menu closes its own popup on the same key), a control that
+        // answered the key by preventing its default, or another surface the focus is inside of - a dialog or a
+        // panel opened over the layer, or a modal opened from inside its content. With the focus outside of every surface, only the
+        // layer watched last - the one opened last, so the topmost - answers, and one press closes one layer. The
+        // same goes for the focus inside a layer covering the page, among the layers covering the page: one opened
+        // over it has the say, not the layer the focus happens to be in. A
+        // layer that refuses the key (a blocking one) is watched all the same and says no in .NET, so that the
+        // press does not fall through to a layer underneath it.
+        public static watchLayerEscape(elementId: string, dotnetObj: DotNetObject) {
+            Utils.unwatchLayerEscape(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+            const claimed = new WeakSet<Event>();
+
+            (element as any).__bitEscapeRoot = true;
+
+            // Read in the capture phase, ahead of the listeners that let an open callout close itself - after which
+            // the stack of open callouts would no longer say there was one.
+            window.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                if (e.isComposing || Callouts.current.calloutId) {
+                    claimed.add(e);
+                }
+            }, { signal: controller.signal, capture: true });
+
+            window.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                if (claimed.has(e) || e.defaultPrevented) return;
+
+                // A dialog surface of the library already answered the key (Utils.setupSurfaceEscape).
+                if ((e as any).__bitSurfaceEscape) return;
+
+                const target = e.target as Node | null;
+
+                // A dialog the focus is inside of owns the key, unless it is part of what this layer hosts - a
+                // surface of the consumer's own the layer is the backdrop of - which the key closes along with it.
+                const dialog = target instanceof Element ? target.closest('[role="dialog"],[role="alertdialog"],dialog') : null;
+                if (dialog && !element.contains(dialog)) return;
+
+                const layers = Utils._layerEscapes;
+                const root = target ? Utils.nearestEscapeRoot(target) : null;
+                const rootCoversPage = root instanceof Element
+                                    && layers.some(l => l.elementId === root.id)
+                                    && Utils.coversPage(root.id);
+
+                if (root && rootCoversPage === false) {
+                    // A surface, or a layer scoped to an element, answers the presses made inside it.
+                    if (root !== element) return;
+                } else {
+                    // A layer covering the page is covered in turn by one opened over it, whatever the focus is
+                    // inside of: the topmost of those answers the press - or refuses it (a blocking one) - rather
+                    // than the layer underneath it.
+                    const candidates = root ? layers.filter(l => Utils.coversPage(l.elementId)) : layers;
+                    if (candidates[candidates.length - 1]?.elementId !== elementId) return;
+                }
+
+                dotnetObj.invokeMethodAsync('OnEscape');
+            }, { signal: controller.signal });
+
+            Utils._layerEscapes.push({ elementId, controller });
+        }
+
+        public static unwatchLayerEscape(elementId: string) {
+            const index = Utils._layerEscapes.findIndex(l => l.elementId === elementId);
+            if (index < 0) return;
+
+            Utils._layerEscapes[index].controller.abort();
+            Utils._layerEscapes.splice(index, 1);
+
+            const element = document.getElementById(elementId) as any;
+            if (element) {
+                delete element.__bitEscapeRoot;
+            }
+        }
+
+        // A layer fixed to the screen, rather than one placed over the element it was declared inside of.
+        private static coversPage(elementId: string) {
+            const element = document.getElementById(elementId);
+            return !!element && getComputedStyle(element).position === 'fixed';
+        }
+
         private static nearestEscapeRoot(node: Node): Node | null {
             let current: Node | null = node;
 

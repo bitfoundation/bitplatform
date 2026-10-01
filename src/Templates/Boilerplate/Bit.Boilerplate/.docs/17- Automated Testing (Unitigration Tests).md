@@ -382,7 +382,7 @@ The project includes GitHub Actions workflows that run tests automatically:
 
 - name: Upload Tests Artifact
   if: failure()
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with:
     name: tests-artifact
     path: ./src/Tests/TestResults

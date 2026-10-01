@@ -77,10 +77,13 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#if (aspire == true)-->
 -   **Build the project**: Run `dotnet build` in src/Server/Boilerplate.Server.AppHost project directory.
 -   **Run the project**: Run `aspire start`. If needed, you may use the Playwright MCP tools to interact with the `serverweb` resource running by aspire to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
--   **Expose the running app to remote devices**: `localhost` is unreachable from other devices, so use the public `*.devtunnels.ms` URL of the `web-dev-tunnel` resource that `aspire start` creates (read it from the aspire dashboard or the aspire MCP `list_resources` tool) instead of a `localhost` URL.
 <!--#else-->
 -   **Build the project**: Run `dotnet build` in src/Server/Boilerplate.Server.Web project directory.
 -   **Run the project**: Run `dotnet watch` in src/Server/Boilerplate.Server.Web project directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
+<!--#endif-->
+<!--#if (aspire == true && cloudflare == true)-->
+-   **Expose the running app to remote devices**: `localhost` is unreachable from other devices, so use the public URL of the `cloudflare-tunnel-web` resource that `aspire start` creates (a `*.trycloudflare.com` quick tunnel unless `cloudflare-tunnel-web-domain` is set; read it from the aspire dashboard or the aspire MCP `list_resources` tool) instead of a `localhost` URL.
+<!--#else-->
 -   **Expose the running app to remote devices**: `localhost` is unreachable from other devices, so create a dev tunnel with the `devtunnel` CLI (`devtunnel host -p 5030 --allow-anonymous`) and use the printed public `*.devtunnels.ms` URL instead of a `localhost` URL.
 <!--#endif-->
 -   **Control the running native (Blazor Hybrid) apps**: every hybrid head renders inside a WebView with remote debugging enabled, so the Android, iOS, Windows and macOS apps can be inspected and driven from the outside just like the web app:
