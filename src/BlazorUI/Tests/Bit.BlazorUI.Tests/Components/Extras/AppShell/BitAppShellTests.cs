@@ -1828,6 +1828,63 @@ public class BitAppShellTests : BunitTestContext
         Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeKeyboard");
     }
 
+    //  Scroll state
+
+    [TestMethod]
+    public void BitAppShellShouldNotTrackTheScrollStateByDefault()
+    {
+        RenderComponent<BitAppShell>();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.setupScrollState"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldTrackTheScrollStateOnceWhenTrackScrollStateIsSet()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.TrackScrollState, true);
+        });
+
+        component.Render();
+        component.Render();
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.AppShell.setupScrollState"];
+
+        Assert.AreEqual(1, invocations.Count);
+
+        // The shell's id, its root and its main container - the element that scrolls and the one marked.
+        Assert.AreEqual(component.Instance.UniqueId.ToString(), invocations[0].Arguments[0]?.ToString());
+        Assert.AreEqual(3, invocations[0].Arguments.Count);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldFollowTrackScrollStateFlippingAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        component.Render(parameters => parameters.Add(p => p.TrackScrollState, true));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.setupScrollState");
+
+        component.Render(parameters => parameters.Add(p => p.TrackScrollState, false));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeScrollState");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldStopTrackingTheScrollStateOnDispose()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.TrackScrollState, true);
+        });
+
+        component.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeScrollState");
+    }
+
     [TestMethod]
     public void BitAppShellShouldStopPersistingScrollWhenPersistScrollIsTurnedOffAfterRender()
     {
@@ -2497,6 +2554,7 @@ public class BitAppShellTests : BunitTestContext
         var shell = component.FindComponents<BitAppShell>()[0].Instance;
 
         Assert.IsTrue(shell.AutoGoToTop);
+        Assert.IsTrue(shell.TrackScrollState);
 
         InvokeLocationChanged(shell, "https://example.com/other");
 

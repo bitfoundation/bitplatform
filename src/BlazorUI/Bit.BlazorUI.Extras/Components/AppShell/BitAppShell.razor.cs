@@ -28,6 +28,10 @@ namespace Bit.BlazorUI;
 /// <c>--bit-AppShell-safe-area-top</c> / <c>-bottom</c> / <c>-start</c> / <c>-end</c>, which default to
 /// the device's own safe areas.
 /// <br />
+/// The states CSS cannot read off a length are marked as attributes of its root: <c>data-bit-ash-keyboard</c> while
+/// the on-screen keyboard is up (<see cref="AvoidKeyboard"/>), and <c>data-bit-ash-scrolled</c> and
+/// <c>data-bit-ash-scroll-direction</c> for its main container (<see cref="TrackScrollState"/>).
+/// <br />
 /// It prints at the length of its content rather than as the one screenful it shows.
 /// <br />
 /// While nothing on the page has focus, the keys that scroll a page - the arrows, Page Up/Down, Home/End and
@@ -62,6 +66,7 @@ public partial class BitAppShell : BitComponentBase
     private bool _paneSetup;
     private bool _autoScrolled;
     private bool _keyboardSetup;
+    private bool _scrollStateSetup;
     private bool _locationChanged;
     private string? _lastLocation;
     private ElementReference? _containerRef;
@@ -135,7 +140,9 @@ public partial class BitAppShell : BitComponentBase
     /// the height of the middle, which is what brings a bottom bar declared inside the shell back above
     /// the keyboard. The bottom safe area inset is given up for as long as the keyboard is open, since what
     /// that inset keeps clear is covered by the keyboard anyway and a band of background above it would be
-    /// room taken from the content for nothing.
+    /// room taken from the content for nothing. As the keyboard opens, a focused element inside the shell that the
+    /// shorter middle has left below its bottom edge is scrolled back into view, which the browser - having
+    /// placed it against the shell as it stood before - does not do.
     /// <br />
     /// The root is also marked with the <c>data-bit-ash-keyboard</c> attribute while the keyboard is up -
     /// which is what the chrome that hides itself while the reader is typing can be styled against - and
@@ -438,6 +445,24 @@ public partial class BitAppShell : BitComponentBase
     /// Custom CSS styles for different parts of the app shell.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitAppShellClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Marks the root of the app shell with whether its main container is scrolled away from the top and which way
+    /// it was last scrolled, so the chrome inside it can react in CSS alone.
+    /// </summary>
+    /// <remarks>
+    /// The root carries <c>data-bit-ash-scrolled</c> while the container is not at its top - what a header that
+    /// lifts itself off the content with a shadow is styled against - and <c>data-bit-ash-scroll-direction</c>,
+    /// <c>up</c> or <c>down</c>, which only flips once the container has moved a few pixels the other way, so the
+    /// jitter of a finger resting on the screen does not flip it. That is the header that slides away while the
+    /// reader scrolls down and comes back the moment they scroll up:
+    /// <c>.bit-ash[data-bit-ash-scroll-direction="down"] .header:not(:focus-within) { translate: 0 -100%; }</c> -
+    /// the <c>:focus-within</c> keeping a header the keyboard focus has moved into on the screen.
+    /// <br />
+    /// It is done in the browser, so it costs no round trip per frame the way the same thing built on
+    /// <see cref="OnScroll"/> would; the attributes are only written when they change.
+    /// </remarks>
+    [Parameter] public bool TrackScrollState { get; set; }
 
     /// <summary>
     /// The cascading value list to be provided for the children of the app shell.
@@ -773,6 +798,8 @@ public partial class BitAppShell : BitComponentBase
 
         await SetupKeyboard();
 
+        await SetupScrollState();
+
         if (_locationChanged && firstRender is false)
         {
             _locationChanged = false;
@@ -829,6 +856,25 @@ public partial class BitAppShell : BitComponentBase
         _dotnetObj ??= DotNetObjectReference.Create(this);
 
         await InvokeJs(() => _js.BitAppShellSetupKeyboard(UniqueId, RootElement, _dotnetObj));
+    }
+
+    // The scroll state markers, followed as the parameter flips like the keyboard tracking above. Nothing is sent
+    // back to .NET: the markers are attributes the page's own CSS reads.
+    private async Task SetupScrollState()
+    {
+        if (TrackScrollState == _scrollStateSetup) return;
+
+        if (TrackScrollState && _containerRef.HasValue is false) return;
+
+        _scrollStateSetup = TrackScrollState;
+
+        if (TrackScrollState is false)
+        {
+            await InvokeJs(() => _js.BitAppShellDisposeScrollState(UniqueId));
+            return;
+        }
+
+        await InvokeJs(() => _js.BitAppShellSetupScrollState(UniqueId, RootElement, _containerRef!.Value));
     }
 
     // The scroll reporting is driven by the very engine BitScrollablePane uses, so there is not a second
@@ -1091,6 +1137,11 @@ public partial class BitAppShell : BitComponentBase
         if (_keyboardSetup)
         {
             await InvokeJs(() => _js.BitAppShellDisposeKeyboard(UniqueId));
+        }
+
+        if (_scrollStateSetup)
+        {
+            await InvokeJs(() => _js.BitAppShellDisposeScrollState(UniqueId));
         }
 
         _dotnetObj?.Dispose();

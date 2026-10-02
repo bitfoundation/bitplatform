@@ -39,4 +39,14 @@ internal static class BitAppShellJsRuntimeExtensions
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.disposeKeyboard", id);
     }
+
+    internal static ValueTask BitAppShellSetupScrollState(this IJSRuntime jsRuntime, string id, ElementReference root, ElementReference container)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.setupScrollState", id, root, container);
+    }
+
+    internal static ValueTask BitAppShellDisposeScrollState(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.disposeScrollState", id);
+    }
 }

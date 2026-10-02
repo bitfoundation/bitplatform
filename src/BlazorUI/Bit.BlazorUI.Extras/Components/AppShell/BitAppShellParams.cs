@@ -151,6 +151,11 @@ public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     public BitAppShellClassStyles? Styles { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the root is marked with whether, and which way, the main container is being scrolled.
+    /// </summary>
+    public bool? TrackScrollState { get; set; }
+
 
 
     /// <summary>
@@ -307,6 +312,11 @@ public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
             bitAppShell.Styles = Styles;
 
             bitAppShell.StyleBuilder.Reset();
+        }
+
+        if (TrackScrollState.HasValue && bitAppShell.HasNotBeenSet(nameof(TrackScrollState)))
+        {
+            bitAppShell.TrackScrollState = TrackScrollState.Value;
         }
     }
 }

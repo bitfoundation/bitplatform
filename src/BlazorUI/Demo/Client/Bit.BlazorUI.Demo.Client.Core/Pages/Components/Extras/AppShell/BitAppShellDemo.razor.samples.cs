@@ -120,22 +120,45 @@ private async Task ReadOffset()
 }";
 
     private readonly string example5RazorCode = @"
+<style>
+    .headroom-head {
+        transition: translate var(--bit-mot-duration) var(--bit-mot-easing),
+                    box-shadow var(--bit-mot-duration) var(--bit-mot-easing);
+    }
+
+    /* Lifted off the content once the shell is scrolled... */
+    .headroom-shell[data-bit-ash-scrolled] .headroom-head {
+        box-shadow: var(--bit-shd-appbar-top);
+    }
+
+    /* ...and out of the way while the reader scrolls down, back the moment they scroll up
+       - or the moment the keyboard focus lands in it, so a focused control is never hidden. */
+    .headroom-shell[data-bit-ash-scroll-direction=""down""] .headroom-head:not(:focus-within) {
+        translate: 0 -100%;
+    }
+</style>
+
 <div>Top: <b>@scrollTop.ToString(""0"")</b> px (@((scrollPercent * 100).ToString(""0""))%)</div>
 <div>Direction: <b>@scrollDirection</b></div>
 <div>Phase: <b>@scrollPhase</b></div>
 <div>Reached: <b>@reachedEdge</b></div>
 
-<BitAppShell ReachOffset=""16""
+<BitAppShell Class=""headroom-shell""
+             TrackScrollState
+             ReachOffset=""16""
              OnScroll=""HandleScroll""
              OnScrollStart=""HandleScrollStart""
              OnScrollEnd=""HandleScrollEnd""
              OnReachedTop=""HandleReachedTop""
              OnReachedBottom=""HandleReachedBottom"">
-    <div class=""page-body"">
-        @foreach (var i in Enumerable.Range(1, 40))
-        {
-            <div class=""row"">Row @i</div>
-        }
+    <div class=""page"">
+        <div class=""page-head headroom-head"">Header</div>
+        <div class=""page-body"">
+            @foreach (var i in Enumerable.Range(1, 40))
+            {
+                <div class=""row"">Row @i</div>
+            }
+        </div>
     </div>
 </BitAppShell>";
     private readonly string example5CsharpCode = @"

@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class AppShell {
         private static STORE_KEY = 'bit-appshell-scrolls';
 
@@ -432,8 +432,17 @@ namespace BitBlazorUI {
 
                 if (inset === state.last) return;
 
+                const grew = inset > Math.max(0, state.last);
+
                 state.last = inset;
                 state.style.textContent = `.bit-ash[data-bit-ash-kbd="${id}"]{--bit-ash-keyboard-inset:${inset}px}`;
+
+                // The browser brings the focused field into view as the keyboard opens, but it does so against
+                // the shell as it stood before the line above shortened its middle - so a field it left just
+                // above the keyboard can now be below the bottom of the container, clipped out of sight.
+                if (grew) {
+                    AppShell.revealFocused(state.element);
+                }
 
                 // A marker for the CSS that cannot be written against a length - the bottom bar a shell
                 // hides while the reader is typing, the map that drops its controls - so a page does not
@@ -482,6 +491,127 @@ namespace BitBlazorUI {
             state.style.remove();
             state.element.removeAttribute('data-bit-ash-kbd');
             state.element.removeAttribute('data-bit-ash-keyboard');
+        }
+
+        // Scrolls the main container of a shell just far enough to bring the focused element inside it back above
+        // its bottom edge (less the scroll padding the page set), and never so far that its top goes under the top
+        // edge - a tall text area keeps its first line in view. Only this one container is moved: the document of
+        // a shell page does not scroll, and the visual viewport is the browser's to place.
+        private static revealFocused(root: HTMLElement) {
+            const main = root.querySelector<HTMLElement>(':scope > .bit-ash-center > [data-bit-ash-main]');
+            const active = document.activeElement as HTMLElement | null;
+            if (!main || !active || active === main || !main.contains(active)) return;
+
+            const style = getComputedStyle(main);
+            const box = main.getBoundingClientRect();
+            const rect = active.getBoundingClientRect();
+            const top = box.top + (parseFloat(style.scrollPaddingTop) || 0);
+            const bottom = box.top + main.clientHeight - (parseFloat(style.scrollPaddingBottom) || 0);
+
+            const by = Math.min(rect.bottom - bottom, rect.top - top);
+            if (by <= 0) return;
+
+            main.scrollBy({ top: by, behavior: 'instant' as ScrollBehavior });
+        }
+
+
+
+        // The scroll state of a shell's main container, written onto its root as two attributes for the page's CSS:
+        // data-bit-ash-scrolled while it is away from its top, and data-bit-ash-scroll-direction (up or down) for
+        // the way it was last moved. Nothing goes back to .NET, which is the point: a header that hides while the
+        // reader scrolls down has to react within the frame, not after a round trip per frame.
+        private static SCROLL_TRAVEL = 8;
+        private static _scrollStates: { [key: string]: { root: HTMLElement, main: HTMLElement, handler: () => void, frame: number, scrolled: boolean, direction: string, turn: number, last: number } } = {};
+
+        public static setupScrollState(id: string, root: HTMLElement, main: HTMLElement) {
+            AppShell.disposeScrollState(id);
+
+            if (!root || !main) return;
+
+            const state = { root, main, handler: () => { }, frame: 0, scrolled: false, direction: '', turn: 0, last: 0 };
+
+            const measure = () => {
+                state.frame = 0;
+
+                // Clamped, so the rubber band of an overscroll past either edge is not read as a scroll the other
+                // way as it springs back.
+                const max = Math.max(0, main.scrollHeight - main.clientHeight);
+                const top = Math.min(max, Math.max(0, main.scrollTop));
+
+                // Within a pixel of the top is at it: a scroll offset is fractional on a scaled display.
+                const scrolled = top > 1;
+
+                // More than a screenful in one frame is a jump rather than a scroll: PersistScroll putting the reader
+                // back on a page, End, a link to an anchor. None of them is the reader heading down the content, and a
+                // header hidden by one would greet them gone on a page they have only just arrived at.
+                const jumped = Math.abs(top - state.last) > main.clientHeight;
+                state.last = top;
+
+                let direction = state.direction;
+                if (scrolled === false || jumped) {
+                    // Back at the top there is no direction to hide anything for.
+                    direction = '';
+                    state.turn = top;
+                } else if (direction === 'down') {
+                    // The turning point follows the container while it keeps going the same way, and the direction
+                    // only flips once it has come back by more than a few pixels from the furthest point it reached.
+                    if (top > state.turn) state.turn = top;
+                    else if (top < state.turn - AppShell.SCROLL_TRAVEL) { direction = 'up'; state.turn = top; }
+                } else if (direction === 'up') {
+                    if (top < state.turn) state.turn = top;
+                    else if (top > state.turn + AppShell.SCROLL_TRAVEL) { direction = 'down'; state.turn = top; }
+                } else if (Math.abs(top - state.turn) > AppShell.SCROLL_TRAVEL) {
+                    direction = top > state.turn ? 'down' : 'up';
+                    state.turn = top;
+                }
+
+                if (scrolled !== state.scrolled) {
+                    state.scrolled = scrolled;
+                    if (scrolled) {
+                        root.setAttribute('data-bit-ash-scrolled', '');
+                    } else {
+                        root.removeAttribute('data-bit-ash-scrolled');
+                    }
+                }
+
+                if (direction !== state.direction) {
+                    state.direction = direction;
+                    if (direction) {
+                        root.setAttribute('data-bit-ash-scroll-direction', direction);
+                    } else {
+                        root.removeAttribute('data-bit-ash-scroll-direction');
+                    }
+                }
+            };
+
+            state.handler = () => {
+                if (state.frame) return;
+                state.frame = requestAnimationFrame(measure);
+            };
+
+            main.addEventListener('scroll', state.handler, { passive: true });
+
+            AppShell._scrollStates[id] = state;
+
+            // A container that is already scrolled - restored by PersistScroll, or by the browser to the fragment
+            // of the url - is marked as such straight away. It has no direction until it is moved.
+            state.turn = state.last = Math.max(0, main.scrollTop);
+            measure();
+        }
+
+        public static disposeScrollState(id: string) {
+            const state = AppShell._scrollStates[id];
+            if (!state) return;
+
+            delete AppShell._scrollStates[id];
+
+            if (state.frame) {
+                cancelAnimationFrame(state.frame);
+            }
+
+            state.main.removeEventListener('scroll', state.handler);
+            state.root.removeAttribute('data-bit-ash-scrolled');
+            state.root.removeAttribute('data-bit-ash-scroll-direction');
         }
     }
 }

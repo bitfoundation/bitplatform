@@ -1,4 +1,4 @@
-@page "/components/appshell"
+﻿@page "/components/appshell"
 
 <PageOutlet Url="components/appshell"
             Title="AppShell"
@@ -178,12 +178,18 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Scroll events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <DemoExample Title="Scroll events & state" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
                 <div>
                     <b>OnScroll</b> reports the position and direction, <b>OnScrollStart</b> / <b>OnScrollEnd</b> bracket a
                     gesture, and <b>OnReachedTop</b> / <b>Bottom</b> / <b>Left</b> / <b>Right</b> fire once per arrival
                     (<b>ReachOffset</b> sets how near counts). Nothing is listened to until a callback is handled;
                     <b>ScrollThrottle</b> caps how often <b>OnScroll</b> fires.
+                </div>
+                <br />
+                <div>
+                    <b>TrackScrollState</b> marks the root with <b>data-bit-ash-scrolled</b> and
+                    <b>data-bit-ash-scroll-direction</b> (<b>up</b> / <b>down</b>), so chrome reacts in CSS with no round trip:
+                    this header lifts with a shadow once scrolled and slides away while scrolling down.
                 </div>
                 <br /><br />
                 <div class="readout">
@@ -195,17 +201,22 @@
                 <br />
                 <div class="shell-box">
                     <BitAppShell Id="events-shell"
+                                 Class="headroom-shell"
+                                 TrackScrollState
                                  ReachOffset="16"
                                  OnScroll="HandleScroll"
                                  OnScrollStart="HandleScrollStart"
                                  OnScrollEnd="HandleScrollEnd"
                                  OnReachedTop="HandleReachedTop"
                                  OnReachedBottom="HandleReachedBottom">
-                        <div class="page-body">
-                            @foreach (var i in Enumerable.Range(1, 40))
-                            {
-                                <div class="row">Row @i</div>
-                            }
+                        <div class="page">
+                            <div class="page-head headroom-head">Header</div>
+                            <div class="page-body">
+                                @foreach (var i in Enumerable.Range(1, 40))
+                                {
+                                    <div class="row">Row @i</div>
+                                }
+                            </div>
                         </div>
                     </BitAppShell>
                 </div>

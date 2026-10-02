@@ -156,7 +156,7 @@ public partial class BitAppShellDemo
             Name = "AvoidKeyboard",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Takes the height of the on-screen keyboard off the scrolling area while it is open, publishes it on the root as the --bit-ash-keyboard-inset CSS variable and marks the root with the data-bit-ash-keyboard attribute. It measures 0 wherever the browser shrinks the layout viewport itself.",
+            Description = "Takes the height of the on-screen keyboard off the scrolling area while it is open, publishes it on the root as the --bit-ash-keyboard-inset CSS variable and marks the root with the data-bit-ash-keyboard attribute. A focused element the shorter middle leaves below its bottom edge is scrolled back into view. It measures 0 wherever the browser shrinks the layout viewport itself.",
          },
          new()
          {
@@ -389,6 +389,13 @@ public partial class BitAppShellDemo
             Description = "Custom CSS styles for different parts of the app shell.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
+         },
+         new()
+         {
+            Name = "TrackScrollState",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the root with data-bit-ash-scrolled while the main container is away from its top, and with data-bit-ash-scroll-direction (up or down) for the way it was last scrolled, so a header can lift or hide itself in CSS alone.",
          },
          new()
          {

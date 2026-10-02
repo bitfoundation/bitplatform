@@ -99,6 +99,22 @@
     background-image: linear-gradient(var(--bit-clr-bg-sec), transparent 6rem);
 }
 
+// The scroll state example: a header that lifts off the content once the shell is scrolled, and slides away while
+// the reader scrolls down. TrackScrollState writes both attributes onto the shell's root.
+.headroom-head {
+    transition: translate var(--bit-mot-duration) var(--bit-mot-easing),
+                box-shadow var(--bit-mot-duration) var(--bit-mot-easing);
+}
+
+::deep .headroom-shell[data-bit-ash-scrolled] .headroom-head {
+    box-shadow: var(--bit-shd-appbar-top);
+}
+
+// Not while the keyboard focus is inside it: a focused control slid out of view is focus obscured (WCAG 2.4.11).
+::deep .headroom-shell[data-bit-ash-scroll-direction="down"] .headroom-head:not(:focus-within) {
+    translate: 0 -100%;
+}
+
 // The overflow example needs something wider than the shell to overflow it sideways.
 .wide-row {
     width: 140%;

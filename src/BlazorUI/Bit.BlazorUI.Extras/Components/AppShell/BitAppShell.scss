@@ -19,6 +19,10 @@
 // What the shell measures is published on its root, for a page to lay its own chrome out against (read-only):
 //   --bit-ash-inset-top / -bottom / -start / -end    the inset each edge ended up with
 //   --bit-ash-keyboard-inset                          how much of the shell the on-screen keyboard covers
+// and as attributes of the root, for the chrome that reacts to a state rather than to a length:
+//   data-bit-ash-keyboard                             while the on-screen keyboard is up (AvoidKeyboard)
+//   data-bit-ash-scrolled                             while the main container is away from its top (TrackScrollState)
+//   data-bit-ash-scroll-direction="up|down"           the way it was last scrolled (TrackScrollState)
 
 // Deliberately outside the library's z-index scale (which tops out at the snackbar's 1400). The four
 // bars mask the physical chrome of the device - the notch, the rounded corners, the home indicator - so
@@ -58,6 +62,11 @@ $bit-ash-inset-zindex: 999999;
     // theme on any host page that never set a color of its own.
     color: var(--bit-AppShell-color, #{$clr-fg-pri});
     background-color: var(--bit-AppShell-background, #{$clr-bg-pri});
+    // Mobile Safari scales text up on its own when the device is turned to landscape, which re-flows an app's
+    // whole layout for a reader who never asked for it. 100% (rather than none) keeps the reader's own text size
+    // settings and zoom working.
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 // The insets a browser reports change while its own retractable UI slides in and out - the bottom bar of

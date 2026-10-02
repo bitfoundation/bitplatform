@@ -99,6 +99,16 @@ public partial class BitAppShellStylesheetTests
         StringAssert.Contains(print, "display: none;");
     }
 
+    [TestMethod]
+    public void BitAppShellShouldStopTheLandscapeTextInflationWithoutBlockingTheReadersTextSize()
+    {
+        var root = Block(ReadStylesheet(), "\n.bit-ash {");
+
+        // 100%, never none: none also takes away the reader's own text size and zoom in some engines.
+        StringAssert.Contains(root, "-webkit-text-size-adjust: 100%;");
+        StringAssert.Contains(root, "\n    text-size-adjust: 100%;");
+    }
+
     private static string Block(string stylesheet, string opening)
     {
         var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
