@@ -531,6 +531,9 @@ public static class BlazorUIComponentCatalog
 
         var parameters = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.IsDefined(typeof(ParameterAttribute)))
+            // An [Obsolete] parameter is kept only so old markup still binds; naming it would be
+            // handing an agent the very name it should not write.
+            .Where(p => p.IsDefined(typeof(ObsoleteAttribute)) is false)
             .Where(p => documented.Contains(p.DeclaringType is { IsGenericType: true } declaring ? declaring.GetGenericTypeDefinition() : p.DeclaringType) is false)
             .OrderBy(p => p.Name, StringComparer.Ordinal)
             .ToArray();

@@ -885,7 +885,7 @@ private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitData
 
     private readonly string example25RazorCode = @"
 <BitDataGrid Items=""@products"" Height=""420px""
-             Direction=""BitDir.Rtl"" Strings=""@persianStrings""
+             Dir=""BitDir.Rtl"" Strings=""@persianStrings""
              Filterable=""true"" Pageable=""true"" PageSize=""8"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""شناسه"" Width=""90px"" Filterable=""false"" />
     <BitDataGridColumn Property=""p => p.Name"" Title=""نام"" Width=""220px"" />
@@ -1346,7 +1346,7 @@ private void OnCancelled(Product product) => status = $""Cancelled editing {prod
 
     private readonly string example39RazorCode = @"
 <BitDataGrid Items=""@products"" Height=""420px""
-             Direction=""BitDir.Rtl""
+             Dir=""BitDir.Rtl""
              Sortable=""true"" Pageable=""true"" PageSize=""8"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""شناسه"" Frozen=""true"" />
     <BitDataGridColumn Property=""p => p.Name"" Title=""نام"" />
