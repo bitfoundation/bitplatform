@@ -95,7 +95,7 @@ public sealed partial class BitChartRenderer
                 // so hovering an arc never costs a full re-layout.
                 double hoverOffset = ds.Offset + ds.HoverOffset;
                 string hoverBg = ds.HoverBackgroundColor
-                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, dsIndex, i, true, v, active: true) : BitChartColorUtil.Adjust(bg, 0.08));
+                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, dsIndex, i, true, v, active: true) : BitChartColorUtil.Shade(bg, 0.08));
                 var hoverPath = new BitChartSvgPath
                 {
                     D = ArcPath(cx + Math.Cos(mid) * hoverOffset, cy + Math.Sin(mid) * hoverOffset, inner, outer, d0, d1, ds.BorderRadius),
@@ -213,13 +213,13 @@ public sealed partial class BitChartRenderer
             var path = new BitChartSvgPath
             {
                 D = ArcPath(cx, cy, 0, r, a0 + halfGap, a1 - halfGap, ds.BorderRadius),
-                Fill = BitChartColorUtil.WithAlpha(bg, 0.7),
+                Fill = BitChartColorUtil.Translucent(bg, 0.7),
                 Stroke = bg, StrokeWidth = arcBorderWidth
             };
             var hoverPath = new BitChartSvgPath
             {
                 D = ArcPath(cx, cy, 0, r, a0 + halfGap, a1 - halfGap, ds.BorderRadius),
-                Fill = BitChartColorUtil.WithAlpha(ds.HoverBackgroundColor ?? BitChartColorUtil.Adjust(bg, -0.1), 0.85),
+                Fill = BitChartColorUtil.Translucent(ds.HoverBackgroundColor ?? BitChartColorUtil.Shade(bg, -0.1), 0.85),
                 Stroke = ds.HoverBorderColor ?? bg, StrokeWidth = ds.HoverBorderWidth ?? arcBorderWidth
             };
             double mid = (a0 + a1) / 2;

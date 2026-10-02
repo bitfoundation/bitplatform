@@ -8,17 +8,12 @@ public partial class BitChartDemo
     [
         new()
         {
-            Name = "AriaLabel",
-            Type = "string?",
+            Name = "Classes",
+            Type = "BitChartClassStyles?",
             DefaultValue = "null",
-            Description = "Accessible label for the chart. When null it falls back to the chart title, then to a generated summary."
-        },
-        new()
-        {
-            Name = "Class",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Custom CSS class applied to the root element of the chart."
+            Description = "Custom CSS classes for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip and empty state.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
         },
         new()
         {
@@ -40,20 +35,6 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "Dir",
-            Type = "BitDir?",
-            DefaultValue = "null",
-            Description = "Text direction of the chrome around the plot (title, legend, tooltip and the screen-reader table). The plot keeps its own coordinates; mirror it by setting Reverse on the index scale."
-        },
-        new()
-        {
-            Name = "ForceAnimation",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Plays the entry and update animations even when reduced motion is requested (prefers-reduced-motion: reduce). By default the chart honors that preference and draws itself straight in its final state."
-        },
-        new()
-        {
             Name = "GenerateTable",
             Type = "bool",
             DefaultValue = "true",
@@ -65,20 +46,6 @@ public partial class BitChartDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Optional CSS height of the chart container. When null the height follows the aspect ratio."
-        },
-        new()
-        {
-            Name = "HtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "new()",
-            Description = "Additional HTML attributes applied to the root element."
-        },
-        new()
-        {
-            Name = "Id",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The id of the root element of the chart."
         },
         new()
         {
@@ -150,10 +117,12 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "Style",
-            Type = "string?",
+            Name = "Styles",
+            Type = "BitChartClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS style applied to the root element of the chart."
+            Description = "Custom CSS styles for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip and empty state.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
         },
         new()
         {
@@ -175,6 +144,137 @@ public partial class BitChartDemo
             Type = "string",
             DefaultValue = "100%",
             Description = "CSS width of the chart container."
+        },
+        new()
+        {
+            Name = "ZoomHint",
+            Type = "string?",
+            DefaultValue = "\"Press plus or minus to zoom, and 0 to reset the zoom.\"",
+            Description = "Appended to NavigationHint while zoom is enabled, naming the zoom keys. Set it to null to leave it out."
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Chart-font-family",
+            DefaultValue = "--bit-tpg-font-family",
+            Description = "Typeface of every text the chart draws: title, legend, ticks, labels and tooltip.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-series-color-1 ... --bit-Chart-series-color-10",
+            DefaultValue = "The Chart.js palette (#36a2eb, #ff6384, #4bc0c0, ...)",
+            Description = "The default palette, one color per series - or per slice of a pie, doughnut or polar area. Only used where the dataset names no color; its translucent area and hover shades are derived from it.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-title-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the title.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-subtitle-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the subtitle.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-legend-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the legend labels.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tick-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the axis tick labels and the radar / polar point labels.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-axis-title-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the axis titles.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-axis-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the axis border lines.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-grid-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of the grid lines, the tick marks and the radar angle lines. Minor grid lines draw it at 40%.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-data-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the data labels.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-crosshair-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the crosshair through the hovered index.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-surface-color",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "The surface the chart sits on: the border that separates pie and doughnut slices, and the backdrop behind radial tick labels. Set it to the card color when the chart sits on a card.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tooltip-background",
+            DefaultValue = "--bit-clr-tooltip-bg",
+            Description = "Fill of the tooltip and its caret, and of the crosshair's axis chip.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tooltip-color",
+            DefaultValue = "--bit-clr-tooltip-fg",
+            Description = "Text color of the tooltip and of the crosshair's axis chip.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tooltip-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the tooltip. Tooltip.CornerRadius in the options overrides it.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tooltip-shadow",
+            DefaultValue = "--bit-shd-tooltip",
+            Description = "Elevation of the tooltip.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring of the plot and the legend items, and the outline of the element the keyboard is on.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-zoom-box-background",
+            DefaultValue = "--bit-clr-pri at 20%",
+            Description = "Fill of the drag-to-zoom selection box.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-zoom-box-border-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Border of the drag-to-zoom selection box.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-no-data-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the empty-state message.",
         },
     ];
 
@@ -286,6 +386,23 @@ public partial class BitChartDemo
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitChartClassStyles",
+            Description = "Defines per-part CSS class/style values for BitChart.",
+            Parameters =
+            [
+                new() { Name = "Root", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the root element." },
+                new() { Name = "Title", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the title." },
+                new() { Name = "Subtitle", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the subtitle." },
+                new() { Name = "Legend", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the legend container." },
+                new() { Name = "LegendItem", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to each legend item." },
+                new() { Name = "Plot", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the plot container that holds the SVG, the tooltip and the empty state." },
+                new() { Name = "Tooltip", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the tooltip box, the default one and a custom template's alike." },
+                new() { Name = "NoData", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the empty state shown when there is nothing to draw." },
+            ]
+        },
         new()
         {
             Id = "chart-config",

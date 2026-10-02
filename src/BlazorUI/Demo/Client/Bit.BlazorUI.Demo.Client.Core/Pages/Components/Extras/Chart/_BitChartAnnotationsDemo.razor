@@ -3,8 +3,7 @@
 <DemoExample Title="Threshold lines" RazorCode="@linesRazorCode" CsharpCode="@linesCsharpCode" Id="annotations-threshold-lines">
     <div class="example-desc">
         <code>BitChartAnnotationPlugin</code> draws reference lines, boxes, points and labels in data coordinates,
-        so they stay glued to the values as the chart resizes. A target line plus a shaded warning band turns raw
-        numbers into a verdict.
+        so they follow the values as the chart resizes - here a target line and a shaded warning band.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="Series()" Options="_lines" /></div></div>
 </DemoExample>
@@ -12,17 +11,16 @@
 <DemoExample Title="Box + vertical marker" RazorCode="@boxRazorCode" CsharpCode="@boxCsharpCode" Id="annotations-box-vertical-marker">
     <div class="example-desc">
         A box highlights a span of categories and a vertical line marks a single event.
-        <code>DrawBehindDatasets</code> decides whether an annotation sits under the data or over it.
+        <code>DrawBehindDatasets</code> places an annotation under or over the data.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="Bars()" Options="_box" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Ellipse, polygon and point" RazorCode="@shapesRazorCode" CsharpCode="@shapesCsharpCode" Id="annotations-shapes">
     <div class="example-desc">
-        Beyond lines and boxes, an annotation can be an <code>Ellipse</code> inscribed in the same XMin/XMax and
-        YMin/YMax bounds - for circling a cluster rather than boxing it - a regular <code>Polygon</code> of
-        any <code>Sides</code>, <code>Radius</code> and <code>Rotation</code>, or a <code>Point</code>. All three are
-        placed in data coordinates and take a <code>Label</code>, so they follow the values as the chart resizes.
+        An annotation can also be an <code>Ellipse</code> inscribed in its XMin/XMax/YMin/YMax bounds, a regular
+        <code>Polygon</code> (<code>Sides</code>, <code>Radius</code>, <code>Rotation</code>) or a
+        <code>Point</code>. All are placed in data coordinates and take a <code>Label</code>.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="Series()" Options="_shapes" /></div></div>
 </DemoExample>

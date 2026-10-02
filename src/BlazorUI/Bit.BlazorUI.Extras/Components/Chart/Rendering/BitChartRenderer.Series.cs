@@ -233,7 +233,7 @@ public sealed partial class BitChartRenderer
 
                 // Hover appearance, precomputed so hovering never triggers a re-layout.
                 string hoverBg = ds.HoverBackgroundColor
-                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, i, di, false, tooltipVal, active: true) : BitChartColorUtil.Adjust(bg, -0.08));
+                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, i, di, false, tooltipVal, active: true) : BitChartColorUtil.Shade(bg, -0.08));
                 if (patternFill is not null) hoverBg = bg;
                 string hoverBorder = ds.HoverBorderColor ?? border;
                 double hoverBorderWidth = ds.HoverBorderWidth ?? borderWidth;
@@ -587,7 +587,7 @@ public sealed partial class BitChartRenderer
         if (ds.FillGradient is { Stops.Count: > 0 } g) return RegisterGradient(scene, g);
         if (!string.IsNullOrEmpty(ds.FillColor)) return ds.FillColor!;
         if (!string.IsNullOrEmpty(ds.BackgroundColor)) return ds.BackgroundColor!;
-        return BitChartColorUtil.WithAlpha(border, 0.2);
+        return BitChartColorUtil.Translucent(border, 0.2);
     }
 
     /// <summary>Computes the pixel polyline for a dataset's line (nulls skipped).</summary>

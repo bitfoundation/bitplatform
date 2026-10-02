@@ -1,0 +1,42 @@
+﻿@using Bit.BlazorUI
+
+@* Covers BitChartParams: the cascaded values fill in the parameters a chart did not set itself and never overwrite
+   the ones it did. *@
+
+<BitParams Parameters="@(new BitChartParams[]
+                         {
+                             new()
+                             {
+                                 Type = BitChartType.Bar,
+                                 Options = SharedOptions,
+                                 Height = "200px",
+                                 Width = "50%",
+                                 NoDataText = "Nothing yet",
+                                 GenerateTable = false,
+                                 Classes = new() { Root = "cascaded-root", Legend = "cascaded-legend" },
+                                 Styles = new() { Root = "--bit-Chart-grid-color: red" },
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitChart Data="Data" />
+    <BitChart Data="Data"
+              Type="BitChartType.Line"
+              Height="120px"
+              GenerateTable="true"
+              Classes="@(new() { Root = "own-root" })"
+              Class="second" />
+    <BitChart />
+</BitParams>
+
+@code {
+    public static readonly BitChartOptions SharedOptions = new()
+    {
+        Plugins = { Title = { Display = true, Text = "Shared title" } }
+    };
+
+    private static readonly BitChartData Data = new()
+    {
+        Labels = { "A", "B" },
+        Datasets = { new BitChartDataset { Label = "S", Data = { 1, 2 } } }
+    };
+}

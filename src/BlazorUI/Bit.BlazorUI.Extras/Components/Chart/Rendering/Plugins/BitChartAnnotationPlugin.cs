@@ -69,7 +69,7 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
                 {
                     X = Math.Min(x1, x2), Y = Math.Min(y1, y2),
                     Width = Math.Abs(x2 - x1), Height = Math.Abs(y2 - y1),
-                    Fill = a.FillColor ?? BitChartColorUtil.WithAlpha(a.Color, 0.15),
+                    Fill = a.FillColor ?? BitChartColorUtil.Translucent(a.Color, 0.15),
                     Stroke = a.Color, StrokeWidth = a.LineWidth
                 });
                 if (!string.IsNullOrEmpty(a.Label))
@@ -114,7 +114,7 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
                     D = $"M {BitChartSvg.N(cx - rx)} {BitChartSvg.N(cy)} " +
                         $"A {BitChartSvg.N(rx)} {BitChartSvg.N(ry)} 0 1 0 {BitChartSvg.N(cx + rx)} {BitChartSvg.N(cy)} " +
                         $"A {BitChartSvg.N(rx)} {BitChartSvg.N(ry)} 0 1 0 {BitChartSvg.N(cx - rx)} {BitChartSvg.N(cy)} Z",
-                    Fill = a.FillColor ?? BitChartColorUtil.WithAlpha(a.Color, 0.15),
+                    Fill = a.FillColor ?? BitChartColorUtil.Translucent(a.Color, 0.15),
                     Stroke = a.Color, StrokeWidth = a.LineWidth,
                     Dash = BitChartSvg.Dash(a.Dash)
                 });
@@ -133,7 +133,7 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
 
                 var poly = new BitChartSvgPolygon
                 {
-                    Fill = a.FillColor ?? BitChartColorUtil.WithAlpha(a.Color, 0.2),
+                    Fill = a.FillColor ?? BitChartColorUtil.Translucent(a.Color, 0.2),
                     Stroke = a.Color, StrokeWidth = a.LineWidth
                 };
                 // Starts at the top so a triangle points up, which is what a reader expects of one.

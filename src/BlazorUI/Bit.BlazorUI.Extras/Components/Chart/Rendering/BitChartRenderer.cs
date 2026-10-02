@@ -138,7 +138,7 @@ public sealed partial class BitChartRenderer
             return list[((dataIndex % list.Count) + list.Count) % list.Count];
         if (!string.IsNullOrEmpty(ds.BackgroundColor))
             return ds.BackgroundColor!;
-        return perIndexPalette ? BitChartColorUtil.Palette(dataIndex) : BitChartColorUtil.Palette(dsIndex);
+        return perIndexPalette ? BitChartColorUtil.SeriesColor(dataIndex) : BitChartColorUtil.SeriesColor(dsIndex);
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ public sealed partial class BitChartRenderer
             return ds.BorderColor!;
         if (fallbackToBackground)
             return ResolveBackground(ds, dsIndex, dataIndex, perIndexPalette, value, active);
-        return perIndexPalette ? BitChartColorUtil.Palette(dataIndex) : BitChartColorUtil.Palette(dsIndex);
+        return perIndexPalette ? BitChartColorUtil.SeriesColor(dataIndex) : BitChartColorUtil.SeriesColor(dsIndex);
     }
 
     /// <summary>True when the dataset asks for a border color in any form.</summary>
@@ -326,7 +326,7 @@ public sealed partial class BitChartRenderer
                 legend.Items.Add(new BitChartLegendItemModel
                 {
                     Text = _data.Labels[i],
-                    Color = ds is null ? BitChartColorUtil.Palette(i) : ResolveBackground(ds, 0, i, true),
+                    Color = ds is null ? BitChartColorUtil.SeriesColor(i) : ResolveBackground(ds, 0, i, true),
                     Hidden = _state.IsIndexHidden(i),
                     Index = i,
                     IsDataIndex = true,

@@ -2,10 +2,9 @@
 
 <DemoExample Title="Interactive legend controls" RazorCode="@liveRazorCode" CsharpCode="@liveCsharpCode" Id="legend-live">
     <div class="example-desc">
-        The legend lives on any of the four sides and aligns to either end or the middle of that side;
-        <code>Reverse</code> flips the order to match a stack read top-down. Every entry is a toggle button:
-        clicking one hides its dataset and the axes re-scale around what is left. Change the controls to see each
-        option, and set <code>OnClickToggle</code> to false for a legend that only labels.
+        The legend sits on any side, aligned to its start, center or end; <code>Reverse</code> flips the entry
+        order. Clicking an entry hides its dataset and re-scales the axes; set <code>OnClickToggle</code> to false
+        for a label-only legend.
     </div>
     <div class="controls">
         <label>
@@ -33,26 +32,23 @@
 
 <DemoExample Title="Legend title" RazorCode="@titledRazorCode" CsharpCode="@titledCsharpCode" Id="legend-title">
     <div class="example-desc">
-        A legend <code>Title</code> names what the entries stand for, which matters once a page carries several
-        charts.
+        A legend <code>Title</code> names what the entries stand for.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_titled" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Point-style markers" RazorCode="@pointStyleRazorCode" CsharpCode="@pointStyleCsharpCode" Id="legend-point-style" PreventRenderForMcpClient>
     <div class="example-desc">
-        <code>UsePointStyle</code> draws each entry with its dataset's own marker instead of a color box, so the
-        legend matches what is actually on the plot. Every entry is a real button: reachable by Tab, toggled with
-        Enter or Space, and reporting its state through <code>aria-pressed</code>.
+        <code>UsePointStyle</code> draws each entry with its dataset's marker instead of a color box. Entries are
+        buttons: reached by Tab, toggled with Enter or Space, state exposed via <code>aria-pressed</code>.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Capping a long legend" RazorCode="@maxHeightRazorCode" CsharpCode="@maxHeightCsharpCode" Id="legend-max-height">
     <div class="example-desc">
-        With enough series the legend starts eating the plot. <code>MaxHeight</code> caps it in pixels and lets the
-        rest scroll, so the chart keeps its space and no entry is pushed off it. The entries stay real buttons, so
-        Tab still reaches the ones below the fold.
+        <code>MaxHeight</code> caps the legend in pixels and scrolls the rest, so many series do not shrink the
+        plot. Entries below the fold stay reachable by Tab.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="ManySeries()" Options="_capped" /></div></div>
 </DemoExample>

@@ -191,8 +191,7 @@ namespace BitBlazorUI {
 
         // ---- export ----
 
-        // Theme tokens the chart references from SVG attributes as var(--bit-...). They resolve against
-        // the document, so an exported (standalone) SVG has to carry their computed values with it.
+        // Theme tokens an exported SVG always carries, beside the ones found in its markup (see serialize).
         private static readonly THEME_VARS = [
             '--bit-clr-fg-pri', '--bit-clr-fg-sec', '--bit-clr-brd-pri', '--bit-clr-brd-sec',
             '--bit-clr-bg-pri', '--bit-clr-pri', '--bit-tpg-font-family'
@@ -214,8 +213,19 @@ namespace BitBlazorUI {
             // Interaction-only layers are not part of the picture.
             clone.querySelectorAll('.bit-cht-hover, .bit-cht-bands').forEach(n => n.remove());
 
+            // Every custom property the drawing reads - the theme tokens, and the public --bit-Chart-* ones a
+            // page may have set on :root, an ancestor or the chart's Style - resolves against the document, so
+            // a standalone file has to carry the computed values with it. One left unset stays unset, and its
+            // var() falls back exactly as it does on the page.
             const computed = getComputedStyle(svg);
-            for (const name of BitChart.THEME_VARS) {
+            const names: string[] = BitChart.THEME_VARS.slice();
+            const pattern = /var\(\s*(--[\w-]+)/g;
+            const markup = clone.outerHTML;
+            let match: RegExpExecArray | null;
+            while ((match = pattern.exec(markup)) !== null) {
+                if (names.indexOf(match[1]) < 0) names.push(match[1]);
+            }
+            for (const name of names) {
                 const value = computed.getPropertyValue(name);
                 if (value) clone.style.setProperty(name, value.trim());
             }

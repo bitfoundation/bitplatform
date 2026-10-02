@@ -1,13 +1,18 @@
 @namespace Bit.BlazorUI
+@inherits BitComponentBase
 
-<div class="@RootClass" style="@RootStyle" dir="@Dir?.ToString().ToLowerInvariant()" id="@Id" @attributes="HtmlAttributes">
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value"
+     dir="@Dir?.ToString().ToLowerInvariant()">
     @if (_scene.Title is { } title && TitleSide(title) == BitChartPosition.Top)
     {
-        @RenderTitle(title, "bit-cht-ttl")
+        @RenderTitle(title, "bit-cht-ttl", false)
     }
     @if (_scene.Subtitle is { } sub && TitleSide(sub) == BitChartPosition.Top)
     {
-        @RenderTitle(sub, "bit-cht-sub")
+        @RenderTitle(sub, "bit-cht-sub", true)
     }
 
     @if (_scene.Legend is { Position: BitChartPosition.Top })
@@ -18,18 +23,18 @@
     <div class="bit-cht-mid">
         @if (_scene.Title is { } leftTitle && TitleSide(leftTitle) == BitChartPosition.Left)
         {
-            @RenderTitle(leftTitle, "bit-cht-ttl bit-cht-ttl-v")
+            @RenderTitle(leftTitle, "bit-cht-ttl bit-cht-ttl-v", false)
         }
         @if (_scene.Legend is { Position: BitChartPosition.Left })
         {
             @RenderLegend(_scene.Legend)
         }
 
-        <div class="bit-cht-plot" @ref="_plotEl">
+        <div class="bit-cht-plot @Classes?.Plot" style="@Styles?.Plot" @ref="_plotEl">
             <svg class="bit-cht-svg" viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="img"
                  aria-roledescription="chart"
                  aria-label="@ChartAriaLabel" aria-describedby="@DescribedBy"
-                 style="@AnimStyle" tabindex="@(_scene.Elements.Count > 0 ? 0 : -1)"
+                 style="@AnimStyle" tabindex="@SvgTabIndex"
                  @onkeydown="OnKeyDown" @onblur="OnBlur">
                 <defs>
                     @if (_scene.PlotArea is { } pa)
@@ -84,7 +89,7 @@
                               fill="transparent" @onmouseenter="() => OnEnterBand(band)" @onmouseleave="OnLeave"
                               @onpointerdown="args => OnPointerDownBand(args, band)"
                               @onclick="() => OnClickBand(band)"
-                              style="@(OnElementClick.HasDelegate ? "cursor:pointer" : "cursor:default")" />
+                              style="@(IsClickable ? "cursor:pointer" : "cursor:default")" />
                     }
                 </g>
                 <g class="@SeriesGroupClass" @key="(_animKey, 2)" clip-path="@ClipRef">
@@ -130,7 +135,7 @@
 
             @if (_scene.IsEmpty)
             {
-                <div class="bit-cht-nodata">
+                <div class="bit-cht-nodata @Classes?.NoData" style="@Styles?.NoData">
                     @if (NoDataTemplate is not null)
                     {
                         @NoDataTemplate
@@ -148,13 +153,13 @@
                 var pos = TooltipPlacement(tt);
                 @if (TooltipTemplate is not null && _tooltipContext is { } ctx)
                 {
-                    <div class="bit-cht-tt bit-cht-tt-custom" style="@pos.Style">
+                    <div class="bit-cht-tt bit-cht-tt-custom @Classes?.Tooltip" style="@pos.Style;@Styles?.Tooltip">
                         @TooltipTemplate(ctx)
                     </div>
                 }
                 else
                 {
-                    <div class="bit-cht-tt" style="@pos.Style;background:@t.BackgroundColor;border-radius:@(BitChartSvg.N(t.CornerRadius))px;padding:@(BitChartSvg.N(t.Padding))px @(BitChartSvg.N(t.Padding * 1.5))px;@(t.BorderWidth > 0 ? $"border:{BitChartSvg.N(t.BorderWidth)}px solid {t.BorderColor};" : "")">
+                    <div class="bit-cht-tt @Classes?.Tooltip" style="@TooltipBoxStyle(t, pos.Style)">
                         @if (!string.IsNullOrEmpty(tt.Title))
                         {
                             <div class="bit-cht-tt-ttl" style="color:@t.TitleColor;font-weight:@t.TitleFont.Weight;font-size:@(BitChartSvg.N(t.TitleFont.Size))px;text-align:@TextAlign(t.TitleAlign)">@tt.Title</div>
@@ -210,7 +215,7 @@
         }
         @if (_scene.Title is { } rightTitle && TitleSide(rightTitle) == BitChartPosition.Right)
         {
-            @RenderTitle(rightTitle, "bit-cht-ttl bit-cht-ttl-v")
+            @RenderTitle(rightTitle, "bit-cht-ttl bit-cht-ttl-v", false)
         }
     </div>
 
@@ -221,16 +226,16 @@
 
     @if (_scene.Subtitle is { } subBottom && TitleSide(subBottom) == BitChartPosition.Bottom)
     {
-        @RenderTitle(subBottom, "bit-cht-sub")
+        @RenderTitle(subBottom, "bit-cht-sub", true)
     }
     @if (_scene.Title is { } titleBottom && TitleSide(titleBottom) == BitChartPosition.Bottom)
     {
-        @RenderTitle(titleBottom, "bit-cht-ttl")
+        @RenderTitle(titleBottom, "bit-cht-ttl", false)
     }
 
     @if (ShowNavigationHint)
     {
-        <div class="bit-cht-sr" id="@HintId">@NavigationHint</div>
+        <div class="bit-cht-sr" id="@HintId">@NavigationHintText</div>
     }
 
     @if (GenerateTable)
@@ -242,10 +247,10 @@
 </div>
 
 @code {
-    private RenderFragment RenderTitle(BitChartTitleModel title, string cls) => __builder =>
+    private RenderFragment RenderTitle(BitChartTitleModel title, string cls, bool subtitle) => __builder =>
     {
         var lines = title.Text.Split('\n');
-        <div class="@cls" style="color:@title.Color;font-family:@title.Font.Family;font-size:@(BitChartSvg.N(title.Font.Size))px;font-weight:@title.Font.Weight;justify-content:@AlignToFlex(title.Align);padding:@(BitChartSvg.N(title.Padding.Top))px @(BitChartSvg.N(title.Padding.Right))px @(BitChartSvg.N(title.Padding.Bottom))px @(BitChartSvg.N(title.Padding.Left))px">
+        <div class="@cls @(subtitle ? Classes?.Subtitle : Classes?.Title)" style="@(subtitle ? Styles?.Subtitle : Styles?.Title);color:@title.Color;font-family:@title.Font.Family;font-size:@(BitChartSvg.N(title.Font.Size))px;font-weight:@title.Font.Weight;justify-content:@AlignToFlex(title.Align);padding:@(BitChartSvg.N(title.Padding.Top))px @(BitChartSvg.N(title.Padding.Right))px @(BitChartSvg.N(title.Padding.Bottom))px @(BitChartSvg.N(title.Padding.Left))px">
             <div style="text-align:@TextAlign(title.Align)">
                 @for (int i = 0; i < lines.Length; i++)
                 {
@@ -298,41 +303,59 @@
     private RenderFragment RenderLegend(BitChartLegendModel legend) => __builder =>
     {
         bool vertical = legend.Position is BitChartPosition.Left or BitChartPosition.Right;
-        <div class="bit-cht-lgd @(vertical ? "bit-cht-lgd-v" : "bit-cht-lgd-h")"
+        bool interactive = IsLegendInteractive(legend);
+        <div class="bit-cht-lgd @(vertical ? "bit-cht-lgd-v" : "bit-cht-lgd-h") @Classes?.Legend"
              role="group" aria-label="@(legend.Title ?? "Chart legend")"
-             style="justify-content:@AlignToFlex(legend.Align);gap:4px @(BitChartSvg.N(legend.Labels.Padding))px@(legend.MaxHeight is { } mh ? $";max-height:{BitChartSvg.N(mh)}px;overflow-y:auto" : "")">
+             style="justify-content:@AlignToFlex(legend.Align);gap:4px @(BitChartSvg.N(legend.Labels.Padding))px@(legend.MaxHeight is { } mh ? $";max-height:{BitChartSvg.N(mh)}px;overflow-y:auto" : "");@Styles?.Legend">
             @if (!string.IsNullOrEmpty(legend.Title))
             {
                 <div class="bit-cht-lgd-ttl">@legend.Title</div>
             }
             @foreach (var item in legend.Items)
             {
-                @* A toggle button: the label is the accessible name and aria-pressed carries the state,
-                   so a screen reader announces "Alpha, toggle button, pressed". *@
-                <button type="button"
-                        class="bit-cht-lgd-itm @(item.Hidden ? "bit-cht-hdn" : "")"
-                        disabled="@(legend.OnClickToggle is false && OnLegendItemClick.HasDelegate is false)"
-                        aria-pressed="@((!item.Hidden).ToString().ToLowerInvariant())"
-                        style="cursor:@(legend.OnClickToggle ? "pointer" : "default");color:@legend.Labels.Color;font-size:@(BitChartSvg.N(legend.Labels.Font.Size))px;font-family:@legend.Labels.Font.Family"
-                        @onclick="() => ToggleLegend(item)">
-                    @if (item.UsePointStyle)
-                    {
-                        var marker = BitChartPointShapes.Build(item.PointStyle, 8, 8, 6, item.Color, item.StrokeColor ?? item.Color, 1);
-                        <svg class="bit-cht-lgd-mrk" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-                            @if (marker is not null)
-                            {
-                                <BitChartSvgPrimitive Node="marker" />
-                            }
-                        </svg>
-                    }
-                    else
-                    {
-                        <span class="bit-cht-lgd-box" aria-hidden="true" style="background:@item.Color;border-color:@(item.StrokeColor ?? item.Color);width:@(BitChartSvg.N(legend.Labels.BoxWidth))px;height:@(BitChartSvg.N(legend.Labels.BoxHeight))px"></span>
-                    }
-                    <span class="bit-cht-lgd-txt">@item.Text</span>
-                </button>
+                var itemStyle = $"color:{legend.Labels.Color};font-size:{BitChartSvg.N(legend.Labels.Font.Size)}px;font-family:{legend.Labels.Font.Family};{Styles?.LegendItem}";
+                @if (interactive)
+                {
+                    @* A toggle button while clicking it shows or hides the series: the label is the accessible
+                       name and aria-pressed carries the state, so a screen reader announces "Alpha, toggle
+                       button, pressed". With a click handler alone it is a plain button, which has no state. *@
+                    <button type="button"
+                            class="bit-cht-lgd-itm @(item.Hidden ? "bit-cht-hdn" : "") @Classes?.LegendItem"
+                            disabled="@(IsEnabled is false)"
+                            aria-pressed="@(legend.OnClickToggle ? (!item.Hidden).ToString().ToLowerInvariant() : null)"
+                            style="@itemStyle"
+                            @onclick="() => ToggleLegend(item)">
+                        @RenderLegendMarker(legend, item)
+                    </button>
+                }
+                else
+                {
+                    @* Nothing happens on a click, so the entry is a label rather than a control that does nothing. *@
+                    <span class="bit-cht-lgd-itm bit-cht-lgd-sta @(item.Hidden ? "bit-cht-hdn" : "") @Classes?.LegendItem" style="@itemStyle">
+                        @RenderLegendMarker(legend, item)
+                    </span>
+                }
             }
         </div>
+    };
+
+    private RenderFragment RenderLegendMarker(BitChartLegendModel legend, BitChartLegendItemModel item) => __builder =>
+    {
+        @if (item.UsePointStyle)
+        {
+            var marker = BitChartPointShapes.Build(item.PointStyle, 8, 8, 6, item.Color, item.StrokeColor ?? item.Color, 1);
+            <svg class="bit-cht-lgd-mrk" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                @if (marker is not null)
+                {
+                    <BitChartSvgPrimitive Node="marker" />
+                }
+            </svg>
+        }
+        else
+        {
+            <span class="bit-cht-lgd-box" aria-hidden="true" style="background:@item.Color;border-color:@(item.StrokeColor ?? item.Color);width:@(BitChartSvg.N(legend.Labels.BoxWidth))px;height:@(BitChartSvg.N(legend.Labels.BoxHeight))px"></span>
+        }
+        <span class="bit-cht-lgd-txt">@item.Text</span>
     };
 
     private RenderFragment RenderDataTable() => __builder =>

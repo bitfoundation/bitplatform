@@ -61,8 +61,8 @@ public sealed class BitChartTrendlinePlugin : IBitChartPlugin
         };
         if (fitted.Count < 2) return;
 
-        string color = trend.Color ?? BitChartColorUtil.WithAlpha(
-            ds.BorderColor ?? ds.BackgroundColor ?? BitChartColorUtil.Palette(trend.DatasetIndex), 0.85);
+        string color = trend.Color ?? BitChartColorUtil.Translucent(
+            ds.BorderColor ?? ds.BackgroundColor ?? BitChartColorUtil.SeriesColor(trend.DatasetIndex), 0.85);
 
         var d = new StringBuilder();
         for (int i = 0; i < fitted.Count; i++)
