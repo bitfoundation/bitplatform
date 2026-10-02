@@ -171,6 +171,19 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [CascadingParameter] protected BitDir? CascadingDir { get; set; }
 
     /// <summary>
+    /// The text direction of the grid. Superseded by <see cref="Dir"/>, which it sets; kept so markup
+    /// written against the earlier name keeps rendering instead of failing to bind.
+    /// </summary>
+    [Parameter]
+    [Obsolete("Use Dir instead.")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    public BitDir Direction
+    {
+        get => Dir ?? BitDir.Ltr;
+        set => _dir = value;
+    }
+
+    /// <summary>
     /// Accessible name of the grid itself. A <c>role="grid"</c> element needs a name for screen-reader
     /// users to tell it apart from the rest of the page (and from other grids on it); when this is not
     /// set the generic <c>Strings.GridLabel</c> is used.
@@ -512,18 +525,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     // direction
     private BitDir? _dir;
-    // The direction the grid actually renders in while Dir leaves it to the page (null) or to its
-    // content (Auto): neither says which way that is, so it is read off the rendered root after each
-    // render that may have changed it. Only the arrow keys and the resize drag need it - the sticky
-    // offsets and the resizer are placed with logical properties, which follow the inherited direction
-    // on their own.
-    private bool _inheritedRtl;
-    private BitDir? _inheritedRtlResolvedFor;
-    private bool _inheritedRtlResolved;
 
     // resizing
     private BitDataGridColumn<TItem>? _resizingColumn;
     private double _resizeStartX;
+    // The direction the drag started in, so every move of one drag mirrors the delta the same way.
+    private bool _resizeRtl;
     private double _resizeStartWidth;
 
     // reordering
@@ -1607,17 +1614,6 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Dir is BitDir.Rtl or BitDir.Ltr)
-        {
-            // An explicit direction is the one the root is written in; forget the inherited one so a
-            // later switch back to null/Auto reads the page afresh rather than trusting a stale value.
-            _inheritedRtlResolved = false;
-        }
-        else if (_inheritedRtlResolved is false || _inheritedRtlResolvedFor != Dir)
-        {
-            if (await ResolveInheritedDirectionAsync()) StateHasChanged();
-        }
-
         if (HasSelectColumn && ShowHeader)
         {
             // Sync the select-all checkbox's indeterminate DOM property. Only invoke when the value
@@ -2763,15 +2759,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // ---------------------------------------------------------- Resizing
     internal async Task StartResizeAsync(BitDataGridColumn<TItem> column, double clientX)
     {
-        _resizingColumn = column;
-        _resizeStartX = clientX;
-        // The page's direction may have changed under a grid that inherits it since it last rendered,
-        // and the drag reads it on every move.
-        if (Dir is not (BitDir.Rtl or BitDir.Ltr)) await ResolveInheritedDirectionAsync();
+        // Everything the drag reads is gathered before it starts: setting _resizingColumn renders the
+        // overlay that feeds OnResizeMove, which must not see a start width or direction still pending.
+        var rtl = await IsRtlAsync();
         // Prefer the header cell's real rendered width: a %/fr-sized column has no px width .NET could
         // parse, and even a px-declared one may be constrained by min/max at render time. Falls back to
         // parsing the declared width when JS is unavailable (prerendering, disconnected circuit).
-        _resizeStartWidth = column.ResizedWidth ?? await MeasureColumnWidthAsync(column);
+        var startWidth = column.ResizedWidth ?? await MeasureColumnWidthAsync(column);
+        _resizeRtl = rtl;
+        _resizeStartX = clientX;
+        _resizeStartWidth = startWidth;
+        _resizingColumn = column;
         StateHasChanged();
     }
 
@@ -2791,7 +2789,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         if (_resizingColumn is null) return;
         var delta = clientX - _resizeStartX;
-        if (IsRtl) delta = -delta;
+        if (_resizeRtl) delta = -delta;
         var newWidth = Math.Max(_resizingColumn.MinWidth, _resizeStartWidth + delta);
         if (_resizingColumn.MaxWidth is { } max) newWidth = Math.Min(max, newWidth);
         _resizingColumn.ResizedWidth = newWidth;
@@ -3121,7 +3119,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
 
         int row = rowIdx, col = colIndex;
-        var rtl = IsRtl;
+        // Only the horizontal arrows depend on the direction, so only they pay for reading it.
+        var rtl = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync();
         var handled = true;
         // Horizontal travel direction in column-index space (used to skip over spanned-away columns).
         int colDir = 0;
@@ -4099,43 +4098,23 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         return c;
     }
 
-    /// <summary>Whether the grid renders right to left: its own or cascaded <see cref="Dir"/> when that names
-    /// a direction, otherwise the one read off the rendered root.</summary>
-    private bool IsRtl => Dir switch
+    /// <summary>Whether the grid renders right to left, read at the moment it matters. An explicit or cascaded
+    /// <see cref="Dir"/> naming a direction answers it; when Dir leaves it to the page (null) or to the
+    /// content (Auto), the rendered root is asked, so a page or content that changed direction since the
+    /// last render is never answered with a stale value. Only the arrow keys and the resize drag need it -
+    /// the sticky offsets and the resizer are placed with logical properties, which follow the inherited
+    /// direction on their own.</summary>
+    private async Task<bool> IsRtlAsync()
     {
-        BitDir.Rtl => true,
-        BitDir.Ltr => false,
-        _ => _inheritedRtl
-    };
-
-    /// <summary>The value of the root's <c>dir</c> attribute: none at all unless a direction is set, so the
-    /// grid inherits the page's instead of overriding it.</summary>
-    private string? DirAttribute => Dir switch
-    {
-        BitDir.Rtl => "rtl",
-        BitDir.Ltr => "ltr",
-        BitDir.Auto => "auto",
-        _ => null
-    };
-
-    /// <summary>Reads the direction the root is rendered in, for a grid whose <see cref="Dir"/> leaves it to the
-    /// page or to the content. Returns whether it differs from the one known so far.</summary>
-    private async Task<bool> ResolveInheritedDirectionAsync()
-    {
-        var resolvedFor = Dir;
-        bool rtl;
+        if (Dir is BitDir.Rtl) return true;
+        if (Dir is BitDir.Ltr) return false;
         try
         {
-            rtl = await JS.InvokeAsync<bool>("BitBlazorUI.DataGrid.isRtl", _rootRef);
+            return await JS.InvokeAsync<bool>("BitBlazorUI.DataGrid.isRtl", _rootRef);
         }
-        catch (JSException) { return false; }
-        catch (JSDisconnectedException) { return false; }
-
-        _inheritedRtlResolved = true;
-        _inheritedRtlResolvedFor = resolvedFor;
-        if (_inheritedRtl == rtl) return false;
-        _inheritedRtl = rtl;
-        return true;
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        return false;
     }
 
     private string RootClasses()
@@ -4144,7 +4123,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (Bordered) c += " bit-dtg-bordered";
         if (Striped) c += " bit-dtg-striped";
         if (Hoverable) c += " bit-dtg-hoverable";
-        if (IsRtl) c += " bit-dtg-rtl";
+        // Like BitComponentBase's bit-rtl, a hook for the named direction only: the grid's own layout
+        // follows whatever direction it ends up in through logical properties, not through this class.
+        if (Dir == BitDir.Rtl) c += " bit-dtg-rtl";
         if (!string.IsNullOrEmpty(Class)) c += " " + Class;
         return c;
     }
