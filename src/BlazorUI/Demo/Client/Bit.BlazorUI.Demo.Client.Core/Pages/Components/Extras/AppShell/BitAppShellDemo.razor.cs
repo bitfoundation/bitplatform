@@ -10,6 +10,7 @@ public partial class BitAppShellDemo
 
     private bool noScroll;
     private bool instantScroll;
+    private BitOverscroll overscroll = BitOverscroll.None;
 
     private bool stableGutter;
     private bool clipOverflowX;
@@ -28,10 +29,9 @@ public partial class BitAppShellDemo
     private double keyboardInset;
 
     private BitAppShell? feedShell;
-    private BitAppShell? clipShell;
     private BitAppShell? scrollShell;
     private BitAppShell? paddingShell;
-    private BitAppShell? behaviorShell;
+    private BitAppShell? overflowShell;
 
     private string offsetText = "-";
 
@@ -43,18 +43,21 @@ public partial class BitAppShellDemo
 
     private string userName = "Saleh Yusefnejad";
 
-    // The four bars are 0 tall on a desktop browser, so the example stands in for the device: the root is
-    // handed the safe areas a phone would report, which the shell sizes its bars AND its middle from - and
-    // which the No*Inset flags still take back to zero. Sizing the bars themselves inline would do neither,
-    // since an inline height wins over the inset variables the flags change. The bars get a color each.
-    private readonly BitAppShellClassStyles insetStyles = new()
-    {
-        Root = "--bit-env-inset-top:1.5rem;--bit-env-inset-bottom:1.5rem;--bit-env-inset-inline-start:1rem;--bit-env-inset-inline-end:1rem",
-        Top = "background:#0d7bbd",
-        Bottom = "background:#0d7bbd",
-        Left = "background:#7a3fb5",
-        Right = "background:#7a3fb5",
-    };
+    // Desktop browsers report no safe areas, so the examples hand the shell the ones a phone would report through
+    // the public safe-area variables - which the No*Inset flags still take back to zero - and paint the bars.
+    private const string deviceInsets = "--bit-AppShell-safe-area-top:1.5rem;--bit-AppShell-safe-area-bottom:1.5rem;--bit-AppShell-safe-area-start:1rem;--bit-AppShell-safe-area-end:1rem;--bit-AppShell-inset-background:var(--bit-clr-pri)";
+
+    // The start bar is wider and of its own color, so the side it lands on in a right-to-left shell can be seen.
+    private const string rtlInsets = $"{deviceInsets};--bit-AppShell-safe-area-start:2rem;--bit-AppShell-inset-start-background:var(--bit-clr-sec)";
+
+    private readonly BitAppShellParams[] appShellParams =
+    [
+        new()
+        {
+            NoBottomInset = true,
+            Style = "--bit-AppShell-safe-area-top:0.75rem;--bit-AppShell-safe-area-bottom:0.75rem;--bit-AppShell-inset-background:var(--bit-clr-pri)"
+        }
+    ];
 
     private readonly BitAppShellClassStyles shellStyles = new()
     {
@@ -323,7 +326,7 @@ public partial class BitAppShellDemo
             Name = "PersistScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Persists scroll position of the main container per url in session storage and restores it on navigation. A fragment-only navigation is left alone.",
+            Description = "Persists scroll position of the main container per url in session storage and restores it on navigation; a page with nothing stored opens at its top. A fragment-only navigation is left alone.",
          },
          new()
          {
@@ -354,6 +357,15 @@ public partial class BitAppShellDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The room the main container keeps between its edges and anything scrolled into view inside it, as any CSS length - which is what keeps a header stuck to the top of the shell from covering what was just scrolled to.",
+         },
+         new()
+         {
+            Name = "ScrollRestoration",
+            Type = "BitAppShellScrollRestoration",
+            DefaultValue = "BitAppShellScrollRestoration.Url",
+            Description = "Which navigations PersistScroll restores: Url restores every navigation to a url left scrolled (app tabs); History only the back and forward buttons, opening every other navigation at its top as a browser does.",
+            LinkType = LinkType.Link,
+            Href = "#scroll-restoration-enum"
          },
          new()
          {
@@ -396,6 +408,70 @@ public partial class BitAppShellDemo
             LinkType = LinkType.Link,
             Href = "#cascading-value"
          },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-AppShell-background",
+            DefaultValue = "var(--bit-clr-bg-pri)",
+            Description = "Background of the shell, and of the four inset bars unless they are given their own.",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-inset-background",
+            DefaultValue = "--bit-AppShell-background",
+            Description = "Background of the four inset bars.",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-inset-top-background",
+            DefaultValue = "--bit-AppShell-inset-background",
+            Description = "Background of the top bar, behind the status bar - commonly the color of the header below it.",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-inset-bottom-background",
+            DefaultValue = "--bit-AppShell-inset-background",
+            Description = "Background of the bottom bar, behind the home indicator.",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-inset-start-background",
+            DefaultValue = "--bit-AppShell-inset-background",
+            Description = "Background of the leading side bar (left in LTR, right in RTL).",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-inset-end-background",
+            DefaultValue = "--bit-AppShell-inset-background",
+            Description = "Background of the trailing side bar (right in LTR, left in RTL).",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-safe-area-top",
+            DefaultValue = "env(safe-area-inset-top)",
+            Description = "How far the top edge is inset. Set it to map the insets a native host measured, or to keep a minimum with max(). StableInsets defaults it to the device maximum; NoInsets and NoTopInset win over it.",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-safe-area-bottom",
+            DefaultValue = "env(safe-area-inset-bottom)",
+            Description = "How far the bottom edge is inset. NoInsets and NoBottomInset win over it.",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-safe-area-start",
+            DefaultValue = "the inline-start env() inset",
+            Description = "How far the leading edge is inset. NoInsets and NoStartInset win over it.",
+        },
+        new()
+        {
+            Name = "--bit-AppShell-safe-area-end",
+            DefaultValue = "the inline-end env() inset",
+            Description = "How far the trailing edge is inset. NoInsets and NoEndInset win over it.",
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -759,6 +835,27 @@ public partial class BitAppShellDemo
                     Name= "Auto",
                     Description="Scroll behavior is determined by the computed value of scroll-behavior.",
                     Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "scroll-restoration-enum",
+            Name = "BitAppShellScrollRestoration",
+            Description = "Which navigations PersistScroll puts the reader back where they left a page on.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Url",
+                    Description="Every navigation to a url that was left scrolled is restored, however it was navigated to - the tabs of a mobile app, each keeping its own place.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "History",
+                    Description="Only the browser's back and forward navigations are restored; every other navigation opens the page at its top, as a browser does.",
+                    Value="1",
                 }
             ]
         },

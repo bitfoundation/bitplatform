@@ -515,6 +515,35 @@ public class BitAppShellTests : BunitTestContext
         Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.afterRenderScroll");
     }
 
+    [TestMethod,
+        DataRow(null, false),
+        DataRow(BitAppShellScrollRestoration.Url, false),
+        DataRow(BitAppShellScrollRestoration.History, true)
+    ]
+    public void BitAppShellShouldTellTheRestoreWhetherOnlyHistoryTraversalsAreRestored(BitAppShellScrollRestoration? restoration, bool historyOnly)
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.locationChangedScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.afterRenderScroll");
+
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PersistScroll, true);
+            if (restoration.HasValue)
+            {
+                parameters.Add(p => p.ScrollRestoration, restoration.Value);
+            }
+        });
+
+        InvokeLocationChanged(component.Instance, "https://example.com/page2");
+
+        component.Render();
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.afterRenderScroll");
+
+        Assert.AreEqual(historyOnly, invocation.Arguments[1]);
+    }
+
     [TestMethod]
     public void BitAppShellShouldNotCallLocationChangedScrollWhenNotYetRendered()
     {
@@ -2418,6 +2447,139 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.IsTrue(classes.Contains("bit-ash-sin"));
         Assert.IsTrue(classes.Contains("bit-ash-nin"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitAppShellCascadingParamsTest>();
+
+        var roots = component.FindAll(".bit-ash");
+        var mains = component.FindAll(".bit-ash-main");
+
+        // The first shell takes everything from the cascading parameters.
+        Assert.IsTrue(roots[0].ClassList.Contains("cascaded"));
+        Assert.IsTrue(roots[0].ClassList.Contains("bit-ash-nin"));
+        Assert.IsTrue(roots[0].ClassList.Contains("bit-ash-fsc"));
+        Assert.IsTrue(roots[0].ClassList.Contains("bit-ash-sin"));
+        StringAssert.Contains(roots[0].GetAttribute("style"), "--bit-AppShell-background: red");
+        Assert.IsTrue(mains[0].ClassList.Contains("cascaded-main"));
+        Assert.IsTrue(mains[0].ClassList.Contains("bit-ash-nsc"));
+        Assert.IsFalse(mains[0].ClassList.Contains("bit-ash-smt"));
+        StringAssert.Contains(mains[0].GetAttribute("style"), "scrollbar-gutter:stable");
+        StringAssert.Contains(mains[0].GetAttribute("style"), "scroll-padding:3rem 0 0 0");
+        StringAssert.Contains(mains[0].GetAttribute("style"), "overflow:hidden");
+
+        // The second one sets its own values, which must not be overwritten - an own false included.
+        Assert.IsFalse(roots[1].ClassList.Contains("bit-ash-nin"));
+        Assert.IsTrue(mains[1].ClassList.Contains("own-main"));
+        Assert.IsFalse(mains[1].ClassList.Contains("cascaded-main"));
+        Assert.IsFalse(mains[1].ClassList.Contains("bit-ash-nsc"));
+        Assert.IsTrue(mains[1].ClassList.Contains("bit-ash-smt"));
+        StringAssert.Contains(mains[1].GetAttribute("style"), "scroll-padding:1rem");
+        Assert.IsFalse(mains[1].GetAttribute("style")!.Contains("overflow:hidden"));
+
+        // What it did not set is still filled in from them.
+        Assert.IsTrue(roots[1].ClassList.Contains("cascaded"));
+        Assert.IsTrue(roots[1].ClassList.Contains("bit-ash-fsc"));
+        StringAssert.Contains(mains[1].GetAttribute("style"), "scrollbar-gutter:stable");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldSubscribeToNavigationThroughCascadingParams()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Extras.goToTop");
+
+        var component = RenderComponent<BitAppShellCascadingParamsTest>();
+
+        // AutoGoToTop reaches the shell only through the params object, and it is still what decides whether
+        // the shell listens for navigations at all - so the params have to be applied before that decision.
+        var shell = component.FindComponents<BitAppShell>()[0].Instance;
+
+        Assert.IsTrue(shell.AutoGoToTop);
+
+        InvokeLocationChanged(shell, "https://example.com/other");
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Extras.goToTop");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldRenderNoRoleWhenUnnamed()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        Assert.IsFalse(component.Find(".bit-ash").HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldBeAGroupWhenNamed()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "My app");
+        });
+
+        var root = component.Find(".bit-ash");
+
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("My app", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod,
+        DataRow("aria-label", "My app"),
+        DataRow("aria-labelledby", "app-title")
+    ]
+    public void BitAppShellShouldBeAGroupWhenNamedByAPlainAttribute(string name, string value)
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAppShell>(0);
+            builder.AddAttribute(1, name, value);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ash");
+
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        // The null AriaLabel parameter must not remove the name the page wrote itself.
+        Assert.AreEqual(value, root.GetAttribute(name));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldLetAPlainRoleWin()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAppShell>(0);
+            builder.AddAttribute(1, nameof(BitAppShell.AriaLabel), "My app");
+            builder.AddAttribute(2, "role", "application");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("application", component.Find(".bit-ash").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldRespectClassesAndStylesChangingAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitAppShellClassStyles { Root = "first-class" });
+            parameters.Add(p => p.Styles, new BitAppShellClassStyles { Root = "margin:1px" });
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitAppShellClassStyles { Root = "second-class" });
+            parameters.Add(p => p.Styles, new BitAppShellClassStyles { Root = "margin:2px" });
+        });
+
+        var root = component.Find(".bit-ash");
+
+        Assert.IsTrue(root.ClassList.Contains("second-class"));
+        Assert.IsFalse(root.ClassList.Contains("first-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:2px");
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("margin:1px"));
     }
 
     private static void InvokeLocationChanged(BitAppShell instance, string uri)

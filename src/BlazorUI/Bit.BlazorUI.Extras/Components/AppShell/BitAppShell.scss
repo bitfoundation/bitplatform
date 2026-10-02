@@ -1,6 +1,24 @@
 ﻿@import '../../Styles/extra-variables.scss';
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// Public CSS variables, read off the root and the bars and never declared here, so a value set on :root (or on
+// an ancestor) re-tunes every app shell under it and one set on the Style of an instance that one alone:
+//   --bit-AppShell-background                 background of the shell, and of the bars   (default: $clr-bg-pri)
+//   --bit-AppShell-inset-background           background of the four inset bars          (default: the shell's)
+//   --bit-AppShell-inset-top-background       ... of the top bar, behind the status bar  (default: the bars')
+//   --bit-AppShell-inset-bottom-background    ... of the bottom bar, behind the home bar (default: the bars')
+//   --bit-AppShell-inset-start-background     ... of the leading side bar                (default: the bars')
+//   --bit-AppShell-inset-end-background       ... of the trailing side bar               (default: the bars')
+//   --bit-AppShell-safe-area-top              how far the top edge is inset              (default: env(safe-area-inset-top))
+//   --bit-AppShell-safe-area-bottom           how far the bottom edge is inset           (default: env(safe-area-inset-bottom))
+//   --bit-AppShell-safe-area-start            how far the leading edge is inset          (default: the logical env() inset)
+//   --bit-AppShell-safe-area-end              how far the trailing edge is inset         (default: the logical env() inset)
+// The four safe areas default to the maximum insets under StableInsets, and the No*Inset flags win over them.
+//
+// What the shell measures is published on its root, for a page to lay its own chrome out against (read-only):
+//   --bit-ash-inset-top / -bottom / -start / -end    the inset each edge ended up with
+//   --bit-ash-keyboard-inset                          how much of the shell the on-screen keyboard covers
+
 // Deliberately outside the library's z-index scale (which tops out at the snackbar's 1400). The four
 // bars mask the physical chrome of the device - the notch, the rounded corners, the home indicator - so
 // there is nothing an application can render that is allowed to paint over them.
@@ -13,10 +31,12 @@ $bit-ash-inset-zindex: 999999;
 // first child is the physically right one in a right-to-left app shell - and the physical right edge is
 // the one whose inset it has to be sized by.
 .bit-ash {
-    --bit-ash-inset-top: #{$bit-env-inset-top};
-    --bit-ash-inset-bottom: #{$bit-env-inset-bottom};
-    --bit-ash-inset-start: #{$bit-env-inset-inline-start};
-    --bit-ash-inset-end: #{$bit-env-inset-inline-end};
+    // The safe areas a page sets come first: a hybrid app whose web view reports no env() insets of its own
+    // maps the ones its native side measured onto them, and a layout that wants a minimum inset says so here.
+    --bit-ash-inset-top: var(--bit-AppShell-safe-area-top, #{$bit-env-inset-top});
+    --bit-ash-inset-bottom: var(--bit-AppShell-safe-area-bottom, #{$bit-env-inset-bottom});
+    --bit-ash-inset-start: var(--bit-AppShell-safe-area-start, #{$bit-env-inset-inline-start});
+    --bit-ash-inset-end: var(--bit-AppShell-safe-area-end, #{$bit-env-inset-inline-end});
     // How much of the shell the on-screen keyboard is covering. It stays 0 unless AvoidKeyboard is set,
     // which is what puts the measured height here from the browser side; a page can read it to place
     // chrome of its own against the same number.
@@ -32,7 +52,7 @@ $bit-ash-inset-zindex: 999999;
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-AppShell-background, #{$clr-bg-pri});
 }
 
 // The insets a browser reports change while its own retractable UI slides in and out - the bottom bar of
@@ -41,10 +61,10 @@ $bit-ash-inset-zindex: 999999;
 // same four instead: the layout is laid out once, for the room left when nothing is retracted, and the
 // browser slides its UI over the background of a bar rather than over the content.
 .bit-ash-sin {
-    --bit-ash-inset-top: #{$bit-env-max-inset-top};
-    --bit-ash-inset-bottom: #{$bit-env-max-inset-bottom};
-    --bit-ash-inset-start: #{$bit-env-max-inset-inline-start};
-    --bit-ash-inset-end: #{$bit-env-max-inset-inline-end};
+    --bit-ash-inset-top: var(--bit-AppShell-safe-area-top, #{$bit-env-max-inset-top});
+    --bit-ash-inset-bottom: var(--bit-AppShell-safe-area-bottom, #{$bit-env-max-inset-bottom});
+    --bit-ash-inset-start: var(--bit-AppShell-safe-area-start, #{$bit-env-max-inset-inline-start});
+    --bit-ash-inset-end: var(--bit-AppShell-safe-area-end, #{$bit-env-max-inset-inline-end});
 }
 
 .bit-ash-nin {
@@ -82,18 +102,20 @@ $bit-ash-inset-zindex: 999999;
     position: fixed;
 }
 
+// Each bar falls back to the background of the four, and that one to the shell's: the commonest re-skin is
+// the top bar alone painted in the color of the header below it, so the status bar reads as part of it.
 .bit-ash-top {
     width: 100%;
     z-index: $bit-ash-inset-zindex;
     height: var(--bit-ash-inset-top);
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-AppShell-inset-top-background, var(--bit-AppShell-inset-background, var(--bit-AppShell-background, #{$clr-bg-pri})));
 }
 
 .bit-ash-bottom {
     width: 100%;
     z-index: $bit-ash-inset-zindex;
     height: var(--bit-ash-inset-bottom-visible);
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-AppShell-inset-bottom-background, var(--bit-AppShell-inset-background, var(--bit-AppShell-background, #{$clr-bg-pri})));
 }
 
 .bit-ash-center {
@@ -135,12 +157,50 @@ $bit-ash-inset-zindex: 999999;
     height: 100%;
     z-index: $bit-ash-inset-zindex;
     width: var(--bit-ash-inset-start);
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-AppShell-inset-start-background, var(--bit-AppShell-inset-background, var(--bit-AppShell-background, #{$clr-bg-pri})));
 }
 
 .bit-ash-right {
     height: 100%;
     z-index: $bit-ash-inset-zindex;
     width: var(--bit-ash-inset-end);
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-AppShell-inset-end-background, var(--bit-AppShell-inset-background, var(--bit-AppShell-background, #{$clr-bg-pri})));
+}
+
+// Paper does not scroll. The main container is the region the whole application scrolls in, so a page
+// printed as it stands on the screen would put one screenful on paper and leave the rest out; it is printed
+// at the length of its content instead. A sheet of paper has no notch and no home indicator either, so the
+// bars and the room they take go too, and a full-screen shell steps back into the flow rather than being
+// repeated on every sheet as a fixed box is. The overflow may be written into the style attribute of the
+// container - by OverflowX/Y and NoScroll - so lifting it takes !important. The block sits at the end of
+// the file because it overrides rules of the same specificity above.
+@media print {
+    .bit-ash {
+        --bit-ash-inset-top: 0px;
+        --bit-ash-inset-bottom: 0px;
+        --bit-ash-inset-start: 0px;
+        --bit-ash-inset-end: 0px;
+
+        height: auto;
+    }
+
+    .bit-ash-fsc {
+        position: static;
+    }
+
+    .bit-ash-top,
+    .bit-ash-bottom,
+    .bit-ash-left,
+    .bit-ash-right {
+        display: none;
+    }
+
+    .bit-ash-center,
+    .bit-ash-main {
+        height: auto;
+    }
+
+    .bit-ash-main {
+        overflow: visible !important;
+    }
 }

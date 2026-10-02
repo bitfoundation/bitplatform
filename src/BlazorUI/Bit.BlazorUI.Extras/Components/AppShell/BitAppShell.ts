@@ -24,6 +24,15 @@ namespace BitBlazorUI {
 
         private static _flushBound = false;
 
+        // The url the browser's back or forward button last went to, which is what the History mode of the
+        // restore tells a traversal apart from a link or a NavigateTo by. popstate is the one event that marks
+        // a traversal, and it is listened to in the CAPTURE phase so it is seen before Blazor's own listener
+        // hands the navigation to .NET - which on WebAssembly can render the new page, and ask for its restore,
+        // before a listener registered after Blazor's would have run at all. It is the url rather than a flag
+        // because a traversal .NET never reports - one that only changes the fragment - must not be taken for
+        // the next navigation.
+        private static _poppedUrl: string | undefined;
+
         // How long a restore keeps trying to reach a position the content is not tall enough for yet, and
         // what it is trying to reach: -1 while nothing is being restored, which is also what tells the
         // scroll listener that the moves it is seeing are the reader's own.
@@ -63,13 +72,21 @@ namespace BitBlazorUI {
             AppShell.removeScroll();
         }
 
-        public static afterRenderScroll(url: string) {
+        public static afterRenderScroll(url: string, historyOnly?: boolean) {
             AppShell._currentUrl = url;
             AppShell.storeScroll(url, AppShell._scrolls[url]);
-            // As in initScroll: a page with nothing stored, or stored at 0, is left where the browser has
-            // already put it - which is the fragment of the url it was navigated to, if it had one.
-            if (AppShell._scrolls[url]! > 0) {
+            // In the History mode only the back and forward buttons put the reader back where they left a page;
+            // any other navigation to it opens it at its top, as a browser does for a page scrolling the document.
+            const traversal = AppShell._poppedUrl === url;
+            AppShell._poppedUrl = undefined;
+            if (AppShell._scrolls[url]! > 0 && (!historyOnly || traversal)) {
                 AppShell.restore(AppShell._scrolls[url]);
+            } else if (url.indexOf('#') < 0) {
+                // A page with nothing stored, or stored at 0, opens at its top. The container is the one the
+                // page being left was scrolled in, and nothing else moves it on a navigation, so without this
+                // a page never visited before would open at whatever depth the previous one was left at.
+                // A url with a fragment is the exception: the browser scrolls that one to its target itself.
+                AppShell._container?.scrollTo({ top: 0, behavior: 'instant' });
             }
             AppShell.addScroll();
         }
@@ -302,6 +319,7 @@ namespace BitBlazorUI {
             // of visibilitychange covers the app being switched away from without being torn down at all.
             window.addEventListener('pagehide', AppShell.onFlush);
             document.addEventListener('visibilitychange', AppShell.onFlush);
+            window.addEventListener('popstate', AppShell.onPopState, { capture: true });
         }
 
         private static unbindFlush() {
@@ -311,6 +329,12 @@ namespace BitBlazorUI {
 
             window.removeEventListener('pagehide', AppShell.onFlush);
             document.removeEventListener('visibilitychange', AppShell.onFlush);
+            window.removeEventListener('popstate', AppShell.onPopState, { capture: true });
+            AppShell._poppedUrl = undefined;
+        }
+
+        private static onPopState() {
+            AppShell._poppedUrl = location.href;
         }
 
 

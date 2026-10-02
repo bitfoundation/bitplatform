@@ -19,6 +19,15 @@ namespace Bit.BlazorUI;
 /// against the same numbers: <c>--bit-ash-inset-top</c>, <c>--bit-ash-inset-bottom</c>,
 /// <c>--bit-ash-inset-start</c> and <c>--bit-ash-inset-end</c> for the four safe areas, and
 /// <c>--bit-ash-keyboard-inset</c> for how much of the shell the on-screen keyboard is covering.
+/// <br />
+/// What it looks like, and how far each edge is inset, is set through the public <c>--bit-AppShell-*</c>
+/// CSS variables, which inherit: <c>--bit-AppShell-background</c>, the background of the four bars
+/// (<c>--bit-AppShell-inset-background</c> and one per edge, such as
+/// <c>--bit-AppShell-inset-top-background</c> behind the status bar), and
+/// <c>--bit-AppShell-safe-area-top</c> / <c>-bottom</c> / <c>-start</c> / <c>-end</c>, which default to
+/// the device's own safe areas.
+/// <br />
+/// It prints at the length of its content rather than as the one screenful it shows.
 /// </remarks>
 [SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
 public partial class BitAppShell : BitComponentBase
@@ -58,6 +67,20 @@ public partial class BitAppShell : BitComponentBase
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
     [Inject] private NavigationManager _navManager { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the app shell component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to the app shells of an
+    /// application through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitAppShellParams.ParamName)]
+    public BitAppShellParams? CascadingParameters { get; set; }
 
 
 
@@ -129,7 +152,7 @@ public partial class BitAppShell : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the app shell.
     /// </summary>
-    [Parameter] public BitAppShellClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitAppShellClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Pins the app shell to the four edges of the screen, so that it fills the window whatever height the
@@ -306,8 +329,10 @@ public partial class BitAppShell : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The positions are kept per url in session storage, so they survive a reload and are gone when the
-    /// tab is - <see cref="ClearPersistedScroll"/> forgets them sooner. A navigation that only changes the
-    /// fragment of the url is left alone, so an in-page anchor still works. It takes precedence over
+    /// tab is - <see cref="ClearPersistedScroll"/> forgets them sooner. A page with no position kept opens at
+    /// its top, and <see cref="ScrollRestoration"/> decides whether every navigation to a page puts the reader
+    /// back or only the browser's back and forward buttons do. A navigation that only changes the fragment of
+    /// the url is left alone, so an in-page anchor still works. It takes precedence over
     /// <see cref="AutoGoToTop"/>.
     /// <br />
     /// The store belongs to the page rather than to this component, so it is the one app shell of an
@@ -365,6 +390,17 @@ public partial class BitAppShell : BitComponentBase
     /// </remarks>
     [Parameter] public string? ScrollPadding { get; set; }
 
+    /// <summary>
+    /// Which navigations <see cref="PersistScroll"/> puts the reader back where they left a page on.
+    /// </summary>
+    /// <remarks>
+    /// The default, <see cref="BitAppShellScrollRestoration.Url"/>, restores every navigation to a url that was
+    /// left scrolled - the tabs of a mobile app, each keeping its own place. <see cref="BitAppShellScrollRestoration.History"/>
+    /// restores only the browser's back and forward navigations and opens every other one at its top, which is what a
+    /// browser does for a page that scrolls the document: following a link to a list read halfway down earlier starts
+    /// it from the top, and coming back to it with the back button lands where the reader left it.
+    /// </remarks>
+    [Parameter] public BitAppShellScrollRestoration ScrollRestoration { get; set; }
 
     /// <summary>
     /// The shortest interval (in milliseconds) between two <see cref="OnScroll"/> reports.
@@ -396,7 +432,7 @@ public partial class BitAppShell : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the app shell.
     /// </summary>
-    [Parameter] public BitAppShellClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitAppShellClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The cascading value list to be provided for the children of the app shell.
@@ -614,6 +650,14 @@ public partial class BitAppShell : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    // A name on an element of no role of its own is one assistive technology is not allowed to announce
+    // (ARIA prohibits naming a generic), so the shell that is given one - as AriaLabel, or as a plain
+    // aria-label or aria-labelledby attribute - becomes the group the name is for. An unnamed shell stays
+    // the plain container it is: the landmarks of an application belong to its layout, not to this.
+    private string? _Role => AriaLabel.HasValue()
+                             || GetSplattedAttribute("aria-label").HasValue()
+                             || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
+
     // The class and the style of the main container, which is the element that actually scrolls - so
     // everything about the scrolling of the app shell lands here rather than on the root.
     private string _MainClass => string.Join(' ', new[]
@@ -692,8 +736,13 @@ public partial class BitAppShell : BitComponentBase
         }
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAppShellParams))]
     protected override void OnParametersSet()
     {
+        // First, so that every decision below - the navigation subscription above all - is taken on the
+        // values the shell ends up with rather than on the ones its own markup happened to set.
+        CascadingParameters?.UpdateParameters(this);
+
         // The two navigation features are parameters like any other, so turning either of them on after
         // the shell has been rendered has to subscribe it - and turning both of them off, unsubscribe it.
         UpdateSubscription();
@@ -722,7 +771,7 @@ public partial class BitAppShell : BitComponentBase
         if (_locationChanged && firstRender is false)
         {
             _locationChanged = false;
-            await InvokeJs(() => _js.BitAppShellAfterRenderScroll(_navManager.Uri));
+            await InvokeJs(() => _js.BitAppShellAfterRenderScroll(_navManager.Uri, ScrollRestoration is BitAppShellScrollRestoration.History));
         }
 
         await base.OnAfterRenderAsync(firstRender);
