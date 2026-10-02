@@ -689,6 +689,20 @@ private readonly BitAccordionListParams[] accordionListParams =
     <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
         In the beginning, there is silence, ...
     </BitAccordionListOption>
+</BitAccordionList>
+
+<BitAccordionList Joined
+                  Style=""--bit-Accordion-border-color: var(--bit-clr-pri); --bit-AccordionList-divider-color: var(--bit-clr-brd-sec);""
+                  TItem=""BitAccordionListOption"">
+    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
+        Once upon a time, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"">
+        Every story starts with a blank canvas, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
+        In the beginning, there is silence, ...
+    </BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example23RazorCode = @"

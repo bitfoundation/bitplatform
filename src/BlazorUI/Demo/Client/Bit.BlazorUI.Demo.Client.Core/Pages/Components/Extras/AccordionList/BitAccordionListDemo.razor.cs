@@ -561,6 +561,7 @@ public partial class BitAccordionListDemo
                 new() { Name = "ItemExpanderIconWrapper", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the expander icon wrapper of each accordion item of the BitAccordionList." },
                 new() { Name = "ItemExpanderIcon", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the expander icon of each accordion item of the BitAccordionList." },
                 new() { Name = "ItemExpandedIcon", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the expander icon of each accordion item of the BitAccordionList in the expanded state." },
+                new() { Name = "ItemSpinner", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the spinner that stands in the expander's slot of an item while an awaited OnToggling is deciding about it." },
                 new() { Name = "ItemActions", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the actions of each accordion item, rendered beside the header." },
                 new() { Name = "ItemContentContainer", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the content container of each accordion item of the BitAccordionList." },
                 new() { Name = "ItemContentWrapper", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the content wrapper of each accordion item, which clips the content while it collapses." },
@@ -574,7 +575,7 @@ public partial class BitAccordionListDemo
         new()
         {
             Name = "--bit-AccordionList-gap",
-            DefaultValue = "--bit-spa-scaling-factor (density-scaled)",
+            DefaultValue = "spacing(1)",
             Description = "Space between the items. The Gap parameter wins over it, and a Joined list has none.",
         },
         new()

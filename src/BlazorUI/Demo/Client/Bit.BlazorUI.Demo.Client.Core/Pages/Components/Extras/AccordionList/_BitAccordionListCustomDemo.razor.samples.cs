@@ -509,6 +509,12 @@ private readonly BitAccordionListParams[] accordionListParams =
 <BitAccordionList Style=""--bit-AccordionList-gap: 2px; --bit-Accordion-radius: 0; --bit-Accordion-title-color: var(--bit-clr-pri); --bit-Accordion-header-expanded-background: var(--bit-clr-bg-sec);""
                   Items=""basicItems""
                   TItem=""Section""
+                  NameSelectors=""nameSelectors"" />
+
+<BitAccordionList Joined
+                  Style=""--bit-Accordion-border-color: var(--bit-clr-pri); --bit-AccordionList-divider-color: var(--bit-clr-brd-sec);""
+                  Items=""basicItems""
+                  TItem=""Section""
                   NameSelectors=""nameSelectors"" />";
     private readonly string example22CsharpCode = basicItemsCsharpCode + bodyForCsharpCode + sectionCsharpCode;
 
