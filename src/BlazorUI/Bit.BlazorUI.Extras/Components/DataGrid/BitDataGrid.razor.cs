@@ -152,7 +152,23 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public bool WrapCellText { get; set; }
 
     [Parameter] public bool ShowFooter { get; set; }
-    [Parameter] public BitDir Direction { get; set; } = BitDir.Ltr;
+
+    /// <summary>
+    /// The text direction of the grid. When not set, the grid follows the <see cref="BitDir"/> cascaded
+    /// from an ancestor, and without one it writes no <c>dir</c> attribute at all, so it inherits the
+    /// direction of the page it is placed in.
+    /// </summary>
+    [Parameter]
+    public BitDir? Dir
+    {
+        get => _dir ?? CascadingDir;
+        set => _dir = value;
+    }
+
+    /// <summary>
+    /// The component direction cascaded from an ancestor component.
+    /// </summary>
+    [CascadingParameter] protected BitDir? CascadingDir { get; set; }
 
     /// <summary>
     /// Accessible name of the grid itself. A <c>role="grid"</c> element needs a name for screen-reader
@@ -493,6 +509,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // Per-column validation errors for the row being edited (conversion failures and Validate results).
     // While non-empty, committing is blocked and the messages render under their editors.
     private Dictionary<string, string>? _editErrors;
+
+    // direction
+    private BitDir? _dir;
+    // The direction the grid actually renders in while Dir leaves it to the page (null) or to its
+    // content (Auto): neither says which way that is, so it is read off the rendered root after each
+    // render that may have changed it. Only the arrow keys and the resize drag need it - the sticky
+    // offsets and the resizer are placed with logical properties, which follow the inherited direction
+    // on their own.
+    private bool _inheritedRtl;
+    private BitDir? _inheritedRtlResolvedFor;
+    private bool _inheritedRtlResolved;
 
     // resizing
     private BitDataGridColumn<TItem>? _resizingColumn;
@@ -1580,6 +1607,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (Dir is BitDir.Rtl or BitDir.Ltr)
+        {
+            // An explicit direction is the one the root is written in; forget the inherited one so a
+            // later switch back to null/Auto reads the page afresh rather than trusting a stale value.
+            _inheritedRtlResolved = false;
+        }
+        else if (_inheritedRtlResolved is false || _inheritedRtlResolvedFor != Dir)
+        {
+            if (await ResolveInheritedDirectionAsync()) StateHasChanged();
+        }
+
         if (HasSelectColumn && ShowHeader)
         {
             // Sync the select-all checkbox's indeterminate DOM property. Only invoke when the value
@@ -2727,6 +2765,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         _resizingColumn = column;
         _resizeStartX = clientX;
+        // The page's direction may have changed under a grid that inherits it since it last rendered,
+        // and the drag reads it on every move.
+        if (Dir is not (BitDir.Rtl or BitDir.Ltr)) await ResolveInheritedDirectionAsync();
         // Prefer the header cell's real rendered width: a %/fr-sized column has no px width .NET could
         // parse, and even a px-declared one may be constrained by min/max at render time. Falls back to
         // parsing the declared width when JS is unavailable (prerendering, disconnected circuit).
@@ -2750,7 +2791,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         if (_resizingColumn is null) return;
         var delta = clientX - _resizeStartX;
-        if (Direction == BitDir.Rtl) delta = -delta;
+        if (IsRtl) delta = -delta;
         var newWidth = Math.Max(_resizingColumn.MinWidth, _resizeStartWidth + delta);
         if (_resizingColumn.MaxWidth is { } max) newWidth = Math.Min(max, newWidth);
         _resizingColumn.ResizedWidth = newWidth;
@@ -3080,7 +3121,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
 
         int row = rowIdx, col = colIndex;
-        var rtl = Direction == BitDir.Rtl;
+        var rtl = IsRtl;
         var handled = true;
         // Horizontal travel direction in column-index space (used to skip over spanned-away columns).
         int colDir = 0;
@@ -3988,13 +4029,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private double DetailOffset => ReorderOffset + (HasReorderColumn ? ReorderColWidth : 0);
     private double SelectOffset => DetailOffset + (HasDetailColumn ? DetailColWidth : 0);
 
-    /// <summary>The inline-start CSS edge for sticky special columns, flipped to "right" in RTL.</summary>
-    private string StickyEdge => Direction == BitDir.Rtl ? "right" : "left";
-
-    internal string RowNumberStickyStyle => $"{StickyEdge}:0;";
-    internal string ReorderStickyStyle => $"{StickyEdge}:{ReorderOffset.ToString(CultureInfo.InvariantCulture)}px;";
-    internal string DetailStickyStyle => $"{StickyEdge}:{DetailOffset.ToString(CultureInfo.InvariantCulture)}px;";
-    internal string SelectStickyStyle => $"{StickyEdge}:{SelectOffset.ToString(CultureInfo.InvariantCulture)}px;";
+    // The sticky offsets are logical, so they follow whichever direction the grid ends up in - its own
+    // Dir, a cascaded one, or the one it inherits from the page - without the grid having to know it.
+    internal string RowNumberStickyStyle => "inset-inline-start:0;";
+    internal string ReorderStickyStyle => $"inset-inline-start:{ReorderOffset.ToString(CultureInfo.InvariantCulture)}px;";
+    internal string DetailStickyStyle => $"inset-inline-start:{DetailOffset.ToString(CultureInfo.InvariantCulture)}px;";
+    internal string SelectStickyStyle => $"inset-inline-start:{SelectOffset.ToString(CultureInfo.InvariantCulture)}px;";
 
     private string ColumnWidthToken(BitDataGridColumn<TItem> column)
     {
@@ -4059,13 +4099,52 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         return c;
     }
 
+    /// <summary>Whether the grid renders right to left: its own or cascaded <see cref="Dir"/> when that names
+    /// a direction, otherwise the one read off the rendered root.</summary>
+    private bool IsRtl => Dir switch
+    {
+        BitDir.Rtl => true,
+        BitDir.Ltr => false,
+        _ => _inheritedRtl
+    };
+
+    /// <summary>The value of the root's <c>dir</c> attribute: none at all unless a direction is set, so the
+    /// grid inherits the page's instead of overriding it.</summary>
+    private string? DirAttribute => Dir switch
+    {
+        BitDir.Rtl => "rtl",
+        BitDir.Ltr => "ltr",
+        BitDir.Auto => "auto",
+        _ => null
+    };
+
+    /// <summary>Reads the direction the root is rendered in, for a grid whose <see cref="Dir"/> leaves it to the
+    /// page or to the content. Returns whether it differs from the one known so far.</summary>
+    private async Task<bool> ResolveInheritedDirectionAsync()
+    {
+        var resolvedFor = Dir;
+        bool rtl;
+        try
+        {
+            rtl = await JS.InvokeAsync<bool>("BitBlazorUI.DataGrid.isRtl", _rootRef);
+        }
+        catch (JSException) { return false; }
+        catch (JSDisconnectedException) { return false; }
+
+        _inheritedRtlResolved = true;
+        _inheritedRtlResolvedFor = resolvedFor;
+        if (_inheritedRtl == rtl) return false;
+        _inheritedRtl = rtl;
+        return true;
+    }
+
     private string RootClasses()
     {
         var c = "bit-dtg";
         if (Bordered) c += " bit-dtg-bordered";
         if (Striped) c += " bit-dtg-striped";
         if (Hoverable) c += " bit-dtg-hoverable";
-        if (Direction == BitDir.Rtl) c += " bit-dtg-rtl";
+        if (IsRtl) c += " bit-dtg-rtl";
         if (!string.IsNullOrEmpty(Class)) c += " " + Class;
         return c;
     }
@@ -4115,13 +4194,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         if (column.Frozen)
         {
-            var edge = Direction == BitDir.Rtl ? "right" : "left";
-            return $"{edge}:{FrozenOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
+            return $"inset-inline-start:{FrozenOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
         }
         if (column.FrozenEnd)
         {
-            var edge = Direction == BitDir.Rtl ? "left" : "right";
-            return $"{edge}:{FrozenEndOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
+            return $"inset-inline-end:{FrozenEndOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
         }
         return string.Empty;
     }

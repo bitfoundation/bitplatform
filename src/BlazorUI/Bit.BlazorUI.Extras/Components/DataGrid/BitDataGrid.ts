@@ -202,6 +202,13 @@ namespace BitBlazorUI {
             if (element) element.indeterminate = value;
         }
 
+        // Whether the element renders right to left. A grid whose Dir is unset inherits the page's
+        // direction and one whose Dir is Auto takes it from its content, so neither is known to .NET;
+        // the computed style resolves both, the dir attribute of every ancestor included.
+        public static isRtl(element: HTMLElement): boolean {
+            return element ? getComputedStyle(element).direction === 'rtl' : false;
+        }
+
         // Measures an element's rendered width. Used when a column resize starts so the drag begins
         // from the column's real on-screen width even when its Width is expressed in %/fr units
         // (which .NET cannot resolve to pixels on its own).

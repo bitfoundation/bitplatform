@@ -442,10 +442,80 @@ public class BitDataGridTests : BunitTestContext
         var headerCells = component.FindAll(".bit-dtg-header-row .bit-dtg-hcell");
         Assert.IsFalse(headerCells[0].ClassList.Contains("bit-dtg-sticky"));
         Assert.IsTrue(headerCells[1].ClassList.Contains("bit-dtg-sticky"));
-        StringAssert.Contains(headerCells[1].GetAttribute("style") ?? "", "right:0px");
+        StringAssert.Contains(headerCells[1].GetAttribute("style") ?? "", "inset-inline-end:0px");
 
         var firstRowCells = component.FindAll(".bit-dtg-body > .bit-dtg-row")[0].QuerySelectorAll(".bit-dtg-cell");
         Assert.IsTrue(firstRowCells[1].ClassList.Contains("bit-dtg-sticky"));
+    }
+
+    [TestMethod]
+    public void WritesNoDirAttributeWhenNoDirectionIsSet()
+    {
+        // Writing dir="ltr" by default would override the direction the grid inherits from the page.
+        var component = RenderGrid();
+
+        var root = component.Find(".bit-dtg");
+        Assert.IsNull(root.GetAttribute("dir"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dtg-rtl"));
+    }
+
+    [TestMethod]
+    public void FollowsTheCascadedDir()
+    {
+        var component = RenderComponent<CascadingValue<BitDir?>>(parameters =>
+        {
+            parameters.Add(p => p.Value, BitDir.Rtl);
+            parameters.AddChildContent<BitDataGrid<TestRow>>(grid =>
+            {
+                grid.Add(p => p.Items, CreateRows());
+                grid.Add(p => p.ChildContent, DefaultColumns());
+            });
+        });
+
+        var root = component.Find(".bit-dtg");
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dtg-rtl"));
+    }
+
+    [TestMethod]
+    public void ExplicitDirWinsOverTheCascadedOne()
+    {
+        var component = RenderComponent<CascadingValue<BitDir?>>(parameters =>
+        {
+            parameters.Add(p => p.Value, BitDir.Rtl);
+            parameters.AddChildContent<BitDataGrid<TestRow>>(grid =>
+            {
+                grid.Add(p => p.Items, CreateRows());
+                grid.Add(p => p.ChildContent, DefaultColumns());
+                grid.Add(p => p.Dir, BitDir.Ltr);
+            });
+        });
+
+        var root = component.Find(".bit-dtg");
+        Assert.AreEqual("ltr", root.GetAttribute("dir"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dtg-rtl"));
+        // A named direction is the one the root is written in, so there is nothing to read off the page.
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.DataGrid.isRtl");
+    }
+
+    [TestMethod]
+    public void InheritedRtlFlipsTheHorizontalArrowKeys()
+    {
+        // No Dir and no cascade: the grid inherits the page's direction, which is read off the root.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.isRtl", _ => true).SetResult(true);
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.CellNavigation, true));
+
+        var root = component.Find(".bit-dtg");
+        Assert.IsNull(root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dtg-rtl"));
+
+        component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell")
+            .KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        // Right to left, the left arrow moves toward the end of the row: to the second column.
+        var cells = component.Find(".bit-dtg-body > .bit-dtg-row").QuerySelectorAll(".bit-dtg-cell");
+        Assert.AreEqual("-1", cells[0].GetAttribute("tabindex"));
+        Assert.AreEqual("0", cells[1].GetAttribute("tabindex"));
     }
 
     [TestMethod]
