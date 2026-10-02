@@ -2,9 +2,9 @@
 
 internal static class BitAppShellJsRuntimeExtensions
 {
-    internal static ValueTask BitAppShellInitScroll(this IJSRuntime jsRuntime, ElementReference container, string url)
+    internal static ValueTask BitAppShellInitScroll(this IJSRuntime jsRuntime, ElementReference container, string url, bool historyOnly)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.initScroll", container, url);
+        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.initScroll", container, url, historyOnly);
     }
 
     internal static ValueTask BitAppShellLocationChangedScroll(this IJSRuntime jsRuntime)

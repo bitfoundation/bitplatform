@@ -10,7 +10,9 @@ namespace BitBlazorUI {
 
         public static PreScroll: number = 0;
 
-        private static _currentUrl: string;
+        // The key the scrolling of the page on screen is stored under: its url, or in the History mode its url
+        // and the history entry showing it (see keyOf).
+        private static _currentKey: string;
         private static _container: HTMLElement | undefined;
         private static _scrolls: { [key: string]: number | undefined } = {};
 
@@ -42,11 +44,11 @@ namespace BitBlazorUI {
         private static _restoreFrame = 0;
         private static _restoreEvents = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 
-        public static initScroll(container: HTMLElement, url: string) {
+        public static initScroll(container: HTMLElement, url: string, historyOnly?: boolean) {
             AppShell._container = container;
-            AppShell._currentUrl = url;
             AppShell._scrolls = AppShell.read();
-            AppShell.storeScroll(url, AppShell.PreScroll > 0 ? AppShell.PreScroll : AppShell._scrolls[url]);
+            const key = AppShell._currentKey = AppShell.keyOf(url, historyOnly);
+            AppShell.storeScroll(key, AppShell.PreScroll > 0 ? AppShell.PreScroll : AppShell._scrolls[key]);
             // Spent. It is where the reader had got to on the shell the SERVER rendered, so it only ever
             // belongs to the first url of the session; a shell whose persistence is turned on again later
             // would otherwise be handed a position from a page it has long since navigated away from.
@@ -54,8 +56,8 @@ namespace BitBlazorUI {
             // A page opened at a position of 0 is left exactly where it is rather than being sent to the
             // top: the browser may already have scrolled the container to the fragment of the url it was
             // opened at, and a restore of a position nobody ever stored would undo it.
-            if (AppShell._scrolls[url]! > 0) {
-                AppShell.restore(AppShell._scrolls[url]);
+            if (AppShell._scrolls[key]! > 0) {
+                AppShell.restore(AppShell._scrolls[key]);
             }
             AppShell.addScroll();
             AppShell.bindFlush();
@@ -73,14 +75,14 @@ namespace BitBlazorUI {
         }
 
         public static afterRenderScroll(url: string, historyOnly?: boolean) {
-            AppShell._currentUrl = url;
-            AppShell.storeScroll(url, AppShell._scrolls[url]);
+            const key = AppShell._currentKey = AppShell.keyOf(url, historyOnly);
+            AppShell.storeScroll(key, AppShell._scrolls[key]);
             // In the History mode only the back and forward buttons put the reader back where they left a page;
             // any other navigation to it opens it at its top, as a browser does for a page scrolling the document.
             const traversal = AppShell._poppedUrl === url;
             AppShell._poppedUrl = undefined;
-            if (AppShell._scrolls[url]! > 0 && (!historyOnly || traversal)) {
-                AppShell.restore(AppShell._scrolls[url]);
+            if (AppShell._scrolls[key]! > 0 && (!historyOnly || traversal)) {
+                AppShell.restore(AppShell._scrolls[key]);
             } else if (url.indexOf('#') < 0) {
                 // A page with nothing stored, or stored at 0, opens at its top. The container is the one the
                 // page being left was scrolled in, and nothing else moves it on a navigation, so without this
@@ -107,7 +109,10 @@ namespace BitBlazorUI {
             AppShell.cancelRestore();
 
             if (url) {
-                delete AppShell._scrolls[url];
+                // The url's own key and the key of every history entry the History mode kept it under.
+                Object.keys(AppShell._scrolls)
+                    .filter(k => k === url || k.indexOf(url + AppShell.ENTRY_SEPARATOR) === 0)
+                    .forEach(k => delete AppShell._scrolls[k]);
                 AppShell._dirty = true;
                 AppShell.flush();
                 return;
@@ -138,7 +143,38 @@ namespace BitBlazorUI {
             // position it was CLAMPED to, and the place being restored to would be lost on the way to it.
             if (AppShell._restoreTop >= 0) return;
 
-            AppShell.storeScroll(AppShell._currentUrl, AppShell._container?.scrollTop);
+            AppShell.storeScroll(AppShell._currentKey, AppShell._container?.scrollTop);
+        }
+
+        // The property of history.state the History mode marks an entry with, and what joins it to the url.
+        private static ENTRY_STATE = '_bitAshEntry';
+        private static ENTRY_SEPARATOR = '\n';
+
+        // What the position of a page is stored under. In the Url mode that is the url, so every visit to it
+        // shares one place. In the History mode it is the history ENTRY: a page reached twice by links is two
+        // entries, and the top a new visit opens at must not be stored over where the reader left the earlier
+        // one, which is where the back button takes them. The entry is told apart by an id this keeps in its
+        // history.state - which the browser hands back on a traversal and keeps across a reload - merged into
+        // whatever the router put there. A navigation that replaces the entry replaces its state too, and is
+        // given a fresh id, which is right: it is a new visit. A state the router keeps as something other
+        // than an object cannot carry the id, and the url is used instead.
+        private static keyOf(url: string, historyOnly?: boolean): string {
+            if (!historyOnly) return url;
+
+            try {
+                const state = history.state;
+                if (state != null && typeof state !== 'object') return url;
+
+                let entry = state?.[AppShell.ENTRY_STATE];
+                if (typeof entry !== 'string') {
+                    entry = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+                    history.replaceState(Object.assign({}, state, { [AppShell.ENTRY_STATE]: entry }), '');
+                }
+
+                return url + AppShell.ENTRY_SEPARATOR + entry;
+            } catch {
+                return url;
+            }
         }
 
         // Puts the container back where the url was left. The content of a page being returned to is
@@ -222,18 +258,18 @@ namespace BitBlazorUI {
             }
         }
 
-        private static storeScroll(url: string, value: number | undefined) {
-            if (!url) return;
+        private static storeScroll(key: string, value: number | undefined) {
+            if (!key) return;
 
-            const known = url in AppShell._scrolls;
+            const known = key in AppShell._scrolls;
 
-            AppShell._scrolls[url] = value || 0;
+            AppShell._scrolls[key] = value || 0;
 
-            // A url already at the end of the order is where touch() would put it, and the cap was
+            // A key already at the end of the order is where touch() would put it, and the cap was
             // enforced when it got there - so the scrolling of one page, which stores a position per
             // frame, does not re-key the map and walk its keys for every one of them.
-            if (known === false || AppShell._mru !== url) {
-                AppShell.touch(url);
+            if (known === false || AppShell._mru !== key) {
+                AppShell.touch(key);
             }
 
             AppShell.schedule();
@@ -245,12 +281,12 @@ namespace BitBlazorUI {
 
         // Moves a url to the end of the insertion order and drops whatever falls out of the cap, so the
         // map stays bounded by the pages most recently looked at rather than by every page ever visited.
-        private static touch(url: string) {
-            AppShell._mru = url;
+        private static touch(key: string) {
+            AppShell._mru = key;
 
-            const value = AppShell._scrolls[url];
-            delete AppShell._scrolls[url];
-            AppShell._scrolls[url] = value;
+            const value = AppShell._scrolls[key];
+            delete AppShell._scrolls[key];
+            AppShell._scrolls[key] = value;
 
             const keys = Object.keys(AppShell._scrolls);
             for (let i = 0; i < keys.length - AppShell.STORE_MAX; i++) {

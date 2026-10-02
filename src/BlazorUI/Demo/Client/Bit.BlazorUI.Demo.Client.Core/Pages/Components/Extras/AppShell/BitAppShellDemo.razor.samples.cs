@@ -329,6 +329,12 @@ private void RenameUser()
         --bit-AppShell-inset-bottom-background: var(--bit-clr-bg-ter);
     }
 
+    /* The env() insets are physical, so in a right-to-left shell the leading edge is the right one. */
+    .themed-shell[dir=""rtl""] {
+        --bit-AppShell-safe-area-start: max(env(safe-area-inset-right), 0.5rem);
+        --bit-AppShell-safe-area-end: max(env(safe-area-inset-left), 0.5rem);
+    }
+
     .themed-head {
         color: var(--bit-clr-pri-text);
         background-color: var(--bit-clr-pri);
@@ -400,6 +406,12 @@ private readonly BitAppShellClassStyles shellClasses = new()
     </div>
 </BitAppShell>";
     private readonly string example14CsharpCode = @"
+// Desktop browsers report no safe areas, so the shell is handed the ones a phone would report
+// (which the No*Inset flags still take back to zero), and the bars are painted to be seen.
+private const string deviceInsets = ""--bit-AppShell-safe-area-top:1.5rem;--bit-AppShell-safe-area-bottom:1.5rem;"" +
+                                    ""--bit-AppShell-safe-area-start:1rem;--bit-AppShell-safe-area-end:1rem;"" +
+                                    ""--bit-AppShell-inset-background:var(--bit-clr-pri)"";
+
 // The start bar is wider and of its own color, so the side it lands on can be seen.
 private const string rtlInsets = $""{deviceInsets};--bit-AppShell-safe-area-start:2rem;--bit-AppShell-inset-start-background:var(--bit-clr-sec)"";";
 }

@@ -118,6 +118,12 @@
     --bit-AppShell-inset-bottom-background: var(--bit-clr-bg-ter);
 }
 
+// The env() insets are physical, so in a right-to-left shell the leading edge is the right one.
+::deep .themed-shell[dir="rtl"] {
+    --bit-AppShell-safe-area-start: max(env(safe-area-inset-right), 0.5rem);
+    --bit-AppShell-safe-area-end: max(env(safe-area-inset-left), 0.5rem);
+}
+
 .themed-head {
     border-bottom: none;
     color: var(--bit-clr-pri-text);

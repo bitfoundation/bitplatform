@@ -797,7 +797,7 @@ public partial class BitAppShell : BitComponentBase
 
             _scrollInit = true;
 
-            await InvokeJs(() => _js.BitAppShellInitScroll(_containerRef.Value, _navManager.Uri));
+            await InvokeJs(() => _js.BitAppShellInitScroll(_containerRef.Value, _navManager.Uri, ScrollRestoration is BitAppShellScrollRestoration.History));
             return;
         }
 
