@@ -4,10 +4,11 @@
     <div class="example-desc">
         Tab into the plot, then walk it: <b>Left/Right</b> move through a series, <b>Up/Down</b> between series,
         <b>Home/End</b> jump to the ends, <b>Enter</b> raises <code>OnElementClick</code> and <b>Escape</b> leaves.
-        Each step is announced through a live region. <code>AriaLabel</code> names the chart (it falls back to the
-        title), <code>NavigationHint</code> is the hidden how-to sentence, and a hidden data table
-        (<code>GenerateTable</code>) gives a screen reader every value. <code>IsEnabled="false"</code> takes the
-        chart out of the tab order and stops every interaction.
+        Each step is announced through a live region. <b>Escape</b> also closes a tooltip the mouse opened, without
+        moving the mouse. <code>AriaLabel</code> names the chart (it falls back to the title),
+        <code>NavigationHint</code> is the hidden how-to sentence, and a hidden data table right after the chart
+        (<code>GenerateTable</code>) lets a screen reader browse every value. <code>IsEnabled="false"</code> takes
+        the chart out of the tab order and stops every interaction.
     </div>
     <div class="controls">
         <BitCheckbox Label="IsEnabled" @bind-Value="_enabled" />

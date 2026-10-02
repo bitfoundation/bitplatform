@@ -55,10 +55,21 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="Japanese()" Options="_wide" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Right-to-left" RazorCode="@rtlRazorCode" CsharpCode="@rtlCsharpCode" Id="localization-rtl">
+<DemoExample Title="Right-to-left and translated texts" RazorCode="@rtlRazorCode" CsharpCode="@rtlCsharpCode" Id="localization-rtl">
     <div class="example-desc">
         <code>Dir="BitDir.Rtl"</code> mirrors the title, legend, tooltip and screen-reader table, but not the plot;
-        set <code>Reverse</code> on the index scale to mirror that too, as here.
+        set <code>Reverse</code> on the index scale to mirror that too. <code>Texts</code> translates what the chart
+        writes for screen readers and the CSV - the legend's name, the announced positions, the table headers - and
+        <code>NavigationHint</code> the keyboard instructions.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="Persian()" Options="_rtl" /></div></div>
+    <div class="chart-wrapper">
+        <div class="chart-container">
+            <BitChart Dir="BitDir.Rtl"
+                      Type="BitChartType.Bar"
+                      Data="Persian()"
+                      Options="_rtl"
+                      Texts="_persianTexts"
+                      NavigationHint="با کلیدهای جهت‌نما میان فصل‌ها و سری‌ها حرکت کنید." />
+        </div>
+    </div>
 </DemoExample>

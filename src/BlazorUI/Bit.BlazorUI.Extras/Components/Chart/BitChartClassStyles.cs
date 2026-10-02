@@ -44,4 +44,9 @@ public class BitChartClassStyles
     /// Custom class or style applied to the empty state shown when there is nothing to draw.
     /// </summary>
     public string? NoData { get; set; }
+
+    /// <summary>
+    /// Custom class or style applied to the loading state shown over the plot while the chart is loading.
+    /// </summary>
+    public string? Loading { get; set; }
 }

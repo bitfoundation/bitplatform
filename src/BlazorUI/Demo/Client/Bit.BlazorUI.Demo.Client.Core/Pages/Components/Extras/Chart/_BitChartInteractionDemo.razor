@@ -37,15 +37,26 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="ModeOptions()" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Empty state" RazorCode="@emptyRazorCode" CsharpCode="@emptyCsharpCode" Id="interaction-empty">
+<DemoExample Title="Loading and empty states" RazorCode="@emptyRazorCode" CsharpCode="@emptyCsharpCode" Id="interaction-empty">
     <div class="example-desc">
-        When there is nothing to draw, the chart shows <code>NoDataText</code>, or your own
-        <code>NoDataTemplate</code>, instead of bare axes.
+        <code>IsLoading</code> veils the plot with a spinner and <code>LoadingLabel</code> (or your
+        <code>LoadingTemplate</code>), marks the chart <code>aria-busy</code> and holds back the empty state.
+        With nothing to draw, the chart shows <code>NoDataText</code> or your <code>NoDataTemplate</code> instead
+        of bare axes.
     </div>
     <div class="buttons-container">
+        <BitButton Variant="BitVariant.Outline" OnClick="Reload" IsEnabled="_loading is false">Reload</BitButton>
         <BitButton Variant="BitVariant.Outline" OnClick="ToggleEmpty">@(_hasData ? "Clear the data" : "Restore the data")</BitButton>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="EmptyDemoData()" NoDataText="No results for this filter" /></div></div>
+    <div class="chart-wrapper">
+        <div class="chart-container">
+            <BitChart Type="BitChartType.Bar"
+                      Data="EmptyDemoData()"
+                      IsLoading="_loading"
+                      LoadingLabel="Fetching revenue..."
+                      NoDataText="No results for this filter" />
+        </div>
+    </div>
 </DemoExample>
 
 <DemoExample Title="Linked charts" RazorCode="@linkedRazorCode" CsharpCode="@linkedCsharpCode" Id="interaction-linked">

@@ -25,7 +25,12 @@
 //                                      and the legend items                           (default: $clr-pri-focus)
 //   --bit-Chart-zoom-box-background    fill of the drag-to-zoom selection             (default: $clr-pri at 20%)
 //   --bit-Chart-zoom-box-border-color  border of the drag-to-zoom selection           (default: $clr-pri)
+//   --bit-Chart-inactive-opacity       the series faded behind a highlighted legend
+//                                      item                                           (default: 0.2)
 //   --bit-Chart-no-data-color          the empty-state message                        (default: $clr-fg-sec)
+//   --bit-Chart-loading-background     the veil over the plot while loading           (default: $clr-bg-pri at 70%)
+//   --bit-Chart-loading-color          the loading label                              (default: $clr-fg-sec)
+//   --bit-Chart-loading-spinner-color  the turning arc of the loading spinner         (default: $clr-pri)
 
 .bit-cht {
     --bit-cht-clr-focus: var(--bit-Chart-focus-color, #{$clr-pri-focus});
@@ -98,6 +103,17 @@
     pointer-events: none;
 }
 
+// A legend item under the pointer or the keyboard brings its series forward by fading the others.
+.bit-cht-el,
+.bit-cht-series > g,
+.bit-cht-fg > g {
+    transition: opacity $mot-duration-short $mot-easing;
+}
+
+.bit-cht-dim {
+    opacity: var(--bit-Chart-inactive-opacity, 0.2);
+}
+
 // The cursor is set inline, from whether the chart has a click handler at all.
 .bit-cht-band {
     outline: none;
@@ -107,9 +123,9 @@
 
 .bit-cht-lgd {
     display: flex;
-    padding: 6px 8px;
+    padding: spacing(0.75) spacing(1);
     flex-wrap: wrap;
-    gap: 4px 14px;
+    gap: spacing(0.5) spacing(1.75);
 }
 
 .bit-cht-lgd-h {
@@ -123,14 +139,15 @@
 }
 
 .bit-cht-lgd-itm {
-    gap: 6px;
     margin: 0;
     border: none;
     color: inherit;
     font: inherit;
     cursor: pointer;
-    padding: 2px 4px;
     line-height: 1.4;
+    gap: spacing(0.75);
+    padding: spacing(0.25) spacing(0.5);
+    letter-spacing: $tg-ctrl-letter-spacing;
     // The WCAG 2.2 SC 2.5.8 floor for a pointer target.
     min-height: 24px;
     background: none;
@@ -240,7 +257,41 @@
     border: 6px solid transparent;
 }
 
-// ---- no data / overlay ----
+// ---- loading / no data ----
+
+// The loading veil lets the chart behind it show through, so a refresh does not flash the whole plot away, and it
+// takes the pointer so nothing under it can be hovered while it is up.
+.bit-cht-ldg {
+    inset: 0;
+    z-index: 11;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    gap: spacing(1);
+    flex-direction: column;
+    justify-content: center;
+    font-size: $tg-fs-sm;
+    color: var(--bit-Chart-loading-color, #{$clr-fg-sec});
+    background: var(--bit-Chart-loading-background, #{translucent($clr-bg-pri, 70%)});
+}
+
+.bit-cht-spn {
+    border-radius: 50%;
+    box-sizing: border-box;
+    width: $siz-icon-lg;
+    height: $siz-icon-lg;
+    border-width: $siz-spinner-stroke;
+    border-style: $shp-border-style;
+    border-color: translucent(currentcolor, 25%);
+    border-top-color: var(--bit-Chart-loading-spinner-color, #{$clr-pri});
+    animation: bit-cht-spin $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-cht-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 .bit-cht-nodata {
     inset: 0;
@@ -416,5 +467,12 @@
     .bit-cht-lgd-box,
     .bit-cht-tt-swt {
         forced-color-adjust: none;
+    }
+
+    // Both halves of the ring would be repainted one color, which leaves a turning circle that does not look
+    // like it turns.
+    .bit-cht-spn {
+        border-color: GrayText;
+        border-top-color: Highlight;
     }
 }

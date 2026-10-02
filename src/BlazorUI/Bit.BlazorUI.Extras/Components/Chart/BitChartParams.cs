@@ -37,6 +37,16 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
     public string? Height { get; set; }
 
     /// <summary>
+    /// The text shown under the spinner, and announced, while the chart is loading.
+    /// </summary>
+    public string? LoadingLabel { get; set; }
+
+    /// <summary>
+    /// Custom content shown in place of the default spinner while the chart is loading.
+    /// </summary>
+    public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
     /// Upper bound on the columns the screen-reader table renders.
     /// </summary>
     public int? MaxTableColumns { get; set; }
@@ -71,6 +81,12 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
     /// Custom CSS styles for different parts of the chart.
     /// </summary>
     public BitChartClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The texts the chart writes for assistive technologies and into its CSV export, which is what localizes every
+    /// chart under the <see cref="BitParams"/> at once.
+    /// </summary>
+    public BitChartTexts? Texts { get; set; }
 
     /// <summary>
     /// The custom tooltip template that replaces the default tooltip body.
@@ -130,6 +146,16 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
             bitChart.StyleBuilder.Reset();
         }
 
+        if (LoadingLabel.HasValue() && bitChart.HasNotBeenSet(nameof(LoadingLabel)))
+        {
+            bitChart.LoadingLabel = LoadingLabel;
+        }
+
+        if (LoadingTemplate is not null && bitChart.HasNotBeenSet(nameof(LoadingTemplate)))
+        {
+            bitChart.LoadingTemplate = LoadingTemplate;
+        }
+
         if (MaxTableColumns.HasValue && bitChart.HasNotBeenSet(nameof(MaxTableColumns)))
         {
             bitChart.MaxTableColumns = MaxTableColumns.Value;
@@ -165,6 +191,11 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
             bitChart.Styles = Styles;
 
             bitChart.StyleBuilder.Reset();
+        }
+
+        if (Texts is not null && bitChart.HasNotBeenSet(nameof(Texts)))
+        {
+            bitChart.Texts = Texts;
         }
 
         if (TooltipTemplate is not null && bitChart.HasNotBeenSet(nameof(TooltipTemplate)))

@@ -34,6 +34,17 @@ namespace BitBlazorUI {
             }
             element.addEventListener('keydown', onKeyDown, true);
 
+            // WCAG 1.4.13: a tooltip the pointer opened can be dismissed without moving the pointer. Escape is heard
+            // on the whole document, since the pointer gives the chart no focus, but only while this chart shows a
+            // tooltip; a keydown from inside the plot is the plot's own Escape, already handled in .NET.
+            function onDocumentKeyDown(e: KeyboardEvent) {
+                if (e.key !== 'Escape' && e.key !== 'Esc') return;
+                if (e.target instanceof Node && element.contains(e.target)) return;
+                if (!element.querySelector('.bit-cht-tt')) return;
+                dotnet.invokeMethodAsync('OnDismissTooltip');
+            }
+            document.addEventListener('keydown', onDocumentKeyDown);
+
             let ro: ResizeObserver | null = null;
             let listening = false;
             if (responsive) {
@@ -50,6 +61,7 @@ namespace BitBlazorUI {
             return {
                 dispose() {
                     element.removeEventListener('keydown', onKeyDown, true);
+                    document.removeEventListener('keydown', onDocumentKeyDown);
                     if (ro) ro.disconnect();
                     if (listening) window.removeEventListener('resize', report);
                 }
@@ -212,6 +224,12 @@ namespace BitBlazorUI {
 
             // Interaction-only layers are not part of the picture.
             clone.querySelectorAll('.bit-cht-hover, .bit-cht-bands').forEach(n => n.remove());
+
+            // A file is a picture, not the widget on the page: it takes no focus, has no keys to hand an application,
+            // and the hint its description points at stays behind on the page.
+            clone.setAttribute('role', 'img');
+            clone.removeAttribute('tabindex');
+            clone.removeAttribute('aria-describedby');
 
             // Every custom property the drawing reads - the theme tokens, and the public --bit-Chart-* ones a
             // page may have set on :root, an ancestor or the chart's Style - resolves against the document, so

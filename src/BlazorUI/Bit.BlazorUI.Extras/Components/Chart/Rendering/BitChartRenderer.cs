@@ -24,7 +24,8 @@ public sealed partial class BitChartRenderer
     /// </summary>
     private readonly Dictionary<string, BitChartScaleOptions> _scales = new();
 
-    public BitChartRenderer(BitChartConfig config, BitChartRenderState state, double width, double height, string? uid = null)
+    public BitChartRenderer(BitChartConfig config, BitChartRenderState state, double width, double height, string? uid = null,
+        BitChartTexts? texts = null)
     {
         _config = config;
         _data = config.Data;
@@ -33,7 +34,10 @@ public sealed partial class BitChartRenderer
         _w = width;
         _h = height;
         _uid = uid ?? "bc";
+        _texts = texts ?? BitChartTexts.Default;
     }
+
+    private readonly BitChartTexts _texts;
 
     public BitChartScene Render()
     {
@@ -313,6 +317,7 @@ public sealed partial class BitChartRenderer
             Labels = lo.Labels,
             Title = lo.Title,
             OnClickToggle = lo.OnClickToggle,
+            HighlightOnHover = lo.HighlightOnHover,
             MaxHeight = lo.MaxHeight
         };
 
@@ -342,7 +347,7 @@ public sealed partial class BitChartRenderer
                 var ds = _data.Datasets[i];
                 legend.Items.Add(new BitChartLegendItemModel
                 {
-                    Text = ds.Label ?? $"Dataset {i + 1}",
+                    Text = ds.Label ?? _texts.DatasetLabel(i, _options.Culture),
                     Color = ResolveBackground(ds, i, 0, false),
                     StrokeColor = ResolveBorder(ds, i, 0, false),
                     Hidden = _state.IsDatasetHidden(i) || ds.Hidden,

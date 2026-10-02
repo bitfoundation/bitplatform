@@ -105,22 +105,30 @@ public partial class BitChart
 
     /// <summary>
     /// Renders the chart's data as CSV. Value datasets become one row per series with a column per
-    /// label; point datasets (scatter/bubble) become one row per point.
+    /// label; point datasets (scatter/bubble) become one row per point. The headers and the names of
+    /// unlabeled datasets come from <see cref="Texts"/>, the X and Y headers from the axis titles when
+    /// the axes show one - the same as the screen-reader table.
     /// </summary>
     public string ToCsv()
     {
         var data = _config.Data;
         var culture = Culture;
+        var texts = ActiveTexts;
         var sb = new StringBuilder();
 
         if (HasPointData)
         {
-            sb.AppendLine("Series,X,Y,R");
-            foreach (var ds in data.Datasets)
+            var first = data.Datasets.First(d => d.Points is { Count: > 0 });
+            sb.Append(CsvText(texts.Series)).Append(',')
+              .Append(CsvText(AxisHeader(first.XAxisID, texts.X))).Append(',')
+              .Append(CsvText(AxisHeader(first.YAxisID, texts.Y))).Append(',')
+              .AppendLine(CsvText(texts.Radius));
+            for (int di = 0; di < data.Datasets.Count; di++)
             {
+                var ds = data.Datasets[di];
                 if (ds.Points is not { } pts) continue;
                 foreach (var p in pts)
-                    sb.Append(CsvText(ds.Label ?? "Series")).Append(',')
+                    sb.Append(CsvText(DatasetName(ds, di))).Append(',')
                       .Append(Csv(p.X.ToString(culture))).Append(',')
                       .Append(Csv(p.Y.ToString(culture))).Append(',')
                       .AppendLine(p.R is { } r ? Csv(r.ToString(culture)) : "");
@@ -128,13 +136,14 @@ public partial class BitChart
             return sb.ToString();
         }
 
-        sb.Append("Series");
+        sb.Append(CsvText(texts.Series));
         foreach (var label in data.Labels) sb.Append(',').Append(CsvText(label));
         sb.AppendLine();
 
-        foreach (var ds in data.Datasets)
+        for (int di = 0; di < data.Datasets.Count; di++)
         {
-            sb.Append(CsvText(ds.Label ?? "Series"));
+            var ds = data.Datasets[di];
+            sb.Append(CsvText(DatasetName(ds, di)));
             if (ds.RangeData is { } ranges)
             {
                 foreach (var r in ranges)

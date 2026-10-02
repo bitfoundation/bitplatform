@@ -134,6 +134,7 @@ public sealed partial class BitChartRenderer
             // together with the joint points instead of staying fixed.
             scene.Series.Add(new BitChartSvgPolygon
             {
+                DatasetIndex = d,
                 Points = verts.Select(p => (p.x, p.y)).ToList(),
                 Fill = ds.Fill != BitChartFillMode.None ? fill : "none",
                 Stroke = border,

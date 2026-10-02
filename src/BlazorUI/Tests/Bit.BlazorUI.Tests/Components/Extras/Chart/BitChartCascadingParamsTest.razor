@@ -12,6 +12,8 @@
                                  Height = "200px",
                                  Width = "50%",
                                  NoDataText = "Nothing yet",
+                                 LoadingLabel = "Cascaded loading",
+                                 Texts = new() { LegendAriaLabel = "Cascaded legend" },
                                  GenerateTable = false,
                                  Classes = new() { Root = "cascaded-root", Legend = "cascaded-legend" },
                                  Styles = new() { Root = "--bit-Chart-grid-color: red" },
@@ -24,8 +26,10 @@
               Height="120px"
               GenerateTable="true"
               Classes="@(new() { Root = "own-root" })"
+              Texts="@(new() { LegendAriaLabel = "Own legend" })"
               Class="second" />
     <BitChart />
+    <BitChart IsLoading />
 </BitParams>
 
 @code {

@@ -5,7 +5,8 @@
      id="@_Id"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
-     dir="@Dir?.ToString().ToLowerInvariant()">
+     dir="@Dir?.ToString().ToLowerInvariant()"
+     aria-busy="@(IsLoading ? "true" : null)">
     @if (_scene.Title is { } title && TitleSide(title) == BitChartPosition.Top)
     {
         @RenderTitle(title, "bit-cht-ttl", false)
@@ -31,7 +32,7 @@
         }
 
         <div class="bit-cht-plot @Classes?.Plot" style="@Styles?.Plot" @ref="_plotEl">
-            <svg class="bit-cht-svg" viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="img"
+            <svg class="bit-cht-svg" viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="@SvgRole"
                  aria-roledescription="chart"
                  aria-label="@ChartAriaLabel" aria-describedby="@DescribedBy"
                  style="@AnimStyle" tabindex="@SvgTabIndex"
@@ -71,7 +72,7 @@
                         @RenderPattern(pat)
                     }
                 </defs>
-                <g class="bit-cht-bg" @key="_animKey">
+                <g class="bit-cht-bg" aria-hidden="true" @key="_animKey">
                     @foreach (var n in _scene.Background)
                     {
                         <BitChartSvgPrimitive Node="n" />
@@ -81,7 +82,7 @@
                    pointer always wins, and make the chart hoverable across the whole plot. The
                    pointerdown handler is what gives a touch screen - which never hovers - the same
                    tooltip on a tap. *@
-                <g class="bit-cht-bands">
+                <g class="bit-cht-bands" aria-hidden="true">
                     @foreach (var band in _scene.HitBands)
                     {
                         <rect class="bit-cht-band" x="@BitChartSvg.N(band.X)" y="@BitChartSvg.N(band.Y)"
@@ -92,13 +93,13 @@
                               style="@(IsClickable ? "cursor:pointer" : "cursor:default")" />
                     }
                 </g>
-                <g class="@SeriesGroupClass" @key="(_animKey, 2)" clip-path="@ClipRef">
+                <g class="@SeriesGroupClass" aria-hidden="true" @key="(_animKey, 2)" clip-path="@ClipRef">
                     @foreach (var n in _scene.Series)
                     {
-                        <BitChartSvgPrimitive Node="n" />
+                        <g class="@SeriesNodeClass(n)"><BitChartSvgPrimitive Node="n" /></g>
                     }
                 </g>
-                <g class="@DataGroupClass" style="@DataGroupStyle" @key="(_animKey, 1)" clip-path="@ClipRef">
+                <g class="@DataGroupClass" aria-hidden="true" style="@DataGroupStyle" @key="(_animKey, 1)" clip-path="@ClipRef">
                     @for (int ei = 0; ei < _scene.Elements.Count; ei++)
                     {
                         var el = _scene.Elements[ei];
@@ -114,7 +115,7 @@
                         </g>
                     }
                 </g>
-                <g class="bit-cht-hover">
+                <g class="bit-cht-hover" aria-hidden="true">
                     @foreach (var n in _hoverNodes)
                     {
                         <BitChartSvgPrimitive Node="n" />
@@ -125,15 +126,42 @@
                               fill="@_config.Options.Zoom.DragBoxColor" stroke="@_config.Options.Zoom.DragBoxBorderColor" stroke-width="1" />
                     }
                 </g>
-                <g class="bit-cht-fg">
+                <g class="bit-cht-fg" aria-hidden="true">
                     @foreach (var n in _scene.Foreground)
                     {
-                        <BitChartSvgPrimitive Node="n" />
+                        @* A data label fades with its series; annotations and trendlines belong to no one series. *@
+                        @if (n.DatasetIndex is null)
+                        {
+                            <BitChartSvgPrimitive Node="n" />
+                        }
+                        else
+                        {
+                            <g class="@SeriesNodeClass(n)"><BitChartSvgPrimitive Node="n" /></g>
+                        }
                     }
                 </g>
             </svg>
 
-            @if (_scene.IsEmpty)
+            @if (IsLoading)
+            {
+                @* The label is announced by the chart's live region, which is there before the veil is; aria-busy on the
+                   root says the chart behind it is not finished. *@
+                <div class="bit-cht-ldg @Classes?.Loading" style="@Styles?.Loading">
+                    @if (LoadingTemplate is not null)
+                    {
+                        @LoadingTemplate
+                    }
+                    else
+                    {
+                        <span class="bit-cht-spn" aria-hidden="true"></span>
+                        @if (LoadingLabel.HasValue())
+                        {
+                            <span class="bit-cht-ldg-lbl">@LoadingLabel</span>
+                        }
+                    }
+                </div>
+            }
+            else if (ShowNoData)
             {
                 <div class="bit-cht-nodata @Classes?.NoData" style="@Styles?.NoData">
                     @if (NoDataTemplate is not null)
@@ -243,7 +271,10 @@
         @RenderDataTable()
     }
 
-    <div class="bit-cht-sr" aria-live="polite" role="status">@_liveMessage</div>
+    @* Rendered from the start rather than with the message: a live region that appears together with its text is
+       one many screen readers never announce. It says the loading label while loading and the keyboard position
+       otherwise. *@
+    <div class="bit-cht-sr" aria-live="polite" role="status">@(IsLoading ? LoadingLabel : _liveMessage)</div>
 </div>
 
 @code {
@@ -305,7 +336,7 @@
         bool vertical = legend.Position is BitChartPosition.Left or BitChartPosition.Right;
         bool interactive = IsLegendInteractive(legend);
         <div class="bit-cht-lgd @(vertical ? "bit-cht-lgd-v" : "bit-cht-lgd-h") @Classes?.Legend"
-             role="group" aria-label="@(legend.Title ?? "Chart legend")"
+             role="group" aria-label="@(legend.Title ?? ActiveTexts.LegendAriaLabel)"
              style="justify-content:@AlignToFlex(legend.Align);gap:4px @(BitChartSvg.N(legend.Labels.Padding))px@(legend.MaxHeight is { } mh ? $";max-height:{BitChartSvg.N(mh)}px;overflow-y:auto" : "");@Styles?.Legend">
             @if (!string.IsNullOrEmpty(legend.Title))
             {
@@ -324,14 +355,17 @@
                             disabled="@(IsEnabled is false)"
                             aria-pressed="@(legend.OnClickToggle ? (!item.Hidden).ToString().ToLowerInvariant() : null)"
                             style="@itemStyle"
-                            @onclick="() => ToggleLegend(item)">
+                            @onclick="() => ToggleLegend(item)"
+                            @onmouseenter="() => HighlightLegendItem(item)" @onmouseleave="ClearLegendHighlight"
+                            @onfocus="() => HighlightLegendItem(item)" @onblur="ClearLegendHighlight">
                         @RenderLegendMarker(legend, item)
                     </button>
                 }
                 else
                 {
                     @* Nothing happens on a click, so the entry is a label rather than a control that does nothing. *@
-                    <span class="bit-cht-lgd-itm bit-cht-lgd-sta @(item.Hidden ? "bit-cht-hdn" : "") @Classes?.LegendItem" style="@itemStyle">
+                    <span class="bit-cht-lgd-itm bit-cht-lgd-sta @(item.Hidden ? "bit-cht-hdn" : "") @Classes?.LegendItem" style="@itemStyle"
+                          @onmouseenter="() => HighlightLegendItem(item)" @onmouseleave="ClearLegendHighlight">
                         @RenderLegendMarker(legend, item)
                     </span>
                 }
@@ -367,20 +401,35 @@
             @if (HasPointData)
             {
                 var budget = MaxTableRows > 0 ? MaxTableRows : int.MaxValue;
+                var first = data.Datasets.First(d => d.Points is { Count: > 0 });
+                bool radius = HasRadiusData;
                 <thead>
-                    <tr><th scope="col">Series</th><th scope="col">X</th><th scope="col">Y</th></tr>
+                    <tr>
+                        <th scope="col">@ActiveTexts.Series</th>
+                        <th scope="col">@AxisHeader(first.XAxisID, ActiveTexts.X)</th>
+                        <th scope="col">@AxisHeader(first.YAxisID, ActiveTexts.Y)</th>
+                        @if (radius)
+                        {
+                            <th scope="col">@ActiveTexts.Radius</th>
+                        }
+                    </tr>
                 </thead>
                 <tbody>
-                    @foreach (var ds in data.Datasets)
+                    @for (int di = 0; di < data.Datasets.Count; di++)
                     {
+                        var ds = data.Datasets[di];
                         @if (ds.Points is { } pts)
                         {
                             @foreach (var p in pts.Take(budget))
                             {
                                 <tr>
-                                    <th scope="row">@(ds.Label ?? "Series")</th>
+                                    <th scope="row">@DatasetName(ds, di)</th>
                                     <td>@Fmt(p.X)</td>
                                     <td>@Fmt(p.Y)</td>
+                                    @if (radius)
+                                    {
+                                        <td>@(p.R is { } r ? Fmt(r) : "")</td>
+                                    }
                                 </tr>
                             }
                             budget -= Math.Min(budget, pts.Count);
@@ -396,7 +445,7 @@
                 var columns = Math.Min(TableColumnCount, TableColumnLimit);
                 <thead>
                     <tr>
-                        <th scope="col">Series</th>
+                        <th scope="col">@ActiveTexts.Series</th>
                         @for (int ci = 0; ci < columns; ci++)
                         {
                             <th scope="col">@(ci < data.Labels.Count ? data.Labels[ci] : "")</th>
@@ -404,10 +453,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var ds in MaxTableRows > 0 ? data.Datasets.Take(MaxTableRows) : data.Datasets)
+                    @for (int di = 0; di < (MaxTableRows > 0 ? Math.Min(MaxTableRows, data.Datasets.Count) : data.Datasets.Count); di++)
                     {
+                        var ds = data.Datasets[di];
                         <tr>
-                            <th scope="row">@(ds.Label ?? "Series")</th>
+                            <th scope="row">@DatasetName(ds, di)</th>
                             @if (ds.RangeData is { } ranges)
                             {
                                 @for (int ci = 0; ci < columns; ci++)

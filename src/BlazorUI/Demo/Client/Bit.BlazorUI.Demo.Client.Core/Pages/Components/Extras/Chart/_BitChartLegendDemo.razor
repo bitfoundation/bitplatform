@@ -3,8 +3,8 @@
 <DemoExample Title="Interactive legend controls" RazorCode="@liveRazorCode" CsharpCode="@liveCsharpCode" Id="legend-live">
     <div class="example-desc">
         The legend sits on any side, aligned to its start, center or end; <code>Reverse</code> flips the entry
-        order. Clicking an entry hides its dataset and re-scales the axes; set <code>OnClickToggle</code> to false
-        for a label-only legend.
+        order. Hovering or focusing an entry fades the other series (<code>HighlightOnHover</code>); clicking it hides
+        its dataset and re-scales the axes. Set <code>OnClickToggle</code> to false for a label-only legend.
     </div>
     <div class="controls">
         <label>
@@ -26,6 +26,7 @@
         </label>
         <label><input type="checkbox" @bind="_usePointStyle" /> Point style</label>
         <label><input type="checkbox" @bind="_reverse" /> Reverse</label>
+        <label><input type="checkbox" @bind="_highlight" /> Highlight on hover</label>
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="MultiSeries()" Options="Live()" /></div></div>
 </DemoExample>

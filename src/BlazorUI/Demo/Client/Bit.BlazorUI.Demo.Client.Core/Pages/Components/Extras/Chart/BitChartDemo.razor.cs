@@ -11,7 +11,7 @@ public partial class BitChartDemo
             Name = "Classes",
             Type = "BitChartClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip and empty state.",
+            Description = "Custom CSS classes for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip, empty state and loading state.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
         },
@@ -38,7 +38,7 @@ public partial class BitChartDemo
             Name = "GenerateTable",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Renders a visually-hidden data table for screen readers and points the chart's aria-describedby at it."
+            Description = "Renders a visually hidden data table right after the chart, which a screen reader can browse cell by cell."
         },
         new()
         {
@@ -46,6 +46,27 @@ public partial class BitChartDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Optional CSS height of the chart container. When null the height follows the aspect ratio."
+        },
+        new()
+        {
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a loading veil with a spinner over the plot, marks the chart aria-busy and holds back the empty state, so a chart still waiting for its data does not claim it has none."
+        },
+        new()
+        {
+            Name = "LoadingLabel",
+            Type = "string?",
+            DefaultValue = "\"Loading\"",
+            Description = "The text shown under the spinner, and announced, while IsLoading is set."
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content shown in place of the default spinner while IsLoading is set."
         },
         new()
         {
@@ -66,7 +87,7 @@ public partial class BitChartDemo
             Name = "NavigationHint",
             Type = "string?",
             DefaultValue = "\"Interactive chart. Use the left and right arrow keys...\"",
-            Description = "A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by aria-describedby alongside the data table. Only rendered when there is data to navigate; set it to null to leave it out."
+            Description = "A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by aria-describedby. Only rendered while there is data to navigate; set it to null to leave it out."
         },
         new()
         {
@@ -120,9 +141,18 @@ public partial class BitChartDemo
             Name = "Styles",
             Type = "BitChartClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip and empty state.",
+            Description = "Custom CSS styles for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip, empty state and loading state.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
+        },
+        new()
+        {
+            Name = "Texts",
+            Type = "BitChartTexts?",
+            DefaultValue = "null",
+            Description = "The texts written for assistive technologies and into the CSV export: the default accessible name, the legend's name, the keyboard announcements, the table headers and captions. English by default; override them to localize.",
+            LinkType = LinkType.Link,
+            Href = "#chart-texts"
         },
         new()
         {
@@ -272,9 +302,33 @@ public partial class BitChartDemo
         },
         new()
         {
+            Name = "--bit-Chart-inactive-opacity",
+            DefaultValue = "0.2",
+            Description = "Opacity of the series faded behind a legend item that is hovered or focused (Legend.HighlightOnHover).",
+        },
+        new()
+        {
             Name = "--bit-Chart-no-data-color",
             DefaultValue = "--bit-clr-fg-sec",
             Description = "Color of the empty-state message.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-loading-background",
+            DefaultValue = "--bit-clr-bg-pri at 70%",
+            Description = "The veil laid over the plot while IsLoading is set; translucent, so the chart behind it shows through.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-loading-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the loading label.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-loading-spinner-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the turning arc of the loading spinner.",
         },
     ];
 
@@ -401,6 +455,25 @@ public partial class BitChartDemo
                 new() { Name = "Plot", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the plot container that holds the SVG, the tooltip and the empty state." },
                 new() { Name = "Tooltip", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the tooltip box, the default one and a custom template's alike." },
                 new() { Name = "NoData", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the empty state shown when there is nothing to draw." },
+                new() { Name = "Loading", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the loading state shown over the plot while the chart is loading." },
+            ]
+        },
+        new()
+        {
+            Id = "chart-texts",
+            Title = "BitChartTexts",
+            Description = "The texts BitChart writes for assistive technologies and into its CSV export. All default to English; the ...Format ones are composite format strings filled in the chart's culture.",
+            Parameters =
+            [
+                new() { Name = "DefaultAriaLabelFormat", Type = "string", DefaultValue = "\"{0} chart with {1} data series.\"", Description = "Accessible name of a chart with neither an AriaLabel nor a displayed title. {0} is the chart type, {1} the number of series." },
+                new() { Name = "LegendAriaLabel", Type = "string", DefaultValue = "\"Chart legend\"", Description = "Accessible name of a legend that has no title of its own." },
+                new() { Name = "PositionFormat", Type = "string", DefaultValue = "\"{0} of {1}\"", Description = "Announced after the keyboard-focused value: its position within its series." },
+                new() { Name = "SeriesPositionFormat", Type = "string", DefaultValue = "\"series {0} of {1}\"", Description = "Announced when the chart has more than one series: which one the focused value belongs to." },
+                new() { Name = "DatasetLabelFormat", Type = "string", DefaultValue = "\"Dataset {0}\"", Description = "Name of a dataset without a Label, in the legend, the table and the CSV alike. {0} is the 1-based dataset number." },
+                new() { Name = "Series", Type = "string", DefaultValue = "\"Series\"", Description = "Header of the series column of the table and the CSV." },
+                new() { Name = "X / Y", Type = "string", DefaultValue = "\"X\" / \"Y\"", Description = "Headers of the point columns of scatter and bubble data, used when the axis shows no title of its own." },
+                new() { Name = "Radius", Type = "string", DefaultValue = "\"R\"", Description = "Header of the radius column of bubble data." },
+                new() { Name = "RowsTruncatedFormat / ColumnsTruncatedFormat", Type = "string", DefaultValue = "\"Showing the first {0} of {1} rows.\" / \"... columns.\"", Description = "Appended to the table's caption when MaxTableRows / MaxTableColumns cut it short." },
             ]
         },
         new()
