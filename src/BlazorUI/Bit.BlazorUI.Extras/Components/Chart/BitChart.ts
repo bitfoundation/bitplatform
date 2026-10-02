@@ -231,6 +231,15 @@ namespace BitBlazorUI {
             clone.removeAttribute('tabindex');
             clone.removeAttribute('aria-describedby');
 
+            // The background goes in before the scan below, so a var() only its fill reads is carried too.
+            if (background) {
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('width', '100%');
+                rect.setAttribute('height', '100%');
+                rect.setAttribute('fill', background);
+                clone.insertBefore(rect, clone.firstChild);
+            }
+
             // Every custom property the drawing reads - the theme tokens, and the public --bit-Chart-* ones a
             // page may have set on :root, an ancestor or the chart's Style - resolves against the document, so
             // a standalone file has to carry the computed values with it. One left unset stays unset, and its
@@ -246,13 +255,6 @@ namespace BitBlazorUI {
             for (const name of names) {
                 const value = computed.getPropertyValue(name);
                 if (value) clone.style.setProperty(name, value.trim());
-            }
-            if (background) {
-                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                rect.setAttribute('width', '100%');
-                rect.setAttribute('height', '100%');
-                rect.setAttribute('fill', background);
-                clone.insertBefore(rect, clone.firstChild);
             }
             return new XMLSerializer().serializeToString(clone);
         }

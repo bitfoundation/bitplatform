@@ -1004,7 +1004,7 @@ public partial class BitChart : BitComponentBase
         }
     }
 
-    private bool IsKeyboardZoomable => _config.Options.Zoom.Enabled && _scene.IsRadialOrCircular is false;
+    private bool IsKeyboardZoomable => _config.Options.Zoom.Enabled && IsEnabled && _scene.IsRadialOrCircular is false;
 
     private void ZoomFromKeyboard(bool zoomIn)
     {
