@@ -50,7 +50,8 @@
 
     // A bordered item slides up over the line of the one above it, so the two share it, and that shared line takes
     // the divider color. A borderless one has no line to share, so it is given one of its own to keep the items
-    // apart, as thick as the outline would have been.
+    // apart, as thick as the outline would have been - and when the item above it is bordered, slides up over that
+    // one's line in turn, so the two still draw a single line between them.
     > .bit-acl-itm ~ .bit-acl-itm > .bit-acd {
         margin-block-start: calc(-1 * var(--bit-Accordion-border-width, #{$shp-border-width}));
         border-block-start-color: var(--bit-AccordionList-divider-color, var(--bit-acd-brd));
@@ -59,5 +60,9 @@
             margin-block-start: 0;
             border-block-start: var(--bit-Accordion-border-width, #{$shp-border-width}) $shp-border-style var(--bit-AccordionList-divider-color, #{$clr-brd-pri});
         }
+    }
+
+    > .bit-acl-itm:has(> .bit-acd:not(.bit-acd-nbd)) + .bit-acl-itm > .bit-acd.bit-acd-nbd {
+        margin-block-start: calc(-1 * var(--bit-Accordion-border-width, #{$shp-border-width}));
     }
 }
