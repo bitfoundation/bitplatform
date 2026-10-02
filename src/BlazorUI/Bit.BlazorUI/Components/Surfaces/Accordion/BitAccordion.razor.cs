@@ -437,7 +437,7 @@ public partial class BitAccordion : BitComponentBase
 
     // Whether the collapsed panel is offered to find-in-page at all: only an accordion that can expand itself around
     // the match is, since the browser would otherwise reveal content inside a panel that stays shut.
-    private bool _IsSearchable => HiddenUntilFound && IsEnabled && ReadOnly is false && _OwnsExpansion && _revealRefused is false;
+    private bool _IsSearchable => HiddenUntilFound && IsEnabled && ReadOnly is false && (_OwnsExpansion || RevealHandler is not null) && _revealRefused is false;
 
     // Whether the panel is hidden until found right now. The attribute is applied as the close starts, and the
     // stylesheet keeps the panel drawn until the transition is over (content-visibility, allow-discrete), which is the
@@ -460,6 +460,12 @@ public partial class BitAccordion : BitComponentBase
     // reads it is a list of accordions (BitAccordionList): the keys it navigates its headers with are the
     // scroll keys of the panel, so it leaves them alone while the panel is the one holding the focus.
     internal bool IsContentFocused => _contentHasFocus;
+
+    // The owner of the expansion of an accordion whose IsExpanded is bound one way by a list of accordions
+    // (BitAccordionList): the list answers the header itself, so it is also the one a find-in-page reveal asks to
+    // open the panel, and the answer says whether it did. It is set through the list item's reference, ahead of
+    // the first render, which is why it is a plain property rather than a parameter.
+    internal Func<Task<bool>>? RevealHandler { get; set; }
 
     // The header answers nothing while an awaited OnToggling of its own is running, and nothing while the
     // page - a BitAccordionList that owns the expansion - says so through the Busy parameter either.
@@ -739,7 +745,11 @@ public partial class BitAccordion : BitComponentBase
             if (IsDisposed || IsExpanded || _IsSearchable is false) return;
         }
 
-        if (await AssignExpanded(true, BitAccordionToggleReason.Reveal) || IsExpanded || IsDisposed) return;
+        var revealed = RevealHandler is not null
+                     ? await RevealHandler()
+                     : await AssignExpanded(true, BitAccordionToggleReason.Reveal);
+
+        if (revealed || IsExpanded || IsDisposed) return;
 
         _revealRefused = true;
     }

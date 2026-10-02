@@ -6,6 +6,19 @@ public partial class _BitAccordionListItem<TItem> : ComponentBase, IDisposable w
     private TItem? _registeredItem;
     private BitAccordion? _accordion;
 
+    // The reference is a property so that the accordion is handed the list's reveal the moment it is captured,
+    // which is ahead of its first render: a HiddenUntilFound panel is only searchable with somebody to open it.
+    private BitAccordion? Accordion
+    {
+        get => _accordion;
+        set
+        {
+            _accordion = value;
+
+            if (value is not null) value.RevealHandler = HandleOnReveal;
+        }
+    }
+
     [Parameter] public TItem Item { get; set; } = default!;
 
     [Parameter] public BitAccordionList<TItem> AccordionList { get; set; } = default!;
@@ -76,6 +89,8 @@ public partial class _BitAccordionListItem<TItem> : ComponentBase, IDisposable w
             builder.CloseElement();
         };
     }
+
+    private Task<bool> HandleOnReveal() => AccordionList.HandleOnItemReveal(Item);
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {

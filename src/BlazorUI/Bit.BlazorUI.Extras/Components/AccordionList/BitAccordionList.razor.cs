@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -26,6 +27,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     // order other than the markup one, and what says the rendered document is worth reading back.
     private bool _optionOrderIsStale;
     private string? _togglingKey;
+    // Settles when the awaited OnToggling in flight is over, so that a find-in-page reveal landing meanwhile can
+    // wait for it rather than be turned away as if it had been refused.
+    private TaskCompletionSource? _toggled;
     private List<TItem> _items = [];
     private List<TItem>? _oldItems;
     private string? _internalExpandedKey;
@@ -48,6 +52,20 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the AccordionList component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple AccordionList
+    /// components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitAccordionListParams.ParamName)]
+    public BitAccordionListParams? CascadingParameters { get; set; }
 
 
 
@@ -184,7 +202,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     [Parameter] public RenderFragment? EmptyContent { get; set; }
 
     /// <summary>
-    /// The space (gap) in pixels between the accordion items.
+    /// The space (gap) in pixels between the accordion items, overriding the --bit-AccordionList-gap CSS variable.
+    /// Ignored while <see cref="Joined"/> is on.
     /// </summary>
     [Parameter, ResetStyleBuilder] public int? Gap { get; set; }
 
@@ -202,6 +221,19 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     [Parameter] public int? HeadingLevel { get; set; }
 
     /// <summary>
+    /// Hands the collapsed panel of every item to the browser as <c>hidden="until-found"</c>, so find-in-page and a
+    /// navigation to a fragment inside a panel reach into it and expand the item around the match.
+    /// </summary>
+    /// <remarks>
+    /// The expansion the browser asks for goes through the list like a click does - it closes the open panel in
+    /// single-expand mode, honours <see cref="MaxExpanded"/> and is reported to <see cref="OnToggling"/> with the
+    /// <see cref="BitAccordionToggleReason.Reveal"/> reason, which can still refuse it. A disabled or read-only item
+    /// is not offered to find-in-page, and the panels have to be in the DOM to be found, so <see cref="LazyContent"/>
+    /// and <see cref="UnmountOnCollapse"/> are ignored while it is on.
+    /// </remarks>
+    [Parameter] public bool HiddenUntilFound { get; set; }
+
+    /// <summary>
     /// Removes the expander icon from the header of all the items. Can be overridden per item.
     /// </summary>
     [Parameter] public bool HideExpanderIcon { get; set; }
@@ -210,6 +242,12 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// The collection of items to render in the AccordionList.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
+
+    /// <summary>
+    /// Joins the items into one surface: no gap between them, a single shared line where two of them meet, and
+    /// rounded corners only at the two ends of the list. <see cref="Gap"/> is ignored while it is on.
+    /// </summary>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder] public bool Joined { get; set; }
 
     /// <summary>
     /// Delays the first render of the content of each item until it is expanded for the first time. The content
@@ -314,7 +352,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// Set <c>Cancel</c> on the provided <see cref="BitAccordionListToggleArgs{TItem}"/> to leave the item as it
     /// is, and read its <c>Item</c>, <c>Key</c>, <c>IsExpanding</c> and <c>Reason</c> to tell an expansion from a
     /// collapse and a click on a header from an <see cref="Expand(string)"/>, <see cref="Collapse(string)"/>,
-    /// <see cref="Toggle(string)"/>, <see cref="ExpandAll"/> or <see cref="CollapseAll"/> call. Since the callback
+    /// <see cref="Toggle(string)"/>, <see cref="ExpandAll"/> or <see cref="CollapseAll"/> call and from a find-in-page
+    /// reveal of a <see cref="HiddenUntilFound"/> panel. Since the callback
     /// is awaited, it can also run asynchronous work first, and nothing else toggles the list while it is running.
     /// <br />
     /// The implicit collapse of the previously expanded item in single-expand mode is part of the expansion that
@@ -674,17 +713,24 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => Multiple ? "bit-acl-mlt" : string.Empty);
+
+        ClassBuilder.Register(() => Joined ? "bit-acl-jnd" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Gap.HasValue ? $"gap:{Gap}px" : string.Empty);
+        StyleBuilder.Register(() => Gap.HasValue && Joined is false ? $"gap:{Gap}px" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAccordionListParams))]
     protected override async Task OnParametersSetAsync()
     {
+        // The cascade is applied before anything reads the parameters it may fill in: the mode, the cap and the
+        // bound keys are all read right below.
+        CascadingParameters?.UpdateParameters(this);
+
         BuildItemClassStyles();
 
         if (ChildContent is null && Options is null && Items is not null)
@@ -1274,6 +1320,29 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         await FocusItemCore(focusables[next]);
     }
 
+    // The browser is about to reveal the collapsed panel of an item, because find-in-page or a fragment navigation
+    // landed inside it (HiddenUntilFound). The expansion goes through the list the way a click does, so the
+    // single-expand mode, MaxExpanded and OnToggling all have their say; the answer is whether the panel is open.
+    internal async Task<bool> HandleOnItemReveal(TItem item)
+    {
+        if (HiddenUntilFound is false || IsEnabled is false || GetIsEnabled(item) is false || GetItemIsReadOnly(item)) return false;
+
+        var key = GetItemKey(item);
+        if (key.HasNoValue()) return false;
+
+        // A toggle that is still waiting on OnToggling is not a refusal of this reveal, so the reveal waits for it.
+        while (_toggled is { } toggled)
+        {
+            await toggled.Task;
+
+            if (IsDisposed) return false;
+        }
+
+        if (_expandedKeys.Contains(key!)) return true;
+
+        return await ToggleItem(item, key!, true, BitAccordionToggleReason.Reveal);
+    }
+
     private async Task SetExpandedByKey(string key, bool expand)
     {
         if (key.HasNoValue()) return;
@@ -1286,7 +1355,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         await ToggleItem(item, key, expand, BitAccordionToggleReason.Method);
     }
 
-    private async Task ToggleItem(TItem item, string key, bool expand, BitAccordionToggleReason reason)
+    private async Task<bool> ToggleItem(TItem item, string key, bool expand, BitAccordionToggleReason reason)
     {
         // Read before the expansion is applied, since applying it adds the new key to the set. A cancelled
         // expansion therefore leaves the previously expanded item(s) exactly where they were.
@@ -1297,9 +1366,10 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
                    ? (Multiple ? GetOverflowKeys(key) : [.. _expandedKeys.Where(k => k != key)])
                    : [];
 
-        if (await ApplyToggle(item, key, expand, reason) is false) return;
+        if (await ApplyToggle(item, key, expand, reason) is false) return false;
 
-        if (expand) QueueScrollIntoView(item);
+        // A revealed panel is one the browser is already scrolling to the match inside of.
+        if (expand && reason is not BitAccordionToggleReason.Reveal) QueueScrollIntoView(item);
 
         // Collapse the item(s) that were expanded before.
         foreach (var otherKey in others)
@@ -1320,6 +1390,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         // item), and the click handler runs on the clicked item's renderer, so both the registered
         // options and the accordion list itself need an explicit re-render.
         await RefreshAndRender();
+
+        return true;
     }
 
     // Runs the cancellable OnToggling callback and, when it is not refused, moves the single item between the
@@ -1337,6 +1409,10 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
             _isToggling = true;
             _togglingKey = key;
+
+            // Its continuations run off the dispatcher's queue rather than inline, so a reveal waiting on it only
+            // resumes once this toggle has gone on to assign the state it was let through with.
+            var toggled = _toggled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // Nothing toggles the list while the callback is running, so the header of the item it was
             // asked about says as much - a spinner, aria-busy and a busy cursor - rather than going on
@@ -1359,6 +1435,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             {
                 _isToggling = false;
                 _togglingKey = null;
+                _toggled = null;
+
+                toggled.TrySetResult();
 
                 await RefreshAndRender();
             }
@@ -1518,9 +1597,10 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
                                    && _items.Count == 0
                                    && ((Options ?? ChildContent) is null || _hasRendered);
 
-    // A label on a plain container is dropped by a screen reader, so the list that carries one says what it
-    // is. It is rendered before the splatted attributes, so a role the page sets itself still wins over it.
-    private string? _Role => AriaLabel.HasValue() ? "group" : null;
+    // A label on a plain container is dropped by a screen reader, so the list that carries one - an AriaLabel, or an
+    // aria-labelledby the page splats on - says what it is. It is rendered before the splatted attributes, so a
+    // role the page sets itself still wins over it.
+    private string? _Role => AriaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
 
     // The header of the one panel that has to stay open reports itself as aria-disabled, the way the WAI-ARIA
     // authoring practices ask a header whose panel cannot be collapsed to.

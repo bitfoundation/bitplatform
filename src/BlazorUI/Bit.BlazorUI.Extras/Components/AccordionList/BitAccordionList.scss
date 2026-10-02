@@ -1,11 +1,18 @@
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 
+// Public CSS variables (read here with a fallback and never declared, so they inherit: set one on :root, on any
+// ancestor, or on the Style of a single list):
+//   --bit-AccordionList-gap            space between the items                        (default: spacing(1); Gap wins)
+//   --bit-AccordionList-divider-color  line between two items of a Joined list        (default: the items' border color, $clr-brd-pri with NoBorder)
+//
+// Every item is a BitAccordion, so the --bit-Accordion-* variables (colors, radius, padding, type, ...) restyle
+// the items of a list just as well when they are set on the list itself.
 .bit-acl {
     width: 100%;
     display: flex;
     box-sizing: border-box;
     flex-flow: column nowrap;
-    gap: spacing(1);
+    gap: var(--bit-AccordionList-gap, #{spacing(1)});
 }
 
 // The three wrappers the list puts around the parts of an item - one to know which item a key was pressed on,
@@ -16,4 +23,41 @@
 .bit-acl-bdy,
 .bit-acl-act {
     display: contents;
+}
+
+
+// A Joined list reads as one surface: the items touch, two neighbours share one line rather than drawing two,
+// and only the outer corners of the first and the last item are rounded. The rules reach only the list's own
+// items (through the item wrapper), never an accordion nested inside a panel. First and last are found among
+// the items themselves rather than among all the children, so markup a page puts between the options does not
+// leave an inner corner rounded.
+.bit-acl-jnd {
+    gap: 0;
+
+    > .bit-acl-itm > .bit-acd {
+        border-radius: 0;
+    }
+
+    > .bit-acl-itm:not(.bit-acl-itm ~ .bit-acl-itm) > .bit-acd {
+        border-start-start-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
+        border-start-end-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
+    }
+
+    > .bit-acl-itm:not(:has(~ .bit-acl-itm)) > .bit-acd {
+        border-end-start-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
+        border-end-end-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
+    }
+
+    // A bordered item slides up over the line of the one above it, so the two share it, and that shared line takes
+    // the divider color. A borderless one has no line to share, so it is given one of its own to keep the items
+    // apart, as thick as the outline would have been.
+    > .bit-acl-itm ~ .bit-acl-itm > .bit-acd {
+        margin-block-start: calc(-1 * var(--bit-Accordion-border-width, #{$shp-border-width}));
+        border-block-start-color: var(--bit-AccordionList-divider-color, var(--bit-acd-brd));
+
+        &.bit-acd-nbd {
+            margin-block-start: 0;
+            border-block-start: var(--bit-Accordion-border-width, #{$shp-border-width}) $shp-border-style var(--bit-AccordionList-divider-color, #{$clr-brd-pri});
+        }
+    }
 }

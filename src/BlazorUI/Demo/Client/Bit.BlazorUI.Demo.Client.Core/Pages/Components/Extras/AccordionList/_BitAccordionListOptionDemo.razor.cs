@@ -13,9 +13,19 @@ public partial class _BitAccordionListOptionDemo
     private string? actionedTitle;
     private string? togglingReport;
     private string? boundExpandedKey = "users";
-    private IEnumerable<string> boundExpandedKeys = ["general"];
     private IEnumerable<string> programmaticKeys = [];
     private BitAccordionList<BitAccordionListOption>? accordionListRef;
+
+    private readonly BitAccordionListParams[] accordionListParams =
+    [
+        new()
+        {
+            Joined = true,
+            Multiple = true,
+            ExpanderIconName = BitIconName.Add,
+            ExpandedExpanderIconName = BitIconName.Remove,
+        }
+    ];
 
     private List<BitButtonGroupItem> bindingButtons =>
     [

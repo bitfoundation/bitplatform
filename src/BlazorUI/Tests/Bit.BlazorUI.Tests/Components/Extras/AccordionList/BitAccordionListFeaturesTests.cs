@@ -1084,6 +1084,20 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionListShouldNameItselfAsAGroupWhenItIsLabelledByAnotherElement()
+    {
+        var component = RenderComponent<BitAccordionListAriaLabelledbyTest>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        var root = component.Find(".bit-acl");
+
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("settings-heading", root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
     public void BitAccordionListShouldLeaveARoleOfThePagesOwnAlone()
     {
         var component = RenderComponent<BitAccordionListHtmlAttributesTest>(parameters =>
