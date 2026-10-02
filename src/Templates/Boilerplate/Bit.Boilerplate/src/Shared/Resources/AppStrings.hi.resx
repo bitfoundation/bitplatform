@@ -2210,4 +2210,13 @@
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>हमने {0} और {1} पर कोड भेजा है।</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>कियोस्क मोड</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>यह ऐप स्क्रीन पर लॉक है: Windows की, Alt+Tab, Task Manager और विंडो बंद करना सभी अवरुद्ध हैं। बाहर निकलने के लिए बटन का उपयोग करें।</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>ऐप से बाहर निकलें</value>
+  </data>
 </root>

@@ -52,7 +52,12 @@ public sealed partial class HarnessMiddleware(RequestDelegate next, HarnessSessi
             // A hosted client's referenced libraries are served from the host's root _content/, while the
             // standalone app - mounted under /standalone/ - resolves them (and lists them in its manifest)
             // relative to its base. Map them the way a reverse proxy mounting the app on a sub-path would.
-            if (path.StartsWith("/standalone/_content/", StringComparison.OrdinalIgnoreCase))
+            // blazor.webassembly.js joins them on .NET 11: a WebAssembly client keeps it for its own publish
+            // and no longer hands it to a project referencing it, so the host serves the copy its own
+            // StaticWebAssetGroup keeps (see the csproj). Without this the boot script request reaches the
+            // fallback document and the app dies on "SyntaxError: Unexpected token '<'".
+            if (path.StartsWith("/standalone/_content/", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith("/standalone/_framework/blazor.webassembly.js", StringComparison.OrdinalIgnoreCase))
             {
                 context.Request.Path = path["/standalone".Length..];
             }

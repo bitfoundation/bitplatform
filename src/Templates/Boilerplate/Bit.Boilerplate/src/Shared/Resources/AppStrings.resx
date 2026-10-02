@@ -2210,4 +2210,13 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>We sent a code to {0} and {1}.</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Kiosk mode</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>This app is locked to the screen: the Windows key, Alt+Tab, Task Manager and closing the window are all blocked. Use the button to leave.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>Exit the app</value>
+  </data>
 </root>
