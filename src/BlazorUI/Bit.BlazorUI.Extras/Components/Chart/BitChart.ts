@@ -209,9 +209,23 @@ namespace BitBlazorUI {
             '--bit-clr-bg-pri', '--bit-clr-pri', '--bit-tpg-font-family'
         ];
 
+        // A background may be a var() - the default one is the chart's surface - which neither a canvas fill nor a
+        // standalone file can read, so it is resolved against the chart the way the page itself would resolve it.
+        private static resolveColor(element: HTMLElement, color: string | null): string | null {
+            if (!color || color.indexOf('var(') < 0) return color;
+            const probe = document.createElement('span');
+            probe.style.display = 'none';
+            probe.style.color = color;
+            element.appendChild(probe);
+            const resolved = getComputedStyle(probe).color;
+            element.removeChild(probe);
+            return resolved || null;
+        }
+
         private static serialize(element: HTMLElement, background: string | null): string | null {
             const svg = element.querySelector('svg') as SVGSVGElement | null;
             if (!svg) return null;
+            background = BitChart.resolveColor(element, background);
 
             const clone = svg.cloneNode(true) as SVGSVGElement;
             const box = svg.getBoundingClientRect();
@@ -268,6 +282,7 @@ namespace BitBlazorUI {
 
         // Rasterizes the serialized SVG onto a canvas the caller can then read as a blob or a data URL.
         private static async rasterize(element: HTMLElement, scale: number, background: string | null) {
+            background = BitChart.resolveColor(element, background);
             const markup = BitChart.serialize(element, background);
             if (!markup) return null;
             const svg = element.querySelector('svg') as SVGSVGElement;

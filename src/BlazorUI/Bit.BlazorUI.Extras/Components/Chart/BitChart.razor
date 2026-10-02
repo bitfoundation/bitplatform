@@ -33,7 +33,7 @@
 
         <div class="bit-cht-plot @Classes?.Plot" style="@Styles?.Plot" @ref="_plotEl">
             <svg class="bit-cht-svg" viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="@SvgRole"
-                 aria-roledescription="chart"
+                 aria-roledescription="@ActiveTexts.RoleDescription"
                  aria-label="@ChartAriaLabel" aria-describedby="@DescribedBy"
                  style="@AnimStyle" tabindex="@SvgTabIndex"
                  @onkeydown="OnKeyDown" @onblur="OnBlur">
@@ -198,7 +198,7 @@
                         }
                         @foreach (var item in tt.Items)
                         {
-                            <div class="bit-cht-tt-itm" style="color:@t.BodyColor;font-size:@(BitChartSvg.N(t.BodyFont.Size))px;text-align:@TextAlign(t.BodyAlign)">
+                            <div class="bit-cht-tt-itm" style="color:@t.BodyColor;font-size:@(BitChartSvg.N(t.BodyFont.Size))px;justify-content:@AlignToFlex(t.BodyAlign);text-align:@TextAlign(t.BodyAlign)">
                                 @if (t.DisplayColors)
                                 {
                                     @if (t.UsePointStyle && item.PointStyle is { } ps && BitChartPointShapes.Build(ps, 7, 7, 5, item.Color, item.Color, 1) is { } marker)
@@ -259,6 +259,16 @@
     @if (_scene.Title is { } titleBottom && TitleSide(titleBottom) == BitChartPosition.Bottom)
     {
         @RenderTitle(titleBottom, "bit-cht-ttl", false)
+    }
+
+    @if (Description.HasValue())
+    {
+        <div class="bit-cht-sr" id="@DescriptionId">@Description</div>
+    }
+
+    @if (NotesText is { } notes)
+    {
+        <div class="bit-cht-sr" id="@NotesId">@notes</div>
     }
 
     @if (ShowNavigationHint)

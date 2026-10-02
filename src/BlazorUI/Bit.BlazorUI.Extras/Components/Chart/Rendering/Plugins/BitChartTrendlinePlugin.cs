@@ -27,6 +27,19 @@ public sealed class BitChartTrendlinePlugin : IBitChartPlugin
         foreach (var t in Trendlines.Where(t => !t.DrawBehindDatasets)) Draw(ctx, t, behind: false);
     }
 
+    /// <summary>Names every labeled trend line with the series it is fitted to; an unlabeled one is left out.</summary>
+    public IEnumerable<string> Describe(BitChartConfig config)
+    {
+        foreach (var t in Trendlines)
+        {
+            if (string.IsNullOrWhiteSpace(t.Label)) continue;
+            var datasets = config.Data.Datasets;
+            yield return t.DatasetIndex >= 0 && t.DatasetIndex < datasets.Count && datasets[t.DatasetIndex].Label is { Length: > 0 } series
+                ? $"{t.Label} ({series})"
+                : t.Label!;
+        }
+    }
+
     private static void Draw(BitChartPluginContext ctx, BitChartTrendline trend, bool behind)
     {
         if (!ctx.IsCartesian || ctx.Plot is not { } plot) return;

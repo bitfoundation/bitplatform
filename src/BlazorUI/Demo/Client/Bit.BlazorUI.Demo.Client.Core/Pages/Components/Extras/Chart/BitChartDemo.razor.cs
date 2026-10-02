@@ -35,6 +35,13 @@ public partial class BitChartDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A visually hidden summary of what the chart shows - its trend or takeaway - that the plot is described by: the long description a complex image needs beside its name and its data table."
+        },
+        new()
+        {
             Name = "GenerateTable",
             Type = "bool",
             DefaultValue = "true",
@@ -254,6 +261,24 @@ public partial class BitChartDemo
         },
         new()
         {
+            Name = "--bit-Chart-annotation-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Default color of an annotation's line or outline, its translucent fill and its label pill. BitChartAnnotation.Color overrides it.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-annotation-label-color",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Default text color of an annotation's label. BitChartAnnotation.LabelColor overrides it.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-center-text-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the text BitChartCenterTextPlugin draws in a doughnut's cutout.",
+        },
+        new()
+        {
             Name = "--bit-Chart-surface-color",
             DefaultValue = "--bit-clr-bg-pri",
             Description = "The surface the chart sits on: the border that separates pie and doughnut slices, and the backdrop behind radial tick labels. Set it to the card color when the chart sits on a card.",
@@ -409,8 +434,8 @@ public partial class BitChartDemo
         new()
         {
             Name = "ExportPngAsync",
-            Type = "Task<bool> ExportPngAsync(string? fileName = null, double scale = 2, string? backgroundColor = \"#ffffff\")",
-            Description = "Downloads the chart as a .png image rasterized from the live SVG at the given pixel ratio."
+            Type = "Task<bool> ExportPngAsync(string? fileName = null, double scale = 2, string? backgroundColor = SurfaceBackground)",
+            Description = "Downloads the chart as a .png image rasterized from the live SVG at the given pixel ratio, on the surface the chart sits on (so a dark theme exports dark); pass a color of your own, or null for a transparent image."
         },
         new()
         {
@@ -433,8 +458,15 @@ public partial class BitChartDemo
         new()
         {
             Name = "ToBase64ImageAsync",
-            Type = "Task<string?> ToBase64ImageAsync(string mimeType = \"image/png\", double scale = 2, string? backgroundColor = \"#ffffff\")",
+            Type = "Task<string?> ToBase64ImageAsync(string mimeType = \"image/png\", double scale = 2, string? backgroundColor = SurfaceBackground)",
             Description = "Returns the rasterized chart as a data: URL - the same picture ExportPngAsync downloads - ready for an img src or a PDF. Mirrors Chart.js's toBase64Image."
+        },
+        new()
+        {
+            Name = "SurfaceBackground",
+            Type = "const string",
+            DefaultValue = "\"var(--bit-Chart-surface-color, var(--bit-clr-bg-pri))\"",
+            Description = "The default background of ExportPngAsync and ToBase64ImageAsync: the surface the chart sits on, resolved in the browser."
         },
     ];
 
@@ -466,6 +498,9 @@ public partial class BitChartDemo
             Parameters =
             [
                 new() { Name = "DefaultAriaLabelFormat", Type = "string", DefaultValue = "\"{0} chart with {1} data series.\"", Description = "Accessible name of a chart with neither an AriaLabel nor a displayed title. {0} is the chart type, {1} the number of series." },
+                new() { Name = "RoleDescription", Type = "string", DefaultValue = "\"chart\"", Description = "What a screen reader calls the plot in place of its role (aria-roledescription)." },
+                new() { Name = "TypeNames", Type = "Dictionary<BitChartType, string>", DefaultValue = "\"Line\", \"Bar\", ... \"Polar area\"", Description = "The name of each chart type, filled into {0} of DefaultAriaLabelFormat." },
+                new() { Name = "NotesFormat", Type = "string", DefaultValue = "\"Marked on the chart: {0}.\"", Description = "The hidden sentence the plot is described by that names what the plugins drew - annotations, labeled trend lines, a center text. {0} is the list of them." },
                 new() { Name = "LegendAriaLabel", Type = "string", DefaultValue = "\"Chart legend\"", Description = "Accessible name of a legend that has no title of its own." },
                 new() { Name = "PositionFormat", Type = "string", DefaultValue = "\"{0} of {1}\"", Description = "Announced after the keyboard-focused value: its position within its series." },
                 new() { Name = "SeriesPositionFormat", Type = "string", DefaultValue = "\"series {0} of {1}\"", Description = "Announced when the chart has more than one series: which one the focused value belongs to." },
@@ -866,6 +901,71 @@ public partial class BitChartDemo
         },
         new()
         {
+            Id = "chart-annotation",
+            Title = "BitChartAnnotation",
+            Description = "One line, box, ellipse, polygon, point or label drawn in data coordinates by BitChartAnnotationPlugin, which is registered through Options.Plugins.Custom. Cartesian charts only.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Kind",
+                    Type = "BitChartAnnotationKind",
+                    DefaultValue = "Line",
+                    Description = "The shape: Line, Box, Point, Label, Ellipse or Polygon."
+                },
+                new()
+                {
+                    Name = "Orientation / Value / AxisId",
+                    Type = "BitChartLineOrientation / double / string",
+                    DefaultValue = "Horizontal / 0 / \"y\"",
+                    Description = "Where a line is drawn: a y value for a horizontal line, an x value (or category index with XIsIndex) for a vertical one."
+                },
+                new()
+                {
+                    Name = "XMin / XMax / YMin / YMax / XIsIndex",
+                    Type = "double? / bool",
+                    DefaultValue = "null / false",
+                    Description = "The bounds of a box or an ellipse in data coordinates; a null bound runs to the edge of the plot. XIsIndex reads the X values as category indices."
+                },
+                new()
+                {
+                    Name = "Sides / Radius / Rotation",
+                    Type = "int / double? / double",
+                    DefaultValue = "3 / null / 0",
+                    Description = "The shape of a polygon, and the pixel radius of a polygon or a point."
+                },
+                new()
+                {
+                    Name = "Color / FillColor / LineWidth / Dash",
+                    Type = "string / string? / double / List<double>?",
+                    DefaultValue = "--bit-Chart-annotation-color / null / 2 / null",
+                    Description = "Styling. A null fill is the color made translucent."
+                },
+                new()
+                {
+                    Name = "Label / LabelColor / LabelBackground / LabelFont",
+                    Type = "string? / string / string? / BitChartFont",
+                    DefaultValue = "null / --bit-Chart-annotation-label-color / null / 11px bold",
+                    Description = "An optional pill beside the shape. A null background follows Color."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "What a screen reader is told about the annotation, in place of its label and value. The drawing is hidden from assistive technologies, so an annotation with neither a Label nor a Description is treated as decoration."
+                },
+                new()
+                {
+                    Name = "DrawBehindDatasets",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Draws the annotation under the datasets rather than over them."
+                },
+            ]
+        },
+        new()
+        {
             Id = "chart-trendline",
             Title = "BitChartTrendline",
             Description = "One fitted line drawn over a dataset by BitChartTrendlinePlugin, which is registered through Options.Plugins.Custom. Cartesian charts only.",
@@ -911,7 +1011,7 @@ public partial class BitChartDemo
                     Name = "Label / LabelColor / LabelBackground / LabelFont",
                     Type = "string? / string / string? / BitChartFont",
                     DefaultValue = "null / #fff / null / 11px bold",
-                    Description = "An optional pill drawn at the end of the line, pinned inside the plot so it stays readable at the edge."
+                    Description = "An optional pill drawn at the end of the line, pinned inside the plot so it stays readable at the edge. A labeled line is also named to screen readers."
                 },
                 new()
                 {

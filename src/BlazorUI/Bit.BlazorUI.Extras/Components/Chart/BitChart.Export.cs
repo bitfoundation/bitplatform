@@ -10,6 +10,12 @@ namespace Bit.BlazorUI;
 public partial class BitChart
 {
     /// <summary>
+    /// The background a raster export is painted on by default: the surface the chart sits on, so the picture keeps
+    /// the contrast it has on the page - a chart exported from a dark theme is light text on dark, not on white.
+    /// </summary>
+    public const string SurfaceBackground = "var(--bit-Chart-surface-color, var(--bit-clr-bg-pri))";
+
+    /// <summary>
     /// Downloads the chart as a standalone <c>.svg</c> file. The theme tokens the chart references are
     /// resolved into the exported file so it looks the same outside the app.
     /// </summary>
@@ -33,9 +39,12 @@ public partial class BitChart
     /// </summary>
     /// <param name="fileName">File name to save as; defaults to <c>chart.png</c>.</param>
     /// <param name="scale">Pixel ratio; 2 (the default) produces a crisp image on high-density displays.</param>
-    /// <param name="backgroundColor">Background painted behind the chart; PNG is transparent without it.</param>
+    /// <param name="backgroundColor">
+    /// Background painted behind the chart: any CSS color, a <c>var()</c> included. Defaults to
+    /// <see cref="SurfaceBackground"/>; pass null for a transparent PNG.
+    /// </param>
     /// <returns>True when the file was produced.</returns>
-    public async Task<bool> ExportPngAsync(string? fileName = null, double scale = 2, string? backgroundColor = "#ffffff")
+    public async Task<bool> ExportPngAsync(string? fileName = null, double scale = 2, string? backgroundColor = SurfaceBackground)
     {
         try
         {
@@ -72,10 +81,13 @@ public partial class BitChart
     /// </summary>
     /// <param name="mimeType">Image type to encode; <c>image/png</c> by default (<c>image/jpeg</c> and <c>image/webp</c> also work).</param>
     /// <param name="scale">Pixel ratio; 2 (the default) produces a crisp image on high-density displays.</param>
-    /// <param name="backgroundColor">Background painted behind the chart; PNG is transparent without it.</param>
+    /// <param name="backgroundColor">
+    /// Background painted behind the chart: any CSS color, a <c>var()</c> included. Defaults to
+    /// <see cref="SurfaceBackground"/>; pass null for a transparent PNG.
+    /// </param>
     /// <returns>The data URL, or null when the chart has not been rendered in a browser yet.</returns>
     public async Task<string?> ToBase64ImageAsync(string mimeType = "image/png", double scale = 2,
-        string? backgroundColor = "#ffffff")
+        string? backgroundColor = SurfaceBackground)
     {
         try
         {

@@ -13,6 +13,34 @@ public class BitChartTexts
     /// </summary>
     public string DefaultAriaLabelFormat { get; set; } = "{0} chart with {1} data series.";
 
+    /// <summary>
+    /// What a screen reader calls the plot in place of its role (<c>aria-roledescription</c>), so it is announced as a
+    /// chart rather than as an application or an image.
+    /// </summary>
+    public string RoleDescription { get; set; } = "chart";
+
+    /// <summary>
+    /// The name of each chart type, filled into {0} of <see cref="DefaultAriaLabelFormat"/>. A type missing from the map
+    /// is named by its enum member.
+    /// </summary>
+    public Dictionary<BitChartType, string> TypeNames { get; set; } = new()
+    {
+        [BitChartType.Line] = "Line",
+        [BitChartType.Bar] = "Bar",
+        [BitChartType.Radar] = "Radar",
+        [BitChartType.Pie] = "Pie",
+        [BitChartType.Doughnut] = "Doughnut",
+        [BitChartType.PolarArea] = "Polar area",
+        [BitChartType.Bubble] = "Bubble",
+        [BitChartType.Scatter] = "Scatter"
+    };
+
+    /// <summary>
+    /// The hidden sentence naming what the plugins drew over the data - annotations, labeled trend lines, the text in a
+    /// doughnut's cutout - which the plot is described by. {0} is the list of them, separated by semicolons.
+    /// </summary>
+    public string NotesFormat { get; set; } = "Marked on the chart: {0}.";
+
     /// <summary>The accessible name of the legend, used when the legend has no title of its own.</summary>
     public string LegendAriaLabel { get; set; } = "Chart legend";
 
@@ -62,6 +90,10 @@ public class BitChartTexts
 
     /// <summary>The English texts, used by a chart that is given none.</summary>
     internal static BitChartTexts Default { get; } = new();
+
+    /// <summary>The name of a chart type, or its enum member when the map has none.</summary>
+    internal string TypeName(BitChartType type)
+        => TypeNames is not null && TypeNames.TryGetValue(type, out var name) && string.IsNullOrWhiteSpace(name) is false ? name : type.ToString();
 
     /// <summary>The name of the unlabeled dataset at the given 0-based index.</summary>
     internal string DatasetLabel(int datasetIndex, IFormatProvider? culture)

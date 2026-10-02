@@ -25,6 +25,36 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
             Draw(ctx, a, behind: false);
     }
 
+    /// <summary>
+    /// Names every annotation that says something: its <see cref="BitChartAnnotation.Description"/>, or else its label
+    /// with the value a line marks. An annotation with neither is decoration and is left out.
+    /// </summary>
+    public IEnumerable<string> Describe(BitChartConfig config)
+    {
+        var culture = config.Options.Culture ?? System.Globalization.CultureInfo.InvariantCulture;
+        foreach (var a in Annotations)
+        {
+            if (string.IsNullOrWhiteSpace(a.Description) is false)
+            {
+                yield return a.Description!;
+            }
+            else if (string.IsNullOrWhiteSpace(a.Label) is false)
+            {
+                if (a.Kind != BitChartAnnotationKind.Line)
+                {
+                    yield return a.Label!;
+                    continue;
+                }
+
+                // A vertical line placed by category index marks that category, which is what its name says.
+                int index = (int)a.Value;
+                bool category = a.Orientation == BitChartLineOrientation.Vertical && a.XIsIndex
+                    && index >= 0 && index < config.Data.Labels.Count;
+                yield return $"{a.Label}: {(category ? config.Data.Labels[index] : a.Value.ToString(culture))}";
+            }
+        }
+    }
+
     private void Draw(BitChartPluginContext ctx, BitChartAnnotation a, bool behind)
     {
         if (!ctx.IsCartesian || ctx.Plot is not { } plot) return;
@@ -166,7 +196,7 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
         double w = BitChartTextMeasure.Width(a.Label, fontSize, a.LabelFont.Weight) + 12;
         double h = a.LabelFont.LineHeightPx + 6;
         double left = anchor == "end" ? x - w : anchor == "middle" ? x - w / 2 : x;
-        add(new BitChartSvgRect { X = left, Y = y - h / 2, Width = w, Height = h, Rx = 4, Fill = a.LabelBackground });
+        add(new BitChartSvgRect { X = left, Y = y - h / 2, Width = w, Height = h, Rx = 4, Fill = a.LabelBackground ?? a.Color });
         add(new BitChartSvgText
         {
             X = left + w / 2, Y = y, Text = a.Label!, Fill = a.LabelColor,

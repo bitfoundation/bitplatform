@@ -16,4 +16,12 @@ public interface IBitChartPlugin
 
     /// <summary>Called after datasets are drawn.</summary>
     void AfterDatasetsDraw(BitChartPluginContext ctx) { }
+
+    /// <summary>
+    /// What a screen reader is told about what the plugin draws, one sentence per mark. Everything drawn in the plot
+    /// is hidden from assistive technologies, so a target line or a total in a doughnut's cutout that says nothing
+    /// here is information only a sighted reader gets. The chart lists the sentences in a visually hidden note its
+    /// plot is described by. The default says nothing, which is right for a purely decorative plugin.
+    /// </summary>
+    IEnumerable<string> Describe(BitChartConfig config) => [];
 }

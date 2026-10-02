@@ -1864,6 +1864,83 @@ public class BitChartTests : BunitTestContext
         component.FindAll(".bit-cht-lgd-itm")[0].MouseEnter();
         Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
     }
+
+    // ---- descriptions ----
+
+    [TestMethod]
+    public void TheDescriptionShouldBeWhatThePlotIsDescribedByFirst()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Description, "Alpha falls while Beta rises.");
+        });
+
+        var ids = component.Find("svg").GetAttribute("aria-describedby")!.Split(' ');
+        Assert.AreEqual(2, ids.Length, "the summary, then how to walk the data");
+        Assert.AreEqual("Alpha falls while Beta rises.", component.Find($"#{ids[0]}").TextContent);
+        StringAssert.Contains(component.Find($"#{ids[1]}").TextContent, "arrow keys");
+        Assert.IsTrue(component.Find($"#{ids[0]}").ClassList.Contains("bit-cht-sr"), "it is visually hidden");
+    }
+
+    [TestMethod]
+    public void AChartThatCannotBeWalkedShouldStillBeDescribed()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Description, "Flat.");
+            p.Add(c => c.IsEnabled, false);
+        });
+
+        var svg = component.Find("svg");
+        Assert.AreEqual("img", svg.GetAttribute("role"));
+        Assert.AreEqual("Flat.", component.Find($"#{svg.GetAttribute("aria-describedby")}").TextContent);
+    }
+
+    [TestMethod]
+    public void WhatThePluginsDrawShouldBeToldToAScreenReader()
+    {
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(new BitChartAnnotationPlugin(
+            new BitChartAnnotation { Value = 2, Label = "Target" },
+            new BitChartAnnotation { Value = 1 }));
+        var component = RenderChart(BitChartType.Line, options: options);
+
+        var ids = component.Find("svg").GetAttribute("aria-describedby")!.Split(' ');
+        Assert.AreEqual("Marked on the chart: Target: 2.", component.Find($"#{ids[0]}").TextContent);
+
+        var silent = RenderChart(BitChartType.Line);
+        Assert.AreEqual(1, silent.Find("svg").GetAttribute("aria-describedby")!.Split(' ').Length, "no plugin, no note");
+    }
+
+    [TestMethod]
+    public void TheDefaultNameShouldCallTheTypeByAReadableName()
+    {
+        var component = RenderChart(BitChartType.PolarArea);
+        Assert.AreEqual("Polar area chart with 2 data series.", component.Find("svg").GetAttribute("aria-label"));
+
+        var texts = new BitChartTexts { TypeNames = { [BitChartType.PolarArea] = "قطبی" }, DefaultAriaLabelFormat = "نمودار {0}", RoleDescription = "نمودار" };
+        var localized = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Type, BitChartType.PolarArea);
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Texts, texts);
+        });
+        Assert.AreEqual("نمودار قطبی", localized.Find("svg").GetAttribute("aria-label"));
+        Assert.AreEqual("نمودار", localized.Find("svg").GetAttribute("aria-roledescription"));
+    }
+
+    [TestMethod]
+    public void AStartAlignedTitleShouldFollowTheReadingDirection()
+    {
+        var component = RenderChart(options: new BitChartOptions
+        {
+            Plugins = new BitChartPluginOptions { Title = new BitChartTitleOptions { Display = true, Text = "T", Align = BitChartAlign.Start } }
+        });
+
+        StringAssert.Contains(component.Find(".bit-cht-ttl > div").GetAttribute("style"), "text-align:start");
+    }
 }
 
 internal static class BitChartTestExtensions

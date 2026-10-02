@@ -34,6 +34,13 @@ public partial class BitChart : BitComponentBase
     /// <summary>The chart data: labels and datasets.</summary>
     [Parameter] public BitChartData? Data { get; set; }
 
+    /// <summary>
+    /// A visually hidden summary of what the chart shows - its trend, its outlier, its takeaway - that the plot is
+    /// described by. The accessible name says what the chart is and the data table holds every value; this is the
+    /// long description WCAG asks of a complex image, which neither of them is.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
     /// <summary>Render a visually-hidden data table for screen readers (default true).</summary>
     [Parameter] public bool GenerateTable { get; set; } = true;
 
@@ -153,6 +160,9 @@ public partial class BitChart : BitComponentBase
     private BitChartTooltipInfo? _activeTooltip;
     private BitChartTooltipContext? _tooltipContext;
     private readonly List<BitChartSvgNode> _hoverNodes = new();
+
+    // What the plugins say they drew, for the hidden note the plot is described by.
+    private List<string> _notes = [];
 
     // Keyboard navigation.
     private int _focusIndex = -1;
@@ -596,6 +606,7 @@ public partial class BitChart : BitComponentBase
             _vh = responsive && _measuredHeight is { } mh && mh > 0 ? mh : basis / aspect;
 
         _scene = new BitChartRenderer(_config, _state, _vw, _vh, _instanceId, ActiveTexts).Render();
+        _notes = _config.Options.Plugins.Custom.SelectMany(p => p.Describe(_config)).Where(n => n.HasValue()).ToList();
         RestoreInteraction();
 
         // Decide whether to (re)play the entry animation. We key off a signature of the data
@@ -1139,6 +1150,13 @@ public partial class BitChart : BitComponentBase
 
     private string HintId => $"{_instanceId}-hint";
 
+    private string DescriptionId => $"{_instanceId}-desc";
+
+    private string NotesId => $"{_instanceId}-notes";
+
+    /// <summary>The hidden sentence naming what the plugins drew: annotations, labeled trend lines, a center text.</summary>
+    private string? NotesText => _notes.Count == 0 ? null : BitChartTexts.Format(Culture, ActiveTexts.NotesFormat, string.Join("; ", _notes));
+
     /// <summary>True when the keyboard hint is worth rendering: there is data to walk and text to say it with.</summary>
     private bool ShowNavigationHint => !string.IsNullOrWhiteSpace(NavigationHint) && IsNavigable;
 
@@ -1146,12 +1164,23 @@ public partial class BitChart : BitComponentBase
     private string? NavigationHintText => IsKeyboardZoomable && ZoomHint.HasValue() ? $"{NavigationHint} {ZoomHint}" : NavigationHint;
 
     /// <summary>
-    /// What the chart points its <c>aria-describedby</c> at: the how-to-navigate sentence, and null without one. The
-    /// data table is deliberately not part of it - a description is read as one flat string every time the chart
-    /// takes focus, which turns a table of hundreds of cells into minutes of speech - and is instead a real table
-    /// right after the chart, which a screen reader can browse cell by cell, or skip.
+    /// What the chart points its <c>aria-describedby</c> at: the <see cref="Description"/>, what the plugins drew, and
+    /// the how-to-navigate sentence, in that order - what the chart says before how to walk it - and null with none
+    /// of them. The data table is deliberately not part of it - a description is read as one flat string every time
+    /// the chart takes focus, which turns a table of hundreds of cells into minutes of speech - and is instead a real
+    /// table right after the chart, which a screen reader can browse cell by cell, or skip.
     /// </summary>
-    private string? DescribedBy => ShowNavigationHint ? HintId : null;
+    private string? DescribedBy
+    {
+        get
+        {
+            var ids = new List<string>(3);
+            if (Description.HasValue()) ids.Add(DescriptionId);
+            if (NotesText is not null) ids.Add(NotesId);
+            if (ShowNavigationHint) ids.Add(HintId);
+            return ids.Count == 0 ? null : string.Join(' ', ids);
+        }
+    }
 
     /// <summary>
     /// The plot is an application while the keyboard can walk it: that is what makes a screen reader in browse mode
@@ -1441,7 +1470,7 @@ public partial class BitChart : BitComponentBase
         {
             if (!string.IsNullOrEmpty(AriaLabel)) return AriaLabel;
             if (_config.Options.Plugins.Title is { Display: true, Text.Length: > 0 } t) return t.Text;
-            return BitChartTexts.Format(Culture, ActiveTexts.DefaultAriaLabelFormat, _config.Type, _config.Data.Datasets.Count);
+            return BitChartTexts.Format(Culture, ActiveTexts.DefaultAriaLabelFormat, ActiveTexts.TypeName(_config.Type), _config.Data.Datasets.Count);
         }
     }
 
@@ -1514,10 +1543,11 @@ public partial class BitChart : BitComponentBase
         _ => "center"
     };
 
+    /// <summary>The logical keywords, so Start is the right-hand side of a right-to-left chart as flex-start already is.</summary>
     private static string TextAlign(BitChartAlign a) => a switch
     {
-        BitChartAlign.Start => "left",
-        BitChartAlign.End => "right",
+        BitChartAlign.Start => "start",
+        BitChartAlign.End => "end",
         _ => "center"
     };
 

@@ -15,6 +15,9 @@
 //   --bit-Chart-grid-color             grid lines, tick marks and radar angle lines   (default: $clr-brd-sec)
 //   --bit-Chart-data-label-color       data labels                                    (default: $clr-fg-pri)
 //   --bit-Chart-crosshair-color        the crosshair through the hovered index        (default: $clr-fg-sec)
+//   --bit-Chart-annotation-color       annotation lines, outlines and label pills     (default: $clr-fg-sec)
+//   --bit-Chart-annotation-label-color annotation label text                          (default: $clr-bg-pri)
+//   --bit-Chart-center-text-color      the text in a doughnut's cutout                (default: $clr-fg-pri)
 //   --bit-Chart-surface-color          the surface the chart sits on: the gap between
 //                                      pie slices and the backdrop of radial ticks    (default: $clr-bg-pri)
 //   --bit-Chart-tooltip-background     tooltip fill and caret, and the crosshair chip (default: $clr-tooltip-bg)

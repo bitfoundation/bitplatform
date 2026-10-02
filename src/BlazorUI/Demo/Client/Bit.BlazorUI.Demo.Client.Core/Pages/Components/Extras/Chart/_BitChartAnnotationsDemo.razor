@@ -3,7 +3,9 @@
 <DemoExample Title="Threshold lines" RazorCode="@linesRazorCode" CsharpCode="@linesCsharpCode" Id="annotations-threshold-lines">
     <div class="example-desc">
         <code>BitChartAnnotationPlugin</code> draws reference lines, boxes, points and labels in data coordinates,
-        so they follow the values as the chart resizes - here a target line and a shaded warning band.
+        so they follow the values as the chart resizes - here a target line and a shaded warning band. A label's
+        pill takes the annotation's <code>Color</code>. Screen readers hear what each one marks - its
+        <code>Label</code> and value ("Target: 80"), or a <code>Description</code> of your own.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="Series()" Options="_lines" /></div></div>
 </DemoExample>

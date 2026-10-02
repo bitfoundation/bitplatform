@@ -79,6 +79,7 @@ public partial class _BitChartLocalizationDemo
 
     private readonly BitChartTexts _persianTexts = new()
     {
+        RoleDescription = "نمودار",
         LegendAriaLabel = "راهنمای نمودار",
         PositionFormat = "{0} از {1}",
         SeriesPositionFormat = "سری {0} از {1}",
@@ -126,6 +127,7 @@ private readonly BitChartOptions _currency = new()
     private readonly string rtlCsharpCode = @"
 private readonly BitChartTexts _persianTexts = new()
 {
+    RoleDescription = ""نمودار"",
     LegendAriaLabel = ""راهنمای نمودار"",
     PositionFormat = ""{0} از {1}"",
     SeriesPositionFormat = ""سری {0} از {1}"",

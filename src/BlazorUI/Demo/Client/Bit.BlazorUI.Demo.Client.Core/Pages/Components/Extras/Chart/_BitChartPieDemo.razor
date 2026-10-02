@@ -33,8 +33,9 @@
 
 <DemoExample Title="Center text (KPI)" RazorCode="@centerTextRazorCode" CsharpCode="@centerTextCsharpCode" Id="pie-center-text">
     <div class="example-desc">
-        <code>BitChartCenterTextPlugin</code> writes one or two lines into the cutout, shrunk to fit. It is an
-        ordinary <code>IBitChartPlugin</code>, so custom overlays hook in the same way.
+        <code>BitChartCenterTextPlugin</code> writes one or two lines into the cutout, shrunk to fit, and says them
+        to screen readers too. It is an ordinary <code>IBitChartPlugin</code>, so custom overlays hook in the same
+        way - and describe what they draw through <code>Describe</code>.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Doughnut" Data="BitChartSampleData.Traffic()" Options="_centerText" /></div></div>
 </DemoExample>

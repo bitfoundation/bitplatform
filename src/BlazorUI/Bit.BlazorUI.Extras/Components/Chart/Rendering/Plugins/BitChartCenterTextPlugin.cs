@@ -13,7 +13,11 @@ public sealed class BitChartCenterTextPlugin : IBitChartPlugin
     public string Text { get; set; } = "";
     /// <summary>Optional secondary line shown beneath the main text.</summary>
     public string? Subtext { get; set; }
-    public string Color { get; set; } = "var(--bit-clr-fg-pri, #1A1A1A)";
+    /// <summary>
+    /// Color of the text. Defaults to the public <c>--bit-Chart-center-text-color</c> variable, falling back to the
+    /// theme's primary foreground.
+    /// </summary>
+    public string Color { get; set; } = "var(--bit-Chart-center-text-color, var(--bit-clr-fg-pri))";
     public string? SubtextColor { get; set; }
     public BitChartFont Font { get; set; } = new() { Size = 28, Weight = "bold" };
     public BitChartFont SubtextFont { get; set; } = new() { Size = 13 };
@@ -25,6 +29,13 @@ public sealed class BitChartCenterTextPlugin : IBitChartPlugin
     {
         Text = text;
         Subtext = subtext;
+    }
+
+    /// <summary>The text in the cutout is a reading of its own - a total, a KPI - so it is said, with its subtext.</summary>
+    public IEnumerable<string> Describe(BitChartConfig config)
+    {
+        if (string.IsNullOrWhiteSpace(Text)) yield break;
+        yield return string.IsNullOrWhiteSpace(Subtext) ? Text : $"{Text} {Subtext}";
     }
 
     public void AfterDatasetsDraw(BitChartPluginContext ctx)

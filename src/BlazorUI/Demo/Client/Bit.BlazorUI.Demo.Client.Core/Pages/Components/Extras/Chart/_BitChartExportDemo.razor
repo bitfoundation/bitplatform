@@ -3,7 +3,8 @@
 <DemoExample Title="Download the chart" RazorCode="@exportRazorCode" CsharpCode="@exportCsharpCode" Id="export-download">
     <div class="example-desc">
         Capture the chart with <code>@@ref</code> and call <code>ExportSvgAsync</code> (vector, theme tokens
-        resolved), <code>ExportPngAsync</code> (raster at the pixel ratio you pass) or <code>ExportCsvAsync</code>
+        resolved), <code>ExportPngAsync</code> (raster at the pixel ratio you pass, on the chart's own surface so a dark theme
+        exports dark) or <code>ExportCsvAsync</code>
         (values in the chart's culture, with a byte order mark so non-Latin labels open correctly in spreadsheets).
     </div>
     <div class="buttons-container" style="gap:.5rem">

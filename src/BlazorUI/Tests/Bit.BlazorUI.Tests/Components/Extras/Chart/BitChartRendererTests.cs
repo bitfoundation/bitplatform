@@ -818,6 +818,51 @@ public class BitChartRendererTests
     }
 
     [TestMethod]
+    public void AnAnnotationLabelShouldTakeTheAnnotationsColorUnlessGivenOneOfItsOwn()
+    {
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(new BitChartAnnotationPlugin(
+            new BitChartAnnotation { Value = 2, Color = "#2ecc71", Label = "Target" },
+            new BitChartAnnotation { Value = 1, Color = "#2ecc71", Label = "Floor", LabelBackground = "#000000" }));
+        var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
+
+        var pills = scene.Foreground.OfType<BitChartSvgRect>().Select(r => r.Fill).ToList();
+        CollectionAssert.AreEqual(new[] { "#2ecc71", "#000000" }, pills);
+    }
+
+    [TestMethod]
+    public void AnAnnotationShouldDefaultToTheThemedColors()
+    {
+        var annotation = new BitChartAnnotation();
+
+        StringAssert.StartsWith(annotation.Color, "var(--bit-Chart-annotation-color,");
+        StringAssert.StartsWith(annotation.LabelColor, "var(--bit-Chart-annotation-label-color,");
+        Assert.IsNull(annotation.LabelBackground);
+    }
+
+    [TestMethod]
+    public void ThePluginsShouldDescribeWhatTheyDrawForScreenReaders()
+    {
+        var data = Bars(1, 2, 3);
+        data.Datasets[0].Label = "Sales";
+        var config = new BitChartConfig(BitChartType.Line, data, new BitChartOptions { Culture = new CultureInfo("de-DE") });
+
+        var annotations = new BitChartAnnotationPlugin(
+            new BitChartAnnotation { Value = 2.5, Label = "Target" },
+            new BitChartAnnotation { Orientation = BitChartLineOrientation.Vertical, XIsIndex = true, Value = 1, Label = "Launch" },
+            new BitChartAnnotation { Kind = BitChartAnnotationKind.Box, Label = "Low", Description = "Low band: under 1" },
+            new BitChartAnnotation { Value = 1 });
+        CollectionAssert.AreEqual(new[] { "Target: 2,5", "Launch: B", "Low band: under 1" },
+            ((IBitChartPlugin)annotations).Describe(config).ToArray(), "a mark with neither a label nor a description is decoration");
+
+        var trend = new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" }, new BitChartTrendline());
+        CollectionAssert.AreEqual(new[] { "Trend (Sales)" }, ((IBitChartPlugin)trend).Describe(config).ToArray());
+
+        CollectionAssert.AreEqual(new[] { "120 total" }, ((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(config).ToArray());
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartCenterTextPlugin()).Describe(config).Count());
+    }
+
+    [TestMethod]
     public void CenterTextPluginShouldDrawInsideTheDoughnut()
     {
         var options = new BitChartOptions { CutoutPercentage = 70 };
