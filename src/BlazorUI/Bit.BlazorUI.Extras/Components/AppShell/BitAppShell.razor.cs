@@ -21,13 +21,18 @@ namespace Bit.BlazorUI;
 /// <c>--bit-ash-keyboard-inset</c> for how much of the shell the on-screen keyboard is covering.
 /// <br />
 /// What it looks like, and how far each edge is inset, is set through the public <c>--bit-AppShell-*</c>
-/// CSS variables, which inherit: <c>--bit-AppShell-background</c>, the background of the four bars
+/// CSS variables, which inherit: <c>--bit-AppShell-background</c> and <c>--bit-AppShell-color</c>, the
+/// background of the shell and the text color its content inherits, the background of the four bars
 /// (<c>--bit-AppShell-inset-background</c> and one per edge, such as
 /// <c>--bit-AppShell-inset-top-background</c> behind the status bar), and
 /// <c>--bit-AppShell-safe-area-top</c> / <c>-bottom</c> / <c>-start</c> / <c>-end</c>, which default to
 /// the device's own safe areas.
 /// <br />
 /// It prints at the length of its content rather than as the one screenful it shows.
+/// <br />
+/// While nothing on the page has focus, the keys that scroll a page - the arrows, Page Up/Down, Home/End and
+/// the space bar - scroll the main container of the one app shell of the page, since its document no longer
+/// scrolls for the browser to aim them at.
 /// </remarks>
 [SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
 public partial class BitAppShell : BitComponentBase

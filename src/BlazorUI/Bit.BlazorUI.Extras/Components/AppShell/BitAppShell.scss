@@ -4,6 +4,7 @@
 // Public CSS variables, read off the root and the bars and never declared here, so a value set on :root (or on
 // an ancestor) re-tunes every app shell under it and one set on the Style of an instance that one alone:
 //   --bit-AppShell-background                 background of the shell, and of the bars   (default: $clr-bg-pri)
+//   --bit-AppShell-color                      text color the content inherits            (default: $clr-fg-pri)
 //   --bit-AppShell-inset-background           background of the four inset bars          (default: the shell's)
 //   --bit-AppShell-inset-top-background       ... of the top bar, behind the status bar  (default: the bars')
 //   --bit-AppShell-inset-bottom-background    ... of the bottom bar, behind the home bar (default: the bars')
@@ -52,6 +53,10 @@ $bit-ash-inset-zindex: 999999;
     height: 100%;
     display: flex;
     flex-direction: column;
+    // The foreground is painted with the background it has to be read against: a shell that paints the
+    // theme's background and leaves the text to whatever the page inherited is black on black in a dark
+    // theme on any host page that never set a color of its own.
+    color: var(--bit-AppShell-color, #{$clr-fg-pri});
     background-color: var(--bit-AppShell-background, #{$clr-bg-pri});
 }
 

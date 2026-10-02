@@ -22,7 +22,7 @@ public partial class BitAppShellStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(10, documented.Length, "The stylesheet does not document the ten public variables.");
+        Assert.AreEqual(11, documented.Length, "The stylesheet does not document the eleven public variables.");
 
         foreach (var name in documented)
         {
@@ -76,6 +76,9 @@ public partial class BitAppShellStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(Block(stylesheet, "\n.bit-ash {"), "background-color: var(--bit-AppShell-background, #{$clr-bg-pri});");
+
+        // The foreground comes with the background, so the text is never left to a page color that does not read on it.
+        StringAssert.Contains(Block(stylesheet, "\n.bit-ash {"), "color: var(--bit-AppShell-color, #{$clr-fg-pri});");
 
         foreach (var (rule, edge) in new[] { ("top", "top"), ("bottom", "bottom"), ("left", "start"), ("right", "end") })
         {

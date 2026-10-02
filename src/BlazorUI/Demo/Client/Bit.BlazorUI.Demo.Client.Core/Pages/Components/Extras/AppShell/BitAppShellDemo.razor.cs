@@ -420,6 +420,12 @@ public partial class BitAppShellDemo
         },
         new()
         {
+            Name = "--bit-AppShell-color",
+            DefaultValue = "var(--bit-clr-fg-pri)",
+            Description = "Text color the content inherits, paired with the background. Set it to inherit to keep the host page's own.",
+        },
+        new()
+        {
             Name = "--bit-AppShell-inset-background",
             DefaultValue = "--bit-AppShell-background",
             Description = "Background of the four inset bars.",

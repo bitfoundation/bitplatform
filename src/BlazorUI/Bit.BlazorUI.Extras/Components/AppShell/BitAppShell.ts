@@ -476,4 +476,74 @@ namespace BitBlazorUI {
     if (bind() === false && document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => { bind(); }, { once: true });
     }
+
+    // The keys that scroll a page - the arrows, Page Up/Down, Home/End and the space bar - are aimed by the
+    // browser at whatever the reader last focused or pressed on, and at the document while that is nothing at
+    // all. The document of a page whose application scrolls in a shell does not scroll, so until the reader
+    // has clicked or tabbed into the shell those keys did nothing in any engine. While that is the case they
+    // are handed to the main container of the shell instead, which is where the document's scrolling went.
+    // Once the reader has pressed inside a container the browser aims the keys there on its own, so that is
+    // left to it - and so is a page whose document does scroll, and any key a handler of the page took.
+    let lastDown: EventTarget | null = null;
+
+    window.addEventListener('pointerdown', e => { lastDown = e.target; }, { capture: true, passive: true });
+
+    window.addEventListener('keydown', e => {
+        if (e.defaultPrevented || e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+
+        const body = document.body;
+        if (!body || (e.target !== body && e.target !== document.documentElement) || body.isContentEditable) return;
+
+        if (lastDown instanceof Element && lastDown.isConnected && lastDown.closest('[data-bit-ash-main]')) return;
+
+        const space = e.key === ' ' || e.key === 'Spacebar';
+        if (e.shiftKey && space === false) return;
+
+        // The one shell of the page: a shell nested in another one - an example on a page, a preview in a
+        // dialog - is a region of that page rather than the page, and a page of several side by side has no
+        // one region the document's scrolling belongs to.
+        const mains = Array.from(document.querySelectorAll<HTMLElement>('[data-bit-ash-main]'))
+            .filter(m => m.parentElement?.closest('[data-bit-ash-main]') == null);
+        if (mains.length !== 1) return;
+
+        const main = mains[0];
+        const line = 40;
+        const page = Math.max(line, main.clientHeight * 0.875);
+
+        let left = 0, top = 0, to: number | undefined;
+        switch (space ? ' ' : e.key) {
+            case 'ArrowDown': top = line; break;
+            case 'ArrowUp': top = -line; break;
+            case 'ArrowRight': left = line; break;
+            case 'ArrowLeft': left = -line; break;
+            case 'PageDown': top = page; break;
+            case 'PageUp': top = -page; break;
+            case ' ': top = e.shiftKey ? -page : page; break;
+            case 'Home': to = 0; break;
+            case 'End': to = main.scrollHeight; break;
+            default: return;
+        }
+
+        const horizontal = left !== 0;
+        const doc = document.scrollingElement || document.documentElement;
+        if (horizontal ? doc.scrollWidth > doc.clientWidth + 1 : doc.scrollHeight > doc.clientHeight + 1) return;
+
+        // The reader is not to move a shell the page stopped from scrolling (NoScroll, an Overflow of Hidden),
+        // and one with nothing to scroll along that axis leaves the key to the page.
+        const overflow = getComputedStyle(main)[horizontal ? 'overflowX' : 'overflowY'];
+        if (overflow !== 'auto' && overflow !== 'scroll') return;
+        if (horizontal ? main.scrollWidth <= main.clientWidth : main.scrollHeight <= main.clientHeight) return;
+
+        e.preventDefault();
+
+        // Animated as the container's own scroll-behavior says - smooth unless the reader asked for reduced
+        // motion - except for a held key, whose repeats would each restart the animation from wherever the
+        // last one had got to and crawl.
+        const behavior: ScrollBehavior | undefined = e.repeat ? 'instant' as ScrollBehavior : undefined;
+        if (to !== undefined) {
+            main.scrollTo({ top: to, behavior });
+        } else {
+            main.scrollBy({ left, top, behavior });
+        }
+    });
 }());
