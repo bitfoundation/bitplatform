@@ -387,6 +387,12 @@ private readonly BitAccordionListParams[] accordionListParams =
 <BitAccordionList Background=""BitColorKind.Tertiary""
                   Border=""BitColorKind.Transparent""
                   Items=""basicItems""
+                  TItem=""BitAccordionListItem"" />
+
+<BitAccordionList Joined
+                  NoBorder
+                  Background=""BitColorKind.Transparent""
+                  Items=""basicItems""
                   TItem=""BitAccordionListItem"" />";
     private readonly string example19CsharpCode = basicItemsCsharpCode + bodyForCsharpCode;
 

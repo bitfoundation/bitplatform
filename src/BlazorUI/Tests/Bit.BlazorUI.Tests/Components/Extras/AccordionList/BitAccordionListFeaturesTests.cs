@@ -1311,6 +1311,43 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
     }
 
+    [TestMethod]
+    [DataRow("Shift")]
+    [DataRow("Ctrl")]
+    [DataRow("Alt")]
+    [DataRow("Meta")]
+    public void BitAccordionListShouldLeaveTheNavigationKeysPressedWithAModifierAlone(string modifier)
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        // The listener that keeps the page from scrolling under the navigation leaves a modified key alone
+        // (Ctrl+Home is the page's own), so the navigation has to as well - or the reader moves twice.
+        var wrapper = component.FindAll(".bit-acl-itm")[0];
+        foreach (var key in new[] { "ArrowDown", "ArrowUp", "Home", "End" })
+        {
+            wrapper.KeyDown(new KeyboardEventArgs
+            {
+                Key = key,
+                ShiftKey = modifier == "Shift",
+                CtrlKey = modifier == "Ctrl",
+                AltKey = modifier == "Alt",
+                MetaKey = modifier == "Meta",
+            });
+        }
+
+        Assert.AreEqual(0, FocusCalls());
+
+        // The bare key is still the navigation.
+        component.FindAll(".bit-acl-itm")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.AreEqual(1, FocusCalls());
+
+        int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
     public class KeylessItem
     {
         public string? Name { get; set; }

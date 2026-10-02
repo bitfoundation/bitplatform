@@ -372,7 +372,8 @@
 <DemoExample Title="Color" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
     <div>
         <code>Background</code> and <code>Border</code> take a <code>BitColorKind</code> and repaint every item, hover
-        shades included.
+        shades included. A <code>Transparent</code> background on a <code>Joined</code>, <code>NoBorder</code> list
+        leaves only the lines between the items: a flush list for a FAQ or a sidebar.
     </div>
     <br />
     <div class="example-content">
@@ -388,6 +389,16 @@
         <div>Background="Tertiary" &amp; Border="Transparent":</div>
         <BitAccordionList Background="BitColorKind.Tertiary"
                           Border="BitColorKind.Transparent"
+                          Items="basicItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Flush (Background="Transparent", Joined &amp; NoBorder):</div>
+        <BitAccordionList Joined
+                          NoBorder
+                          Background="BitColorKind.Transparent"
                           Items="basicItems"
                           TItem="Section"
                           NameSelectors="nameSelectors" />

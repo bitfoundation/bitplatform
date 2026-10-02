@@ -445,6 +445,13 @@ private readonly BitAccordionListParams[] accordionListParams =
                   Border=""BitColorKind.Transparent""
                   Items=""basicItems""
                   TItem=""Section""
+                  NameSelectors=""nameSelectors"" />
+
+<BitAccordionList Joined
+                  NoBorder
+                  Background=""BitColorKind.Transparent""
+                  Items=""basicItems""
+                  TItem=""Section""
                   NameSelectors=""nameSelectors"" />";
     private readonly string example19CsharpCode = basicItemsCsharpCode + bodyForCsharpCode + sectionCsharpCode;
 

@@ -240,7 +240,7 @@ public partial class BitAccordionListDemo
             Name = "Navigable",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Moves the focus between the headers of the items with the ArrowUp, ArrowDown, Home and End keys, in addition to the Tab key. The navigation wraps around at both ends of the list, skips the disabled items, and leaves the same keys pressed inside a panel to whatever the panel holds.",
+            Description = "Moves the focus between the headers of the items with the ArrowUp, ArrowDown, Home and End keys, in addition to the Tab key. The navigation wraps around at both ends of the list, skips the disabled items, and leaves the same keys pressed inside a panel, or with a modifier, alone.",
         },
         new()
         {

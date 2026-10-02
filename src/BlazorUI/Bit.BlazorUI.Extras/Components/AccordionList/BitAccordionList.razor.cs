@@ -288,8 +288,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// </summary>
     /// <remarks>
     /// Only the headers answer these keys: the same keys pressed inside the panel of an item belong to whatever
-    /// the panel holds and are left alone. The navigation wraps around at both ends of the list and skips the
-    /// items that are disabled.
+    /// the panel holds and are left alone, and so are the keys pressed with a modifier (Ctrl+Home, Alt+ArrowDown),
+    /// which belong to the page. The navigation wraps around at both ends of the list and skips the items that
+    /// are disabled.
     /// </remarks>
     [Parameter] public bool Navigable { get; set; } = true;
 
@@ -1296,6 +1297,11 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         if (Navigable is false || IsEnabled is false) return;
 
         if (e.Key is not ("ArrowDown" or "ArrowUp" or "Home" or "End")) return;
+
+        // A key pressed with a modifier is a different gesture (Ctrl+Home, Alt+ArrowDown, a screen reader's own
+        // commands), and the listener that suppresses the page scroll leaves it alone too - moving the focus on
+        // it would move the reader twice: once to another header and once down the page.
+        if (e.ShiftKey || e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         // A disabled header is out of the tab order, so the navigation walks past it rather than parking the
         // focus on something that cannot be reached by the Tab key either.
