@@ -6,6 +6,11 @@ public partial class Templates04CreateProjectPage
 {
     private string name = "MyFirstProject";
 
+    private bool android;
+    private bool ios;
+    private bool macOS;
+    private bool windows;
+
     private Parameter<bool> cloudflare = new() { Value = true, Default = true };
     private Parameter<bool> sample = new() { Value = false, Default = false };
     private Parameter<bool> sentry = new() { Value = false, Default = false };
@@ -63,7 +68,7 @@ public partial class Templates04CreateProjectPage
             new() { Text = "SQLite", Value = "Sqlite" },
             new() { Text = "SqlServer", Value = "SqlServer" },
             new() { Text = "PostgreSQL", Value = "PostgreSQL" },
-            new() { Text = "MySQL", Value = "MySQL" },
+            new() { Text = "MySQL", Value = "MySql" },
             new() { Text = "Other", Value = "Other" },
         ]
     };
@@ -107,7 +112,7 @@ public partial class Templates04CreateProjectPage
 
     private string GetFinalCommand()
     {
-        StringBuilder finalCommand = new($"dotnet new bit-bp {GetNameCommand()}");
+        StringBuilder finalCommand = new(GetNameCommand());
 
         if (captcha.IsModified)
         {
@@ -204,12 +209,44 @@ public partial class Templates04CreateProjectPage
             finalCommand.Append(GetThemeCommand());
         }
 
+        if (android || ios || macOS || windows)
+        {
+            finalCommand.Append(GetPlatformsCommand());
+        }
+
         return finalCommand.ToString();
     }
 
     private string GetNameCommand()
     {
-        return $"--name {name} ";
+        return $"bit new {name} ";
+    }
+
+    private string GetPlatformsCommand()
+    {
+        List<string> platforms = ["web"];
+
+        if (android)
+        {
+            platforms.Add("android");
+        }
+
+        if (ios)
+        {
+            platforms.Add("ios");
+        }
+
+        if (macOS)
+        {
+            platforms.Add("macos");
+        }
+
+        if (windows)
+        {
+            platforms.Add("windows");
+        }
+
+        return $"--platforms {string.Join(',', platforms)} ";
     }
 
     private string GetCaptchaCommand()

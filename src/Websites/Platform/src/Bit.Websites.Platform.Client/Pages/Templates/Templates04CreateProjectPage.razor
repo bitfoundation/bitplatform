@@ -13,6 +13,10 @@
     <BitText Typography="BitTypography.Subtitle1" Gutter>
         Let's make our next cross platform project a success with Bit.Boilerplate.
     </BitText>
+    <BitText Typography="BitTypography.Body1" Gutter>
+        Pick the options below and run the command in a terminal. <code>bit new</code> asks about anything left out, installs what the project needs, and gets it building.
+        New to it? Start with <a href="/templates/getting-started">Getting started</a>.
+    </BitText>
     <br />
     <BitSticky Top="64px">
         <CodeBox>
@@ -39,6 +43,25 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Native apps now</BitText>
+            </div>
+            <BitStack Horizontal HorizontalAlign="BitAlignment.Start" Wrap>
+                <BitCheckbox Label="Android" @bind-Value="android" />
+                <BitCheckbox Label="iOS" @bind-Value="ios" />
+                <BitCheckbox Label="macOS" @bind-Value="macOS" />
+                <BitCheckbox Label="Windows" @bind-Value="windows" />
+            </BitStack>
+            <br />
+            <CodeBox>
+                @GetPlatformsCommand()
+            </CodeBox>
+            The web app is always set up. Native apps need several GB of .NET workloads and make <code>bit new</code> take much longer,
+            so you may rather add them later from the project folder, e.g. <code>bit setup --platforms android</code>.
+            iOS and macOS apps need a Mac, and the Windows app needs Windows.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
                 <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
             </div>
@@ -59,6 +82,13 @@
                         For the default SQLite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank" rel="noopener">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank" rel="noopener">Visual Studio Code</a>.
                     </div>
                     break;
+                case "SqlServer" when aspire.Value:
+                case "PostgreSQL" when aspire.Value:
+                case "MySql" when aspire.Value:
+                    <div>
+                        With Aspire, @database.Value runs in a container for you, so there's nothing to install besides Docker, which <code>bit new</code> offers when it's missing.
+                    </div>
+                    break;
                 case "SqlServer":
                     <div>
                         You can use Sql Server LocalDb 2025 for development purposes.
@@ -75,7 +105,7 @@
                         <CodeBox>winget install --id=PostgreSQL.PostgreSQL.18</CodeBox>
                     </div>
                     break;
-                case "MySQL":
+                case "MySql":
                     <div>
                         Download and install @database.Value <a href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener">here</a>.
                     </div>
@@ -219,8 +249,7 @@
             </CodeBox>
             <BitText Typography="BitTypography.Body2">
                 Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank" rel="noopener">ASP.NET Core Aspire</a>.
-                <CodeBox>dotnet tool install -g Aspire.Cli</CodeBox>
-                Aspire requires Docker Desktop to be installed and running. Download and install Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">here</a>.
+                It runs those resources in containers, so <code>bit new</code> installs the Aspire CLI, and offers Docker, when they're missing.
             </BitText>
         </BitGridItem>
 
@@ -293,7 +322,7 @@
                 {
                     <div>
                         To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank" rel="noopener">reCAPTCHA</a> into
-                        the app, include --captcha reCaptcha in the dotnet new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank" rel="noopener">Live demo</a>
+                        the app, include --captcha reCaptcha in the bit new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank" rel="noopener">Live demo</a>
                     </div>
                 }
             </div>
@@ -333,7 +362,7 @@
             <CodeBox>
                 @GetSentryCommand()
             </CodeBox>
-            Adding --sentry true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
+            Adding --sentry to the bit new command allows you to capture errors, crashes, and analytics data
             seamlessly across all supported platforms.
         </BitGridItem>
 
@@ -445,28 +474,6 @@
         </BitGridItem>
 
     </BitGrid>
-    <br />
-    <br />
-    <section class="section-card">
-        <BitText Typography="BitTypography.H5" Gutter>Visual Studio</BitText>
-        <br />
-        <BitCarousel Style="height:unset;aspect-ratio:1/.55" AutoPlay=true InfiniteScrolling=true AutoPlayInterval="5000">
-            <BitCarouselItem>
-                <div class="image-container">
-                    <img src="images/templates/create-new-project-vs-1.webp" alt="Create a new project dialog in Visual Studio" loading="lazy" />
-                </div>
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <div class="image-container">
-                    <img src="images/templates/create-new-project-vs-2.webp" alt="Configure the Boilerplate project options in Visual Studio" loading="lazy" />
-                </div>
-            </BitCarouselItem>
-        </BitCarousel>
-        <br />
-        <div class="section-card-txt">
-            <b>Note</b>: In second window of create new project modal, make sure to check <b>Place solution and project in the same directory</b> checkbox.
-        </div>
-    </section>
 </div>
 
 <NavigationButtons Prev="Project structure" PrevUrl="/templates/project-structure" Next="Run project" NextUrl="/templates/run-project" />
