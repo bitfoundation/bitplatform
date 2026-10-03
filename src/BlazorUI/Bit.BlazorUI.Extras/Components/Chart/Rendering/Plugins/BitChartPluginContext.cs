@@ -62,6 +62,20 @@ public sealed class BitChartPluginContext
         return ValueScales.Values.FirstOrDefault()?.PixelFor(value) ?? 0;
     }
 
+    /// <summary>
+    /// A value on the index axis spelled the way the axis shows it - a date on a time axis - for a plugin describing
+    /// a mark it placed there.
+    /// </summary>
+    public string FormatIndexValue(double value)
+        => IndexScale?.FormatPoint(value) ?? value.ToString(Config.Options.Culture ?? System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>A value on a value axis (default "y") spelled the way the axis shows it.</summary>
+    public string FormatValue(double value, string axisId = "y")
+    {
+        var scale = ValueScales is null ? null : ValueScales.TryGetValue(axisId, out var s) ? s : ValueScales.Values.FirstOrDefault();
+        return scale?.FormatPoint(value) ?? value.ToString(Config.Options.Culture ?? System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     public void AddBehind(BitChartSvgNode node) => Scene.Background.Add(node);
     public void AddFront(BitChartSvgNode node) => Scene.Foreground.Add(node);
 }

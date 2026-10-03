@@ -709,6 +709,6 @@ public partial class DemoPage
 
 
     private readonly List<string> _notInheritedComponents = [
-        "CascadingValueProvider", "Chart", "ChartLegacy", "DataGrid", "DataGridLegacy", "ModalService", "Params"
+        "CascadingValueProvider", "ChartLegacy", "DataGrid", "DataGridLegacy", "ModalService", "Params"
     ];
 }
