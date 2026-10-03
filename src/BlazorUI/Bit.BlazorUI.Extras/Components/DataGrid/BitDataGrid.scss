@@ -24,7 +24,7 @@
 //   --bit-DataGrid-hover-background     background of the row under the pointer     (default: $clr-bg-pri-hover)
 //   --bit-DataGrid-selected-background  wash laid over a selected row               (default: $clr-pri-tint)
 //   --bit-DataGrid-selected-color       text color of a selected row                (default: the grid's color)
-//   --bit-DataGrid-editing-background   background of the row being edited          (default: $clr-wrn-light)
+//   --bit-DataGrid-editing-background   wash laid over the row (Cell mode: cell) being edited (default: $clr-wrn-tint)
 //   --bit-DataGrid-accent-color         sort arrows, active group toggle, group bar (default: $clr-pri)
 //   --bit-DataGrid-focus-color          focus indicator of the cells and controls   (default: $clr-pri-focus)
 //   --bit-DataGrid-group-background     background of the group header rows        (default: $clr-bg-ter)
@@ -233,7 +233,7 @@
 }
 
 /* A cell paints the state of its row: the row sets --bit-dtg-rbg (resting: plain or striped), --bit-dtg-cbg (the
-   current state that replaces it: hover, editing) and --bit-dtg-tint (a wash laid over either: selection). The
+   current state that replaces it: hover) and --bit-dtg-tint (a wash laid over either: selection, editing). The
    background stays opaque under the tint, so a frozen cell still covers what scrolls beneath it. */
 .bit-dtg-cell {
     padding: var(--bit-dtg-cell-pad);
@@ -329,9 +329,12 @@
     color: var(--bit-DataGrid-selected-color, currentcolor);
 }
 
-.bit-dtg-body > .bit-dtg-row.bit-dtg-editing {
-    --bit-dtg-cbg: var(--bit-DataGrid-editing-background, #{$clr-wrn-light});
-    --bit-dtg-tint: initial;
+/* Row mode marks the row being edited, Cell mode only the cell that is open. */
+.bit-dtg-body > .bit-dtg-row.bit-dtg-editing,
+.bit-dtg-body > .bit-dtg-row > .bit-dtg-cell-editing {
+    /* A wash, like the selection's: the solid light warning fill it once was stayed light in dark mode,
+       under light text. */
+    --bit-dtg-tint: var(--bit-DataGrid-editing-background, #{$clr-wrn-tint});
     color: var(--bit-DataGrid-color, #{$clr-fg-pri});
 }
 
@@ -796,6 +799,14 @@ button.bit-dtg-htext {
     margin-inline-end: 0;
 }
 
+/* A column's FilterTemplate fills the cell and reads as body text, not as a centred header label. */
+.bit-dtg-filter-custom {
+    width: 100%;
+    min-width: 0;
+    text-align: start;
+    color: $clr-fg-pri;
+}
+
 /* ---------------------------------------------------------- Buttons */
 .bit-dtg-btn {
     display: inline-flex;
@@ -1003,7 +1014,8 @@ button.bit-dtg-htext {
     }
 
     // The row being edited loses its background, so it is marked with an outline instead.
-    .bit-dtg-body > .bit-dtg-row.bit-dtg-editing {
+    .bit-dtg-body > .bit-dtg-row.bit-dtg-editing,
+    .bit-dtg-body > .bit-dtg-row > .bit-dtg-cell-editing {
         outline: $shp-border-width-thick $shp-border-style Highlight;
         outline-offset: calc(-1 * #{$shp-border-width-thick});
     }

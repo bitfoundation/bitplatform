@@ -76,7 +76,8 @@
         var colIndex = slot.ColIndex;
         var span = Grid.ResolveColSpan(column, Item);
         if (span > 1) skip = span - 1;
-        var cellStyle = Grid.FrozenStyle(column) + (span > 1 ? $"grid-column:span {span};" : "") + Grid.Styles?.Cell;
+        var cellStyle = AppendStyle(AppendStyle(Grid.FrozenStyle(column) + (span > 1 ? $"grid-column:span {span};" : ""), Grid.Styles?.Cell),
+                                    column.CellStyleSelector?.Invoke(Item));
 
         <BitDataGridCell TItem="TItem" Grid="Grid" Item="Item" Column="column" ColIndex="colIndex" ColSpan="span"
                             CssClass="@CellClass(column)" Style="@cellStyle" Title="@CellTitle(column)">
@@ -87,14 +88,19 @@
     @if (Grid.HasCommandColumn)
     {
         <div class="bit-dtg-cell bit-dtg-cell-command" role="gridcell" aria-colindex="@Grid.AriaCommandColIndex" @onclick:stopPropagation="true">
-            @if (Editing)
+            @if (Grid.IsCellEditMode)
             {
-                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@(!Grid.IsEnabled || Grid.HasEditErrors)" @onclick="Grid.CommitEditAsync">@Grid.Strings.SaveText</button>
-                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn" @onclick="Grid.CancelEditAsync">@Grid.Strings.CancelText</button>
+                @* A cell opens and commits on its own (Enter, F2, a double-click; Enter or leaving it), so the row keeps only Delete. *@
+                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
+            }
+            else if (Editing)
+            {
+                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@(!Grid.IsEnabled || Grid.HasEditErrors)" @onclick="() => Grid.CommitEditFromCommandAsync(Item)">@Grid.Strings.SaveText</button>
+                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn" @onclick="() => Grid.CancelEditFromCommandAsync(Item)">@Grid.Strings.CancelText</button>
             }
             else
             {
-                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn" @onclick="() => Grid.BeginEdit(Item)">@Grid.Strings.EditText</button>
+                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn" @onclick="() => Grid.BeginEditFromCommand(Item)">@Grid.Strings.EditText</button>
                 <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
             }
         </div>
@@ -128,7 +134,7 @@
     // nothing inside it is focusable, so an expansion that announces itself through aria-expanded would
     // be reachable by pointer only. Make the row the keyboard control in exactly that case: the toggle
     // column is already a button, and cell navigation already routes Enter through the focused cell.
-    private bool RowKeyboardToggle => RowExpandable && !Grid.HasDetailColumn && !Grid.CellNavigation;
+    private bool RowKeyboardToggle => RowExpandable && !Grid.HasDetailColumn && !Grid.CellNavigationActive;
 
     // In a treegrid the row - not the toggle button inside it - is what carries the node's depth, so
     // assistive tech can report "level 3" while moving between rows. 1-based per ARIA; absent outside
@@ -175,7 +181,7 @@
                 <span class="bit-dtg-tree-leaf"></span>
             }
         }
-        @if (Editing && Grid.ColumnEditable(column))
+        @if (Grid.IsEditingCell(Item, column) && Grid.ColumnEditable(column))
         {
             @if (column.EditTemplate is not null)
             {
@@ -204,7 +210,7 @@
         {
             var c = "bit-dtg-row";
             if (Selected) c += " bit-dtg-selected";
-            if (Editing) c += " bit-dtg-editing";
+            if (Editing && !Grid.IsCellEditMode) c += " bit-dtg-editing";
             if (RowExpandable) c += " bit-dtg-row-expandable";
             if (Grid.Classes?.Row is { Length: > 0 } row) c += " " + row;
             if (Selected && Grid.Classes?.SelectedRow is { Length: > 0 } selected) c += " " + selected;
@@ -239,8 +245,10 @@
         var c = "bit-dtg-cell " + BitDataGrid<TItem>.AlignClass(column.Align);
         if (BitDataGrid<TItem>.IsSticky(column)) c += " bit-dtg-sticky";
         if (Grid.ColumnWrapsText(column)) c += " bit-dtg-cell-wrap";
+        if (Grid.IsCellEditMode && Grid.IsEditingCell(Item, column)) c += " bit-dtg-cell-editing";
         if (Grid.Classes?.Cell is { Length: > 0 } cell) c += " " + cell;
         if (!string.IsNullOrEmpty(column.CellClass)) c += " " + column.CellClass;
+        if (column.CellClassSelector?.Invoke(Item) is { Length: > 0 } selected) c += " " + selected;
         return c;
     }
 
@@ -248,7 +256,7 @@
     // readable. Only for cells rendering the column's own value: a Template owns its markup - and any
     // tooltip it wants - and an editor's input must not be covered by one.
     private string? CellTitle(BitDataGridColumn<TItem> column)
-        => Grid.ColumnShowsTooltip(column) && column.Template is null && !(Editing && Grid.ColumnEditable(column))
+        => Grid.ColumnShowsTooltip(column) && column.Template is null && !(Grid.IsEditingCell(Item, column) && Grid.ColumnEditable(column))
             ? column.GetFormattedValue(Item)
             : null;
 

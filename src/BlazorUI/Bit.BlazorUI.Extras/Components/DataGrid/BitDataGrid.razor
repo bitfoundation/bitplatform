@@ -400,18 +400,7 @@
                 }
                 else if (TotalCount == 0 && PendingNewItem is null && !IsInfiniteMode && !UseServerVirtualization)
                 {
-                    <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                        <div class="bit-dtg-cell bit-dtg-empty @Classes?.Empty" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Empty">
-                            @if (EmptyTemplate is not null)
-                            {
-                                @EmptyTemplate
-                            }
-                            else
-                            {
-                                <span>@Strings.EmptyText</span>
-                            }
-                        </div>
-                    </div>
+                    @RenderEmptyMessage
                 }
                 else if (_viewGroups is not null)
                 {
@@ -421,18 +410,7 @@
                 {
                     @if (InfiniteItems.Count == 0 && !InfiniteLoading)
                     {
-                        <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                            <div class="bit-dtg-cell bit-dtg-empty @Classes?.Empty" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Empty">
-                                @if (EmptyTemplate is not null)
-                                {
-                                    @EmptyTemplate
-                                }
-                                else
-                                {
-                                    <span>@Strings.EmptyText</span>
-                                }
-                            </div>
-                        </div>
+                        @RenderEmptyMessage
                     }
                     else
                     {
@@ -479,18 +457,7 @@
                        empty message renders alongside it instead of replacing it. *@
                     @if (_serverVirtualizeEmpty)
                     {
-                        <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                            <div class="bit-dtg-cell bit-dtg-empty @Classes?.Empty" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Empty">
-                                @if (EmptyTemplate is not null)
-                                {
-                                    @EmptyTemplate
-                                }
-                                else
-                                {
-                                    <span>@Strings.EmptyText</span>
-                                }
-                            </div>
-                        </div>
+                        @RenderEmptyMessage
                     }
                     <Virtualize @ref="_serverVirtualize" TItem="TItem" ItemsProvider="ProvideVirtualizedRowsAsync" ItemSize="RowHeight" Context="item">
                         <ItemContent>
@@ -650,6 +617,12 @@
     // editor so users can pick the comparison instead of the fixed type default.
     private RenderFragment RenderFilterEditor(BitDataGridColumn<TItem> column) => __builder =>
     {
+        if (column.FilterTemplate is not null)
+        {
+            <div class="bit-dtg-filter-custom">@column.FilterTemplate(CreateFilterContext(column))</div>
+            return;
+        }
+
         var type = column.EffectiveDataType;
         var showOps = ColumnFilterOperators(column) && type is BitDataGridColumnDataType.Text
             or BitDataGridColumnDataType.Number
@@ -685,22 +658,37 @@
 
     // The blank/not-blank pair closes the list for every type: they are the two criteria that need no
     // value at all, and without them "show me the rows that are missing this" has no expression in the UI.
-    private static IEnumerable<BitDataGridFilterOperator> OperatorChoices(BitDataGridColumnDataType type)
-        => type == BitDataGridColumnDataType.Text
-            ? new[]
-            {
-                BitDataGridFilterOperator.Contains, BitDataGridFilterOperator.DoesNotContain,
-                BitDataGridFilterOperator.StartsWith, BitDataGridFilterOperator.EndsWith,
-                BitDataGridFilterOperator.Equals, BitDataGridFilterOperator.NotEquals,
-                BitDataGridFilterOperator.IsEmpty, BitDataGridFilterOperator.IsNotEmpty,
-            }
-            : new[]
-            {
-                BitDataGridFilterOperator.Equals, BitDataGridFilterOperator.NotEquals,
-                BitDataGridFilterOperator.GreaterThan, BitDataGridFilterOperator.GreaterThanOrEqual,
-                BitDataGridFilterOperator.LessThan, BitDataGridFilterOperator.LessThanOrEqual,
-                BitDataGridFilterOperator.IsEmpty, BitDataGridFilterOperator.IsNotEmpty,
-            };
+    // Text and numbers also take a typed list ("is any of"); a list of dates is not something anyone types.
+    private static IEnumerable<BitDataGridFilterOperator> OperatorChoices(BitDataGridColumnDataType type) => type switch
+    {
+        BitDataGridColumnDataType.Text =>
+        [
+            BitDataGridFilterOperator.Contains, BitDataGridFilterOperator.DoesNotContain,
+            BitDataGridFilterOperator.StartsWith, BitDataGridFilterOperator.EndsWith,
+            BitDataGridFilterOperator.Equals, BitDataGridFilterOperator.NotEquals,
+            BitDataGridFilterOperator.In, BitDataGridFilterOperator.NotIn,
+            BitDataGridFilterOperator.IsEmpty, BitDataGridFilterOperator.IsNotEmpty,
+        ],
+        BitDataGridColumnDataType.Number =>
+        [
+            BitDataGridFilterOperator.Equals, BitDataGridFilterOperator.NotEquals,
+            BitDataGridFilterOperator.GreaterThan, BitDataGridFilterOperator.GreaterThanOrEqual,
+            BitDataGridFilterOperator.LessThan, BitDataGridFilterOperator.LessThanOrEqual,
+            BitDataGridFilterOperator.In, BitDataGridFilterOperator.NotIn,
+            BitDataGridFilterOperator.IsEmpty, BitDataGridFilterOperator.IsNotEmpty,
+        ],
+        _ =>
+        [
+            BitDataGridFilterOperator.Equals, BitDataGridFilterOperator.NotEquals,
+            BitDataGridFilterOperator.GreaterThan, BitDataGridFilterOperator.GreaterThanOrEqual,
+            BitDataGridFilterOperator.LessThan, BitDataGridFilterOperator.LessThanOrEqual,
+            BitDataGridFilterOperator.IsEmpty, BitDataGridFilterOperator.IsNotEmpty,
+        ],
+    };
+
+    /// <summary>The set operators: their value is a list, typed into the filter box comma-separated.</summary>
+    private static bool IsSetOperator(BitDataGridFilterOperator op)
+        => op is BitDataGridFilterOperator.In or BitDataGridFilterOperator.NotIn;
 
     /// <summary>The value-less operators: they carry their whole criterion in the operator itself, so
     /// the editor beside them has nothing to collect.</summary>
@@ -721,6 +709,8 @@
         BitDataGridFilterOperator.LessThanOrEqual => Strings.FilterOpLessThanOrEqual,
         BitDataGridFilterOperator.IsEmpty => Strings.FilterOpIsEmpty,
         BitDataGridFilterOperator.IsNotEmpty => Strings.FilterOpIsNotEmpty,
+        BitDataGridFilterOperator.In => Strings.FilterOpIn,
+        BitDataGridFilterOperator.NotIn => Strings.FilterOpNotIn,
         _ => op.ToString()
     };
 
@@ -766,11 +756,20 @@
         // it targets (placeholders and bare selects are not exposed as accessible names).
         var filterLabel = string.Format(Strings.FilterByFormat, column.DisplayTitle);
 
-        if (type is BitDataGridColumnDataType.Number)
+        if (type is BitDataGridColumnDataType.Text or BitDataGridColumnDataType.Number && IsSetOperator(EffectiveFilterOperator(column)))
+        {
+            <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" placeholder="@Strings.FilterListPlaceholder" aria-label="@filterLabel"
+                   inputmode="@(type is BitDataGridColumnDataType.Number ? "decimal" : null)"
+                   value="@EditorText(column, FormatFilterRaw(current))"
+                   @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
+                   @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
+        }
+        else if (type is BitDataGridColumnDataType.Number)
         {
             <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" type="number" placeholder="=" aria-label="@filterLabel"
-                   value="@FormatFilterNumber(current)"
-                   @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)" />
+                   value="@EditorText(column, FormatFilterNumber(current))"
+                   @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
+                   @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
         }
         else if (type is BitDataGridColumnDataType.Date or BitDataGridColumnDataType.DateTime or BitDataGridColumnDataType.DateTimeOffset)
         {
@@ -801,8 +800,9 @@
         else
         {
             <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" placeholder="@Strings.FilterPlaceholder" aria-label="@filterLabel"
-                   value="@(current?.ToString())"
-                   @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)" />
+                   value="@EditorText(column, current?.ToString())"
+                   @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
+                   @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
         }
     };
 
@@ -820,11 +820,14 @@
         _filterRaw[column.Id] = raw;
 
         if (string.IsNullOrWhiteSpace(raw))
-            return SetFilterAsync(column, BitDataGridFilterOperator.Equals, null);
+            return SetEditorFilterAsync(column, BitDataGridFilterOperator.Equals, null);
 
         var op = EffectiveFilterOperator(column);
         var underlying = column.Accessor?.UnderlyingType;
         var inv = System.Globalization.CultureInfo.InvariantCulture;
+
+        if (IsSetOperator(op) && column.EffectiveDataType is BitDataGridColumnDataType.Text or BitDataGridColumnDataType.Number)
+            return SetEditorFilterAsync(column, op, ParseFilterList(column, raw));
 
         switch (column.EffectiveDataType)
         {
@@ -832,12 +835,12 @@
                 try
                 {
                     var parsed = Convert.ChangeType(raw, underlying ?? typeof(double), inv);
-                    return SetFilterAsync(column, op, parsed);
+                    return SetEditorFilterAsync(column, op, parsed);
                 }
-                catch { return SetFilterAsync(column, BitDataGridFilterOperator.Equals, null); }
+                catch { return SetEditorFilterAsync(column, BitDataGridFilterOperator.Equals, null); }
 
             case BitDataGridColumnDataType.Boolean:
-                return SetFilterAsync(column, BitDataGridFilterOperator.Equals,
+                return SetEditorFilterAsync(column, BitDataGridFilterOperator.Equals,
                     bool.TryParse(raw, out var b) ? b : (object?)null);
 
             case BitDataGridColumnDataType.Date:
@@ -848,8 +851,8 @@
                 if (underlying == typeof(DateOnly))
                 {
                     return DateOnly.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var d)
-                        ? SetFilterAsync(column, op, d)
-                        : SetFilterAsync(column, BitDataGridFilterOperator.Equals, null);
+                        ? SetEditorFilterAsync(column, op, d)
+                        : SetEditorFilterAsync(column, BitDataGridFilterOperator.Equals, null);
                 }
 
                 if (underlying == typeof(DateTimeOffset))
@@ -863,9 +866,9 @@
                     if (DateOnly.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var d))
                     {
                         var day = new DateTimeOffset(d.Year, d.Month, d.Day, 0, 0, 0, TimeSpan.Zero);
-                        return SetFilterAsync(column, op, day);
+                        return SetEditorFilterAsync(column, op, day);
                     }
-                    return SetFilterAsync(column, BitDataGridFilterOperator.Equals, null);
+                    return SetEditorFilterAsync(column, BitDataGridFilterOperator.Equals, null);
                 }
                 else
                 {
@@ -879,7 +882,7 @@
                         // Ordering operators compare against the selected day's midnight.
                         if (op == BitDataGridFilterOperator.Equals)
                             return SetRangeFilterAsync(column, start, start.AddDays(1));
-                        return SetFilterAsync(column, op, start);
+                        return SetEditorFilterAsync(column, op, start);
                     }
                     return SetRangeFilterAsync(column, null, null);
                 }
@@ -887,13 +890,52 @@
 
             case BitDataGridColumnDataType.Enum:
                 if (underlying is { IsEnum: true } et && Enum.TryParse(et, raw, true, out var ev))
-                    return SetFilterAsync(column, BitDataGridFilterOperator.Equals, ev);
-                return SetFilterAsync(column, BitDataGridFilterOperator.Equals, null);
+                    return SetEditorFilterAsync(column, BitDataGridFilterOperator.Equals, ev);
+                return SetEditorFilterAsync(column, BitDataGridFilterOperator.Equals, null);
 
             default:
-                return SetFilterAsync(column, op, raw);
+                return SetEditorFilterAsync(column, op, raw);
         }
     }
+
+    private Task SetEditorFilterAsync(BitDataGridColumn<TItem> column, BitDataGridFilterOperator op, object? value)
+        => SetFilterAsync(column, op, value, keepEditorText: true);
+
+    // What a typed filter box shows: the text the user typed into it (which can run ahead of the filter
+    // that is applied, while a debounce is pending), else the applied value formatted for the editor.
+    private string? EditorText(BitDataGridColumn<TItem> column, string? applied)
+        => _filterRaw.TryGetValue(column.Id, out var text) ? text : applied;
+
+    // Splits a comma-separated list typed under "is any of" / "is none of". Numbers parse invariantly
+    // into the column's own type; an entry that does not parse is dropped rather than failing the list.
+    private static List<object?> ParseFilterList(BitDataGridColumn<TItem> column, string raw)
+    {
+        var members = new List<object?>();
+        foreach (var part in raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (column.EffectiveDataType is not BitDataGridColumnDataType.Number)
+            {
+                members.Add(part);
+                continue;
+            }
+            try { members.Add(Convert.ChangeType(part, column.Accessor?.UnderlyingType ?? typeof(double), System.Globalization.CultureInfo.InvariantCulture)); }
+            catch (FormatException) { }
+            catch (InvalidCastException) { }
+            catch (OverflowException) { }
+        }
+        return members;
+    }
+
+    private BitDataGridFilterContext CreateFilterContext(BitDataGridColumn<TItem> column)
+        => new(column.Id,
+               column.DisplayTitle,
+               string.Format(Strings.FilterByFormat, column.DisplayTitle),
+               column.Accessor?.UnderlyingType,
+               IsEnabled,
+               _filters.Where(f => f.ColumnId == column.Id).ToList(),
+               (op, value) => SetFilterAsync(column, op, value),
+               (from, toExclusive) => SetRangeFilterAsync(column, from, toExclusive),
+               () => ClearFilterAsync(column.Id));
 
     private static IEnumerable<string> EnumNames(BitDataGridColumn<TItem> column)
     {
@@ -944,6 +986,24 @@
         // two conventions (AG Grid uses Shift, Excel and Fluent use Ctrl), so accept either.
         await ToggleSortAsync(column, MultiSort && (e.CtrlKey || e.MetaKey || e.ShiftKey));
     }
+
+    // The message row of a grid with nothing to show. Rows that exist but are all filtered out are
+    // told apart from no rows at all, so the user knows a filter or the search, not the data, is why.
+    private RenderFragment RenderEmptyMessage => __builder =>
+    {
+        <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+            <div class="bit-dtg-cell bit-dtg-empty @Classes?.Empty" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Empty">
+                @if (EmptyTemplate is not null)
+                {
+                    @EmptyTemplate
+                }
+                else
+                {
+                    <span>@(_filters.Count > 0 || _search is not null ? Strings.NoMatchesText : Strings.EmptyText)</span>
+                }
+            </div>
+        </div>
+    };
 
     private RenderFragment RenderPager => @<div class="bit-dtg-pager @Classes?.Pager" style="@Styles?.Pager">
         <div class="bit-dtg-pager-info">

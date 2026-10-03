@@ -13,8 +13,8 @@
                 aria-describedby="@ErrorId"
                 @onchange="e => SetNullable(e.Value)">
             <option value="">@string.Empty</option>
-            <option value="true">True</option>
-            <option value="false">False</option>
+            <option value="true">@Grid.Strings.BooleanTrueText</option>
+            <option value="false">@Grid.Strings.BooleanFalseText</option>
         </select>
         break;
 
@@ -29,7 +29,7 @@
 
     case BitDataGridColumnDataType.Number:
         <input disabled="@(!Grid.IsEnabled)" type="number" class="bit-dtg-editor" step="any"
-               value="@(GetNumberString())"
+               value="@_typedStart"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
                aria-describedby="@ErrorId"
@@ -86,7 +86,7 @@
 
     default:
         <input disabled="@(!Grid.IsEnabled)" type="text" class="bit-dtg-editor"
-               value="@(GetString())"
+               value="@_typedStart"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
                aria-describedby="@ErrorId"
@@ -109,6 +109,18 @@
     private object? Value => Grid.GetEditValue(Column, Item);
     private string? Error => Grid.GetEditError(Column);
     private string GetString() => Value?.ToString() ?? string.Empty;
+
+    // What the typed (oninput) editors start out showing. Every keystroke re-renders the grid, and a render
+    // that set the input's value from the buffer would land after the user had typed on, putting the
+    // input back a character or two and losing what was typed in between. The input owns its text while
+    // it is open; rendering a value that never changes leaves it alone. Read when the editor appears, so
+    // one that is re-created mid-edit (paged away and back) starts from the buffered text.
+    private string? _typedStart;
+
+    protected override void OnInitialized()
+    {
+        _typedStart = Column.EffectiveDataType == BitDataGridColumnDataType.Number ? GetNumberString() : GetString();
+    }
 
     // Each built-in editor renders a bare control with no visible <label>, so screen readers would
     // announce it without any field context. Expose the column's title as the accessible name so the

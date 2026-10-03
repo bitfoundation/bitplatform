@@ -69,6 +69,11 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
     public bool? ExpandDetailOnRowClick { get; set; }
 
     /// <summary>
+    /// How long, in milliseconds, a text or number filter box waits after the last keystroke before it applies.
+    /// </summary>
+    public int? FilterDebounce { get; set; }
+
+    /// <summary>
     /// Adds an operator dropdown beside each column filter.
     /// </summary>
     public bool? FilterOperators { get; set; }
@@ -294,6 +299,11 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
         if (ExpandDetailOnRowClick.HasValue && bitDataGrid.HasNotBeenSet(nameof(ExpandDetailOnRowClick)))
         {
             bitDataGrid.ExpandDetailOnRowClick = ExpandDetailOnRowClick.Value;
+        }
+
+        if (FilterDebounce.HasValue && bitDataGrid.HasNotBeenSet(nameof(FilterDebounce)))
+        {
+            bitDataGrid.FilterDebounce = FilterDebounce.Value;
         }
 
         if (FilterOperators.HasValue && bitDataGrid.HasNotBeenSet(nameof(FilterOperators)))

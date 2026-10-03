@@ -244,6 +244,47 @@ namespace BitBlazorUI {
             target?.focus();
         }
 
+        // Moves the focus into an editor that has just opened, so Enter/F2, a double-click or the Edit button
+        // leave the user typing rather than on a cell (or a button) that no longer holds the control. A blank
+        // column id means the row's first editor. Only the cells of this grid count, not those of a grid nested
+        // in a detail row. Text is selected, so typing replaces the value the way it does in a spreadsheet.
+        public static focusEditor(root: HTMLElement, columnId: string) {
+            if (!root) return;
+            const cells = Array.from(root.querySelectorAll<HTMLElement>('[data-bit-dtg-edit]'))
+                .filter(c => c.closest('.bit-dtg') === root);
+            const cell = (columnId ? cells.find(c => c.dataset.bitDtgEdit === columnId) : undefined) ?? cells[0];
+            const target = cell?.querySelector<HTMLElement>(
+                'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+            if (!target) return;
+            target.focus();
+            if (target instanceof HTMLInputElement && ['text', 'search', 'number', 'email', 'tel', 'url'].includes(target.type)) {
+                try { target.select(); } catch { }
+            }
+        }
+
+        // Puts the focus on a row's command button (Edit) once the Save/Cancel button that held it is gone.
+        public static focusRowCommand(root: HTMLElement, ariaRowIndex: number) {
+            const row = Array.from(root?.querySelectorAll<HTMLElement>(`.bit-dtg-row[aria-rowindex="${ariaRowIndex}"]`) ?? [])
+                .find(r => r.closest('.bit-dtg') === root);
+            row?.querySelector<HTMLElement>('.bit-dtg-cell-command button:not([disabled])')?.focus();
+        }
+
+        // Cell edit mode commits when the focus leaves the open cell. A focusout whose relatedTarget is still
+        // inside the cell (a custom EditTemplate with several controls) is a move within it, not a departure.
+        // The cell carries the number of its edit, so a late report cannot commit the edit opened after it.
+        public static initCellEditBlur(root: HTMLElement, dotNetRef: DotNetObject) {
+            if (!root) return { dispose: () => { } };
+            const onFocusOut = (e: FocusEvent) => {
+                const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-bit-dtg-edit-version]');
+                if (!cell || cell.closest('.bit-dtg') !== root) return;
+                const next = e.relatedTarget as Node | null;
+                if (next && cell.contains(next)) return;
+                dotNetRef.invokeMethodAsync('OnCellEditBlurAsync', Number(cell.dataset.bitDtgEditVersion));
+            };
+            root.addEventListener('focusout', onFocusOut);
+            return { dispose: () => root.removeEventListener('focusout', onFocusOut) };
+        }
+
         // Measures an element's rendered width. Used when a column resize starts so the drag begins
         // from the column's real on-screen width even when its Width is expressed in %/fr units
         // (which .NET cannot resolve to pixels on its own).
@@ -505,9 +546,27 @@ namespace BitBlazorUI {
             // the embedded control. Stop propagation here so the key stays with the control; its native
             // behavior is preserved because preventDefault is intentionally not called. This is checked
             // before the cell-target branch below, which only matches when the cell itself is focused.
+            // The grid's own editors (.bit-dtg-editor) are the exception: their Enter commits and their other
+            // keys are ignored by the editing cell, so they bubble on to it.
             const ownerCell = target.closest('.bit-dtg-cell') as HTMLElement | null;
-            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedCellKeyControl(target)) {
+            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedCellKeyControl(target)
+                && !target.classList.contains('bit-dtg-editor')) {
                 e.stopPropagation();
+                return;
+            }
+
+            // In Cell mode Tab moves the edit to the next cell, which the editing cell's .NET handler does; the
+            // browser's own Tab would leave the grid (the other cells are out of the tab order). A Tab that
+            // stays among the controls of one custom editor is left native and kept from that handler.
+            if (e.key === 'Tab') {
+                const editingCell = target.closest<HTMLElement>('.bit-dtg-cell-editing');
+                if (!editingCell) return;
+                const controls = Array.from(editingCell.querySelectorAll<HTMLElement>(
+                    'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                const index = controls.indexOf(target);
+                const staysInside = e.shiftKey ? index > 0 : index >= 0 && index < controls.length - 1;
+                if (staysInside) e.stopPropagation();
+                else e.preventDefault();
                 return;
             }
 
@@ -531,7 +590,7 @@ namespace BitBlazorUI {
             // lifecycle keys (Enter commits, Escape cancels) are grid-owned; cancel their native
             // actions but leave caret movement and typing to the input.
             if ((e.key === 'Enter' || e.key === 'Escape') &&
-                target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing')) {
+                (target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing') || target.closest('.bit-dtg-cell-editing'))) {
                 // Don't swallow these keys for nested controls that own their keyboard behavior:
                 // a <button> activates on Enter, a <select> opens/commits a choice, a <textarea>
                 // inserts a newline, and a contenteditable region edits text. Suppressing here would

@@ -12,6 +12,9 @@ public partial class BitDataGridDemo : AppComponentBase
     // example 2 - filtering & paging
     private readonly List<Product> filterProducts = SampleData.Generate(200);
 
+    private readonly List<BitDropdownItem<string>> categoryFilterItems =
+        Enum.GetNames<Category>().Select(name => new BitDropdownItem<string> { Text = name, Value = name }).ToList();
+
 
     // example 3 - quick search
     private readonly List<Product> searchProducts = SampleData.Generate(200);
@@ -69,6 +72,7 @@ public partial class BitDataGridDemo : AppComponentBase
     // example 6 - inline editing
     private readonly List<Product> editProducts = SampleData.Generate(25);
     private BitDataGrid<Product>? editGrid;
+    private BitDataGridEditMode editMode;
     private int nextId;
     private string editStatus = "Double-click a row, or use its Edit button.";
 
@@ -194,6 +198,8 @@ public partial class BitDataGridDemo : AppComponentBase
     private static string? RowClassFor(Product p) => p.Stock == 0 ? "row-out-of-stock" : null;
 
     private static string? RowStyleFor(Product p) => p.Price > 800 ? "font-weight:600;" : null;
+
+    private static string? StockStyleFor(Product p) => p.Stock is > 0 and < 50 ? "color:var(--bit-clr-wrn-fg);font-weight:600;" : null;
 
 
     // example 14 - text wrapping & row height

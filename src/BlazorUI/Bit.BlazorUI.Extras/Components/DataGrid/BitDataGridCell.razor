@@ -7,6 +7,8 @@
 <div @ref="_el" class="@CssClass" role="gridcell" style="@Style" tabindex="@TabIndex" title="@Title"
      aria-colindex="@Grid.AriaColIndex(ColIndex)"
      aria-colspan="@(ColSpan > 1 ? ColSpan : (int?)null)"
+     data-bit-dtg-edit="@(ShowsEditor ? Column.Id : null)"
+     data-bit-dtg-edit-version="@(ShowsEditor && Grid.IsCellEditMode ? Grid.EditVersion : (int?)null)"
      @onclick="HandleClick"
      @ondblclick="HandleDoubleClick"
      @oncontextmenu="HandleContextMenu"
@@ -37,12 +39,14 @@
 
     private ElementReference _el;
 
-    private int? TabIndex => Grid.CellNavigation ? Grid.CellTabIndex(Item, ColIndex) : (int?)null;
-    private bool Editing => Grid.IsEditing(Item);
+    private int? TabIndex => Grid.CellNavigationActive ? Grid.CellTabIndex(Item, ColIndex) : (int?)null;
+    // In Cell mode only the open cell is editing; its neighbours in the same row keep navigating.
+    private bool Editing => Grid.IsEditingCell(Item, Column);
+    private bool ShowsEditor => Editing && Grid.ColumnEditable(Column);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Grid.CellNavigation && Grid.ShouldFocusCell(Item, ColIndex))
+        if (Grid.CellNavigationActive && Grid.ShouldFocusCell(Item, ColIndex))
         {
             Grid.ClearFocusPending();
             try { await _el.FocusAsync(); } catch { /* element may have been removed */ }
@@ -55,12 +59,12 @@
 
     private void HandleFocusIn()
     {
-        if (Grid.CellNavigation) Grid.SetFocusedCell(Item, ColIndex);
+        if (Grid.CellNavigationActive) Grid.SetFocusedCell(Item, ColIndex);
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        if (!Grid.CellNavigation) return;
+        if (!Grid.CellNavigationActive) return;
 
         // While inline-editing, the cell only handles the edit lifecycle keys; everything
         // else (typing, caret movement) belongs to the editor input.
@@ -75,6 +79,12 @@
             {
                 await Grid.CommitEditAsync();
                 Grid.RefocusFocusedCell();
+            }
+            else if (e.Key == "Tab" && Grid.IsCellEditMode)
+            {
+                // Spreadsheet-style: Tab commits and opens the next editable cell (Shift+Tab the previous).
+                // A Tab between the controls of one custom editor never gets here (the JS key guard keeps it).
+                await Grid.MoveCellEditAsync(Item, Column, backwards: e.ShiftKey);
             }
             return;
         }

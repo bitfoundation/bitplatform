@@ -37,7 +37,8 @@ public partial class BitDataGridDemo
         new() { Name = "MultiSort", Type = "bool", DefaultValue = "true", Description = "Enables multi-column sorting via Ctrl/⌘+click with priority badges." },
         new() { Name = "AllowUnsorted", Type = "bool", DefaultValue = "true", Description = "Whether a third header click returns the column to its unsorted state (ascending → descending → unsorted). Set false to cycle between ascending and descending only. Overridable per column with AllowUnsorted." },
         new() { Name = "Filterable", Type = "bool", DefaultValue = "false", Description = "Renders a per-column quick-filter row. A tree grid filters by pruning the hierarchy to the branches containing a match; the row is suppressed on a lazily-loaded tree (ChildrenProvider)." },
-        new() { Name = "FilterOperators", Type = "bool", DefaultValue = "false", Description = "Shows an operator dropdown next to text/number/date filter editors so users pick the comparison (contains/starts with/=/≠/>/≥/</≤) instead of the fixed default." },
+        new() { Name = "FilterOperators", Type = "bool", DefaultValue = "false", Description = "Shows an operator dropdown next to text/number/date filter editors so users pick the comparison (contains/starts with/=/≠/>/≥/</≤/is blank, and for text and numbers is any of/is none of over a comma-separated list) instead of the fixed default." },
+        new() { Name = "FilterDebounce", Type = "int", DefaultValue = "300", Description = "How long (ms) a text or number filter box waits after the last keystroke before applying, so the grid filters as the user types. 0 applies each keystroke; a negative value applies only on Enter or blur." },
         new() { Name = "Strings", Type = "BitDataGridStrings", DefaultValue = "new()", Description = "All user-visible strings rendered by the grid; assign a customized instance to localize the UI.", LinkType = LinkType.Link, Href = "#BitDataGridStrings" },
         new() { Name = "Resizable", Type = "bool", DefaultValue = "false", Description = "Lets the columns be resized: drag a header's edge, double-click it to fit the content, or focus it (a separator) and use Left/Right, Home/End (MinWidth/MaxWidth) and Enter (fit)." },
         new() { Name = "Reorderable", Type = "bool", DefaultValue = "false", Description = "Lets the columns be reordered: drag a header (mouse, touch or pen), press Ctrl+Left/Right on it, or use the column chooser's move buttons." },
@@ -71,6 +72,7 @@ public partial class BitDataGridDemo
         new() { Name = "RowHeightSelector", Type = "Func<TItem, float>?", DefaultValue = "null", Description = "Optional per-row height selector (ignored while virtualizing)." },
         new() { Name = "VirtualizeColumns", Type = "bool", DefaultValue = "false", Description = "Renders only the columns in (and near) the horizontal viewport, replacing scrolled-out runs with spacers - for grids with very many columns. Requires explicit px column widths; not applied with column header groups or ColSpans." },
         new() { Name = "Editable", Type = "bool", DefaultValue = "false", Description = "Enables inline editing with a command column." },
+        new() { Name = "EditMode", Type = "BitDataGridEditMode", DefaultValue = "BitDataGridEditMode.Row", Description = "Row edits the whole row with Save/Cancel; Cell edits one cell at a time - Enter, F2 or a double-click opens it, Enter, Tab (opening the next cell) or moving the focus out commits it (raising OnRowSave), Escape cancels. Cell mode makes the cells keyboard-navigable.", LinkType = LinkType.Link, Href = "#BitDataGridEditMode" },
         new() { Name = "NewItemFactory", Type = "Func<TItem>?", DefaultValue = "null", Description = "Factory used by the toolbar Add button to create a new row." },
         new() { Name = "OnRowSave", Type = "EventCallback<TItem>", DefaultValue = "", Description = "Raised when an edited row is saved." },
         new() { Name = "OnRowCancel", Type = "EventCallback<TItem>", DefaultValue = "", Description = "Raised when an edit is cancelled." },
@@ -139,6 +141,8 @@ public partial class BitDataGridDemo
         new() { Name = "ExpandAllDetailsAsync", Type = "Task", DefaultValue = "", Description = "Expands the detail content of every row of the current view - in local mode every row matching the active filters, not only the rendered page; in server, queryable and infinite modes only the rows loaded so far. Raises OnDetailToggle once per newly expanded row." },
         new() { Name = "CollapseAllDetailsAsync", Type = "Task", DefaultValue = "", Description = "Collapses every expanded detail row, raising OnDetailToggle once per row." },
         new() { Name = "EditingItem", Type = "TItem?", DefaultValue = "null", Description = "The row currently in inline-edit mode, or null when no edit is open." },
+        new() { Name = "EditingColumnId", Type = "string?", DefaultValue = "null", Description = "The column of the cell open for editing in Cell mode, or null." },
+        new() { Name = "BeginEditAsync", Type = "Task", DefaultValue = "", Description = "BeginEditAsync(item, columnId) - opens an edit at a cell and moves the focus into its editor (the whole row in Row mode; in Cell mode only that cell, after committing any other)." },
         new() { Name = "BeginEdit", Type = "void", DefaultValue = "", Description = "BeginEdit(item) - puts a row into inline-edit mode from code, exactly as its Edit button (or Enter/F2 on a navigable cell) does, snapshotting its values so CancelEditAsync can restore them." },
         new() { Name = "CommitEditAsync", Type = "Task", DefaultValue = "", Description = "Commits the open inline edit (writing the buffered values to the row and raising OnRowSave). Refuses while any editor holds an invalid value." },
         new() { Name = "CancelEditAsync", Type = "Task", DefaultValue = "", Description = "Abandons the open inline edit, restoring the row to the values it had when the edit began, and raises OnRowCancel." },
@@ -163,7 +167,7 @@ public partial class BitDataGridDemo
         new() { Name = "--bit-DataGrid-hover-background", DefaultValue = "--bit-clr-bg-pri-hover", Description = "Background of the row under the pointer while Hoverable." },
         new() { Name = "--bit-DataGrid-selected-background", DefaultValue = "--bit-clr-pri-tint", Description = "Wash laid over a selected row; the row stays opaque underneath, so frozen cells still cover what scrolls by." },
         new() { Name = "--bit-DataGrid-selected-color", DefaultValue = "The grid's color", Description = "Text color of a selected row." },
-        new() { Name = "--bit-DataGrid-editing-background", DefaultValue = "--bit-clr-wrn-light", Description = "Background of the row being edited." },
+        new() { Name = "--bit-DataGrid-editing-background", DefaultValue = "--bit-clr-wrn-tint", Description = "Wash laid over the row being edited (in Cell mode, over the cell)." },
         new() { Name = "--bit-DataGrid-accent-color", DefaultValue = "--bit-clr-pri", Description = "Sort arrows and priority badges, the active group toggle, the group bar, the checkboxes and the resize handle." },
         new() { Name = "--bit-DataGrid-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focus indicator of the cells, the rows and the controls in the grid." },
         new() { Name = "--bit-DataGrid-group-background", DefaultValue = "--bit-clr-bg-ter", Description = "Background of the group header rows." },
@@ -223,6 +227,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Validate", Type = "Func<TItem, object?, string?>?", DefaultValue = "null", Description = "Validator for inline edits: receives the row and the proposed value, returns an error message to reject it (blocking Save) or null to accept." },
                 new() { Name = "Filterable", Type = "bool?", DefaultValue = "null", Description = "Overrides the grid-level Filterable for this column." },
                 new() { Name = "FilterOperators", Type = "bool?", DefaultValue = "null", Description = "Overrides the grid-level FilterOperators (the operator dropdown next to this column's filter editor)." },
+                new() { Name = "FilterTemplate", Type = "RenderFragment<BitDataGridFilterContext>?", DefaultValue = "null", Description = "Replaces this column's built-in filter editor with custom markup (e.g. a multi-select applying In). The context carries the current filter and ApplyAsync/ApplyRangeAsync/ClearAsync.", LinkType = LinkType.Link, Href = "#BitDataGridFilterContext" },
                 new() { Name = "Resizable", Type = "bool?", DefaultValue = "null", Description = "Overrides the grid-level Resizable for this column." },
                 new() { Name = "Reorderable", Type = "bool?", DefaultValue = "null", Description = "Overrides the grid-level Reorderable for this column." },
                 new() { Name = "Editable", Type = "bool?", DefaultValue = "null", Description = "Overrides the grid-level Editable for this column." },
@@ -245,6 +250,8 @@ public partial class BitDataGridDemo
                 new() { Name = "AggregateFormat", Type = "string?", DefaultValue = "null", Description = "Format string for the aggregate value. Falls back to Format." },
                 new() { Name = "HeaderClass", Type = "string?", DefaultValue = "null", Description = "Custom CSS class applied to the header cell." },
                 new() { Name = "CellClass", Type = "string?", DefaultValue = "null", Description = "Custom CSS class applied to each data cell." },
+                new() { Name = "CellClassSelector", Type = "Func<TItem, string?>?", DefaultValue = "null", Description = "Per-row CSS class for this column's cells, from the row's data (added after CellClass)." },
+                new() { Name = "CellStyleSelector", Type = "Func<TItem, string?>?", DefaultValue = "null", Description = "Per-row inline style for this column's cells, applied last. Prefer color/font over background, which would hide the selection and hover states." },
                 new() { Name = "Template", Type = "RenderFragment<TItem>?", DefaultValue = "null", Description = "Custom rendering for a data cell." },
                 new() { Name = "HeaderTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom rendering for the header cell content." },
                 new() { Name = "EditTemplate", Type = "RenderFragment<TItem>?", DefaultValue = "null", Description = "Custom editor rendered when the row/cell is in edit mode." },
@@ -338,8 +345,29 @@ public partial class BitDataGridDemo
             Parameters =
             [
                 new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the column being filtered." },
-                new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "BitDataGridFilterOperator.Contains", Description = "The comparison operator applied to the value.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },
-                new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The value compared against the column's cell value." },
+                new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "BitDataGridFilterOperator.Unspecified", Description = "The comparison operator applied to the value. Unspecified applies no filter.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },
+                new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The value compared against the column's cell value; a collection for In/NotIn." },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridFilterContext",
+            Title = "BitDataGridFilterContext",
+            Description = "The context of a column's FilterTemplate: the column's current filter and the calls that change it, through the same pipeline as the built-in editors.",
+            Parameters =
+            [
+                new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the column being filtered." },
+                new() { Name = "Title", Type = "string", DefaultValue = "", Description = "The column's header text." },
+                new() { Name = "Label", Type = "string", DefaultValue = "", Description = "The accessible name for the editor (\"Filter by {Title}\"); put it on the control's aria-label." },
+                new() { Name = "ValueType", Type = "Type?", DefaultValue = "null", Description = "The type of the column's bound member, Nullable<T> unwrapped." },
+                new() { Name = "IsEnabled", Type = "bool", DefaultValue = "", Description = "Whether the grid is enabled; disable the editor when it is not." },
+                new() { Name = "Filters", Type = "IReadOnlyList<BitDataGridFilterDescriptor>", DefaultValue = "", Description = "The descriptors applied to the column: none, one, or the two halves of a range.", LinkType = LinkType.Link, Href = "#BitDataGridFilterDescriptor" },
+                new() { Name = "IsActive", Type = "bool", DefaultValue = "", Description = "Whether any filter is applied to the column." },
+                new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "", Description = "The operator of the column's (first) filter, or Unspecified.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },
+                new() { Name = "Value", Type = "object?", DefaultValue = "", Description = "The value of the column's (first) filter, or null." },
+                new() { Name = "ApplyAsync", Type = "Task (BitDataGridFilterOperator, object?)", DefaultValue = "", Description = "Replaces the column's filter; a null, blank or empty-set value clears it." },
+                new() { Name = "ApplyRangeAsync", Type = "Task (object?, object?)", DefaultValue = "", Description = "Replaces the column's filter with a half-open range (>= from AND < toExclusive)." },
+                new() { Name = "ClearAsync", Type = "Task ()", DefaultValue = "", Description = "Removes the column's filter." },
             ],
         },
         new()
@@ -411,7 +439,7 @@ public partial class BitDataGridDemo
                 new() { Name = "PagerPageFormat", Type = "string", DefaultValue = "\"Page {0} of {1}\"", Description = "Pager page summary format." },
                 new() { Name = "InvalidValueError", Type = "string", DefaultValue = "\"Invalid value for {0}.\"", Description = "Error shown when an edited value can't be converted to the column's type." },
                 new() { Name = "SearchPlaceholder", Type = "string", DefaultValue = "\"Search…\"", Description = "Placeholder of the toolbar's quick-search box." },
-                new() { Name = "…", Type = "string", DefaultValue = "", Description = "Plus ~60 more: toolbar/edit button texts, search and column-chooser labels, filter placeholder and operator labels, boolean/enum option texts, the names of the special columns, group/detail/tree/reorder/resize/move labels and tooltips, the sort priority, aggregate label formats and aria-live announcements." },
+                new() { Name = "…", Type = "string", DefaultValue = "", Description = "Plus 86 more: toolbar/edit button texts, search and column-chooser labels, the no-matches text, filter placeholders and operator labels, boolean/enum option texts, the names of the special columns, group/detail/tree/reorder/resize/move labels and tooltips, the sort priority, aggregate label formats and aria-live announcements." },
             ],
         },
     ];
@@ -440,6 +468,17 @@ public partial class BitDataGridDemo
                 new() { Name = "None", Value = "0" },
                 new() { Name = "Ascending", Value = "1" },
                 new() { Name = "Descending", Value = "2" },
+            ]
+        },
+        new()
+        {
+            Id = "BitDataGridEditMode",
+            Name = "BitDataGridEditMode",
+            Description = "How much of a row an inline edit opens.",
+            Items =
+            [
+                new() { Name = "Row", Value = "0", Description = "The whole row opens at once, with Save/Cancel in the command column." },
+                new() { Name = "Cell", Value = "1", Description = "One cell opens at a time; Enter, Tab (opening the next) or moving the focus out commits it, Escape cancels." },
             ]
         },
         new()
@@ -519,6 +558,8 @@ public partial class BitDataGridDemo
                 new() { Name = "LessThanOrEqual", Value = "10" },
                 new() { Name = "IsEmpty", Value = "11" },
                 new() { Name = "IsNotEmpty", Value = "12" },
+                new() { Name = "In", Value = "13", Description = "Equals any member of the collection in Value." },
+                new() { Name = "NotIn", Value = "14", Description = "Equals no member of the collection in Value." },
             ]
         },
     ];

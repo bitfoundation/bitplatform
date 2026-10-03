@@ -189,13 +189,24 @@ private readonly List<Product> basicProducts = SampleData.Generate(50);" + Produ
              Pageable=""true"" PageSize=""10"" ShowToolbar=""true"">
     <BitDataGridColumn Field=""Id"" Title=""ID"" Width=""70px"" Align=""BitDataGridColumnAlign.Right"" Filterable=""false"" />
     <BitDataGridColumn Field=""Name"" Width=""220px"" />
-    <BitDataGridColumn Field=""Category"" />
+    <BitDataGridColumn Field=""Category"">
+        <FilterTemplate>
+            <BitDropdown TItem=""BitDropdownItem<string>"" TValue=""string"" Items=""categoryFilterItems""
+                         MultiSelect Size=""BitSize.Small"" Placeholder=""All""
+                         AriaLabel=""@context.Label"" IsEnabled=""context.IsEnabled""
+                         Values=""@(context.Value as IEnumerable<string?>)""
+                         ValuesChanged=""values => context.ApplyAsync(BitDataGridFilterOperator.In, values?.ToList())"" />
+        </FilterTemplate>
+    </BitDataGridColumn>
     <BitDataGridColumn Field=""Supplier"" FilterOperators=""false"" />
     <BitDataGridColumn Field=""Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right"" />
     <BitDataGridColumn Field=""ReleaseDate"" Title=""Released"" Format=""yyyy-MM-dd"" />
 </BitDataGrid>";
     private readonly string example2CsharpCode = @"
-private readonly List<Product> filterProducts = SampleData.Generate(200);" + ProductModelCode + SampleDataCode;
+private readonly List<Product> filterProducts = SampleData.Generate(200);
+
+private readonly List<BitDropdownItem<string>> categoryFilterItems =
+    Enum.GetNames<Category>().Select(name => new BitDropdownItem<string> { Text = name, Value = name }).ToList();" + ProductModelCode + SampleDataCode;
 
     private readonly string example3RazorCode = @"
 <BitDataGrid Items=""@searchProducts"" Height=""430px""
@@ -295,8 +306,15 @@ private async Task CopySelection()
 }" + ProductModelCode + SampleDataCode;
 
     private readonly string example6RazorCode = @"
+<BitStack Horizontal Wrap VerticalAlign=""BitAlignment.Center"">
+    <BitButton Variant=""@(editMode == BitDataGridEditMode.Row ? BitVariant.Fill : BitVariant.Outline)""
+               OnClick=""() => editMode = BitDataGridEditMode.Row"">Row</BitButton>
+    <BitButton Variant=""@(editMode == BitDataGridEditMode.Cell ? BitVariant.Fill : BitVariant.Outline)""
+               OnClick=""() => editMode = BitDataGridEditMode.Cell"">Cell</BitButton>
+</BitStack>
+
 <BitDataGrid @ref=""editGrid"" TItem=""Product"" Items=""@editProducts"" Height=""460px"" KeyField=""p => p.Id""
-             Editable=""true"" NewItemFactory=""CreateProduct"" CellNavigation=""true""
+             Editable=""true"" EditMode=""editMode"" NewItemFactory=""CreateProduct"" CellNavigation=""true""
              OnRowSave=""OnSave"" OnRowCancel=""OnCancel"" OnRowDelete=""OnDelete"" OnRowCreate=""OnCreate""
              OnRowDoubleClick=""EditOnDoubleClick""
              Pageable=""true"" PageSize=""10"">
@@ -313,6 +331,7 @@ private async Task CopySelection()
     private readonly string example6CsharpCode = @"
 private readonly List<Product> editProducts = SampleData.Generate(25);
 private BitDataGrid<Product>? editGrid;
+private BitDataGridEditMode editMode;
 private int nextId;
 private string editStatus = ""Double-click a row, or use its Edit button."";
 
@@ -569,7 +588,7 @@ private bool rowNumbers = true;" + ProductModelCode + SampleDataCode;
         <BitDataGridColumn Property=""p => p.Supplier"" Width=""140px"" />
         <BitDataGridColumn Property=""p => p.Category"" ShowTooltip=""false"" />
         <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right"" />
-        <BitDataGridColumn Property=""p => p.Stock"" Align=""BitDataGridColumnAlign.Right"" />
+        <BitDataGridColumn TItem=""Product"" Property=""p => p.Stock"" Align=""BitDataGridColumnAlign.Right"" CellStyleSelector=""StockStyleFor"" />
     </BitDataGrid>
 </div>";
     private readonly string example13CsharpCode = @"
@@ -578,7 +597,10 @@ private readonly List<Product> styledRowProducts = SampleData.Generate(60);
 // Both run per row and come after the grid's own class and style, so they win whatever they repeat.
 private static string? RowClassFor(Product p) => p.Stock == 0 ? ""row-out-of-stock"" : null;
 
-private static string? RowStyleFor(Product p) => p.Price > 800 ? ""font-weight:600;"" : null;" + ProductModelCode + SampleDataCode;
+private static string? RowStyleFor(Product p) => p.Price > 800 ? ""font-weight:600;"" : null;
+
+// Per cell of one column: only the Stock cell of a low-stock row.
+private static string? StockStyleFor(Product p) => p.Stock is > 0 and < 50 ? ""color:var(--bit-clr-wrn-fg);font-weight:600;"" : null;" + ProductModelCode + SampleDataCode;
     private readonly DemoCodeFile[] example13CodeFiles =
     [
         new("Page.razor.css", example13CssCode),

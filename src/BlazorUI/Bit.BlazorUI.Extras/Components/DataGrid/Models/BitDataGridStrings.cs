@@ -18,6 +18,9 @@ public class BitDataGridStrings
     /// <summary>Shown when the grid has no rows to display.</summary>
     public string EmptyText { get; set; } = "No records to display.";
 
+    /// <summary>Shown instead of <see cref="EmptyText"/> when there are rows, but the filters or the search exclude them all.</summary>
+    public string NoMatchesText { get; set; } = "No records match the current filters.";
+
     /// <summary>Shown while <c>Loading</c> is true.</summary>
     public string LoadingText { get; set; } = "Loading…";
 
@@ -117,6 +120,11 @@ public class BitDataGridStrings
     public string FilterOpLessThanOrEqual { get; set; } = "≤";
     public string FilterOpIsEmpty { get; set; } = "Is blank";
     public string FilterOpIsNotEmpty { get; set; } = "Is not blank";
+    public string FilterOpIn { get; set; } = "Is any of";
+    public string FilterOpNotIn { get; set; } = "Is none of";
+
+    /// <summary>Placeholder of the filter input while an "is any of" / "is none of" operator is selected.</summary>
+    public string FilterListPlaceholder { get; set; } = "a, b, c…";
 
     public string BooleanTrueText { get; set; } = "True";
     public string BooleanFalseText { get; set; } = "False";
@@ -193,6 +201,9 @@ public class BitDataGridStrings
     /// <summary>{0} = the search term.</summary>
     public string AnnouncementSearched { get; set; } = "Searching for {0}";
     public string AnnouncementSearchCleared { get; set; } = "Search cleared";
+
+    /// <summary>A filter or search announcement with the number of rows it leaves. {0} = the announcement, {1} = row count.</summary>
+    public string AnnouncementResultsFormat { get; set; } = "{0}. Rows: {1}";
     /// <summary>{0} = column title.</summary>
     public string AnnouncementGrouped { get; set; } = "Grouped by {0}";
     /// <summary>{0} = column title.</summary>

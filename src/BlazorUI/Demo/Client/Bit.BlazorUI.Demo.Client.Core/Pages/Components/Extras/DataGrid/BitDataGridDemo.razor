@@ -51,9 +51,11 @@
 
         <DemoExample Title="Filtering &amp; paging" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                <b>Filterable</b> adds a filter row whose editor follows each column's type. <b>FilterOperators</b> adds an operator picker
-                (including <i>Is blank</i>), which a column can opt out of. <b>Pageable</b> pages the rows, and <b>ShowToolbar</b> shows
-                <i>Clear filters</i> while a filter is on. These columns bind by <b>Field</b> name.
+                <b>Filterable</b> adds a filter row whose editor follows each column's type and filters as you type (<b>FilterDebounce</b>).
+                <b>FilterOperators</b> adds an operator picker
+                (including <i>Is blank</i>, and <i>Is any of</i> taking a comma-separated list), which a column can opt out of.
+                A column's <b>FilterTemplate</b> replaces its editor - here a multi-select applying <b>In</b>. <b>Pageable</b> pages the rows,
+                and <b>ShowToolbar</b> shows <i>Clear filters</i> while a filter is on. These columns bind by <b>Field</b> name.
             </div>
             <br />
             <BitDataGrid Items="@filterProducts" Height="430px"
@@ -61,7 +63,15 @@
                          Pageable="true" PageSize="10" ShowToolbar="true">
                 <BitDataGridColumn Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
                 <BitDataGridColumn Field="Name" Width="220px" />
-                <BitDataGridColumn Field="Category" />
+                <BitDataGridColumn Field="Category">
+                    <FilterTemplate>
+                        <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="categoryFilterItems"
+                                     MultiSelect Size="BitSize.Small" Placeholder="All"
+                                     AriaLabel="@context.Label" IsEnabled="context.IsEnabled"
+                                     Values="@(context.Value as IEnumerable<string?>)"
+                                     ValuesChanged="values => context.ApplyAsync(BitDataGridFilterOperator.In, values?.ToList())" />
+                    </FilterTemplate>
+                </BitDataGridColumn>
                 <BitDataGridColumn Field="Supplier" FilterOperators="false" />
                 <BitDataGridColumn Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
                 <BitDataGridColumn Field="ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
@@ -142,14 +152,21 @@
 
         <DemoExample Title="Inline editing" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                <b>Editable</b> adds a command column and <b>NewItemFactory</b> an <i>Add</i> button. Each editor follows its column's type,
-                edits are buffered until Save, and <b>Validate</b> blocks an invalid value (clear a name, or enter a negative price).
-                With <b>CellNavigation</b>, Enter or F2 edits, Enter saves, Esc cancels and Delete removes the row; a double-click here calls
-                <b>BeginEdit</b> through <b>OnRowDoubleClick</b>.
+                <b>Editable</b> adds a command column and <b>NewItemFactory</b> an <i>Add</i> button. Editors follow each column's type,
+                edits are buffered until saved, and <b>Validate</b> blocks an invalid value (clear a name, or enter a negative price).
+                <b>EditMode</b> edits the whole row (Save/Cancel) or one cell at a time: Enter, F2 or a double-click opens it; Enter, Tab or
+                leaving it saves; Esc cancels; Delete removes the focused row. A row double-click here calls <b>BeginEdit</b> via <b>OnRowDoubleClick</b>.
             </div>
             <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton Variant="@(editMode == BitDataGridEditMode.Row ? BitVariant.Fill : BitVariant.Outline)"
+                           OnClick="() => editMode = BitDataGridEditMode.Row">Row</BitButton>
+                <BitButton Variant="@(editMode == BitDataGridEditMode.Cell ? BitVariant.Fill : BitVariant.Outline)"
+                           OnClick="() => editMode = BitDataGridEditMode.Cell">Cell</BitButton>
+            </BitStack>
+            <br />
             <BitDataGrid @ref="editGrid" TItem="Product" Items="@editProducts" Height="460px" KeyField="p => p.Id"
-                         Editable="true" NewItemFactory="CreateProduct" CellNavigation="true"
+                         Editable="true" EditMode="editMode" NewItemFactory="CreateProduct" CellNavigation="true"
                          OnRowSave="OnSave" OnRowCancel="OnCancel" OnRowDelete="OnDelete" OnRowCreate="OnCreate"
                          OnRowDoubleClick="EditOnDoubleClick"
                          Pageable="true" PageSize="10">
@@ -344,9 +361,10 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Row styling &amp; cell tooltips" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
+        <DemoExample Title="Row &amp; cell styling" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
             <div>
-                <b>RowClass</b> and <b>RowStyle</b> style a row from its data - out-of-stock rows turn red, premium ones bold.
+                <b>RowClass</b> and <b>RowStyle</b> style a row from its data - out-of-stock rows turn red, premium ones bold;
+                a column's <b>CellClassSelector</b> and <b>CellStyleSelector</b> do the same for its own cells - low stock in amber.
                 <b>ShowCellTooltips</b> gives every cell its full text as a tooltip (a column opts out with <b>ShowTooltip="false"</b>):
                 narrow the Name column and hover a name.
             </div>
@@ -362,7 +380,7 @@
                     <BitDataGridColumn Property="p => p.Supplier" Width="140px" />
                     <BitDataGridColumn Property="p => p.Category" ShowTooltip="false" />
                     <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                    <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn TItem="Product" Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" CellStyleSelector="StockStyleFor" />
                 </BitDataGrid>
             </div>
         </DemoExample>
