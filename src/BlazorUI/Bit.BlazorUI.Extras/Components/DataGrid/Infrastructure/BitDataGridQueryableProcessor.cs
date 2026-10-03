@@ -205,6 +205,21 @@ public static class BitDataGridQueryableProcessor
             {
                 body = null;
             }
+            else if (member.Type == typeof(string))
+            {
+                // Case-insensitive like the in-memory pipeline (BitDataGridValueComparer) and BuildStringMatch:
+                // both sides are lowered with the same culture-aware ToLower(), and a null row value is matched
+                // separately since ToLower() cannot be called on it.
+                var toLower = typeof(string).GetMethod(nameof(string.ToLower), Type.EmptyTypes)!;
+                var lowered = values.OfType<string>().Select(v => v.ToLower()).Distinct().ToArray();
+                var isNull = Expression.Equal(member, Expression.Constant(null, typeof(string)));
+                Expression? match = lowered.Length == 0 ? null : Expression.AndAlso(Expression.Not(isNull),
+                    Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(string)],
+                        Expression.Constant(lowered, typeof(string[])), Expression.Call(member, toLower)));
+                body = values.Contains(null)
+                    ? (match is null ? isNull : Expression.OrElse(isNull, match))
+                    : match;
+            }
             else
             {
                 var array = Array.CreateInstance(member.Type, values.Count);

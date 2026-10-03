@@ -1775,10 +1775,11 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
         if (!_stickyBandsAttached)
         {
-            _stickyBandsAttached = true;
             try
             {
                 _stickyBandsHandle = await JS.InvokeAsync<IJSObjectReference>("BitBlazorUI.DataGrid.observeStickyBands", _infiniteViewport);
+                // Only marked attached on success so a failed init retries on a later render.
+                _stickyBandsAttached = true;
             }
             catch (JSException) { }
             catch (JSDisconnectedException) { }

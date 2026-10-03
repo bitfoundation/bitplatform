@@ -253,8 +253,7 @@ namespace BitBlazorUI {
             const cells = Array.from(root.querySelectorAll<HTMLElement>('[data-bit-dtg-edit]'))
                 .filter(c => c.closest('.bit-dtg') === root);
             const cell = (columnId ? cells.find(c => c.dataset.bitDtgEdit === columnId) : undefined) ?? cells[0];
-            const target = cell?.querySelector<HTMLElement>(
-                'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+            const target = cell ? focusableControls(cell)[0] : undefined;
             if (!target) return;
             target.focus();
             if (target instanceof HTMLInputElement && ['text', 'search', 'number', 'email', 'tel', 'url'].includes(target.type)) {
@@ -530,6 +529,18 @@ namespace BitBlazorUI {
             : root.hasAttribute('data-bit-dtg-select-all');
     }
 
+    // The controls of an editor that can actually take the focus, in DOM order: enabled, not a hidden input,
+    // not hidden themselves or inside a hidden/inert subtree, and rendered (display:none leaves no client
+    // rects). Opening an editor focuses the first; Cell-mode Tab treats the first and last as the boundaries.
+    const focusableSelector = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    function focusableControls(container: HTMLElement): HTMLElement[] {
+        return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(el =>
+            !(el instanceof HTMLInputElement && el.type === 'hidden')
+            && !el.closest('[hidden], [inert]')
+            && el.getClientRects().length > 0
+            && getComputedStyle(el).visibility !== 'hidden');
+    }
+
     let cellKeyGuardInstalled = false;
     function installCellKeyGuard() {
         if (cellKeyGuardInstalled || typeof document === 'undefined') return;
@@ -561,8 +572,7 @@ namespace BitBlazorUI {
             if (e.key === 'Tab') {
                 const editingCell = target.closest<HTMLElement>('.bit-dtg-cell-editing');
                 if (!editingCell) return;
-                const controls = Array.from(editingCell.querySelectorAll<HTMLElement>(
-                    'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                const controls = focusableControls(editingCell);
                 const index = controls.indexOf(target);
                 const staysInside = e.shiftKey ? index > 0 : index >= 0 && index < controls.length - 1;
                 if (staysInside) e.stopPropagation();

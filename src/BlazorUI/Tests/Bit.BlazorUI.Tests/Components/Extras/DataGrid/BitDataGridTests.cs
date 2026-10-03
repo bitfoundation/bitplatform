@@ -3165,6 +3165,14 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Price", BitDataGridFilterOperator.NotIn, new[] { 2.5, 10 }));
         Assert.AreEqual(3, component.Instance.TotalCount);
 
+        // String members match case-insensitively, the way the in-memory pipeline compares them.
+        await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.In, new[] { "apple", "CHERRY" }));
+        Assert.AreEqual(2, component.Instance.TotalCount);
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.NotIn, new[] { "apple", "CHERRY" }));
+        Assert.AreEqual(3, component.Instance.TotalCount);
+
         // The OR-of-days path a DateTime member takes keeps whole-day semantics for a midnight member.
         RenderFragment releasedColumn = b =>
         {
