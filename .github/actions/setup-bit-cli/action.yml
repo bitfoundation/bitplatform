@@ -1,0 +1,22 @@
+name: Setup bit CLI
+description: Packs bit CLI and the Boilerplate template of this checkout, puts bit on the PATH, and sets BIT_TEMPLATE_PACKAGE to the template package for bit new --template-package. Use it after setup-dotnet, and after use-prerelease-packages when that applies.
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Pack and install bit CLI
+      shell: pwsh
+      run: |
+        $PSNativeCommandUseErrorActionPreference = $true
+        $packages = Join-Path $env:RUNNER_TEMP 'bit-cli-packages'
+        $tools = Join-Path $env:RUNNER_TEMP 'bit-cli'
+
+        dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj -c Release -o $packages -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet pack src/Cli/Bit.Cli/Bit.Cli.csproj -c Release -o $packages -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet tool install Bit.Cli --tool-path $tools --add-source $packages --version 0.0.0
+
+        Add-Content $env:GITHUB_PATH $tools
+        Add-Content $env:GITHUB_ENV "BIT_TEMPLATE_PACKAGE=$(Join-Path $packages 'Bit.Boilerplate.0.0.0.nupkg')"
+        & (Join-Path $tools ($IsWindows ? 'bit.exe' : 'bit')) --version
