@@ -16,11 +16,15 @@
     background: $clr-bg-pri;
 }
 
+// The canvas is its own stacking context, so whatever z-indexes a provider gives its panes and
+// controls inside it (Leaflet's run from 400 to 1000) stay inside it and never outrank the
+// overlay, the popup anchor, the status and the hints layered above it.
 .bit-map-canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+    isolation: isolate;
 }
 
 .bit-map-canvas:focus-visible {

@@ -113,6 +113,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>
     /// Optional content rendered above the map canvas (overlays, custom controls, etc.).
+    /// Each direct child takes the pointer over its whole box, so size it to its content:
+    /// a block-level child spanning the map's width blocks dragging and clicking the markers under it.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 

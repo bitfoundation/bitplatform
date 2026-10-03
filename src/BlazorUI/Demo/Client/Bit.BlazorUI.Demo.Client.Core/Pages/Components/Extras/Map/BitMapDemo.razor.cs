@@ -44,7 +44,7 @@ public partial class BitMapDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Optional content rendered above the map canvas.",
+            Description = "Optional content rendered above the map canvas. Each direct child takes the pointer over its whole box, so size it to its content (a block-level child spanning the map's width would block dragging and clicking the markers under it).",
          },
          new()
          {
