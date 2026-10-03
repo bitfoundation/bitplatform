@@ -151,6 +151,28 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 
 ---
 
+### 6. Rebrand (`rebrand`)
+
+**Canonical file**: `.github/agents/rebrand.agent.md`
+
+**What it does**: Re-skins the whole app to look and feel like a design reference - color roles, neutrals, elevation, shape, focus, typography, density and motion for light and dark, plus fonts, the logo, the home page and the shell - without changing behavior, text or the identity flows, and proves the result state by state.
+
+**When to use it**: When a designer or product owner wants the app to look like a given product, brand, design system or mockup - whether the reference is a live website, a Figma file, screenshots, brand guidelines, a token file or only a described mood.
+
+**Key capabilities**:
+- Turns any reference into a written spec - color by role, typography, shape, elevation, density, motion, states and imagery, each value with its source
+- Settles the base preset first: the one the project was created with, or another bit BlazorUI preset that sits closer to the reference
+- Puts every value into one `Styles/_brand.scss` that re-values that preset's light and dark themes in place, with the palette derived the way bit BlazorUI builds its own
+- Decides every interactive state (selected, hovered, focused) and what the browser paints: autofill, text selection and native widgets
+- Carries the brand into the native chrome color, the accent picker, logo, identity art, loaders, app icons and emails
+- Verifies a state matrix - focus, hover, selected, disabled, invalid, overlays, RTL, phone and tablet, both schemes - with measured contrast, a keyboard focus walk and a token ledger, then runs the tests
+
+Everything lives in the one skill file; it brings no scripts or tools of its own.
+
+**Example usage**: `/rebrand Make the app look like our new brand. Figma: <link to the design file>. Feel: calm, precise, editorial.`
+
+---
+
 ### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
