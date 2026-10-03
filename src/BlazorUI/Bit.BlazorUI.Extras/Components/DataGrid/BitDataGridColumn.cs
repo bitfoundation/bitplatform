@@ -33,11 +33,13 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// <summary>CSS width, e.g. "120px" or "20%". When null the column shares remaining space.</summary>
     [Parameter] public string? Width { get; set; }
 
+    /// <summary>The narrowest the column can be resized to, in pixels. Default: 60.</summary>
     [Parameter] public int MinWidth { get; set; } = 60;
 
     /// <summary>Maximum width in pixels the column can be resized to. When null the column is unbounded.</summary>
     [Parameter] public int? MaxWidth { get; set; }
 
+    /// <summary>Overrides the grid-level <c>Sortable</c> for this column.</summary>
     [Parameter] public bool? Sortable { get; set; }
 
     /// <summary>
@@ -75,6 +77,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public Func<TItem, object?, string?>? Validate { get; set; }
 
+    /// <summary>Overrides the grid-level <c>Filterable</c> for this column.</summary>
     [Parameter] public bool? Filterable { get; set; }
 
     /// <summary>Overrides the grid-level <c>FilterOperators</c> toggle (the operator dropdown next to
@@ -88,9 +91,17 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// Rendered only while the column is filterable.
     /// </summary>
     [Parameter] public RenderFragment<BitDataGridFilterContext>? FilterTemplate { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Resizable</c> for this column.</summary>
     [Parameter] public bool? Resizable { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Reorderable</c> for this column.</summary>
     [Parameter] public bool? Reorderable { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Editable</c> for this column.</summary>
     [Parameter] public bool? Editable { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Groupable</c> for this column.</summary>
     [Parameter] public bool? Groupable { get; set; }
 
     /// <summary>
@@ -150,15 +161,27 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public Func<TItem, int?>? ColSpan { get; set; }
 
+    /// <summary>Whether the column is shown. The column chooser flips it at runtime. Default: true.</summary>
     [Parameter] public bool Visible { get; set; } = true;
 
+    /// <summary>
+    /// Makes this column's cells the headers of their rows (role <c>rowheader</c>) - the column that names a row, such
+    /// as a name or an id. A screen reader then announces it as the focus moves from row to row in another column, and
+    /// the row's selection checkbox is named after it.
+    /// </summary>
+    [Parameter] public bool RowHeader { get; set; }
+
+    /// <summary>The horizontal alignment of the column's header and cells.</summary>
     [Parameter] public BitDataGridColumnAlign Align { get; set; } = BitDataGridColumnAlign.Left;
 
     /// <summary>A .NET format string applied to the value (e.g. "C2", "yyyy-MM-dd").</summary>
     [Parameter] public string? Format { get; set; }
 
+    /// <summary>The kind of value the column holds, which picks its filter editor, operators and inline editor. Auto
+    /// reads it off the bound property's type.</summary>
     [Parameter] public BitDataGridColumnDataType DataType { get; set; } = BitDataGridColumnDataType.Auto;
 
+    /// <summary>The built-in aggregate shown for the column in the footer and in each group header.</summary>
     [Parameter] public BitDataGridAggregateType Aggregate { get; set; } = BitDataGridAggregateType.None;
 
     /// <summary>
@@ -172,7 +195,10 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// <summary>Format string for the aggregate value. Falls back to <see cref="Format"/>.</summary>
     [Parameter] public string? AggregateFormat { get; set; }
 
+    /// <summary>A CSS class added to the column's header cell.</summary>
     [Parameter] public string? HeaderClass { get; set; }
+
+    /// <summary>A CSS class added to each of the column's data cells.</summary>
     [Parameter] public string? CellClass { get; set; }
 
     /// <summary>

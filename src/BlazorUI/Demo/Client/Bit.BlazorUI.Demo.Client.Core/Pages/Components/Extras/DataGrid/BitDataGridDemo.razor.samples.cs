@@ -239,7 +239,7 @@ private string? searchTerm;" + ProductModelCode + SampleDataCode;
              IsRowSelectionDisabled=""p => p.Discontinued""
              Pageable=""true"" PageSize=""10"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitDataGridColumnAlign.Right"" />
-    <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
+    <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" RowHeader=""true"" />
     <BitDataGridColumn Property=""p => p.Category"" />
     <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right"" />
     <BitDataGridColumn Property=""p => p.Discontinued"" Align=""BitDataGridColumnAlign.Center"" />
@@ -683,7 +683,7 @@ private async Task SimulateLoading()
 
 <BitDataGrid @ref=""treeGrid"" Items=""@fileRoots"" Height=""460px"" KeyField=""n => n.Id""
              ChildrenSelector=""n => n.Children"" TreeInitiallyExpanded=""true""
-             ShowSearchBox=""true"" Filterable=""true"">
+             ShowSearchBox=""true"" Filterable=""true"" CellNavigation=""true"">
     <BitDataGridColumn Property=""p => p.Name"" Width=""320px"" />
     <BitDataGridColumn Property=""p => p.Kind"" Title=""Type"" Width=""120px"" />
     <BitDataGridColumn Property=""p => p.Size"" Title=""Size (bytes)"" Format=""N0"" Align=""BitDataGridColumnAlign.Right"" />

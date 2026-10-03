@@ -41,7 +41,8 @@
     {
         specialColIndex++;
         <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
-            <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-icon-btn" @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@Grid.IsDetailExpanded(Item)">
+            <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-icon-btn" tabindex="@CellControlTabIndex"
+                    @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@Grid.IsDetailExpanded(Item)">
                 <span class="@(Grid.IsDetailExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsDetailExpanded(Item) ? "▾" : "▸")</span>
             </button>
         </div>
@@ -55,7 +56,7 @@
                on mousedown because the change event that carries the new value exposes no modifier
                keys, and mousedown is dispatched before it. *@
             <input type="checkbox" checked="@Selected" disabled="@(!Grid.IsEnabled || !Grid.CanSelectRow(Item))"
-                   aria-label="@SelectRowLabel"
+                   tabindex="@CellControlTabIndex" aria-label="@SelectRowLabel"
                    @onmousedown="e => Grid.SetRangeSelectPending(Item, e.ShiftKey)"
                    @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
         </div>
@@ -91,7 +92,7 @@
             @if (Grid.IsCellEditMode)
             {
                 @* A cell opens and commits on its own (Enter, F2, a double-click; Enter or leaving it), so the row keeps only Delete. *@
-                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
+                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" tabindex="@CellControlTabIndex" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
             }
             else if (Editing)
             {
@@ -100,8 +101,8 @@
             }
             else
             {
-                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn" @onclick="() => Grid.BeginEditFromCommand(Item)">@Grid.Strings.EditText</button>
-                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
+                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn" tabindex="@CellControlTabIndex" @onclick="() => Grid.BeginEditFromCommand(Item)">@Grid.Strings.EditText</button>
+                <button disabled="@(!Grid.IsEnabled)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" tabindex="@CellControlTabIndex" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
             }
         </div>
     }
@@ -149,14 +150,21 @@
          : RowExpandable ? (Grid.IsDetailExpanded(Item) ? "true" : "false")
          : null;
 
+    // With cell navigation the cells are the grid's one tab stop (the APG grid pattern), so the per-row controls whose
+    // job a key on the focused cell already does - Space selects, Enter opens the detail or the editor, the arrows open
+    // a tree node, Delete deletes - leave the tab order instead of adding a stop or two to every row. They stay
+    // clickable, and reachable by a screen reader's own cursor. The Save/Cancel of an open row edit keep theirs.
+    private int? CellControlTabIndex => Grid.CellNavigationActive ? -1 : null;
+
     // Gives the row-selection checkbox an accessible name so screen readers can identify which row is
-    // being selected. Uses the first visible column's value as row-specific context when available.
+    // being selected: the value of the column that heads the rows (RowHeader), else of the first visible one.
     private string SelectRowLabel
     {
         get
         {
             var cols = Grid.VisibleColumns;
-            var context = cols.Count > 0 ? cols[0].GetFormattedValue(Item) : null;
+            var header = cols.FirstOrDefault(c => c.RowHeader) ?? (cols.Count > 0 ? cols[0] : null);
+            var context = header?.GetFormattedValue(Item);
             return string.IsNullOrWhiteSpace(context) ? Grid.Strings.SelectRowLabel : string.Format(Grid.Strings.SelectRowFormat, context);
         }
     }
@@ -167,7 +175,7 @@
             <span class="bit-dtg-tree-indent" style="--bit-dtg-tree-level:@Grid.TreeLevel(Item);"></span>
             @if (Grid.TreeHasChildren(Item))
             {
-                <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle"
+                <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle" tabindex="@CellControlTabIndex"
                         @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
                         @onkeydown:stopPropagation="true"
                         disabled="@(!Grid.IsEnabled || Grid.IsTreeNodeLoading(Item))"
@@ -242,8 +250,7 @@
 
     private string CellClass(BitDataGridColumn<TItem> column)
     {
-        var c = "bit-dtg-cell " + BitDataGrid<TItem>.AlignClass(column.Align);
-        if (BitDataGrid<TItem>.IsSticky(column)) c += " bit-dtg-sticky";
+        var c = "bit-dtg-cell " + BitDataGrid<TItem>.AlignClass(column.Align) + BitDataGrid<TItem>.FrozenClass(column);
         if (Grid.ColumnWrapsText(column)) c += " bit-dtg-cell-wrap";
         if (Grid.IsCellEditMode && Grid.IsEditingCell(Item, column)) c += " bit-dtg-cell-editing";
         if (Grid.Classes?.Cell is { Length: > 0 } cell) c += " " + cell;

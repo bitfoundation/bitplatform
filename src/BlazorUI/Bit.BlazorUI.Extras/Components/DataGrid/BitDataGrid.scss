@@ -348,6 +348,17 @@
     z-index: 4;
 }
 
+/* The inner edge of each pinned band is ruled whether or not the grid is Bordered: the columns scroll beneath it, and
+   an unruled grid would slide them under the pinned cells with nothing in between. A start band ends at its last
+   sticky cell, an end band starts at its first. */
+.bit-dtg-row > .bit-dtg-sticky:not(.bit-dtg-frozen-end):has(+ :not(.bit-dtg-sticky)) {
+    border-inline-end: var(--bit-dtg-brd);
+}
+
+.bit-dtg-row > :not(.bit-dtg-sticky) + .bit-dtg-frozen-end {
+    border-inline-start: var(--bit-dtg-brd);
+}
+
 .bit-dtg-cell-detail,
 .bit-dtg-cell-select {
     justify-content: center;
@@ -403,6 +414,25 @@ button.bit-dtg-htext {
 .bit-dtg-sort-icon {
     font-size: $tg-fs-2xs;
     color: var(--bit-DataGrid-accent-color, #{$clr-pri});
+}
+
+/* An unsorted sortable header shows which way its first click sorts, but only under the pointer or the focus, so the
+   affordance is discoverable without every title carrying an arrow. Generated content with an empty alternative: it
+   is no part of the header's text or its accessible name (a browser without the syntax drops the hint altogether). */
+.bit-dtg-sortable:not([aria-sort]) > .bit-dtg-htext::after {
+    content: "▲" / "";
+    font-size: $tg-fs-2xs;
+    color: $clr-fg-sec;
+    opacity: 0;
+    transition: opacity $mot-duration-short $mot-easing;
+}
+
+.bit-dtg-sortable.bit-dtg-sort-desc-first:not([aria-sort]) > .bit-dtg-htext::after {
+    content: "▼" / "";
+}
+
+.bit-dtg-sortable:not([aria-sort]) > .bit-dtg-htext:is(:hover, :focus-visible)::after {
+    opacity: 1;
 }
 
 .bit-dtg-sort-priority {

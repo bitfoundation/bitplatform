@@ -34,7 +34,7 @@
             <div>
                 Bind <b>Items</b> and declare the columns; <b>Property</b> binds a column with a typed selector. A header click sorts
                 ascending, descending, then unsorted (<b>AllowUnsorted="false"</b> drops the last step), and Ctrl/⌘ or Shift+click adds a
-                column to the sort. <b>AriaLabel</b> names the grid for screen readers.
+                column to the sort. <b>AriaLabel</b> names the grid for screen readers - or <b>AriaLabelledBy</b>, pointing at a visible heading.
             </div>
             <br />
             <BitDataGrid Items="@basicProducts" Height="430px" AriaLabel="Products">
@@ -100,9 +100,11 @@
 
         <DemoExample Title="Selection" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                <b>SelectionMode</b> picks a row click (Single) or checkboxes with a select-all box (Multiple); Shift+click selects a range.
+                <b>SelectionMode</b> picks a row click (Single, which makes the cells navigable so Space selects too) or checkboxes with a
+                select-all box (Multiple); Shift+click selects a range.
                 <b>SelectedItems</b> is two-way bindable and tracked by <b>KeyField</b>, and <b>IsRowSelectionDisabled</b> locks rows out -
-                discontinued products here.
+                discontinued products here. <b>RowHeader</b> makes Name the header of its row: screen readers announce it from row to row,
+                and it names each checkbox.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
@@ -118,7 +120,7 @@
                          IsRowSelectionDisabled="p => p.Discontinued"
                          Pageable="true" PageSize="10">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" RowHeader="true" />
                 <BitDataGridColumn Property="p => p.Category" />
                 <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
                 <BitDataGridColumn Property="p => p.Discontinued" Align="BitDataGridColumnAlign.Center" />
@@ -128,7 +130,8 @@
         <DemoExample Title="Keyboard &amp; clipboard" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>CellNavigation</b> makes the cells a single tab stop (the APG grid pattern): the arrows, Home/End, Ctrl+Home/End and
-                Page Up/Down move between them, Space toggles the row, Shift+Space extends the range and Ctrl+A selects every row.
+                Page Up/Down move between them, Space toggles the row, Shift+Space extends the range and Ctrl+A selects every row - so the
+                row checkboxes leave the tab order.
                 With <b>ClipboardCopy</b>, Ctrl/⌘+C copies the selected rows as tab-separated text that pastes into Excel as columns.
             </div>
             <br />
@@ -154,8 +157,8 @@
             <div>
                 <b>Editable</b> adds a command column and <b>NewItemFactory</b> an <i>Add</i> button. Editors follow each column's type,
                 edits are buffered until saved, and <b>Validate</b> blocks an invalid value (clear a name, or enter a negative price).
-                <b>EditMode</b> edits the whole row (Save/Cancel) or one cell at a time: Enter, F2 or a double-click opens it; Enter, Tab or
-                leaving it saves; Esc cancels; Delete removes the focused row. A row double-click here calls <b>BeginEdit</b> via <b>OnRowDoubleClick</b>.
+                <b>EditMode</b> edits the whole row (Save/Cancel) or one cell at a time: Enter, F2 or a double-click opens it, and typing
+                into a text or number cell opens it with what you type; Enter, Tab or leaving it saves; Esc cancels; Delete removes the focused row. A row double-click here calls <b>BeginEdit</b> via <b>OnRowDoubleClick</b>.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
@@ -441,6 +444,7 @@
                 <b>ChildrenSelector</b> turns <b>Items</b> into the roots of a tree (a <i>treegrid</i> whose rows carry their level and
                 expanded state). Sorting keeps the hierarchy, and a search or filter prunes it to the matching branches.
                 <b>TreeInitiallyExpanded</b> sets how it opens; <b>ExpandAllAsync</b> / <b>CollapseAllAsync</b> drive it from code.
+                With <b>CellNavigation</b>, → and ← open and close a node from its first cell, and ← on a child goes to its parent.
             </div>
             <br />
             <BitStack Horizontal Wrap>
@@ -450,7 +454,7 @@
             <br />
             <BitDataGrid @ref="treeGrid" Items="@fileRoots" Height="460px" KeyField="n => n.Id"
                          ChildrenSelector="n => n.Children" TreeInitiallyExpanded="true"
-                         ShowSearchBox="true" Filterable="true">
+                         ShowSearchBox="true" Filterable="true" CellNavigation="true">
                 <BitDataGridColumn Property="p => p.Name" Width="320px" />
                 <BitDataGridColumn Property="p => p.Kind" Title="Type" Width="120px" />
                 <BitDataGridColumn Property="p => p.Size" Title="Size (bytes)" Format="N0" Align="BitDataGridColumnAlign.Right" />

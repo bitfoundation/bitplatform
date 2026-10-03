@@ -248,16 +248,54 @@ namespace BitBlazorUI {
         // leave the user typing rather than on a cell (or a button) that no longer holds the control. A blank
         // column id means the row's first editor. Only the cells of this grid count, not those of a grid nested
         // in a detail row. Text is selected, so typing replaces the value the way it does in a spreadsheet.
-        public static focusEditor(root: HTMLElement, columnId: string) {
+        // An editor opened by typing into its cell (typed) takes the keys gathered while it was opening instead -
+        // see the cell key guard - and an input event tells .NET about them as if they had been typed into it.
+        public static focusEditor(root: HTMLElement, columnId: string, typed?: boolean) {
             if (!root) return;
+            const text = typedText.get(root)?.text;
+            typedText.delete(root);
             const cells = Array.from(root.querySelectorAll<HTMLElement>('[data-bit-dtg-edit]'))
                 .filter(c => c.closest('.bit-dtg') === root);
             const cell = (columnId ? cells.find(c => c.dataset.bitDtgEdit === columnId) : undefined) ?? cells[0];
             const target = cell ? focusableControls(cell)[0] : undefined;
             if (!target) return;
             target.focus();
-            if (target instanceof HTMLInputElement && ['text', 'search', 'number', 'email', 'tel', 'url'].includes(target.type)) {
+            if (!(target instanceof HTMLInputElement) || !['text', 'search', 'number', 'email', 'tel', 'url'].includes(target.type)) return;
+            if (typed) {
+                // A key that reached .NET after the editor had already claimed the gathered text asks again, with
+                // nothing left to hand over: the editor keeps what it holds, unselected, so typing runs on.
+                if (text === undefined) return;
+                // Inserted the way typing inserts it, replacing the selected value: a number input refuses a value
+                // set from script that is not yet a number ("12." on the way to "12.5"), but keeps one typed into it.
+                // Both paths raise the input event that tells .NET.
                 try { target.select(); } catch { }
+                const inserted = text.length > 0 ? document.execCommand('insertText', false, text) : document.execCommand('delete');
+                if (!inserted) {
+                    target.value = text;
+                    target.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                return;
+            }
+            try { target.select(); } catch { }
+        }
+
+        // Moves the focus to the first focusable match of the selectors, tried in order, inside this grid - not inside
+        // a grid nested in one of its detail rows. Used when the control that held the focus is about to go away (a
+        // clear button that disappears with what it cleared) or to move (a keyed item that follows its column).
+        public static focusFirst(root: HTMLElement, selectors: string[]) {
+            if (!root) return;
+            for (const selector of selectors ?? []) {
+                let matches: HTMLElement[];
+                try {
+                    matches = Array.from(root.querySelectorAll<HTMLElement>(selector));
+                } catch {
+                    continue;
+                }
+                const target = matches.find(el => el.closest('.bit-dtg') === root && isFocusable(el));
+                if (target) {
+                    target.focus();
+                    return;
+                }
             }
         }
 
@@ -534,11 +572,37 @@ namespace BitBlazorUI {
     // rects). Opening an editor focuses the first; Cell-mode Tab treats the first and last as the boundaries.
     const focusableSelector = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
     function focusableControls(container: HTMLElement): HTMLElement[] {
-        return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(el =>
-            !(el instanceof HTMLInputElement && el.type === 'hidden')
+        return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(isFocusable);
+    }
+    function isFocusable(el: HTMLElement): boolean {
+        return el.matches(focusableSelector)
+            && !(el instanceof HTMLInputElement && el.type === 'hidden')
             && !el.closest('[hidden], [inert]')
             && el.getClientRects().length > 0
-            && getComputedStyle(el).visibility !== 'hidden');
+            && getComputedStyle(el).visibility !== 'hidden';
+    }
+
+    // Typing into a focused cell opens its editor (see BitDataGrid.OpensEditorByTyping), but the editor exists only
+    // once .NET has rendered it - a round trip, over a network in Blazor Server - and every key typed before then
+    // lands on the cell. They are gathered here, per grid, and handed to the editor when it takes the focus. A gather
+    // left unclaimed (the edit was refused) goes stale after a pause, so it cannot leak into a later edit.
+    const typedText = new WeakMap<HTMLElement, { text: string, at: number }>();
+    const typedTextLifetime = 1500;
+    function gatherTypedKey(cell: HTMLElement, e: KeyboardEvent): boolean {
+        const kind = cell.getAttribute('data-bit-dtg-typable');
+        if (!kind || e.ctrlKey || e.metaKey || e.altKey) return false;
+        const root = cell.closest('.bit-dtg') as HTMLElement | null;
+        if (!root) return false;
+        const now = Date.now();
+        const last = typedText.get(root);
+        const gathering = !!last && now - last.at < typedTextLifetime;
+        const clears = e.key === 'Backspace';
+        // Space selects the row, so it cannot start a gather - but once one is under way it is a typed space (the
+        // edit has opened in .NET by the time it gets there, and the opening cell no longer takes the key).
+        if (!clears && (e.key.length !== 1 || (e.key === ' ' && !gathering))) return false;
+        if (!clears && kind === 'number' && !/[0-9+\-.,eE]/.test(e.key)) return false;
+        typedText.set(root, { text: clears ? '' : (gathering ? last!.text : '') + e.key, at: now });
+        return true;
     }
 
     let cellKeyGuardInstalled = false;
@@ -583,7 +647,9 @@ namespace BitBlazorUI {
             // The navigable cell is the focused element itself (a div.bit-dtg-cell with a tabindex).
             // Suppress the grid-owned keys here so arrow/page/home/end never scroll the viewport.
             if (target.classList?.contains('bit-dtg-cell') && target.hasAttribute('tabindex')) {
-                if (cellNavKeys.has(e.key)) e.preventDefault();
+                // Gathering comes first: a Space typed while an editor is opening is text, not the selection key.
+                if (gatherTypedKey(target, e)) e.preventDefault();
+                else if (cellNavKeys.has(e.key)) e.preventDefault();
                 else if (isGridOwnedShortcut(target, e)) e.preventDefault();
                 return;
             }
