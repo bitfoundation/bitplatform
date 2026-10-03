@@ -99,4 +99,15 @@
         background: var(--bit-clr-bg-sec);
         border: 1px solid var(--bit-clr-brd-sec);
     }
+
+    // Three small charts sharing one BitChartParams.
+    .cascade-grid {
+        gap: 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(rem2(220px), 1fr));
+    }
+
+    .custom-chart {
+        background: linear-gradient(180deg, var(--bit-clr-bg-sec), transparent);
+    }
 }

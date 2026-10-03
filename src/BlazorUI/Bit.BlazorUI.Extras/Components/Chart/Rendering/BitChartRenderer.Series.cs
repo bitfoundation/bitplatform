@@ -233,7 +233,7 @@ public sealed partial class BitChartRenderer
 
                 // Hover appearance, precomputed so hovering never triggers a re-layout.
                 string hoverBg = ds.HoverBackgroundColor
-                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, i, di, false, tooltipVal, active: true) : BitChartColorUtil.Adjust(bg, -0.08));
+                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, i, di, false, tooltipVal, active: true) : BitChartColorUtil.Shade(bg, -0.08));
                 if (patternFill is not null) hoverBg = bg;
                 string hoverBorder = ds.HoverBorderColor ?? border;
                 double hoverBorderWidth = ds.HoverBorderWidth ?? borderWidth;
@@ -527,7 +527,7 @@ public sealed partial class BitChartRenderer
                 fillD = d + $" L {BitChartSvg.N(xy[^1].x)} {BitChartSvg.N(baseY)} L {BitChartSvg.N(xy[0].x)} {BitChartSvg.N(baseY)} Z";
             }
 
-            scene.Series.Add(new BitChartSvgPath { D = fillD, Fill = fillPaint, Stroke = null, AnimateFade = progressive });
+            scene.Series.Add(new BitChartSvgPath { D = fillD, Fill = fillPaint, Stroke = null, AnimateFade = progressive, DatasetIndex = dsIndex });
         }
 
         if (ds.ShowLine)
@@ -545,6 +545,7 @@ public sealed partial class BitChartRenderer
                     var dash = seg.BorderDash?.Invoke(sctx);
                     scene.Series.Add(new BitChartSvgPath
                     {
+                        DatasetIndex = dsIndex,
                         D = $"M {BitChartSvg.N(a.x)} {BitChartSvg.N(a.y)} L {BitChartSvg.N(b.x)} {BitChartSvg.N(b.y)}",
                         Fill = "none", Stroke = color, StrokeWidth = width,
                         Dash = dash is null ? "" : BitChartSvg.Dash(dash),
@@ -559,6 +560,7 @@ public sealed partial class BitChartRenderer
                 bool dashed = ds.BorderDash is { Count: > 0 };
                 scene.Series.Add(new BitChartSvgPath
                 {
+                    DatasetIndex = dsIndex,
                     D = d, Fill = "none", Stroke = border, StrokeWidth = lineWidth,
                     Dash = BitChartSvg.Dash(ds.BorderDash), DashOffset = ds.BorderDashOffset,
                     LineCap = ds.BorderCapStyle, LineJoin = ds.BorderJoinStyle,
@@ -587,7 +589,7 @@ public sealed partial class BitChartRenderer
         if (ds.FillGradient is { Stops.Count: > 0 } g) return RegisterGradient(scene, g);
         if (!string.IsNullOrEmpty(ds.FillColor)) return ds.FillColor!;
         if (!string.IsNullOrEmpty(ds.BackgroundColor)) return ds.BackgroundColor!;
-        return BitChartColorUtil.WithAlpha(border, 0.2);
+        return BitChartColorUtil.Translucent(border, 0.2);
     }
 
     /// <summary>Computes the pixel polyline for a dataset's line (nulls skipped).</summary>
@@ -680,11 +682,12 @@ public sealed partial class BitChartRenderer
                 if (ds.Fill != BitChartFillMode.None)
                 {
                     string fillD = AreaBetween(topXy, tension, ds.Stepped, basePts);
-                    scene.Series.Add(new BitChartSvgPath { D = fillD, Fill = ResolveFill(scene, ds, border), Stroke = null, AnimateFade = progressive });
+                    scene.Series.Add(new BitChartSvgPath { D = fillD, Fill = ResolveFill(scene, ds, border), Stroke = null, AnimateFade = progressive, DatasetIndex = i });
                 }
 
                 scene.Series.Add(new BitChartSvgPath
                 {
+                    DatasetIndex = i,
                     D = BuildPath(topXy, tension, ds.Stepped, ds.CubicInterpolationMode), Fill = "none", Stroke = border,
                     StrokeWidth = lineWidth,
                     Dash = BitChartSvg.Dash(ds.BorderDash), DashOffset = ds.BorderDashOffset,
@@ -866,7 +869,8 @@ public sealed partial class BitChartRenderer
         {
             scene.Foreground.Add(new BitChartSvgRect
             {
-                X = x - halfW, Y = y - halfH, Width = halfW * 2, Height = halfH * 2, Rx = dl.BorderRadius, Fill = bgc
+                X = x - halfW, Y = y - halfH, Width = halfW * 2, Height = halfH * 2, Rx = dl.BorderRadius, Fill = bgc,
+                DatasetIndex = dsIndex, DataIndex = dataIndex
             });
         }
 
@@ -875,7 +879,8 @@ public sealed partial class BitChartRenderer
             X = x, Y = y,
             Text = text,
             Fill = dl.Color, FontFamily = dl.Font.Family, FontSize = dl.Font.Size, FontWeight = dl.Font.Weight,
-            Anchor = "middle", Baseline = "central", Rotation = dl.Rotation
+            Anchor = "middle", Baseline = "central", Rotation = dl.Rotation,
+            DatasetIndex = dsIndex, DataIndex = dataIndex
         });
     }
 

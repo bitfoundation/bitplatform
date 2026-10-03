@@ -12,7 +12,7 @@
    as it was while giving the keyboard navigation of the AccordionList something to listen on that knows
    which item the key was pressed on - which the list root, shared by every item, could not tell. *@
 <div class="bit-acl-itm" @onkeydown="HandleOnKeyDown">
-    <BitAccordion @ref="_accordion"
+    <BitAccordion @ref="Accordion"
                   Actions="BuildActions()"
                   Background="AccordionList.Background"
                   Border="AccordionList.Border"
@@ -33,6 +33,7 @@
                   HeaderAriaLabel="@AccordionList.GetItemHeaderAriaLabel(Item)"
                   HeaderTemplate="headerTemplate"
                   HeadingLevel="AccordionList.HeadingLevel"
+                  HiddenUntilFound="AccordionList.HiddenUntilFound"
                   HideExpanderIcon="AccordionList.GetItemHideExpanderIcon(Item)"
                   Icon="AccordionList.GetItemIcon(Item)"
                   IconName="@AccordionList.GetItemIconName(Item)"

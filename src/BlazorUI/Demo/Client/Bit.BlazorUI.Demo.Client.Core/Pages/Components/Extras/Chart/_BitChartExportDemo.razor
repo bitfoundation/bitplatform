@@ -2,11 +2,10 @@
 
 <DemoExample Title="Download the chart" RazorCode="@exportRazorCode" CsharpCode="@exportCsharpCode" Id="export-download">
     <div class="example-desc">
-        Because the chart is a live SVG element, it can hand itself over as a file. Capture the component with
-        <code>@@ref</code> and call <code>ExportSvgAsync</code> for a vector file (theme tokens are resolved into
-        it so it looks right outside the app), <code>ExportPngAsync</code> for a raster image at the pixel ratio
-        you pass, or <code>ExportCsvAsync</code> for the underlying values - formatted with the chart's culture
-        and written with a byte order mark, so a file of non-Latin labels opens correctly in a spreadsheet.
+        Capture the chart with <code>@@ref</code> and call <code>ExportSvgAsync</code> (vector, theme tokens
+        resolved), <code>ExportPngAsync</code> (raster at the pixel ratio you pass, on the chart's own surface so a dark theme
+        exports dark) or <code>ExportCsvAsync</code>
+        (values in the chart's culture, with a byte order mark so non-Latin labels open correctly in spreadsheets).
     </div>
     <div class="buttons-container" style="gap:.5rem">
         <BitButton Variant="BitVariant.Outline" OnClick="ExportSvg">Download SVG</BitButton>
@@ -18,9 +17,8 @@
 
 <DemoExample Title="The CSV without downloading it" RazorCode="@csvRazorCode" CsharpCode="@csvCsharpCode" Id="export-csv-text">
     <div class="example-desc">
-        <code>ToCsv()</code> returns the same text the CSV export writes, so you can post it to a server, put it on
-        the clipboard, or show it - as here. Value datasets become one row per series with a column per label;
-        scatter and bubble datasets become one row per point.
+        <code>ToCsv()</code> returns the CSV export's text without downloading it. Value datasets become one row
+        per series with a column per label; scatter and bubble datasets one row per point.
     </div>
     <div class="buttons-container">
         <BitButton Variant="BitVariant.Outline" OnClick="ShowCsv">Show the CSV</BitButton>
@@ -34,10 +32,9 @@
 
 <DemoExample Title="The picture without downloading it" RazorCode="@imageRazorCode" CsharpCode="@imageCsharpCode" Id="export-image">
     <div class="example-desc">
-        <code>ToSvgStringAsync()</code> hands back the same standalone markup the SVG download writes, and
-        <code>ToBase64ImageAsync()</code> the same raster picture as a <code>data:</code> URL - the counterpart
-        of Chart.js's <code>toBase64Image</code>. Neither touches the file system, so the chart can go straight into a
-        report, an email body or an <code>img</code> tag, as the preview below does.
+        <code>ToSvgStringAsync()</code> returns the SVG download's standalone markup and
+        <code>ToBase64ImageAsync()</code> its raster picture as a <code>data:</code> URL, without touching the file
+        system - e.g. for an <code>img</code> tag, as below.
     </div>
     <div class="buttons-container" style="gap:.5rem">
         <BitButton Variant="BitVariant.Outline" OnClick="ShowImage">Render to a data URL</BitButton>

@@ -150,7 +150,7 @@ public static class BlazorUIMarkdown
             // A multi-API component is three views of one feature set, so its tabs carry the same
             // sections by design. Printing that list once and naming the tabs beside it says the
             // same thing as printing it three times, and says the part that differs out loud.
-            var identical = tabs.Length > 1 && tabs.Skip(1).All(t => t.Select(e => e.Title).SequenceEqual(tabs[0].Select(e => e.Title)));
+            var identical = IsMultiApi(component.Examples);
 
             if (identical)
             {
@@ -175,17 +175,20 @@ public static class BlazorUIMarkdown
     public static string Examples(BlazorUIComponent component, string? filter)
     {
         var tabs = component.Examples.Select(e => e.Tab).Where(t => t is not null).Distinct().ToArray();
+        var multiApi = IsMultiApi(component.Examples);
 
         // A filter that names a tab exactly means that tab and not the sections whose titles happen
         // to contain the word: "Option" is one of BitDropdown's three APIs and also a word in
         // "Search options", and the tab is what a caller who typed a tab name asked for.
         //
-        // With no filter and more than one tab, only the first is answered. The tabs of a multi-API
-        // component carry the same sections in a different API by design, so returning all of them
-        // is the same code three times over - and three times over is more than one answer holds,
-        // so the caller would get one tab and a truncation notice anyway.
+        // With no filter, a multi-API component answers with its first tab only. Its tabs carry the
+        // same sections in a different API by design, so returning all of them is the same code
+        // three times over - and three times over is more than one answer holds, so the caller would
+        // get one tab and a truncation notice anyway. Tabs that are different features (BitChart's
+        // Line, Bar, Legend, ...) are each something the first one does not show, so they are all
+        // answered, in page order, up to the cap.
         IReadOnlyList<DemoExampleSource> matches = string.IsNullOrWhiteSpace(filter)
-            ? tabs.Length > 1
+            ? multiApi
                 ? [.. component.Examples.Where(e => e.Tab == tabs[0])]
                 : component.Examples
             : component.Examples.Any(e => string.Equals(e.Tab, filter, StringComparison.OrdinalIgnoreCase))
@@ -209,7 +212,7 @@ public static class BlazorUIMarkdown
 
         builder.AppendLine($"# {component.Name} examples").AppendLine();
 
-        if (string.IsNullOrWhiteSpace(filter) && tabs.Length > 1)
+        if (string.IsNullOrWhiteSpace(filter) && multiApi)
         {
             builder.AppendLine($"{component.Name} is a multi-API component: the same sections appear under each of its {tabs.Length} tabs - {string.Join(", ", tabs)} - differing only in how the items are supplied. This is the **{tabs[0]}** tab; pass another tab name as `example` for its version of the same code.").AppendLine();
         }
@@ -327,6 +330,17 @@ public static class BlazorUIMarkdown
         BlazorUIReflection.AppendMembers(builder, clr, type.Name);
 
         return Truncate(builder.ToString());
+    }
+
+    /// <summary>
+    /// Whether a page's tabs are views of one feature set - a multi-API component, whose every tab carries the same
+    /// sections - rather than a page split into a tab per feature, whose tabs each hold something the others do not.
+    /// </summary>
+    private static bool IsMultiApi(IReadOnlyList<DemoExampleSource> examples)
+    {
+        var tabs = examples.GroupBy(e => e.Tab).ToArray();
+
+        return tabs.Length > 1 && tabs.Skip(1).All(t => t.Select(e => e.Title).SequenceEqual(tabs[0].Select(e => e.Title)));
     }
 
     /// <summary>

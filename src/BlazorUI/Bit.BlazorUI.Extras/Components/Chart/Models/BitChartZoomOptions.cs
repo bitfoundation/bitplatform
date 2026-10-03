@@ -11,9 +11,9 @@ public sealed class BitChartZoomOptions
     /// <summary>Enable drag-to-zoom box selection (overrides <see cref="Pan"/> for the drag gesture).</summary>
     public bool DragZoom { get; set; }
     /// <summary>Fill color of the drag-zoom selection box.</summary>
-    public string DragBoxColor { get; set; } = "rgba(54,162,235,0.2)";
+    public string DragBoxColor { get; set; } = "var(--bit-Chart-zoom-box-background, color-mix(in srgb, var(--bit-clr-pri) 20%, transparent))";
     /// <summary>Border color of the drag-zoom selection box.</summary>
-    public string DragBoxBorderColor { get; set; } = "rgba(54,162,235,0.8)";
+    public string DragBoxBorderColor { get; set; } = "var(--bit-Chart-zoom-box-border-color, var(--bit-clr-pri))";
     /// <summary>Axis/axes affected by zoom and pan.</summary>
     public BitChartZoomMode Mode { get; set; } = BitChartZoomMode.X;
     /// <summary>Wheel zoom sensitivity (fraction per wheel notch).</summary>

@@ -44,7 +44,7 @@ public partial class BitMapDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Optional content rendered above the map canvas.",
+            Description = "Optional content rendered above the map canvas (overlays, custom controls, etc.). Each direct child is sized to its content from the top-start corner, unless positioned absolutely, and only the children take the pointer, so the map stays draggable around them. Keep them clear of the corners the provider's controls and attribution occupy.",
          },
          new()
          {
