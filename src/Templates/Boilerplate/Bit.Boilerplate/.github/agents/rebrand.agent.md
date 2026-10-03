@@ -39,10 +39,10 @@ Paths that don't start with `src/` are relative to `src/Client/Boilerplate.Clien
 - **Accessibility outranks fidelity.** WCAG 2.2 AA in both schemes: text 4.5:1 (3:1 for large text), icons and
   control boundaries 3:1, a visible focus indicator on every focusable element, nothing carried by color alone. Where
   the reference falls short, keep its character, change the mapping (4.1), and list the deviation.
-- **Public surface only.** Use the design tokens, component knobs, parameters and APIs bit BlazorUI documents, and
-  look them up with its MCP tools (AGENTS.md section 3) instead of guessing. Never style internal class names or
-  variables: they change without notice. Where nothing public reaches a part, that is a gap to report upstream
-  (AGENTS.md section 6).
+- **Public surface only.** Use what bit BlazorUI documents as public - design tokens, per-component variables,
+  parameters, APIs - and look it up with its MCP tools (AGENTS.md section 3) instead of guessing. Never depend on
+  undocumented markup or class names: they change without notice. Where nothing public reaches a part, that is a gap
+  to report upstream (AGENTS.md section 6).
 - **Project conventions** (`AGENTS.md`) apply, `[mirror]` comments included. Values live in `.scss`; `**/*.css` is
   build output.
 - **Branch and commits**: work on `rebrand/<slug>` unless the current branch is already dedicated to this work; commit
@@ -112,19 +112,42 @@ Two things are easy to get wrong:
 - **Logos.** An SVG shown through `<img>` needs its `xmlns` attribute and cannot inherit `currentColor`; markup copied
   out of a web page usually has neither. Keep a version for each surface the logo sits on.
 
-## 3. Where the theme goes
+## 3. The base preset, then where the theme goes
 
 bit BlazorUI paints everything from `--bit-*` design tokens - color roles and neutrals, shape, elevation, typography,
-size, spacing, motion and layout - plus documented per-component knobs, so a theme is data. Read the theming guide
-(`GetBitBlazorUIThemingGuide`) before you decide values, at least its chapters on design tokens, presets, and color
-derivation and contrast: it is the reference for which tokens exist and what reads them.
+size, spacing, motion and layout - plus documented per-component variables, so a theme is data, and a preset is one
+complete set of values for them. Read the theming guide (`GetBitBlazorUIThemingGuide`) before you decide anything,
+at least its chapters on design tokens, presets, and color derivation and contrast.
 
-The app pins one of bit's presets as its light and dark themes, `fluent2-light` and `fluent2-dark`
-(`src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppThemePresets.cs`). Re-value those two presets in
-place, in one new file, `Styles/_brand.scss`, imported from `Styles/app.scss` after the abstracts, under the preset's
-own selectors: `:root[bit-theme="fluent2-light"]` and `:root[bit-theme="fluent2-dark"]`, each paired with its
-descendant twin (`:root [bit-theme="fluent2-light"]`), since bit re-resolves tokens inside any element that carries
-its own `bit-theme`. `app.css` loads after the preset, so equal specificity wins, and theme persistence, the
+### 3.1 Settle the base preset first
+
+<!--#if (theme == "Fluent2")-->
+This app is built on bit BlazorUI's Fluent 2 preset (`fluent2-light` and `fluent2-dark`). bit also ships Material and
+Cupertino.
+<!--#elif (theme == "Fluent")-->
+This app is built on bit BlazorUI's Fluent preset (`fluent-light` and `fluent-dark`). bit also ships Fluent 2,
+Material and Cupertino.
+<!--#elif (theme == "Material")-->
+This app is built on bit BlazorUI's Material preset (`material-light` and `material-dark`). bit also ships Fluent 2
+and Cupertino.
+<!--#elif (theme == "Cupertino")-->
+This app is built on bit BlazorUI's Cupertino preset (`cupertino-light` and `cupertino-dark`). bit also ships Fluent 2
+and Material.
+<!--#endif-->
+
+Compare them with the spec: the preset whose shape, elevation, density, type and motion already sit closest to the
+reference leaves the least to re-value. If another preset is closer, switch the app to it first - the presets chapter
+shows how - and change everything that pins the current one together: `AppThemePresets`
+(`src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppThemePresets.cs`), the preset stylesheet and theme
+names of the host pages, and every `[mirror]` counterpart they name. Record the choice with its reason, and close it
+before anything below: every later decision re-values this preset.
+
+### 3.2 Where the values go
+
+Re-value the base preset's light and dark themes in place, in one new file, `Styles/_brand.scss`, imported from
+`Styles/app.scss` after the abstracts. Use the preset's own selectors - `:root[bit-theme="..."]` for each of its two
+theme names, each paired with its descendant twin `:root [bit-theme="..."]` - as the presets chapter prescribes for
+authoring a preset. `app.css` loads after the preset, so equal specificity wins, and theme persistence, the
 server-rendered first paint and the light/dark toggle keep working with no C# change.
 
 - Put what both schemes share in one place and include it in both.
@@ -134,10 +157,6 @@ server-rendered first paint and the light/dark toggle keep working with no C# ch
 - Keep the reasons for your values in the spec and the report, not in comments.
 - `Styles/abstracts/_bit-css-variables.scss` only maps tokens to SCSS variables, so it follows the brand on its own:
   don't edit it to re-skin.
-
-When the reference is close to a design system bit ships as a preset, consider pinning that preset instead and
-re-valuing it: its shape, elevation, density and motion then start out right. Change everything that pins the current
-one together (search for `fluent2-light`, `fluent2-dark` and `AppThemePresets`).
 
 **Derive the palette; don't hand-pick ramps.** bit BlazorUI derives a whole color role from one main color the way
 its own palettes are built; the theming guide shows how. Run it in a throwaway program outside the repository, on the
