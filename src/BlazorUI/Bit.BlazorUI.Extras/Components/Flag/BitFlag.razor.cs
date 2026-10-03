@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFlag is a component that renders the flag image of a country.
@@ -16,7 +18,8 @@
 /// out of the flat or the shiny image set of the Bit.BlazorUI.Assets package - at whichever of their 16
 /// to 64 pixels the size of the flag and the density of the screen call for - <see cref="Emoji"/> asks
 /// for the Unicode emoji flag instead - which is text, so it costs no request and stays crisp at any
-/// size - or <see cref="Src"/> points the flag at a set of images of the page's own. An image of a set,
+/// size - or <see cref="Src"/> and <see cref="SrcPattern"/> point the flag at an image, or a whole set of
+/// images, of the page's own. An image of a set,
 /// or of the page's own, that fails to load falls back to the packaged flag. The frame around it
 /// takes the <see cref="Size"/>, or a <see cref="Width"/>, <see cref="Height"/> and
 /// <see cref="AspectRatio"/> of its own, and the shape: <see cref="Rounded"/>, <see cref="Circular"/>,
@@ -104,6 +107,13 @@ public partial class BitFlag : BitComponentBase
     /// their boxes keyed by.
     /// </summary>
     private string? _flagIso2;
+
+    /// <summary>
+    /// Whether the image the flag points at is one of the page's own - a <see cref="Src"/>, or one written out
+    /// of a <see cref="SrcPattern"/> - which is drawn exactly as given and is what a srcset of the
+    /// <see cref="ImageAttributes"/> goes with.
+    /// </summary>
+    private bool _drawsOwnSrc;
 
     /// <summary>
     /// Whether the image currently pointed at has already failed to load. An image that failed is not
@@ -205,6 +215,18 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     [CascadingParameter] private BitFlagImageSet? CascadingImageSet { get; set; }
 
+    /// <summary>
+    /// Gets or sets the cascading parameters for the flag component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple flag components
+    /// through the <see cref="BitParams"/> component: the size, the shape and the image source of every flag of a
+    /// country picker, set once. A value set on the flag itself wins over it.
+    /// </remarks>
+    [CascadingParameter(Name = BitFlagParams.ParamName)]
+    public BitFlagParams? CascadingParameters { get; set; }
 
 
     /// <summary>
@@ -328,7 +350,8 @@ public partial class BitFlag : BitComponentBase
     /// plain black flag - which is why the image is what is drawn unless this asks otherwise.
     /// <br />
     /// It is built from the country code rather than looked up, so it also answers for a code the
-    /// packaged images do not cover, and it wins over <see cref="ImageSet"/> and <see cref="Src"/>.
+    /// packaged images do not cover, and it wins over <see cref="ImageSet"/>, <see cref="Src"/> and
+    /// <see cref="SrcPattern"/>.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Emoji { get; set; }
@@ -423,8 +446,9 @@ public partial class BitFlag : BitComponentBase
     /// whose flag covers it twice over, since the box it is cut to differs from one size to the next.
     /// <br />
     /// It is also cascaded: a <c>CascadingValue</c> of a BitFlagImageSet sets it for every flag inside,
-    /// and one set on the flag wins over it. <see cref="Src"/> and <see cref="Emoji"/> win over it, and a
-    /// country the sets do not cover is drawn from the packaged image.
+    /// and one set on the flag wins over it - as does one a <see cref="BitParams"/> cascades through a
+    /// <see cref="BitFlagParams"/>. <see cref="Src"/>, <see cref="SrcPattern"/> and <see cref="Emoji"/> win over
+    /// it, and a country the sets do not cover is drawn from the packaged image.
     /// </remarks>
     [Parameter] public BitFlagImageSet? ImageSet { get; set; }
 
@@ -558,6 +582,10 @@ public partial class BitFlag : BitComponentBase
     /// flag is those same 16 pixels scaled up, which the flat artwork carries well but only so far -
     /// past the sizes of the theme, an <see cref="ImageSet"/>, the emoji flag or a <see cref="Src"/> of a
     /// set of the page's own stays sharp. <see cref="Width"/> and <see cref="Height"/> win over it.
+    /// <br />
+    /// Left unset, the flag is the size the <c>--bit-Flag-size</c> CSS variable says, and Medium where nothing
+    /// sets it. The size the variable gives is not one the component can read, so a flag sized by it with an
+    /// <see cref="ImageSet"/> wants an <see cref="ImageSize"/> as well.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -574,9 +602,23 @@ public partial class BitFlag : BitComponentBase
     /// that turns out not to cover a country is answered with the flag that ships rather than with
     /// nothing. Such a set is usually drawn in the proportions of the flags themselves rather than
     /// square, which is what <see cref="AspectRatio"/> and <see cref="Fit"/> are for. It wins over
-    /// <see cref="ImageSet"/>, and <see cref="Emoji"/> wins over it.
+    /// <see cref="SrcPattern"/> and <see cref="ImageSet"/>, and <see cref="Emoji"/> wins over it.
     /// </remarks>
     [Parameter] public string? Src { get; set; }
+
+    /// <summary>
+    /// The url of the flag image of every country, as a pattern the codes of the country are written into:
+    /// <c>{iso2}</c> and <c>{iso3}</c> for the lower-cased codes, <c>{ISO2}</c> and <c>{ISO3}</c> for the
+    /// upper-cased ones (e.g. "https://flagcdn.com/{iso2}.svg" or "/flags/4x3/{iso2}.svg").
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Src"/> points one flag at an image; this points every flag at a set - a CDN, or the vector
+    /// set of a package like flag-icons - and is what a <see cref="BitParams"/> cascades to a whole country
+    /// picker at once. It is only written for a country that resolved, and a pattern whose image fails to load
+    /// falls back to the packaged flag exactly as a <see cref="Src"/> does. <see cref="Src"/> and
+    /// <see cref="Emoji"/> win over it, and it wins over <see cref="ImageSet"/>.
+    /// </remarks>
+    [Parameter] public string? SrcPattern { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the flag.
@@ -730,8 +772,13 @@ public partial class BitFlag : BitComponentBase
                                     : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFlagParams))]
     protected override void OnParametersSet()
     {
+        // The cascade is applied before anything reads the parameters it may fill in: the image, the shape and the
+        // size are all worked out right below.
+        CascadingParameters?.UpdateParameters(this);
+
         _country = ResolveCountry();
 
         // The emoji is built from the code rather than looked up, so a code the packaged images do not
@@ -747,9 +794,17 @@ public partial class BitFlag : BitComponentBase
         string? srcSet = null;
         var imageSize = 0;
 
+        _drawsOwnSrc = false;
+
         if (Src.HasValue())
         {
             src = Src;
+            _drawsOwnSrc = true;
+        }
+        else if (SrcPattern.HasValue() && _country is not null && _country.Iso2.HasValue())
+        {
+            src = FormatSrcPattern(SrcPattern!, _country);
+            _drawsOwnSrc = true;
         }
         // A code the sets do not cover is not asked of them: it keeps the packaged image it always had
         // rather than paying a failed request before falling back to it.
@@ -858,6 +913,21 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     private static string GetFlagUrl(string iso2, BitFlagImageSet set, int size) =>
         $"{AssetsFlagsPath}{iso2.ToUpperInvariant()}-{(set is BitFlagImageSet.Shiny ? "shiny" : "flat")}-{size}.webp";
+
+    /// <summary>
+    /// The url a <see cref="SrcPattern"/> comes to for a country: its codes written in where the pattern names
+    /// them, lower-cased or upper-cased the way the placeholder itself is written.
+    /// </summary>
+    private static string FormatSrcPattern(string pattern, BitCountry country)
+    {
+        var iso2 = country.Iso2;
+        var iso3 = country.Iso3 ?? string.Empty;
+
+        return pattern.Replace("{iso2}", iso2.ToLowerInvariant(), StringComparison.Ordinal)
+                      .Replace("{ISO2}", iso2.ToUpperInvariant(), StringComparison.Ordinal)
+                      .Replace("{iso3}", iso3.ToLowerInvariant(), StringComparison.Ordinal)
+                      .Replace("{ISO3}", iso3.ToUpperInvariant(), StringComparison.Ordinal);
+    }
 
     /// <summary>
     /// The box a shaped frame is cut to inside an image: the box the flag is drawn in, or the square out

@@ -2046,4 +2046,28 @@ public class BitFlagTests : BunitTestContext
         Assert.AreEqual("The Netherlands", component.Find("img").GetAttribute("alt"));
         Assert.AreEqual("The Netherlands", component.Find(".bit-flg").GetAttribute("aria-label"));
     }
+
+    /// <summary>
+    /// A flag in a picker is a toggle, and its state has to reach a screen reader as well as the eye: the button the
+    /// flag becomes keeps an aria-pressed the page writes on it.
+    /// </summary>
+    [TestMethod,
+        DataRow("true"),
+        DataRow("false")]
+    public void BitFlagShouldKeepASplattedAriaPressedOnTheButton(string pressed)
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "nl");
+            builder.AddAttribute(2, nameof(BitFlag.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(3, "aria-pressed", pressed);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.AreEqual("button", root.GetAttribute("role"));
+        Assert.AreEqual(pressed, root.GetAttribute("aria-pressed"));
+    }
 }
