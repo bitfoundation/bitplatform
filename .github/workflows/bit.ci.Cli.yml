@@ -1,0 +1,53 @@
+name: bit platform CI - Cli
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+    - 'src/Cli/**'
+    - 'src/Minifier/Bit.Minifier/MapDecoder.cs'
+    - 'src/Minifier/Bit.Minifier/Decode.cs'
+    - 'src/Templates/Boilerplate/Bit.Boilerplate/.template.config/template.json'
+    - '.github/actions/setup-bit-cli/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-Cli:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build bit CLI (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-24.04, windows-2025, macOS-26 ]
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: dotnet build
+      run: dotnet build src/Cli/Bit.Cli.slnx -p:EnforceCodeStyleInBuild=true
+
+    - name: dotnet test
+      working-directory: src/Cli/Tests/Bit.Cli.Tests
+      run: dotnet test --no-build
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: bit new dry run
+      run: bit new Contoso.Shop --database PostgreSQL --redis --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --dry-run --yes

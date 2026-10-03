@@ -47,12 +47,12 @@ jobs:
       script: cd src && dotnet workload install wasm-tools
 
   - script: |
-      dnx Bit.ResxTranslator
+      dnx Bit.Cli translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json
@@ -147,12 +147,12 @@ jobs:
     displayName: 'Install Node.js'
 
   - script: |
-      dnx Bit.ResxTranslator
+      dnx Bit.Cli translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json
@@ -225,12 +225,12 @@ jobs:
     displayName: Copy keystore to app project folder
 
   - script: |
-      dnx Bit.ResxTranslator
+      dnx Bit.Cli translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json

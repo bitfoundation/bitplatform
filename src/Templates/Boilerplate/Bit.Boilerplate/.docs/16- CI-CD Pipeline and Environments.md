@@ -264,9 +264,9 @@ This is the **core deployment workflow** that handles building and deploying all
    - Setup Node.js 24
    ```
 
-2. **Localization with Bit.ResxTranslator**
+2. **Localization with `bit translate`**
    ```bash
-   dnx Bit.ResxTranslator
+   dnx Bit.Cli translate
    ```
    - Automatically translates all `.resx` resource files missing values
 
@@ -340,7 +340,7 @@ This is the **core deployment workflow** that handles building and deploying all
 1. **Environment Setup & Configuration**
    ```yaml
    - Setup .NET SDK and Node.js
-   - Translate resource files (Bit.ResxTranslator)
+   - Translate resource files (`bit translate`)
    - Update appsettings.json:
      - ServerAddress: Environment-specific API URL
      - WindowsUpdate.FilesUrl: Auto-update endpoint
@@ -448,7 +448,7 @@ dotnet publish -c Release \
    - Setup .NET SDK
    - Setup Xcode 26.6 (latest)
    - Setup Node.js 24
-   - Translate resources (Bit.ResxTranslator)
+   - Translate resources (`bit translate`)
    - Update appsettings.json with ServerAddress
    ```
 
@@ -604,12 +604,12 @@ Variables:
   APP_ID = com.myapp                       (bundle id / Velopack package id)
   APP_SERVICE_NAME = my-app-service        (Azure App Service name)
   WINDOWS_UPDATE_FILES_URL = https://api.myapp.com/windows
-  OPENAI_ENDPOINT = <optional, only if you use Bit.ResxTranslator>
+  OPENAI_ENDPOINT = <optional, only if you use bit translate>
 
 Secrets:
   AZURE_PUBLISH_PROFILE = <production publish profile>
   PUBLIC_VAPIDKEY = <production VAPID key>
-  OPENAI_APIKEY = <optional - when unset, the Bit.ResxTranslator step is skipped>
+  OPENAI_APIKEY = <optional - when unset, the bit translate step translates nothing>
 ```
 
 The mobile/desktop jobs additionally need `ANDROID_RELEASE_KEYSTORE_FILE_BASE64`,
@@ -695,16 +695,16 @@ The workflow uses the `variable-substitution` action to replace values in JSON f
 
 ### Expected app size
 
-Depending on `dotnet new bit-bp` and `dotnet publish` commands parameters, the app size is expected to be something between the following range:
+Depending on `bit new` and `dotnet publish` commands parameters, the app size is expected to be something between the following range:
 
 - **Web** => 3.5MB to 7MB
-Enabling/Disabling LLVM during `dotnet publish` command and `--offlineDb` parameter during `dotnet new bit-bp` command have huge impacts.
+Enabling/Disabling LLVM during `dotnet publish` command and `--offlineDb` parameter during `bit new` command have huge impacts.
 ---
 - **Android** => 18MB to 35MB
-Enabling/Disabling LLVM during `dotnet publish` command has the most impact. `dotnet new` parameters doesn't have much affect on this. 
+Enabling/Disabling LLVM during `dotnet publish` command has the most impact. `bit new` parameters doesn't have much affect on this. 
 ---
 - **Windows** => 30MB to 55MB
-Enabling/Disabling AOT during `dotnet publish` command has the most impact. `dotnet new` parameters or x86/x64 don't have much affect on this.
+Enabling/Disabling AOT during `dotnet publish` command has the most impact. `bit new` parameters or x86/x64 don't have much affect on this.
 ---
 - **iOS/macOS** => 120MB to 130MB
 ---
