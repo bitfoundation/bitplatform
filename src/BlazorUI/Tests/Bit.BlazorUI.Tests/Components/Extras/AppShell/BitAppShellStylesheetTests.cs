@@ -97,6 +97,11 @@ public partial class BitAppShellStylesheetTests
         StringAssert.Contains(Block(print, "\n    .bit-ash-fsc {"), "position: static;");
         StringAssert.Contains(print, ".bit-ash-main {\n        overflow: visible !important;");
         StringAssert.Contains(print, "display: none;");
+
+        // The theme's colors go back to the page on paper: a dark theme's foreground is near-white, and a printout
+        // leaves the background it was chosen against out by default.
+        StringAssert.Contains(Block(print, "\n    .bit-ash {"), "color: inherit;");
+        StringAssert.Contains(Block(print, "\n    .bit-ash {"), "background-color: transparent;");
     }
 
     [TestMethod]

@@ -6,7 +6,10 @@
 /// <remarks>
 /// What belongs here is how the shell of an app behaves - its insets, its scroller, its navigation features -
 /// which is what a BitParams around the layout, or a set of layouts, agrees on. The content, the cascaded
-/// values and the callbacks are deliberately not here: they are what makes one shell the one it is.
+/// values and the callbacks are deliberately not here: they are what makes one shell the one it is. Nor are
+/// <see cref="BitAppShell.PersistScroll"/> and <see cref="BitAppShell.ScrollRestoration"/>: the positions they
+/// keep are one store of the page's, which only the one app shell of an application is meant to own, so they
+/// are set on that shell rather than handed to every shell under a BitParams.
 /// </remarks>
 public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -107,11 +110,6 @@ public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
     public BitOverscroll? Overscroll { get; set; }
 
     /// <summary>
-    /// Gets or sets whether the scroll position of the main container is kept per url and restored on navigation.
-    /// </summary>
-    public bool? PersistScroll { get; set; }
-
-    /// <summary>
     /// Gets or sets whether the reader's place is kept when content is added above what they are looking at.
     /// </summary>
     public bool? PreserveScroll { get; set; }
@@ -130,11 +128,6 @@ public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
     /// Gets or sets the room the main container keeps between its edges and anything scrolled into view inside it.
     /// </summary>
     public string? ScrollPadding { get; set; }
-
-    /// <summary>
-    /// Gets or sets which navigations PersistScroll puts the reader back where they left a page on.
-    /// </summary>
-    public BitAppShellScrollRestoration? ScrollRestoration { get; set; }
 
     /// <summary>
     /// Gets or sets the shortest interval (in milliseconds) between two OnScroll reports.
@@ -162,6 +155,10 @@ public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
     /// Updates the properties of the specified <see cref="BitAppShell"/> instance with any values that have been set on
     /// this object, if those properties have not already been set on the <see cref="BitAppShell"/> itself.
     /// </summary>
+    /// <remarks>
+    /// A property this object leaves unset puts the app shell's own default back, unless the app shell set it itself: a
+    /// value an earlier update wrote is otherwise left behind on the app shell once the BitParams stops cascading it.
+    /// </remarks>
     /// <param name="bitAppShell">
     /// The <see cref="BitAppShell"/> instance whose properties will be updated. Cannot be null.
     /// </param>
@@ -171,152 +168,187 @@ public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitAppShell);
 
-        if (AutoGoToTop.HasValue && bitAppShell.HasNotBeenSet(nameof(AutoGoToTop)))
+        if (bitAppShell.HasNotBeenSet(nameof(AutoGoToTop)))
         {
-            bitAppShell.AutoGoToTop = AutoGoToTop.Value;
+            bitAppShell.AutoGoToTop = AutoGoToTop ?? false;
         }
 
-        if (AutoScroll.HasValue && bitAppShell.HasNotBeenSet(nameof(AutoScroll)))
+        if (bitAppShell.HasNotBeenSet(nameof(AutoScroll)))
         {
-            bitAppShell.AutoScroll = AutoScroll.Value;
+            bitAppShell.AutoScroll = AutoScroll ?? false;
         }
 
-        if (AutoScrollThreshold.HasValue && bitAppShell.HasNotBeenSet(nameof(AutoScrollThreshold)))
+        if (bitAppShell.HasNotBeenSet(nameof(AutoScrollThreshold)))
         {
-            bitAppShell.AutoScrollThreshold = AutoScrollThreshold.Value;
+            bitAppShell.AutoScrollThreshold = AutoScrollThreshold ?? 0;
         }
 
-        if (AvoidKeyboard.HasValue && bitAppShell.HasNotBeenSet(nameof(AvoidKeyboard)))
+        if (bitAppShell.HasNotBeenSet(nameof(AvoidKeyboard)))
         {
-            bitAppShell.AvoidKeyboard = AvoidKeyboard.Value;
+            bitAppShell.AvoidKeyboard = AvoidKeyboard ?? false;
         }
 
-        if (Classes is not null && bitAppShell.HasNotBeenSet(nameof(Classes)))
+        if (bitAppShell.HasNotBeenSet(nameof(Classes)))
         {
-            bitAppShell.Classes = Classes;
+            var classes = Classes;
 
-            bitAppShell.ClassBuilder.Reset();
+            if (bitAppShell.Classes != classes)
+            {
+                bitAppShell.Classes = classes;
+
+                bitAppShell.ClassBuilder.Reset();
+            }
         }
 
-        if (FullScreen.HasValue && bitAppShell.HasNotBeenSet(nameof(FullScreen)))
+        if (bitAppShell.HasNotBeenSet(nameof(FullScreen)))
         {
-            bitAppShell.FullScreen = FullScreen.Value;
+            var fullScreen = FullScreen ?? false;
 
-            bitAppShell.ClassBuilder.Reset();
+            if (bitAppShell.FullScreen != fullScreen)
+            {
+                bitAppShell.FullScreen = fullScreen;
+
+                bitAppShell.ClassBuilder.Reset();
+            }
         }
 
-        if (Gutter.HasValue && bitAppShell.HasNotBeenSet(nameof(Gutter)))
+        if (bitAppShell.HasNotBeenSet(nameof(Gutter)))
         {
-            bitAppShell.Gutter = Gutter.Value;
+            bitAppShell.Gutter = Gutter;
         }
 
-        if (NoBottomInset.HasValue && bitAppShell.HasNotBeenSet(nameof(NoBottomInset)))
+        if (bitAppShell.HasNotBeenSet(nameof(NoBottomInset)))
         {
-            bitAppShell.NoBottomInset = NoBottomInset.Value;
+            var noBottomInset = NoBottomInset ?? false;
 
-            bitAppShell.ClassBuilder.Reset();
+            if (bitAppShell.NoBottomInset != noBottomInset)
+            {
+                bitAppShell.NoBottomInset = noBottomInset;
+
+                bitAppShell.ClassBuilder.Reset();
+            }
         }
 
-        if (NoEndInset.HasValue && bitAppShell.HasNotBeenSet(nameof(NoEndInset)))
+        if (bitAppShell.HasNotBeenSet(nameof(NoEndInset)))
         {
-            bitAppShell.NoEndInset = NoEndInset.Value;
+            var noEndInset = NoEndInset ?? false;
 
-            bitAppShell.ClassBuilder.Reset();
+            if (bitAppShell.NoEndInset != noEndInset)
+            {
+                bitAppShell.NoEndInset = noEndInset;
+
+                bitAppShell.ClassBuilder.Reset();
+            }
         }
 
-        if (NoInsets.HasValue && bitAppShell.HasNotBeenSet(nameof(NoInsets)))
+        if (bitAppShell.HasNotBeenSet(nameof(NoInsets)))
         {
-            bitAppShell.NoInsets = NoInsets.Value;
+            var noInsets = NoInsets ?? false;
 
-            bitAppShell.ClassBuilder.Reset();
+            if (bitAppShell.NoInsets != noInsets)
+            {
+                bitAppShell.NoInsets = noInsets;
+
+                bitAppShell.ClassBuilder.Reset();
+            }
         }
 
-        if (NoScroll.HasValue && bitAppShell.HasNotBeenSet(nameof(NoScroll)))
+        if (bitAppShell.HasNotBeenSet(nameof(NoScroll)))
         {
-            bitAppShell.NoScroll = NoScroll.Value;
+            bitAppShell.NoScroll = NoScroll ?? false;
         }
 
-        if (NoStartInset.HasValue && bitAppShell.HasNotBeenSet(nameof(NoStartInset)))
+        if (bitAppShell.HasNotBeenSet(nameof(NoStartInset)))
         {
-            bitAppShell.NoStartInset = NoStartInset.Value;
+            var noStartInset = NoStartInset ?? false;
 
-            bitAppShell.ClassBuilder.Reset();
+            if (bitAppShell.NoStartInset != noStartInset)
+            {
+                bitAppShell.NoStartInset = noStartInset;
+
+                bitAppShell.ClassBuilder.Reset();
+            }
         }
 
-        if (NoTopInset.HasValue && bitAppShell.HasNotBeenSet(nameof(NoTopInset)))
+        if (bitAppShell.HasNotBeenSet(nameof(NoTopInset)))
         {
-            bitAppShell.NoTopInset = NoTopInset.Value;
+            var noTopInset = NoTopInset ?? false;
 
-            bitAppShell.ClassBuilder.Reset();
+            if (bitAppShell.NoTopInset != noTopInset)
+            {
+                bitAppShell.NoTopInset = noTopInset;
+
+                bitAppShell.ClassBuilder.Reset();
+            }
         }
 
-        if (OverflowX.HasValue && bitAppShell.HasNotBeenSet(nameof(OverflowX)))
+        if (bitAppShell.HasNotBeenSet(nameof(OverflowX)))
         {
-            bitAppShell.OverflowX = OverflowX.Value;
+            bitAppShell.OverflowX = OverflowX;
         }
 
-        if (OverflowY.HasValue && bitAppShell.HasNotBeenSet(nameof(OverflowY)))
+        if (bitAppShell.HasNotBeenSet(nameof(OverflowY)))
         {
-            bitAppShell.OverflowY = OverflowY.Value;
+            bitAppShell.OverflowY = OverflowY;
         }
 
-        if (Overscroll.HasValue && bitAppShell.HasNotBeenSet(nameof(Overscroll)))
+        if (bitAppShell.HasNotBeenSet(nameof(Overscroll)))
         {
-            bitAppShell.Overscroll = Overscroll.Value;
+            bitAppShell.Overscroll = Overscroll;
         }
 
-        if (PersistScroll.HasValue && bitAppShell.HasNotBeenSet(nameof(PersistScroll)))
+        if (bitAppShell.HasNotBeenSet(nameof(PreserveScroll)))
         {
-            bitAppShell.PersistScroll = PersistScroll.Value;
+            bitAppShell.PreserveScroll = PreserveScroll ?? false;
         }
 
-        if (PreserveScroll.HasValue && bitAppShell.HasNotBeenSet(nameof(PreserveScroll)))
+        if (bitAppShell.HasNotBeenSet(nameof(ReachOffset)))
         {
-            bitAppShell.PreserveScroll = PreserveScroll.Value;
+            bitAppShell.ReachOffset = ReachOffset ?? 0;
         }
 
-        if (ReachOffset.HasValue && bitAppShell.HasNotBeenSet(nameof(ReachOffset)))
+        if (bitAppShell.HasNotBeenSet(nameof(ScrollBehavior)))
         {
-            bitAppShell.ReachOffset = ReachOffset.Value;
+            bitAppShell.ScrollBehavior = ScrollBehavior;
         }
 
-        if (ScrollBehavior.HasValue && bitAppShell.HasNotBeenSet(nameof(ScrollBehavior)))
+        if (bitAppShell.HasNotBeenSet(nameof(ScrollPadding)))
         {
-            bitAppShell.ScrollBehavior = ScrollBehavior.Value;
+            bitAppShell.ScrollPadding = ScrollPadding.HasValue() ? ScrollPadding : null;
         }
 
-        if (ScrollPadding.HasValue() && bitAppShell.HasNotBeenSet(nameof(ScrollPadding)))
+        if (bitAppShell.HasNotBeenSet(nameof(ScrollThrottle)))
         {
-            bitAppShell.ScrollPadding = ScrollPadding;
+            bitAppShell.ScrollThrottle = ScrollThrottle ?? 0;
         }
 
-        if (ScrollRestoration.HasValue && bitAppShell.HasNotBeenSet(nameof(ScrollRestoration)))
+        if (bitAppShell.HasNotBeenSet(nameof(StableInsets)))
         {
-            bitAppShell.ScrollRestoration = ScrollRestoration.Value;
+            var stableInsets = StableInsets ?? false;
+
+            if (bitAppShell.StableInsets != stableInsets)
+            {
+                bitAppShell.StableInsets = stableInsets;
+
+                bitAppShell.ClassBuilder.Reset();
+            }
         }
 
-        if (ScrollThrottle.HasValue && bitAppShell.HasNotBeenSet(nameof(ScrollThrottle)))
+        if (bitAppShell.HasNotBeenSet(nameof(Styles)))
         {
-            bitAppShell.ScrollThrottle = ScrollThrottle.Value;
+            var styles = Styles;
+
+            if (bitAppShell.Styles != styles)
+            {
+                bitAppShell.Styles = styles;
+
+                bitAppShell.StyleBuilder.Reset();
+            }
         }
 
-        if (StableInsets.HasValue && bitAppShell.HasNotBeenSet(nameof(StableInsets)))
+        if (bitAppShell.HasNotBeenSet(nameof(TrackScrollState)))
         {
-            bitAppShell.StableInsets = StableInsets.Value;
-
-            bitAppShell.ClassBuilder.Reset();
-        }
-
-        if (Styles is not null && bitAppShell.HasNotBeenSet(nameof(Styles)))
-        {
-            bitAppShell.Styles = Styles;
-
-            bitAppShell.StyleBuilder.Reset();
-        }
-
-        if (TrackScrollState.HasValue && bitAppShell.HasNotBeenSet(nameof(TrackScrollState)))
-        {
-            bitAppShell.TrackScrollState = TrackScrollState.Value;
+            bitAppShell.TrackScrollState = TrackScrollState ?? false;
         }
     }
 }

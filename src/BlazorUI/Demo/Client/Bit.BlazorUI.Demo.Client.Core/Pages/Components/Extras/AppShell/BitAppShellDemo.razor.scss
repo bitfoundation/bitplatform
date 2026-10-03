@@ -106,12 +106,12 @@
                 box-shadow var(--bit-mot-duration) var(--bit-mot-easing);
 }
 
-::deep .headroom-shell[data-bit-ash-scrolled] .headroom-head {
+::deep .bit-ash[data-bit-ash-scrolled] .headroom-head {
     box-shadow: var(--bit-shd-appbar-top);
 }
 
 // Not while the keyboard focus is inside it: a focused control slid out of view is focus obscured (WCAG 2.4.11).
-::deep .headroom-shell[data-bit-ash-scroll-direction="down"] .headroom-head:not(:focus-within) {
+::deep .bit-ash[data-bit-ash-scroll-direction="down"] .headroom-head:not(:focus-within) {
     translate: 0 -100%;
 }
 
@@ -122,9 +122,9 @@
 }
 
 // The CSS variables example: a status bar painted like the header, a bottom bar like a tab bar, and a minimum
-// side inset that still grows with the device's. Set on the shell's own root through its Class here; an app sets
-// them on :root.
-::deep .themed-shell {
+// side inset that still grows with the device's. Set on the box around the shell here, which they inherit from; an
+// app sets them on :root.
+.themed-box {
     --bit-AppShell-safe-area-top: 1.5rem;
     --bit-AppShell-safe-area-bottom: 1.25rem;
     --bit-AppShell-safe-area-start: max(env(safe-area-inset-left), 0.5rem);
@@ -135,7 +135,7 @@
 }
 
 // The env() insets are physical, so in a right-to-left shell the leading edge is the right one.
-::deep .themed-shell[dir="rtl"] {
+.themed-box ::deep .bit-ash[dir="rtl"] {
     --bit-AppShell-safe-area-start: max(env(safe-area-inset-right), 0.5rem);
     --bit-AppShell-safe-area-end: max(env(safe-area-inset-left), 0.5rem);
 }

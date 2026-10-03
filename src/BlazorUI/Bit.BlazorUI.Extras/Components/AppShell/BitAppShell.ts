@@ -13,6 +13,11 @@
         // The key the scrolling of the page on screen is stored under: its url, or in the History mode its url
         // and the history entry showing it (see keyOf).
         private static _currentKey: string;
+        // The url of the page on screen, which is what tells a navigation to another page apart from one that only
+        // rewrote the query of this one.
+        private static _currentUrl: string | undefined;
+        // The container of the one app shell whose positions are kept. The store belongs to the page, so a second
+        // shell asking for persistence while this one is still on the page is not handed it.
         private static _container: HTMLElement | undefined;
         private static _scrolls: { [key: string]: number | undefined } = {};
 
@@ -26,15 +31,6 @@
 
         private static _flushBound = false;
 
-        // The url the browser's back or forward button last went to, which is what the History mode of the
-        // restore tells a traversal apart from a link or a NavigateTo by. popstate is the one event that marks
-        // a traversal, and it is listened to in the CAPTURE phase so it is seen before Blazor's own listener
-        // hands the navigation to .NET - which on WebAssembly can render the new page, and ask for its restore,
-        // before a listener registered after Blazor's would have run at all. It is the url rather than a flag
-        // because a traversal .NET never reports - one that only changes the fragment - must not be taken for
-        // the next navigation.
-        private static _poppedUrl: string | undefined;
-
         // How long a restore keeps trying to reach a position the content is not tall enough for yet, and
         // what it is trying to reach: -1 while nothing is being restored, which is also what tells the
         // scroll listener that the moves it is seeing are the reader's own.
@@ -45,9 +41,13 @@
         private static _restoreEvents = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 
         public static initScroll(container: HTMLElement, url: string, historyOnly?: boolean) {
+            const owner = AppShell._container;
+            if (owner && owner !== container && owner.isConnected) return;
+
             AppShell._container = container;
+            AppShell._currentUrl = url;
             AppShell._scrolls = AppShell.read();
-            const key = AppShell._currentKey = AppShell.keyOf(url, historyOnly);
+            const key = AppShell._currentKey = AppShell.keyOf(url, historyOnly).key;
             AppShell.storeScroll(key, AppShell.PreScroll > 0 ? AppShell.PreScroll : AppShell._scrolls[key]);
             // Spent. It is where the reader had got to on the shell the SERVER rendered, so it only ever
             // belongs to the first url of the session; a shell whose persistence is turned on again later
@@ -63,7 +63,9 @@
             AppShell.bindFlush();
         }
 
-        public static locationChangedScroll() {
+        public static locationChangedScroll(container: HTMLElement) {
+            if (container !== AppShell._container) return;
+
             // Whatever was being restored belongs to the page being left.
             AppShell.cancelRestore();
             // The position of the page being left is written out now rather than being left to the frame
@@ -74,31 +76,68 @@
             AppShell.removeScroll();
         }
 
-        public static afterRenderScroll(url: string, historyOnly?: boolean) {
-            const key = AppShell._currentKey = AppShell.keyOf(url, historyOnly);
+        public static afterRenderScroll(container: HTMLElement, url: string, historyOnly?: boolean) {
+            if (container !== AppShell._container) return;
+
+            const previous = AppShell._currentUrl;
+            AppShell._currentUrl = url;
+            const entry = AppShell.keyOf(url, historyOnly);
+            const key = AppShell._currentKey = entry.key;
             AppShell.storeScroll(key, AppShell._scrolls[key]);
             // In the History mode only the back and forward buttons put the reader back where they left a page;
             // any other navigation to it opens it at its top, as a browser does for a page scrolling the document.
-            const traversal = AppShell._poppedUrl === url;
-            AppShell._poppedUrl = undefined;
-            if (AppShell._scrolls[key]! > 0 && (!historyOnly || traversal)) {
+            // A traversal is an entry that already carries the id keyOf gave it: the browser hands an entry's
+            // state back when it is gone back or forward to, and every navigation that pushes or replaces one
+            // writes the router's own fresh state instead. Unlike a popstate this belongs to the entry itself, so
+            // two traversals in quick succession cannot overwrite each other's answer.
+            if (AppShell._scrolls[key]! > 0 && (!historyOnly || entry.known)) {
                 AppShell.restore(AppShell._scrolls[key]);
             } else if (url.indexOf('#') < 0) {
-                // A page with nothing stored, or stored at 0, opens at its top. The container is the one the
-                // page being left was scrolled in, and nothing else moves it on a navigation, so without this
-                // a page never visited before would open at whatever depth the previous one was left at.
-                // A url with a fragment is the exception: the browser scrolls that one to its target itself.
-                AppShell._container?.scrollTo({ top: 0, behavior: 'instant' });
+                if (previous && AppShell.pathOf(previous) === AppShell.pathOf(url)) {
+                    // Only the query changed: the same page rewriting its url as the reader filters or searches it
+                    // - a NavigateTo with replace on every keystroke of a search box - which is not a new page to
+                    // open at its top. The container is left where it stands, and that is where this url was left.
+                    AppShell.storeScroll(key, container.scrollTop);
+                } else {
+                    // A page with nothing stored, or stored at 0, opens at its top. The container is the one the
+                    // page being left was scrolled in, and nothing else moves it on a navigation, so without this
+                    // a page never visited before would open at whatever depth the previous one was left at.
+                    // A url with a fragment is the exception: the browser scrolls that one to its target itself.
+                    AppShell.holdScroll(container);
+                    container.scrollTo({ top: 0, behavior: 'instant' });
+                }
             }
             AppShell.addScroll();
         }
 
-        public static disposeScroll() {
+        // Brings the page on screen over to another mode of the restore (ScrollRestoration changed while it was
+        // shown): the keys of the two modes differ, so without this the page would go on being stored under a key
+        // the next restore of it never looks under. It is stored where it stands, under the key of the new mode.
+        public static updateScroll(container: HTMLElement, url: string, historyOnly?: boolean) {
+            if (container !== AppShell._container) return;
+
+            const key = AppShell.keyOf(url, historyOnly).key;
+            if (key === AppShell._currentKey) return;
+
+            AppShell._currentUrl = url;
+            AppShell._currentKey = key;
+            AppShell.storeScroll(key, AppShell._restoreTop >= 0 ? AppShell._restoreTop : container.scrollTop);
+        }
+
+        public static disposeScroll(container: HTMLElement) {
+            if (container !== AppShell._container) return;
+
             AppShell.cancelRestore();
             AppShell.flush();
             AppShell.removeScroll();
             AppShell.unbindFlush();
             AppShell._container = undefined;
+            AppShell._currentUrl = undefined;
+        }
+
+        // The url less its query and fragment: what a navigation has to change to be one to another page.
+        private static pathOf(url: string) {
+            return url.split('#')[0].split('?')[0];
         }
 
         // Empties the stored positions, both the ones in hand and the ones in session storage, so that an
@@ -158,22 +197,25 @@
         // whatever the router put there. A navigation that replaces the entry replaces its state too, and is
         // given a fresh id, which is right: it is a new visit. A state the router keeps as something other
         // than an object cannot carry the id, and the url is used instead.
-        private static keyOf(url: string, historyOnly?: boolean): string {
-            if (!historyOnly) return url;
+        // Whether the entry already carried an id is returned beside the key: it is what tells an entry the browser
+        // handed back - a traversal - apart from one a navigation has just written.
+        private static keyOf(url: string, historyOnly?: boolean): { key: string, known: boolean } {
+            if (!historyOnly) return { key: url, known: false };
 
             try {
                 const state = history.state;
-                if (state != null && typeof state !== 'object') return url;
+                if (state != null && typeof state !== 'object') return { key: url, known: false };
 
                 let entry = state?.[AppShell.ENTRY_STATE];
-                if (typeof entry !== 'string') {
+                const known = typeof entry === 'string';
+                if (known === false) {
                     entry = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
                     history.replaceState(Object.assign({}, state, { [AppShell.ENTRY_STATE]: entry }), '');
                 }
 
-                return url + AppShell.ENTRY_SEPARATOR + entry;
+                return { key: url + AppShell.ENTRY_SEPARATOR + entry, known };
             } catch {
-                return url;
+                return { key: url, known: false };
             }
         }
 
@@ -190,6 +232,7 @@
 
             const target = Math.max(0, top || 0);
 
+            AppShell.holdScroll(container);
             container.scrollTo({ top: target, behavior: 'instant' });
 
             // The top of the content is where a page that was never scrolled opens, and it is reachable
@@ -213,6 +256,7 @@
             const reachable = Math.min(target, max);
 
             if (Math.abs(container.scrollTop - reachable) > 1) {
+                AppShell.holdScroll(container);
                 container.scrollTo({ top: target, behavior: 'instant' });
             }
 
@@ -355,7 +399,6 @@
             // of visibilitychange covers the app being switched away from without being torn down at all.
             window.addEventListener('pagehide', AppShell.onFlush);
             document.addEventListener('visibilitychange', AppShell.onFlush);
-            window.addEventListener('popstate', AppShell.onPopState, { capture: true });
         }
 
         private static unbindFlush() {
@@ -365,12 +408,6 @@
 
             window.removeEventListener('pagehide', AppShell.onFlush);
             document.removeEventListener('visibilitychange', AppShell.onFlush);
-            window.removeEventListener('popstate', AppShell.onPopState, { capture: true });
-            AppShell._poppedUrl = undefined;
-        }
-
-        private static onPopState() {
-            AppShell._poppedUrl = location.href;
         }
 
 
@@ -511,6 +548,7 @@
             const by = Math.min(rect.bottom - bottom, rect.top - top);
             if (by <= 0) return;
 
+            AppShell.holdScroll(main);
             main.scrollBy({ top: by, behavior: 'instant' as ScrollBehavior });
         }
 
@@ -521,14 +559,48 @@
         // the way it was last moved. Nothing goes back to .NET, which is the point: a header that hides while the
         // reader scrolls down has to react within the frame, not after a round trip per frame.
         private static SCROLL_TRAVEL = 8;
-        private static _scrollStates: { [key: string]: { root: HTMLElement, main: HTMLElement, handler: () => void, frame: number, scrolled: boolean, direction: string, turn: number, last: number } } = {};
+        // How long a container has to have stopped moving for a move this side or the page made to be over.
+        private static SCROLL_SETTLE = 150;
+        private static _scrollInputs = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+        private static _scrollStates: { [key: string]: ScrollState } = {};
+
+        // Marks the moves the scroll state of a shell is about to see as not the reader's: the scrolling API of the
+        // component, called from .NET just before it moves the container.
+        public static holdScrollState(id: string) {
+            const state = AppShell._scrollStates[id];
+            if (state) AppShell.hold(state);
+        }
+
+        // The same for the moves this class makes itself - a restore, the top of a new page, a focused field brought
+        // back above the keyboard - addressed by the container, since those know nothing of the shell's id.
+        private static holdScroll(main: HTMLElement) {
+            for (const id in AppShell._scrollStates) {
+                const state = AppShell._scrollStates[id];
+                if (state.main === main) AppShell.hold(state);
+            }
+        }
+
+        // A held state reads every move as a jump until the container has been still for a moment - a smooth move
+        // runs over many frames - or until the reader takes over with an input of their own.
+        private static hold(state: ScrollState) {
+            state.held = true;
+            AppShell.settle(state);
+        }
+
+        private static settle(state: ScrollState) {
+            clearTimeout(state.settle);
+            state.settle = setTimeout(() => {
+                state.settle = 0;
+                state.held = false;
+            }, AppShell.SCROLL_SETTLE);
+        }
 
         public static setupScrollState(id: string, root: HTMLElement, main: HTMLElement) {
             AppShell.disposeScrollState(id);
 
             if (!root || !main) return;
 
-            const state = { root, main, handler: () => { }, frame: 0, scrolled: false, direction: '', turn: 0, last: 0 };
+            const state: ScrollState = { root, main, handler: () => { }, release: () => { }, frame: 0, scrolled: false, direction: '', turn: 0, last: 0, held: false, settle: 0 };
 
             const measure = () => {
                 state.frame = 0;
@@ -541,10 +613,11 @@
                 // Within a pixel of the top is at it: a scroll offset is fractional on a scaled display.
                 const scrolled = top > 1;
 
-                // More than a screenful in one frame is a jump rather than a scroll: PersistScroll putting the reader
-                // back on a page, End, a link to an anchor. None of them is the reader heading down the content, and a
-                // header hidden by one would greet them gone on a page they have only just arrived at.
-                const jumped = Math.abs(top - state.last) > main.clientHeight;
+                // A move that is not the reader's is a jump rather than a scroll: PersistScroll putting the reader back on
+                // a page, the scrolling API, and - by more than a screenful in one frame - End or a link to an anchor.
+                // None of them is the reader heading down the content, and a header hidden by one would greet them gone
+                // on a page they have only just arrived at.
+                const jumped = state.held || Math.abs(top - state.last) > main.clientHeight;
                 state.last = top;
 
                 let direction = state.direction;
@@ -585,11 +658,21 @@
             };
 
             state.handler = () => {
+                // A held move is over once the container stops, so every frame of it pushes that moment back.
+                if (state.held) AppShell.settle(state);
+
                 if (state.frame) return;
                 state.frame = requestAnimationFrame(measure);
             };
 
+            state.release = () => {
+                clearTimeout(state.settle);
+                state.settle = 0;
+                state.held = false;
+            };
+
             main.addEventListener('scroll', state.handler, { passive: true });
+            AppShell._scrollInputs.forEach(e => main.addEventListener(e, state.release, { passive: true }));
 
             AppShell._scrollStates[id] = state;
 
@@ -609,11 +692,138 @@
                 cancelAnimationFrame(state.frame);
             }
 
+            clearTimeout(state.settle);
+
             state.main.removeEventListener('scroll', state.handler);
+            AppShell._scrollInputs.forEach(e => state.main.removeEventListener(e, state.release));
             state.root.removeAttribute('data-bit-ash-scrolled');
             state.root.removeAttribute('data-bit-ash-scroll-direction');
         }
+
+
+
+        // The keys that scroll a page - the arrows, Page Up/Down, Home/End and the space bar - are aimed by the
+        // browser at whatever the reader last focused or pressed on, and at the document while that is nothing at
+        // all. The document of a page whose application scrolls in a shell does not scroll, so until the reader
+        // has clicked or tabbed into the shell those keys did nothing in any engine. While that is the case they
+        // are handed to the main container of the shell instead, which is where the document's scrolling went.
+        // Once the reader has pressed inside a container the browser aims the keys there on its own, so that is
+        // left to it - and so is a page whose document does scroll, and any key a handler of the page took.
+        //
+        // The two listeners this takes are window-wide, so they are only there while a page has a shell to hand the
+        // keys to: every shell registers itself as it is rendered and leaves as it is disposed, and the shell the
+        // server rendered has them bound from the moment the script finds it, before anything has registered.
+        private static SCROLL_KEYS = ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'PageDown', 'PageUp', ' ', 'Home', 'End'];
+        private static _shells = 0;
+        private static _keysBound = false;
+        private static _lastDown: EventTarget | null = null;
+
+        public static registerShell() {
+            AppShell._shells++;
+            AppShell.bindKeys();
+        }
+
+        public static unregisterShell() {
+            AppShell._shells = Math.max(0, AppShell._shells - 1);
+
+            if (AppShell._shells > 0 || AppShell._keysBound === false) return;
+
+            AppShell._keysBound = false;
+            AppShell._lastDown = null;
+            window.removeEventListener('pointerdown', AppShell.onKeysPointerDown, { capture: true } as any);
+            window.removeEventListener('keydown', AppShell.onScrollKey);
+        }
+
+        public static bindKeys() {
+            if (AppShell._keysBound) return;
+
+            AppShell._keysBound = true;
+            window.addEventListener('pointerdown', AppShell.onKeysPointerDown, { capture: true, passive: true });
+            window.addEventListener('keydown', AppShell.onScrollKey);
+        }
+
+        private static onKeysPointerDown(e: PointerEvent) {
+            AppShell._lastDown = e.target;
+        }
+
+        private static onScrollKey(e: KeyboardEvent) {
+            if (e.defaultPrevented || e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+
+            const space = e.key === ' ' || e.key === 'Spacebar';
+            if (e.shiftKey && space === false) return;
+
+            // Every other key leaves before anything below has been looked up.
+            const key = space ? ' ' : e.key;
+            if (AppShell.SCROLL_KEYS.indexOf(key) < 0) return;
+
+            const body = document.body;
+            if (!body || (e.target !== body && e.target !== document.documentElement) || body.isContentEditable) return;
+
+            const lastDown = AppShell._lastDown;
+            if (lastDown instanceof Element && lastDown.isConnected && lastDown.closest('[data-bit-ash-main]')) return;
+
+            // The one shell of the page: a shell nested in another one - an example on a page, a preview in a
+            // dialog - is a region of that page rather than the page, and a page of several side by side has no
+            // one region the document's scrolling belongs to.
+            const mains = Array.from(document.querySelectorAll<HTMLElement>('[data-bit-ash-main]'))
+                .filter(m => m.parentElement?.closest('[data-bit-ash-main]') == null);
+            if (mains.length !== 1) return;
+
+            const main = mains[0];
+            const line = 40;
+            const page = Math.max(line, main.clientHeight * 0.875);
+
+            let left = 0, top = 0, to: number | undefined;
+            switch (key) {
+                case 'ArrowDown': top = line; break;
+                case 'ArrowUp': top = -line; break;
+                case 'ArrowRight': left = line; break;
+                case 'ArrowLeft': left = -line; break;
+                case 'PageDown': top = page; break;
+                case 'PageUp': top = -page; break;
+                case ' ': top = e.shiftKey ? -page : page; break;
+                case 'Home': to = 0; break;
+                case 'End': to = main.scrollHeight; break;
+                default: return;
+            }
+
+            const horizontal = left !== 0;
+            const doc = document.scrollingElement || document.documentElement;
+            if (horizontal ? doc.scrollWidth > doc.clientWidth + 1 : doc.scrollHeight > doc.clientHeight + 1) return;
+
+            // The reader is not to move a shell the page stopped from scrolling (NoScroll, an Overflow of Hidden),
+            // and one with nothing to scroll along that axis leaves the key to the page.
+            const overflow = getComputedStyle(main)[horizontal ? 'overflowX' : 'overflowY'];
+            if (overflow !== 'auto' && overflow !== 'scroll') return;
+            if (horizontal ? main.scrollWidth <= main.clientWidth : main.scrollHeight <= main.clientHeight) return;
+
+            e.preventDefault();
+
+            // Animated as the container's own scroll-behavior says - smooth unless the reader asked for reduced
+            // motion - except for a held key, whose repeats would each restart the animation from wherever the
+            // last one had got to and crawl.
+            const behavior: ScrollBehavior | undefined = e.repeat ? 'instant' as ScrollBehavior : undefined;
+            if (to !== undefined) {
+                main.scrollTo({ top: to, behavior });
+            } else {
+                main.scrollBy({ left, top, behavior });
+            }
+        }
     }
+
+    type ScrollState = {
+        root: HTMLElement,
+        main: HTMLElement,
+        handler: () => void,
+        release: () => void,
+        frame: number,
+        scrolled: boolean,
+        direction: string,
+        turn: number,
+        last: number,
+        held: boolean,
+        settle: number
+    };
 }
 
 (function () {
@@ -633,6 +843,10 @@
             BitBlazorUI.AppShell.PreScroll = container.scrollTop;
         }, { passive: true });
 
+        // The scrolling keys are handed to it from the start as well, which is when a reader who has not
+        // clicked anything yet is most likely to reach for them.
+        BitBlazorUI.AppShell.bindKeys();
+
         return true;
     }
 
@@ -642,74 +856,4 @@
     if (bind() === false && document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => { bind(); }, { once: true });
     }
-
-    // The keys that scroll a page - the arrows, Page Up/Down, Home/End and the space bar - are aimed by the
-    // browser at whatever the reader last focused or pressed on, and at the document while that is nothing at
-    // all. The document of a page whose application scrolls in a shell does not scroll, so until the reader
-    // has clicked or tabbed into the shell those keys did nothing in any engine. While that is the case they
-    // are handed to the main container of the shell instead, which is where the document's scrolling went.
-    // Once the reader has pressed inside a container the browser aims the keys there on its own, so that is
-    // left to it - and so is a page whose document does scroll, and any key a handler of the page took.
-    let lastDown: EventTarget | null = null;
-
-    window.addEventListener('pointerdown', e => { lastDown = e.target; }, { capture: true, passive: true });
-
-    window.addEventListener('keydown', e => {
-        if (e.defaultPrevented || e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
-
-        const body = document.body;
-        if (!body || (e.target !== body && e.target !== document.documentElement) || body.isContentEditable) return;
-
-        if (lastDown instanceof Element && lastDown.isConnected && lastDown.closest('[data-bit-ash-main]')) return;
-
-        const space = e.key === ' ' || e.key === 'Spacebar';
-        if (e.shiftKey && space === false) return;
-
-        // The one shell of the page: a shell nested in another one - an example on a page, a preview in a
-        // dialog - is a region of that page rather than the page, and a page of several side by side has no
-        // one region the document's scrolling belongs to.
-        const mains = Array.from(document.querySelectorAll<HTMLElement>('[data-bit-ash-main]'))
-            .filter(m => m.parentElement?.closest('[data-bit-ash-main]') == null);
-        if (mains.length !== 1) return;
-
-        const main = mains[0];
-        const line = 40;
-        const page = Math.max(line, main.clientHeight * 0.875);
-
-        let left = 0, top = 0, to: number | undefined;
-        switch (space ? ' ' : e.key) {
-            case 'ArrowDown': top = line; break;
-            case 'ArrowUp': top = -line; break;
-            case 'ArrowRight': left = line; break;
-            case 'ArrowLeft': left = -line; break;
-            case 'PageDown': top = page; break;
-            case 'PageUp': top = -page; break;
-            case ' ': top = e.shiftKey ? -page : page; break;
-            case 'Home': to = 0; break;
-            case 'End': to = main.scrollHeight; break;
-            default: return;
-        }
-
-        const horizontal = left !== 0;
-        const doc = document.scrollingElement || document.documentElement;
-        if (horizontal ? doc.scrollWidth > doc.clientWidth + 1 : doc.scrollHeight > doc.clientHeight + 1) return;
-
-        // The reader is not to move a shell the page stopped from scrolling (NoScroll, an Overflow of Hidden),
-        // and one with nothing to scroll along that axis leaves the key to the page.
-        const overflow = getComputedStyle(main)[horizontal ? 'overflowX' : 'overflowY'];
-        if (overflow !== 'auto' && overflow !== 'scroll') return;
-        if (horizontal ? main.scrollWidth <= main.clientWidth : main.scrollHeight <= main.clientHeight) return;
-
-        e.preventDefault();
-
-        // Animated as the container's own scroll-behavior says - smooth unless the reader asked for reduced
-        // motion - except for a held key, whose repeats would each restart the animation from wherever the
-        // last one had got to and crawl.
-        const behavior: ScrollBehavior | undefined = e.repeat ? 'instant' as ScrollBehavior : undefined;
-        if (to !== undefined) {
-            main.scrollTo({ top: to, behavior });
-        } else {
-            main.scrollBy({ left, top, behavior });
-        }
-    });
 }());

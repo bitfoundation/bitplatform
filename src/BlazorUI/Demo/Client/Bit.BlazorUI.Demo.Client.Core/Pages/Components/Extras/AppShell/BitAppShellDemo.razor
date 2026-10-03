@@ -71,7 +71,7 @@
                 <div>
                     Four bars keep the content off the notch and the home indicator. Desktop browsers report no safe areas, so
                     this shell is handed a phone's through the <b>--bit-AppShell-safe-area-*</b> variables, which is also how a
-                    hybrid app maps the insets its native side measured.
+                    hybrid app maps the insets its native side measured. They inherit, so they are set on the box around it.
                 </div>
                 <br />
                 <div>
@@ -89,14 +89,13 @@
                     <BitToggle @bind-Value="noEndInset" Text="NoEndInset" />
                 </div>
                 <br />
-                <div class="shell-box">
+                <div class="shell-box" style="@deviceInsets">
                     <BitAppShell Id="insets-shell"
                                  NoInsets="noInsets"
                                  NoEndInset="noEndInset"
                                  NoTopInset="noTopInset"
                                  NoStartInset="noStartInset"
-                                 NoBottomInset="noBottomInset"
-                                 Style="@deviceInsets">
+                                 NoBottomInset="noBottomInset">
                         <div class="page-body">
                             @foreach (var i in Enumerable.Range(1, 12))
                             {
@@ -201,7 +200,6 @@
                 <br />
                 <div class="shell-box">
                     <BitAppShell Id="events-shell"
-                                 Class="headroom-shell"
                                  TrackScrollState
                                  ReachOffset="16"
                                  OnScroll="HandleScroll"
@@ -337,7 +335,8 @@
                 <div>
                     The shell's scroller does not move on navigation by itself. <b>AutoGoToTop</b> opens each page at its top.
                     <b>PersistScroll</b> remembers where each url was left (per tab, in session storage) and puts the reader back
-                    there, retrying while the page's content loads; a page with nothing stored opens at its top. It wins over
+                    there, retrying while the page's content loads; another page with nothing stored opens at its top, while a
+                    url that only changes its query (a filter, a search box) is left where it stands. It wins over
                     <b>AutoGoToTop</b>, and <b>ClearPersistedScroll</b> forgets one url or all of them (e.g. on sign-out).
                     In-page anchor links are left alone by both.
                 </div>
@@ -372,13 +371,14 @@
 
             <DemoExample Title="CSS variables" RazorCode="@example11RazorCode" Id="example11">
                 <div>
-                    The public <b>--bit-AppShell-*</b> variables inherit: set them on <i>:root</i> for the whole app or in
-                    <b>Style</b> for one shell. Paint the top bar like the header so the status bar reads as part of it, the
-                    bottom one like a tab bar, or give an edge a minimum inset with <b>max()</b>.
+                    The public <b>--bit-AppShell-*</b> variables inherit: set them on <i>:root</i> for the whole app, or on
+                    any element around a shell for that one - this example sets them on the box it sits in. Paint the top bar
+                    like the header so the status bar reads as part of it, the bottom one like a tab bar, or give an edge a
+                    minimum inset with <b>max()</b>.
                 </div>
                 <br /><br />
-                <div class="shell-box">
-                    <BitAppShell Id="themed-shell" Class="themed-shell">
+                <div class="shell-box themed-box">
+                    <BitAppShell Id="themed-shell">
                         <div class="page">
                             <div class="page-head themed-head">Header</div>
                             <div class="page-body">
@@ -399,7 +399,7 @@
                 </div>
                 <br /><br />
                 <BitParams Parameters="appShellParams">
-                    <div class="shell-pair">
+                    <div class="shell-pair" style="@pairInsets">
                         <div class="shell-box short">
                             <BitAppShell Id="params-shell-1">
                                 <div class="page-body"><div class="row">All cascaded</div></div>

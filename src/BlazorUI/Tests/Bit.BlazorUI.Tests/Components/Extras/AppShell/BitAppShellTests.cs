@@ -541,7 +541,51 @@ public class BitAppShellTests : BunitTestContext
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.afterRenderScroll");
 
-        Assert.AreEqual(historyOnly, invocation.Arguments[1]);
+        Assert.AreEqual(historyOnly, invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldAddressTheScrollStoreByItsContainer()
+    {
+        // The store belongs to the page, so every call names the container it is for: a second shell asking for
+        // persistence while the first is still on the page is ignored by the browser side rather than taking over.
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PersistScroll, true);
+        });
+
+        InvokeLocationChanged(component.Instance, "https://example.com/page2");
+
+        component.Render();
+
+        component.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        Assert.IsInstanceOfType<ElementReference>(Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.initScroll").Arguments[0]);
+        Assert.IsInstanceOfType<ElementReference>(Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.locationChangedScroll").Arguments[0]);
+        Assert.IsInstanceOfType<ElementReference>(Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.afterRenderScroll").Arguments[0]);
+        Assert.IsInstanceOfType<ElementReference>(Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeScroll").Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldHandTheRestoreAModeChangedWhileAPageIsShown()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PersistScroll, true);
+        });
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.updateScroll"));
+
+        component.Render(parameters => parameters.Add(p => p.ScrollRestoration, BitAppShellScrollRestoration.History));
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.updateScroll");
+
+        Assert.AreEqual(true, invocation.Arguments[2]);
+
+        // Nothing more is sent while the mode stays what it is.
+        component.Render(parameters => parameters.Add(p => p.ScrollRestoration, BitAppShellScrollRestoration.History));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.updateScroll"].Count);
     }
 
     [TestMethod]
@@ -1753,6 +1797,48 @@ public class BitAppShellTests : BunitTestContext
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.initScroll"].Count);
     }
 
+    [TestMethod]
+    public void BitAppShellShouldRegisterForTheScrollingKeysWhileItIsOnThePage()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        component.Render();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.registerShell"].Count);
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.unregisterShell"));
+
+        component.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.unregisterShell");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldHoldTheScrollStateBeforeTheScrollingApiMovesTheContainer()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.TrackScrollState, true);
+        });
+
+        component.InvokeAsync(() => component.Instance.ScrollTo(null, 500)).GetAwaiter().GetResult();
+
+        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+
+        // Ahead of the move, so the move is read as a jump rather than as the reader heading down the content.
+        Assert.IsTrue(identifiers.IndexOf("BitBlazorUI.AppShell.holdScrollState") >= 0);
+        Assert.IsTrue(identifiers.IndexOf("BitBlazorUI.AppShell.holdScrollState") < identifiers.IndexOf("BitBlazorUI.Extras.scrollTo"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldNotHoldTheScrollStateItDoesNotTrack()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        component.InvokeAsync(() => component.Instance.ScrollTo(null, 500)).GetAwaiter().GetResult();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.holdScrollState"));
+    }
+
     // ---------------------------------------------------------------------------------------------
     //  Keyboard inset
     // ---------------------------------------------------------------------------------------------
@@ -2559,6 +2645,42 @@ public class BitAppShellTests : BunitTestContext
         InvokeLocationChanged(shell, "https://example.com/other");
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Extras.goToTop");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldPutItsDefaultsBackWhenTheCascadingParamsStopSettingThem()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitAppShellParams { TrackScrollState = true, FullScreen = true, ScrollPadding = "1rem" }]);
+            parameters.AddChildContent<BitAppShell>();
+        });
+
+        var shell = component.FindComponent<BitAppShell>();
+
+        Assert.IsTrue(shell.Instance.TrackScrollState);
+        Assert.IsTrue(shell.Find(".bit-ash").ClassList.Contains("bit-ash-fsc"));
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, [new BitAppShellParams()]));
+
+        Assert.IsFalse(shell.Instance.TrackScrollState);
+        Assert.IsNull(shell.Instance.ScrollPadding);
+        Assert.IsFalse(shell.Find(".bit-ash").ClassList.Contains("bit-ash-fsc"));
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeScrollState");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldKeepItsOwnValuesWhenTheCascadingParamsStopSettingThem()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitAppShellParams { NoScroll = true }]);
+            parameters.AddChildContent<BitAppShell>(shell => shell.Add(p => p.NoScroll, true));
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, [new BitAppShellParams()]));
+
+        Assert.IsTrue(component.FindComponent<BitAppShell>().Instance.NoScroll);
     }
 
     [TestMethod]

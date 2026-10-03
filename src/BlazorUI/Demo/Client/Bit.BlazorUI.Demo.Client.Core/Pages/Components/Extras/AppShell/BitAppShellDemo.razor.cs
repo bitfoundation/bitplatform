@@ -50,12 +50,14 @@ public partial class BitAppShellDemo
     // The start bar is wider and of its own color, so the side it lands on in a right-to-left shell can be seen.
     private const string rtlInsets = $"{deviceInsets};--bit-AppShell-safe-area-start:2rem;--bit-AppShell-inset-start-background:var(--bit-clr-sec)";
 
+    // The bars of the cascading parameters example, set on the element around both shells: the variables inherit.
+    private const string pairInsets = "--bit-AppShell-safe-area-top:0.75rem;--bit-AppShell-safe-area-bottom:0.75rem;--bit-AppShell-inset-background:var(--bit-clr-pri)";
+
     private readonly BitAppShellParams[] appShellParams =
     [
         new()
         {
-            NoBottomInset = true,
-            Style = "--bit-AppShell-safe-area-top:0.75rem;--bit-AppShell-safe-area-bottom:0.75rem;--bit-AppShell-inset-background:var(--bit-clr-pri)"
+            NoBottomInset = true
         }
     ];
 
@@ -326,7 +328,7 @@ public partial class BitAppShellDemo
             Name = "PersistScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Persists scroll position of the main container per url in session storage and restores it on navigation; a page with nothing stored opens at its top. A fragment-only navigation is left alone.",
+            Description = "Persists scroll position of the main container per url in session storage and restores it on navigation; another page with nothing stored opens at its top, while a navigation that only changes the query (a filter, a search box) or the fragment is left where it stands. One shell per page owns the store, so it is not part of BitAppShellParams.",
          },
          new()
          {

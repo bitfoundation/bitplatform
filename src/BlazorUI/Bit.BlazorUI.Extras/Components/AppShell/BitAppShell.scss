@@ -196,6 +196,11 @@ $bit-ash-inset-zindex: 999999;
         --bit-ash-inset-end: 0px;
 
         height: auto;
+        // A browser leaves backgrounds out of a printout unless it is asked to print them, so the foreground of a
+        // dark theme - a near-white - would land on white paper without the background it was chosen against.
+        // The shell hands both back to the host page on paper, so the two are never printed apart.
+        color: inherit;
+        background-color: transparent;
     }
 
     .bit-ash-fsc {

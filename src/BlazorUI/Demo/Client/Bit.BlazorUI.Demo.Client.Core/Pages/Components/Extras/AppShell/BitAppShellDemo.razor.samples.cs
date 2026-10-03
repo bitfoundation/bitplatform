@@ -22,19 +22,21 @@ public partial class BitAppShellDemo
 <BitToggle @bind-Value=""noStartInset"" Text=""NoStartInset"" />
 <BitToggle @bind-Value=""noEndInset"" Text=""NoEndInset"" />
 
-<BitAppShell NoInsets=""noInsets""
-             NoEndInset=""noEndInset""
-             NoTopInset=""noTopInset""
-             NoStartInset=""noStartInset""
-             NoBottomInset=""noBottomInset""
-             Style=""@deviceInsets"">
-    <div class=""page-body"">
-        @foreach (var i in Enumerable.Range(1, 12))
-        {
-            <div class=""row"">Row @i</div>
-        }
-    </div>
-</BitAppShell>";
+@* The safe-area variables inherit, so any element around the shell can set them. *@
+<div style=""@deviceInsets"">
+    <BitAppShell NoInsets=""noInsets""
+                 NoEndInset=""noEndInset""
+                 NoTopInset=""noTopInset""
+                 NoStartInset=""noStartInset""
+                 NoBottomInset=""noBottomInset"">
+        <div class=""page-body"">
+            @foreach (var i in Enumerable.Range(1, 12))
+            {
+                <div class=""row"">Row @i</div>
+            }
+        </div>
+    </BitAppShell>
+</div>";
     private readonly string example2CsharpCode = @"
 private bool noInsets;
 private bool noTopInset;
@@ -127,13 +129,13 @@ private async Task ReadOffset()
     }
 
     /* Lifted off the content once the shell is scrolled... */
-    .headroom-shell[data-bit-ash-scrolled] .headroom-head {
+    .bit-ash[data-bit-ash-scrolled] .headroom-head {
         box-shadow: var(--bit-shd-appbar-top);
     }
 
     /* ...and out of the way while the reader scrolls down, back the moment they scroll up
        - or the moment the keyboard focus lands in it, so a focused control is never hidden. */
-    .headroom-shell[data-bit-ash-scroll-direction=""down""] .headroom-head:not(:focus-within) {
+    .bit-ash[data-bit-ash-scroll-direction=""down""] .headroom-head:not(:focus-within) {
         translate: 0 -100%;
     }
 </style>
@@ -143,8 +145,7 @@ private async Task ReadOffset()
 <div>Phase: <b>@scrollPhase</b></div>
 <div>Reached: <b>@reachedEdge</b></div>
 
-<BitAppShell Class=""headroom-shell""
-             TrackScrollState
+<BitAppShell TrackScrollState
              ReachOffset=""16""
              OnScroll=""HandleScroll""
              OnScrollStart=""HandleScrollStart""
@@ -339,8 +340,8 @@ private void RenameUser()
 
     private readonly string example11RazorCode = @"
 <style>
-    /* On :root for the whole app; on the shell here, so the example stays in its box. */
-    .themed-shell {
+    /* On :root for the whole app; on an element around the shell here - they inherit - so the example stays in its box. */
+    .themed-box {
         --bit-AppShell-safe-area-top: 1.5rem;
         --bit-AppShell-safe-area-bottom: 1.25rem;
         /* A minimum side inset that still grows with the device's. */
@@ -353,7 +354,7 @@ private void RenameUser()
     }
 
     /* The env() insets are physical, so in a right-to-left shell the leading edge is the right one. */
-    .themed-shell[dir=""rtl""] {
+    .themed-box .bit-ash[dir=""rtl""] {
         --bit-AppShell-safe-area-start: max(env(safe-area-inset-right), 0.5rem);
         --bit-AppShell-safe-area-end: max(env(safe-area-inset-left), 0.5rem);
     }
@@ -364,35 +365,39 @@ private void RenameUser()
     }
 </style>
 
-<BitAppShell Class=""themed-shell"">
-    <div class=""page"">
-        <div class=""page-head themed-head"">Header</div>
-        <div class=""page-body"">
-            @foreach (var i in Enumerable.Range(1, 12))
-            {
-                <div class=""row"">Row @i</div>
-            }
+<div class=""themed-box"">
+    <BitAppShell>
+        <div class=""page"">
+            <div class=""page-head themed-head"">Header</div>
+            <div class=""page-body"">
+                @foreach (var i in Enumerable.Range(1, 12))
+                {
+                    <div class=""row"">Row @i</div>
+                }
+            </div>
         </div>
-    </div>
-</BitAppShell>";
+    </BitAppShell>
+</div>";
 
     private readonly string example12RazorCode = @"
-<BitParams Parameters=""appShellParams"">
-    <BitAppShell>
-        <div class=""page-body""><div class=""row"">All cascaded</div></div>
-    </BitAppShell>
+@* The bars are given a size around both shells, so the inset each one keeps can be seen on a desktop. *@
+<div style=""--bit-AppShell-safe-area-top:0.75rem;--bit-AppShell-safe-area-bottom:0.75rem;--bit-AppShell-inset-background:var(--bit-clr-pri)"">
+    <BitParams Parameters=""appShellParams"">
+        <BitAppShell>
+            <div class=""page-body""><div class=""row"">All cascaded</div></div>
+        </BitAppShell>
 
-    <BitAppShell NoBottomInset=""false"">
-        <div class=""page-body""><div class=""row"">Own NoBottomInset</div></div>
-    </BitAppShell>
-</BitParams>";
+        <BitAppShell NoBottomInset=""false"">
+            <div class=""page-body""><div class=""row"">Own NoBottomInset</div></div>
+        </BitAppShell>
+    </BitParams>
+</div>";
     private readonly string example12CsharpCode = @"
 private readonly BitAppShellParams[] appShellParams =
 [
     new()
     {
-        NoBottomInset = true,
-        Style = ""--bit-AppShell-safe-area-top:0.75rem;--bit-AppShell-safe-area-bottom:0.75rem;--bit-AppShell-inset-background:var(--bit-clr-pri)""
+        NoBottomInset = true
     }
 ];";
 
