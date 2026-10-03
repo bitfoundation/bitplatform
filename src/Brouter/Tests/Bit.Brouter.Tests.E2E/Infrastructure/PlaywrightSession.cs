@@ -33,8 +33,7 @@ public static class PlaywrightSession
 
     private static async Task<IBrowser> LaunchAsync()
     {
-        var options = new BrowserTypeLaunchOptions { Headless = E2EEnvironment.Headed is false };
-        if (E2EEnvironment.Channel is { } channel) options.Channel = channel;
+        var options = new BrowserTypeLaunchOptions { Headless = E2EEnvironment.Headed is false, Channel = E2EEnvironment.Channel };
         if (E2EEnvironment.Executable is { } executable) options.ExecutablePath = executable;
 
         return await (await PlaywrightAsync()).Chromium.LaunchAsync(options);

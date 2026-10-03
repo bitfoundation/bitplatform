@@ -38,7 +38,8 @@ public class BitSwipeTrapTriggerArgs(
     public decimal VelocityY { get; set; } = velocityY;
 
     /// <summary>
-    /// The type of the pointer that performed the swipe action: "mouse", "touch" or "pen".
+    /// The type of the pointer that performed the swipe action: "mouse", "touch" or "pen" - or "keyboard" for an
+    /// arrow key pressed on a trap with KeyboardTrigger.
     /// </summary>
     public string? PointerType { get; set; } = pointerType;
 
