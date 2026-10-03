@@ -2,21 +2,69 @@
 
 /* ============================================================
    BitDataGrid - styles
-   Theming is driven entirely by the Bit BlazorUI theme system
-   (the global --bit-clr-* / --bit-tpg-* / --bit-shp-* variables),
-   so the grid automatically follows the active theme, including
-   light/dark.
+   Theming is driven by the Bit BlazorUI theme system (the global
+   --bit-clr-* / --bit-tpg-* / --bit-shp-* variables), so the grid
+   follows the active theme and preset, light or dark.
    ============================================================ */
 
-.bit-dtg {
-    --bit-dtg-cell-pad: #{spacing(1)} #{spacing(1.25)};
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a grid inherits down to whatever reads it:
+//   --bit-DataGrid-background           background of the grid and its rows       (default: $clr-bg-pri)
+//   --bit-DataGrid-color                text color                                  (default: $clr-fg-pri)
+//   --bit-DataGrid-font-family          font of the whole grid                      (default: $tg-font-family)
+//   --bit-DataGrid-font-size            font size of the whole grid                 (default: $tg-fs-sm)
+//   --bit-DataGrid-line-height          line height of the cells                    (default: 1.4)
+//   --bit-DataGrid-border-color         color of the outer border and every line    (default: $clr-brd-ter)
+//   --bit-DataGrid-border-radius        corner of the bordered grid                 (default: $shp-radius-surface)
+//   --bit-DataGrid-cell-padding         padding of every cell                       (default: spacing(1) spacing(1.25))
+//   --bit-DataGrid-header-background    background of the header rows              (default: $clr-bg-sec)
+//   --bit-DataGrid-header-color         text color of the header rows              (default: the grid's color)
+//   --bit-DataGrid-header-font-weight   weight of the column titles                 (default: $tg-fw-semibold)
+//   --bit-DataGrid-stripe-background    background of every other row when Striped  (default: $clr-bg-sec)
+//   --bit-DataGrid-hover-background     background of the row under the pointer     (default: $clr-bg-pri-hover)
+//   --bit-DataGrid-selected-background  wash laid over a selected row               (default: $clr-pri-tint)
+//   --bit-DataGrid-selected-color       text color of a selected row                (default: the grid's color)
+//   --bit-DataGrid-editing-background   wash laid over the row (Cell mode: cell) being edited (default: $clr-wrn-tint)
+//   --bit-DataGrid-accent-color         sort arrows, active group toggle, group bar (default: $clr-pri)
+//   --bit-DataGrid-focus-color          focus indicator of the cells and controls   (default: $clr-pri-focus)
+//   --bit-DataGrid-group-background     background of the group header rows        (default: $clr-bg-ter)
+//   --bit-DataGrid-group-indent         indent of each nested group level           (default: spacing(2.5))
+//   --bit-DataGrid-tree-indent          indent of each tree level                   (default: spacing(2.25))
+//   --bit-DataGrid-detail-background    background of the expanded detail rows      (default: $clr-bg-sec)
+//   --bit-DataGrid-footer-background    background of the footer row                (default: $clr-bg-sec)
+//   --bit-DataGrid-disabled-color       text color of a disabled grid               (default: $clr-fg-dis)
+// The row height is the RowHeight parameter (it also drives virtualization); the cell padding and the line height
+// set the density around it.
 
-    font-family: $tg-font-family;
-    font-size: $tg-fs-sm;
-    line-height: 1.4;
-    color: $clr-fg-pri;
-    background: $clr-bg-pri;
-    border-radius: $shp-radius-surface;
+// The focus indicator of every control inside the grid: an outline drawn inside the element, since the cells clip
+// their overflow (a ring outside the control would be cut off), the same way BitDropdown draws its items' ring.
+// The library resets `button { outline: none }` globally, so without it the grid's buttons show no focus at all.
+@mixin dtg-focus-inset($color: var(--bit-DataGrid-focus-color, #{$clr-pri-focus})) {
+    outline: $shp-focus-ring-width $shp-border-style #{$color};
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+    @media (forced-colors: active) {
+        outline-color: Highlight;
+    }
+}
+
+.bit-dtg {
+    --bit-dtg-cell-pad: var(--bit-DataGrid-cell-padding, #{spacing(1)} #{spacing(1.25)});
+    --bit-dtg-brd: #{$shp-border-width} #{$shp-border-style} var(--bit-DataGrid-border-color, #{$clr-brd-ter});
+    // The row state a cell paints, set by the rows below. Reset on every root, so a grid nested in another one's
+    // template starts from its own defaults instead of inheriting the row it sits in.
+    --bit-dtg-rbg: initial;
+    --bit-dtg-cbg: initial;
+    --bit-dtg-tint: initial;
+    --bit-dtg-stripe-bg: initial;
+    --bit-dtg-hover-bg: initial;
+
+    font-family: var(--bit-DataGrid-font-family, #{$tg-font-family});
+    font-size: var(--bit-DataGrid-font-size, #{$tg-fs-sm});
+    line-height: var(--bit-DataGrid-line-height, 1.4);
+    color: var(--bit-DataGrid-color, #{$clr-fg-pri});
+    background: var(--bit-DataGrid-background, #{$clr-bg-pri});
+    border-radius: var(--bit-DataGrid-border-radius, #{$shp-radius-surface});
     display: flex;
     flex-direction: column;
     position: relative;
@@ -30,7 +78,15 @@
 }
 
 .bit-dtg.bit-dtg-bordered {
-    border: $shp-border-width $shp-border-style $clr-brd-ter;
+    border: var(--bit-dtg-brd);
+}
+
+.bit-dtg-striped {
+    --bit-dtg-stripe-bg: var(--bit-DataGrid-stripe-background, #{$clr-bg-sec});
+}
+
+.bit-dtg-hoverable:not(.bit-dis) {
+    --bit-dtg-hover-bg: var(--bit-DataGrid-hover-background, #{$clr-bg-pri-hover});
 }
 
 /* ---------------------------------------------------------- Toolbar */
@@ -40,8 +96,14 @@
     align-items: center;
     gap: spacing(1);
     padding: spacing(1);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-bottom: var(--bit-dtg-brd);
     flex-wrap: wrap;
+}
+
+/* ShowToolbar keeps the bar even when nothing is in it yet (Clear filters only appears once a filter is on), so
+   an empty bar takes no room instead of drawing a padded strip above the header. */
+.bit-dtg-toolbar:has(> .bit-dtg-toolbar-start:empty):has(> .bit-dtg-toolbar-end:empty) {
+    display: none;
 }
 
 .bit-dtg-toolbar-start,
@@ -55,13 +117,19 @@
 .bit-dtg-column-chooser {
     display: flex;
     flex-wrap: wrap;
-    gap: spacing(1.5);
+    gap: spacing(1) spacing(1.5);
     padding: spacing(1.25);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-ter;
-    background: $clr-bg-sec;
+    border-bottom: var(--bit-dtg-brd);
+    background: var(--bit-DataGrid-header-background, #{$clr-bg-sec});
 }
 
 .bit-dtg-chooser-item {
+    display: inline-flex;
+    gap: spacing(0.25);
+    align-items: center;
+}
+
+.bit-dtg-chooser-label {
     display: inline-flex;
     gap: spacing(0.75);
     align-items: center;
@@ -70,9 +138,22 @@
 
 /* The last remaining column can't be hidden, so its checkbox is disabled; dim the whole label (not
    just the box) and drop the pointer affordance so the state reads as unavailable rather than broken. */
-.bit-dtg-chooser-item:has(input:disabled) {
+.bit-dtg-chooser-label:has(input:disabled) {
     opacity: $opa-dis;
     cursor: default;
+}
+
+.bit-dtg-chooser-item input,
+.bit-dtg-cell-select input,
+.bit-dtg-hcell input[type="checkbox"] {
+    accent-color: var(--bit-DataGrid-accent-color, #{$clr-pri});
+}
+
+.bit-dtg-chooser-item input:focus-visible,
+.bit-dtg-cell-select input:focus-visible,
+.bit-dtg-hcell input[type="checkbox"]:focus-visible {
+    outline: $shp-focus-ring-width $shp-border-style var(--bit-DataGrid-focus-color, #{$clr-pri-focus});
+    outline-offset: $shp-border-width;
 }
 
 /* ---------------------------------------------------------- Quick search */
@@ -83,24 +164,25 @@
 }
 
 .bit-dtg-search-input {
-    padding: spacing(0.625) spacing(1);
-    border: $shp-border-width $shp-border-style $clr-brd-ter;
+    min-height: $siz-ctrl-md;
+    padding: 0 spacing(1);
+    border: var(--bit-dtg-brd);
     border-radius: $shp-radius-control;
-    background: $clr-bg-pri;
-    color: $clr-fg-pri;
+    background: var(--bit-DataGrid-background, #{$clr-bg-pri});
+    color: inherit;
     font: inherit;
     min-width: rem2(180px);
 }
 
-.bit-dtg-search-input:focus-visible {
-    outline: $shp-focus-ring-width solid $clr-pri;
-    outline-offset: calc(-1 * $shp-focus-ring-width);
-}
-
 /* ---------------------------------------------------------- Viewport */
+/* The sticky header and footer and the frozen columns cover part of the viewport, so it scrolls a control into view
+   only as far as the uncovered part: --bit-dtg-head-h/--bit-dtg-foot-h are measured by BitDataGrid.ts and the frozen
+   widths written by the grid. */
 .bit-dtg-viewport {
     overflow: auto;
     position: relative;
+    scroll-padding-block: var(--bit-dtg-head-h, 0px) var(--bit-dtg-foot-h, 0px);
+    scroll-padding-inline: var(--bit-dtg-frozen-start, 0px) var(--bit-dtg-frozen-end, 0px);
 }
 
 .bit-dtg-table {
@@ -118,7 +200,7 @@
     display: grid;
     grid-template-columns: var(--bit-dtg-template);
     align-items: stretch;
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-bottom: var(--bit-dtg-brd);
 }
 
 .bit-dtg-header {
@@ -129,11 +211,11 @@
 
 .bit-dtg-header-row,
 .bit-dtg-filter-row {
-    background: $clr-bg-sec;
+    background: var(--bit-DataGrid-header-background, #{$clr-bg-sec});
 }
 
 .bit-dtg-filter-row {
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-bottom: var(--bit-dtg-brd);
 }
 
 .bit-dtg-hcell {
@@ -141,21 +223,26 @@
     align-items: center;
     gap: spacing(0.5);
     padding: var(--bit-dtg-cell-pad);
-    font-weight: $tg-fw-semibold;
+    font-weight: var(--bit-DataGrid-header-font-weight, #{$tg-fw-semibold});
     position: relative;
-    background: $clr-bg-sec;
+    color: var(--bit-DataGrid-header-color, currentcolor);
+    background: var(--bit-DataGrid-header-background, #{$clr-bg-sec});
     border-inline-end: $shp-border-width $shp-border-style transparent;
     user-select: none;
     overflow: hidden;
 }
 
+/* A cell paints the state of its row: the row sets --bit-dtg-rbg (resting: plain or striped), --bit-dtg-cbg (the
+   current state that replaces it: hover) and --bit-dtg-tint (a wash laid over either: selection, editing). The
+   background stays opaque under the tint, so a frozen cell still covers what scrolls beneath it. */
 .bit-dtg-cell {
     padding: var(--bit-dtg-cell-pad);
     display: flex;
     align-items: center;
     overflow: hidden;
     white-space: nowrap;
-    background: $clr-bg-pri;
+    background-color: var(--bit-dtg-cbg, var(--bit-dtg-rbg, var(--bit-DataGrid-background, #{$clr-bg-pri})));
+    background-image: linear-gradient(var(--bit-dtg-tint, transparent), var(--bit-dtg-tint, transparent));
 }
 
 /* text-overflow has no effect on a flex container (its text becomes an anonymous flex item), so the
@@ -202,7 +289,7 @@
 
 .bit-dtg-bordered .bit-dtg-cell,
 .bit-dtg-bordered .bit-dtg-hcell {
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-inline-end: var(--bit-dtg-brd);
 }
 
 .bit-dtg-center {
@@ -212,31 +299,43 @@
 
 .bit-dtg-right {
     justify-content: flex-end;
-    text-align: right;
+    text-align: end;
 }
 
-/* Striping & hover */
-.bit-dtg-striped .bit-dtg-body .bit-dtg-row:nth-child(even) .bit-dtg-cell {
-    background: $clr-bg-sec;
+/* The header's title is a flex item that takes the whole cell, so the column's alignment has to reach inside it
+   too - a right-aligned column would otherwise title its numbers from the left. */
+.bit-dtg-center > .bit-dtg-htext {
+    justify-content: center;
 }
 
-.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row:hover .bit-dtg-cell {
-    background: $clr-bg-pri-hover;
+.bit-dtg-right > .bit-dtg-htext {
+    justify-content: flex-end;
 }
 
-/* Selection & editing must win over both striping and hover (in every row position) */
-.bit-dtg-row.bit-dtg-selected .bit-dtg-cell,
-.bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-selected:nth-child(even) .bit-dtg-cell,
-.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-selected:hover .bit-dtg-cell {
-    color: $clr-pri-text;
-    background: $clr-pri;
+/* Striping, hover, editing and selection. The grid-level switches (Striped, Hoverable) are flags on the root,
+   reset on every root, so a grid nested in a detail row keeps its own. */
+.bit-dtg-body > .bit-dtg-row:nth-child(even) {
+    --bit-dtg-rbg: var(--bit-dtg-stripe-bg);
 }
 
-.bit-dtg-row.bit-dtg-editing .bit-dtg-cell,
-.bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-editing:nth-child(even) .bit-dtg-cell,
-.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-editing:hover .bit-dtg-cell {
-    color: $clr-fg-pri;
-    background: $clr-wrn-light;
+.bit-dtg-body > .bit-dtg-row:hover {
+    --bit-dtg-cbg: var(--bit-dtg-hover-bg);
+}
+
+/* Editing wins over the hover and the selection: the row holds the editors, and a wash or a highlight on top of
+   them would read as a state the editors do not have. */
+.bit-dtg-body > .bit-dtg-row.bit-dtg-selected {
+    --bit-dtg-tint: var(--bit-DataGrid-selected-background, #{$clr-pri-tint});
+    color: var(--bit-DataGrid-selected-color, currentcolor);
+}
+
+/* Row mode marks the row being edited, Cell mode only the cell that is open. */
+.bit-dtg-body > .bit-dtg-row.bit-dtg-editing,
+.bit-dtg-body > .bit-dtg-row > .bit-dtg-cell-editing {
+    /* A wash, like the selection's: the solid light warning fill it once was stayed light in dark mode,
+       under light text. */
+    --bit-dtg-tint: var(--bit-DataGrid-editing-background, #{$clr-wrn-tint});
+    color: var(--bit-DataGrid-color, #{$clr-fg-pri});
 }
 
 /* Sticky / frozen columns */
@@ -290,38 +389,52 @@ button.bit-dtg-htext {
     margin: 0;
     color: inherit;
     font: inherit;
+    letter-spacing: inherit;
     text-align: inherit;
     cursor: pointer;
+    align-self: stretch;
+    border-radius: $shp-radius-xs;
+
+    &:focus-visible {
+        @include dtg-focus-inset;
+    }
 }
 
 .bit-dtg-sort-icon {
     font-size: $tg-fs-2xs;
-    color: $clr-pri;
+    color: var(--bit-DataGrid-accent-color, #{$clr-pri});
 }
 
 .bit-dtg-sort-priority {
     font-size: $tg-fs-2xs;
-    background: $clr-pri;
+    font-variant-numeric: tabular-nums;
+    min-width: 1.6em;
+    text-align: center;
+    background: var(--bit-DataGrid-accent-color, #{$clr-pri});
     color: $clr-pri-text;
     border-radius: $shp-radius-full;
     padding: 0 spacing(0.5);
-    line-height: rem2(14px);
 }
 
-/* Resizer handle */
+/* Resize handle: a focusable separator on the inline-end edge of the header. */
 .bit-dtg-resizer {
     position: absolute;
     top: 0;
     inset-inline-end: 0;
-    width: rem2(7px);
+    width: spacing(1);
     height: 100%;
     cursor: col-resize;
     touch-action: none;
 }
 
 .bit-dtg-resizer:hover {
-    background: $clr-pri;
-    opacity: .5;
+    background: translucent(var(--bit-DataGrid-accent-color, #{$clr-pri}), 50%);
+}
+
+/* The handle is a thin bar, so focus fills it rather than outlining it: an outline that narrow would be lost. */
+.bit-dtg-resizer:focus-visible {
+    outline: none;
+    background: var(--bit-DataGrid-focus-color, #{$clr-pri-focus});
 }
 
 .bit-dtg-resize-overlay {
@@ -334,16 +447,23 @@ button.bit-dtg-htext {
 
 /* ---------------------------------------------------------- Group rows */
 .bit-dtg-group-row {
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-bottom: var(--bit-dtg-brd);
 }
 
+/* Nested groups are indented by their level, and every level keeps the accent bar on its inline-start edge. */
 .bit-dtg-group-cell {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
     gap: spacing(1.25);
     padding: var(--bit-dtg-cell-pad);
-    background: $clr-bg-ter;
+    padding-inline-start: calc(#{spacing(1)} + var(--bit-dtg-group-level, 0) * var(--bit-DataGrid-group-indent, #{spacing(2.5)}));
+    background: var(--bit-DataGrid-group-background, #{$clr-bg-ter});
+    border-inline-start: $shp-border-width-thick $shp-border-style var(--bit-DataGrid-accent-color, #{$clr-pri});
+}
+
+.bit-dtg-group-title {
+    font-weight: $tg-fw-semibold;
 }
 
 .bit-dtg-group-count {
@@ -355,22 +475,15 @@ button.bit-dtg-htext {
     font-size: $tg-fs-xs;
 }
 
-/* Nested groups: subtle indentation shading applied at every level so deeper groups
-   keep the hierarchy cue (the level value drives indentation elsewhere). */
-.bit-dtg-group-row .bit-dtg-group-cell {
-    border-inline-start: $shp-border-width-thick $shp-border-style $clr-pri;
-}
-
 /* ----------------------------------------------- Grouped column headers */
 .bit-dtg-group-header-row {
-    background: $clr-bg-sec;
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-ter;
+    background: var(--bit-DataGrid-header-background, #{$clr-bg-sec});
+    border-bottom: var(--bit-dtg-brd);
 }
 
 .bit-dtg-group-header {
     font-weight: $tg-fw-bold;
-    background: $clr-bg-sec;
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-inline-end: var(--bit-dtg-brd);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -390,15 +503,30 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: rem2(24px);
+    min-height: rem2(24px);
     background: none;
     border: none;
+    border-radius: $shp-radius-control;
     padding: 0;
     cursor: grab;
     color: $clr-fg-sec;
     user-select: none;
+
+    &:focus-visible {
+        @include dtg-focus-inset;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
+    }
 }
 
-.bit-dtg-drag-handle:active {
+.bit-dtg-drag-handle:active:not(:disabled) {
     cursor: grabbing;
 }
 
@@ -422,66 +550,44 @@ button.bit-dtg-htext {
 /* The row is focusable when it is the only detail toggle (hidden toggle column, no cell
    navigation), so it needs the same visible focus ring the navigable cells get. */
 .bit-dtg-row[tabindex]:focus-visible {
-    outline: $shp-focus-ring-width solid $clr-pri;
-    outline-offset: calc(-1 * $shp-focus-ring-width);
+    @include dtg-focus-inset;
     z-index: 1;
 }
 
-/* The inset ring is drawn over cells that a selected row paints with the primary color, so it would
-   blend into them. Switch to the selected foreground color, exactly as the focused cell does. */
-.bit-dtg-row.bit-dtg-selected[tabindex]:focus-visible {
-    outline-color: $clr-pri-text;
-}
-
 .bit-dtg-detail-row {
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-bottom: var(--bit-dtg-brd);
 }
 
 .bit-dtg-detail-content {
     padding: spacing(1.5) spacing(2);
-    background: $clr-bg-sec;
+    background: var(--bit-DataGrid-detail-background, #{$clr-bg-sec});
 }
 
 /* ---------------------------------------------------------- Tree view */
 .bit-dtg-tree-indent {
     display: inline-block;
     flex: 0 0 auto;
+    width: calc(var(--bit-dtg-tree-level, 0) * var(--bit-DataGrid-tree-indent, #{spacing(2.25)}));
 }
 
 .bit-dtg-tree-toggle {
     flex: 0 0 auto;
-    width: spacing(2.5);
-    text-align: center;
 }
 
 .bit-dtg-tree-leaf {
     display: inline-block;
-    width: spacing(2.5);
+    width: rem2(24px);
     flex: 0 0 auto;
 }
 
 /* ---------------------------------------------------------- Cell navigation */
-/* The focus ring is driven solely by real DOM :focus so exactly one cell can
-   ever be outlined (state and DOM focus are kept in sync via @key + FocusAsync). */
-.bit-dtg-cell[tabindex]:focus {
-    outline: $shp-focus-ring-width solid $clr-pri;
-    outline-offset: calc(-1 * $shp-focus-ring-width);
-    z-index: 1;
-}
-
+/* The focus ring is driven solely by real DOM focus so exactly one cell can ever be outlined (state
+   and DOM focus are kept in sync via @key + FocusAsync). The selection is a translucent wash, so the
+   ring keeps the same color over a selected cell. */
+.bit-dtg-cell[tabindex]:focus,
 .bit-dtg-cell[tabindex]:focus-visible {
-    outline: $shp-focus-ring-width solid $clr-pri;
-    outline-offset: calc(-1 * $shp-focus-ring-width);
+    @include dtg-focus-inset;
     z-index: 1;
-}
-
-/* A selected cell/row paints its background with the primary color, so a primary-colored focus
-   ring would blend in and make keyboard focus invisible. Switch the ring to the selected
-   foreground color (which is guaranteed to contrast with the selected background) so the focused
-   cell stays clearly visible even while selected. */
-.bit-dtg-row.bit-dtg-selected .bit-dtg-cell[tabindex]:focus,
-.bit-dtg-row.bit-dtg-selected .bit-dtg-cell[tabindex]:focus-visible {
-    outline-color: $clr-pri-text;
 }
 
 /* ---------------------------------------------------------- Footer */
@@ -491,27 +597,29 @@ button.bit-dtg-htext {
     z-index: 3;
 }
 
-.bit-dtg-footer-row .bit-dtg-cell {
-    background: $clr-bg-sec;
+.bit-dtg-footer-row > .bit-dtg-cell {
+    background-color: var(--bit-DataGrid-footer-background, #{$clr-bg-sec});
     font-weight: $tg-fw-semibold;
-    border-top: $shp-border-width-thick $shp-border-style $clr-brd-ter;
+    border-top: $shp-border-width-thick $shp-border-style var(--bit-DataGrid-border-color, #{$clr-brd-ter});
 }
 
 /* ---------------------------------------------------------- Empty / loading */
 .bit-dtg-empty,
 .bit-dtg-loading {
     padding: spacing(4);
+    justify-content: center;
+    gap: spacing(1);
     text-align: center;
     color: $clr-fg-sec;
 }
 
 .bit-dtg-spinner {
     display: inline-block;
-    width: rem2(14px);
-    height: rem2(14px);
-    border: $siz-spinner-stroke $shp-border-style $clr-fg-sec;
+    width: 1em;
+    height: 1em;
+    border: $siz-spinner-stroke $shp-border-style currentcolor;
     border-top-color: transparent;
-    border-radius: 50%;
+    border-radius: $shp-radius-full;
     vertical-align: middle;
     animation: bit-dtg-spin $mot-duration-spinner $mot-easing-spinner infinite;
 }
@@ -531,20 +639,20 @@ button.bit-dtg-htext {
 .bit-dtg-skeleton {
     display: block;
     width: 60%;
-    height: rem2(10px);
+    height: 0.7em;
     border-radius: $shp-radius-full;
     background: linear-gradient(90deg,
-            $clr-brd-ter 25%,
-            $clr-bg-sec 37%,
-            $clr-brd-ter 63%);
+            var(--bit-DataGrid-border-color, #{$clr-brd-ter}) 25%,
+            var(--bit-DataGrid-stripe-background, #{$clr-bg-sec}) 37%,
+            var(--bit-DataGrid-border-color, #{$clr-brd-ter}) 63%);
     background-size: 400% 100%;
     animation: bit-dtg-shimmer calc(1.2s * $mot-loop-factor) ease-in-out infinite;
 
     // Unlike the spinner this is a placeholder rather than the progress signal, so reduced motion
-    // stops it outright the way BitTextShimmer does, leaving the static gradient. The .bit-fam
-    // opt-out is matched on an ancestor too, since the grid renders no .bit-fam of its own.
+    // stops it outright the way BitTextShimmer does, leaving the static gradient. ForceAnimation
+    // (bit-fam on the root, or on an ancestor) opts back in.
     @media (prefers-reduced-motion: reduce) {
-        &:not(.bit-fam):not(.bit-fam *) {
+        &:not(.bit-fam *) {
             animation: none;
         }
     }
@@ -572,11 +680,19 @@ button.bit-dtg-htext {
 .bit-dtg-filter-input {
     width: 100%;
     padding: spacing(0.5) spacing(0.75);
-    border: $shp-border-width $shp-border-style $clr-brd-ter;
+    border: var(--bit-dtg-brd);
     border-radius: $shp-radius-control;
-    background: $clr-bg-pri;
-    color: $clr-fg-pri;
+    background: var(--bit-DataGrid-background, #{$clr-bg-pri});
+    color: inherit;
     font: inherit;
+}
+
+.bit-dtg-editor:focus,
+.bit-dtg-filter-input:focus,
+.bit-dtg-filter-op:focus,
+.bit-dtg-page-size:focus,
+.bit-dtg-search-input:focus {
+    @include dtg-focus-inset;
 }
 
 /* The boolean editor reuses .bit-dtg-editor for class consistency, so fully strip the text-input
@@ -591,12 +707,27 @@ button.bit-dtg-htext {
     background: none;
     appearance: auto;
     -webkit-appearance: checkbox;
-    accent-color: $clr-pri;
+    accent-color: var(--bit-DataGrid-accent-color, #{$clr-pri});
     cursor: pointer;
+
+    &:focus {
+        outline-offset: $shp-border-width;
+    }
 }
 
 .bit-dtg-filter-input {
     font-weight: $tg-fw-regular;
+}
+
+.bit-dtg-editor:disabled,
+.bit-dtg-filter-input:disabled,
+.bit-dtg-filter-op:disabled,
+.bit-dtg-page-size:disabled,
+.bit-dtg-search-input:disabled {
+    color: $clr-fg-dis;
+    background: $clr-bg-dis;
+    border-color: $clr-brd-dis;
+    cursor: default;
 }
 
 /* Touch drag-and-drop: without touch-action none the browser turns the drag into a scroll and fires
@@ -609,11 +740,11 @@ button.bit-dtg-htext {
 
 /* Highlights the row/header cell a touch drag would drop onto. */
 .bit-dtg-drop-target {
-    outline: $shp-focus-ring-width dashed $clr-pri;
+    outline: $shp-focus-ring-width dashed var(--bit-DataGrid-accent-color, #{$clr-pri});
     outline-offset: calc(-1 * $shp-focus-ring-width);
 }
 
-/* Screen-reader-only content (the aria-live status region). */
+/* Screen-reader-only content (the aria-live status region, the names of the special columns). */
 .bit-dtg-visually-hidden {
     position: absolute;
     width: 1px;
@@ -636,8 +767,7 @@ button.bit-dtg-htext {
     display: block;
     margin-top: spacing(0.25);
     font-size: $tg-fs-xs;
-    line-height: 1.2;
-    color: $clr-err;
+    color: $clr-err-fg;
 }
 
 /* Lays out the operator dropdown and the filter input side by side. */
@@ -653,10 +783,10 @@ button.bit-dtg-htext {
     max-width: 40%;
     margin-inline-end: spacing(0.5);
     padding: spacing(0.5) spacing(0.25);
-    border: $shp-border-width $shp-border-style $clr-brd-ter;
+    border: var(--bit-dtg-brd);
     border-radius: $shp-radius-control;
-    background: $clr-bg-pri;
-    color: $clr-fg-pri;
+    background: var(--bit-DataGrid-background, #{$clr-bg-pri});
+    color: inherit;
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-regular;
 }
@@ -669,20 +799,38 @@ button.bit-dtg-htext {
     margin-inline-end: 0;
 }
 
+/* A column's FilterTemplate fills the cell and reads as body text, not as a centred header label. */
+.bit-dtg-filter-custom {
+    width: 100%;
+    min-width: 0;
+    text-align: start;
+    color: $clr-fg-pri;
+}
+
 /* ---------------------------------------------------------- Buttons */
 .bit-dtg-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: spacing(0.5);
-    padding: spacing(0.625) spacing(1.25);
-    border: $shp-border-width $shp-border-style $clr-brd-ter;
-    border-radius: $shp-radius-control;
-    background: $clr-bg-pri;
-    color: $clr-fg-pri;
+    min-height: $siz-ctrl-md;
+    min-width: $siz-ctrl-md;
+    padding: 0 $siz-ctrl-pad-x-sm;
+    border: var(--bit-dtg-brd);
+    border-radius: $shp-radius-button;
+    background: var(--bit-DataGrid-background, #{$clr-bg-pri});
+    color: inherit;
     font: inherit;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
     cursor: pointer;
     text-decoration: none;
-    line-height: 1.2;
+    white-space: nowrap;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    &:focus-visible {
+        @include dtg-focus-inset;
+    }
 }
 
 .bit-dtg-btn:hover:not(:disabled) {
@@ -698,6 +846,11 @@ button.bit-dtg-htext {
     background: $clr-pri;
     border-color: $clr-pri;
     color: $clr-pri-text;
+
+    // The ring would vanish into the fill in the focus color, so it is drawn in the text color on it instead.
+    &:focus-visible {
+        outline-color: $clr-pri-text;
+    }
 }
 
 /* Win over the generic .bit-dtg-btn:hover rule so primary buttons keep their primary treatment on hover */
@@ -708,30 +861,63 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-btn-danger {
-    color: $clr-err;
+    color: $clr-err-fg;
     border-color: $clr-err;
 }
 
+/* The command buttons share the row with the data, so they take the small control height. */
 .bit-dtg-cell-command {
     gap: spacing(0.75);
+
+    .bit-dtg-btn {
+        min-height: $siz-ctrl-sm;
+    }
 }
 
+/* Glyph-only buttons (toggles, the group button, the chooser's move buttons) keep a 24px target, the WCAG 2.5.8
+   minimum, however small their glyph. */
 .bit-dtg-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: rem2(24px);
+    min-height: rem2(24px);
     background: none;
     border: none;
-    color: $clr-fg-pri;
+    color: inherit;
     cursor: pointer;
-    font-size: $tg-fs-xs;
-    padding: spacing(0.25) spacing(0.5);
+    font-size: $tg-fs-sm;
+    line-height: 1;
+    padding: 0 spacing(0.5);
     border-radius: $shp-radius-control;
+
+    &:focus-visible {
+        @include dtg-focus-inset;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
+    }
 }
 
-.bit-dtg-icon-btn:hover {
-    background: $clr-bg-pri-hover;
+.bit-dtg-icon-btn:hover:not(:disabled) {
+    background: translucent(currentcolor, 10%);
 }
 
 .bit-dtg-group-btn.bit-dtg-active {
-    color: $clr-pri;
+    color: var(--bit-DataGrid-accent-color, #{$clr-pri});
+}
+
+/* A collapsed toggle's triangle points the way the content runs, so it turns around in a right-to-left grid. The
+   pager's and the column chooser's arrows are bidi-mirrored characters, which the browser already turns. */
+.bit-dtg-dir-glyph {
+    display: inline-block;
+}
+
+.bit-dtg-dir-glyph:dir(rtl) {
+    transform: scaleX(-1);
 }
 
 /* ---------------------------------------------------------- Pager */
@@ -741,7 +927,7 @@ button.bit-dtg-htext {
     align-items: center;
     gap: spacing(1);
     padding: spacing(1);
-    border-top: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-top: var(--bit-dtg-brd);
     flex-wrap: wrap;
 }
 
@@ -758,15 +944,97 @@ button.bit-dtg-htext {
     gap: spacing(0.5);
 }
 
+.bit-dtg-pager-btn {
+    padding: 0;
+}
+
 .bit-dtg-pager-current {
     padding: 0 spacing(1);
 }
 
 .bit-dtg-page-size {
-    padding: spacing(0.5) spacing(0.75);
-    border: $shp-border-width $shp-border-style $clr-brd-ter;
+    min-height: $siz-ctrl-md;
+    padding: 0 spacing(0.75);
+    border: var(--bit-dtg-brd);
     border-radius: $shp-radius-control;
-    background: $clr-bg-pri;
+    background: var(--bit-DataGrid-background, #{$clr-bg-pri});
     color: $clr-fg-pri;
     font: inherit;
+}
+
+/* ---------------------------------------------------------- Disabled */
+/* A disabled grid keeps its data readable but every control in it is disabled; the text takes the disabled color
+   and nothing advertises an interaction any more. */
+.bit-dtg.bit-dis {
+    color: var(--bit-DataGrid-disabled-color, #{$clr-fg-dis});
+
+    .bit-dtg-sort-icon,
+    .bit-dtg-group-btn.bit-dtg-active,
+    .bit-dtg-cell-rownumber,
+    .bit-dtg-hcell-rownumber,
+    .bit-dtg-group-count,
+    .bit-dtg-group-agg,
+    .bit-dtg-pager-info,
+    .bit-dtg-empty,
+    .bit-dtg-loading {
+        color: inherit;
+    }
+
+    .bit-dtg-sort-priority {
+        color: inherit;
+        background: $clr-bg-dis;
+    }
+
+    .bit-dtg-group-cell {
+        border-inline-start-color: currentcolor;
+    }
+
+    .bit-dtg-row-expandable,
+    .bit-dtg-row[draggable="true"] {
+        cursor: default;
+    }
+}
+
+/* ---------------------------------------------------------- Forced colors */
+/* Windows High Contrast replaces every background an author paints with the system Canvas, so the states the grid
+   tells apart by a background alone are re-established in the system colors. A system color keyword is honoured
+   where a palette color is not. */
+@media (forced-colors: active) {
+    // The selected row is filled the way a native list fills its selected option. The cells opt out of the forced
+    // palette so the Highlight pair is not overpainted by the backplate drawn behind text in this mode.
+    .bit-dtg-body > .bit-dtg-row.bit-dtg-selected > .bit-dtg-cell {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+
+    .bit-dtg-body > .bit-dtg-row.bit-dtg-selected > .bit-dtg-cell[tabindex]:focus,
+    .bit-dtg-body > .bit-dtg-row.bit-dtg-selected > .bit-dtg-cell[tabindex]:focus-visible {
+        outline-color: HighlightText;
+    }
+
+    // The row being edited loses its background, so it is marked with an outline instead.
+    .bit-dtg-body > .bit-dtg-row.bit-dtg-editing,
+    .bit-dtg-body > .bit-dtg-row > .bit-dtg-cell-editing {
+        outline: $shp-border-width-thick $shp-border-style Highlight;
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
+
+    .bit-dtg-resizer:hover,
+    .bit-dtg-resizer:focus-visible {
+        forced-color-adjust: none;
+        background: Highlight;
+    }
+
+    .bit-dtg-sort-priority {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    .bit-dtg-drop-target {
+        outline-color: Highlight;
+    }
+
+    .bit-dtg.bit-dis {
+        color: GrayText;
+    }
 }

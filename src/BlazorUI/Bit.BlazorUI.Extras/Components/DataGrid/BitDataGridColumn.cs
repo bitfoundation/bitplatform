@@ -80,6 +80,14 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// <summary>Overrides the grid-level <c>FilterOperators</c> toggle (the operator dropdown next to
     /// this column's filter editor).</summary>
     [Parameter] public bool? FilterOperators { get; set; }
+
+    /// <summary>
+    /// Replaces this column's built-in filter editor in the filter row with custom markup - a
+    /// multi-select applying <see cref="BitDataGridFilterOperator.In"/>, a range slider, a preset list.
+    /// The context carries the column's current filter and the calls that apply or clear it.
+    /// Rendered only while the column is filterable.
+    /// </summary>
+    [Parameter] public RenderFragment<BitDataGridFilterContext>? FilterTemplate { get; set; }
     [Parameter] public bool? Resizable { get; set; }
     [Parameter] public bool? Reorderable { get; set; }
     [Parameter] public bool? Editable { get; set; }
@@ -166,6 +174,19 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     [Parameter] public string? HeaderClass { get; set; }
     [Parameter] public string? CellClass { get; set; }
+
+    /// <summary>
+    /// Per-row CSS class for this column's cells, from the row's data - e.g. a negative amount in red.
+    /// Added after <see cref="CellClass"/>. The cell counterpart of the grid's <c>RowClass</c>.
+    /// </summary>
+    [Parameter] public Func<TItem, string?>? CellClassSelector { get; set; }
+
+    /// <summary>
+    /// Per-row inline style for this column's cells, from the row's data. Applied last, so it wins over
+    /// the grid's own cell styles; prefer <c>color</c>/<c>font-*</c> over <c>background</c>, which would
+    /// hide the selection and hover states the cell paints.
+    /// </summary>
+    [Parameter] public Func<TItem, string?>? CellStyleSelector { get; set; }
 
     /// <summary>Custom rendering for a data cell.</summary>
     [Parameter] public RenderFragment<TItem>? Template { get; set; }

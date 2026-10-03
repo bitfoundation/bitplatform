@@ -5,19 +5,26 @@
     color: $bit-color-primary;
 }
 
-/* Example 35: RowClass returns this class, and the grid puts it on a row element this page never
+/* Example 13: RowClass returns this class, and the grid puts it on a row element this page never
    wrote - so the page's scope attribute never lands on it. ::deep off the wrapper the page does own
    is what crosses that boundary. */
 .styled-rows ::deep .row-out-of-stock .bit-dtg-cell {
     color: $bit-color-error;
 }
 
-.muted {
-    color: $bit-color-foreground-secondary;
-    font-size: 0.75rem;
+/* Example 29: Classes puts these on parts the grid renders, so they too are reached through ::deep off a
+   wrapper the page owns. */
+.styled-grid ::deep .custom-header-cell {
+    color: $bit-color-primary;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-/* Cell context menu (example 16): the invisible overlay catches the click/right-click
+.styled-grid ::deep .custom-selected-row .bit-dtg-cell {
+    font-style: italic;
+}
+
+/* Cell context menu (example 23): the invisible overlay catches the click/right-click
    that dismisses the menu, so it must sit below the menu but above everything else. */
 .ctx-menu-overlay {
     position: fixed;

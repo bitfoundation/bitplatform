@@ -196,6 +196,30 @@ namespace BitBlazorUI {
             };
         }
 
+        // Publishes the height of the sticky header and footer on the viewport as --bit-dtg-head-h/--bit-dtg-foot-h,
+        // which the stylesheet turns into scroll padding: whatever the browser scrolls into view inside the viewport
+        // (a cell the arrow keys move to, a checkbox reached with Tab) then stops below the header and above the
+        // footer instead of under them (WCAG 2.4.11). Both can change height at any time (wrapped titles, a filter
+        // row, a footer appearing), and so does the table they sit in, which is what is observed.
+        public static observeStickyBands(viewport: HTMLElement) {
+            if (!viewport || typeof ResizeObserver === 'undefined') return { dispose: () => { } };
+
+            const update = () => {
+                const table = viewport.firstElementChild;
+                const header = table?.querySelector<HTMLElement>(':scope > .bit-dtg-header');
+                const footer = table?.querySelector<HTMLElement>(':scope > .bit-dtg-footer');
+                viewport.style.setProperty('--bit-dtg-head-h', `${header?.offsetHeight ?? 0}px`);
+                viewport.style.setProperty('--bit-dtg-foot-h', `${footer?.offsetHeight ?? 0}px`);
+            };
+
+            const observer = new ResizeObserver(update);
+            observer.observe(viewport);
+            if (viewport.firstElementChild) observer.observe(viewport.firstElementChild);
+            update();
+
+            return { dispose: () => observer.disconnect() };
+        }
+
         // Syncs the "some but not all rows selected" state onto the select-all checkbox.
         // indeterminate is a DOM property with no attribute equivalent, so Blazor markup can't set it.
         public static setIndeterminate(element: HTMLInputElement, value: boolean) {
@@ -207,6 +231,57 @@ namespace BitBlazorUI {
         // the computed style resolves both, the dir attribute of every ancestor included.
         public static isRtl(element: HTMLElement): boolean {
             return element ? getComputedStyle(element).direction === 'rtl' : false;
+        }
+
+        // Puts the focus back into a column header after its column moved: moving an element in the DOM drops the
+        // focus it held. The sort button is the header's own control, so it is preferred; a header that is not
+        // sortable falls back to its first focusable child (the resize handle).
+        public static focusHeader(root: HTMLElement, columnId: string) {
+            const header = root?.querySelector<HTMLElement>(`.bit-dtg-header-row .bit-dtg-hcell[data-col="${CSS.escape(columnId)}"]`);
+            if (!header) return;
+            const target = header.querySelector<HTMLElement>('button.bit-dtg-htext')
+                ?? header.querySelector<HTMLElement>('button, [tabindex]:not([tabindex="-1"])');
+            target?.focus();
+        }
+
+        // Moves the focus into an editor that has just opened, so Enter/F2, a double-click or the Edit button
+        // leave the user typing rather than on a cell (or a button) that no longer holds the control. A blank
+        // column id means the row's first editor. Only the cells of this grid count, not those of a grid nested
+        // in a detail row. Text is selected, so typing replaces the value the way it does in a spreadsheet.
+        public static focusEditor(root: HTMLElement, columnId: string) {
+            if (!root) return;
+            const cells = Array.from(root.querySelectorAll<HTMLElement>('[data-bit-dtg-edit]'))
+                .filter(c => c.closest('.bit-dtg') === root);
+            const cell = (columnId ? cells.find(c => c.dataset.bitDtgEdit === columnId) : undefined) ?? cells[0];
+            const target = cell ? focusableControls(cell)[0] : undefined;
+            if (!target) return;
+            target.focus();
+            if (target instanceof HTMLInputElement && ['text', 'search', 'number', 'email', 'tel', 'url'].includes(target.type)) {
+                try { target.select(); } catch { }
+            }
+        }
+
+        // Puts the focus on a row's command button (Edit) once the Save/Cancel button that held it is gone.
+        public static focusRowCommand(root: HTMLElement, ariaRowIndex: number) {
+            const row = Array.from(root?.querySelectorAll<HTMLElement>(`.bit-dtg-row[aria-rowindex="${ariaRowIndex}"]`) ?? [])
+                .find(r => r.closest('.bit-dtg') === root);
+            row?.querySelector<HTMLElement>('.bit-dtg-cell-command button:not([disabled])')?.focus();
+        }
+
+        // Cell edit mode commits when the focus leaves the open cell. A focusout whose relatedTarget is still
+        // inside the cell (a custom EditTemplate with several controls) is a move within it, not a departure.
+        // The cell carries the number of its edit, so a late report cannot commit the edit opened after it.
+        public static initCellEditBlur(root: HTMLElement, dotNetRef: DotNetObject) {
+            if (!root) return { dispose: () => { } };
+            const onFocusOut = (e: FocusEvent) => {
+                const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-bit-dtg-edit-version]');
+                if (!cell || cell.closest('.bit-dtg') !== root) return;
+                const next = e.relatedTarget as Node | null;
+                if (next && cell.contains(next)) return;
+                dotNetRef.invokeMethodAsync('OnCellEditBlurAsync', Number(cell.dataset.bitDtgEditVersion));
+            };
+            root.addEventListener('focusout', onFocusOut);
+            return { dispose: () => root.removeEventListener('focusout', onFocusOut) };
         }
 
         // Measures an element's rendered width. Used when a column resize starts so the drag begins
@@ -356,13 +431,26 @@ namespace BitBlazorUI {
     // key and lags a keystroke behind. A single capture-phase listener decides per-key up front and only
     // cancels the arrow keys on a focused drag handle, so Tab/Enter/Space keep working and the .NET
     // keydown handler still runs to actually move the row.
+    // The column headers own two more keys the same way: a focused resize handle (a separator) moves its edge with
+    // the arrows and takes it to its limits with Home/End, and Ctrl+Left/Right anywhere in a reorderable header
+    // (one that carries data-col) moves the column. Left alone, both would also scroll the viewport sideways.
+    const resizerKeys = new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter']);
     let reorderKeyGuardInstalled = false;
     function installReorderKeyGuard() {
         if (reorderKeyGuardInstalled || typeof document === 'undefined') return;
         reorderKeyGuardInstalled = true;
         document.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
             const target = e.target as HTMLElement | null;
+            if (target?.classList?.contains('bit-dtg-resizer') && resizerKeys.has(e.key) && !e.altKey && !e.metaKey) {
+                e.preventDefault();
+                return;
+            }
+            if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+                target?.closest?.('.bit-dtg-hcell[data-col]')) {
+                e.preventDefault();
+                return;
+            }
+            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
             if (target?.classList?.contains('bit-dtg-drag-handle')) {
                 // Don't cancel the default while the row is being edited: keyboard reordering is
                 // short-circuited in that state (matching the .NET handler and the draggable guard),
@@ -441,6 +529,18 @@ namespace BitBlazorUI {
             : root.hasAttribute('data-bit-dtg-select-all');
     }
 
+    // The controls of an editor that can actually take the focus, in DOM order: enabled, not a hidden input,
+    // not hidden themselves or inside a hidden/inert subtree, and rendered (display:none leaves no client
+    // rects). Opening an editor focuses the first; Cell-mode Tab treats the first and last as the boundaries.
+    const focusableSelector = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    function focusableControls(container: HTMLElement): HTMLElement[] {
+        return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(el =>
+            !(el instanceof HTMLInputElement && el.type === 'hidden')
+            && !el.closest('[hidden], [inert]')
+            && el.getClientRects().length > 0
+            && getComputedStyle(el).visibility !== 'hidden');
+    }
+
     let cellKeyGuardInstalled = false;
     function installCellKeyGuard() {
         if (cellKeyGuardInstalled || typeof document === 'undefined') return;
@@ -457,9 +557,26 @@ namespace BitBlazorUI {
             // the embedded control. Stop propagation here so the key stays with the control; its native
             // behavior is preserved because preventDefault is intentionally not called. This is checked
             // before the cell-target branch below, which only matches when the cell itself is focused.
+            // The grid's own editors (.bit-dtg-editor) are the exception: their Enter commits and their other
+            // keys are ignored by the editing cell, so they bubble on to it.
             const ownerCell = target.closest('.bit-dtg-cell') as HTMLElement | null;
-            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedCellKeyControl(target)) {
+            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedCellKeyControl(target)
+                && !target.classList.contains('bit-dtg-editor')) {
                 e.stopPropagation();
+                return;
+            }
+
+            // In Cell mode Tab moves the edit to the next cell, which the editing cell's .NET handler does; the
+            // browser's own Tab would leave the grid (the other cells are out of the tab order). A Tab that
+            // stays among the controls of one custom editor is left native and kept from that handler.
+            if (e.key === 'Tab') {
+                const editingCell = target.closest<HTMLElement>('.bit-dtg-cell-editing');
+                if (!editingCell) return;
+                const controls = focusableControls(editingCell);
+                const index = controls.indexOf(target);
+                const staysInside = e.shiftKey ? index > 0 : index >= 0 && index < controls.length - 1;
+                if (staysInside) e.stopPropagation();
+                else e.preventDefault();
                 return;
             }
 
@@ -483,7 +600,7 @@ namespace BitBlazorUI {
             // lifecycle keys (Enter commits, Escape cancels) are grid-owned; cancel their native
             // actions but leave caret movement and typing to the input.
             if ((e.key === 'Enter' || e.key === 'Escape') &&
-                target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing')) {
+                (target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing') || target.closest('.bit-dtg-cell-editing'))) {
                 // Don't swallow these keys for nested controls that own their keyboard behavior:
                 // a <button> activates on Enter, a <select> opens/commits a choice, a <textarea>
                 // inserts a newline, and a contenteditable region edits text. Suppressing here would
