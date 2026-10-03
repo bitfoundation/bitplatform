@@ -13,7 +13,6 @@ public partial class _BitAccordionListCustomDemo
     private string? actionedTitle;
     private string? togglingReport;
     private string? boundExpandedKey = "users";
-    private IEnumerable<string> boundExpandedKeys = ["general"];
     private IEnumerable<string> programmaticKeys = [];
     private BitAccordionList<Section>? accordionListRef;
 
@@ -76,7 +75,7 @@ public partial class _BitAccordionListCustomDemo
 
     private readonly List<Section> lazyItems =
     [
-        new() { Id = "lazy-1", Name = "Lazy panel", Info = "Rendered the first time it is opened, and kept afterwards", Content = TimestampBody() },
+        new() { Id = "lazy-1", Name = "Lazy panel", Info = "Rendered on its first open, and kept afterwards", Content = TimestampBody() },
     ];
 
     private readonly List<Section> unmountItems =
@@ -110,6 +109,13 @@ public partial class _BitAccordionListCustomDemo
 
     private readonly List<Section> noItems = [];
 
+    private readonly List<Section> faqItems =
+    [
+        new() { Id = "password", Name = "How do I reset my password?", Info = "Account", Content = BodyFor("Open Settings, choose Security and pick Reset password; the link we email you expires after one hour.") },
+        new() { Id = "refund", Name = "Can I get a refund?", Info = "Billing", Content = BodyFor("Refunds are issued within 14 days, to the payment method the order was paid with.") },
+        new() { Id = "invoice", Name = "Where is my invoice?", Info = "Billing", Content = BodyFor("Every invoice is listed under Billing, ready to download as a PDF.") },
+    ];
+
     private readonly List<Section> scrollItems =
     [
         new() { Id = "scroll-1", Name = "First section", Info = "Opens without moving anything", Content = BodyFor(Story1) },
@@ -123,6 +129,17 @@ public partial class _BitAccordionListCustomDemo
         new() { Id = "general", Name = "General settings", Info = "The general settings of the application", Content = BodyFor(Story1) },
         new() { Id = "users", Name = "Users", Info = "You are currently not an owner", Content = BodyFor(Story2) },
         new() { Id = "advanced", Name = "Advanced settings", Info = "Filtering has been entirely disabled", Content = BodyFor(Story3) },
+    ];
+
+    private readonly BitAccordionListParams[] accordionListParams =
+    [
+        new()
+        {
+            Joined = true,
+            Multiple = true,
+            ExpanderIconName = BitIconName.Add,
+            ExpandedExpanderIconName = BitIconName.Remove,
+        }
     ];
 
     private List<BitButtonGroupItem> bindingButtons =>

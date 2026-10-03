@@ -138,6 +138,72 @@ namespace BitBlazorUI {
             } catch (e) { console.error('BitBlazorUI.Extras.scrollIntoView:', e); }
         }
 
+        // Holds the element where it sits in the viewport right now while the layout above it changes: a list of
+        // accordions closing the panels above a find-in-page match it has just revealed, which the browser has
+        // already scrolled to - the close arrives a render later and runs over a transition, and every pixel it
+        // gives up would pull the match up by as much. Each frame scrolls the drift back out of the element's
+        // scroller, until the element has held still for a while after moving, the reader scrolls on their own, or
+        // the time runs out.
+        public static keepInPlace(element: HTMLElement) {
+            if (!element || !element.isConnected) return;
+
+            const scroller = Extras.scrollParent(element);
+            const top = element.getBoundingClientRect().top;
+            const deadline = performance.now() + 3000;
+            const events = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+
+            let moved = false;
+            let still = 0;
+            let stopped = false;
+
+            const stop = () => {
+                stopped = true;
+                events.forEach(e => window.removeEventListener(e, stop, true));
+            };
+
+            events.forEach(e => window.addEventListener(e, stop, { capture: true, passive: true }));
+
+            const frame = () => {
+                if (stopped) return;
+
+                if (!element.isConnected || performance.now() > deadline || (moved && still > 15)) {
+                    stop();
+                    return;
+                }
+
+                const drift = element.getBoundingClientRect().top - top;
+
+                if (Math.abs(drift) >= 0.5) {
+                    scroller.scrollBy({ top: drift, behavior: 'instant' });
+                    moved = true;
+                    still = 0;
+                } else {
+                    still++;
+                }
+
+                requestAnimationFrame(frame);
+            };
+
+            requestAnimationFrame(frame);
+        }
+
+        // The nearest ancestor that scrolls vertically, or the document's own scroller when none does.
+        private static scrollParent(element: HTMLElement): Element {
+            let node = element.parentElement;
+
+            while (node && node !== document.body && node !== document.documentElement) {
+                const overflow = getComputedStyle(node).overflowY;
+
+                if ((overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay') && node.scrollHeight > node.clientHeight) {
+                    return node;
+                }
+
+                node = node.parentElement;
+            }
+
+            return document.scrollingElement ?? document.documentElement;
+        }
+
         // Answers with the indexes of the provided elements in the order they appear in the document, so a
         // component that cannot tell the order of the children it was given in markup - Blazor hands a child
         // its parameters again only when one of them has actually changed, so a child of nothing but
