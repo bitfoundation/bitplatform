@@ -121,31 +121,6 @@
     white-space: nowrap;
 }
 
-// The CSS variables example: a status bar painted like the header, a bottom bar like a tab bar, and a minimum
-// side inset that still grows with the device's. Set on the box around the shell here, which they inherit from; an
-// app sets them on :root.
-.themed-box {
-    --bit-AppShell-safe-area-top: 1.5rem;
-    --bit-AppShell-safe-area-bottom: 1.25rem;
-    --bit-AppShell-safe-area-start: max(env(safe-area-inset-left), 0.5rem);
-    --bit-AppShell-safe-area-end: max(env(safe-area-inset-right), 0.5rem);
-    --bit-AppShell-background: var(--bit-clr-bg-sec);
-    --bit-AppShell-inset-top-background: var(--bit-clr-pri);
-    --bit-AppShell-inset-bottom-background: var(--bit-clr-bg-ter);
-}
-
-// The env() insets are physical, so in a right-to-left shell the leading edge is the right one.
-.themed-box ::deep .bit-ash[dir="rtl"] {
-    --bit-AppShell-safe-area-start: max(env(safe-area-inset-right), 0.5rem);
-    --bit-AppShell-safe-area-end: max(env(safe-area-inset-left), 0.5rem);
-}
-
-.themed-head {
-    border-bottom: none;
-    color: var(--bit-clr-pri-text);
-    background-color: var(--bit-clr-pri);
-}
-
 // The cascading parameters example puts two shells side by side, one below the other on a narrow screen.
 .shell-pair {
     gap: 1rem;

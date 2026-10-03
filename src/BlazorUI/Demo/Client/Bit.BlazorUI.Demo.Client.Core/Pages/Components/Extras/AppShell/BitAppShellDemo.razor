@@ -369,30 +369,7 @@
                 <BitButton OnClick="RenameUser">Change the cascaded name</BitButton>
             </DemoExample>
 
-            <DemoExample Title="CSS variables" RazorCode="@example11RazorCode" Id="example11">
-                <div>
-                    The public <b>--bit-AppShell-*</b> variables inherit: set them on <i>:root</i> for the whole app, or on
-                    any element around a shell for that one - this example sets them on the box it sits in. Paint the top bar
-                    like the header so the status bar reads as part of it, the bottom one like a tab bar, or give an edge a
-                    minimum inset with <b>max()</b>.
-                </div>
-                <br /><br />
-                <div class="shell-box themed-box">
-                    <BitAppShell Id="themed-shell">
-                        <div class="page">
-                            <div class="page-head themed-head">Header</div>
-                            <div class="page-body">
-                                @foreach (var i in Enumerable.Range(1, 12))
-                                {
-                                    <div class="row">Row @i</div>
-                                }
-                            </div>
-                        </div>
-                    </BitAppShell>
-                </div>
-            </DemoExample>
-
-            <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
                 <div>
                     <b>BitParams</b> with a <b>BitAppShellParams</b> sets defaults for every shell under it; a shell's own value
                     wins (the second one keeps its bottom inset).
@@ -414,7 +391,7 @@
                 </BitParams>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
                 <div>
                     <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part: <b>Root</b>,
                     <b>Top</b>, <b>Center</b>, <b>Left</b>, <b>Main</b>, <b>Right</b> and <b>Bottom</b>.
@@ -432,7 +409,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
                 <div>
                     With <b>Dir</b> set to <b>Rtl</b> the shell lays out right to left, so the start bar (wider here) is on the
                     right. Left to the device, each side bar is still sized from the safe area of its own physical edge.

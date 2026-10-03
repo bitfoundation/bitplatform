@@ -339,47 +339,6 @@ private void RenameUser()
 }";
 
     private readonly string example11RazorCode = @"
-<style>
-    /* On :root for the whole app; on an element around the shell here - they inherit - so the example stays in its box. */
-    .themed-box {
-        --bit-AppShell-safe-area-top: 1.5rem;
-        --bit-AppShell-safe-area-bottom: 1.25rem;
-        /* A minimum side inset that still grows with the device's. */
-        --bit-AppShell-safe-area-start: max(env(safe-area-inset-left), 0.5rem);
-        --bit-AppShell-safe-area-end: max(env(safe-area-inset-right), 0.5rem);
-        --bit-AppShell-background: var(--bit-clr-bg-sec);
-        /* The status bar painted like the header below it, the home bar like a tab bar. */
-        --bit-AppShell-inset-top-background: var(--bit-clr-pri);
-        --bit-AppShell-inset-bottom-background: var(--bit-clr-bg-ter);
-    }
-
-    /* The env() insets are physical, so in a right-to-left shell the leading edge is the right one. */
-    .themed-box .bit-ash[dir=""rtl""] {
-        --bit-AppShell-safe-area-start: max(env(safe-area-inset-right), 0.5rem);
-        --bit-AppShell-safe-area-end: max(env(safe-area-inset-left), 0.5rem);
-    }
-
-    .themed-head {
-        color: var(--bit-clr-pri-text);
-        background-color: var(--bit-clr-pri);
-    }
-</style>
-
-<div class=""themed-box"">
-    <BitAppShell>
-        <div class=""page"">
-            <div class=""page-head themed-head"">Header</div>
-            <div class=""page-body"">
-                @foreach (var i in Enumerable.Range(1, 12))
-                {
-                    <div class=""row"">Row @i</div>
-                }
-            </div>
-        </div>
-    </BitAppShell>
-</div>";
-
-    private readonly string example12RazorCode = @"
 @* The bars are given a size around both shells, so the inset each one keeps can be seen on a desktop. *@
 <div style=""--bit-AppShell-safe-area-top:0.75rem;--bit-AppShell-safe-area-bottom:0.75rem;--bit-AppShell-inset-background:var(--bit-clr-pri)"">
     <BitParams Parameters=""appShellParams"">
@@ -392,7 +351,7 @@ private void RenameUser()
         </BitAppShell>
     </BitParams>
 </div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private readonly BitAppShellParams[] appShellParams =
 [
     new()
@@ -401,7 +360,7 @@ private readonly BitAppShellParams[] appShellParams =
     }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitAppShell Classes=""shellClasses"" Styles=""shellStyles"">
     <div class=""page-body"">
         @foreach (var i in Enumerable.Range(1, 12))
@@ -410,7 +369,7 @@ private readonly BitAppShellParams[] appShellParams =
         }
     </div>
 </BitAppShell>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private readonly BitAppShellClassStyles shellStyles = new()
 {
     Root = ""border-radius:0.5rem;overflow:hidden"",
@@ -424,7 +383,7 @@ private readonly BitAppShellClassStyles shellClasses = new()
     Main = ""styled-main"",
 };";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitAppShell Dir=""BitDir.Rtl"" Style=""@rtlInsets"">
     <div class=""page-body"">
         @foreach (var i in Enumerable.Range(1, 12))
@@ -433,7 +392,7 @@ private readonly BitAppShellClassStyles shellClasses = new()
         }
     </div>
 </BitAppShell>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 // Desktop browsers report no safe areas, so the shell is handed the ones a phone would report
 // (which the No*Inset flags still take back to zero), and the bars are painted to be seen.
 private const string deviceInsets = ""--bit-AppShell-safe-area-top:1.5rem;--bit-AppShell-safe-area-bottom:1.5rem;"" +
