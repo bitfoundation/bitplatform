@@ -89,6 +89,15 @@ public partial class BitFlagStylesheetTests
     }
 
     [TestMethod]
+    public void BitFlagShouldKeepTheThemeCornerOfARoundedFlagInProportionToIt()
+    {
+        // The surface corner of a preset is sized for cards - Material's is 12px - and would turn a 16px flag into a
+        // pill, so the default is capped by the size of the flag. A value of the page's own is taken as given.
+        StringAssert.Contains(RuleOf(ReadStylesheet(), ".bit-flg-rnd"),
+                              "--bit-flg-rad: var(--bit-Flag-radius, min(#{$shp-radius-surface}, calc(var(--bit-flg-siz) / 8)));");
+    }
+
+    [TestMethod]
     public void BitFlagShouldKeepTheFocusRingOffTheShadow()
     {
         // The box-shadow of the frame is its Shadow; a ring drawn with it would take the elevation away from a

@@ -483,9 +483,10 @@ public class BitFlagTests : BunitTestContext
         DataRow("Large", "24", "0.8x 1.2x 1.6x 2.4x 3.2x"),
         DataRow("Height:3rem", "48", "0.33x 0.5x 0.67x 1x 1.33x"),
         DataRow("Width:20px", "24", "0.8x 1.2x 1.6x 2.4x 3.2x"),
-        DataRow("Width:40px;Height:20px", "48", "0.4x 0.6x 0.8x 1.2x 1.6x"),
-        DataRow("Height:2rem;AspectRatio:3/2", "48", "0.33x 0.5x 0.67x 1x 1.33x"),
-        DataRow("Width:24px;AspectRatio:1/2", "48", "0.33x 0.5x 0.67x 1x 1.33x")]
+        // A frame of proportions of its own is cut to the flag unless a Fit places the image, as Contain does.
+        DataRow("Width:40px;Height:20px;Fit:Contain", "48", "0.4x 0.6x 0.8x 1.2x 1.6x"),
+        DataRow("Height:2rem;AspectRatio:3/2;Fit:Contain", "48", "0.33x 0.5x 0.67x 1x 1.33x"),
+        DataRow("Width:24px;AspectRatio:1/2;Fit:Contain", "48", "0.33x 0.5x 0.67x 1x 1.33x")]
     public void BitFlagShouldDescribeTheImageSetBySizeOfTheFlag(string sizing, string expectedSrcSize, string expectedDensities)
     {
         var component = RenderComponent<BitFlag>(parameters =>
@@ -503,6 +504,7 @@ public class BitFlagTests : BunitTestContext
                     case "Large": parameters.Add(p => p.Size, BitSize.Large); break;
                     case "Height": parameters.Add(p => p.Height, pair[1]); break;
                     case "Width": parameters.Add(p => p.Width, pair[1]); break;
+                    case "Fit": parameters.Add(p => p.Fit, Enum.Parse<BitImageFit>(pair[1])); break;
                     default: parameters.Add(p => p.AspectRatio, pair[1]); break;
                 }
             }
@@ -1800,14 +1802,14 @@ public class BitFlagTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow("AspectRatio"),
-        DataRow("WidthAndHeight"),
         DataRow("Src"),
-        DataRow("Emoji")]
+        DataRow("Emoji"),
+        DataRow("FitContain"),
+        DataRow("UnreadableRatio")]
     public void BitFlagShouldNotCutAFrameWhoseShapeIsNotTheFlags(string reason)
     {
-        // A ratio or both lengths are a shape the page asked for, a Src of the page's own is drawn exactly
-        // as given, and the emoji flag is no image at all.
+        // A Src of the page's own is drawn exactly as given, the emoji flag is no image at all, a Fit that
+        // is not Cover places the image the way it asks, and a ratio that cannot be read cannot be cut to.
         var component = RenderComponent<BitFlag>(parameters =>
         {
             parameters.Add(p => p.Iso2, "jp");
@@ -1815,17 +1817,118 @@ public class BitFlagTests : BunitTestContext
 
             switch (reason)
             {
-                case "AspectRatio": parameters.Add(p => p.AspectRatio, "3/2"); break;
-                case "WidthAndHeight":
-                    parameters.Add(p => p.Width, "4rem");
-                    parameters.Add(p => p.Height, "2rem");
-                    break;
                 case "Src": parameters.Add(p => p.Src, "/flags/jp.svg"); break;
-                default: parameters.Add(p => p.Emoji, true); break;
+                case "Emoji": parameters.Add(p => p.Emoji, true); break;
+                case "FitContain":
+                    parameters.Add(p => p.AspectRatio, "3/2");
+                    parameters.Add(p => p.Fit, BitImageFit.Contain);
+                    break;
+                default:
+                    parameters.Add(p => p.Width, "3rem");
+                    parameters.Add(p => p.Height, "50%");
+                    break;
             }
         });
 
         Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+    }
+
+    [TestMethod,
+        DataRow("AspectRatio:1", "--bit-flg-crp-x:2.5;--bit-flg-crp-y:2;--bit-flg-crp-w:11;--bit-flg-crp-h:11"),
+        DataRow("AspectRatio:3/2", "--bit-flg-crp-x:1;--bit-flg-crp-y:2.83;--bit-flg-crp-w:14;--bit-flg-crp-h:9.33"),
+        DataRow("AspectRatio:3/2;Fit:Cover", "--bit-flg-crp-x:1;--bit-flg-crp-y:2.83;--bit-flg-crp-w:14;--bit-flg-crp-h:9.33"),
+        DataRow("Width:4rem;Height:2rem", "--bit-flg-crp-x:1;--bit-flg-crp-y:4;--bit-flg-crp-w:14;--bit-flg-crp-h:7"),
+        DataRow("Width:48px;Height:2rem", "--bit-flg-crp-x:1;--bit-flg-crp-y:2.83;--bit-flg-crp-w:14;--bit-flg-crp-h:9.33"),
+        DataRow("Width:3em;Height:2em", "--bit-flg-crp-x:1;--bit-flg-crp-y:2.83;--bit-flg-crp-w:14;--bit-flg-crp-h:9.33"),
+        DataRow("Width:2rem;Height:2rem;Rounded", "--bit-flg-crp-x:2.5;--bit-flg-crp-y:2;--bit-flg-crp-w:11;--bit-flg-crp-h:11"),
+        // Both lengths win over a ratio, which the browser ignores once both are set.
+        DataRow("Width:4rem;Height:2rem;AspectRatio:1", "--bit-flg-crp-x:1;--bit-flg-crp-y:4;--bit-flg-crp-w:14;--bit-flg-crp-h:7")]
+    public void BitFlagShouldCoverAFrameOfItsOwnProportionsWithTheFlag(string sizing, string expected)
+    {
+        // The square image would cover such a frame with the empty space around the flag as well, so the
+        // frame is cut to the middle of the flag in its own proportions instead.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+
+            foreach (var part in sizing.Split(';'))
+            {
+                var pair = part.Split(':');
+
+                switch (pair[0])
+                {
+                    case "Rounded": parameters.Add(p => p.Rounded, true); break;
+                    case "Height": parameters.Add(p => p.Height, pair[1]); break;
+                    case "Width": parameters.Add(p => p.Width, pair[1]); break;
+                    case "Fit": parameters.Add(p => p.Fit, Enum.Parse<BitImageFit>(pair[1])); break;
+                    default: parameters.Add(p => p.AspectRatio, pair[1]); break;
+                }
+            }
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
+        StringAssert.Contains(root.GetAttribute("style"), expected);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldLeaveAnUnshapedSquareOfItsOwnLengthsUncut()
+    {
+        // Two equal lengths are the square the frame has without them, which shows the whole flag.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Width, "2rem");
+            parameters.Add(p => p.Height, "2rem");
+        });
+
+        Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldCutAFrameOfItsOwnProportionsToOneImageOfTheSet()
+    {
+        // The box differs from one size of the image to the next, so the browser is offered one image rather
+        // than a choice - the smallest whose cut covers the frame twice over, else the largest.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Height, "2rem");
+            parameters.Add(p => p.AspectRatio, "1");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual($"{AssetsFlags}JP-flat-64.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+        StringAssert.Contains(component.Find(".bit-flg").GetAttribute("style"),
+                              "--bit-flg-crp-x:12;--bit-flg-crp-y:12;--bit-flg-crp-w:40;--bit-flg-crp-h:40;--bit-flg-crp-s:64");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldFollowTheFitChangingTheCutAfterRender()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.AspectRatio, "1");
+        });
+
+        Assert.IsTrue(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.AspectRatio, "1");
+            parameters.Add(p => p.Fit, BitImageFit.Contain);
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-flg-crp"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-flg-crp"));
     }
 
     [TestMethod]

@@ -24,7 +24,9 @@ public partial class BitFlagDemo
 
 <BitFlag Name=""Curaçao"" />
 
-<BitFlag Iso2=""UK"" />";
+<BitFlag Iso2=""UK"" />
+
+<BitFlag Code=""+1"" />";
 
     private readonly string example3RazorCode = @"
 <BitFlag Rounded Height=""2rem"" Country=""BitCountries.Japan"" />
@@ -122,7 +124,11 @@ private const string flagCdnPattern = ""https://flagcdn.com/{iso2}.svg"";";
 
 <BitFlag Bordered Height=""2rem"" AspectRatio=""4/3"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />
 
-<BitFlag Bordered Height=""2rem"" Fit=""BitImageFit.Contain"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />";
+<BitFlag Bordered Height=""2rem"" Fit=""BitImageFit.Contain"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />
+
+<BitFlag Bordered Height=""2rem"" AspectRatio=""1"" Country=""BitCountries.Brazil"" />
+<BitFlag Rounded Height=""2rem"" AspectRatio=""1"" ImageSet=""BitFlagImageSet.Shiny"" Country=""BitCountries.Brazil"" />
+<BitFlag Bordered Height=""2rem"" AspectRatio=""2"" Country=""BitCountries.Brazil"" />";
 
     private readonly string example9CsharpCode = @"
 // A 3:2 vector image, the shape the flag itself is drawn in.

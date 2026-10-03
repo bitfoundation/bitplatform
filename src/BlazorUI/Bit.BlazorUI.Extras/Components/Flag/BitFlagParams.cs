@@ -214,7 +214,9 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
         {
             bitFlag.Fit = Fit.Value;
 
+            // Whether the frame is cut to the flag, which is written into its style, follows the fit too.
             bitFlag.ClassBuilder.Reset();
+            bitFlag.StyleBuilder.Reset();
         }
 
         if (Grayscale.HasValue && bitFlag.HasNotBeenSet(nameof(Grayscale)) && bitFlag.Grayscale != Grayscale.Value)

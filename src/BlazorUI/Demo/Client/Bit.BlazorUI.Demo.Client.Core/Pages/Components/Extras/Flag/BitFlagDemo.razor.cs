@@ -16,7 +16,7 @@ public partial class BitFlagDemo
             Name = "AspectRatio",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The aspect ratio of the frame, as any CSS aspect-ratio value (e.g. \"4/3\"). The height stays and the width follows - the other way round where only a Width is given.",
+            Description = "The aspect ratio of the frame, as any CSS aspect-ratio value (e.g. \"4/3\"). The height stays and the width follows - the other way round where only a Width is given. A packaged or ImageSet flag is cropped to fill it (\"1\" draws a square flag) unless a Fit other than Cover is set.",
         },
         new()
         {
@@ -60,7 +60,7 @@ public partial class BitFlagDemo
             Name = "Code",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The dialing code of the country, read like a phone number (\"+31\", \"0031\", \"31\"). Codes are shared, and the first country of BitCountries.All carrying one wins.",
+            Description = "The dialing code of the country, read like a phone number (\"+31\", \"0031\", \"31\"). A shared code resolves to the country owning it (\"1\" is the United States), so prefer an ISO code where that matters.",
         },
         new()
         {
@@ -90,7 +90,7 @@ public partial class BitFlagDemo
             Name = "Fit",
             Type = "BitImageFit?",
             DefaultValue = "null",
-            Description = "How the image fits a frame of another shape (a Src, SrcPattern or AspectRatio). Unset, it covers the frame and is cropped.",
+            Description = "How the image fits a frame of another shape (a Src, SrcPattern or AspectRatio). Unset, it covers the frame and is cropped - a packaged or ImageSet flag to the flag inside its image.",
             LinkType = LinkType.Link,
             Href = "#image-fit-enum",
         },
@@ -186,7 +186,7 @@ public partial class BitFlagDemo
             Name = "Rounded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Rounds the corners of the flag. Circular wins over it where both are set.",
+            Description = "Rounds the corners of the flag with the theme's surface radius, kept in proportion to the flag's size (--bit-Flag-radius overrides it). Circular wins over it where both are set.",
         },
         new()
         {
@@ -239,7 +239,7 @@ public partial class BitFlagDemo
             Name = "Width",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The width of the flag, as any CSS length. A Height alone usually sets both. It wins over Size.",
+            Description = "The width of the flag, as any CSS length. A Height alone usually sets both; with a Height that is not a square, a packaged or ImageSet flag is cropped to fill the frame. It wins over Size.",
         },
     ];
 
@@ -270,8 +270,8 @@ public partial class BitFlagDemo
         new()
         {
             Name = "--bit-Flag-radius",
-            DefaultValue = "--bit-shp-radius-surface",
-            Description = "Corner radius of a Rounded flag.",
+            DefaultValue = "min(--bit-shp-radius-surface, 1/8 of the size)",
+            Description = "Corner radius of a Rounded flag. The default is capped so a theme's large card corner does not turn a small flag into a pill; a value set here is taken as given.",
         },
         new()
         {
@@ -360,7 +360,7 @@ public partial class BitFlagDemo
                 {
                     Name = "FindByCode(string? code)",
                     Type = "BitCountry?",
-                    Description = "The first country carrying the dialing code, read the way a telephone number is written: \"+31\", \"00 31\" and \"31\" all reach the Netherlands."
+                    Description = "The country carrying the dialing code, read the way a telephone number is written: \"+31\", \"00 31\" and \"31\" all reach the Netherlands. A shared code resolves to the country with the highest Priority (\"1\" is the United States, \"7\" Russia), else the first alphabetically."
                 },
                 new()
                 {
@@ -386,7 +386,7 @@ public partial class BitFlagDemo
         {
             Id = "country",
             Title = "BitCountry",
-            Description = "Represents the basic information of a specific country. BitCountries holds one shared instance per country, and its Find methods resolve any of the four values below back to it.",
+            Description = "Represents the basic information of a specific country. BitCountries holds one shared instance per country - build a new one rather than editing it - and its Find methods resolve its Name, Code, Iso2 or Iso3 back to it.",
             Parameters =
             [
                 new()
@@ -412,6 +412,32 @@ public partial class BitFlagDemo
                     Name = "Iso3",
                     Type = "string",
                     Description = "The ISO 3166-1 alpha-3 code of the country."
+                },
+                new()
+                {
+                    Name = "Priority",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The tie-breaker among the countries sharing a dialing code; the higher one wins (the United States over Canada for \"1\")."
+                },
+                new()
+                {
+                    Name = "ExtraCodes",
+                    Type = "string[]?",
+                    DefaultValue = "null",
+                    Description = "The other dialing codes the country answers to beyond Code (the Dominican Republic's \"1-829\" and \"1-849\" beside its \"1-809\")."
+                },
+                new()
+                {
+                    Name = "DigitsCode",
+                    Type = "string",
+                    Description = "The Code reduced to its digits, as it appears in an E.164 number."
+                },
+                new()
+                {
+                    Name = "DigitsCodes",
+                    Type = "string[]",
+                    Description = "Every dialing code of the country - Code first, then ExtraCodes - reduced to its digits."
                 },
                 new()
                 {

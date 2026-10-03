@@ -3,7 +3,7 @@
 // Public CSS variables, read here with a fallback and never declared, so they inherit: set one on :root to
 // restyle every flag, on an ancestor for every flag inside it, or on the Style of a single flag:
 //   --bit-Flag-size                 size of a flag with no Size, Width or Height     (default: $siz-icon-md)
-//   --bit-Flag-radius               corner radius of a Rounded flag                  (default: $shp-radius-surface)
+//   --bit-Flag-radius               corner radius of a Rounded flag                  (default: $shp-radius-surface, at most 1/8 of the size)
 //   --bit-Flag-border-width         border width of a Bordered flag                  (default: $shp-border-width)
 //   --bit-Flag-border-color         border color of a Bordered flag                  (default: $clr-brd-sec)
 //   --bit-Flag-shadow               elevation of a Shadow flag                       (default: $box-shadow-card)
@@ -231,8 +231,12 @@
     object-fit: scale-down;
 }
 
+// The theme's surface corner is sized for cards, and a preset that rounds them generously - 12px for Material,
+// 10px for Cupertino - would turn a 16px flag into a pill. So the default is capped at an eighth of the flag's
+// size, which keeps the corner in proportion to the flag at every size while a theme with smaller corners than
+// that keeps its own. A --bit-Flag-radius of the page's own is taken as given.
 .bit-flg-rnd {
-    --bit-flg-rad: var(--bit-Flag-radius, #{$shp-radius-surface});
+    --bit-flg-rad: var(--bit-Flag-radius, min(#{$shp-radius-surface}, calc(var(--bit-flg-siz) / 8)));
     border-radius: var(--bit-flg-rad);
 }
 

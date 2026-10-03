@@ -60,9 +60,8 @@
                 <div class="example-desc">
                     <b>Iso2</b>, <b>Iso3</b>, <b>Code</b> (dialing) and <b>Name</b> take the country as the page's
                     data has it; the first that resolves wins. All are case insensitive, a dialing code is read like a
-                    phone number ("+31", "0031", "31"), and <b>Name</b> also answers to everyday names, abbreviations
-                    and other spellings. Dialing codes are shared (Canada and the US are both "1"), so prefer an ISO
-                    code where that matters.
+                    phone number, and <b>Name</b> also answers to everyday names and other spellings. A shared dialing
+                    code resolves to the country owning it, so prefer an ISO code where that matters.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -74,6 +73,7 @@
                     <div><BitFlag Name="Czechia" /> <span>Name="Czechia" - the current name</span></div>
                     <div><BitFlag Name="Curaçao" /> <span>Name="Curaçao" - accents ignored</span></div>
                     <div><BitFlag Iso2="UK" /> <span>Iso2="UK" - reserved by ISO for the United Kingdom ("GB")</span></div>
+                    <div><BitFlag Code="+1" /> <span>Code="+1" - shared with Canada, owned by the United States</span></div>
                 </div>
             </DemoExample>
 
@@ -204,10 +204,10 @@
 
             <DemoExample Title="Aspect ratio & fit" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
                 <div class="example-desc">
-                    The frame is square. <b>AspectRatio</b> gives it the shape of a non-square image - 4:3 and 3:2 are
-                    what vector sets ship - keeping the height (or the <b>Width</b>, where that is the one given).
-                    <b>Fit</b> places the image in a frame of another shape: it covers and crops by default;
-                    <b>Contain</b> shows the whole flag.
+                    The frame is square. <b>AspectRatio</b> gives it another shape - 4:3 and 3:2 are what vector sets
+                    ship - keeping the height. <b>Fit</b> places the image in it: it covers and crops by default;
+                    <b>Contain</b> shows the whole image. A packaged or <b>ImageSet</b> flag covers the frame with the
+                    flag itself, so <b>AspectRatio</b>="1" draws a square flag.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -215,6 +215,12 @@
                     <div><BitFlag Bordered Height="2rem" AspectRatio="3/2" Src="@netherlandsSvg" Country="BitCountries.Netherlands" /> <span>AspectRatio="3/2"</span></div>
                     <div><BitFlag Bordered Height="2rem" AspectRatio="4/3" Src="@netherlandsSvg" Country="BitCountries.Netherlands" /> <span>AspectRatio="4/3"</span></div>
                     <div><BitFlag Bordered Height="2rem" Fit="BitImageFit.Contain" Src="@netherlandsSvg" Country="BitCountries.Netherlands" /> <span>Fit="BitImageFit.Contain"</span></div>
+                    <div>
+                        <BitFlag Bordered Height="2rem" AspectRatio="1" Country="BitCountries.Brazil" />
+                        <BitFlag Rounded Height="2rem" AspectRatio="1" ImageSet="BitFlagImageSet.Shiny" Country="BitCountries.Brazil" />
+                        <BitFlag Bordered Height="2rem" AspectRatio="2" Country="BitCountries.Brazil" />
+                        <span>Packaged and ImageSet flags, cropped to the ratio</span>
+                    </div>
                 </div>
             </DemoExample>
 

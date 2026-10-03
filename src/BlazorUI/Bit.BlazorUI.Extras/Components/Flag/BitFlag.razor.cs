@@ -181,12 +181,19 @@ public partial class BitFlag : BitComponentBase
     /// image.
     /// </summary>
     /// <remarks>
-    /// Only a frame whose proportions are left to the flag is: one given a shape, and neither a ratio
-    /// nor both lengths of its own, which keep the shape they were asked for.
+    /// A frame whose proportions are left to the flag is cut to it once it is given a shape. A frame of
+    /// proportions of its own - an <see cref="AspectRatio"/>, or a <see cref="Width"/> and a
+    /// <see cref="Height"/> - is cut to the middle of the flag in those proportions, so that it is covered
+    /// with flag rather than with the empty space around it, unless a <see cref="Fit"/> asks for the
+    /// picture to be placed some other way. A square of both lengths of the page's own is the shape the
+    /// frame has without them, so it is only cut once it is given a shape or a ratio as well.
     /// </remarks>
-    private bool _cutsToFlag => (Rounded || Circular || Bordered || Shadow)
-                                && AspectRatio.HasValue() is false
-                                && (Width.HasValue() && Height.HasValue()) is false;
+    private bool _cutsToFlag;
+
+    /// <summary>
+    /// The proportions a frame cut to the flag is cut in, which is null where they are the flag's own.
+    /// </summary>
+    private double? _cutRatio;
 
     /// <summary>
     /// Whether the frame is cut to the flag drawn inside the image rather than to the image.
@@ -280,6 +287,11 @@ public partial class BitFlag : BitComponentBase
     /// that stays and the width follows from the ratio, or the other way round where a
     /// <see cref="Width"/> is what was given. It pairs with <see cref="Fit"/>, which decides what the
     /// image does inside a frame that is not its own shape.
+    /// <br />
+    /// A packaged flag, or one of an <see cref="ImageSet"/>, fills the frame instead: it is cropped to the
+    /// middle of the flag in the proportions of the frame - "1" draws a square flag - rather than the
+    /// square image around it, empty edges included, being scaled to cover it. A <see cref="Fit"/> other
+    /// than Cover places the image as it asks instead.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? AspectRatio { get; set; }
@@ -319,8 +331,9 @@ public partial class BitFlag : BitComponentBase
     /// <remarks>
     /// The code is read the way a telephone number is written rather than as an exact key: "+31",
     /// "00 31" and "31" all reach the Netherlands. Dialing codes are not unique - Canada and the
-    /// United States both carry "1" - and the first country of <see cref="BitCountries.All"/> that
-    /// carries the code wins, so where the difference matters name the country by its ISO code.
+    /// United States both carry "1" - and the country that owns the code in practice wins (see
+    /// <see cref="BitCountries.FindByCode"/>), so where the difference matters name the country by its
+    /// ISO code.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? Code { get; set; }
@@ -377,10 +390,12 @@ public partial class BitFlag : BitComponentBase
     /// <see cref="Src"/> of the page's own or an <see cref="AspectRatio"/> makes possible: the packaged
     /// images are square and so is the frame they are drawn in. Left unset, the image covers the frame
     /// and whatever falls outside it is cropped, which is what keeps a circular or rounded flag full
-    /// of flag rather than of empty space; <see cref="BitImageFit.Contain"/> is the other answer, and
-    /// fits the whole flag inside the frame instead.
+    /// of flag rather than of empty space - and a packaged flag, or one of an <see cref="ImageSet"/>, in
+    /// a frame of proportions of its own is cropped to the flag inside its image rather than to the
+    /// image. <see cref="BitImageFit.Contain"/> is the other answer, and fits the whole image inside the
+    /// frame instead.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public BitImageFit? Fit { get; set; }
 
     /// <summary>
@@ -442,7 +457,7 @@ public partial class BitFlag : BitComponentBase
     /// <see cref="Size"/>
     /// otherwise. A flag sized in any other unit is drawn from the 64 pixel image, and one sized by a
     /// style or a class of the page's own is read at its Size - so give such a flag its Width or Height.
-    /// A frame cut to the flag - rounded, circular, bordered or shadowed - is drawn from the one image
+    /// A frame cut to the flag - shaped, or given proportions of its own - is drawn from the one image
     /// whose flag covers it twice over, since the box it is cut to differs from one size to the next.
     /// <br />
     /// It is also cascaded: a <c>CascadingValue</c> of a BitFlagImageSet sets it for every flag inside,
@@ -463,7 +478,7 @@ public partial class BitFlag : BitComponentBase
     /// sized by a style or a class of the page's own - which the component cannot read - actually needs.
     /// The image is still scaled to the frame, so a small one drawn large is blurred.
     /// <br />
-    /// A frame cut to the flag - rounded, circular, bordered or shadowed - is cut to the box the flag is
+    /// A frame cut to the flag - shaped, or given proportions of its own - is cut to the box the flag is
     /// drawn in inside this image. It only applies to an ImageSet: the packaged image of the Extras
     /// package is 16 pixels and nothing else, so a flag without an ImageSet draws that one whatever this
     /// says.
@@ -555,7 +570,10 @@ public partial class BitFlag : BitComponentBase
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
-    /// <see cref="Circular"/> wins over it where both are set.
+    /// The corner is the surface radius of the theme, capped at an eighth of the size of the flag: a preset
+    /// that rounds its cards generously would otherwise turn a small flag into a pill. The
+    /// <c>--bit-Flag-radius</c> CSS variable replaces it, uncapped. <see cref="Circular"/> wins over it where
+    /// both are set.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Rounded { get; set; }
@@ -641,7 +659,9 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The flag images are square, so setting only a <see cref="Height"/> is usually enough - it sets
-    /// the width as well. Both of them win over <see cref="Size"/>.
+    /// the width as well. Both of them win over <see cref="Size"/>. A Width and a Height that are not a
+    /// square give the frame proportions of its own, which a packaged flag, or one of an
+    /// <see cref="ImageSet"/>, fills by being cropped to them the way an <see cref="AspectRatio"/> crops it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Width { get; set; }
@@ -765,9 +785,9 @@ public partial class BitFlag : BitComponentBase
             return size == PackagedFlagSize ? style : $"{style};--bit-flg-crp-s:{size}";
         });
 
-        // The same freeing of the height as for a ratio: a width alone leaves the height to the
-        // proportions of the flag.
-        StyleBuilder.Register(() => _cropped && Width.HasValue() && Height.HasValue() is false
+        // The same freeing of the height as for a ratio, which has already freed it where there is one: a
+        // width alone leaves the height to the proportions of the flag.
+        StyleBuilder.Register(() => _cropped && AspectRatio.HasValue() is false && Width.HasValue() && Height.HasValue() is false
                                     ? "height:auto"
                                     : string.Empty);
     }
@@ -778,6 +798,8 @@ public partial class BitFlag : BitComponentBase
         // The cascade is applied before anything reads the parameters it may fill in: the image, the shape and the
         // size are all worked out right below.
         CascadingParameters?.UpdateParameters(this);
+
+        (_cutsToFlag, _cutRatio) = GetCut();
 
         _country = ResolveCountry();
 
@@ -937,11 +959,56 @@ public partial class BitFlag : BitComponentBase
     {
         var box = GetFlagContentBox(set, size, iso2);
 
-        if (Circular is false) return box;
+        // A frame of proportions of its own takes the largest box of them out of the middle of the flag,
+        // the way a picture covers a frame - and a circle takes a square.
+        var ratio = _cutRatio ?? (Circular ? 1 : (double?)null);
 
-        var side = Math.Min(box.W, box.H);
+        if (ratio is not { } r) return box;
 
-        return new(box.X + (box.W - side) / 2, box.Y + (box.H - side) / 2, side, side);
+        if (box.W / box.H > r)
+        {
+            var width = box.H * r;
+
+            return new(box.X + (box.W - width) / 2, box.Y, width, box.H);
+        }
+
+        var height = box.W / r;
+
+        return new(box.X, box.Y + (box.H - height) / 2, box.W, height);
+    }
+
+    /// <summary>
+    /// Whether a frame drawing an image with a flag inside it is cut to that flag, and the proportions it
+    /// is cut in where they are not the flag's own.
+    /// </summary>
+    private (bool Cuts, double? Ratio) GetCut()
+    {
+        var shaped = Rounded || Circular || Bordered || Shadow;
+
+        // A picture asked to be contained, stretched or left at its own size is placed the way it was
+        // asked for, which a frame covered with flag is not.
+        var covers = Fit is null or BitImageFit.Cover or BitImageFit.CenterCover;
+
+        // Both lengths are the proportions of the frame whatever else is said - the browser ignores an
+        // aspect-ratio once there is nothing left for it to work out - and a square of them is the shape the
+        // frame has without them, which is only cut once something asks for a shape or a ratio as well.
+        if (Width.HasValue() && Height.HasValue())
+        {
+            var ratio = ParseLengthRatio(Width, Height);
+
+            if (ratio is not { } r || covers is false) return (false, null);
+
+            return shaped || AspectRatio.HasValue() || Math.Abs(r - 1) > 0.001 ? (true, r) : (false, null);
+        }
+
+        if (AspectRatio.HasValue())
+        {
+            var ratio = ParseAspectRatio(AspectRatio);
+
+            return ratio.HasValue && covers ? (true, ratio) : (false, null);
+        }
+
+        return (shaped, null);
     }
 
     /// <summary>
@@ -1087,6 +1154,44 @@ public partial class BitFlag : BitComponentBase
         return double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && number > 0
             ? number * pixels
             : null;
+    }
+
+    /// <summary>
+    /// The width over the height two CSS lengths stand for: lengths in px or rem, or two lengths written
+    /// in the same unit. A percentage is a share of a different length for each of them, so it is null,
+    /// as is anything else.
+    /// </summary>
+    private static double? ParseLengthRatio(string? width, string? height)
+    {
+        if (ParseCssPixels(width) is { } widthPixels && ParseCssPixels(height) is { } heightPixels)
+        {
+            return widthPixels / heightPixels;
+        }
+
+        var (widthValue, widthUnit) = SplitCssLength(width);
+        var (heightValue, heightUnit) = SplitCssLength(height);
+
+        if (widthValue is null || heightValue is null || widthUnit == "%") return null;
+
+        return string.Equals(widthUnit, heightUnit, StringComparison.OrdinalIgnoreCase) ? widthValue / heightValue : null;
+    }
+
+    /// <summary>
+    /// The positive number and the unit a CSS length is written as, or a null number where it is not one.
+    /// </summary>
+    private static (double? Value, string Unit) SplitCssLength(string? length)
+    {
+        var value = length?.Trim();
+
+        if (value.HasValue() is false) return (null, string.Empty);
+
+        var unitStart = value!.Length;
+
+        while (unitStart > 0 && (char.IsLetter(value[unitStart - 1]) || value[unitStart - 1] == '%')) unitStart--;
+
+        return double.TryParse(value[..unitStart], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && number > 0
+            ? (number, value[unitStart..])
+            : (null, string.Empty);
     }
 
     /// <summary>
