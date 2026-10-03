@@ -690,7 +690,7 @@
             </div>
             <br />
             <BitDataGrid Items="@localizedProducts" Height="420px"
-                         Direction="BitDir.Rtl" Strings="@persianStrings"
+                         Dir="BitDir.Rtl" Strings="@persianStrings"
                          Filterable="true" Pageable="true" PageSize="8">
                 <BitDataGridColumn Property="p => p.Id" Title="شناسه" Width="90px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
                 <BitDataGridColumn Property="p => p.Name" Title="نام" Width="220px" />
@@ -1097,11 +1097,11 @@
 
         <DemoExample Title="RTL" RazorCode="@example39RazorCode" CsharpCode="@example39CsharpCode" Id="example39" PreventRenderForMcpClient>
             <div>
-                Render the grid in a right-to-left layout by setting the <code>Direction</code> parameter to <code>BitDir.Rtl</code>.
+                Render the grid in a right-to-left layout by setting the <code>Dir</code> parameter to <code>BitDir.Rtl</code>. Without it the grid follows a <code>BitDir</code> cascaded from an ancestor, or else the direction of the page it is placed in.
             </div>
             <br />
             <BitDataGrid Items="@rtlProducts" Height="420px"
-                         Direction="BitDir.Rtl"
+                         Dir="BitDir.Rtl"
                          Sortable="true" Pageable="true" PageSize="8">
                 <BitDataGridColumn Property="p => p.Id" Title="شناسه" Width="90px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
                 <BitDataGridColumn Property="p => p.Name" Title="نام" Width="220px" />

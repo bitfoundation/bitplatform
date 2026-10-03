@@ -116,21 +116,10 @@ document.addEventListener('contextmenu', (e: MouseEvent) => {
 // (iOS keyboard show/hide, pinch-zoom). window 'resize' doesn't fire for these on iOS, so
 // listen to visualViewport directly. Reposition is a no-op when no callout is open.
 if (window.visualViewport) {
-    let settleTimer: ReturnType<typeof setTimeout> | null = null;
-    const onVisualViewportChange = BitBlazorUI.Utils.throttle(() => {
-        // Track the viewport live while it changes (throttled)...
-        BitBlazorUI.Callouts.reposition();
-
-        // ...and guarantee one final reposition after it settles. The keyboard animates the page
-        // scroll/visual-viewport over a few hundred ms; a leading-edge throttle can drop the last
-        // frame, leaving the callout anchored to a mid-scroll position of its component. Re-running
-        // once the burst of events stops lands it on the final, settled geometry.
-        if (settleTimer != null) clearTimeout(settleTimer);
-        settleTimer = setTimeout(() => {
-            settleTimer = null;
-            BitBlazorUI.Callouts.reposition();
-        }, 100);
-    }, 16);
+    // Track the viewport live while it changes, throttled on both edges: the keyboard animates the page
+    // scroll/visual-viewport over a few hundred ms, and a throttle that dropped the last frame would leave the
+    // callout anchored to a mid-scroll position of its component rather than to the final, settled geometry.
+    const onVisualViewportChange = BitBlazorUI.Utils.throttle(() => BitBlazorUI.Callouts.reposition(), 16, { trailing: true });
     window.visualViewport.addEventListener('resize', onVisualViewportChange);
     window.visualViewport.addEventListener('scroll', onVisualViewportChange);
 }

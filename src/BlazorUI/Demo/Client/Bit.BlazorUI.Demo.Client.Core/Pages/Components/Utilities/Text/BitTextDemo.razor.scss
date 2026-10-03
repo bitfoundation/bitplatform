@@ -21,34 +21,8 @@
     }
 }
 
-// A caption over the run of text it names. The width that the truncation, the clamp and the alignment all need
-// before there is anything to see is on the text itself rather than here, so that the source of the example is
-// what a reader can copy out and get the same result from.
-.demo-group {
-    gap: 0.25rem;
-    display: flex;
-    max-width: 100%;
-    flex-flow: column;
-    align-items: flex-start;
-}
-
-// The two columns of figures sit side by side so that the ragged edge of the proportional ones and the aligned
-// edge of the tabular ones can be compared at a glance. The container is a column, so the row is one of its own.
-.demo-row {
-    gap: 2rem;
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.demo-figures {
-    gap: 0.25rem;
-    display: flex;
-    flex-flow: column;
-}
-
-// A visible box around a group, so that a bottom margin and a class applied through a parameter can be seen.
-.demo-boxed,
-::deep .demo-boxed {
+// The class the Style & Class example applies through its Class parameter and through a splatted attribute.
+::deep .custom-class {
     padding: 0.5rem;
     border: 1px solid gray;
 }

@@ -129,9 +129,7 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
     /// <summary>Signs the current user out through the header persona menu and its confirmation dialog.</summary>
     private async Task SignOut(IPage page)
     {
-        // Open the user menu in the header (clicking its persona) then click its "Sign out" action.
-        await page.Locator(".bit-prs.persona").First.ClickAsync();
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
+        await AppMenuUtils.ClickItem(page, AppStrings.SignOut);
 
         // Confirm in the dialog (its OK button is also labelled "Sign out"; the menu one is gone once the dialog is up).
         await Expect(page.GetByText(AppStrings.SignOutPrompt)).ToBeVisibleAsync();

@@ -476,7 +476,7 @@ public static class BlazorUIMarkdown
         // BitComponentBase half of them and nothing of what an input base adds.
         var missing = component.ComponentType is null ? [] : component.ComponentType
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.IsDefined(typeof(ParameterAttribute)) && carried.Contains(p.Name) is false)
+            .Where(p => p.IsDefined(typeof(ParameterAttribute)) && p.IsDefined(typeof(ObsoleteAttribute)) is false && carried.Contains(p.Name) is false)
             .Select(p => p.Name)
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)

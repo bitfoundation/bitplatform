@@ -363,6 +363,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitLabel", "BitLabelParams")]
     [DataRow("BitPullToRefresh", "BitPullToRefreshParams")]
     [DataRow("BitLink", "BitLinkParams")]
+    [DataRow("BitSticky", "BitStickyParams")]
     [DataRow("BitImage", "BitImageParams")]
     [DataRow("BitShimmer", "BitShimmerParams")]
     [DataRow("BitTooltip", "BitTooltipParams")]
@@ -371,6 +372,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitSeparator", "BitSeparatorParams")]
     [DataRow("BitOverlay", "BitOverlayParams")]
     [DataRow("BitAccordionList", "BitAccordionListParams")]
+    [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
