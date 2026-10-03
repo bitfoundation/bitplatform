@@ -161,7 +161,8 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 
 **Key capabilities**:
 - Turns any reference into a written spec - color by role, typography, shape, elevation, density, motion, states and imagery, each value with its source
-- Puts every value into one `Styles/_brand.scss` that re-values the app's pinned light and dark presets in place, with the palette derived the way bit BlazorUI builds its own
+- Settles the base preset first: the one the project was created with, or another bit BlazorUI preset that sits closer to the reference
+- Puts every value into one `Styles/_brand.scss` that re-values that preset's light and dark themes in place, with the palette derived the way bit BlazorUI builds its own
 - Decides every interactive state (selected, hovered, focused) and what the browser paints: autofill, text selection and native widgets
 - Carries the brand into the native chrome color, the accent picker, logo, identity art, loaders, app icons and emails
 - Verifies a state matrix - focus, hover, selected, disabled, invalid, overlays, RTL, phone and tablet, both schemes - with measured contrast, a keyboard focus walk and a token ledger, then runs the tests
