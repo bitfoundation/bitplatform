@@ -63,8 +63,6 @@
         <EmbeddedResource Include="appsettings*.json" />
     </ItemGroup>
 
-    <!-- Before the scoped css is resolved, which looks for these files among the Content items: the files are generated,
-         so a fresh clone has none of them when the project is evaluated. -->
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="BuildCssFiles" />
         <ItemGroup>

@@ -34,24 +34,16 @@
 
     <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildCss" />
 
-    <!-- The generated files are static web assets, which ResolveProjectStaticWebAssets finds among the Content items:
-         they are generated before it runs, and added to Content because the project was evaluated before they existed. -->
     <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <ItemGroup>
             <Content Include="wwwroot\styles\*.css*" Exclude="@(Content);@(None)" />
         </ItemGroup>
     </Target>
 
-    <!-- Runs BeforeBuildTasks through the MSBuild task with TargetFramework removed, so that the build of each target
-         framework asks for the same project configuration, which MSBuild builds once and hands to the rest. A project that
-         references this one starts those builds itself, in parallel, so they would otherwise all run npm, tsc and sass on
-         the same files at the same time. -->
     <Target Name="BeforeBuildTasksOnce">
         <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BeforeBuildTasks" RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
     </Target>
 
-    <!-- A build of every target framework is that same configuration: it runs BeforeBuildTasks before it starts the build
-         of each target framework, whose requests above then find the result ready. -->
     <Target Name="BeforeBuildTasksOnCrossTargeting" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="BeforeBuildTasks" Condition=" '$(IsCrossTargetingBuild)' == 'true' AND '$(DesignTimeBuild)' != 'true' " />
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">

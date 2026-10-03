@@ -172,8 +172,6 @@
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
-    <!-- Before the scoped css is resolved, which looks for the compiled .razor.css files among the Content items: the files
-         are generated, so a fresh clone has none of them when the project is evaluated. -->
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
         <Error Text="Version '$(Version)' cannot be represented as an android versionCode. versionCode is derived from major, minor and patch only, so a revision ('1.0.0.4') or a pre-release suffix ('1.0.0-rc1') is DISCARDED - '1.0.0.6' and '1.0.0.7' would both ship as 1000000, and the store rejects the second upload or, worse, accepts an update no device receives. Minor and patch each get three digits, so neither may pass 999 - '1.0.1000' and '1.1.0' would collide the same way. Pass major.minor or major.minor.patch with each part under 1000, e.g. 1.0.0 or 1.0.1."

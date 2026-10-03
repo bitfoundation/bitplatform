@@ -76,8 +76,6 @@
         <TypeScriptFiles Include="**\*.ts" />
     </ItemGroup>
 
-    <!-- Before the static web assets and the scoped css are resolved, which look for these files among the Content items:
-         the files are generated, so a fresh clone has none of them when the project is evaluated. -->
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
