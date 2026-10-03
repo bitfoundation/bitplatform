@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -32,6 +33,13 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     private ElementReference _rootRef;
     private Exception? _capturedException;
     private BitErrorBoundaryContext? _context;
+    private readonly string _uniqueId = $"BitErrorBoundary-{Guid.NewGuid():N}";
+
+    // The parameters the markup set on the latest render, and the value each parameter the params object supplies
+    // held before it first did. A value written by the params object is not one the markup passes again on the next
+    // render, so Blazor never overwrites it: once the params object stops supplying it, it is put back from here.
+    private readonly HashSet<string> _setByMarkup = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, object?>? _cascadeOriginals;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -45,6 +53,16 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// Gets or sets the component direction to be cascaded from an ancestor component.
     /// </summary>
     [CascadingParameter] protected BitDir? CascadingDir { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the error boundary.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple error boundaries
+    /// through the <see cref="BitParams"/> component. A parameter the boundary's own markup sets always wins.
+    /// </remarks>
+    [CascadingParameter(Name = BitErrorBoundaryParams.ParamName)]
+    public BitErrorBoundaryParams? CascadingParameters { get; set; }
 
 
 
@@ -151,6 +169,18 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// row layout and is reached by <c>Classes.Footer</c> and <c>Styles.Footer</c> exactly as they are.
     /// </remarks>
     [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// The heading level (1 to 6) of the title of the default error UI.
+    /// <br />
+    /// The default value is <strong>3</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A screen reader lists the page by its headings, so the title takes the level that fits the outline it lands
+    /// in - 1 for a boundary standing in for a whole page, deeper for one around a widget - while its look stays
+    /// the same. A value out of the range is clamped into it.
+    /// </remarks>
+    [Parameter] public int? HeadingLevel { get; set; }
 
     /// <summary>
     /// Prevents rendering the Home button of the default error UI.
@@ -310,7 +340,9 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     [Parameter] public bool ShowCopyButton { get; set; }
 
     /// <summary>
-    /// Whether the actual exception information should be shown or not.
+    /// Renders the full text of the caught exception in the default error UI.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
     /// This renders the exception's full text, stack trace and all. It is what a developer needs to see
@@ -330,10 +362,13 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     [Parameter] public BitErrorBoundaryClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The header title of the boundary.
+    /// The title of the default error UI, which also names it for assistive technologies.
     /// <br />
     /// The default value is <strong>"Oops, Something went wrong..."</strong>.
     /// </summary>
+    /// <remarks>
+    /// An empty value drops the heading altogether, and the error UI's name with it.
+    /// </remarks>
     [Parameter] public string? Title { get; set; }
 
 
@@ -421,6 +456,20 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
 
 
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // Whatever the markup passes arrives on every render of the parent, so what is in this view is exactly what
+        // the markup sets - which is what a params object must never write over.
+        _setByMarkup.Clear();
+
+        foreach (var parameter in parameters)
+        {
+            _setByMarkup.Add(parameter.Name);
+        }
+
+        return base.SetParametersAsync(parameters);
+    }
+
     protected override void OnInitialized()
     {
         _navigationManager.LocationChanged += HandleLocationChanged;
@@ -428,8 +477,11 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitErrorBoundaryParams))]
     protected override void OnParametersSet()
     {
+        ApplyCascadingParameters();
+
         var keys = RecoverKeys?.ToArray();
 
         // The first pass has nothing to compare against: a boundary has caught nothing yet when its
@@ -523,6 +575,23 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
 
 
+    /// <summary>
+    /// What the boundary holds of its own for <see cref="Dir"/>, which reads through to the cascaded direction
+    /// while it is not set.
+    /// </summary>
+    internal BitDir? OwnDir
+    {
+        get => _dir;
+        set => _dir = value;
+    }
+
+    /// <summary>
+    /// Whether the markup set the named parameter on the latest render.
+    /// </summary>
+    internal bool IsSetByMarkup(string name) => _setByMarkup.Contains(name);
+
+
+
     /// <summary>The class list of the error UI's root element.</summary>
     /// <remarks>
     /// A class the page put in the HtmlAttributes dictionary is merged in rather than left to the splat,
@@ -573,6 +642,26 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
     /// <summary>The heading the error UI carries, which an explicitly empty Title drops.</summary>
     private string? _Title => Title ?? "Oops, Something went wrong...";
+
+    /// <summary>The level of the title's heading element, clamped into the range HTML has headings for.</summary>
+    private int _HeadingLevel => Math.Clamp(HeadingLevel ?? 3, 1, 6);
+
+    /// <summary>The id of the title, which names the error UI.</summary>
+    private string _TitleId => $"{_uniqueId}-title";
+
+    /// <summary>The id of the message, which describes the error UI.</summary>
+    private string _MessageId => $"{_uniqueId}-message";
+
+    /// <summary>Whether the icon, the title and the message leave anything for the header to hold.</summary>
+    private bool _HasHeader => HideIcon is false || _Title.HasValue() || Message.HasValue();
+
+    /// <summary>
+    /// The role of the header, which is what announces the error. Only the header is announced rather than the
+    /// whole error UI: a live region is read out in full, and a stack trace and a row of button names are noise
+    /// after the one sentence that matters. A boundary that moves the focus to a titled error UI drops it, since
+    /// the focus already announces its name and message, and an alert on top would read them twice.
+    /// </summary>
+    private string? _HeaderRole => AutoFocus && _Title.HasValue() ? null : "alert";
 
     /// <summary>The accessible name of the exception details block, which an explicitly empty one drops.</summary>
     private string? _ExceptionLabel => ExceptionLabel is null ? "Exception details" : (ExceptionLabel.HasValue() ? ExceptionLabel : null);
@@ -637,6 +726,44 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// Whether two readings of <see cref="RecoverKeys"/> differ, counting the list appearing or
     /// disappearing altogether as a difference and two empty readings as none.
     /// </summary>
+    /// <summary>
+    /// Takes each parameter the markup left unset from the params object a <see cref="BitParams"/> cascades, and
+    /// puts back the value of every one it supplied before and no longer does.
+    /// </summary>
+    private void ApplyCascadingParameters()
+    {
+        var cascaded = CascadingParameters;
+
+        // Nothing supplied now and nothing before, which is where every boundary outside a BitParams stays.
+        if (cascaded is null && _cascadeOriginals is null) return;
+
+        foreach (var parameter in BitErrorBoundaryParams.Parameters)
+        {
+            if (IsSetByMarkup(parameter.Name))
+            {
+                // What the markup gives it is what it holds of its own now, so there is nothing to put back for it.
+                _cascadeOriginals?.Remove(parameter.Name);
+
+                continue;
+            }
+
+            var value = cascaded is null ? null : parameter.FromParams(cascaded);
+
+            if (value is not null)
+            {
+                // Recorded once, so that a params object replaced by another one never passes its value off as the
+                // boundary's own.
+                (_cascadeOriginals ??= []).TryAdd(parameter.Name, parameter.FromBoundary(this));
+
+                parameter.SetOnBoundary(this, value);
+            }
+            else if (_cascadeOriginals is not null && _cascadeOriginals.Remove(parameter.Name, out var original))
+            {
+                parameter.SetOnBoundary(this, original);
+            }
+        }
+    }
+
     private static bool KeysChanged(object?[]? oldKeys, object?[]? newKeys)
     {
         if (oldKeys is null || newKeys is null) return (oldKeys?.Length ?? 0) != (newKeys?.Length ?? 0);
