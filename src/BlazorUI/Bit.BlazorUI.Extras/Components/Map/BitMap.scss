@@ -1,11 +1,22 @@
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 
+// The map's layer stack, bottom to top. The root is a stacking context of its own, so these
+// numbers order the layers against each other and never against the page around the map.
+$map-z-content: 0; // what the provider draws on the map itself: tiles, vectors, markers
+$map-z-hint: 1; // the cooperative-gestures hint
+$map-z-status: 2; // loading / error / unsupported, which cover the hint while they show
+$map-z-overlay: 3; // ChildContent
+$map-z-popup: 4; // the MarkerPopupTemplate anchor and the provider's own popups and tooltips
+$map-z-control: 5; // the provider's controls and attribution (a licence requirement)
+$map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
+
 .bit-map {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
+    isolation: isolate;
 }
 
 // A fullscreen element has no ancestor to inherit a size or a background from, so both are
@@ -16,15 +27,60 @@
     background: $clr-bg-pri;
 }
 
-// The canvas is its own stacking context, so whatever z-indexes a provider gives its panes and
-// controls inside it (Leaflet's run from 400 to 1000) stay inside it and never outrank the
-// overlay, the popup anchor, the status and the hints layered above it.
+// A provider gives its panes and controls z-indexes of its own (Leaflet's run from 400 to 1000),
+// which would outrank every layer of the stack. By default the canvas is a stacking context, so
+// the provider's whole drawing - its controls and popups included - is one layer below the overlay.
 .bit-map-canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     isolation: isolate;
+
+    // The providers whose DOM keeps their controls and popups apart from the map itself are sorted
+    // into the stack instead, so the overlay goes between the map and the provider's own chrome.
+    // Leaflet draws its popups and tooltips inside the map pane, which its pan transform makes a
+    // stacking context of its own, so those stay with the map - MarkerPopupTemplate is the popup
+    // that draws above the overlay on every provider.
+    &:is(.leaflet-container, .maplibregl-map, .mapboxgl-map, :has(> .ol-viewport)) {
+        isolation: auto;
+    }
+
+    .leaflet-map-pane {
+        z-index: $map-z-content;
+    }
+
+    .leaflet-top,
+    .leaflet-bottom,
+    .maplibregl-ctrl-top-left,
+    .maplibregl-ctrl-top-right,
+    .maplibregl-ctrl-bottom-left,
+    .maplibregl-ctrl-bottom-right,
+    .mapboxgl-ctrl-top,
+    .mapboxgl-ctrl-top-left,
+    .mapboxgl-ctrl-top-right,
+    .mapboxgl-ctrl-bottom,
+    .mapboxgl-ctrl-bottom-left,
+    .mapboxgl-ctrl-bottom-right,
+    .mapboxgl-ctrl-left,
+    .mapboxgl-ctrl-right {
+        z-index: $map-z-control;
+    }
+
+    .maplibregl-popup,
+    .mapboxgl-popup {
+        z-index: $map-z-popup;
+    }
+
+    // OpenLayers writes z-index 0 inline on both overlay containers, so only !important outranks
+    // it. The stop-event one holds the controls and the click popup, the other the hover tooltip.
+    .ol-overlaycontainer {
+        z-index: $map-z-popup !important;
+    }
+
+    .ol-overlaycontainer-stopevent {
+        z-index: $map-z-control !important;
+    }
 }
 
 .bit-map-canvas:focus-visible {
@@ -32,11 +88,18 @@
     outline-offset: -#{$shp-border-width-thick};
 }
 
+// Only the overlay's children take the pointer, and a flex column sizes each one to its content
+// from the top-start corner - a plain block child would otherwise span the map's width and swallow
+// the drags and clicks across that whole strip. A child positioned absolutely is placed by its own
+// insets instead.
 .bit-map-overlay {
     position: absolute;
     inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     pointer-events: none;
-    z-index: 3;
+    z-index: $map-z-overlay;
 
     > * {
         pointer-events: auto;
@@ -71,7 +134,7 @@
     overflow: visible;
     white-space: normal;
     clip-path: none;
-    z-index: 4;
+    z-index: $map-z-help;
     color: $clr-fg-pri;
     background: $clr-bg-pri;
     border-radius: $shp-radius-popup;
@@ -84,7 +147,7 @@
 .bit-map-gesture-hint {
     position: absolute;
     inset: 0;
-    z-index: 2;
+    z-index: $map-z-hint;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -113,7 +176,7 @@
 .bit-map-status {
     position: absolute;
     inset: 0;
-    z-index: 2;
+    z-index: $map-z-status;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -172,7 +235,7 @@
     position: absolute;
     inset-block-start: 0;
     inset-inline-start: 0;
-    z-index: 4;
+    z-index: $map-z-popup;
     // The transform positions the anchor point itself; this lifts the bubble above it and centres
     // it, the same relationship a map pin has to its tip.
     will-change: transform;
