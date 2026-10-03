@@ -440,11 +440,7 @@ function Get-WebAppVersions {
         throw 'Microsoft Edge is not installed, and it is what reads the web apps'' versions.'
     }
 
-    # Unique, so that no other run's folder name starts with it: the browser's processes are found by it below.
     $userDataDir = Join-Path ([IO.Path]::GetTempPath()) "test-platform-edge-$([guid]::NewGuid().ToString('N'))"
-    # Port 0: Edge picks a free one and writes it to DevToolsActivePort in the profile folder. A fixed port may be held by
-    # a browser left from an earlier run, and Edge starts anyway, so whatever answered there would be that other browser,
-    # with its own cache and service workers.
     Start-Process $edge -ArgumentList '--headless=new', '--remote-debugging-port=0', "--user-data-dir=`"$userDataDir`"", '--window-size=1440,900', '--no-first-run', 'about:blank'
 
     try {
@@ -475,8 +471,6 @@ function Get-WebAppVersions {
         }
     }
     finally {
-        # Edge relaunches itself, so the process Start-Process returned is not the browser; the profile folder is in
-        # the command line of every process that is.
         Get-CimInstance Win32_Process -Filter "Name = 'msedge.exe'" | Where-Object CommandLine -like "*$userDataDir*" |
             ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
         Start-Sleep -Seconds 1
