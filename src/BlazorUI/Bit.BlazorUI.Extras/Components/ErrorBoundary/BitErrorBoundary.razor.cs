@@ -204,6 +204,8 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
     /// <summary>
     /// The text of the Home button.
+    /// <br />
+    /// The default value is <strong>"Home"</strong>.
     /// </summary>
     [Parameter] public string? HomeText { get; set; }
 
@@ -316,11 +318,15 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
     /// <summary>
     /// The text of the Recover button.
+    /// <br />
+    /// The default value is <strong>"Recover"</strong>.
     /// </summary>
     [Parameter] public string? RecoverText { get; set; }
 
     /// <summary>
     /// The text of the Refresh button.
+    /// <br />
+    /// The default value is <strong>"Refresh"</strong>.
     /// </summary>
     [Parameter] public string? RefreshText { get; set; }
 
@@ -723,10 +729,6 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     };
 
     /// <summary>
-    /// Whether two readings of <see cref="RecoverKeys"/> differ, counting the list appearing or
-    /// disappearing altogether as a difference and two empty readings as none.
-    /// </summary>
-    /// <summary>
     /// Takes each parameter the markup left unset from the params object a <see cref="BitParams"/> cascades, and
     /// puts back the value of every one it supplied before and no longer does.
     /// </summary>
@@ -764,6 +766,10 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Whether two readings of <see cref="RecoverKeys"/> differ, counting the list appearing or
+    /// disappearing altogether as a difference and two empty readings as none.
+    /// </summary>
     private static bool KeysChanged(object?[]? oldKeys, object?[]? newKeys)
     {
         if (oldKeys is null || newKeys is null) return (oldKeys?.Length ?? 0) != (newKeys?.Length ?? 0);

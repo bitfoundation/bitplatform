@@ -143,7 +143,7 @@ public partial class BitErrorBoundaryDemo
             Name = "HomeText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the Home button.",
+            Description = "The text of the Home button. Defaults to \"Home\".",
         },
         new()
         {
@@ -243,14 +243,14 @@ public partial class BitErrorBoundaryDemo
             Name = "RecoverText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the Recover button.",
+            Description = "The text of the Recover button. Defaults to \"Recover\".",
         },
         new()
         {
             Name = "RefreshText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the Refresh button.",
+            Description = "The text of the Refresh button. Defaults to \"Refresh\".",
         },
         new()
         {

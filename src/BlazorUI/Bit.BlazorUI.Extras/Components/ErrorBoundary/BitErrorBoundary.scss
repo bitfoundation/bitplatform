@@ -34,6 +34,13 @@
     border: var(--bit-ErrorBoundary-border, none);
     border-radius: var(--bit-ErrorBoundary-radius, #{$shp-radius-none});
     background-color: var(--bit-ErrorBoundary-background, #{$clr-bg-pri});
+
+    // AutoFocus parks the focus on the root so that its name and message are read out, not so that anything is
+    // operated there - and around a boundary standing in for a whole page a ring would trace the viewport's edge.
+    // A tabindex the page wrote itself is a stop it asked for, so that one keeps the browser's outline.
+    &[tabindex="-1"] {
+        @include focus-anchor;
+    }
 }
 
 // The part that is announced, laid out exactly as the root lays out its own parts.

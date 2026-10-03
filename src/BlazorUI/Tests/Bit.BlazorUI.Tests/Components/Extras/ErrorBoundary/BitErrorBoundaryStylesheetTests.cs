@@ -75,6 +75,20 @@ public class BitErrorBoundaryStylesheetTests
         StringAssert.Contains(block, "@include focus-ring;");
     }
 
+    // The root AutoFocus parks the focus on is an anchor, as a dialog's root is: nothing is operated there, and a ring
+    // around a boundary standing in for a whole page would trace the edge of the viewport.
+    [TestMethod]
+    public void BitErrorBoundaryShouldDrawNoRingAroundTheRootAutoFocusParksTheFocusOn()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var block = stylesheet[stylesheet.IndexOf("\n.bit-erb {", StringComparison.Ordinal)..];
+        block = block[..block.IndexOf("\n}", StringComparison.Ordinal)];
+
+        StringAssert.Contains(block, "&[tabindex=\"-1\"] {");
+        StringAssert.Contains(block, "@include focus-anchor;");
+    }
+
     // A design-system decision is read off the theme, never typed into the component.
     [TestMethod]
     public void BitErrorBoundaryShouldNotHardCodeAFontFamilyOrAColor()
