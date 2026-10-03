@@ -371,6 +371,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitSplitter", "BitSplitterParams")]
     [DataRow("BitSeparator", "BitSeparatorParams")]
     [DataRow("BitOverlay", "BitOverlayParams")]
+    [DataRow("BitAppShell", "BitAppShellParams")]
     [DataRow("BitAccordionList", "BitAccordionListParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     [DataRow("BitChart", "BitChartParams")]
