@@ -9,8 +9,9 @@
 /// from every run of text in it.
 /// <br />
 /// A step also carries the tag it renders on its own, which is what makes the ramp usable without a page having to
-/// name one: the six heading steps render their own heading tag, the two subtitles an "h6", the two body steps and
-/// <see cref="Inherit"/> a "p", and <see cref="Button"/>, the two captions and <see cref="Overline"/> a "span".
+/// name one: the six heading steps render their own heading tag, the two subtitles a "div", the two body steps and
+/// <see cref="Inherit"/> a "p", and <see cref="Button"/>, the two captions and <see cref="Overline"/> a "span". Only
+/// the heading steps are headings.
 /// That tag is a default and not a decision - where the outline of the document asks for another one,
 /// <see cref="BitText.Element"/> names it and the looks stay where they were.
 /// </remarks>
@@ -47,13 +48,13 @@ public enum BitTypography
     H6,
 
     /// <summary>
-    /// The larger of the two subtitles, for the line under a heading. Renders an "h6", and is the step a text is
-    /// drawn at while none is asked for.
+    /// The larger of the two subtitles, for the line under a heading. Renders a "div" - not a heading - and is the
+    /// step a text is drawn at while none is asked for.
     /// </summary>
     Subtitle1,
 
     /// <summary>
-    /// The smaller of the two subtitles. Renders an "h6".
+    /// The smaller of the two subtitles. Renders a "div" - not a heading.
     /// </summary>
     Subtitle2,
 
@@ -93,7 +94,8 @@ public enum BitTypography
     /// Takes every typographic declaration - the family, the size, the weight, the line height, the tracking and
     /// the case - from the element around it rather than from a step of the ramp, which is what a run of text
     /// inside an already styled block needs to keep the look of its surroundings while still taking the colors,
-    /// the wrapping and the rest of the parameters of the component. Renders a "p".
+    /// the wrapping and the rest of the parameters of the component. Renders a "p"; inside a sentence, set
+    /// <see cref="BitText.Element"/> to "span".
     /// </summary>
     Inherit,
 }
