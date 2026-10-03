@@ -136,5 +136,6 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
 | `review` | Reviewing a diff or PR against this project's conventions | `.github/agents/review.agent.md` |
 | `ai-dlc` | Driving a feature end-to-end through requirements, plan, design, implement, validate | `.github/agents/ai-dlc.agent.md` |
+| `rebrand` | Re-skinning the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood) | `.github/agents/rebrand.agent.md` |
 
 Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command, and Visual Studio lists the canonical files themselves in its agent picker as `@<name>`. The files under `.agents/skills/`, `.claude/skills/` and `.gemini/commands/` are thin bridges that delegate to the canonical file - never edit them for content, only the canonical file above.

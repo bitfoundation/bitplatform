@@ -31,6 +31,7 @@
     <File Path=".github/agents/ai-dlc.agent.md" />
     <File Path=".github/agents/bitify-ui.agent.md" />
     <File Path=".github/agents/localize-strings.agent.md" />
+    <File Path=".github/agents/rebrand.agent.md" />
     <File Path=".github/agents/review.agent.md" />
     <File Path=".github/agents/scaffold-entity.agent.md" />
   </Folder>
