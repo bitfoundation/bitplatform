@@ -514,19 +514,7 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 
 When you open the project in VS Code, you'll be prompted to install these extensions.
 
-#### 6.3.4 `.vscode/tasks.json`
-
-**Pre-configured Tasks**:
-
-- **`before-build`**: Runs TypeScript compilation and SCSS processing (runs automatically on folder open)
-- **`build`**: Builds the `Boilerplate.Server.Web` project
-- **`generate-resx-files`**: Generates C# code from `.resx` files
-- **`run`**: Starts the application
-- **`run-tests`**: Runs all tests
-
-**How to use**: Press `Ctrl+Shift+P` → `Tasks: Run Task` → Select a task
-
-#### 6.3.5 `.vscode/launch.json`
+#### 6.3.4 `.vscode/launch.json`
 
 **Debug Configurations**:
 

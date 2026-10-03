@@ -99,11 +99,6 @@ jobs:
       run: |
           sed -i 's/IsEmbeddingEnabled = false/IsEmbeddingEnabled = true/' SalesModule/src/Server/SalesModule.Server.Api/Infrastructure/Data/AppDbContext.cs
 
-    - name: Generate CSS/JS files
-      run: |
-          dotnet build SalesModule/src/Client/SalesModule.Client.Core/SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
-          dotnet build SalesModule/src/Client/SalesModule.Client.Web/SalesModule.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
-
     - name: Publish
       run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
@@ -206,9 +201,6 @@ jobs:
       run: |
             cd SalesModule
             dnx Bit.ResxTranslator --prerelease
-
-    - name: Generate CSS/JS files
-      run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
     # Needed for delta packages. Fails on the first run, when the bucket is empty.
     - name: Download previous releases from R2

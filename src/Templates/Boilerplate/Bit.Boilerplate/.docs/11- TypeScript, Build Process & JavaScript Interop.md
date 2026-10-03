@@ -79,25 +79,30 @@ SCSS is compiled to CSS during the same build pipeline. You'll also learn how to
 The `.csproj` file defines custom MSBuild targets that run automatically during the build process:
 
 ```xml
-<Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+<Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
     <CallTarget Targets="InstallNodejsDependencies" />
     <CallTarget Targets="BuildJavaScript" />
     <CallTarget Targets="BuildCssFiles" />
+    <ItemGroup>
+        <Content Include="**\*.razor.css;wwwroot\scripts\app.js;wwwroot\styles\app.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+    </ItemGroup>
 </Target>
 ```
+
+`BeforeBuildTasks` runs before the build gathers the static web assets (`app.js`, `app.css`) and the scoped CSS (`.razor.css`), so even the first build of a fresh clone ships them. MSBuild lists the project's files before any of them is generated, which is why the target adds them to `Content` itself. The IDE's design-time builds skip it.
 
 ### Build Process Flow
 
 ```
-1. CoreCompile (C# compilation)
+1. BeforeBuildTasks
     ↓
-2. BeforeBuildTasks
+2. InstallNodejsDependencies
     ↓
-3. InstallNodejsDependencies
+3. BuildJavaScript (TypeScript type-check → esbuild bundles .ts → app.js)
     ↓
-4. BuildJavaScript (TypeScript type-check → esbuild bundles .ts → app.js)
+4. BuildCssFiles (SCSS → CSS)
     ↓
-5. BuildCssFiles (SCSS → CSS)
+5. Static web assets and scoped CSS are gathered, then CoreCompile (C# compilation)
 ```
 
 ### Step 1: InstallNodejsDependencies

@@ -61,12 +61,6 @@ jobs:
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
 
-  - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-      dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-    failOnStderr: true
-    displayName: Generate CSS/JS files
-
   - task: Bash@3
     displayName: 'Publish'
     inputs:
@@ -162,12 +156,6 @@ jobs:
       jsonTargetFiles: 'src/**/appsettings*json'
 
   - task: Bash@3
-    displayName: 'Generate CSS/JS files'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"'
-
-  - task: Bash@3
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
@@ -239,12 +227,6 @@ jobs:
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
   
-  - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-    failOnStderr: true
-    displayName: Generate CSS/JS files
-
   - task: Bash@3
     displayName: 'Publish aab'
     inputs:
