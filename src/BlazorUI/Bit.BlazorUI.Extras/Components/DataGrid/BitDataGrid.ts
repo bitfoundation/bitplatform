@@ -196,6 +196,30 @@ namespace BitBlazorUI {
             };
         }
 
+        // Publishes the height of the sticky header and footer on the viewport as --bit-dtg-head-h/--bit-dtg-foot-h,
+        // which the stylesheet turns into scroll padding: whatever the browser scrolls into view inside the viewport
+        // (a cell the arrow keys move to, a checkbox reached with Tab) then stops below the header and above the
+        // footer instead of under them (WCAG 2.4.11). Both can change height at any time (wrapped titles, a filter
+        // row, a footer appearing), and so does the table they sit in, which is what is observed.
+        public static observeStickyBands(viewport: HTMLElement) {
+            if (!viewport || typeof ResizeObserver === 'undefined') return { dispose: () => { } };
+
+            const update = () => {
+                const table = viewport.firstElementChild;
+                const header = table?.querySelector<HTMLElement>(':scope > .bit-dtg-header');
+                const footer = table?.querySelector<HTMLElement>(':scope > .bit-dtg-footer');
+                viewport.style.setProperty('--bit-dtg-head-h', `${header?.offsetHeight ?? 0}px`);
+                viewport.style.setProperty('--bit-dtg-foot-h', `${footer?.offsetHeight ?? 0}px`);
+            };
+
+            const observer = new ResizeObserver(update);
+            observer.observe(viewport);
+            if (viewport.firstElementChild) observer.observe(viewport.firstElementChild);
+            update();
+
+            return { dispose: () => observer.disconnect() };
+        }
+
         // Syncs the "some but not all rows selected" state onto the select-all checkbox.
         // indeterminate is a DOM property with no attribute equivalent, so Blazor markup can't set it.
         public static setIndeterminate(element: HTMLInputElement, value: boolean) {
@@ -207,6 +231,17 @@ namespace BitBlazorUI {
         // the computed style resolves both, the dir attribute of every ancestor included.
         public static isRtl(element: HTMLElement): boolean {
             return element ? getComputedStyle(element).direction === 'rtl' : false;
+        }
+
+        // Puts the focus back into a column header after its column moved: moving an element in the DOM drops the
+        // focus it held. The sort button is the header's own control, so it is preferred; a header that is not
+        // sortable falls back to its first focusable child (the resize handle).
+        public static focusHeader(root: HTMLElement, columnId: string) {
+            const header = root?.querySelector<HTMLElement>(`.bit-dtg-header-row .bit-dtg-hcell[data-col="${CSS.escape(columnId)}"]`);
+            if (!header) return;
+            const target = header.querySelector<HTMLElement>('button.bit-dtg-htext')
+                ?? header.querySelector<HTMLElement>('button, [tabindex]:not([tabindex="-1"])');
+            target?.focus();
         }
 
         // Measures an element's rendered width. Used when a column resize starts so the drag begins
@@ -356,13 +391,26 @@ namespace BitBlazorUI {
     // key and lags a keystroke behind. A single capture-phase listener decides per-key up front and only
     // cancels the arrow keys on a focused drag handle, so Tab/Enter/Space keep working and the .NET
     // keydown handler still runs to actually move the row.
+    // The column headers own two more keys the same way: a focused resize handle (a separator) moves its edge with
+    // the arrows and takes it to its limits with Home/End, and Ctrl+Left/Right anywhere in a reorderable header
+    // (one that carries data-col) moves the column. Left alone, both would also scroll the viewport sideways.
+    const resizerKeys = new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter']);
     let reorderKeyGuardInstalled = false;
     function installReorderKeyGuard() {
         if (reorderKeyGuardInstalled || typeof document === 'undefined') return;
         reorderKeyGuardInstalled = true;
         document.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
             const target = e.target as HTMLElement | null;
+            if (target?.classList?.contains('bit-dtg-resizer') && resizerKeys.has(e.key) && !e.altKey && !e.metaKey) {
+                e.preventDefault();
+                return;
+            }
+            if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+                target?.closest?.('.bit-dtg-hcell[data-col]')) {
+                e.preventDefault();
+                return;
+            }
+            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
             if (target?.classList?.contains('bit-dtg-drag-handle')) {
                 // Don't cancel the default while the row is being edited: keyboard reordering is
                 // short-circuited in that state (matching the .NET handler and the draggable guard),

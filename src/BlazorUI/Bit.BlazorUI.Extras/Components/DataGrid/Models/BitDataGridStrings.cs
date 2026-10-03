@@ -58,7 +58,25 @@ public class BitDataGridStrings
     public string ClearSearchLabel { get; set; } = "Clear search";
 
     /// <summary>Tooltip of a resizable column's drag handle.</summary>
-    public string ResizeColumnTitle { get; set; } = "Drag to resize, or double-click to fit the content";
+    public string ResizeColumnTitle { get; set; } = "Drag or use the arrow keys to resize; double-click or press Enter to fit the content";
+
+    /// <summary>Accessible label of a resizable column's resize handle. {0} = column title.</summary>
+    public string ResizeColumnFormat { get; set; } = "Resize {0}";
+
+    /// <summary>Accessible label of the column chooser button that moves a column one place toward the start. {0} = column title.</summary>
+    public string MoveColumnEarlierFormat { get; set; } = "Move {0} earlier";
+
+    /// <summary>Accessible label of the column chooser button that moves a column one place toward the end. {0} = column title.</summary>
+    public string MoveColumnLaterFormat { get; set; } = "Move {0} later";
+
+    /// <summary>Spoken after a column header in a multi-column sort. {0} = the column's place in the sort order.</summary>
+    public string SortPriorityFormat { get; set; } = "sort priority {0}";
+
+    /// <summary>Accessible name of the header of the row drag handle column.</summary>
+    public string ReorderColumnHeaderLabel { get; set; } = "Reorder";
+
+    /// <summary>Accessible name of the header of the detail toggle column.</summary>
+    public string DetailsColumnHeaderLabel { get; set; } = "Details";
 
     public string EditText { get; set; } = "Edit";
     public string DeleteText { get; set; } = "Delete";
@@ -181,6 +199,8 @@ public class BitDataGridStrings
     public string AnnouncementUngrouped { get; set; } = "Grouping by {0} removed";
     /// <summary>Announced after a clipboard copy. {0} = the number of rows copied.</summary>
     public string AnnouncementRowsCopied { get; set; } = "{0} rows copied to the clipboard";
+    /// <summary>Announced after a column is moved from the keyboard or the column chooser. {0} = column title, {1} = its new 1-based position, {2} = the number of columns.</summary>
+    public string AnnouncementColumnMoved { get; set; } = "{0} moved to position {1} of {2}";
 
     /// <summary>Footer aggregate labels. {0} = the formatted aggregate value.</summary>
     public string AggregateSumFormat { get; set; } = "Σ {0}";
