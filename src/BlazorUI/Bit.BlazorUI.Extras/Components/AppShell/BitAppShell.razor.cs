@@ -19,6 +19,24 @@ namespace Bit.BlazorUI;
 /// against the same numbers: <c>--bit-ash-inset-top</c>, <c>--bit-ash-inset-bottom</c>,
 /// <c>--bit-ash-inset-start</c> and <c>--bit-ash-inset-end</c> for the four safe areas, and
 /// <c>--bit-ash-keyboard-inset</c> for how much of the shell the on-screen keyboard is covering.
+/// <br />
+/// What it looks like, and how far each edge is inset, is set through the public <c>--bit-AppShell-*</c>
+/// CSS variables, which inherit: <c>--bit-AppShell-background</c> and <c>--bit-AppShell-color</c>, the
+/// background of the shell and the text color its content inherits, the background of the four bars
+/// (<c>--bit-AppShell-inset-background</c> and one per edge, such as
+/// <c>--bit-AppShell-inset-top-background</c> behind the status bar), and
+/// <c>--bit-AppShell-safe-area-top</c> / <c>-bottom</c> / <c>-start</c> / <c>-end</c>, which default to
+/// the device's own safe areas.
+/// <br />
+/// The states CSS cannot read off a length are marked as attributes of its root: <c>data-bit-ash-keyboard</c> while
+/// the on-screen keyboard is up (<see cref="AvoidKeyboard"/>), and <c>data-bit-ash-scrolled</c> and
+/// <c>data-bit-ash-scroll-direction</c> for its main container (<see cref="TrackScrollState"/>).
+/// <br />
+/// It prints at the length of its content rather than as the one screenful it shows.
+/// <br />
+/// While nothing on the page has focus, the keys that scroll a page - the arrows, Page Up/Down, Home/End and
+/// the space bar - scroll the main container of the one app shell of the page, since its document no longer
+/// scrolls for the browser to aim them at.
 /// </remarks>
 [SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
 public partial class BitAppShell : BitComponentBase
@@ -43,11 +61,15 @@ public partial class BitAppShell : BitComponentBase
 
 
 
+    private bool _cascaded;
+    private bool _registered;
     private bool _subscribed;
     private bool _scrollInit;
+    private bool _scrollHistoryOnly;
     private bool _paneSetup;
     private bool _autoScrolled;
     private bool _keyboardSetup;
+    private bool _scrollStateSetup;
     private bool _locationChanged;
     private string? _lastLocation;
     private ElementReference? _containerRef;
@@ -58,6 +80,20 @@ public partial class BitAppShell : BitComponentBase
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
     [Inject] private NavigationManager _navManager { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the app shell component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to the app shells of an
+    /// application through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitAppShellParams.ParamName)]
+    public BitAppShellParams? CascadingParameters { get; set; }
 
 
 
@@ -107,7 +143,9 @@ public partial class BitAppShell : BitComponentBase
     /// the height of the middle, which is what brings a bottom bar declared inside the shell back above
     /// the keyboard. The bottom safe area inset is given up for as long as the keyboard is open, since what
     /// that inset keeps clear is covered by the keyboard anyway and a band of background above it would be
-    /// room taken from the content for nothing.
+    /// room taken from the content for nothing. As the keyboard opens, a focused element inside the shell that the
+    /// shorter middle has left below its bottom edge is scrolled back into view, which the browser - having
+    /// placed it against the shell as it stood before - does not do.
     /// <br />
     /// The root is also marked with the <c>data-bit-ash-keyboard</c> attribute while the keyboard is up -
     /// which is what the chrome that hides itself while the reader is typing can be styled against - and
@@ -129,7 +167,7 @@ public partial class BitAppShell : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the app shell.
     /// </summary>
-    [Parameter] public BitAppShellClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitAppShellClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Pins the app shell to the four edges of the screen, so that it fills the window whatever height the
@@ -306,13 +344,17 @@ public partial class BitAppShell : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The positions are kept per url in session storage, so they survive a reload and are gone when the
-    /// tab is - <see cref="ClearPersistedScroll"/> forgets them sooner. A navigation that only changes the
-    /// fragment of the url is left alone, so an in-page anchor still works. It takes precedence over
-    /// <see cref="AutoGoToTop"/>.
+    /// tab is - <see cref="ClearPersistedScroll"/> forgets them sooner. A navigation to another page with no
+    /// position kept opens it at its top, and <see cref="ScrollRestoration"/> decides whether every navigation to
+    /// a page puts the reader back or only the browser's back and forward buttons do. A navigation that only
+    /// changes the query of the url - a filter or a search box writing itself into it - is the same page and is
+    /// left where it stands, and one that only changes the fragment is left alone too, so an in-page anchor still
+    /// works. It takes precedence over <see cref="AutoGoToTop"/>.
     /// <br />
     /// The store belongs to the page rather than to this component, so it is the one app shell of an
-    /// application that is meant to ask for it: a second shell doing so on the same page would take the
-    /// store over from the first.
+    /// application that is meant to ask for it, which is also why it cannot be set through
+    /// <see cref="BitAppShellParams"/>: while one shell on the page keeps its positions, a second one asking
+    /// for the same is ignored.
     /// </remarks>
     [Parameter] public bool PersistScroll { get; set; }
     /// <summary>
@@ -365,6 +407,17 @@ public partial class BitAppShell : BitComponentBase
     /// </remarks>
     [Parameter] public string? ScrollPadding { get; set; }
 
+    /// <summary>
+    /// Which navigations <see cref="PersistScroll"/> puts the reader back where they left a page on.
+    /// </summary>
+    /// <remarks>
+    /// The default, <see cref="BitAppShellScrollRestoration.Url"/>, restores every navigation to a url that was
+    /// left scrolled - the tabs of a mobile app, each keeping its own place. <see cref="BitAppShellScrollRestoration.History"/>
+    /// restores only the browser's back and forward navigations and opens every other one at its top, which is what a
+    /// browser does for a page that scrolls the document: following a link to a list read halfway down earlier starts
+    /// it from the top, and coming back to it with the back button lands where the reader left it.
+    /// </remarks>
+    [Parameter] public BitAppShellScrollRestoration ScrollRestoration { get; set; }
 
     /// <summary>
     /// The shortest interval (in milliseconds) between two <see cref="OnScroll"/> reports.
@@ -396,7 +449,25 @@ public partial class BitAppShell : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the app shell.
     /// </summary>
-    [Parameter] public BitAppShellClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitAppShellClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Marks the root of the app shell with whether its main container is scrolled away from the top and which way
+    /// it was last scrolled, so the chrome inside it can react in CSS alone.
+    /// </summary>
+    /// <remarks>
+    /// The root carries <c>data-bit-ash-scrolled</c> while the container is not at its top - what a header that
+    /// lifts itself off the content with a shadow is styled against - and <c>data-bit-ash-scroll-direction</c>,
+    /// <c>up</c> or <c>down</c>, which only flips once the container has moved a few pixels the other way, so the
+    /// jitter of a finger resting on the screen does not flip it. That is the header that slides away while the
+    /// reader scrolls down and comes back the moment they scroll up:
+    /// <c>.bit-ash[data-bit-ash-scroll-direction="down"] .header:not(:focus-within) { translate: 0 -100%; }</c> -
+    /// the <c>:focus-within</c> keeping a header the keyboard focus has moved into on the screen.
+    /// <br />
+    /// It is done in the browser, so it costs no round trip per frame the way the same thing built on
+    /// <see cref="OnScroll"/> would; the attributes are only written when they change.
+    /// </remarks>
+    [Parameter] public bool TrackScrollState { get; set; }
 
     /// <summary>
     /// The cascading value list to be provided for the children of the app shell.
@@ -438,6 +509,8 @@ public partial class BitAppShell : BitComponentBase
     {
         if (_containerRef.HasValue is false) return;
 
+        HoldScrollState();
+
         await InvokeJs(() => _js.BitExtrasGoToTop(_containerRef!.Value, behavior));
     }
 
@@ -448,6 +521,8 @@ public partial class BitAppShell : BitComponentBase
     public async Task GoToBottom(BitScrollBehavior? behavior = null)
     {
         if (_containerRef.HasValue is false) return;
+
+        HoldScrollState();
 
         await InvokeJs(() => _js.BitExtrasGoToBottom(_containerRef!.Value, behavior));
     }
@@ -461,6 +536,8 @@ public partial class BitAppShell : BitComponentBase
     public async Task ScrollTo(double? left, double? top, BitScrollBehavior? behavior = null)
     {
         if (_containerRef.HasValue is false) return;
+
+        HoldScrollState();
 
         await InvokeJs(() => _js.BitExtrasScrollTo(_containerRef!.Value, left, top, behavior));
     }
@@ -478,6 +555,8 @@ public partial class BitAppShell : BitComponentBase
         // A NaN or an infinity is not a distance, and the serializer of the interop call refuses both, so a
         // call made with one is dropped here rather than thrown out of the caller's own event handler.
         if (double.IsFinite(x) is false || double.IsFinite(y) is false) return;
+
+        HoldScrollState();
 
         await InvokeJs(() => _js.BitExtrasScrollBy(_containerRef!.Value, x, y, behavior));
     }
@@ -513,6 +592,8 @@ public partial class BitAppShell : BitComponentBase
             BitScrollBehavior.Auto => ScrollBehavior is null or BitScrollBehavior.Smooth,
             _ => smooth && ScrollBehavior is null or BitScrollBehavior.Smooth
         };
+
+        HoldScrollState();
 
         await InvokeJs(() => _js.BitScrollablePaneScrollToElement(_containerRef!.Value,
                                                                   elementId,
@@ -614,6 +695,14 @@ public partial class BitAppShell : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    // A name on an element of no role of its own is one assistive technology is not allowed to announce
+    // (ARIA prohibits naming a generic), so the shell that is given one - as AriaLabel, or as a plain
+    // aria-label or aria-labelledby attribute - becomes the group the name is for. An unnamed shell stays
+    // the plain container it is: the landmarks of an application belong to its layout, not to this.
+    private string? _Role => AriaLabel.HasValue()
+                             || GetSplattedAttribute("aria-label").HasValue()
+                             || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
+
     // The class and the style of the main container, which is the element that actually scrolls - so
     // everything about the scrolling of the app shell lands here rather than on the root.
     private string _MainClass => string.Join(' ', new[]
@@ -692,8 +781,26 @@ public partial class BitAppShell : BitComponentBase
         }
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAppShellParams))]
     protected override void OnParametersSet()
     {
+        // First, so that every decision below - the navigation subscription above all - is taken on the
+        // values the shell ends up with rather than on the ones its own markup happened to set.
+        if (CascadingParameters is not null)
+        {
+            _cascaded = true;
+
+            CascadingParameters.UpdateParameters(this);
+        }
+        else if (_cascaded)
+        {
+            // A BitParams that has gone away takes what it had cascaded with it: an empty set of parameters puts
+            // back the defaults of everything the shell's own markup does not set.
+            _cascaded = false;
+
+            new BitAppShellParams().UpdateParameters(this);
+        }
+
         // The two navigation features are parameters like any other, so turning either of them on after
         // the shell has been rendered has to subscribe it - and turning both of them off, unsubscribe it.
         UpdateSubscription();
@@ -711,6 +818,12 @@ public partial class BitAppShell : BitComponentBase
             // fell back to holding a body that a shell app never scrolls, and the region behind it went on
             // scrolling. One more render is what puts the element into the cascade.
             StateHasChanged();
+
+            // The keys that scroll a page are handed to the main container of its one shell while nothing has
+            // focus, through window-wide listeners that are only bound while a page has a shell on it.
+            _registered = true;
+
+            await InvokeJs(() => _js.BitAppShellRegister());
         }
 
         await SetupPersistScroll();
@@ -719,10 +832,14 @@ public partial class BitAppShell : BitComponentBase
 
         await SetupKeyboard();
 
+        await SetupScrollState();
+
         if (_locationChanged && firstRender is false)
         {
             _locationChanged = false;
-            await InvokeJs(() => _js.BitAppShellAfterRenderScroll(_navManager.Uri));
+            _scrollHistoryOnly = ScrollRestoration is BitAppShellScrollRestoration.History;
+
+            await InvokeJs(() => _js.BitAppShellAfterRenderScroll(_containerRef!.Value, _navManager.Uri, _scrollHistoryOnly));
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -735,22 +852,35 @@ public partial class BitAppShell : BitComponentBase
     // leaving a listener behind that goes on writing positions nothing will ever restore.
     private async Task SetupPersistScroll()
     {
-        if (PersistScroll == _scrollInit) return;
+        var historyOnly = ScrollRestoration is BitAppShellScrollRestoration.History;
+
+        if (PersistScroll == _scrollInit)
+        {
+            // The two modes store a page under different keys, so a mode changed while a page is on screen has to
+            // be handed over now - unless a navigation is about to be restored, which is sent the new mode anyway.
+            if (_scrollInit is false || historyOnly == _scrollHistoryOnly || _locationChanged) return;
+
+            _scrollHistoryOnly = historyOnly;
+
+            await InvokeJs(() => _js.BitAppShellUpdateScroll(_containerRef!.Value, _navManager.Uri, historyOnly));
+            return;
+        }
 
         if (PersistScroll)
         {
             if (_containerRef.HasValue is false) return;
 
             _scrollInit = true;
+            _scrollHistoryOnly = historyOnly;
 
-            await InvokeJs(() => _js.BitAppShellInitScroll(_containerRef.Value, _navManager.Uri));
+            await InvokeJs(() => _js.BitAppShellInitScroll(_containerRef.Value, _navManager.Uri, historyOnly));
             return;
         }
 
         _scrollInit = false;
         _locationChanged = false;
 
-        await InvokeJs(() => _js.BitAppShellDisposeScroll());
+        await InvokeJs(() => _js.BitAppShellDisposeScroll(_containerRef!.Value));
     }
 
     // The keyboard tracking, followed as the parameter flips rather than settled on the first render, so
@@ -775,6 +905,35 @@ public partial class BitAppShell : BitComponentBase
         _dotnetObj ??= DotNetObjectReference.Create(this);
 
         await InvokeJs(() => _js.BitAppShellSetupKeyboard(UniqueId, RootElement, _dotnetObj));
+    }
+
+    // The scroll state markers, followed as the parameter flips like the keyboard tracking above. Nothing is sent
+    // back to .NET: the markers are attributes the page's own CSS reads.
+    private async Task SetupScrollState()
+    {
+        if (TrackScrollState == _scrollStateSetup) return;
+
+        if (TrackScrollState && _containerRef.HasValue is false) return;
+
+        _scrollStateSetup = TrackScrollState;
+
+        if (TrackScrollState is false)
+        {
+            await InvokeJs(() => _js.BitAppShellDisposeScrollState(UniqueId));
+            return;
+        }
+
+        await InvokeJs(() => _js.BitAppShellSetupScrollState(UniqueId, RootElement, _containerRef!.Value));
+    }
+
+    // A move the scrolling API makes is the page's rather than the reader's, so the scroll state is told to read it
+    // as a jump rather than as the reader heading down the content. It is sent without being waited on, so it
+    // arrives ahead of the move it is for without a round trip between the two.
+    private void HoldScrollState()
+    {
+        if (_scrollStateSetup is false) return;
+
+        _ = InvokeJs(() => _js.BitAppShellHoldScrollState(UniqueId));
     }
 
     // The scroll reporting is driven by the very engine BitScrollablePane uses, so there is not a second
@@ -904,11 +1063,11 @@ public partial class BitAppShell : BitComponentBase
 
         if (PersistScroll)
         {
-            if (IsRendered is false) return;
+            if (_scrollInit is false) return;
 
             _locationChanged = true;
 
-            _ = InvokeJs(() => _js.BitAppShellLocationChangedScroll());
+            _ = InvokeJs(() => _js.BitAppShellLocationChangedScroll(_containerRef!.Value));
 
             // The restore happens on the next render of this component. In its intended place - the
             // layout - the new page arrives as this component's own ChildContent, so that render is
@@ -1026,7 +1185,12 @@ public partial class BitAppShell : BitComponentBase
 
         if (_scrollInit)
         {
-            await InvokeJs(() => _js.BitAppShellDisposeScroll());
+            await InvokeJs(() => _js.BitAppShellDisposeScroll(_containerRef!.Value));
+        }
+
+        if (_registered)
+        {
+            await InvokeJs(() => _js.BitAppShellUnregister());
         }
 
         if (_paneSetup)
@@ -1037,6 +1201,11 @@ public partial class BitAppShell : BitComponentBase
         if (_keyboardSetup)
         {
             await InvokeJs(() => _js.BitAppShellDisposeKeyboard(UniqueId));
+        }
+
+        if (_scrollStateSetup)
+        {
+            await InvokeJs(() => _js.BitAppShellDisposeScrollState(UniqueId));
         }
 
         _dotnetObj?.Dispose();
