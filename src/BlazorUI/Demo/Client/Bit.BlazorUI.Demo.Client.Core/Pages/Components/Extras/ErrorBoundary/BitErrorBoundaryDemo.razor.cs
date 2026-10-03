@@ -264,7 +264,7 @@ public partial class BitErrorBoundaryDemo
             Name = "ShowException",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the full text of the caught exception, stack trace included, in a scrolling block that takes the keyboard focus.",
+            Description = "Renders the full text of the caught exception, stack trace included, in a scrolling block that can receive the keyboard focus.",
         },
         new()
         {
