@@ -161,10 +161,10 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 
 **Key capabilities**:
 - Turns any reference into a written spec - color by role, typography, shape, elevation, density, motion, states and imagery, each value with its source
-- Puts every value into one `Styles/_brand.scss` that re-values the app's pinned Fluent 2 presets in place, with the palette derived by bit BlazorUI's own `BitThemeFactory`
-- Decides what no token reaches: per-state component internals (such as a selected item's icon), browser autofill, placeholders, text selection and native widgets
+- Puts every value into one `Styles/_brand.scss` that re-values the app's pinned light and dark presets in place, with the palette derived the way bit BlazorUI builds its own
+- Decides every interactive state (selected, hovered, focused) and what the browser paints: autofill, text selection and native widgets
 - Carries the brand into the native chrome color, the accent picker, logo, identity art, loaders, app icons and emails
-- Verifies a state matrix - focus, hover, selected, disabled, invalid, overlays, RTL, phone and tablet, both schemes - with an in-page contrast audit, a keyboard focus walk and a token ledger, then runs the tests
+- Verifies a state matrix - focus, hover, selected, disabled, invalid, overlays, RTL, phone and tablet, both schemes - with measured contrast, a keyboard focus walk and a token ledger, then runs the tests
 
 Everything lives in the one skill file; it brings no scripts or tools of its own.
 
