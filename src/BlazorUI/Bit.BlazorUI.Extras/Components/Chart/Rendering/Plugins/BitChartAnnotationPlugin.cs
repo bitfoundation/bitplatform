@@ -27,11 +27,13 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
 
     /// <summary>
     /// Names every annotation that says something: its <see cref="BitChartAnnotation.Description"/>, or else its label
-    /// with the value a line marks. An annotation with neither is decoration and is left out.
+    /// with the value a line marks, spelled the way its axis shows it (a date on a time axis). An annotation with
+    /// neither is decoration and is left out, and so is every one on a chart that is not cartesian, where none is drawn.
     /// </summary>
-    public IEnumerable<string> Describe(BitChartConfig config)
+    public IEnumerable<string> Describe(BitChartPluginContext ctx)
     {
-        var culture = config.Options.Culture ?? System.Globalization.CultureInfo.InvariantCulture;
+        if (!ctx.IsCartesian || ctx.Plot is null) yield break;
+        var labels = ctx.Config.Data.Labels;
         foreach (var a in Annotations)
         {
             if (string.IsNullOrWhiteSpace(a.Description) is false)
@@ -46,11 +48,16 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
                     continue;
                 }
 
+                if (a.Orientation == BitChartLineOrientation.Horizontal)
+                {
+                    yield return $"{a.Label}: {ctx.FormatValue(a.Value, a.AxisId)}";
+                    continue;
+                }
+
                 // A vertical line placed by category index marks that category, which is what its name says.
                 int index = (int)a.Value;
-                bool category = a.Orientation == BitChartLineOrientation.Vertical && a.XIsIndex
-                    && index >= 0 && index < config.Data.Labels.Count;
-                yield return $"{a.Label}: {(category ? config.Data.Labels[index] : a.Value.ToString(culture))}";
+                bool category = a.XIsIndex && index >= 0 && index < labels.Count;
+                yield return $"{a.Label}: {(category ? labels[index] : ctx.FormatIndexValue(a.Value))}";
             }
         }
     }

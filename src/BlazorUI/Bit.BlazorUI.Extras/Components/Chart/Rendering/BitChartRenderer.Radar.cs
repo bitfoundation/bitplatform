@@ -45,6 +45,7 @@ public sealed partial class BitChartRenderer
             Scene = scene, Config = _config, IsCartesian = false, HiddenDatasets = _state.HiddenDatasets,
             CenterX = cx, CenterY = cy, InnerRadius = 0, OuterRadius = maxR
         };
+        scene.PluginContext = pctx;
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(pctx);
 
         // Grid rings (polygons by default, circles when grid.circular).

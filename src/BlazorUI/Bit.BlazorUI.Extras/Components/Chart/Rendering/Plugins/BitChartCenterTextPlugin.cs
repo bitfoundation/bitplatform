@@ -31,10 +31,13 @@ public sealed class BitChartCenterTextPlugin : IBitChartPlugin
         Subtext = subtext;
     }
 
-    /// <summary>The text in the cutout is a reading of its own - a total, a KPI - so it is said, with its subtext.</summary>
-    public IEnumerable<string> Describe(BitChartConfig config)
+    /// <summary>
+    /// The text in the cutout is a reading of its own - a total, a KPI - so it is said, with its subtext. A cartesian
+    /// chart has no cutout and is drawn no text, so it is told none either.
+    /// </summary>
+    public IEnumerable<string> Describe(BitChartPluginContext ctx)
     {
-        if (string.IsNullOrWhiteSpace(Text)) yield break;
+        if (ctx.IsCartesian || string.IsNullOrWhiteSpace(Text)) yield break;
         yield return string.IsNullOrWhiteSpace(Subtext) ? Text : $"{Text} {Subtext}";
     }
 

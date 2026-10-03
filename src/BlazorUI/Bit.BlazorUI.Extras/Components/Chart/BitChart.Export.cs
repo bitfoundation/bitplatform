@@ -130,20 +130,25 @@ public partial class BitChart
 
         if (HasPointData)
         {
-            var first = data.Datasets.First(d => d.Points is { Count: > 0 });
+            // The radius column is there only for bubble data, as it is in the table.
+            bool radius = HasRadiusData;
             sb.Append(CsvText(texts.Series)).Append(',')
-              .Append(CsvText(AxisHeader(first.XAxisID, texts.X))).Append(',')
-              .Append(CsvText(AxisHeader(first.YAxisID, texts.Y))).Append(',')
-              .AppendLine(CsvText(texts.Radius));
+              .Append(CsvText(PointHeader(x: true, texts.X))).Append(',')
+              .Append(CsvText(PointHeader(x: false, texts.Y)));
+            if (radius) sb.Append(',').Append(CsvText(texts.Radius));
+            sb.AppendLine();
             for (int di = 0; di < data.Datasets.Count; di++)
             {
                 var ds = data.Datasets[di];
                 if (ds.Points is not { } pts) continue;
                 foreach (var p in pts)
+                {
                     sb.Append(CsvText(DatasetName(ds, di))).Append(',')
                       .Append(Csv(p.X.ToString(culture))).Append(',')
-                      .Append(Csv(p.Y.ToString(culture))).Append(',')
-                      .AppendLine(p.R is { } r ? Csv(r.ToString(culture)) : "");
+                      .Append(Csv(p.Y.ToString(culture)));
+                    if (radius) sb.Append(',').Append(p.R is { } r ? Csv(r.ToString(culture)) : "");
+                    sb.AppendLine();
+                }
             }
             return sb.ToString();
         }

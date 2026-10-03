@@ -44,6 +44,7 @@ public sealed partial class BitChartRenderer
             Scene = scene, Config = _config, IsCartesian = false, HiddenDatasets = _state.HiddenDatasets,
             CenterX = cx, CenterY = cy, InnerRadius = ringInner, OuterRadius = ringOuter
         };
+        scene.PluginContext = ctx;
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(ctx);
 
         double ringCursor = ringOuter;
@@ -184,6 +185,7 @@ public sealed partial class BitChartRenderer
             Scene = scene, Config = _config, IsCartesian = false, HiddenDatasets = _state.HiddenDatasets,
             CenterX = cx, CenterY = cy, InnerRadius = 0, OuterRadius = maxR
         };
+        scene.PluginContext = pctx;
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(pctx);
 
         // Radial grid circles.

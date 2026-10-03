@@ -291,7 +291,7 @@
     private RenderFragment RenderTitle(BitChartTitleModel title, string cls, bool subtitle) => __builder =>
     {
         var lines = title.Text.Split('\n');
-        <div class="@cls @(subtitle ? Classes?.Subtitle : Classes?.Title)" style="@(subtitle ? Styles?.Subtitle : Styles?.Title);color:@title.Color;font-family:@title.Font.Family;font-size:@(BitChartSvg.N(title.Font.Size))px;font-weight:@title.Font.Weight;justify-content:@AlignToFlex(title.Align);padding:@(BitChartSvg.N(title.Padding.Top))px @(BitChartSvg.N(title.Padding.Right))px @(BitChartSvg.N(title.Padding.Bottom))px @(BitChartSvg.N(title.Padding.Left))px">
+        <div class="@cls @(subtitle ? Classes?.Subtitle : Classes?.Title)" style="color:@title.Color;font-family:@title.Font.Family;font-size:@(BitChartSvg.N(title.Font.Size))px;font-weight:@title.Font.Weight;justify-content:@AlignToFlex(title.Align);padding:@(BitChartSvg.N(title.Padding.Top))px @(BitChartSvg.N(title.Padding.Right))px @(BitChartSvg.N(title.Padding.Bottom))px @(BitChartSvg.N(title.Padding.Left))px;@(subtitle ? Styles?.Subtitle : Styles?.Title)">
             <div style="text-align:@TextAlign(title.Align)">
                 @for (int i = 0; i < lines.Length; i++)
                 {
@@ -411,13 +411,12 @@
             @if (HasPointData)
             {
                 var budget = MaxTableRows > 0 ? MaxTableRows : int.MaxValue;
-                var first = data.Datasets.First(d => d.Points is { Count: > 0 });
                 bool radius = HasRadiusData;
                 <thead>
                     <tr>
                         <th scope="col">@ActiveTexts.Series</th>
-                        <th scope="col">@AxisHeader(first.XAxisID, ActiveTexts.X)</th>
-                        <th scope="col">@AxisHeader(first.YAxisID, ActiveTexts.Y)</th>
+                        <th scope="col">@PointHeader(x: true, ActiveTexts.X)</th>
+                        <th scope="col">@PointHeader(x: false, ActiveTexts.Y)</th>
                         @if (radius)
                         {
                             <th scope="col">@ActiveTexts.Radius</th>

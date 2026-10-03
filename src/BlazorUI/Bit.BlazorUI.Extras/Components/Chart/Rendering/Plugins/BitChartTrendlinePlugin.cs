@@ -27,17 +27,39 @@ public sealed class BitChartTrendlinePlugin : IBitChartPlugin
         foreach (var t in Trendlines.Where(t => !t.DrawBehindDatasets)) Draw(ctx, t, behind: false);
     }
 
-    /// <summary>Names every labeled trend line with the series it is fitted to; an unlabeled one is left out.</summary>
-    public IEnumerable<string> Describe(BitChartConfig config)
+    /// <summary>
+    /// Names every labeled trend line with the series it is fitted to; an unlabeled one is left out, and so is one
+    /// that is not drawn - on a chart that is not cartesian, or fitted to a dataset that is missing, hidden or has too
+    /// few values to fit.
+    /// </summary>
+    public IEnumerable<string> Describe(BitChartPluginContext ctx)
     {
+        if (!ctx.IsCartesian || ctx.Plot is null) yield break;
+        var datasets = ctx.Config.Data.Datasets;
         foreach (var t in Trendlines)
         {
             if (string.IsNullOrWhiteSpace(t.Label)) continue;
-            var datasets = config.Data.Datasets;
-            yield return t.DatasetIndex >= 0 && t.DatasetIndex < datasets.Count && datasets[t.DatasetIndex].Label is { Length: > 0 } series
-                ? $"{t.Label} ({series})"
-                : t.Label!;
+            if (!ctx.IsDatasetVisible(t.DatasetIndex)) continue;
+            var ds = datasets[t.DatasetIndex];
+            if (Samples(ds).Count < 2) continue;
+            yield return ds.Label is { Length: > 0 } series ? $"{t.Label} ({series})" : t.Label!;
         }
+    }
+
+    /// <summary>The (x, y) pairs a trend is fitted through, in data coordinates: an index for a category axis, the point's own x otherwise.</summary>
+    private static List<(double X, double Y)> Samples(BitChartDataset ds)
+    {
+        var samples = new List<(double X, double Y)>();
+        if (ds.Points is { } points)
+        {
+            foreach (var p in points.OrderBy(p => p.X)) samples.Add((p.X, p.Y));
+        }
+        else
+        {
+            for (int i = 0; i < ds.Data.Count; i++)
+                if (ds.Data[i] is { } v) samples.Add((i, v));
+        }
+        return samples;
     }
 
     private static void Draw(BitChartPluginContext ctx, BitChartTrendline trend, bool behind)
@@ -49,17 +71,7 @@ public sealed class BitChartTrendlinePlugin : IBitChartPlugin
         var ds = datasets[trend.DatasetIndex];
         if (!ctx.IsDatasetVisible(trend.DatasetIndex)) return;
 
-        // (x, y) in data coordinates: an index for a category axis, the point's own x otherwise.
-        var samples = new List<(double X, double Y)>();
-        if (ds.Points is { } points)
-        {
-            foreach (var p in points.OrderBy(p => p.X)) samples.Add((p.X, p.Y));
-        }
-        else
-        {
-            for (int i = 0; i < ds.Data.Count; i++)
-                if (ds.Data[i] is { } v) samples.Add((i, v));
-        }
+        var samples = Samples(ds);
         if (samples.Count < 2) return;
 
         bool byIndex = ds.Points is null && ctx.IndexIsCategory;

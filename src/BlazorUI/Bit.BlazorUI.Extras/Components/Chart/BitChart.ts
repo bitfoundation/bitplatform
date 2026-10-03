@@ -211,15 +211,18 @@ namespace BitBlazorUI {
 
         // A background may be a var() - the default one is the chart's surface - which neither a canvas fill nor a
         // standalone file can read, so it is resolved against the chart the way the page itself would resolve it.
+        // The probe reads background-color rather than color: it does not inherit, so a var() chain that resolves to
+        // nothing falls back to transparent - no fill at all - instead of the chart's own text color.
         private static resolveColor(element: HTMLElement, color: string | null): string | null {
             if (!color || color.indexOf('var(') < 0) return color;
             const probe = document.createElement('span');
             probe.style.display = 'none';
-            probe.style.color = color;
+            probe.style.backgroundColor = color;
             element.appendChild(probe);
-            const resolved = getComputedStyle(probe).color;
+            const resolved = getComputedStyle(probe).backgroundColor;
             element.removeChild(probe);
-            return resolved || null;
+            if (!resolved || resolved === 'transparent' || /^rgba\([^)]*,\s*0\)$/.test(resolved)) return null;
+            return resolved;
         }
 
         private static serialize(element: HTMLElement, background: string | null): string | null {

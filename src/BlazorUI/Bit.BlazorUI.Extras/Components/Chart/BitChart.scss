@@ -117,6 +117,13 @@
     opacity: var(--bit-Chart-inactive-opacity, 0.2);
 }
 
+// An element that enters with an opacity keyframe holds its final opacity:1 (fill-mode both), and an
+// animation outranks a normal declaration, so the fade has to be important to reach it. A transition
+// still outranks an important declaration, so the fade keeps its easing.
+.bit-cht-dim:is(.bit-cht-anim, .bit-cht-el-anim, .bit-cht-fade) {
+    opacity: var(--bit-Chart-inactive-opacity, 0.2) !important;
+}
+
 // The cursor is set inline, from whether the chart has a click handler at all.
 .bit-cht-band {
     outline: none;

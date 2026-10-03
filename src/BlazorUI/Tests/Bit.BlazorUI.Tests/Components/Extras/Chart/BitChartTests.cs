@@ -634,6 +634,45 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
+    public void ScatterCsvShouldCarryARadiusColumnOnlyForBubbleData()
+    {
+        var data = new BitChartData
+        {
+            Datasets = { new BitChartDataset { Label = "P", Points = [new(1, 2), new(3, 4)] } }
+        };
+        var lines = RenderChart(BitChartType.Scatter, data).Replace_ToCsv().TrimEnd('\n').Split('\n');
+
+        CollectionAssert.AreEqual(new[] { "Series,X,Y", "P,1,2", "P,3,4" }, lines, "the table shows no radius column here, and neither does the file");
+    }
+
+    [TestMethod]
+    public void PointsOnDifferentAxesShouldNotBeHeadedByOneOfThemAlone()
+    {
+        var data = new BitChartData
+        {
+            Datasets =
+            {
+                new BitChartDataset { Label = "Revenue", Points = [new(1, 2)] },
+                new BitChartDataset { Label = "Margin", Points = [new(3, 40)], YAxisID = "y2" }
+            }
+        };
+        var options = new BitChartOptions
+        {
+            Scales =
+            {
+                ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Title = new() { Display = true, Text = "Month" } },
+                ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Title = new() { Display = true, Text = "Revenue" } },
+                ["y2"] = new BitChartScaleOptions { Id = "y2", Type = BitChartScaleType.Linear, Position = BitChartPosition.Right, Title = new() { Display = true, Text = "Margin %" } }
+            }
+        };
+        var component = RenderChart(BitChartType.Scatter, data, options);
+
+        // Both series share the x axis, so its title still names that column; the y values are on two axes.
+        StringAssert.StartsWith(component.Instance.ToCsv(), "Series,Month,Y");
+        CollectionAssert.AreEqual(new[] { "Series", "Month", "Y" }, component.FindAll("table thead th").Select(h => h.TextContent).ToList());
+    }
+
+    [TestMethod]
     public void ToCsvShouldFollowTheConfiguredCulture()
     {
         var options = new BitChartOptions { Culture = new CultureInfo("de-DE") };
@@ -1384,6 +1423,26 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
+    public void TheZoomKeysShouldLeaveTheBrowsersOwnZoomShortcutsAlone()
+    {
+        var options = new BitChartOptions { Zoom = { Enabled = true } };
+        var component = RenderChart(BitChartType.Line, options: options);
+        var chart = component.Instance;
+        var full = chart.GetAxisRange("x")!.Value;
+
+        // Ctrl/Meta with plus, minus or zero is the page zoom, which the chart must not join in.
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "+", CtrlKey = true });
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "=", MetaKey = true });
+        Assert.AreEqual(full, chart.GetAxisRange("x")!.Value);
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "+" });
+        var zoomed = chart.GetAxisRange("x")!.Value;
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "0", CtrlKey = true });
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "-", AltKey = true });
+        Assert.AreEqual(zoomed, chart.GetAxisRange("x")!.Value, "a page-zoom reset must not discard the chart's own zoom");
+    }
+
+    [TestMethod]
     public void TheZoomKeysShouldDoNothingWithoutZoom()
     {
         var component = RenderChart(BitChartType.Line);
@@ -1504,6 +1563,30 @@ public class BitChartTests : BunitTestContext
         StringAssert.Contains(component.FindAll(".bit-cht-lgd-itm.c-item")[1].GetAttribute("style"), "margin:5px");
         StringAssert.Contains(component.Find(".bit-cht-plot.c-plot").GetAttribute("style"), "margin:6px");
         StringAssert.Contains(component.Find(".bit-cht-tt.c-tip").GetAttribute("style"), "margin:7px");
+    }
+
+    [TestMethod]
+    public void TheTitleStylesShouldWinOverTheGeneratedOnes()
+    {
+        var options = new BitChartOptions
+        {
+            Plugins =
+            {
+                Title = { Display = true, Text = "T" },
+                Subtitle = { Display = true, Text = "S" }
+            }
+        };
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Type, BitChartType.Bar);
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Options, options);
+            p.Add(c => c.Styles, new BitChartClassStyles { Title = "color:red", Subtitle = "font-size:24px" });
+        });
+
+        // An inline declaration later in the attribute wins, so the caller's has to come after the generated ones.
+        StringAssert.EndsWith(component.Find(".bit-cht-ttl").GetAttribute("style")!.TrimEnd(';'), "color:red");
+        StringAssert.EndsWith(component.Find(".bit-cht-sub").GetAttribute("style")!.TrimEnd(';'), "font-size:24px");
     }
 
     [TestMethod]
@@ -1803,6 +1886,27 @@ public class BitChartTests : BunitTestContext
 
         component.FindAll(".bit-cht-lgd-itm")[1].MouseLeave();
 
+        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void TheLegendHighlightShouldBeLetGoOfWhenTheChartStopsTakingInput(bool loading)
+    {
+        var component = RenderChart(BitChartType.Line);
+        component.FindAll(".bit-cht-lgd-itm")[1].MouseEnter();
+        Assert.AreNotEqual(0, component.FindAll(".bit-cht-dim").Count);
+
+        // A disabled legend button need not fire mouseleave, so the fade cannot wait for one.
+        component.Render(p =>
+        {
+            if (loading) p.Add(c => c.IsLoading, true);
+            else p.Add(c => c.IsEnabled, false);
+        });
+        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+
+        component.FindAll(".bit-cht-lgd-itm")[1].MouseEnter();
         Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
     }
 

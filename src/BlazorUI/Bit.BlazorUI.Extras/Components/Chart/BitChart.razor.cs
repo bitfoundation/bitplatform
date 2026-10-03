@@ -216,11 +216,13 @@ public partial class BitChart : BitComponentBase
         _config = Config ?? new BitChartConfig(Type, Data ?? new BitChartData(), Options ?? new BitChartOptions());
 
         // A disabled or loading chart takes no input, so whatever was hovered or walked by the keyboard is let go of.
-        if ((IsEnabled is false || IsLoading) && (_hoverAnchor is not null || _focusKey is not null))
+        if ((IsEnabled is false || IsLoading) && (_hoverAnchor is not null || _focusKey is not null || _legendHighlight is not null))
         {
             _focusIndex = -1;
             _focusKey = null;
             _liveMessage = null;
+            // A disabled legend button does not reliably fire mouseleave, so the fade is let go of here too.
+            _legendHighlight = null;
             ClearHover();
         }
 
@@ -258,7 +260,7 @@ public partial class BitChart : BitComponentBase
         // switching between panning and drag-to-zoom) at runtime tears the old listeners down instead
         // of leaving the chart reacting to gestures it no longer offers.
         var z = _config.Options.Zoom;
-        bool wantZoom = z.Enabled && IsEnabled && !_scene.IsRadialOrCircular;
+        bool wantZoom = z.Enabled && IsEnabled && !IsLoading && !_scene.IsRadialOrCircular;
         bool pan = z.Pan && !z.DragZoom;
         string signature = wantZoom ? $"{z.Wheel}|{pan}|{z.DragZoom}" : "";
         if (_zoomSignature == signature) return;
@@ -606,7 +608,9 @@ public partial class BitChart : BitComponentBase
             _vh = responsive && _measuredHeight is { } mh && mh > 0 ? mh : basis / aspect;
 
         _scene = new BitChartRenderer(_config, _state, _vw, _vh, _instanceId, ActiveTexts).Render();
-        _notes = _config.Options.Plugins.Custom.SelectMany(p => p.Describe(_config)).Where(n => n.HasValue()).ToList();
+        _notes = _scene.PluginContext is { } pctx
+            ? _config.Options.Plugins.Custom.SelectMany(p => p.Describe(pctx)).Where(n => n.HasValue()).ToList()
+            : [];
         RestoreInteraction();
 
         // Decide whether to (re)play the entry animation. We key off a signature of the data
@@ -996,13 +1000,15 @@ public partial class BitChart : BitComponentBase
                 break;
             // Zoom is otherwise a pointer gesture only, so the keyboard gets its own way in: plus and minus zoom
             // around the element the reader is on (the middle of the plot before they are on one), 0 resets.
-            case "+" or "=" when IsKeyboardZoomable:
+            // Ctrl/Meta/Alt with these keys is the browser's own page zoom, which is left to the browser alone;
+            // Shift is not checked, since it is how "+" and "_" are typed on most layouts.
+            case "+" or "=" when IsKeyboardZoomable && IsPlainKey(e):
                 ZoomFromKeyboard(zoomIn: true);
                 break;
-            case "-" or "_" when IsKeyboardZoomable:
+            case "-" or "_" when IsKeyboardZoomable && IsPlainKey(e):
                 ZoomFromKeyboard(zoomIn: false);
                 break;
-            case "0" when IsKeyboardZoomable:
+            case "0" when IsKeyboardZoomable && IsPlainKey(e):
                 ResetZoom();
                 break;
             case "Escape":
@@ -1016,6 +1022,8 @@ public partial class BitChart : BitComponentBase
     }
 
     private bool IsKeyboardZoomable => _config.Options.Zoom.Enabled && IsEnabled && _scene.IsRadialOrCircular is false;
+
+    private static bool IsPlainKey(KeyboardEventArgs e) => e.CtrlKey is false && e.MetaKey is false && e.AltKey is false;
 
     private void ZoomFromKeyboard(bool zoomIn)
     {
@@ -1300,7 +1308,7 @@ public partial class BitChart : BitComponentBase
 
     private void HighlightLegendItem(BitChartLegendItemModel item)
     {
-        if (IsEnabled is false || _scene.Legend is not { HighlightOnHover: true } || item.Hidden) return;
+        if (IsEnabled is false || IsLoading || _scene.Legend is not { HighlightOnHover: true } || item.Hidden) return;
         _legendHighlight = (item.IsDataIndex, item.Index);
     }
 
@@ -1483,13 +1491,19 @@ public partial class BitChart : BitComponentBase
     private string DatasetName(BitChartDataset ds, int index) => ds.Label ?? ActiveTexts.DatasetLabel(index, Culture);
 
     /// <summary>
-    /// The header of a point column: the title the axis shows, which says what the values are, or the generic name
-    /// when the axis has none.
+    /// The header of a point column: the title of the axis every point dataset is plotted on, which says what the
+    /// values are, or the generic name when that axis shows none - or when the datasets sit on different axes, whose
+    /// titles one header cannot all be.
     /// </summary>
-    private string AxisHeader(string axisId, string fallback)
-        => _config.Options.Scales.TryGetValue(axisId, out var scale) && scale.Title is { Display: true, Text.Length: > 0 } title
-            ? title.Text
-            : fallback;
+    private string PointHeader(bool x, string fallback)
+    {
+        var ids = _config.Data.Datasets.Where(d => d.Points is { Count: > 0 }).Select(d => x ? d.XAxisID : d.YAxisID).Distinct().ToList();
+        return ids.Count == 1
+            && _config.Options.Scales.TryGetValue(ids[0], out var scale)
+            && scale.Title is { Display: true, Text.Length: > 0 } title
+                ? title.Text
+                : fallback;
+    }
 
     /// <summary>Total rows the data table would render without a cap.</summary>
     private int TableRowCount => HasPointData

@@ -333,6 +333,17 @@ public static class BlazorUIMarkdown
     }
 
     /// <summary>
+    /// Whether a page's tabs are views of one feature set - a multi-API component, whose every tab carries the same
+    /// sections - rather than a page split into a tab per feature, whose tabs each hold something the others do not.
+    /// </summary>
+    private static bool IsMultiApi(IReadOnlyList<DemoExampleSource> examples)
+    {
+        var tabs = examples.GroupBy(e => e.Tab).ToArray();
+
+        return tabs.Length > 1 && tabs.Skip(1).All(t => t.Select(e => e.Title).SequenceEqual(tabs[0].Select(e => e.Title)));
+    }
+
+    /// <summary>
     /// Every other type this answer's tables name, with its members but without their prose.
     /// <para>
     /// Two kinds end up here. The shared ones - <c>BitColor</c>, <c>BitVariant</c>,
@@ -347,17 +358,6 @@ public static class BlazorUIMarkdown
     /// recognise the type here, and the call that returns it in full.
     /// </para>
     /// </summary>
-    /// <summary>
-    /// Whether a page's tabs are views of one feature set - a multi-API component, whose every tab carries the same
-    /// sections - rather than a page split into a tab per feature, whose tabs each hold something the others do not.
-    /// </summary>
-    private static bool IsMultiApi(IReadOnlyList<DemoExampleSource> examples)
-    {
-        var tabs = examples.GroupBy(e => e.Tab).ToArray();
-
-        return tabs.Length > 1 && tabs.Skip(1).All(t => t.Select(e => e.Title).SequenceEqual(tabs[0].Select(e => e.Title)));
-    }
-
     private static void AppendReferencedTypes(StringBuilder builder, BlazorUIComponent component)
     {
         var documented = component.OwnTypes.Select(t => t.Name)
