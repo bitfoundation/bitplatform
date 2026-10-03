@@ -59,4 +59,13 @@ All features can be **selectively chosen during project creation** to match your
 Try it out on [Google Play, App Store, Web, and Windows](https://bitplatform.dev/demos).
 
 ## Getting Started
-Check out our [30-part documentation](https://bitplatform.dev/templates/getting-started) to get started.
+Create a project that's ready to run, on Windows, macOS or Linux, with the [bit CLI](https://www.nuget.org/packages/Bit.Cli):
+
+```bash
+dotnet tool install --global Bit.Cli
+bit new MyApp
+```
+
+It asks for the options it needs, installs what the project needs, and leaves it built, with git, its first migration and your IDE open. `dotnet new install Bit.Boilerplate` and `dotnet new bit-bp` keep working too.
+
+Check out our [30-part documentation](https://bitplatform.dev/templates/getting-started) to learn more.

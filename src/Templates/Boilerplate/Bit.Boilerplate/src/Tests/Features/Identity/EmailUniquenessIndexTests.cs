@@ -16,9 +16,9 @@ namespace Boilerplate.Tests.Features.Identity;
 /// </para>
 /// <para>
 /// Asserted against the MODEL and the DDL the configured provider generates from it, rather than by inserting a
-/// colliding row. Two reasons, both deliberate: the test database is the developer's real SQLite file and
-/// <c>EnsureCreatedAsync</c> is a no-op once it exists, so a live insert would test whatever schema happened to be
-/// created first rather than the one this configuration describes - and a test that writes a poisoned duplicate into a
+/// colliding row. Two reasons, both deliberate: the test database is the developer's real SQLite file, whose schema is
+/// whatever was created or migrated into it, so a live insert would test that schema rather than the one this
+/// configuration describes - and a test that writes a poisoned duplicate into a
 /// database that outlives the run leaves exactly the corruption it exists to prevent.
 /// </para>
 /// </summary>
@@ -60,9 +60,9 @@ public class EmailUniquenessIndexTests
             && createScript.Contains(nameof(User.NormalizedEmail), StringComparison.Ordinal),
             "The generated DDL carries no unique index over NormalizedEmail, so nothing enforces it at the database level.");
 
-        // Note for whoever sees this go red after changing UserConfiguration: an EXISTING developer database is not
-        // migrated by EnsureCreatedAsync, so the running app keeps the old index until the file is recreated or a
-        // migration is applied. This test reads the model, so it is unaffected by that - which is the point.
+        // Note for whoever sees this go red after changing UserConfiguration: an EXISTING developer database keeps the
+        // old index until a migration that changes it is added and applied. This test reads the model, so it is
+        // unaffected by that - which is the point.
     }
 
     public TestContext TestContext { get; set; } = default!;

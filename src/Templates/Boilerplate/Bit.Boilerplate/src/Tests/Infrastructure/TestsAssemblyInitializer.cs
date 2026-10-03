@@ -129,7 +129,14 @@ public partial class TestsAssemblyInitializer
             }
             //#endif
             //#endif
-            await dbContext.Database.EnsureCreatedAsync(); // It's recommended to start using ef-core migrations.
+            //#if (IsInsideProjectTemplate == true)
+            await dbContext.Database.EnsureCreatedAsync();
+            /*
+            //#endif
+            await dbContext.Database.MigrateAsync();
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
         }
     }
 

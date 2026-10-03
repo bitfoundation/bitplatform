@@ -35,12 +35,12 @@ jobs:
         with:
           node-version: 24
 
-      - name: Use Bit.ResxTranslator
+      - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.ResxTranslator
+          dnx Bit.Cli translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -183,12 +183,12 @@ jobs:
         with:
           node-version: 24
 
-      - name: Use Bit.ResxTranslator
+      - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.ResxTranslator
+          dnx Bit.Cli translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -240,12 +240,12 @@ jobs:
           fileName: 'Boilerplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
-      - name: Use Bit.ResxTranslator
+      - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.ResxTranslator
+          dnx Bit.Cli translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -299,12 +299,12 @@ jobs:
         with:
           node-version: 24
 
-      - name: Use Bit.ResxTranslator
+      - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.ResxTranslator
+          dnx Bit.Cli translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2

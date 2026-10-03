@@ -55,6 +55,12 @@ openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365
 > of band instead (a CI/CD secret, Azure Key Vault, AWS Secrets Manager, the OS certificate store - see *Why PEM over
 > PFX* below), and keep it out of the repository, e.g. `git rm --cached AppCertificate.key` plus a `.gitignore` entry.
 
+Projects created with `bit new` start with a certificate of their own, generated on the developer's machine with the
+subject `CN=AppCertificate, OU=Development`, instead of the one the template ships. It is still a development
+certificate: outside the Development environment the app refuses to start while a certificate with
+`OU=Development` (or the template's own) is loaded, so production needs one generated as above and delivered out
+of band.
+
 ## Rotating the Certificate
 
 The app trusts **more than one** certificate at a time, so a rotation does not sign anybody out:
