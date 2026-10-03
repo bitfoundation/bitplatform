@@ -517,9 +517,9 @@ throw new BadRequestException(
 
 ---
 
-## 5. The `bit-resx` Tool - Automated Translation
+## 5. `bit translate` - Automated Translation
 
-The `bit-resx` tool (also known as `Bit.ResxTranslator`) is a .NET global tool that automates the translation of `.resx` files using Large Language Models (LLMs) like OpenAI or Azure OpenAI. This dramatically reduces the manual effort required to maintain translations across multiple languages.
+`bit translate`, a command of the [bit CLI](https://www.nuget.org/packages/Bit.Cli), automates the translation of `.resx` files using Large Language Models (LLMs) like OpenAI or Azure OpenAI. This dramatically reduces the manual effort required to maintain translations across multiple languages.
 
 ### What Does It Do?
 
@@ -535,7 +535,7 @@ The tool performs the following tasks automatically:
 
 ### Installation
 
-Nothing to install: `dnx` runs it straight from NuGet (see [Usage](#usage) below).
+Nothing to install: `dnx Bit.Cli translate` runs it straight from NuGet. With the bit CLI installed as a .NET global tool (`dotnet tool install --global Bit.Cli`), the command is `bit translate`.
 
 #### `Bit.ResxTranslator.json` Configuration Options Explained
 
@@ -600,33 +600,38 @@ export OpenAI__ApiKey="your-api-key-here"
 
 ### Usage
 
-Run the translation command from your project root (where `Bit.ResxTranslator.json` is located):
+Run the translation command in your project (it finds `Bit.ResxTranslator.json` in the current folder or the nearest one above it):
 
 ```bash
-dnx Bit.ResxTranslator
+bit translate
 ```
 
-## Philosophy of bit-resx Translator in CD Pipelines
+- `bit translate --check` calls no model and fails when any translation is missing, for CI.
+- `bit translate --dry-run` lists what would be translated.
+- `bit translate --language fa` translates only the languages you name.
+- A translation that drops or renumbers a `{0}` placeholder is asked for once more, and left out if it is still wrong.
 
-While the `bit-resx` translator is a powerful tool for automatic translation, its core philosophy is to streamline localization in CI/CD pipelines. You do **not** need to manually translate or commit every language file for all supported languages. Instead, you can:
+## Philosophy of `bit translate` in CD Pipelines
+
+While `bit translate` is a powerful tool for automatic translation, its core philosophy is to streamline localization in CI/CD pipelines. You do **not** need to manually translate or commit every language file for all supported languages. Instead, you can:
 
 - Only add or manually translate the keys and languages that are important to your project.
 - Leave less important languages (or less critical keys) untranslated or even omit them from the source code.
-- During the CD (Continuous Deployment) process, `bit-resx` will automatically fill in any missing translations for all supported languages before publishing.
+- During the CD (Continuous Deployment) process, `bit translate` will automatically fill in any missing translations for all supported languages before publishing.
 
 This approach keeps your source code clean and focused, while ensuring that all languages are fully translated at deployment time.
 
-That's why `bit-resx` tool is added to the project CD pipelines. Here's how it's used in this project's GitHub Actions:
+That's why `bit translate` is added to the project CD pipelines. Here's how it's used in this project's GitHub Actions:
 
 **Example from `.github/workflows/cd-template.yml`:**
 
 ```yaml
-- name: Use Bit.ResxTranslator
+- name: Translate .resx files
   env:
     OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
     OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
   run: |
-    dnx Bit.ResxTranslator
+    dnx Bit.Cli translate
 ```
 
 > The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from
