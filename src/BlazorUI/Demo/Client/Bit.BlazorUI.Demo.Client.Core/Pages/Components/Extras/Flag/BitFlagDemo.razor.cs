@@ -9,14 +9,14 @@ public partial class BitFlagDemo
             Name = "Alt",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The alternative text of the flag image, which is also its accessible name. A flag with none is decorative and is not announced at all. Where OnClick makes the flag a button, this is the name of the button.",
+            Description = "The accessible name of the flag. Without one the flag is decorative; with OnClick it names the button, so say what the click does.",
         },
         new()
         {
             Name = "AspectRatio",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The aspect ratio of the frame of the flag, as any CSS aspect-ratio value (e.g. \"4/3\" or \"1\"). The height stays and the width follows from the ratio - or the other way round where a Width is what was given - which is what gives a Src of a page's own the proportions the flag itself is drawn in.",
+            Description = "The aspect ratio of the frame, as any CSS aspect-ratio value (e.g. \"4/3\"). The height stays and the width follows - the other way round where only a Width is given.",
         },
         new()
         {
@@ -37,7 +37,7 @@ public partial class BitFlagDemo
             Name = "Bordered",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws a hairline border around the flag, which is what keeps a mostly white flag off a white surface. It is drawn inside the frame, so it costs no layout.",
+            Description = "Draws a hairline border inside the frame, which keeps a mostly white flag visible on a white surface.",
         },
         new()
         {
@@ -60,14 +60,14 @@ public partial class BitFlagDemo
             Name = "Code",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The dialing code of the country, read the way a telephone number is written: \"+31\", \"0031\" and \"31\" all reach the Netherlands. Dialing codes are not unique, and the first country of BitCountries.All carrying the code wins.",
+            Description = "The dialing code of the country, read like a phone number (\"+31\", \"0031\", \"31\"). Codes are shared, and the first country of BitCountries.All carrying one wins.",
         },
         new()
         {
             Name = "Country",
             Type = "BitCountry?",
             DefaultValue = "null",
-            Description = "The country to render the flag. It is taken exactly as given rather than looked up, so a country of the page's own is as valid as one out of BitCountries, and it wins over every other way of naming one.",
+            Description = "The country of the flag, taken as given rather than looked up - a country of the page's own works too. It wins over Iso2, Iso3, Code and Name.",
             LinkType = LinkType.Link,
             Href = "#country",
         },
@@ -76,21 +76,21 @@ public partial class BitFlagDemo
             Name = "Emoji",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the flag as its Unicode emoji instead of as an image, which costs no request and stays crisp at any size. Windows draws the two letters of the country code instead of the flag, and a subdivision as a plain black flag. It wins over Src.",
+            Description = "Renders the Unicode emoji flag instead of an image: no request, crisp at any size, but drawn by the platform (Windows draws the two letters of the code). It wins over Src, SrcPattern and ImageSet.",
         },
         new()
         {
             Name = "FallbackTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "What to render in place of the flag when there is none to draw - a country that resolved to nothing, or an image that failed to load after the packaged flag has stood in for it.",
+            Description = "What to render when there is no flag to draw: an unknown country, or an image that failed after the packaged flag stood in for it.",
         },
         new()
         {
             Name = "Fit",
             Type = "BitImageFit?",
             DefaultValue = "null",
-            Description = "How the flag image is scaled and cropped to fit the frame around it, which only matters where a Src of the page's own or an AspectRatio makes the two different shapes. Unset, the image covers the frame and the overflow is cropped.",
+            Description = "How the image fits a frame of another shape (a Src, SrcPattern or AspectRatio). Unset, it covers the frame and is cropped.",
             LinkType = LinkType.Link,
             Href = "#image-fit-enum",
         },
@@ -99,28 +99,28 @@ public partial class BitFlagDemo
             Name = "Grayscale",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws the flag in shades of grey, which is how a flag says the country is not the one in play while staying recognisable.",
+            Description = "Draws the flag in shades of grey, for a country that is not in play.",
         },
         new()
         {
             Name = "Height",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The height of the flag, as any CSS length. It also sets the size the emoji flag is drawn at, and the width where no Width is set. It wins over Size.",
+            Description = "The height of the flag, as any CSS length; also the width where no Width is set, and the emoji's size. It wins over Size.",
         },
         new()
         {
             Name = "ImageAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
-            Description = "Additional HTML attributes to render on the img element rather than on the frame - a crossorigin or a referrerpolicy for a Src pointing at a CDN. The src, the alt and the loading of the flag itself still win over them, and a srcset among them only goes with a Src of the page's own.",
+            Description = "Additional HTML attributes for the img element rather than the frame, e.g. a crossorigin or referrerpolicy for a CDN. The flag's own src, alt and loading win, and a srcset only goes with a Src or SrcPattern.",
         },
         new()
         {
             Name = "ImageSet",
             Type = "BitFlagImageSet?",
             DefaultValue = "null",
-            Description = "Draws the flag out of the flat or the shiny image set of the Bit.BlazorUI.Assets package - which has to be installed for it - at whichever of 16, 24, 32, 48 and 64 pixels the size of the flag and the density of the screen call for, unless ImageSize picks one. The size is read off Width, Height and AspectRatio in px or rem, and off Size otherwise. Unset, the flag is the packaged 16 pixel image. It is also cascaded, so a CascadingValue of a BitFlagImageSet sets it for every flag inside; Src and Emoji win over it.",
+            Description = "Draws the flag from the flat or shiny set of the Bit.BlazorUI.Assets package (16-64px), at the size the flag and the screen density need - read off Width/Height in px or rem, else Size. Also taken from a CascadingValue of a BitFlagImageSet. Emoji, Src and SrcPattern win over it.",
             LinkType = LinkType.Link,
             Href = "#flag-image-set-enum",
         },
@@ -129,7 +129,7 @@ public partial class BitFlagDemo
             Name = "ImageSize",
             Type = "BitFlagImageSize?",
             DefaultValue = "null",
-            Description = "Pins the flag to one size of the image of its ImageSet instead of offering the browser every size of it. The image is still scaled to the frame, and a shaped frame is cut to the flag inside that image. It only applies to an ImageSet: without one, the flag is the packaged 16 pixel image.",
+            Description = "Pins the ImageSet image to one size instead of letting the browser pick; it is still scaled to the frame. Only applies with an ImageSet.",
             LinkType = LinkType.Link,
             Href = "#flag-image-size-enum",
         },
@@ -138,7 +138,7 @@ public partial class BitFlagDemo
             Name = "Iso2",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The ISO 3166-1 alpha-2 code of the country, matched case insensitively. A code no country of BitCountries.All carries draws nothing rather than a broken image. The reserved \"UK\" is answered with the United Kingdom, whose own code is \"GB\".",
+            Description = "The ISO 3166-1 alpha-2 code of the country, case insensitive; \"UK\" is answered with the United Kingdom (\"GB\"). An unknown code draws nothing rather than a broken image.",
         },
         new()
         {
@@ -152,7 +152,7 @@ public partial class BitFlagDemo
             Name = "Loading",
             Type = "BitImageLoading?",
             DefaultValue = "null",
-            Description = "How the browser should load the flag image. It defaults to loading lazily, which is what a list of two hundred flags wants.",
+            Description = "How the browser loads the flag image. Lazy unless set.",
             LinkType = LinkType.Link,
             Href = "#image-loading-enum",
         },
@@ -161,25 +161,25 @@ public partial class BitFlagDemo
             Name = "Name",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The full English name of the country, matched case insensitively against the whole name rather than part of it. The alternative names and abbreviations a country is as widely known by are answered too - \"Czechia\", \"Türkiye\", \"Holland\", \"USA\" - and so are the accents and the punctuation another source spells it with.",
+            Description = "The full English name of the country, case insensitive. Everyday names and abbreviations (\"Czechia\", \"Holland\", \"USA\") resolve too, ignoring accents and punctuation.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "The callback for when the flag is clicked. Setting it turns the flag into a button that joins the tab order, grows its target to the 24 pixels WCAG asks of one and answers Enter and Space as well as the pointer, named by its Alt or, without one, by the country it shows.",
+            Description = "The callback for when the flag is clicked. It makes the flag a button: in the tab order, activated by Enter and Space, with a 24px pointer target, named by its Alt or else its country.",
         },
         new()
         {
             Name = "OnError",
             Type = "EventCallback",
-            Description = "The callback for when the flag image fails to load. A Src of the page's own that failed raises it once for that image and once more if the packaged flag standing in for it fails as well.",
+            Description = "The callback for when the flag image fails to load; fired again if the packaged flag standing in for a failed Src fails too.",
         },
         new()
         {
             Name = "OnLoad",
             Type = "EventCallback",
-            Description = "The callback for when the flag image has loaded. It is the browser's own load event, so it never fires for the emoji flag, which is text.",
+            Description = "The callback for when the flag image has loaded. Never fired for an emoji flag.",
         },
         new()
         {
@@ -200,7 +200,7 @@ public partial class BitFlagDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the flag, out of the icon sizes of the theme. Medium is the 16 pixels the packaged images are drawn at, and past the sizes of the theme an ImageSet is what stays sharp. Width and Height win over it.",
+            Description = "The size of the flag, out of the theme's icon sizes; unset, it is --bit-Flag-size, else Medium (16px). Width and Height win over it.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -209,7 +209,14 @@ public partial class BitFlagDemo
             Name = "Src",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The url of the image to render instead of the packaged flag image, for a set of images of the page's own. It wins over ImageSet and Emoji wins over it, and a source that fails falls back to the packaged flag of the same country and then to the FallbackTemplate.",
+            Description = "The url of an image of the page's own to draw instead of the packaged flag. A failed one falls back to the packaged flag, then to the FallbackTemplate. It wins over SrcPattern and ImageSet; Emoji wins over it.",
+        },
+        new()
+        {
+            Name = "SrcPattern",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The url of the image of every country, with {iso2}/{iso3} (lower case) or {ISO2}/{ISO3} (upper case) written in - e.g. \"https://flagcdn.com/{iso2}.svg\". Falls back like a Src; Src and Emoji win over it, and it wins over ImageSet.",
         },
         new()
         {
@@ -225,14 +232,14 @@ public partial class BitFlagDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The tooltip value of the flag element. A tooltip is a pointer affordance rather than an accessible name, so a flag that has to be named to everyone wants an Alt as well.",
+            Description = "The tooltip of the flag. It is not an accessible name, so a flag that must be named wants an Alt as well.",
         },
         new()
         {
             Name = "Width",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The width of the flag, as any CSS length. The flag images are square, so a Height alone usually sets both. It wins over Size.",
+            Description = "The width of the flag, as any CSS length. A Height alone usually sets both. It wins over Size.",
         },
     ];
 
@@ -249,6 +256,70 @@ public partial class BitFlagDemo
             Name = "FocusAsync(bool preventScroll)",
             Type = "ValueTask",
             Description = "Gives focus to the flag element, leaving the page scrolled where it is instead of bringing the flag into view.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Flag-size",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of a flag with no Size, Width or Height - also the size the emoji is drawn at.",
+        },
+        new()
+        {
+            Name = "--bit-Flag-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of a Rounded flag.",
+        },
+        new()
+        {
+            Name = "--bit-Flag-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Border width of a Bordered flag.",
+        },
+        new()
+        {
+            Name = "--bit-Flag-border-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Border color of a Bordered flag.",
+        },
+        new()
+        {
+            Name = "--bit-Flag-shadow",
+            DefaultValue = "--bit-shd-card",
+            Description = "Elevation of a Shadow flag.",
+        },
+        new()
+        {
+            Name = "--bit-Flag-grayscale-filter",
+            DefaultValue = "grayscale(1)",
+            Description = "Filter of a Grayscale flag, e.g. grayscale(1) opacity(0.5).",
+        },
+        new()
+        {
+            Name = "--bit-Flag-hover-opacity",
+            DefaultValue = "0.8",
+            Description = "Opacity of a clickable flag under the pointer.",
+        },
+        new()
+        {
+            Name = "--bit-Flag-active-opacity",
+            DefaultValue = "0.6",
+            Description = "Opacity of a clickable flag while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-Flag-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-Flag-emoji-font-family",
+            DefaultValue = "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif",
+            Description = "Font stack of the Emoji flag. Put a flag emoji font of the page's own first to draw flags where the platform draws letters (Windows).",
         },
     ];
 
@@ -569,6 +640,9 @@ public partial class BitFlagDemo
     // of the world ship: the packaged images are square, so this is the case AspectRatio is for.
     private const string netherlandsSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%231e4785'/%3E%3Crect width='900' height='400' fill='%23fff'/%3E%3Crect width='900' height='200' fill='%23ae1c28'/%3E%3C/svg%3E";
 
+    // One url for every country: {iso2} is written in as the lower-cased alpha-2 code.
+    private const string flagCdnPattern = "https://flagcdn.com/{iso2}.svg";
+
     private static readonly BitCountry[] clickableCountries =
     [
         BitCountries.France,
@@ -578,6 +652,19 @@ public partial class BitFlagDemo
     ];
 
     private BitCountry? selectedCountry;
+
+    private readonly BitFlagParams[] flagParams =
+    [
+        new()
+        {
+            Height = "2rem",
+            Rounded = true,
+            Bordered = true,
+            AutoAlt = true,
+            AutoTitle = true,
+            ImageSet = BitFlagImageSet.Shiny,
+        }
+    ];
 
     private int eventFlagsRenderCount;
     private int loadedCount;

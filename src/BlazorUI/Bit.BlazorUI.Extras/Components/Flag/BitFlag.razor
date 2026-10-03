@@ -89,10 +89,11 @@
     var splattedDecoding = ImageAttributes.TryGetValue("decoding", out var sdc) ? sdc?.ToString() : null;
 
     @*  The srcset of the picture. An image of a set carries its own; a srcset of the page's own goes with
-        the Src of the page's own only, since the packaged flag standing in for a failed one - or asked
-        for in the first place - would otherwise never be drawn over it. *@
+        an image of the page's own only - a Src, or one written out of a SrcPattern - since the packaged
+        flag standing in for a failed one - or asked for in the first place - would otherwise never be
+        drawn over it. *@
     var splattedSrcSet = ImageAttributes.TryGetValue("srcset", out var sss) ? sss?.ToString() : null;
-    var srcSet = _srcSet ?? (Src.HasValue() && _hasError is false ? splattedSrcSet : null);
+    var srcSet = _srcSet ?? (_drawsOwnSrc && _hasError is false ? splattedSrcSet : null);
 
     @*  The error is the flag's own business - it is what moves the picture on to the packaged flag and
         then to the fallback - so that one is always listened for. The load is nobody's unless the page
