@@ -27,8 +27,11 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     // order other than the markup one, and what says the rendered document is worth reading back.
     private bool _optionOrderIsStale;
     private string? _togglingKey;
-    // Settles when the awaited OnToggling in flight is over, so that a find-in-page reveal landing meanwhile can
-    // wait for it rather than be turned away as if it had been refused.
+    // The toggles in flight (a click, a method call, ExpandAll, a reveal) and what settles when the last of them is
+    // over - its OnToggling, the state it assigns, the panels it closes along the way, the keys it pushes back and
+    // the render - so that a find-in-page reveal landing meanwhile waits for all of it, rather than starting a toggle
+    // of its own from a state the other one has only half applied.
+    private int _pendingToggles;
     private TaskCompletionSource? _toggled;
     private List<TItem> _items = [];
     private List<TItem>? _oldItems;
@@ -441,26 +444,35 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     {
         if (Multiple is false) return;
 
-        var changed = false;
+        BeginToggle();
 
-        foreach (var item in _items.ToArray())
+        try
         {
-            if (GetIsEnabled(item) is false) continue;
+            var changed = false;
 
-            // The cap is a cap on the whole list, so ExpandAll stops at it rather than opening every panel
-            // and letting each one close the one before it.
-            if (_MaxExpanded is int max && _expandedKeys.Count >= max) break;
+            foreach (var item in _items.ToArray())
+            {
+                if (GetIsEnabled(item) is false) continue;
 
-            var key = GetItemKey(item);
-            if (key.HasNoValue() || _expandedKeys.Contains(key!)) continue;
+                // The cap is a cap on the whole list, so ExpandAll stops at it rather than opening every panel
+                // and letting each one close the one before it.
+                if (_MaxExpanded is int max && _expandedKeys.Count >= max) break;
 
-            changed |= await ApplyToggle(item, key!, true, BitAccordionToggleReason.Method);
+                var key = GetItemKey(item);
+                if (key.HasNoValue() || _expandedKeys.Contains(key!)) continue;
+
+                changed |= await ApplyToggle(item, key!, true, BitAccordionToggleReason.Method);
+            }
+
+            if (changed is false) return;
+
+            await UpdateBoundKeys();
+            await RefreshAndRender();
         }
-
-        if (changed is false) return;
-
-        await UpdateBoundKeys();
-        await RefreshAndRender();
+        finally
+        {
+            EndToggle();
+        }
     }
 
     /// <summary>
@@ -473,29 +485,38 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// </remarks>
     public async Task CollapseAll()
     {
-        var changed = false;
+        BeginToggle();
 
-        foreach (var item in _items.ToArray())
+        try
         {
-            var key = GetItemKey(item);
-            if (key.HasNoValue() || _expandedKeys.Contains(key!) is false) continue;
+            var changed = false;
 
-            changed |= await ApplyToggle(item, key!, false, BitAccordionToggleReason.Method);
+            foreach (var item in _items.ToArray())
+            {
+                var key = GetItemKey(item);
+                if (key.HasNoValue() || _expandedKeys.Contains(key!) is false) continue;
+
+                changed |= await ApplyToggle(item, key!, false, BitAccordionToggleReason.Method);
+            }
+
+            // Keys that no longer map to an item of the list are dropped along with the rest, so a collapsed list
+            // does not keep reporting them through the two-way bound ExpandedKey(s).
+            var orphans = _expandedKeys.Where(k => FindItem(k) is null).ToArray();
+            if (orphans.Length > 0)
+            {
+                foreach (var orphan in orphans) RemoveExpandedKey(orphan);
+                changed = true;
+            }
+
+            if (changed is false) return;
+
+            await UpdateBoundKeys();
+            await RefreshAndRender();
         }
-
-        // Keys that no longer map to an item of the list are dropped along with the rest, so a collapsed list
-        // does not keep reporting them through the two-way bound ExpandedKey(s).
-        var orphans = _expandedKeys.Where(k => FindItem(k) is null).ToArray();
-        if (orphans.Length > 0)
+        finally
         {
-            foreach (var orphan in orphans) RemoveExpandedKey(orphan);
-            changed = true;
+            EndToggle();
         }
-
-        if (changed is false) return;
-
-        await UpdateBoundKeys();
-        await RefreshAndRender();
     }
 
     /// <summary>
@@ -1329,20 +1350,21 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     // The browser is about to reveal the collapsed panel of an item, because find-in-page or a fragment navigation
     // landed inside it (HiddenUntilFound). The expansion goes through the list the way a click does, so the
     // single-expand mode, MaxExpanded and OnToggling all have their say; the answer is whether the panel is open.
+    // The accordion only asks while its panel is searchable, which already means an enabled, editable item.
     internal async Task<bool> HandleOnItemReveal(TItem item)
     {
-        if (HiddenUntilFound is false || IsEnabled is false || GetIsEnabled(item) is false || GetItemIsReadOnly(item)) return false;
-
-        var key = GetItemKey(item);
-        if (key.HasNoValue()) return false;
-
-        // A toggle that is still waiting on OnToggling is not a refusal of this reveal, so the reveal waits for it.
+        // A toggle still in flight is not a refusal of this reveal, so the reveal waits for the whole of it.
         while (_toggled is { } toggled)
         {
             await toggled.Task;
-
-            if (IsDisposed) return false;
         }
+
+        // The wait can have changed what the accordion saw when it asked: the list can be gone, or the item have
+        // been turned off or made read-only meanwhile.
+        if (IsDisposed || HiddenUntilFound is false || IsEnabled is false || GetIsEnabled(item) is false || GetItemIsReadOnly(item)) return false;
+
+        var key = GetItemKey(item);
+        if (key.HasNoValue()) return false;
 
         if (_expandedKeys.Contains(key!)) return true;
 
@@ -1363,41 +1385,79 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     private async Task<bool> ToggleItem(TItem item, string key, bool expand, BitAccordionToggleReason reason)
     {
-        // Read before the expansion is applied, since applying it adds the new key to the set. A cancelled
-        // expansion therefore leaves the previously expanded item(s) exactly where they were.
-        //
-        // In single-expand mode that is every other panel; in multiple-expand mode under a MaxExpanded cap
-        // it is the oldest of them, as many as the one being opened needs to fit.
-        var others = expand
-                   ? (Multiple ? GetOverflowKeys(key) : [.. _expandedKeys.Where(k => k != key)])
-                   : [];
+        BeginToggle();
 
-        if (await ApplyToggle(item, key, expand, reason) is false) return false;
-
-        // A revealed panel is one the browser is already scrolling to the match inside of.
-        if (expand && reason is not BitAccordionToggleReason.Reveal) QueueScrollIntoView(item);
-
-        // Collapse the item(s) that were expanded before.
-        foreach (var otherKey in others)
+        try
         {
-            if (RemoveExpandedKey(otherKey) is false) continue;
+            // Read before the expansion is applied, since applying it adds the new key to the set. A cancelled
+            // expansion therefore leaves the previously expanded item(s) exactly where they were.
+            //
+            // In single-expand mode that is every other panel; in multiple-expand mode under a MaxExpanded cap
+            // it is the oldest of them, as many as the one being opened needs to fit.
+            var others = expand
+                       ? (Multiple ? GetOverflowKeys(key) : [.. _expandedKeys.Where(k => k != key)])
+                       : [];
 
-            var otherItem = FindItem(otherKey);
-            if (otherItem is null) continue;
+            if (await ApplyToggle(item, key, expand, reason) is false) return false;
 
-            SetIsExpanded(otherItem, false);
-            await OnCollapse.InvokeAsync(otherItem);
-            await OnToggle.InvokeAsync(otherItem);
+            if (reason is BitAccordionToggleReason.Reveal)
+            {
+                // A revealed panel is one the browser has already scrolled to the match inside of, so it is not
+                // scrolled to again - but a panel closed along the way above it would pull the match up and out
+                // of place, so the item is held where the browser left it while the others close.
+                if (others.Length > 0) await KeepItemInPlace(item);
+            }
+            else if (expand)
+            {
+                QueueScrollIntoView(item);
+            }
+
+            // Collapse the item(s) that were expanded before.
+            foreach (var otherKey in others)
+            {
+                if (RemoveExpandedKey(otherKey) is false) continue;
+
+                var otherItem = FindItem(otherKey);
+                if (otherItem is null) continue;
+
+                SetIsExpanded(otherItem, false);
+                await OnCollapse.InvokeAsync(otherItem);
+                await OnToggle.InvokeAsync(otherItem);
+            }
+
+            await UpdateBoundKeys();
+
+            // A toggle can affect other items too (single-expand mode collapses the previously expanded
+            // item), and the click handler runs on the clicked item's renderer, so both the registered
+            // options and the accordion list itself need an explicit re-render.
+            await RefreshAndRender();
+
+            return true;
         }
+        finally
+        {
+            EndToggle();
+        }
+    }
 
-        await UpdateBoundKeys();
+    private void BeginToggle()
+    {
+        // Its continuations run off the dispatcher's queue rather than inline, so a reveal waiting on it resumes
+        // only once the toggle that settles it has returned.
+        if (_pendingToggles++ == 0)
+        {
+            _toggled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+    }
 
-        // A toggle can affect other items too (single-expand mode collapses the previously expanded
-        // item), and the click handler runs on the clicked item's renderer, so both the registered
-        // options and the accordion list itself need an explicit re-render.
-        await RefreshAndRender();
+    private void EndToggle()
+    {
+        if (--_pendingToggles > 0) return;
 
-        return true;
+        var toggled = _toggled;
+        _toggled = null;
+
+        toggled?.TrySetResult();
     }
 
     // Runs the cancellable OnToggling callback and, when it is not refused, moves the single item between the
@@ -1416,17 +1476,14 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             _isToggling = true;
             _togglingKey = key;
 
-            // Its continuations run off the dispatcher's queue rather than inline, so a reveal waiting on it only
-            // resumes once this toggle has gone on to assign the state it was let through with.
-            var toggled = _toggled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            // Nothing toggles the list while the callback is running, so the header of the item it was
-            // asked about says as much - a spinner, aria-busy and a busy cursor - rather than going on
-            // looking like a toggle that answers at once.
-            await RefreshAndRender();
-
             try
             {
+                // Nothing toggles the list while the callback is running, so the header of the item it was
+                // asked about says as much - a spinner, aria-busy and a busy cursor - rather than going on
+                // looking like a toggle that answers at once. It is rendered inside the try, so a render that
+                // throws still lets go of the busy state rather than refusing every toggle from then on.
+                await RefreshAndRender();
+
                 var args = new BitAccordionListToggleArgs<TItem>(item, key, expand, reason);
 
                 await OnToggling.InvokeAsync(args);
@@ -1441,9 +1498,6 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             {
                 _isToggling = false;
                 _togglingKey = null;
-                _toggled = null;
-
-                toggled.TrySetResult();
 
                 await RefreshAndRender();
             }
@@ -1489,6 +1543,20 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             RefreshOptions();
             StateHasChanged();
         });
+    }
+
+    // Holds the item's place in the viewport while the panels above it close: the browser has just scrolled a
+    // find-in-page match inside it into view, and every pixel a panel above gives up would move the match by as much.
+    private async Task KeepItemInPlace(TItem item)
+    {
+        if (_itemRefs.TryGetValue(item, out var itemRef) is false) return;
+        if (itemRef.GetElement() is not { } element) return;
+
+        try
+        {
+            await _js.BitExtrasKeepInPlace(element);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task FocusItemCore(TItem item)
@@ -1707,9 +1775,11 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return null;
     }
 
+    // An item's own icon or icon name overrides the list's pair as a whole: the accordion prefers an icon over a
+    // name, so the list's icon handed down beside an item's own name would win over it rather than default it.
     internal BitIconInfo? GetItemExpanderIcon(TItem item)
     {
-        return GetExpanderIcon(item) ?? ExpanderIcon;
+        return GetExpanderIcon(item) ?? (GetExpanderIconName(item).HasValue() ? null : ExpanderIcon);
     }
 
     internal string? GetItemExpanderIconName(TItem item)
@@ -1719,7 +1789,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     internal BitIconInfo? GetItemExpandedExpanderIcon(TItem item)
     {
-        return GetExpandedExpanderIcon(item) ?? ExpandedExpanderIcon;
+        return GetExpandedExpanderIcon(item) ?? (GetExpandedExpanderIconName(item).HasValue() ? null : ExpandedExpanderIcon);
     }
 
     internal string? GetItemExpandedExpanderIconName(TItem item)

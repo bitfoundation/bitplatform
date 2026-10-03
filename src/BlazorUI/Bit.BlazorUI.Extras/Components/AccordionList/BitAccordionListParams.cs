@@ -235,7 +235,11 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
             bitAccordionList.EmptyContent = EmptyContent;
         }
 
-        if (ExpandedExpanderIcon is not null && bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIcon)))
+        // The icon takes precedence over the icon name, so a cascaded icon is only a default for a list that has
+        // set neither: applied over a list's own ExpandedExpanderIconName it would override it rather than default it.
+        if (ExpandedExpanderIcon is not null &&
+            bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIcon)) &&
+            bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIconName)))
         {
             bitAccordionList.ExpandedExpanderIcon = ExpandedExpanderIcon;
         }
@@ -245,8 +249,7 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
             bitAccordionList.ExpandedExpanderIconName = ExpandedExpanderIconName;
         }
 
-        // The icon takes precedence over the icon name, so a cascaded icon is only a default for a list that has
-        // set neither: applied over a list's own ExpanderIconName it would override it rather than default it.
+        // Likewise for the collapsed expander icon and the list's own ExpanderIconName.
         if (ExpanderIcon is not null &&
             bitAccordionList.HasNotBeenSet(nameof(ExpanderIcon)) &&
             bitAccordionList.HasNotBeenSet(nameof(ExpanderIconName)))

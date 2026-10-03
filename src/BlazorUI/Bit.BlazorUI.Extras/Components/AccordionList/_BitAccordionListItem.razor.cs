@@ -4,16 +4,16 @@ public partial class _BitAccordionListItem<TItem> : ComponentBase, IDisposable w
 {
     private bool _skipRender;
     private TItem? _registeredItem;
-    private BitAccordion? _accordion;
 
     // The reference is a property so that the accordion is handed the list's reveal the moment it is captured,
-    // which is ahead of its first render: a HiddenUntilFound panel is only searchable with somebody to open it.
+    // which Blazor does before the accordion's first render: a HiddenUntilFound panel is only searchable with
+    // somebody to open it.
     private BitAccordion? Accordion
     {
-        get => _accordion;
+        get;
         set
         {
-            _accordion = value;
+            field = value;
 
             if (value is not null) value.RevealHandler = HandleOnReveal;
         }
@@ -25,11 +25,11 @@ public partial class _BitAccordionListItem<TItem> : ComponentBase, IDisposable w
 
 
 
-    internal ValueTask FocusAsync() => _accordion?.FocusAsync() ?? ValueTask.CompletedTask;
+    internal ValueTask FocusAsync() => Accordion?.FocusAsync() ?? ValueTask.CompletedTask;
 
     // The root element of the accordion the item renders, which is the box the list scrolls into view: the
     // wrapper around it generates none of its own (display: contents) and could not be scrolled to.
-    internal ElementReference? GetElement() => _accordion?.RootElement;
+    internal ElementReference? GetElement() => Accordion?.RootElement;
 
 
 
@@ -100,7 +100,7 @@ public partial class _BitAccordionListItem<TItem> : ComponentBase, IDisposable w
         // own scroll. The stop inside it never sees them - they are fired on the box that holds the content
         // rather than inside it - so the navigation steps aside for as long as the panel holds the focus,
         // rather than moving the reader twice: once down the list and once down the panel.
-        if (_accordion?.IsContentFocused is true) return;
+        if (Accordion?.IsContentFocused is true) return;
 
         await AccordionList.HandleOnItemKeyDown(e, Item);
     }

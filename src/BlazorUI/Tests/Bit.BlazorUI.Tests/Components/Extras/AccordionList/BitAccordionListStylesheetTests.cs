@@ -62,7 +62,24 @@ public class BitAccordionListStylesheetTests : BunitTestContext
         }
 
         StringAssert.Contains(joined, "gap: 0;");
-        StringAssert.Contains(joined, "margin-block-start: calc(-1 * var(--bit-Accordion-border-width, ");
+
+        // The shared line is the top border of the lower item alone, so nothing pairs an item with the one above
+        // it: no adjacency, and no overlap sized by one item's border for a line that belongs to the other.
+        StringAssert.Contains(joined, "border-block-end-width: 0;");
+        Assert.IsFalse(joined.Contains("margin-block-start"), "The shared line is drawn by overlapping two borders again.");
+        Assert.IsFalse(Regex.IsMatch(joined, @"\+\s*\.bit-acl-itm"), "A rule pairs adjacent items, which markup between the options breaks.");
+    }
+
+    [TestMethod]
+    public void BitAccordionListJoinedShouldFindTheLastItemWithoutHas()
+    {
+        var stylesheet = StripComments(ReadStylesheet());
+
+        // :has() is the newest of the selectors that could find it; the last item is found with the older
+        // `of S` syntax instead, behind a plain :last-child for the engines that predate that too.
+        Assert.IsFalse(stylesheet.Contains(":has("));
+        StringAssert.Contains(stylesheet, "> .bit-acl-itm:last-child > .bit-acd");
+        StringAssert.Contains(stylesheet, "> .bit-acl-itm:nth-last-child(1 of .bit-acl-itm) > .bit-acd");
     }
 
     [TestMethod]

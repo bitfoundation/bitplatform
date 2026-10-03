@@ -173,6 +173,44 @@ public class BitAccordionListParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionListShouldKeepItsOwnExpandedIconNameOverACascadedExpandedIcon()
+    {
+        var component = RenderWithParams(new BitAccordionListParams
+        {
+            ExpandedExpanderIcon = BitIconInfo.Css("cascaded-expanded"),
+        }, builder =>
+        {
+            builder.AddAttribute(2, nameof(BitAccordionList<BitAccordionListItem>.ExpandedExpanderIconName), "ChevronUp");
+            builder.AddAttribute(3, nameof(BitAccordionList<BitAccordionListItem>.DefaultExpandedKey), "a");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".cascaded-expanded").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-acd-exp .bit-icon--ChevronUp").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListItemShouldKeepItsOwnIconNamesOverTheListsIcons()
+    {
+        var component = RenderWithParams(new BitAccordionListParams
+        {
+            ExpanderIcon = BitIconInfo.Css("cascaded-icon"),
+            ExpandedExpanderIcon = BitIconInfo.Css("cascaded-expanded"),
+        }, builder => builder.AddAttribute(2, nameof(BitAccordionList<BitAccordionListItem>.DefaultExpandedKey), "a"), items:
+        [
+            new() { Key = "a", Title = "Item A", ExpandedExpanderIconName = "ChevronUp" },
+            new() { Key = "b", Title = "Item B", ExpanderIconName = "ChevronDown" },
+            new() { Key = "c", Title = "Item C" },
+        ]);
+
+        var icons = component.FindAll(".bit-acd-eic");
+
+        // An item's own name overrides the list's icon, the way it would override the list's own name.
+        Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--ChevronUp"));
+        Assert.IsTrue(icons[1].ClassList.Contains("bit-icon--ChevronDown"));
+        Assert.IsTrue(icons[2].ClassList.Contains("cascaded-icon"));
+    }
+
+    [TestMethod]
     public void BitAccordionListShouldTakeACascadedMultipleMode()
     {
         var component = RenderWithParams(new BitAccordionListParams { Multiple = true, MaxExpanded = 2 });

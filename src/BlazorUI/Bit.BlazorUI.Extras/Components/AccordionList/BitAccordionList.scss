@@ -30,7 +30,8 @@
 // and only the outer corners of the first and the last item are rounded. The rules reach only the list's own
 // items (through the item wrapper), never an accordion nested inside a panel. First and last are found among
 // the items themselves rather than among all the children, so markup a page puts between the options does not
-// leave an inner corner rounded.
+// leave an inner corner rounded - with `:nth-last-child(... of ...)`, which is older than `:has()` in every
+// engine, behind a plain `:last-child` for the engines older still.
 .bit-acl-jnd {
     gap: 0;
 
@@ -43,26 +44,31 @@
         border-start-end-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
     }
 
-    > .bit-acl-itm:not(:has(~ .bit-acl-itm)) > .bit-acd {
+    // The line between two items is the top border of the lower one alone, so every item above another gives up
+    // its bottom border. Nothing then depends on what the item above it is - bordered or not, how thick its line,
+    // or whether other markup stands between the two - and the line is drawn once, in one color and one width.
+    > .bit-acl-itm:not(:last-child) > .bit-acd {
+        border-block-end-width: 0;
+    }
+
+    > .bit-acl-itm:last-child > .bit-acd {
         border-end-start-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
         border-end-end-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
     }
 
-    // A bordered item slides up over the line of the one above it, so the two share it, and that shared line takes
-    // the divider color. A borderless one has no line to share, so it is given one of its own to keep the items
-    // apart, as thick as the outline would have been - and when the item above it is bordered, slides up over that
-    // one's line in turn, so the two still draw a single line between them.
+    > .bit-acl-itm:nth-last-child(1 of .bit-acl-itm) > .bit-acd {
+        border-block-end-width: var(--bit-Accordion-border-width, #{$shp-border-width});
+        border-end-start-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
+        border-end-end-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
+    }
+
+    // That shared line takes the divider color. A borderless item has no top border to lend it, so it is given
+    // one of its own to keep the items apart, as thick as the outline would have been.
     > .bit-acl-itm ~ .bit-acl-itm > .bit-acd {
-        margin-block-start: calc(-1 * var(--bit-Accordion-border-width, #{$shp-border-width}));
         border-block-start-color: var(--bit-AccordionList-divider-color, var(--bit-acd-brd));
 
         &.bit-acd-nbd {
-            margin-block-start: 0;
             border-block-start: var(--bit-Accordion-border-width, #{$shp-border-width}) $shp-border-style var(--bit-AccordionList-divider-color, #{$clr-brd-pri});
         }
-    }
-
-    > .bit-acl-itm:has(> .bit-acd:not(.bit-acd-nbd)) + .bit-acl-itm > .bit-acd.bit-acd-nbd {
-        margin-block-start: calc(-1 * var(--bit-Accordion-border-width, #{$shp-border-width}));
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -139,5 +140,135 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "two" }, component.Instance.GetExpandedKeys().ToArray());
         Assert.AreEqual("until-found", component.FindAll(".bit-acd-con")[0].GetAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListHiddenUntilFoundShouldHoldTheRevealedItemInPlaceOnlyWhenItClosesOthers()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.ScrollIntoViewOnExpand, true);
+        });
+
+        // Nothing is open, so nothing closes above the match and the browser's own scroll is left alone.
+        component.FindAll(".bit-acd-con")[0].TriggerEvent("onbeforematch", EventArgs.Empty);
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.keepInPlace"));
+
+        // Item A closes as B is revealed, so B is held where the browser scrolled it.
+        component.FindAll(".bit-acd-con")[1].TriggerEvent("onbeforematch", EventArgs.Empty);
+
+        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.keepInPlace"));
+
+        // A revealed panel is never scrolled to again: the browser has already scrolled to the match inside it.
+        component.WaitForAssertion(() => Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+    }
+
+    [TestMethod]
+    public void BitAccordionListHiddenUntilFoundShouldCloseTheOldestPanelBeyondMaxExpanded()
+    {
+        string[]? boundKeys = null;
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitAccordionListItem>
+            {
+                new() { Key = "a", Title = "Item A" },
+                new() { Key = "b", Title = "Item B" },
+                new() { Key = "c", Title = "Item C" },
+            });
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxExpanded, 2);
+            parameters.Add(p => p.DefaultExpandedKeys, ["a", "b"]);
+            parameters.Add(p => p.ExpandedKeysChanged, (IEnumerable<string>? keys) => boundKeys = keys?.ToArray());
+        });
+
+        component.FindAll(".bit-acd-con")[2].TriggerEvent("onbeforematch", EventArgs.Empty);
+
+        CollectionAssert.AreEquivalent(new[] { "b", "c" }, component.Instance.GetExpandedKeys().ToArray());
+        CollectionAssert.AreEquivalent(new[] { "b", "c" }, boundKeys);
+        Assert.AreEqual("until-found", component.FindAll(".bit-acd-con")[0].GetAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public async Task BitAccordionListHiddenUntilFoundShouldWaitForTheWholeToggleInFlight()
+    {
+        var toggling = new TaskCompletionSource();
+        var expanding = new TaskCompletionSource();
+        var events = new List<string>();
+        string? boundKey = null;
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Bind(p => p.ExpandedKey, boundKey, v => { boundKey = v; events.Add($"bound:{v}"); });
+            parameters.Add(p => p.OnToggling, EventCallback.Factory.Create<BitAccordionListToggleArgs<BitAccordionListItem>>(this, async args =>
+            {
+                events.Add($"toggling:{args.Key}");
+                if (args.Key == "a") await toggling.Task;
+            }));
+            parameters.Add(p => p.OnExpand, EventCallback.Factory.Create<BitAccordionListItem>(this, async item =>
+            {
+                events.Add($"expand:{item.Key}");
+                if (item.Key == "a") await expanding.Task;
+            }));
+            parameters.Add(p => p.OnCollapse, (BitAccordionListItem item) => events.Add($"collapse:{item.Key}"));
+        });
+
+        var click = component.InvokeAsync(() => component.FindAll(".bit-acd-hdr")[0].Click());
+        var reveal = component.InvokeAsync(() => component.FindAll(".bit-acd-con")[1].TriggerEventAsync("onbeforematch", EventArgs.Empty));
+
+        // The click is waiting on OnToggling, and the reveal waits behind it rather than being turned away.
+        Assert.IsFalse(reveal.IsCompleted);
+
+        toggling.SetResult();
+
+        // The click is through OnToggling but still in OnExpand: its state is only half applied, so the reveal
+        // keeps on waiting rather than starting a toggle of its own from it.
+        component.WaitForAssertion(() => CollectionAssert.Contains(events, "expand:a"));
+        Assert.IsFalse(events.Contains("toggling:b"));
+        Assert.IsFalse(reveal.IsCompleted);
+
+        expanding.SetResult();
+
+        await click;
+        await reveal;
+
+        CollectionAssert.AreEqual(new[] { "toggling:a", "expand:a", "bound:a", "toggling:b", "expand:b", "collapse:a", "bound:b" }, events);
+        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+    }
+
+    [TestMethod]
+    public async Task BitAccordionListHiddenUntilFoundShouldNotRevealAnItemTurnedOffWhileWaiting()
+    {
+        var toggling = new TaskCompletionSource();
+        var items = GetItems();
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.OnToggling, EventCallback.Factory.Create<BitAccordionListToggleArgs<BitAccordionListItem>>(this, async args =>
+            {
+                if (args.Key == "a") await toggling.Task;
+            }));
+        });
+
+        var click = component.InvokeAsync(() => component.FindAll(".bit-acd-hdr")[0].Click());
+        var reveal = component.InvokeAsync(() => component.FindAll(".bit-acd-con")[1].TriggerEventAsync("onbeforematch", EventArgs.Empty));
+
+        items[1].IsEnabled = false;
+
+        toggling.SetResult();
+
+        await click;
+        await reveal;
+
+        CollectionAssert.AreEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray());
     }
 }

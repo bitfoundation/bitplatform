@@ -463,8 +463,9 @@ public partial class BitAccordion : BitComponentBase
 
     // The owner of the expansion of an accordion whose IsExpanded is bound one way by a list of accordions
     // (BitAccordionList): the list answers the header itself, so it is also the one a find-in-page reveal asks to
-    // open the panel, and the answer says whether it did. It is set through the list item's reference, ahead of
-    // the first render, which is why it is a plain property rather than a parameter.
+    // open the panel, and the answer says whether it did. It is internal plumbing between the two components, and a
+    // [Parameter] has to be public, so it is a plain property the list item sets as it captures its reference -
+    // which Blazor does before the accordion's first render, in time for that render to mark the panel searchable.
     internal Func<Task<bool>>? RevealHandler { get; set; }
 
     // The header answers nothing while an awaited OnToggling of its own is running, and nothing while the
