@@ -69,12 +69,11 @@ jobs:
       with:
         project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
-    - name: Create project from Boilerplate
-      run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -184,12 +183,11 @@ jobs:
       with:
         project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
-    - name: Create project from Boilerplate
-      run: |
-        cd src\Templates\Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter false
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -202,10 +200,10 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-sales.bitplatform.dev
 
-    - name: Use Bit.ResxTranslator
+    - name: Translate .resx files
       run: |
             cd SalesModule
-            dnx Bit.ResxTranslator --prerelease
+            bit translate
 
     - name: Generate CSS/JS files
       run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release

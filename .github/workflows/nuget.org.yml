@@ -11,6 +11,7 @@ on:
       - 'src/Brouter/**'
       - 'src/Bswup/**'
       - 'src/Butil/**'
+      - 'src/Cli/**'
       - 'src/CodeAnalyzers/**'
       - 'src/Minifier/**'
       - 'src/SourceGenerators/**'
@@ -23,6 +24,10 @@ jobs:
   build-publish:
     name: build & publish
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
 
     steps:
 
@@ -167,15 +172,24 @@ jobs:
     - name: dotnet pack Minifier
       run: dotnet pack src/Minifier/Bit.Minifier/Bit.Minifier.csproj --output . --configuration Release
 
-    - name: dotnet build Minifier.Cli
-      run: dotnet build src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Minifier.Cli
-      run: dotnet pack src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj --output . --configuration Release
-
-    - name: dotnet build ResxTranslator
-      run: dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack ResxTranslator
-      run: dotnet pack src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj --output . --configuration Release
+    - name: dotnet build bit CLI
+      env:
+        BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        BitCliTelemetryConnectionString: ${{ secrets.BIT_CLI_TELEMETRY_CONNECTION_STRING }}
+      run: dotnet build src/Cli/Bit.Cli/Bit.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack bit CLI
+      env:
+        BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        BitCliTelemetryConnectionString: ${{ secrets.BIT_CLI_TELEMETRY_CONNECTION_STRING }}
+      run: |
+        dotnet pack src/Cli/Bit.Cli/Bit.Cli.csproj --output . --configuration Release
+        unzip -o -q Bit.Cli.*.nupkg 'tools/*/any/bit.dll' -d bit-cli
+    - name: Attest bit CLI provenance
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: |
+          Bit.Cli.*.nupkg
+          bit-cli/tools/*/any/bit.dll
     
     - name: build SourceGenerators nupkg file
       run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release

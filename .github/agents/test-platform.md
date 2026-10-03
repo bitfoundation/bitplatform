@@ -80,9 +80,10 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    ```
 
    A test that needs what the job generated - another database, `--module Admin`, `--advancedTests` - needs the same
-   project: replay the job's `dotnet pack`, `dotnet new install` and `dotnet new bit-bp ...` lines from `all.ci.yml` in
-   a scratch folder outside the repository, with the job's database in Docker and the job's connection string
-   (`ConnectionStrings__mssqldb` and the like, in `all.ci.yml`).
+   project: pack the template and the CLI the way `.github/actions/setup-bit-cli` does, then replay the job's
+   `bit new ...` line from `all.ci.yml` with `--template-package` in a scratch folder outside the repository, with the
+   job's database in Docker and the job's connection string (`ConnectionStrings__mssqldb` and the like, in
+   `all.ci.yml`).
 
    Run a flaky test often enough to watch it fail before the fix and not after - under load, when the failure is
    about timing.
