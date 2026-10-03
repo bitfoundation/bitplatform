@@ -1,0 +1,221 @@
+﻿# bit CLI
+
+Create [bit platform](https://bitplatform.dev) projects that are ready to run on Windows, macOS and Linux, translate `.resx` files with an LLM, and decode stack traces minified by Bit.Minifier.
+
+```bash
+dotnet tool install --global Bit.Cli
+bit new MyApp
+```
+
+Or run it without installing anything:
+
+```bash
+dnx Bit.Cli new MyApp
+```
+
+It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package.
+
+## bit new
+
+`bit new` creates a project from [bit Boilerplate](https://bitplatform.dev/templates) and gets it ready, so the first run works:
+
+1. Asks for the project name and options, or takes them from flags.
+2. Checks this machine, lists what the project needs and is missing, and installs what you tick: Node.js, Docker, WSL, Git, the Aspire CLI, the HTTPS development certificate, Windows long paths, VS Code. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system.
+3. Creates the project, with a development certificate of its own.
+4. Initializes git with `develop` and `main`, and commits.
+5. Installs the .NET workloads the chosen platforms need, restores NuGet packages, and builds, which also generates the CSS and JS.
+6. Runs `dotnet format`, and commits that on its own.
+7. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
+8. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts.
+9. Opens your IDE.
+
+A step that fails doesn't stop the rest: every step runs, and the summary lists the commands that finish whatever didn't work. The first run takes a few minutes, mostly workloads and the first build.
+
+```bash
+bit new Contoso.Shop
+bit new Contoso.Shop --database PostgreSQL --module Admin --redis
+bit new Contoso.Shop --platforms web,android
+bit new Contoso.Shop --yes --no-open --no-trust
+```
+
+The interactive questions end with the same command without questions, to repeat the project in CI.
+
+### Options
+
+Every option of `dotnet new bit-bp` works the same way:
+
+| Option | Values | Default |
+|---|---|---|
+| `--database` | `Sqlite`, `SqlServer`, `PostgreSQL`, `MySql`, `Other` | `Sqlite` |
+| `--filesStorage` | `Local`, `S3`, `AzureBlobStorage`, `Other` | `Local` |
+| `--api` | `Integrated`, `Standalone` | `Integrated` |
+| `--pipeline` | `GitHub`, `Azure`, `None` | `GitHub` |
+| `--module` | `None`, `Admin`, `Sales` | `None` |
+| `--captcha` | `None`, `reCaptcha` | `None` |
+| `--theme` | `Fluent2`, `Fluent`, `Cupertino`, `Material` | `Fluent2` |
+| `--aspire` | `true`, `false` | `true` |
+| `--multitenant` | `true`, `false` | `true` |
+| `--notification` | `true`, `false` | `true` |
+| `--cloudflare` | `true`, `false` | `true` |
+| `--redis` | `true`, `false` | `false` |
+| `--signalR` | `true`, `false` | `false` |
+| `--offlineDb` | `true`, `false` | `false` |
+| `--sentry` | `true`, `false` | `false` |
+| `--appInsights` | `true`, `false` | `false` |
+| `--ads` | `true`, `false` | `false` |
+| `--brouter` | `true`, `false` | `false` |
+| `--sample` | `true`, `false` | `false` |
+| `--advancedTests` | `true`, `false` | `false` |
+| `--apiServerUrl` | a URL | |
+| `--webAppUrl` | a URL | |
+
+And these of its own:
+
+| Option | What it does |
+|---|---|
+| `-o, --output <dir>` | Create the project there. Default: `./<name>`. |
+| `--platforms web,android,ios,macos,windows` | Platforms to set up and build now. The web app is always included; native apps add several GB of workloads and minutes of build, and can be added later with `bit setup`. iOS and macOS need a Mac, Windows needs Windows. |
+| `--tools node,docker,...` | Tools to install when missing. Default: the ones the project needs. `none` installs nothing. |
+| `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: ask; `none` without a terminal to ask in. |
+| `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
+| `--template-package <nupkg>` | Create from a local Bit.Boilerplate package, the way this repository's CI does. |
+| `-y, --yes` | Accept every default and never ask. |
+| `--non-interactive` | Never ask; fail when a required value is missing. |
+| `--dry-run` | Show the plan and change nothing. |
+| `--no-setup` | Only create the project: no tools, workloads, restore or build. Run `bit setup` in its folder later. |
+| `--no-tools`, `--no-certificate`, `--no-git`, `--no-workloads`, `--no-restore`, `--no-build`, `--no-format`, `--no-migration`, `--no-trust`, `--no-open` | Skip that step. |
+
+## bit setup
+
+Gets an existing project ready on this machine, e.g. after cloning it, or adds a platform later:
+
+```bash
+bit setup
+bit setup --platforms android
+```
+
+It installs missing tools, workloads and packages, and builds.
+
+## bit doctor
+
+```bash
+bit doctor
+bit doctor --fix
+```
+
+Checks the tools a project needs, inside a project for that project's own needs, and offers to install what's missing with `--fix`. It exits with code 3 when something needed is missing.
+
+## bit trust
+
+```bash
+bit trust
+```
+
+Marks the git repository around the current folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, e.g. after cloning a project.
+
+## bit translate
+
+Fills in the missing translations of `.resx` files with an OpenAI-compatible LLM, and keeps the existing ones:
+
+```bash
+bit translate
+bit translate --language fa --language de
+bit translate --check
+bit translate --dry-run
+```
+
+It reads `Bit.ResxTranslator.json` from the current folder or the nearest one above it (or `--config <file>`):
+
+```jsonc
+{
+  "DefaultLanguage": "en",
+  "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
+  "ResxPaths": [ "/src/**/*.resx" ],
+  "ChatOptions": { "Temperature": "0" },
+  "OpenAI": {
+    "Model": "gpt-4.1-mini",
+    "Endpoint": "https://api.openai.com/v1",
+    "ApiKey": null
+  }
+}
+```
+
+- `ResxPaths` are globs relative to the config file's folder, for the base `.resx` files.
+- Put the key in the `OpenAI__ApiKey` environment variable rather than in the file. `OpenAI__Model` and `OpenAI__Endpoint` work too. Without a key it translates nothing and says so, without failing a pipeline.
+- Any OpenAI-compatible endpoint works: OpenAI, Azure AI Foundry (`https://YOUR_AZURE_FOUNDRY.services.ai.azure.com/openai/v1`), Google AI Studio (`https://generativelanguage.googleapis.com/v1beta/openai`), xAI (`https://api.x.ai/v1`).
+- Strings go in batches of 250. A translation that drops or renumbers a `{0}` placeholder is asked for once more, and left out if it's still wrong, so the next run tries it again.
+- `--check` calls no model and exits with code 3 when anything is missing, for CI.
+
+In a pipeline:
+
+```yaml
+- name: Translate .resx files
+  env:
+    OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
+  run: dnx Bit.Cli translate
+```
+
+## bit decode
+
+Reads a stack trace of an app minified by [Bit.Minifier](https://github.com/bitfoundation/bitplatform/tree/develop/src/Minifier) back into the names its source has:
+
+```bash
+bit decode bit-minifier.map trace.txt
+bit decode < trace.txt
+```
+
+Without a map, the newest `obj/**/bit-minifier.map` under the current folder is used. Without a trace file, the trace is read from standard input.
+
+## What it changes on your machine
+
+- **Tools** you tick, with `winget` on Windows, Homebrew on macOS and the distribution's package manager on Linux. Each command is shown before it runs.
+- **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. On macOS and Linux, `sudo` asks for your password once.
+- **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
+- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, and telemetry not sent yet.
+
+## Telemetry
+
+bit sends error reports to the bit platform team so failed runs get fixed: whether each step worked and how long it took, error codes like `NU1301`, the type and stack trace of a crash, the OS, .NET and bit versions, and whether it runs in CI, through `dnx` or for a coding agent. A random ID, made on the first run, ties one machine's runs together.
+
+It never sends project names, paths, user or machine names, file contents, `.resx` text, prompts, API keys, environment variable values, feed URLs, git remotes, exception messages or the output of the tools it runs.
+
+With `bit telemetry all`, or a yes to the question the first `bit new` asks, it also sends the template options, platforms, tools and IDE you pick, and translation volumes.
+
+| To | Do |
+|---|---|
+| see the setting and why | `bit telemetry` |
+| change it | `bit telemetry off`, `bit telemetry errors` or `bit telemetry all` |
+| turn it off in CI or a container | `BIT_CLI_TELEMETRY=off`, or `DO_NOT_TRACK=1`, or `DOTNET_CLI_TELEMETRY_OPTOUT=1` |
+| see exactly what would be sent | `BIT_CLI_TELEMETRY=log` prints every item to stderr and sends nothing |
+
+The data goes to Azure Monitor (Application Insights). A build without a telemetry endpoint, like a local one, sends nothing.
+
+## Where this build comes from
+
+```bash
+bit about
+```
+
+shows the version, the commit and the GitHub Actions run that built it. Release packages are built from this repository by GitHub Actions, which attests the provenance of the `bit.dll` inside them. `bit about` prints the command that checks the copy you run:
+
+```bash
+gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>/tools/net10.0/any/bit.dll --repo bitfoundation/bitplatform
+```
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Done |
+| 1 | A step failed |
+| 2 | Wrong usage, or a value is missing |
+| 3 | A check failed: `bit translate --check`, `bit doctor` |
+| 130 | Canceled |
+
+## Coming from the old tools
+
+| Before | Now |
+|---|---|
+| `dnx Bit.ResxTranslator` | `dnx Bit.Cli translate`, or `bit translate` |
+| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli decode map trace`, or `bit decode map trace` |
+| `dotnet new install Bit.Boilerplate` + `dotnet new bit-bp ...` | `bit new ...`, with the same options |
