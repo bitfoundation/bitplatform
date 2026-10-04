@@ -8,7 +8,8 @@
 //   --bit-TextShimmer-angle             tilt of the band from upright                   (default: 0deg)
 //   --bit-TextShimmer-duration          one sweep                                       (default: 2s x the loop factor)
 //   --bit-TextShimmer-delay             pause before the first sweep                    (default: 0ms)
-//   --bit-TextShimmer-repeat-delay      extra rest between two sweeps                   (default: 0ms)
+//   --bit-TextShimmer-repeat-delay      extra rest between two sweeps                   (default: 0ms; x the loop factor
+//                                       unless a duration is set, the same as RepeatDelay)
 //   --bit-TextShimmer-iterations        sweeps before the text comes to rest            (default: infinite)
 //   --bit-TextShimmer-disabled-opacity  opacity of a shimmer whose IsEnabled is false   (default: $opa-dis)
 // A parameter written on the shimmer itself (BaseColor, GradientColor, Color, Spread, SpreadLength, Angle, Duration,
@@ -34,6 +35,9 @@
     // A looping animation multiplies its literal duration by the loop factor of the theme, so a theme can retune
     // the pace. Reduced motion stops the shimmer outright rather than slowing it (see below).
     --bit-tsh-duration: var(--bit-TextShimmer-duration, calc(2000ms * #{$mot-loop-factor}));
+    // The same sweep before the loop factor retunes it, which the rest below is a ratio of - so the factor retunes a
+    // rest along with the default sweep it follows, and leaves the one after an explicit duration as it was given.
+    --bit-tsh-sweep: var(--bit-TextShimmer-duration, 2000ms);
     --bit-tsh-delay: var(--bit-TextShimmer-delay, 0ms);
     // The extra rest RepeatDelay adds after every sweep.
     --bit-tsh-repeat-delay: var(--bit-TextShimmer-repeat-delay, 0ms);
@@ -113,15 +117,16 @@
     }
 }
 
-// The cycle is taken of the duration the element ends up with - the one a parameter writes inline, the one a class
-// sets, or the default the loop factor retunes - so the rest is the one asked for whichever of them wins. CSS cannot
+// The cycle is taken of the sweep the element ends up with - the one a parameter writes inline, the one a class
+// sets, or the default - before the loop factor, which then stretches the sweep and the rest alike: the rest is the
+// one asked for after an explicit duration, and keeps its share of the default sweep a theme retunes. CSS cannot
 // divide a time by a time directly, but atan2 takes two values of any one type and the tangent of the angle it
 // returns is their ratio. The angle is kept short of a quarter turn, whose tangent is infinite: a sweep of no length
 // is then a cycle that is merely very long, which still multiplies the duration to nothing. An engine without
 // atan2 keeps the cycle of 1, which only drops the extra rest.
 @supports (animation-duration: calc(1s * tan(atan2(1s, 2s)))) {
     .bit-tsh {
-        --bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-duration)), 89.9deg)));
+        --bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-sweep)), 89.9deg)));
     }
 }
 
@@ -184,9 +189,11 @@
 // rather than through the --bit-mot-duration* tokens (a near-zero looping duration renders as flicker).
 // .bit-fam is the shared opt-out class rendered by BitComponentBase.ForceAnimation. It is honored on
 // an ancestor as well as on the element itself, so that opting a whole subtree in behaves the same
-// here as it does for the token-driven animations, which inherit the class's custom properties.
+// here as it does for the token-driven animations, which inherit the class's custom properties. The opt-out is
+// wrapped in :where() so the rule weighs no more than .bit-tsh itself: the forced-colors and print rules below then
+// still win over it, and so do the disabled and static ones.
 @media (prefers-reduced-motion: reduce) {
-    .bit-tsh:not(.bit-fam):not(.bit-fam *) {
+    .bit-tsh:where(:not(.bit-fam):not(.bit-fam *)) {
         @include bit-tsh-static;
     }
 }
