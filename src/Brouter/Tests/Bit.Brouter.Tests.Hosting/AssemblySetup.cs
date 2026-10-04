@@ -13,7 +13,7 @@ public static class AssemblySetup
     public static async Task CleanupAsync()
     {
         await HarnessHostFactory.DisposeSharedAsync();
-#if NET10_0_OR_GREATER
+#if NET11_0_OR_GREATER
         await SampleHostFactories.DisposeAsync();
 #endif
     }

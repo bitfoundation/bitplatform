@@ -310,7 +310,7 @@ You do **NOT** need to run `dotnet ef database update` or `Update-Database` manu
 `bit new` adds the `Initial` migration to `/src/Server/Boilerplate.Server.Api/Infrastructure/Data/Migrations/` when it creates the project. A project created any other way starts without one, and `MigrateAsync()` refuses to run until it exists. Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
-dnx dotnet-ef@10.0.12 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
+dnx dotnet-ef@11.0.0-rc.1.26425.128 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
 ```
 
 ### Adding Future Migrations
@@ -318,7 +318,7 @@ dnx dotnet-ef@10.0.12 -- migrations add Initial --output-dir Infrastructure/Data
 When you modify entities or configurations, create a new migration; the app applies it on its next start:
 
 ```bash
-dnx dotnet-ef@10.0.12 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
+dnx dotnet-ef@11.0.0-rc.1.26425.128 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
 ```
 
 If the model changes without a migration, `MigrateAsync()` stops the app with a "pending model changes" error until the migration is added.
@@ -394,7 +394,7 @@ Add-Migration YourMigrationName -OutputDir Infrastructure\Data\Migrations -Conte
 
 Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
-dnx dotnet-ef@10.0.12 -- migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dnx dotnet-ef@11.0.0-rc.1.26425.128 -- migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 **Important Notes:**
