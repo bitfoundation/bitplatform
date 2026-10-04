@@ -16,6 +16,7 @@
         autoClose: boolean;
         submit: boolean;
         autoHeight: boolean;
+        shortcuts?: { [keys: string]: string } | null;
     };
 
     type MdeFindResult = {
@@ -184,6 +185,12 @@
         private static readonly NOT_BEFORE_CLOSE = /[^\s)\]}>]/;
         // Ctrl/Cmd+Alt+<digit> heading shortcuts, keyed by physical code so they survive
         // keyboard layouts where the combination does not produce the digit itself.
+        // The punctuation keys a toolbar item's shortcut can name, by physical code: Shift changes what they type
+        // ("Ctrl+Shift+." arrives as a ">"), and the shortcut names the key, not the character.
+        private static readonly PUNCTUATION_CODES: { [code: string]: string } = {
+            Period: '.', Comma: ',', Slash: '/', Backslash: '\\',Minus: '-', Equal: '=', Semicolon: ';',
+            Quote: "'", BracketLeft: '[', BracketRight: ']', Backquote: '`'
+        };
         private static readonly HEADING_CODES: { [key: string]: string } = {
             Digit1: 'Heading1', Digit2: 'Heading2', Digit3: 'Heading3',
             Digit4: 'Heading4', Digit5: 'Heading5', Digit6: 'Heading6'
@@ -907,6 +914,8 @@
             const mod = (e.ctrlKey || e.metaKey) && !altGraph;
             const key = e.key.toLowerCase();
 
+            if (this.runItemShortcut(e, true)) return;
+
             // Alt + Up/Down moves the current line(s), the way code editors do.
             if (e.altKey && !altGraph && !mod && !e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
                 e.preventDefault();
@@ -1010,10 +1019,50 @@
 
         private previewKeyDownHandler = (e: KeyboardEvent) => {
             if (e.key === 'Escape') { this.invoke('OnEscape'); return; }
+            if (this.runItemShortcut(e, false)) return;
             if ((e.ctrlKey || e.metaKey) && e.code === 'Slash') { e.preventDefault(); this.invoke('OnShortcut', 'help'); return; }
             if (e.key === 'F9') { e.preventDefault(); this.invoke('OnShortcut', 'mode'); return; }
             if (e.key === 'F11') { e.preventDefault(); this.invoke('OnShortcut', 'fullscreen'); return; }
         };
+
+        // The shortcut a toolbar item binds is looked up before any built-in one, so an app can take over the keys
+        // of a built-in (Ctrl+K for a link dialog of its own). A command only runs from the textarea, where the
+        // selection it works on is; a custom item runs from the preview pane as well.
+        private runItemShortcut(e: KeyboardEvent, editing: boolean): boolean {
+            const map = this.config.shortcuts;
+            if (!map || e.isComposing) return false;
+
+            const altGraph = typeof e.getModifierState === 'function' && e.getModifierState('AltGraph');
+            const mod = (e.ctrlKey || e.metaKey) && !altGraph;
+            const alt = e.altKey && !altGraph;
+            if (!mod && !alt && /^F\d{1,2}$/.test(e.key) === false) return false;
+
+            const keys = (mod ? 'ctrl+' : '') + (alt ? 'alt+' : '') + (e.shiftKey ? 'shift+' : '') + this.shortcutKey(e);
+            const action = map[keys];
+            if (!action) return false;
+
+            if (action.startsWith('cmd:')) {
+                if (!editing) return false;
+                e.preventDefault();
+                this.runCommand(action.slice(4));
+                return true;
+            }
+
+            e.preventDefault();
+            this.invoke('OnToolbarShortcut', action.slice(5));
+            return true;
+        }
+
+        // A letter is the one the layout types (Ctrl+Z is where the Z is printed), unless the layout types no latin
+        // letter there; a digit and a punctuation key are named by where they sit, which Shift does not change.
+        private shortcutKey(e: KeyboardEvent): string {
+            const key = e.key.toLowerCase();
+            const code = e.code || '';
+            if (/^[a-z]$/.test(key)) return key;
+            if (/^Key[A-Z]$/.test(code)) return code.slice(3).toLowerCase();
+            if (/^Digit\d$/.test(code)) return code.slice(5);
+            return MarkdownEditorCore.PUNCTUATION_CODES[code] ?? key;
+        }
 
         // A full-screen editor covers the page, so a Tab past its last control would land on one hidden under it.
         // The keyboard is kept inside it instead; Escape (which leaves full-screen) is the way out. The help

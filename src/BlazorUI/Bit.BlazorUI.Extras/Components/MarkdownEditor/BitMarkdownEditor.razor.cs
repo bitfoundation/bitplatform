@@ -666,6 +666,22 @@ public partial class BitMarkdownEditor : BitComponentBase
     }
 
     /// <summary>
+    /// Invoked from JavaScript when the shortcut of a custom toolbar item is pressed in the editor.
+    /// </summary>
+    [JSInvokable("OnToolbarShortcut")]
+    public async Task _OnToolbarShortcut(string name)
+    {
+        if (IsDisposed) return;
+
+        var item = FindToolbarItem(ActiveToolbar, name);
+        if (item is null || item.Type is not BitMarkdownEditorToolbarItemType.Custom || IsToolbarItemDisabled(item)) return;
+
+        await OnToolbarItemClick(item);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
     /// Invoked from JavaScript when an autosaved draft was restored at initialization.
     /// </summary>
     [JSInvokable("OnDraftRestored")]
@@ -925,8 +941,90 @@ public partial class BitMarkdownEditor : BitComponentBase
         // Nothing on screen reacts to the caret unless a command button can light up or the
         // status bar prints the position, so the (per-caret-move) round trip is not worth
         // making otherwise.
-        ReportSelection = (ShowToolbar && ActiveToolbar.Any(IsCommandItem)) || (ShowStatusBar && ShowCursorPosition)
+        ReportSelection = (ShowToolbar && ActiveToolbar.Any(IsCommandItem)) || (ShowStatusBar && ShowCursorPosition),
+        Shortcuts = BuildShortcuts()
     };
+
+    // The keys of every shortcut the script handles on its own, spelled the way NormalizeShortcut spells them.
+    private static readonly HashSet<string> _builtInShortcuts =
+    [
+        "ctrl+b", "ctrl+i", "ctrl+e", "ctrl+k", "ctrl+d", "ctrl+f", "ctrl+z", "ctrl+y", "ctrl+/", "ctrl+enter",
+        "ctrl+shift+s", "ctrl+shift+d", "ctrl+shift+z", "ctrl+shift+.", "ctrl+shift+7", "ctrl+shift+8", "ctrl+shift+9",
+        "ctrl+alt+c", "ctrl+alt+1", "ctrl+alt+2", "ctrl+alt+3", "ctrl+alt+4", "ctrl+alt+5", "ctrl+alt+6",
+        "alt+arrowup", "alt+arrowdown", "f9", "f11"
+    ];
+
+    /// <summary>
+    /// Spells a shortcut hint (<c>"Ctrl+Shift+K"</c>, <c>"Cmd+Alt+1"</c>, <c>"F2"</c>) the way the script spells a
+    /// keydown: the modifiers in a fixed order (Cmd and Meta are Ctrl, Option is Alt), then the key, all lower case.
+    /// Null for a hint that names no key, or one that would fire on plain typing (no Ctrl or Alt, not a function key).
+    /// </summary>
+    internal static string? NormalizeShortcut(string? shortcut)
+    {
+        if (string.IsNullOrWhiteSpace(shortcut)) return null;
+
+        var parts = shortcut.Split('+', StringSplitOptions.TrimEntries);
+        bool ctrl = false, alt = false, shift = false;
+        string? key = null;
+
+        for (var i = 0; i < parts.Length; i++)
+        {
+            switch (parts[i].ToLowerInvariant())
+            {
+                case "ctrl" or "control" or "cmd" or "command" or "meta" or "mod": ctrl = true; break;
+                case "alt" or "option": alt = true; break;
+                case "shift": shift = true; break;
+                // "Ctrl++" splits into an empty part before the plus key it names.
+                case "": if (i == parts.Length - 1) key = "+"; break;
+                case var other: key = other; break;
+            }
+        }
+
+        if (key is null) return null;
+
+        var functionKey = key.Length is 2 or 3 && key[0] == 'f' && int.TryParse(key.AsSpan(1), out var n) && n is >= 1 and <= 24;
+        if (ctrl is false && alt is false && functionKey is false) return null;
+
+        return $"{(ctrl ? "ctrl+" : null)}{(alt ? "alt+" : null)}{(shift ? "shift+" : null)}{key}";
+    }
+
+    // A shortcut on a command item runs the command in the script with no round trip; one on a custom item calls
+    // back. The first item to claim a key keeps it.
+    private Dictionary<string, string>? BuildShortcuts()
+    {
+        Dictionary<string, string>? map = null;
+
+        foreach (var item in EnumerateToolbarItems(ActiveToolbar))
+        {
+            if (NormalizeShortcut(item.Shortcut) is not { } keys) continue;
+
+            var action = item.Type switch
+            {
+                BitMarkdownEditorToolbarItemType.Command when item.Command is { } command => $"cmd:{command}",
+                BitMarkdownEditorToolbarItemType.Custom when item.OnClick is not null => $"item:{item.Name}",
+                _ => null
+            };
+
+            if (action is not null) (map ??= []).TryAdd(keys, action);
+        }
+
+        return map;
+    }
+
+    private static IEnumerable<BitMarkdownEditorToolbarItem> EnumerateToolbarItems(IEnumerable<BitMarkdownEditorToolbarItem> items)
+    {
+        foreach (var item in items)
+        {
+            yield return item;
+
+            if (item.Children is null) continue;
+
+            foreach (var child in EnumerateToolbarItems(item.Children)) yield return child;
+        }
+    }
+
+    private static BitMarkdownEditorToolbarItem? FindToolbarItem(IEnumerable<BitMarkdownEditorToolbarItem> items, string name) =>
+        EnumerateToolbarItems(items).FirstOrDefault(i => i.Name == name);
 
     private static bool IsCommandItem(BitMarkdownEditorToolbarItem item) =>
         item.Type is BitMarkdownEditorToolbarItemType.Command ||
@@ -1121,8 +1219,9 @@ public partial class BitMarkdownEditor : BitComponentBase
             or BitMarkdownEditorToolbarItemType.Find ||
         (item.Type is BitMarkdownEditorToolbarItemType.Command && item.Command is { } cmd && _toggleCommands.Contains(cmd));
 
+    // An item with no title of its own is named by its text.
     private string GetToolbarItemLabel(BitMarkdownEditorToolbarItem item) =>
-        ActiveTexts.GetToolbarTitle(item.Name, item.Title);
+        ActiveTexts.GetToolbarTitle(item.Name, string.IsNullOrEmpty(item.Title) ? item.Text ?? string.Empty : item.Title);
 
     private string GetToolbarItemTitle(BitMarkdownEditorToolbarItem item)
     {
@@ -1149,6 +1248,22 @@ public partial class BitMarkdownEditor : BitComponentBase
             // A shortcut the editor does not capture has no business being documented as one,
             // and Ctrl+Enter is only captured while something is listening for the submit.
             if (OnSubmit.HasDelegate) yield return (ActiveTexts.ShortcutSubmit, "Ctrl/Cmd + Enter");
+
+            // The app's own: every custom item's bound shortcut, and a command item's on keys of its own choosing.
+            HashSet<string> listed = [];
+            foreach (var item in EnumerateToolbarItems(ActiveToolbar))
+            {
+                if (NormalizeShortcut(item.Shortcut) is not { } keys) continue;
+
+                var bound = item.Type switch
+                {
+                    BitMarkdownEditorToolbarItemType.Custom => item.OnClick is not null,
+                    BitMarkdownEditorToolbarItemType.Command => item.Command is not null && _builtInShortcuts.Contains(keys) is false,
+                    _ => false
+                };
+
+                if (bound && listed.Add(keys)) yield return (GetToolbarItemLabel(item), item.Shortcut!);
+            }
         }
     }
 
@@ -1211,7 +1326,11 @@ public partial class BitMarkdownEditor : BitComponentBase
                 await OpenFind();
                 break;
             case BitMarkdownEditorToolbarItemType.Custom when item.OnClick is not null && (ReadOnly is false || item.AlwaysEnabled):
-                await item.OnClick(this);
+                // A handler written in the component that owns the toolbar changes that component's state, so it is
+                // run as one of its event handlers and the component re-renders after it, the way it does after any
+                // other; a handler with no component behind it re-renders the editor alone.
+                var onClick = item.OnClick;
+                await EventCallback.Factory.Create(onClick.Target as IHandleEvent ?? (object)this, () => onClick(this)).InvokeAsync();
                 break;
         }
     }

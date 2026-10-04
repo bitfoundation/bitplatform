@@ -22,7 +22,7 @@ public partial class BitMarkdownEditorStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(29, documented.Length, "The stylesheet does not document the twenty-nine public variables.");
+        Assert.AreEqual(30, documented.Length, "The stylesheet does not document the thirty public variables.");
 
         foreach (var name in documented)
         {

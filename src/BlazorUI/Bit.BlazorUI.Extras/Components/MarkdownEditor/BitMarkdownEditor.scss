@@ -20,6 +20,7 @@
 //   --bit-MarkdownEditor-padding                   padding of the textarea                     (default: spacing(1.5) spacing(1.75))
 //   --bit-MarkdownEditor-placeholder-color         placeholder of the textarea                 (default: $clr-fg-sec)
 //   --bit-MarkdownEditor-preview-padding           padding of the preview pane                 (default: spacing(1.5) spacing(2))
+//   --bit-MarkdownEditor-preview-background        background of the preview pane              (default: transparent)
 //   --bit-MarkdownEditor-toolbar-background        background of the toolbar and find panel    (default: $clr-bg-sec)
 //   --bit-MarkdownEditor-toolbar-sticky-offset     gap above a StickyToolbar once it is pinned (default: 0)
 //   --bit-MarkdownEditor-button-size               square of a toolbar button                  (default: $siz-ctrl-md)
@@ -148,6 +149,11 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
         height: $siz-icon-md;
     }
 
+    .bit-mde-ico {
+        line-height: 1;
+        font-size: $siz-icon-md;
+    }
+
     &:hover:not(:disabled) {
         border-color: $mde-divider;
         color: var(--bit-MarkdownEditor-button-hover-color, #{$clr-fg-pri});
@@ -172,6 +178,14 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
         opacity: $opa-dis;
         cursor: not-allowed;
     }
+}
+
+// A toolbar button that spells its label out grows with it instead of keeping to its square.
+.bit-mde-btx {
+    width: auto;
+    gap: spacing(0.5);
+    padding: 0 $siz-ctrl-pad-x-sm;
+    min-width: var(--bit-MarkdownEditor-button-size, #{$siz-ctrl-md});
 }
 
 .bit-mde-stk > .bit-mde-tlb {
@@ -448,6 +462,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 }
 
 .bit-mde-ppn {
+    background: var(--bit-MarkdownEditor-preview-background, transparent);
     padding: var(--bit-MarkdownEditor-preview-padding, #{spacing(1.5) spacing(2)});
 
     // The pane is a tab stop so the arrow keys can scroll it; the same inset ring

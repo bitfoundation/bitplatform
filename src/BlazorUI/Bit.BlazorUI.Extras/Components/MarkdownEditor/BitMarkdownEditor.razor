@@ -41,7 +41,7 @@
                     <div class="bit-mde-dd">
                         <button type="button"
                                 style="@Styles?.ToolbarButton"
-                                class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
+                                class="bit-mde-btn @(item.Text is null ? null : "bit-mde-btx") @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
                                 title="@GetToolbarItemTitle(item)"
                                 aria-label="@GetToolbarItemLabel(item)"
                                 aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
@@ -51,7 +51,7 @@
                                 data-cmd="@item.Name"
                                 tabindex="-1"
                                 disabled="@IsToolbarItemDisabled(item)">
-                            @((MarkupString)item.Icon)
+                            @RenderItemContent(item)
                         </button>
                         <div id="@GetMenuId(item)" class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
                             @foreach (var child in item.Children ?? [])
@@ -79,11 +79,7 @@
                                             data-bit-mde-upload="@(child.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                                             disabled="@IsToolbarItemDisabled(child)"
                                             @onclick="() => OnToolbarItemClick(child)">
-                                        @((MarkupString)child.Icon)
-                                        @if (child.Text is not null)
-                                        {
-                                            <span class="bit-mde-mit">@child.Text</span>
-                                        }
+                                        @RenderItemContent(child)
                                     </button>
                                 }
                             }
@@ -94,7 +90,7 @@
                 {
                     <button type="button"
                             style="@Styles?.ToolbarButton"
-                            class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
+                            class="bit-mde-btn @(item.Text is null ? null : "bit-mde-btx") @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
                             title="@GetToolbarItemTitle(item)"
                             aria-label="@GetToolbarItemLabel(item)"
                             aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
@@ -104,7 +100,7 @@
                             tabindex="-1"
                             disabled="@IsToolbarItemDisabled(item)"
                             @onclick="() => OnToolbarItemClick(item)">
-                        @((MarkupString)item.Icon)
+                        @RenderItemContent(item)
                     </button>
                 }
             }
@@ -270,3 +266,24 @@
         </div>
     }
 </div>
+
+@code {
+    // The glyph of an item - its own markup, or else the built-in icon it names - and its text. The text a menu
+    // item of the default toolbar shows is its localized title, so what is read out is also what is on screen.
+    private RenderFragment RenderItemContent(BitMarkdownEditorToolbarItem item) => __builder =>
+    {
+        @if (string.IsNullOrEmpty(item.Icon) is false)
+        {
+            @((MarkupString)item.Icon)
+        }
+        else if (string.IsNullOrEmpty(item.IconName) is false)
+        {
+            <i class="bit-mde-ico @BitIconInfo.Bit(item.IconName).GetCssClasses()" aria-hidden="true"></i>
+        }
+
+        @if (item.Text is not null)
+        {
+            <span class="bit-mde-mit">@ActiveTexts.GetToolbarTitle(item.Name, item.Text)</span>
+        }
+    };
+}

@@ -44,11 +44,13 @@ private bool fullScreen;";
 
     private readonly string example5RazorCode = @"
 <BitMarkdownEditor @bind-Value=""customToolbarValue"" Toolbar=""customToolbar"" Height=""8rem"" />
+<div role=""status"">@toolbarStatus</div>
 
 <BitMarkdownEditor ShowToolbar=""false"" ShowStatusBar=""false"" Height=""8rem"" />";
     private readonly string example5CsharpCode = @"
-private string? customToolbarValue = ""The toolbar of this editor only offers **basic** formatting and a custom *clear* button."";
+private string? customToolbarValue = ""The toolbar of this editor only offers **basic** formatting, a custom *clear* button and a *Save* button bound to Ctrl+S."";
 private IReadOnlyList<BitMarkdownEditorToolbarItem> customToolbar = [];
+private string? toolbarStatus;
 
 protected override void OnInitialized()
 {
@@ -77,11 +79,24 @@ protected override void OnInitialized()
         {
             Name = ""clear"",
             Title = ""Clear content"",
-            Icon = ""🗑️"",
+            IconName = BitIconName.Delete,
             Type = BitMarkdownEditorToolbarItemType.Custom,
             OnClick = _ =>
             {
                 customToolbarValue = string.Empty;
+                return Task.CompletedTask;
+            }
+        },
+        new()
+        {
+            Name = ""save"",
+            Text = ""Save"",
+            IconName = BitIconName.Save,
+            Shortcut = ""Ctrl+S"",
+            Type = BitMarkdownEditorToolbarItemType.Custom,
+            OnClick = _ =>
+            {
+                toolbarStatus = $""Saved {customToolbarValue?.Length ?? 0} characters at {DateTime.Now:T}."";
                 return Task.CompletedTask;
             }
         },
@@ -463,6 +478,7 @@ private const string cssVariablesStyle = ""--bit-MarkdownEditor-border-radius:1r
                                          ""--bit-MarkdownEditor-statusbar-background:color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);"" +
                                          ""--bit-MarkdownEditor-button-radius:999px;"" +
                                          ""--bit-MarkdownEditor-button-active-background:var(--bit-clr-sec);"" +
+                                         ""--bit-MarkdownEditor-preview-background:var(--bit-clr-bg-sec);"" +
                                          ""--bit-MarkdownEditor-font-family:Georgia,serif;"" +
                                          ""--bit-MarkdownEditor-font-size:1rem;"" +
                                          ""--bit-MarkdownEditor-pane-min-width:0"";

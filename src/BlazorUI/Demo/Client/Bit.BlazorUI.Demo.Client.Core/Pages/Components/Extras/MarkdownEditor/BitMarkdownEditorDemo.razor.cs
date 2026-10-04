@@ -549,6 +549,7 @@ public partial class BitMarkdownEditorDemo
         new() { Name = "--bit-MarkdownEditor-line-height", DefaultValue = "1.6", Description = "Line height of the textarea." },
         new() { Name = "--bit-MarkdownEditor-padding", DefaultValue = "spacing(1.5) spacing(1.75)", Description = "Padding of the textarea." },
         new() { Name = "--bit-MarkdownEditor-placeholder-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Placeholder text of the textarea." },
+        new() { Name = "--bit-MarkdownEditor-preview-background", DefaultValue = "transparent", Description = "Background of the preview pane." },
         new() { Name = "--bit-MarkdownEditor-preview-padding", DefaultValue = "spacing(1.5) spacing(2)", Description = "Padding of the preview pane." },
         new() { Name = "--bit-MarkdownEditor-toolbar-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the toolbar and the find panel." },
         new() { Name = "--bit-MarkdownEditor-toolbar-sticky-offset", DefaultValue = "0", Description = "Gap between a StickyToolbar and the top of the scrolling ancestor once it is pinned (the height of a fixed header)." },
@@ -591,7 +592,14 @@ public partial class BitMarkdownEditorDemo
                     Name = "Icon",
                     Type = "string",
                     DefaultValue = "string.Empty",
-                    Description = "Raw inline SVG markup rendered inside the button.",
+                    Description = "Raw inline markup rendered inside the button: an SVG, or the element of an external icon font. Takes precedence over IconName.",
+                },
+                new()
+                {
+                    Name = "IconName",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The name of a built-in Fabric MDL2 icon (e.g. BitIconName.Save) drawn when Icon is empty.",
                 },
                 new()
                 {
@@ -616,14 +624,14 @@ public partial class BitMarkdownEditorDemo
                     Name = "Shortcut",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Optional human readable shortcut hint, e.g. \"Ctrl+B\". Shown in the tooltip and reported as aria-keyshortcuts.",
+                    Description = "The keyboard shortcut of the item, e.g. \"Ctrl+S\": shown in the tooltip and reported as aria-keyshortcuts. On a Command or Custom item it is also bound (ahead of a built-in shortcut on the same keys), and a custom one is listed in the shortcuts panel. It needs Ctrl/Cmd or Alt unless it is a function key.",
                 },
                 new()
                 {
                     Name = "OnClick",
                     Type = "Func<BitMarkdownEditor, Task>?",
                     DefaultValue = "null",
-                    Description = "Callback used when the Type is Custom. Receives the editor instance so the handler can read or rewrite the content.",
+                    Description = "Callback used when the Type is Custom. Receives the editor instance so the handler can read or rewrite the content; a handler written in a component re-renders it afterwards.",
                 },
                 new()
                 {
@@ -637,7 +645,7 @@ public partial class BitMarkdownEditorDemo
                     Name = "Text",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Optional short text label rendered inside the button (used by dropdown menu items).",
+                    Description = "A short text rendered beside the icon: the label of a menu item, or of a toolbar button worth spelling out (Save, Publish). Names the item when it has no Title.",
                 },
                 new()
                 {
@@ -1068,8 +1076,9 @@ Start typing here...";
 Switch between **Edit**, **Split** and **Preview** using the choice group above,
 the eye button of the toolbar, the F9 key, or the `@bind-Mode` parameter.";
 
-    private string? customToolbarValue = "The toolbar of this editor only offers **basic** formatting and a custom *clear* button.";
+    private string? customToolbarValue = "The toolbar of this editor only offers **basic** formatting, a custom *clear* button and a *Save* button bound to Ctrl+S.";
     private IReadOnlyList<BitMarkdownEditorToolbarItem> customToolbar = [];
+    private string? toolbarStatus;
 
     private BitMarkdownEditor commandsRef = default!;
     private string? getValueResult;
@@ -1183,6 +1192,7 @@ survolez la barre d'outils, ouvrez la recherche ou lisez la barre d'état.";
                                              "--bit-MarkdownEditor-statusbar-background:color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);" +
                                              "--bit-MarkdownEditor-button-radius:999px;" +
                                              "--bit-MarkdownEditor-button-active-background:var(--bit-clr-sec);" +
+                                             "--bit-MarkdownEditor-preview-background:var(--bit-clr-bg-sec);" +
                                              "--bit-MarkdownEditor-font-family:Georgia,serif;" +
                                              "--bit-MarkdownEditor-font-size:1rem;" +
                                              "--bit-MarkdownEditor-pane-min-width:0";
@@ -1236,11 +1246,24 @@ and split panes that never stack (`--bit-MarkdownEditor-pane-min-width:0`).";
             {
                 Name = "clear",
                 Title = "Clear content",
-                Icon = "🗑️",
+                IconName = BitIconName.Delete,
                 Type = BitMarkdownEditorToolbarItemType.Custom,
                 OnClick = _ =>
                 {
                     customToolbarValue = string.Empty;
+                    return Task.CompletedTask;
+                }
+            },
+            new()
+            {
+                Name = "save",
+                Text = "Save",
+                IconName = BitIconName.Save,
+                Shortcut = "Ctrl+S",
+                Type = BitMarkdownEditorToolbarItemType.Custom,
+                OnClick = _ =>
+                {
+                    toolbarStatus = $"Saved {customToolbarValue?.Length ?? 0} characters at {DateTime.Now:T}.";
                     return Task.CompletedTask;
                 }
             },

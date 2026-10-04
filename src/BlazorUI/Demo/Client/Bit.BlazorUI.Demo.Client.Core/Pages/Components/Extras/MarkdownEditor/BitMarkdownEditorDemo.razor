@@ -97,13 +97,15 @@
             <DemoExample Title="Toolbar" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
                 <div>
                     <b>Toolbar</b> takes your own list of items: commands, dropdowns, separators and <b>Custom</b> items that
-                    receive the editor (set <b>AlwaysEnabled</b> to keep one usable while read-only). <b>ShowToolbar</b> and
-                    <b>ShowStatusBar</b> hide the chrome. The toolbar is one tab stop; arrow keys move between buttons and
-                    Enter, Space or Arrow Down opens a menu.
+                    receive the editor (<b>AlwaysEnabled</b> keeps one usable while read-only). An item draws an SVG
+                    <b>Icon</b> or a built-in <b>IconName</b>, may spell out a <b>Text</b>, and its <b>Shortcut</b> is bound
+                    and listed in the shortcuts panel. <b>ShowToolbar</b> and <b>ShowStatusBar</b> hide the chrome. The
+                    toolbar is one tab stop; arrow keys move between buttons and Enter, Space or Arrow Down opens a menu.
                 </div>
                 <br />
                 <BitMarkdownEditor @bind-Value="customToolbarValue" Toolbar="customToolbar" Height="8rem" />
-                <br /><br />
+                <div role="status">@toolbarStatus</div>
+                <br />
                 <BitMarkdownEditor ShowToolbar="false" ShowStatusBar="false" Height="8rem" />
             </DemoExample>
 
