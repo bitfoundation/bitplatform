@@ -13,6 +13,10 @@ public class BitTagsInputEditArgs
 
     /// <summary>
     /// The text the tag is about to become, after the trimming and the transformation were applied to it.
+    /// <br />
+    /// Writing to it corrects the tag on its way in. What is written goes through the same trimming,
+    /// transformation and validation rules as the typed text did, so a rewrite that breaks one of them is
+    /// refused and reported through OnInvalid; leaving it empty keeps the text as it was typed.
     /// </summary>
     public string NewTag { get; set; } = string.Empty;
 

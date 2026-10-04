@@ -1,5 +1,10 @@
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
+// The site's sticky header would otherwise cover whatever the in-page links of the samples scroll to.
+.markdownviewer-demo {
+    --bit-MarkdownViewer-scroll-margin: var(--demo-section-scroll-margin);
+}
+
 ::deep {
     .mdv-playground {
         width: 100%;
@@ -42,7 +47,7 @@
         border-radius: 4px;
         background: transparent;
         color: inherit;
-        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        font-family: var(--bit-tpg-font-family-mono);
         font-size: 13px;
         line-height: 1.5;
         resize: none;
@@ -111,13 +116,7 @@
     }
 
     .mdv-toc-item {
-        color: inherit;
         font-size: 0.9em;
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
     }
 
     .mdv-toc-level-2 {
@@ -147,7 +146,8 @@
     }
 
     // The code-block template's own chrome: a header naming the language beside a copy button,
-    // with the block itself underneath.
+    // with the block itself underneath. A template's output is outside the viewer's stylesheet,
+    // so its code block is styled here too.
     .mdv-code-card {
         margin-bottom: 1rem;
         overflow: hidden;
@@ -161,7 +161,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 0.25rem 0.25rem 0.25rem 0.75rem;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-family: var(--bit-tpg-font-family-mono);
         font-size: 0.75rem;
         color: $bit-color-foreground-secondary;
         background: $bit-color-background-secondary;
@@ -169,7 +169,22 @@
 
     .mdv-code-card pre {
         margin: 0;
-        border-radius: 0;
+        padding: 1rem;
+        overflow: auto;
+        font-size: 0.85em;
+        font-family: var(--bit-tpg-font-family-mono);
+    }
+
+    // The Accessibility example: a card with a heading of its own, which the document nests under.
+    .mdv-comment {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid $bit-color-border-secondary;
+    }
+
+    .mdv-comment-title {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
     }
 
     @media (max-width: 800px) {

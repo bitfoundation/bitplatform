@@ -157,13 +157,13 @@ namespace BitBlazorUI {
             s.map.setCamera({ center: positions[0], type: animate === false ? 'jump' : 'ease' });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number, animate: boolean = true) {
             const s = BitMapAzureMaps._require(id);
             const pad = paddingPx ?? 48;
-            s.map.setCamera({ bounds: [swLng, swLat, neLng, neLat], padding: { top: pad, right: pad, bottom: pad, left: pad }, maxZoom: maxZoom ?? 18, type: 'ease' });
+            s.map.setCamera({ bounds: [swLng, swLat, neLng, neLat], padding: { top: pad, right: pad, bottom: pad, left: pad }, maxZoom: maxZoom ?? 18, type: animate ? 'ease' : 'jump' });
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number, animate: boolean = true) {
             const s = BitMapAzureMaps._require(id);
             const positions: number[][] = [];
             for (const k in s.markers) {
@@ -173,10 +173,11 @@ namespace BitBlazorUI {
             if (positions.length === 0) return;
             const bounds = s.atlas.data.BoundingBox.fromPositions(positions);
             const pad = paddingPx ?? 48;
-            s.map.setCamera({ bounds, padding: { top: pad, right: pad, bottom: pad, left: pad }, maxZoom: maxZoom ?? 18, type: 'ease' });
+            s.map.setCamera({ bounds, padding: { top: pad, right: pad, bottom: pad, left: pad }, maxZoom: maxZoom ?? 18, type: animate ? 'ease' : 'jump' });
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {
+            opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapAzureMaps._require(id);
             const atlas = s.atlas;
             // Popup content is built as real DOM rather than an HTML string so plain-text
@@ -323,7 +324,22 @@ namespace BitBlazorUI {
             e.popup.open(s.map);
         }
 
+        /** Closes whichever marker popup is open. Returns whether there was one. */
+        public static closeMarkerPopup(id: string): boolean {
+            const s = BitMapAzureMaps._maps[id];
+            if (!s) return false;
+            for (const k in s.markers) {
+                const popup = s.markers[k].popup;
+                if (popup?.isOpen?.()) {
+                    popup.close();
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapAzureMaps._require(id);
             const st = BitMapHelpers.readPathStyle(style);
             const feature = {
@@ -334,7 +350,7 @@ namespace BitBlazorUI {
             BitMapAzureMaps._addVectorLayer(s, layerId, [feature], [{
                 id: layerId, type: 'line',
                 options: {
-                    strokeColor: BitMapHelpers.hexToRgba(st.color, st.opacity),
+                    strokeColor: BitMapHelpers.toRgba(st.color, st.opacity),
                     strokeWidth: st.weight,
                     strokeDashArray: BitMapAzureMaps._dashArr(st.dashArray),
                 },
@@ -342,6 +358,7 @@ namespace BitBlazorUI {
         }
 
         public static addPolygon(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapAzureMaps._require(id);
             const st = BitMapHelpers.readPathStyle(style);
             const ring = latlngs.map(p => [p.lng, p.lat]);
@@ -352,12 +369,13 @@ namespace BitBlazorUI {
                 properties: { _bmLayerId: layerId, _bmKind: 'vector', _bmVectorKind: 'polygon' },
             };
             BitMapAzureMaps._addVectorLayer(s, layerId, [feature], [
-                { id: `${layerId}-fill`, type: 'polygon', options: { fillColor: BitMapHelpers.hexToRgba(st.fillColor, st.fillOpacity) } },
-                { id: `${layerId}-outline`, type: 'line', options: { strokeColor: BitMapHelpers.hexToRgba(st.color, st.opacity), strokeWidth: st.weight, strokeDashArray: BitMapAzureMaps._dashArr(st.dashArray) } },
+                { id: `${layerId}-fill`, type: 'polygon', options: { fillColor: BitMapHelpers.toRgba(st.fillColor, st.fillOpacity) } },
+                { id: `${layerId}-outline`, type: 'line', options: { strokeColor: BitMapHelpers.toRgba(st.color, st.opacity), strokeWidth: st.weight, strokeDashArray: BitMapAzureMaps._dashArr(st.dashArray) } },
             ], 'polygon');
         }
 
         public static addCircle(id: string, layerId: string, lat: number, lng: number, radiusMeters: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapAzureMaps._require(id);
             const st = BitMapHelpers.readPathStyle(style);
             const ring = BitMapHelpers.circleRingLngLat(lat, lng, radiusMeters);
@@ -367,12 +385,13 @@ namespace BitBlazorUI {
                 properties: { _bmLayerId: layerId, _bmKind: 'vector', _bmVectorKind: 'circle' },
             };
             BitMapAzureMaps._addVectorLayer(s, layerId, [feature], [
-                { id: `${layerId}-fill`, type: 'polygon', options: { fillColor: BitMapHelpers.hexToRgba(st.fillColor, st.fillOpacity) } },
-                { id: `${layerId}-outline`, type: 'line', options: { strokeColor: BitMapHelpers.hexToRgba(st.color, st.opacity), strokeWidth: st.weight } },
+                { id: `${layerId}-fill`, type: 'polygon', options: { fillColor: BitMapHelpers.toRgba(st.fillColor, st.fillOpacity) } },
+                { id: `${layerId}-outline`, type: 'line', options: { strokeColor: BitMapHelpers.toRgba(st.color, st.opacity), strokeWidth: st.weight } },
             ], 'circle');
         }
 
         public static addRectangle(id: string, layerId: string, swLat: number, swLng: number, neLat: number, neLng: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapAzureMaps._require(id);
             const st = BitMapHelpers.readPathStyle(style);
             const ring = [[swLng, swLat], [neLng, swLat], [neLng, neLat], [swLng, neLat], [swLng, swLat]];
@@ -382,12 +401,13 @@ namespace BitBlazorUI {
                 properties: { _bmLayerId: layerId, _bmKind: 'vector', _bmVectorKind: 'rectangle' },
             };
             BitMapAzureMaps._addVectorLayer(s, layerId, [feature], [
-                { id: `${layerId}-fill`, type: 'polygon', options: { fillColor: BitMapHelpers.hexToRgba(st.fillColor, st.fillOpacity) } },
-                { id: `${layerId}-outline`, type: 'line', options: { strokeColor: BitMapHelpers.hexToRgba(st.color, st.opacity), strokeWidth: st.weight, strokeDashArray: BitMapAzureMaps._dashArr(st.dashArray) } },
+                { id: `${layerId}-fill`, type: 'polygon', options: { fillColor: BitMapHelpers.toRgba(st.fillColor, st.fillOpacity) } },
+                { id: `${layerId}-outline`, type: 'line', options: { strokeColor: BitMapHelpers.toRgba(st.color, st.opacity), strokeWidth: st.weight, strokeDashArray: BitMapAzureMaps._dashArr(st.dashArray) } },
             ], 'rectangle');
         }
 
         public static addGeoJson(id: string, layerId: string, geoJsonString: string, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapAzureMaps._require(id);
             let gj: any;
             try { gj = JSON.parse(geoJsonString); } catch { throw new Error('Invalid GeoJSON string'); }
@@ -405,16 +425,16 @@ namespace BitBlazorUI {
             ds.add(data);
 
             const polygonLayer = new s.atlas.layer.PolygonLayer(ds, `${layerId}-fill`, {
-                fillColor: BitMapHelpers.hexToRgba(st.fillColor, st.fillOpacity),
+                fillColor: BitMapHelpers.toRgba(st.fillColor, st.fillOpacity),
                 filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
             });
             const lineLayer = new s.atlas.layer.LineLayer(ds, `${layerId}-line`, {
-                strokeColor: BitMapHelpers.hexToRgba(st.color, st.opacity),
+                strokeColor: BitMapHelpers.toRgba(st.color, st.opacity),
                 strokeWidth: st.weight,
                 strokeDashArray: BitMapAzureMaps._dashArr(st.dashArray),
             });
             const bubbleLayer = new s.atlas.layer.BubbleLayer(ds, `${layerId}-bubble`, {
-                color: BitMapHelpers.hexToRgba(st.color, 1),
+                color: BitMapHelpers.toRgba(st.color, 1),
                 radius: 6, strokeColor: '#ffffff', strokeWidth: 2,
                 filter: ['==', ['geometry-type'], 'Point'],
             });

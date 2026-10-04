@@ -71,6 +71,13 @@ public sealed class BitMarkdownFootnotesNode : BitMarkdownNode
     /// </summary>
     public string? IdScope { get; set; }
 
+    /// <summary>
+    /// The level of the visually hidden heading the section is labelled by, which is what lets a screen reader
+    /// reach the notes from its list of headings. Defaults to 2, as GitHub writes it; the viewer moves it down
+    /// with the rest of the document's headings.
+    /// </summary>
+    public int HeadingLevel { get; set; } = 2;
+
     public List<BitMarkdownNode> Children { get; } = new();
 
     public override IList<BitMarkdownNode> ChildNodes => Children;

@@ -9,7 +9,7 @@ public partial class BitMessageBoxDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves the focus onto the default action button once the message box is rendered, and marks it with the autofocus attribute the surrounding layer reads, so a message box kept mounted between showings lands the focus on it on every opening. The BitMessageBoxService defaults it to true for the message boxes it shows.",
+            Description = "Moves the focus onto the default action button (see DefaultButton) once the message box is rendered, and on every opening of a modal it stays mounted in. The BitMessageBoxService turns it on for the boxes it shows.",
         },
         new()
         {
@@ -23,7 +23,7 @@ public partial class BitMessageBoxDemo
             Name = "Body",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The body of the message box. Line breaks in it are kept and long lines wrap.",
+            Description = "The body of the message box. Line breaks in it are kept and long lines wrap. Its id is {Id}-bdy, for the aria-describedby of a modal around it.",
         },
         new()
         {
@@ -117,7 +117,7 @@ public partial class BitMessageBoxDemo
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The template used to render the footer of the message box, which takes the place of its action buttons. The controls in it are the page's own, so AnswerAsync is what ends the message box with an answer.",
+            Description = "The template used to render the footer of the message box, which takes the place of its action buttons. The controls in it are the page's own, so AnswerAsync is what ends the message box with an answer; the box is cascaded, so a component of your own in it can take it as a [CascadingParameter] BitMessageBox.",
         },
         new()
         {
@@ -274,7 +274,14 @@ public partial class BitMessageBoxDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The title of the message box.",
+            Description = "The title of the message box. Its id is {Id}-ttl, for the aria-labelledby of a modal around it.",
+        },
+        new()
+        {
+            Name = "TitleElement",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The HTML element the title is rendered as (h5 by default). Pick the heading level that fits the page outline - h2 is usual for a dialog; the look does not change.",
         },
         new()
         {
@@ -310,6 +317,25 @@ public partial class BitMessageBoxDemo
             DefaultValue = "",
             Description = "Moves the focus onto the default action button of the message box, or onto its close button where it renders no action buttons of its own.",
         },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-MessageBox-padding", DefaultValue = "var(--bit-spa-dialog)", Description = "Inset of the message box (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-gap", DefaultValue = "spacing(2)", Description = "Room between the header, the body and the footer." },
+        new() { Name = "--bit-MessageBox-min-width", DefaultValue = "spacing(40)", Description = "Width the message box does not shrink below (scaled by Size, never past the max width, unset on small screens)." },
+        new() { Name = "--bit-MessageBox-max-width", DefaultValue = "var(--bit-siz-dialog-max-width) in a modal, 100% inline", Description = "Width the message box stops growing at: the theme's dialog width where it is the content of a modal, its container's width where it is rendered inline." },
+        new() { Name = "--bit-MessageBox-max-height", DefaultValue = "the screen height a modal leaves", Description = "Height past which the body scrolls (header and footer stay put)." },
+        new() { Name = "--bit-MessageBox-text-align", DefaultValue = "var(--bit-layout-dialog-text-align)", Description = "Alignment of the title and the body." },
+        new() { Name = "--bit-MessageBox-icon-color", DefaultValue = "the main color of Color", Description = "Color of the leading icon." },
+        new() { Name = "--bit-MessageBox-icon-size", DefaultValue = "var(--bit-siz-icon-md)", Description = "Size of the leading icon (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-title-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Color of the title." },
+        new() { Name = "--bit-MessageBox-title-font-size", DefaultValue = "var(--bit-tpg-dialog-title-font-size)", Description = "Size of the title (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-title-font-weight", DefaultValue = "var(--bit-tpg-dialog-title-font-weight)", Description = "Weight of the title." },
+        new() { Name = "--bit-MessageBox-body-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Color of the body." },
+        new() { Name = "--bit-MessageBox-body-font-size", DefaultValue = "var(--bit-tpg-fs-md)", Description = "Size of the body (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-actions-gap", DefaultValue = "spacing(2)", Description = "Room between the action buttons." },
+        new() { Name = "--bit-MessageBox-actions-justify", DefaultValue = "var(--bit-layout-dialog-actions-justify)", Description = "How the action buttons sit along the footer." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -461,6 +487,13 @@ public partial class BitMessageBoxDemo
                     Type = "bool",
                     DefaultValue = "false",
                     Description = "Set to true to keep the message box open and hand over no answer."
+                },
+                new()
+                {
+                    Name = "CancellationToken",
+                    Type = "CancellationToken",
+                    DefaultValue = "",
+                    Description = "Cancelled when the close or the Cancel button takes the answer back while the guard is still working it out. Hand it to the guard's slow work; an answer taken back is never handed over."
                 }
             ]
         },
@@ -580,7 +613,7 @@ public partial class BitMessageBoxDemo
                     Name = "FooterTemplate",
                     Type = "RenderFragment?",
                     DefaultValue = "null",
-                    Description = "The template used to render the footer of the message box."
+                    Description = "The template used to render the footer of the message box. A component of your own in it takes the box as a [CascadingParameter] BitMessageBox and answers the showing with its AnswerAsync."
                 },
                 new()
                 {
@@ -718,10 +751,117 @@ public partial class BitMessageBoxDemo
                 },
                 new()
                 {
+                    Name = "TitleElement",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The HTML element the title is rendered as (h5 by default)."
+                },
+                new()
+                {
                     Name = "YesText",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "The text of the Yes button."
+                }
+            ]
+        },
+        new()
+        {
+            Id = "prompt-parameters",
+            Title = "BitMessageBoxPromptParameters",
+            Description = "The parameters of BitMessageBoxService.Prompt: everything BitMessageBoxParameters sets, plus the text field the answer is typed into.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "AsyncValidator",
+                    Type = "Func<string, CancellationToken, Task<string?>>?",
+                    DefaultValue = "null",
+                    Description = "An asynchronous check (a server call) run on answering, after Required and Validator accept the value: return an error message to refuse it, or null to accept it. The field shows it is busy meanwhile, and an edit takes its message away. The token is cancelled when the check is given up on (Cancel, the close button, Escape, the token of the showing); an exception it throws closes the box and is rethrown out of Prompt."
+                },
+                new()
+                {
+                    Name = "AutoComplete",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The autocomplete attribute of the text field, such as off, username or current-password."
+                },
+                new()
+                {
+                    Name = "CanRevealPassword",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Adds a button to a Password field that shows what was typed."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The help text under the text field, which also describes it."
+                },
+                new()
+                {
+                    Name = "InputType",
+                    Type = "BitInputType?",
+                    DefaultValue = "null",
+                    Description = "The type of the text field, such as Password or Email. Text by default."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The visible label of the text field. Without one the question in the body names the field."
+                },
+                new()
+                {
+                    Name = "MaxLength",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The maximum number of characters the text field accepts."
+                },
+                new()
+                {
+                    Name = "Multiline",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Renders a multi-line text field, where Enter starts a new line and Ctrl+Enter answers the box."
+                },
+                new()
+                {
+                    Name = "Placeholder",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The placeholder of the text field."
+                },
+                new()
+                {
+                    Name = "Required",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Refuses an empty or white-space answer, showing RequiredMessage under the field."
+                },
+                new()
+                {
+                    Name = "RequiredMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The error message a Required field shows when it is left empty. \"A value is required.\" by default."
+                },
+                new()
+                {
+                    Name = "Validator",
+                    Type = "Func<string, string?>?",
+                    DefaultValue = "null",
+                    Description = "Checks the answer before it is accepted: return an error message to refuse it (shown under the field), or null to accept it. Re-runs on every edit once a value has been refused. An empty field is checked as an empty string, never null."
+                },
+                new()
+                {
+                    Name = "Value",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The initial value of the text field, selected when the box opens."
                 }
             ]
         }
@@ -782,6 +922,28 @@ public partial class BitMessageBoxDemo
     private BitMessageBoxResult buttonsResult;
     private BitMessageBoxResult modalServiceResult;
     private bool? confirmResult;
+    private string? promptResult;
+    private BitMessageBoxResult serviceResult;
+
+    private readonly BitMessageBoxParams[] messageBoxParams =
+    [
+        new()
+        {
+            Size = BitSize.Small,
+            YesText = "Save",
+            NoText = "Don't save",
+            CancelText = "Go back",
+            CloseButtonTitle = "Dismiss",
+            PrimaryButtonColor = BitColor.Primary,
+            DefaultButton = BitMessageBoxResult.Cancel
+        }
+    ];
+
+    private const string cssVariablesStyle = "--bit-MessageBox-text-align:center;" +
+                                             "--bit-MessageBox-actions-justify:center;" +
+                                             "--bit-MessageBox-icon-size:2rem;" +
+                                             "--bit-MessageBox-title-color:var(--bit-clr-suc);" +
+                                             "--bit-MessageBox-padding:2rem;";
 
     private async Task HandleBeforeResult(BitMessageBoxBeforeResultArgs args)
     {
@@ -791,7 +953,7 @@ public partial class BitMessageBoxDemo
         if (args.Result is not BitMessageBoxResult.Yes) return;
 
         // The work the answer starts, which AutoLoading spins the pressed button through.
-        await Task.Delay(1000);
+        await Task.Delay(1000, args.CancellationToken);
 
         if (guardConfirmed) return;
 
@@ -818,32 +980,40 @@ public partial class BitMessageBoxDemo
     [AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
     private async Task ShowMessageBoxService()
     {
-        await messageBoxService.Show("TITLE", "BODY");
+        serviceResult = await messageBoxService.Show("TITLE", "BODY", BitMessageBoxButtons.OkCancel);
     }
 
     private async Task ShowInfoMessageBox()
     {
-        await messageBoxService.ShowInfo("Information", "The export finished in 4 seconds.");
+        serviceResult = await messageBoxService.ShowInfo("Information", "The export finished in 4 seconds.");
     }
 
     private async Task ShowSuccessMessageBox()
     {
-        await messageBoxService.ShowSuccess("Success", "Your changes are saved.");
+        serviceResult = await messageBoxService.ShowSuccess("Success", "Your changes are saved.");
     }
 
     private async Task ShowWarningMessageBox()
     {
-        await messageBoxService.ShowWarning("Warning", "This workspace is almost out of space.");
+        serviceResult = await messageBoxService.ShowWarning("Warning", "This workspace is almost out of space.");
     }
 
     private async Task ShowSevereWarningMessageBox()
     {
-        await messageBoxService.ShowSevereWarning("Severe warning", "This workspace is out of space.");
+        serviceResult = await messageBoxService.ShowSevereWarning("Severe warning", "This workspace is out of space.");
     }
 
     private async Task ShowErrorMessageBox()
     {
-        await messageBoxService.ShowError("Error", "The file could not be uploaded.");
+        serviceResult = await messageBoxService.ShowError("Error", "The file could not be uploaded.");
+    }
+
+    private async Task ShowTimedMessageBox()
+    {
+        // The token takes the box back off the screen; a cancelled showing answers None.
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        serviceResult = await messageBoxService.Show(new() { Title = "Saved", Body = "This closes itself in 5 seconds." }, cts.Token);
     }
 
     private async Task ShowConfirm()
@@ -863,7 +1033,72 @@ public partial class BitMessageBoxDemo
             YesText = "Delete forever",
             NoText = "Keep it",
             DefaultButton = BitMessageBoxResult.No,
-            IconAriaLabel = "Error"
+            IconAriaLabel = "Error",
+            // A click beside the box does not dismiss it; Escape still does.
+            Modal = new() { Blocking = true }
+        });
+    }
+
+    private async Task ShowPrompt()
+    {
+        promptResult = await messageBoxService.Prompt("Rename", "The new name of the file:", "report.pdf");
+    }
+
+    private async Task ShowValidatedPrompt()
+    {
+        promptResult = await messageBoxService.Prompt(new()
+        {
+            Title = "New folder",
+            Body = "Folders hold the files of a project.",
+            Label = "Name",
+            Description = "Up to 40 characters, no slashes.",
+            Placeholder = "Untitled folder",
+            AutoComplete = "off",
+            MaxLength = 40,
+            Required = true,
+            RequiredMessage = "Give the folder a name.",
+            Validator = v => v.IndexOfAny(['/', '\\']) >= 0 ? "A name cannot hold a slash." : null,
+            AsyncValidator = IsFolderNameTaken,
+            OkText = "Create"
+        });
+    }
+
+    // Stands in for a call to the server, which is the only one that knows the folders already there.
+    private static async Task<string?> IsFolderNameTaken(string name, CancellationToken cancellationToken)
+    {
+        await Task.Delay(800, cancellationToken);
+
+        return string.Equals(name.Trim(), "Projects", StringComparison.OrdinalIgnoreCase) ? "A folder with this name already exists." : null;
+    }
+
+    private async Task ShowPasswordPrompt()
+    {
+        var password = await messageBoxService.Prompt(new()
+        {
+            Title = "Delete the account?",
+            Body = "Enter your password to confirm.",
+            Color = BitColor.Error,
+            Label = "Password",
+            InputType = BitInputType.Password,
+            AutoComplete = "current-password",
+            CanRevealPassword = true,
+            Required = true,
+            OkText = "Delete",
+            PrimaryButtonColor = BitColor.Error
+        });
+
+        // The password itself is the caller's to check; only whether one was given is shown here.
+        promptResult = password is null ? null : "(a password)";
+    }
+
+    private async Task ShowMultilinePrompt()
+    {
+        promptResult = await messageBoxService.Prompt(new()
+        {
+            Title = "Feedback",
+            Body = "What could be better?",
+            Multiline = true,
+            OkText = "Send"
         });
     }
 }

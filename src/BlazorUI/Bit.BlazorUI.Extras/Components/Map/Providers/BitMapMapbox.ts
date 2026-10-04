@@ -30,11 +30,11 @@ namespace BitBlazorUI {
         public static panBy(id: string, dx: number, dy: number, animate: boolean) {
             return BitMapGlBase.panBy(BitMapMapbox._key, id, dx, dy, animate);
         }
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
-            return BitMapGlBase.fitBounds(BitMapMapbox._key, id, swLat, swLng, neLat, neLng, paddingPx, maxZoom);
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number, animate: boolean = true) {
+            return BitMapGlBase.fitBounds(BitMapMapbox._key, id, swLat, swLng, neLat, neLng, paddingPx, maxZoom, animate);
         }
-        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
-            return BitMapGlBase.fitBoundsToMarkers(BitMapMapbox._key, id, paddingPx, maxZoom);
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number, animate: boolean = true) {
+            return BitMapGlBase.fitBoundsToMarkers(BitMapMapbox._key, id, paddingPx, maxZoom, animate);
         }
         public static addMarker(id: string, markerId: string, opts: any) { return BitMapGlBase.addMarker(BitMapMapbox._key, id, markerId, opts); }
         public static removeMarker(id: string, markerId: string) { return BitMapGlBase.removeMarker(BitMapMapbox._key, id, markerId); }
@@ -46,6 +46,7 @@ namespace BitBlazorUI {
             return BitMapGlBase.setMarkerPosition(BitMapMapbox._key, id, markerId, lat, lng);
         }
         public static openMarkerPopup(id: string, markerId: string) { return BitMapGlBase.openMarkerPopup(BitMapMapbox._key, id, markerId); }
+        public static closeMarkerPopup(id: string) { return BitMapGlBase.closeMarkerPopup(BitMapMapbox._key, id); }
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
             return BitMapGlBase.addPolyline(BitMapMapbox._key, id, layerId, latlngs, style);
         }
