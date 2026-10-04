@@ -374,6 +374,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitAppShell", "BitAppShellParams")]
     [DataRow("BitFullCalendar", "BitFullCalendarParams")]
     [DataRow("BitInfiniteScrolling", "BitInfiniteScrollingParams")]
+    [DataRow("BitMarkdownEditor", "BitMarkdownEditorParams")]
     [DataRow("BitAccordionList", "BitAccordionListParams")]
     [DataRow("BitNavPanel", "BitNavPanelParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]

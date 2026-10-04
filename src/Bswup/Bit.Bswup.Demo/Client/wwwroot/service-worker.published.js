@@ -18,7 +18,7 @@ self.mode = 'InitialPrerender';
 // line to get the faster, prerender-friendly passive behavior the preset intends.
 self.isPassive = false;
 
-self.assetsExclude = [/\.scp\.css$/];
+self.assetsExclude = [/\.scp\.css$/, /^_framework\/blazor\.webassembly\.js$/];
 self.caseInsensitiveUrl = true;
 
 // The MCP server (Server/Controllers/McpController.cs) and the plain HTTP mirror of its tools

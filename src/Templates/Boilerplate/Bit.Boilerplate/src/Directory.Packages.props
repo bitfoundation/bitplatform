@@ -143,7 +143,6 @@
         <PackageVersion Include="Twilio" Version="8.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.12" />
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.Localization" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
         <PackageVersion Include="FakeItEasy" Version="9.0.1" />

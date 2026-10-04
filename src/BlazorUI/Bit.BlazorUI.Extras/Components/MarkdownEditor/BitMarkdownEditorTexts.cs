@@ -31,6 +31,7 @@ public class BitMarkdownEditorTexts
     public string ToolbarTaskList { get; set; } = "Task list";
     public string ToolbarLink { get; set; } = "Link";
     public string ToolbarImage { get; set; } = "Image";
+    public string ToolbarUploadImage { get; set; } = "Upload image";
     public string ToolbarInlineCode { get; set; } = "Inline code";
     public string ToolbarCodeBlock { get; set; } = "Code block";
     public string ToolbarTable { get; set; } = "Table";
@@ -86,6 +87,11 @@ public class BitMarkdownEditorTexts
     public string ModeSplit { get; set; } = "Split";
     public string ModePreview { get; set; } = "Preview";
 
+    /// <summary>
+    /// What a screen reader is told once the display mode is cycled ({0} = the label of the new mode).
+    /// </summary>
+    public string ModeAnnouncementFormat { get; set; } = "{0} mode";
+
     public string FindReplaceTitle { get; set; } = "Find and replace";
     public string FindPlaceholder { get; set; } = "Find";
     public string ReplacePlaceholder { get; set; } = "Replace with";
@@ -132,6 +138,7 @@ public class BitMarkdownEditorTexts
     public string ShortcutDeleteLine { get; set; } = "Delete line";
     public string ShortcutTogglePreview { get; set; } = "Cycle edit / split / preview";
     public string ShortcutFullScreen { get; set; } = "Toggle full-screen";
+    public string ShortcutHelp { get; set; } = "Keyboard shortcuts";
     public string ShortcutSubmit { get; set; } = "Submit";
     public string ShortcutEscapeTab { get; set; } = "Move focus out of the editor";
 
@@ -155,6 +162,7 @@ public class BitMarkdownEditorTexts
         "task" => ToolbarTaskList,
         "link" => ToolbarLink,
         "image" => ToolbarImage,
+        "upload" => ToolbarUploadImage,
         "code" => ToolbarInlineCode,
         "codeblock" => ToolbarCodeBlock,
         "table" => ToolbarTable,
