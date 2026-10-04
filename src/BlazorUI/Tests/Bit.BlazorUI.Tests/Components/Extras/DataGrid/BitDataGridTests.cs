@@ -395,7 +395,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Price > 2 → Banana (2.5), Cherry (10), Date (7).
         component.FindAll(".bit-dtg-filter-op")[1].Change("GreaterThan");
-        component.Find("input.bit-dtg-filter-input[type=number]").Change("2");
+        component.Find("input.bit-dtg-filter-input[inputmode=decimal]").Change("2");
         Assert.AreEqual(3, FirstCellTexts(component).Count);
 
         // Switching the operator re-applies the same filter text: Price < 2 → Apple (-5), Elderberry (1).
@@ -413,7 +413,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.FindAll(".bit-dtg-filter-op")[0].Change("StartsWith");
-        component.Find("input.bit-dtg-filter-input:not([type=number])").Change("ba");
+        component.Find("input.bit-dtg-filter-input:not([inputmode=decimal])").Change("ba");
 
         var names = FirstCellTexts(component);
         Assert.AreEqual(1, names.Count);
@@ -3295,14 +3295,14 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.OnFilterChange, (IReadOnlyList<BitDataGridFilterDescriptor> _) => changes++);
         });
 
-        component.Find(".bit-dtg-filter-input:not([type=number])").Input("err");
+        component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Input("err");
         Assert.AreEqual(5, FirstCellTexts(component).Count, "nothing applies before the debounce elapses");
 
         component.WaitForAssertion(() => Assert.AreEqual(2, FirstCellTexts(component).Count), TimeSpan.FromSeconds(2));
         Assert.AreEqual(1, changes);
 
         // The blur that follows (a change event with the text already applied) does not apply it again.
-        await component.InvokeAsync(() => component.Find(".bit-dtg-filter-input:not([type=number])").Change("err"));
+        await component.InvokeAsync(() => component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Change("err"));
         Assert.AreEqual(1, changes);
     }
 
@@ -3317,9 +3317,9 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.OnFilterChange, (IReadOnlyList<BitDataGridFilterDescriptor> _) => changes++);
         });
 
-        var box = component.Find(".bit-dtg-filter-input:not([type=number])");
+        var box = component.Find(".bit-dtg-filter-input:not([inputmode=decimal])");
         box.Input("err");
-        component.Find(".bit-dtg-filter-input:not([type=number])").Change("err");
+        component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Change("err");
         Assert.AreEqual(2, FirstCellTexts(component).Count);
 
         await Task.Delay(200);
@@ -3335,11 +3335,11 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.FilterDebounce, -1);
         });
 
-        component.Find(".bit-dtg-filter-input:not([type=number])").Input("err");
+        component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Input("err");
         Assert.AreEqual(5, FirstCellTexts(component).Count);
-        Assert.AreEqual("err", component.Find(".bit-dtg-filter-input:not([type=number])").GetAttribute("value"), "the box keeps what was typed");
+        Assert.AreEqual("err", component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").GetAttribute("value"), "the box keeps what was typed");
 
-        component.Find(".bit-dtg-filter-input:not([type=number])").Change("err");
+        component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Change("err");
         Assert.AreEqual(2, FirstCellTexts(component).Count);
     }
 
@@ -3353,13 +3353,13 @@ public class BitDataGridTests : BunitTestContext
         });
 
         // Applied at once, but the box is not rewritten to the parsed value's own formatting ("2.5").
-        component.Find("input.bit-dtg-filter-input[type=number]").Input("2.50");
+        component.Find("input.bit-dtg-filter-input[inputmode=decimal]").Input("2.50");
         Assert.AreEqual(1, FirstCellTexts(component).Count);
-        Assert.AreEqual("2.50", component.Find("input.bit-dtg-filter-input[type=number]").GetAttribute("value"));
+        Assert.AreEqual("2.50", component.Find("input.bit-dtg-filter-input[inputmode=decimal]").GetAttribute("value"));
 
         // A programmatic filter replaces what was typed, and the box follows it.
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Price", BitDataGridFilterOperator.Equals, 10.0));
-        Assert.AreEqual("10", component.Find("input.bit-dtg-filter-input[type=number]").GetAttribute("value"));
+        Assert.AreEqual("10", component.Find("input.bit-dtg-filter-input[inputmode=decimal]").GetAttribute("value"));
     }
 
     [TestMethod]
@@ -3572,5 +3572,122 @@ public class BitDataGridTests : BunitTestContext
         DataCell(component, 1, 0).KeyDown(new KeyboardEventArgs { Key = "Tab", ShiftKey = true });
         Assert.AreSame(items[0], component.Instance.EditingItem);
         Assert.AreEqual("Price", component.Instance.EditingColumnId);
+    }
+
+    [TestMethod]
+    public void ANumberFilterBoxKeepsANumberStillBeingTypedAndReadsADecimalComma()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Filterable, true);
+            parameters.Add(p => p.FilterDebounce, 0);
+        });
+        IElement Box() => component.Find("input.bit-dtg-filter-input[inputmode=decimal]");
+
+        // A number input would report "-" as an empty value, and the render after it would wipe the box.
+        Assert.AreEqual("text", Box().GetAttribute("type"));
+        Box().Input("-");
+        Assert.AreEqual("-", Box().GetAttribute("value"), "a number not finished yet stays in the box");
+        Assert.AreEqual(5, FirstCellTexts(component).Count, "and filters nothing");
+
+        Box().Input("2,5");
+        CollectionAssert.AreEqual(new[] { "Banana" }, FirstCellTexts(component).ToArray());
+        Assert.AreEqual("2,5", Box().GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public async Task TypingIntoAnotherRowCommitsTheRowBeingEdited()
+    {
+        var items = CreateRows();
+        var saved = new List<TestRow>();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.CellNavigation, true);
+            parameters.Add(p => p.OnRowSave, (TestRow r) => saved.Add(r));
+        });
+
+        await component.InvokeAsync(() => component.Instance.BeginEditAsync(items[0], "Name"));
+        component.Find("input.bit-dtg-editor").Input("Blueberry");
+
+        // Row mode: a key typed on another row opens that row, but never by throwing away the open one's edits.
+        DataCell(component, 1, 0).KeyDown(new KeyboardEventArgs { Key = "x" });
+        Assert.AreEqual("Blueberry", items[0].Name);
+        CollectionAssert.AreEqual(new[] { items[0] }, saved);
+        Assert.AreSame(items[1], component.Instance.EditingItem);
+    }
+
+    [TestMethod]
+    public async Task ABuiltInEditorShowsAValueChangedUnderIt()
+    {
+        var items = CreateRows();
+        RenderFragment columns = builder =>
+        {
+            // A custom editor that sets another field as well, the way a dependent field does.
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.AddComponentParameter(2, "EditTemplate", (RenderFragment<TestRow>)(row => b =>
+            {
+                b.OpenElement(0, "button");
+                b.AddAttribute(1, "class", "set-price");
+                b.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => row.Price = 42));
+                b.CloseElement();
+            }));
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(3);
+            builder.AddComponentParameter(4, "Field", "Price");
+            builder.CloseComponent();
+        };
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ChildContent, columns);
+            parameters.Add(p => p.Editable, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance.BeginEditAsync(items[0], "Price"));
+        Assert.AreEqual("2.5", component.Find("input.bit-dtg-editor").GetAttribute("value"));
+
+        component.Find(".set-price").Click();
+        component.Render();
+        Assert.AreEqual("42", component.Find("input.bit-dtg-editor").GetAttribute("value"));
+
+        // What the user types into it is still theirs: their own keystrokes never rewrite the box.
+        component.Find("input.bit-dtg-editor").Input("43");
+        Assert.AreEqual("42", component.Find("input.bit-dtg-editor").GetAttribute("value"));
+        Assert.AreEqual(42, items[0].Price, "buffered until the row is saved");
+    }
+
+    [TestMethod]
+    public async Task AnEditorHandedAnotherColumnShowsThatColumnsValue()
+    {
+        var items = CreateRows();
+        var nameVisible = true;
+        RenderFragment Columns() => builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.AddComponentParameter(2, "Visible", nameVisible);
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(3);
+            builder.AddComponentParameter(4, "Field", "Price");
+            builder.CloseComponent();
+        };
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ChildContent, Columns());
+            parameters.Add(p => p.Editable, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance.BeginEditAsync(items[0], "Name"));
+        Assert.AreEqual("Banana", component.FindAll("input.bit-dtg-editor")[0].GetAttribute("value"));
+
+        // Hiding Name moves Price into the first cell, and with it the editor that cell already held.
+        nameVisible = false;
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Columns()));
+        var editor = component.Find("input.bit-dtg-editor");
+        Assert.AreEqual("Price", editor.GetAttribute("aria-label"));
+        Assert.AreEqual("2.5", editor.GetAttribute("value"));
     }
 }

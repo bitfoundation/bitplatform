@@ -181,7 +181,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// The text direction of the grid. Superseded by <see cref="BitComponentBase.Dir"/>, which it sets;
     /// kept so markup written against the earlier name keeps rendering instead of failing to bind.
     /// </summary>
-    [Parameter]
+    [Parameter, ResetClassBuilder]
     [Obsolete("Use Dir instead.")]
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public BitDir Direction
@@ -1061,6 +1061,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
             _lastGroupsInitiallyCollapsed = GroupsInitiallyCollapsed;
             _groupsCollapsedByDefault = GroupsInitiallyCollapsed;
             _groupStateOverrides.Clear();
+            _groupExpansionVersion++;
         }
 
         // A PageSize parameter change from the parent supersedes any page size the user picked in the pager.
@@ -1944,7 +1945,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         _gridSelfRef?.Dispose();
         // Drop any keystroke still waiting out its debounce so it can't run a search against a
         // disposed grid.
-        _searchDebounceCts?.Cancel();
+        _searchDebounce.Cancel();
         CancelFilterDebounce();
         // Only signal cancellation here; deterministic disposal of _loadCts belongs to the request
         // lifecycle (ResetLoadCancellation). Disposing it during teardown could surface an
@@ -2244,13 +2245,17 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     // The keystrokes still waiting out FilterDebounce, per column: superseded by the next keystroke in
     // the same box, flushed by Enter/blur, and dropped by anything else that sets the column's filter.
-    private readonly Dictionary<string, CancellationTokenSource> _filterDebounceCts = new();
+    private readonly Dictionary<string, BitDataGridDebouncer> _filterDebounces = new();
 
     private void CancelFilterDebounce(string? columnId = null)
     {
-        foreach (var id in columnId is null ? _filterDebounceCts.Keys.ToList() : [columnId])
+        if (columnId is null)
         {
-            if (_filterDebounceCts.Remove(id, out var cts)) cts.Cancel();
+            foreach (var debounce in _filterDebounces.Values) debounce.Cancel();
+        }
+        else if (_filterDebounces.TryGetValue(columnId, out var debounce))
+        {
+            debounce.Cancel();
         }
     }
 
@@ -2269,36 +2274,15 @@ public partial class BitDataGrid<TItem> : BitComponentBase
             return;
         }
 
-        var cts = new CancellationTokenSource();
-        _filterDebounceCts[column.Id] = cts;
-        var superseded = false;
-        try
-        {
-            await Task.Delay(FilterDebounce, cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-        finally
-        {
-            if (_filterDebounceCts.TryGetValue(column.Id, out var current) && ReferenceEquals(current, cts)) _filterDebounceCts.Remove(column.Id);
-            superseded = cts.IsCancellationRequested;
-            cts.Dispose();
-        }
-
-        // The delay can finish just before a newer keystroke cancels it, with this continuation still queued
-        // behind that keystroke's handler; the cancellation then arrives too late to throw, so it is read here.
-        if (superseded) return;
-
-        await SetTypedFilterAsync(column, raw);
+        if (!_filterDebounces.TryGetValue(column.Id, out var debounce)) _filterDebounces[column.Id] = debounce = new();
+        if (await debounce.WaitAsync(FilterDebounce)) await SetTypedFilterAsync(column, raw);
     }
 
     /// <summary>Enter or blur on a text/number filter box: applies at once what is still waiting out the
     /// debounce. Text the box already applied is not applied again, which would re-announce it.</summary>
     internal Task OnFilterCommitAsync(BitDataGridColumn<TItem> column, string? raw)
     {
-        var pending = _filterDebounceCts.ContainsKey(column.Id);
+        var pending = _filterDebounces.TryGetValue(column.Id, out var debounce) && debounce.IsPending;
         CancelFilterDebounce(column.Id);
         var typed = _filterRaw.TryGetValue(column.Id, out var text) ? text : null;
         return FilterDebounce < 0 || pending || typed != raw
@@ -2345,8 +2329,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // otherwise the clear button (or a programmatic search) would be undone a fraction of a second
         // later by the term the user had half-typed. A debounced search that has already run its delay
         // has dropped its own source by the time it lands here, so it never cancels itself.
-        _searchDebounceCts?.Cancel();
-        _searchDebounceCts = null;
+        _searchDebounce.Cancel();
 
         // The box always shows the term that is actually applied - including when a programmatic
         // search (or the clear button) supersedes what the user had typed into it.
@@ -2371,7 +2354,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     // Cancels a pending debounced search when a newer keystroke arrives (or the grid goes away), so
     // only the last one in a burst ever reaches SearchAsync.
-    private CancellationTokenSource? _searchDebounceCts;
+    private readonly BitDataGridDebouncer _searchDebounce = new();
 
     /// <summary>
     /// Handles a keystroke in the search box: applies the term after <see cref="SearchDebounce"/>
@@ -2384,41 +2367,15 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // user has actually typed rather than the term applied a moment ago.
         _searchBoxText = text ?? string.Empty;
 
-        _searchDebounceCts?.Cancel();
-        _searchDebounceCts = null;
-
         if (SearchDebounce <= 0)
         {
+            _searchDebounce.Cancel();
             await ApplyTypedSearchAsync(text);
             return;
         }
 
-        var cts = new CancellationTokenSource();
-        _searchDebounceCts = cts;
-        var superseded = false;
-        try
-        {
-            await Task.Delay(SearchDebounce, cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            // Superseded by a later keystroke (or by teardown); that one owns the search now.
-            return;
-        }
-        finally
-        {
-            // Each flow disposes the source it created, whether it ran out or was cancelled by a newer
-            // keystroke, so a long burst of typing doesn't leave one per character for the GC.
-            if (ReferenceEquals(_searchDebounceCts, cts)) _searchDebounceCts = null;
-            superseded = cts.IsCancellationRequested;
-            cts.Dispose();
-        }
-
-        // A delay that finished just before a newer keystroke (or a programmatic search) cancelled it is
-        // still superseded: the cancellation came too late to throw, so it is read here.
-        if (superseded) return;
-
-        await ApplyTypedSearchAsync(text);
+        // A wait superseded by a later keystroke, a programmatic search or teardown leaves the search to that.
+        if (await _searchDebounce.WaitAsync(SearchDebounce)) await ApplyTypedSearchAsync(text);
     }
 
     /// <summary>
@@ -2527,6 +2484,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         if (!IsEnabled) return;
 
         if (!_groupStateOverrides.Add(group.Path)) _groupStateOverrides.Remove(group.Path);
+        _groupExpansionVersion++;
         MarkStateChanged();
         StateHasChanged();
     }
@@ -2543,6 +2501,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // including groups that don't exist yet, so the state survives a regrouping or a data refresh.
         _groupsCollapsedByDefault = collapsed;
         _groupStateOverrides.Clear();
+        _groupExpansionVersion++;
         MarkStateChanged();
         StateHasChanged();
         return Task.CompletedTask;
@@ -2551,7 +2510,11 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     // The group paths encode the grouping columns and levels, so any change to the grouping makes the
     // recorded per-group exceptions meaningless; drop them rather than letting them accumulate and
     // silently apply to an unrelated group that happens to rebuild under the same path.
-    private void ResetGroupExpansionState() => _groupStateOverrides.Clear();
+    private void ResetGroupExpansionState()
+    {
+        _groupStateOverrides.Clear();
+        _groupExpansionVersion++;
+    }
 
     // ---------------------------------------------------------- Selection
     internal bool SelectionEnabled => SelectionMode != BitDataGridSelectionMode.None;
@@ -2949,22 +2912,18 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     {
         if (!IsEnabled || !ColumnEditable(column)) return;
 
-        if (IsCellEditMode)
+        // Moving on from an open edit commits it, in either mode, so a key pressed on another row (Enter, F2 or the
+        // first character typed into it) never throws away what was typed there - and a commit refused by a
+        // validation error keeps that edit open instead.
+        var sameEdit = _editItem is not null && KeyEquals(_editItem, item) && (!IsCellEditMode || _editColumnId == column.Id);
+        if (!sameEdit)
         {
-            var sameCell = _editItem is not null && KeyEquals(_editItem, item) && _editColumnId == column.Id;
-            if (!sameCell)
+            if (_editItem is not null)
             {
-                if (_editItem is not null)
-                {
-                    await CommitEditAsync();
-                    if (_editItem is not null) return;
-                }
-                OpenEdit(item, column.Id);
+                await CommitEditAsync();
+                if (_editItem is not null) return;
             }
-        }
-        else
-        {
-            BeginEdit(item);
+            OpenEdit(item, IsCellEditMode ? column.Id : null);
         }
 
         _editorFocusRequest = column.Id;
@@ -3694,7 +3653,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     // ------------------------------------------------- Keyboard cell navigation
     /// <summary>The flat, ordered list of rows the keyboard navigation moves across: the rows on screen, in the order
     /// they are shown - group order, without the rows of a collapsed group, while grouped.</summary>
-    internal IReadOnlyList<TItem> NavigableRows => _viewGroups is not null && _groupedNavigableRows is not null ? _groupedNavigableRows : _pageItems;
+    internal IReadOnlyList<TItem> NavigableRows => CurrentGroupedLayout()?.NavigableRows ?? (IReadOnlyList<TItem>)_pageItems;
 
     internal bool IsCellFocused(TItem item, int colIndex)
         => _focusedRow is not null && KeyEquals(_focusedRow, item) && _focusedCol == colIndex;
@@ -4270,6 +4229,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         {
             if (!string.IsNullOrEmpty(path)) _groupStateOverrides.Add(path);
         }
+        _groupExpansionVersion++;
         if (GroupingAllowed)
         {
             // Skipped entirely in modes that don't support grouping, so a snapshot captured in a
@@ -4383,11 +4343,9 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     {
         // The row being added renders first in the body, ahead of the view, and the rows after it count on from it.
         if (_pendingNew is not null && ReferenceEquals(item, _pendingNew)) return HeaderRowCount + 1;
-        if (_viewGroups is not null)
+        if (CurrentGroupedLayout() is { } layout)
         {
-            return item is not null && _groupedAriaRowIndex is not null && _groupedAriaRowIndex.TryGetValue(GetKey(item), out var position)
-                ? position
-                : null;
+            return item is not null && layout.RowIndex.TryGetValue(GetKey(item), out var position) ? position : null;
         }
         if (RowDataIndex(item) is not { } index) return null;
         return index + 1 + HeaderRowCount + PendingRowCount;
@@ -4398,67 +4356,76 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     /// <summary>The 1-based aria-rowindex of a group's header row, or null outside the grouped view.</summary>
     internal int? GroupAriaRowIndex(BitDataGridGroup<TItem> group)
-        => _groupAriaRowIndex is not null && _groupAriaRowIndex.TryGetValue(group.Path, out var position) ? position : null;
+        => CurrentGroupedLayout() is { } layout && layout.GroupIndex.TryGetValue(group.Path, out var position) ? position : null;
 
     /// <summary>Whether the footer row of aggregates renders.</summary>
     internal bool HasFooterRow => ShowFooter && _footerAggregates.Count > 0;
 
     // While grouped, every row is in the DOM but in group order, with a header row for each group in between and the
-    // rows of a collapsed group left out, so neither a row's data position nor the view's count says where it is. The
-    // positions are recounted in render order on every render, by ComputeAriaRowCount, which the grid element reads
-    // before any row renders. The same pass lists the rows the keyboard can reach, in the order they are shown.
-    private Dictionary<object, int>? _groupedAriaRowIndex;
-    private Dictionary<string, int>? _groupAriaRowIndex;
-    private List<TItem>? _groupedNavigableRows;
+    // rows of a collapsed group left out, so neither a row's data position nor the view's count says where it is. One
+    // walk numbers them in render order and lists the rows the keyboard can reach, in the order they are shown. It is
+    // read on demand rather than refreshed by a render, so the keyboard handlers that run right after a refresh (a row
+    // deleted, an edit committed into another group) see the new view, and it is only walked again when what it is
+    // built from changes: the view, which groups are open, or the rows above the body.
+    private sealed record GroupedLayout(Dictionary<object, int> RowIndex, Dictionary<string, int> GroupIndex, List<TItem> NavigableRows, int BodyRowCount);
+    private GroupedLayout? _groupedLayout;
+    private (IReadOnlyList<BitDataGridGroup<TItem>>? View, int Expansion, int Start) _groupedLayoutSource;
+
+    // Bumped whenever which groups are collapsed changes, so the cached layout knows to walk again.
+    private int _groupExpansionVersion;
+
+    private GroupedLayout? CurrentGroupedLayout()
+    {
+        if (_viewGroups is null) return null;
+
+        var start = HeaderRowCount + PendingRowCount + 1;
+        var source = (_viewGroups, _groupExpansionVersion, start);
+        if (_groupedLayout is not null && ReferenceEquals(_groupedLayoutSource.View, _viewGroups)
+            && _groupedLayoutSource.Expansion == _groupExpansionVersion && _groupedLayoutSource.Start == start)
+        {
+            return _groupedLayout;
+        }
+
+        var rows = new Dictionary<object, int>();
+        var groups = new Dictionary<string, int>();
+        var navigable = new List<TItem>();
+        var next = start;
+        Walk(_viewGroups);
+        _groupedLayoutSource = source;
+        return _groupedLayout = new(rows, groups, navigable, next - start);
+
+        void Walk(IReadOnlyList<BitDataGridGroup<TItem>> list)
+        {
+            foreach (var group in list)
+            {
+                groups[group.Path] = next++;
+                if (IsGroupCollapsed(group)) continue;
+                if (group.HasSubGroups)
+                {
+                    Walk(group.SubGroups);
+                    continue;
+                }
+                foreach (var item in group.Items)
+                {
+                    if (item is null || !rows.TryAdd(GetKey(item), next)) continue;
+                    next++;
+                    navigable.Add(item);
+                }
+            }
+        }
+    }
+
     private int _ariaRowCount;
 
     /// <summary>
     /// Counts the grid's rows for its aria-rowcount - the header rows, the data rows (with the group rows while grouped)
-    /// and the footer - and, while grouped, numbers them in the order they render. -1 when the total is unknown
-    /// (infinite scrolling).
+    /// and the footer. -1 when the total is unknown (infinite scrolling).
     /// </summary>
     internal int ComputeAriaRowCount()
     {
-        _groupedAriaRowIndex = null;
-        _groupAriaRowIndex = null;
-        _groupedNavigableRows = null;
-
         if (IsInfiniteMode) return _ariaRowCount = -1;
 
-        var body = TotalCount;
-        if (_viewGroups is not null)
-        {
-            var rows = new Dictionary<object, int>();
-            var groups = new Dictionary<string, int>();
-            var navigable = new List<TItem>();
-            var next = HeaderRowCount + PendingRowCount + 1;
-            Walk(_viewGroups);
-            _groupedAriaRowIndex = rows;
-            _groupAriaRowIndex = groups;
-            _groupedNavigableRows = navigable;
-            body = next - HeaderRowCount - PendingRowCount - 1;
-
-            void Walk(IReadOnlyList<BitDataGridGroup<TItem>> list)
-            {
-                foreach (var group in list)
-                {
-                    groups[group.Path] = next++;
-                    if (IsGroupCollapsed(group)) continue;
-                    if (group.HasSubGroups)
-                    {
-                        Walk(group.SubGroups);
-                        continue;
-                    }
-                    foreach (var item in group.Items)
-                    {
-                        if (item is null || !rows.TryAdd(GetKey(item), next)) continue;
-                        next++;
-                        navigable.Add(item);
-                    }
-                }
-            }
-        }
-
+        var body = CurrentGroupedLayout()?.BodyRowCount ?? TotalCount;
         return _ariaRowCount = HeaderRowCount + PendingRowCount + body + (HasFooterRow ? 1 : 0);
     }
 

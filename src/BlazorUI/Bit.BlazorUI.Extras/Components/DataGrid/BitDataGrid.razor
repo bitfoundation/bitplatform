@@ -755,7 +755,9 @@
         }
         else if (type is BitDataGridColumnDataType.Number)
         {
-            <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" type="number" placeholder="=" aria-label="@filterLabel"
+            @* A text box, not type="number": a number input reports what it cannot parse yet ("-", "12.") as an empty
+               value, and the render that follows a keystroke would write that empty value back over the typing. *@
+            <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" type="text" inputmode="decimal" autocomplete="off" placeholder="=" aria-label="@filterLabel"
                    value="@EditorText(column, FormatFilterNumber(current))"
                    @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
                    @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
@@ -823,7 +825,10 @@
             case BitDataGridColumnDataType.Number:
                 try
                 {
-                    var parsed = Convert.ChangeType(raw, underlying ?? typeof(double), inv);
+                    // The box is plain text, so a decimal comma reaches here as typed; read it as the decimal point
+                    // when the text has none of its own, as a number input in a comma-decimal locale would.
+                    var number = raw.Contains('.') ? raw : raw.Replace(',', '.');
+                    var parsed = Convert.ChangeType(number, underlying ?? typeof(double), inv);
                     return SetEditorFilterAsync(column, op, parsed);
                 }
                 catch { return SetEditorFilterAsync(column, BitDataGridFilterOperator.Equals, null); }

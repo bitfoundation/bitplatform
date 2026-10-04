@@ -157,6 +157,42 @@ public class BitDataGridStructureTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task DeletingARowOfAGroupedViewHandsTheFocusToTheRowShownAfterIt()
+    {
+        var items = CreateRows();
+        var component = RenderGrid(items: items, configure: p =>
+        {
+            p.Add(x => x.CellNavigation, true);
+            p.Add(x => x.Editable, true);
+            p.Add(x => x.OnRowDelete, (Row r) => { items.Remove(r); });
+        });
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Kind"));
+
+        IElement FirstCell(string name) => component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)")
+            .Single(r => r.TextContent.Contains(name)).QuerySelector("[aria-colindex]")!;
+
+        // Banana is second on screen; once it is gone, Carrot is - read off the view the delete left, not the one before.
+        FirstCell("Banana").FocusIn();
+        FirstCell("Banana").KeyDown(new KeyboardEventArgs { Key = "Delete" });
+        Assert.AreEqual(2, items.Count);
+        Assert.AreEqual("0", FirstCell("Carrot").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", FirstCell("Apple").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void TheObsoleteDirectionStillSwitchesTheGridsDirectionAfterTheFirstRender()
+    {
+#pragma warning disable CS0618 // Direction is the obsolete spelling of Dir, kept working for existing markup.
+        var component = RenderGrid(configure: p => p.Add(x => x.Direction, BitDir.Ltr));
+        Assert.IsFalse(component.Find(".bit-dtg").ClassList.Contains("bit-dtg-rtl"));
+
+        component.Render(p => p.Add(x => x.Direction, BitDir.Rtl));
+#pragma warning restore CS0618
+        Assert.IsTrue(component.Find(".bit-dtg").ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(component.Find(".bit-dtg").ClassList.Contains("bit-dtg-rtl"));
+    }
+
+    [TestMethod]
     public void TheFooterIsTheLastRowAndKeepsThePinnedColumnsPinned()
     {
         var columns = Columns(

@@ -307,19 +307,61 @@ namespace BitBlazorUI {
         }
 
         // Cell edit mode commits when the focus leaves the open cell. A focusout whose relatedTarget is still
-        // inside the cell (a custom EditTemplate with several controls) is a move within it, not a departure.
-        // The cell carries the number of its edit, so a late report cannot commit the edit opened after it.
+        // inside the cell (a custom EditTemplate with several controls) is a move within it, not a departure -
+        // and so is one into a popup the cell's editor opened (a dropdown's list, a date picker's calendar), which
+        // the callout JS moves to the body and which only the opener's aria-controls / aria-owns ties back to it.
+        // The edit then commits once the focus or a press lands outside both. The cell carries the number of its
+        // edit, so a late report cannot commit the edit opened after it.
         public static initCellEditBlur(root: HTMLElement, dotNetRef: DotNetObject) {
             if (!root) return { dispose: () => { } };
+            // The edit whose focus went into one of its popups, still to commit when the user moves on from it.
+            let away: { cell: HTMLElement, version: number } | null = null;
+            // The last element pressed: a press on a part of a popup that takes no focus blurs with no relatedTarget.
+            let pressed: Node | null = null;
+            const commit = (version: number) => dotNetRef.invokeMethodAsync('OnCellEditBlurAsync', version);
             const onFocusOut = (e: FocusEvent) => {
                 const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-bit-dtg-edit-version]');
                 if (!cell || cell.closest('.bit-dtg') !== root) return;
-                const next = e.relatedTarget as Node | null;
+                const version = Number(cell.dataset.bitDtgEditVersion);
+                const next = (e.relatedTarget as Node | null) ?? pressed;
                 if (next && cell.contains(next)) return;
-                dotNetRef.invokeMethodAsync('OnCellEditBlurAsync', Number(cell.dataset.bitDtgEditVersion));
+                if (next && isOwnedBy(cell, next)) {
+                    away = { cell, version };
+                    return;
+                }
+                away = null;
+                commit(version);
             };
+            // Capture phase, so a popup that stops the event still reports where the user went.
+            const onElsewhere = (e: Event) => {
+                if (e.type === 'pointerdown') pressed = e.target as Node | null;
+                if (!away) return;
+                const target = e.target as Node | null;
+                if (!away.cell.isConnected) {
+                    away = null;
+                    return;
+                }
+                if (target && (away.cell.contains(target) || isOwnedBy(away.cell, target))) return;
+                const version = away.version;
+                away = null;
+                commit(version);
+            };
+            // A press is only the cause of the blur it is in the middle of, never of a later one (Tab out to the browser).
+            const onReleased = () => pressed = null;
             root.addEventListener('focusout', onFocusOut);
-            return { dispose: () => root.removeEventListener('focusout', onFocusOut) };
+            document.addEventListener('focusin', onElsewhere, true);
+            document.addEventListener('pointerdown', onElsewhere, true);
+            document.addEventListener('pointerup', onReleased, true);
+            document.addEventListener('pointercancel', onReleased, true);
+            return {
+                dispose: () => {
+                    root.removeEventListener('focusout', onFocusOut);
+                    document.removeEventListener('focusin', onElsewhere, true);
+                    document.removeEventListener('pointerdown', onElsewhere, true);
+                    document.removeEventListener('pointerup', onReleased, true);
+                    document.removeEventListener('pointercancel', onReleased, true);
+                }
+            };
         }
 
         // Measures an element's rendered width. Used when a column resize starts so the drag begins
@@ -574,6 +616,20 @@ namespace BitBlazorUI {
     function focusableControls(container: HTMLElement): HTMLElement[] {
         return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(isFocusable);
     }
+    // Whether a node sits in a popup the container opened: inside an element that a control in the container names
+    // with aria-controls or aria-owns - the one tie a popup moved to the body keeps with its opener - or, a few levels
+    // deep, in a popup opened from such a popup (a submenu).
+    function isOwnedBy(container: HTMLElement, node: Node, depth = 0): boolean {
+        if (depth > 3) return false;
+        for (let el = node instanceof Element ? node : node.parentElement; el; el = el.parentElement) {
+            if (!el.id) continue;
+            const id = CSS.escape(el.id);
+            const opener = document.querySelector(`[aria-controls~="${id}"], [aria-owns~="${id}"]`);
+            if (!opener || opener === el) continue;
+            if (container.contains(opener) || isOwnedBy(container, opener, depth + 1)) return true;
+        }
+        return false;
+    }
     function isFocusable(el: HTMLElement): boolean {
         return el.matches(focusableSelector)
             && !(el instanceof HTMLInputElement && el.type === 'hidden')
@@ -600,7 +656,9 @@ namespace BitBlazorUI {
         // Space selects the row, so it cannot start a gather - but once one is under way it is a typed space (the
         // edit has opened in .NET by the time it gets there, and the opening cell no longer takes the key).
         if (!clears && (e.key.length !== 1 || (e.key === ' ' && !gathering))) return false;
-        if (!clears && kind === 'number' && !/[0-9+\-.,eE]/.test(e.key)) return false;
+        // A number starts the way BitDataGrid.IsTypingKey lets it (no exponent: that key opens nothing in .NET, so
+        // gathering it would only prefix the next gather); an exponent can follow once one is under way.
+        if (!clears && kind === 'number' && !(gathering ? /[0-9+\-.,eE]/ : /[0-9+\-.,]/).test(e.key)) return false;
         typedText.set(root, { text: clears ? '' : (gathering ? last!.text : '') + e.key, at: now });
         return true;
     }
