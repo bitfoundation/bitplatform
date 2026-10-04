@@ -88,6 +88,11 @@ internal static class BitMarkdownEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.blur", id);
     }
 
+    public static ValueTask BitMarkdownEditorSyncFocus(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.syncFocus", id);
+    }
+
     public static ValueTask BitMarkdownEditorDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.dispose", id);
