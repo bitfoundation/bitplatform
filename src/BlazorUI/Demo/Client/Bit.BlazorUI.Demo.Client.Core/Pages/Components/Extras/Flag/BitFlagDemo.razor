@@ -136,6 +136,30 @@
                     <b>BitFlagImageSet</b> sets it for every flag inside. A missing image falls back to the packaged flag.
                 </div>
                 <br />
+                <div class="example-desc">
+                    <b>It needs the Bit.BlazorUI.Assets package.</b> Add its nuget package to the project next to
+                    Bit.BlazorUI.Extras; there is nothing to link or register, since the images are static web assets
+                    served from <code>_content/Bit.BlazorUI.Assets/flags/</code>. Extras does not reference Assets -
+                    the two meet only at that URL - so a missing package is no build error: every flag asking for an
+                    image set makes one failed request, then draws the packaged 16px image. That is why
+                    <b>ImageSet</b> is opt-in rather than the default.
+                </div>
+                <br />
+                <div class="example-desc">
+                    <b>Why the images are split across two packages.</b> Extras carries one 16px flat image per
+                    country - 239 images, about 45KB - which is all a flag at the theme's icon sizes needs on a screen
+                    of ordinary density, and is always there for an image set to fall back to. The sets are two
+                    artworks at five sizes each - ten images per country, 2,390 images, about 1.1MB - which only a
+                    flag drawn large or on a dense screen needs. Kept in Extras, they would land in the published
+                    output of every app using any Extras component, most of which never draw a flag past 16px, and
+                    an app that precaches its published files for offline use (a PWA's service worker) would download
+                    all of them on install. Bit.BlazorUI.Assets is the package of optional static files that only
+                    the apps asking for them should carry, its fonts among them, so the sets live there, and only
+                    the apps that install it pay for them. Even then a page downloads no more than it draws: the
+                    browser is offered every size of a flag and fetches the one its size and the screen's density
+                    call for.
+                </div>
+                <br />
                 <div class="flag-list">
                     <div><BitFlag Height="3rem" Country="BitCountries.Brazil" /> <span>The packaged 16px image</span></div>
                     <div><BitFlag ImageSet="BitFlagImageSet.Flat" Height="3rem" Country="BitCountries.Brazil" /> <span>ImageSet="BitFlagImageSet.Flat"</span></div>
