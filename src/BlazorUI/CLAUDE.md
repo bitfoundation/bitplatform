@@ -3,6 +3,26 @@
 Guidance for the bit BlazorUI component library and its demo app. Coding style comes from the
 `.editorconfig` at the root of the `src` folder ([../CLAUDE.md](../CLAUDE.md)).
 
+## Razor comments
+
+**Never put a `@* ... *@` comment inside a tag, between its attributes.** It compiles, but the Razor
+compiler mis-reads the attributes around it and the page throws at runtime. A comment about an
+attribute goes in the comment block right above the element's opening tag:
+
+```razor
+@* Why the chip is named through aria-label. *@
+<div role="listitem"
+     aria-label="@TagName(tag)">
+```
+
+never
+
+```razor
+<div role="listitem"
+     @* Why the chip is named through aria-label. *@
+     aria-label="@TagName(tag)">
+```
+
 ## Demo pages
 
 A component's demo page is
