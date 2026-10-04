@@ -69,7 +69,7 @@ private string? toolbarMessage;
 
 private void Share(BitPdfViewer viewer)
 {
-    toolbarMessage = viewer.PageCount == 0 ? null : $""Link to page {viewer.CurrentPage} copied"";
+    toolbarMessage = viewer.PageCount == 0 ? null : $""Share requested for page {viewer.CurrentPage} of {viewer.PageCount}"";
 }";
 
     private readonly string example4RazorCode = @"

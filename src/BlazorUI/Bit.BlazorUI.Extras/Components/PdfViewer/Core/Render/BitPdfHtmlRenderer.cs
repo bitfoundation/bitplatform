@@ -1343,11 +1343,28 @@ public sealed class BitPdfHtmlRenderer
             string top = destTop is double t
                 ? string.Create(CultureInfo.InvariantCulture, $" data-bit-pdv-top=\"{t:0.##}\"")
                 : string.Empty;
-            string label = Escape(string.Format(CultureInfo.CurrentCulture, InternalLinkLabelFormat, page));
+            string label = Escape(FormatInternalLinkLabel(page));
             _links.Append(string.Create(CultureInfo.InvariantCulture,
                 $"<a href=\"#page={page}\" data-bit-pdv-page=\"{page}\"{top} aria-label=\"{label}\"{reach} style=\"{style}\"></a>"));
         }
         // Otherwise (unknown/unsafe scheme, unresolved dest): drop the hotspot.
+    }
+
+    /// <summary>
+    /// The accessible name of an internal link to <paramref name="page"/>. A malformed
+    /// <see cref="InternalLinkLabelFormat"/> (a localized text with a stray brace) falls
+    /// back to the default wording rather than dropping the link.
+    /// </summary>
+    private string FormatInternalLinkLabel(int page)
+    {
+        try
+        {
+            return string.Format(CultureInfo.CurrentCulture, InternalLinkLabelFormat, page);
+        }
+        catch (FormatException)
+        {
+            return string.Format(CultureInfo.CurrentCulture, "Go to page {0}", page);
+        }
     }
 
     /// <summary>

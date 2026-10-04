@@ -1147,7 +1147,8 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
 
 /* A full toolbar is wider than a phone. Rather than wrapping it into three rows
    that eat the document, it stays one row that scrolls sideways, and the file name -
-   the one part that is not a control - makes room. */
+   the one part that is not a control - shrinks to make room, keeping a few
+   characters and its ellipsis so the document is still named. */
 @media (max-width: 45rem) {
     .bit-pdv-toolbar {
         gap: spacing(1);
@@ -1163,7 +1164,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     }
 
     .bit-pdv-title {
-        display: none;
+        min-width: 4rem;
     }
 
     // Side panels cover most of a phone; they may take more of it than the half they get on a wide screen.

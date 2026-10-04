@@ -1676,7 +1676,7 @@ public partial class BitPdfViewerDemo
     /// <summary>The custom toolbar button of the toolbar example, handed the viewer as its context.</summary>
     private void Share(BitPdfViewer viewer)
     {
-        toolbarMessage = viewer.PageCount == 0 ? null : $"Link to page {viewer.CurrentPage} copied";
+        toolbarMessage = viewer.PageCount == 0 ? null : $"Share requested for page {viewer.CurrentPage} of {viewer.PageCount}";
     }
 
     private void HandleDownloading(BitPdfDownloadArgs args)
