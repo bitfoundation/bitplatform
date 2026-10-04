@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
@@ -27,10 +28,29 @@ namespace Bit.BlazorUI;
 /// Anything that is not a parameter is splatted onto the rendered tag, and the attributes the component builds itself
 /// are merged with the splatted ones rather than replacing them - which is how a "role" of "status" or an "aria-live"
 /// reaches the element when the shimmer is the message a screen reader should announce.
+/// <br />
+/// The look of every shimmer can be set at once through the public "--bit-TextShimmer-*" custom properties, on
+/// ":root", on an ancestor or on a class; a value given by a parameter of the shimmer itself wins over them.
 /// </remarks>
 public partial class BitTextShimmer : BitComponentBase
 {
     private const string DefaultElement = "p";
+    private const double DefaultSpread = 2;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the text shimmer component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings (the colors, the pace and the direction of the
+    /// band, or a "pause animations" switch for a whole region) to be applied to multiple text shimmer components
+    /// through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitTextShimmerParams.ParamName)]
+    public BitTextShimmerParams? CascadingParameters { get; set; }
 
 
 
@@ -225,9 +245,12 @@ public partial class BitTextShimmer : BitComponentBase
     /// count is the length of <see cref="Text"/> in user-perceived characters, or <see cref="ContentLength"/> when
     /// the content is supplied using <see cref="ChildContent"/>. A negative value is treated as zero, which draws a
     /// hard edged band, and a value that is not a finite number is ignored. <see cref="SpreadLength"/> wins over it.
+    /// <br />
+    /// Left at the default, the computed spread gives way to a "--bit-TextShimmer-spread" set by a class, an ancestor
+    /// or ":root"; any other value wins over that variable.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public double Spread { get; set; } = 2;
+    public double Spread { get; set; } = DefaultSpread;
 
     /// <summary>
     /// An explicit CSS length for the spread of the band, which replaces the one computed from Spread and the character count.
@@ -307,8 +330,14 @@ public partial class BitTextShimmer : BitComponentBase
             var length = ChildContent is null && Text is not null ? new StringInfo(Text).LengthInTextElements : ContentLength;
             // A spread that is not a finite number would write a length the browser refuses, and a gradient with an
             // invalid stop is no gradient at all - so it falls back to the default multiplier instead.
-            var spread = Math.Max(0, Math.Max(0, length) * (double.IsFinite(Spread) ? Spread : 2));
-            return $"--bit-tsh-spread:{Format(spread)}px";
+            var multiplier = double.IsFinite(Spread) ? Spread : DefaultSpread;
+            var spread = Math.Max(0, Math.Max(0, length) * multiplier);
+
+            // The spread the default multiplier computes is only the fallback of the public variable, which a class
+            // or an ancestor may set to restyle every shimmer at once; a multiplier that was asked for wins over it.
+            return multiplier == DefaultSpread
+                ? $"--bit-tsh-auto-spread:{Format(spread)}px"
+                : $"--bit-tsh-spread:{Format(spread)}px";
         });
 
         StyleBuilder.Register(() => Duration.HasValue ? $"--bit-tsh-duration:{Ms(Duration.Value)}" : string.Empty);
@@ -331,6 +360,14 @@ public partial class BitTextShimmer : BitComponentBase
         StyleBuilder.Register(() => Angle.HasValue && double.IsFinite(Angle.Value) ? $"--bit-tsh-angle:{Format(Angle.Value)}deg" : string.Empty);
         StyleBuilder.Register(() => BaseColor.HasValue() ? $"--bit-tsh-base-clr:{BaseColor}" : string.Empty);
         StyleBuilder.Register(() => GradientColor.HasValue() ? $"--bit-tsh-gradient-clr:{GradientColor}" : string.Empty);
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTextShimmerParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

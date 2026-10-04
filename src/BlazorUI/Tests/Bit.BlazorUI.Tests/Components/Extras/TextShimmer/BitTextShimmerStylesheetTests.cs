@@ -105,6 +105,51 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
 
 
 
+    // The public variables inherit, so a value set on :root, an ancestor or a class reaches every shimmer under it:
+    // each one is read with a fallback and never declared, and the header of the stylesheet names it.
+    [TestMethod,
+        DataRow("base-color", "--bit-tsh-base-clr"),
+        DataRow("gradient-color", "--bit-tsh-gradient-clr"),
+        DataRow("spread", "--bit-tsh-spread"),
+        DataRow("angle", "--bit-tsh-angle"),
+        DataRow("duration", "--bit-tsh-duration"),
+        DataRow("delay", "--bit-tsh-delay"),
+        DataRow("repeat-delay", "--bit-tsh-repeat-delay"),
+        DataRow("iterations", "--bit-tsh-iterations")]
+    public void EveryPublicVariableIsReadWithAFallbackAndNeverDeclared(string name, string privateVariable)
+    {
+        var stylesheet = ReadStylesheet();
+        var variable = $"--bit-TextShimmer-{name}";
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared.");
+        StringAssert.Contains(stylesheet, $"//   {variable} ");
+        StringAssert.Matches(GetBlock(stylesheet, "\n.bit-tsh {"), new Regex($@"{privateVariable}: var\({variable}, "));
+    }
+
+    // A Spread left at its default publishes the spread it computes under a name of its own, which only backs the
+    // public variable up - so --bit-TextShimmer-spread restyles every shimmer that was not given a spread.
+    [TestMethod]
+    public void TheComputedDefaultSpreadIsOnlyTheFallbackOfThePublicVariable()
+    {
+        var root = GetBlock(ReadStylesheet(), "\n.bit-tsh {");
+
+        StringAssert.Contains(root, "--bit-tsh-spread: var(--bit-TextShimmer-spread, var(--bit-tsh-auto-spread));");
+    }
+
+    // A Color is a choice the shimmer was given, so its class sets the private value again after the root reads the
+    // public variable into it.
+    [TestMethod]
+    public void TheColorRoleWinsOverThePublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+        var roles = GetBlock(stylesheet, ".bit-tsh-#{$role} {");
+
+        StringAssert.Contains(roles, "--bit-tsh-gradient-clr:");
+        Assert.IsTrue(stylesheet.IndexOf(".bit-tsh-#{$role}", StringComparison.Ordinal) > stylesheet.IndexOf("\n.bit-tsh {", StringComparison.Ordinal));
+    }
+
+
+
     private static string[] GetRootDeclarations()
     {
         return VariableDeclaration.Matches(GetBlock(ReadStylesheet(), "\n.bit-tsh {")).Select(m => m.Groups[1].Value).ToArray();

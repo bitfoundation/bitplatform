@@ -116,7 +116,7 @@ public partial class BitTextShimmerDemo
             Name = "Spread",
             Type = "double",
             DefaultValue = "2",
-            Description = "The shimmer band width multiplier. The effective spread of the band (px) - from its brightest point to each of its edges - is Spread times the character count, so longer text gets a proportionally wider shine. SpreadLength wins over it.",
+            Description = "The shimmer band width multiplier. The effective spread of the band (px) - from its brightest point to each of its edges - is Spread times the character count, so longer text gets a proportionally wider shine. SpreadLength wins over it; left at the default, --bit-TextShimmer-spread does too.",
         },
         new()
         {
@@ -139,6 +139,18 @@ public partial class BitTextShimmerDemo
             DefaultValue = "null",
             Description = "The text to display, that is also used to scale the shimmer band width based on its character count.",
         },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-TextShimmer-base-color", DefaultValue = "var(--bit-clr-fg-ter)", Description = "Resting color of the text. BaseColor wins over it." },
+        new() { Name = "--bit-TextShimmer-gradient-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Color of the band. GradientColor and Color win over it." },
+        new() { Name = "--bit-TextShimmer-spread", DefaultValue = "2px per character", Description = "Distance from the brightest point of the band to each edge; prefer a font-relative length (em, ch). SpreadLength and a non-default Spread win over it." },
+        new() { Name = "--bit-TextShimmer-angle", DefaultValue = "0deg", Description = "Tilt of the band from upright, mirrored in RTL. Angle wins over it." },
+        new() { Name = "--bit-TextShimmer-duration", DefaultValue = "calc(2000ms * var(--bit-mot-loop-factor))", Description = "Length of one sweep. Duration wins over it." },
+        new() { Name = "--bit-TextShimmer-delay", DefaultValue = "0ms", Description = "Pause before the first sweep. Delay wins over it." },
+        new() { Name = "--bit-TextShimmer-repeat-delay", DefaultValue = "0ms", Description = "Extra rest between two sweeps. RepeatDelay wins over it." },
+        new() { Name = "--bit-TextShimmer-iterations", DefaultValue = "infinite", Description = "Number of sweeps before the text comes to rest. Iterations wins over it." },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -178,6 +190,9 @@ public partial class BitTextShimmerDemo
     private bool isPaused;
 
     private bool isStatic;
+
+    private bool pauseAll;
+    private BitTextShimmerParams[] shimmerParams => [new() { Duration = 3000, RepeatDelay = 1000, SpreadLength = "3em", Paused = pauseAll }];
 
     private bool isThinking;
     private string thinkingResult = "Ask a question to see the assistant think.";
