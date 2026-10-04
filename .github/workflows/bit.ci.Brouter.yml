@@ -33,10 +33,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -69,7 +74,7 @@ jobs:
     - name: dotnet test (source generator)
       run: cd src/Brouter/Tests/Bit.Brouter.Tests.Generators && dotnet test --no-build
 
-    - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0)
+    - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0/net11.0)
       # Browser, hybrid and trimmed/AOT publish coverage are the stages below.
       run: cd src/Brouter/Tests/Bit.Brouter.Tests.Hosting && dotnet test --no-build
 
@@ -82,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ net10.0, net9.0, net8.0 ]
+        framework: [ net11.0, net10.0, net9.0, net8.0 ]
 
     steps:
     - name: Checkout source code
@@ -90,10 +95,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -116,7 +126,7 @@ jobs:
       run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -150,7 +160,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -222,7 +232,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -242,7 +252,7 @@ jobs:
       run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published host
       env:
