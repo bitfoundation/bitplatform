@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -10,7 +10,7 @@
 
     @if (Label is not null || LabelTemplate is not null)
     {
-        <label style="@Styles?.Label" class="bit-mde-lbl @Classes?.Label" for="@TextAreaId">
+        <label style="@Styles?.Label" class="bit-mde-lbl @(Required ? "bit-mde-req" : null) @Classes?.Label" for="@TextAreaId">
             @if (LabelTemplate is not null)
             {
                 @LabelTemplate
@@ -26,8 +26,12 @@
     {
         <div role="toolbar" aria-label="@ActiveTexts.ToolbarAriaLabel" aria-controls="@TextAreaId"
              style="@Styles?.Toolbar" class="bit-mde-tlb @Classes?.Toolbar">
-            @foreach (var item in ActiveToolbar)
+            @for (var index = 0; index < ActiveToolbar.Count; index++)
             {
+                var item = ActiveToolbar[index];
+
+                if (IsToolbarItemVisible(item) is false) continue;
+
                 if (item.Type is BitMarkdownEditorToolbarItemType.Separator)
                 {
                     <span class="bit-mde-sep" aria-hidden="true"></span>
@@ -39,20 +43,23 @@
                     <div class="bit-mde-dd">
                         <button type="button"
                                 style="@Styles?.ToolbarButton"
-                                class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
+                                class="bit-mde-btn @(item.Text is null ? null : "bit-mde-btx") @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
                                 title="@GetToolbarItemTitle(item)"
                                 aria-label="@GetToolbarItemLabel(item)"
                                 aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
                                 aria-haspopup="menu"
                                 aria-expanded="false"
+                                aria-controls="@GetMenuId(index)"
                                 data-cmd="@item.Name"
                                 tabindex="-1"
                                 disabled="@IsToolbarItemDisabled(item)">
-                            @((MarkupString)item.Icon)
+                            @RenderItemContent(item)
                         </button>
-                        <div class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
+                        <div id="@GetMenuId(index)" class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
                             @foreach (var child in item.Children ?? [])
                             {
+                                if (IsToolbarItemVisible(child) is false) continue;
+
                                 if (child.Type is BitMarkdownEditorToolbarItemType.Separator)
                                 {
                                     <div class="bit-mde-msep" role="separator"></div>
@@ -71,13 +78,10 @@
                                             aria-keyshortcuts="@GetToolbarItemKeyShortcuts(child)"
                                             aria-checked="@(IsToolbarItemToggle(child) ? (IsToolbarItemActive(child) ? "true" : "false") : null)"
                                             data-cmd="@child.Name"
+                                            data-bit-mde-upload="@(child.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                                             disabled="@IsToolbarItemDisabled(child)"
                                             @onclick="() => OnToolbarItemClick(child)">
-                                        @((MarkupString)child.Icon)
-                                        @if (child.Text is not null)
-                                        {
-                                            <span class="bit-mde-mit">@child.Text</span>
-                                        }
+                                        @RenderItemContent(child)
                                     </button>
                                 }
                             }
@@ -88,16 +92,17 @@
                 {
                     <button type="button"
                             style="@Styles?.ToolbarButton"
-                            class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
+                            class="bit-mde-btn @(item.Text is null ? null : "bit-mde-btx") @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
                             title="@GetToolbarItemTitle(item)"
                             aria-label="@GetToolbarItemLabel(item)"
                             aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
                             aria-pressed="@(IsToolbarItemToggle(item) ? (IsToolbarItemActive(item) ? "true" : "false") : null)"
                             data-cmd="@item.Name"
+                            data-bit-mde-upload="@(item.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                             tabindex="-1"
                             disabled="@IsToolbarItemDisabled(item)"
                             @onclick="() => OnToolbarItemClick(item)">
-                        @((MarkupString)item.Icon)
+                        @RenderItemContent(item)
                     </button>
                 }
             }
@@ -108,6 +113,9 @@
     {
         <div class="bit-mde-fnd" role="region" aria-label="@ActiveTexts.FindReplaceTitle">
             <input @ref="_findRef"
+                   type="search"
+                   autocomplete="off"
+                   spellcheck="false"
                    class="bit-mde-fni"
                    placeholder="@ActiveTexts.FindPlaceholder"
                    aria-label="@ActiveTexts.FindPlaceholder"
@@ -115,6 +123,9 @@
                    @oninput="e => OnFindTextChanged(e.Value?.ToString() ?? string.Empty)"
                    @onkeydown="OnFindKeyDown" />
             <input class="bit-mde-fni"
+                   type="text"
+                   autocomplete="off"
+                   spellcheck="false"
                    placeholder="@ActiveTexts.ReplacePlaceholder"
                    aria-label="@ActiveTexts.ReplacePlaceholder"
                    value="@_replaceText"
@@ -142,8 +153,12 @@
 
     <div class="bit-mde-bdy bit-mde-@Mode.ToString().ToLowerInvariant()">
         <div class="bit-mde-pne bit-mde-epn">
-            <textarea @ref="_textAreaRef"
+            @* The Preview mode hides the textarea, and a browser refuses to submit a form over a required control it
+               cannot focus without saying why, so only aria-required stays on it there. *@
+            <textarea @ref="InputElement"
+                      @attributes="InputHtmlAttributes"
                       id="@TextAreaId"
+                      name="@Name"
                       style="@Styles?.TextArea"
                       class="bit-mde-txa @Classes?.TextArea"
                       placeholder="@Placeholder"
@@ -152,6 +167,9 @@
                       maxlength="@(MaxLength is > 0 ? MaxLength : null)"
                       spellcheck="@(SpellCheck ? "true" : "false")"
                       readonly="@(ReadOnly || IsEnabled is false)"
+                      disabled="@(IsEnabled is false)"
+                      required="@(Required && Mode is not BitMarkdownEditorMode.Preview)"
+                      aria-required="@(Required ? "true" : null)"
                       autocomplete="off"
                       autocapitalize="off"
                       autocorrect="off"
@@ -161,7 +179,8 @@
 
         @* The preview pane scrolls on its own, so it needs to be reachable by keyboard
            for the arrow keys to be able to scroll it. *@
-        <div style="@Styles?.Preview"
+        <div @ref="_previewRef"
+             style="@Styles?.Preview"
              class="bit-mde-pne bit-mde-ppn @Classes?.Preview"
              tabindex="0"
              role="group"
@@ -185,6 +204,24 @@
             }
         </div>
     </div>
+
+    @if (HasDescription)
+    {
+        @* A div rather than a span: a DescriptionTemplate is free to render block content. *@
+        <div id="@DescriptionId" style="@Styles?.Description" class="bit-mde-des @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
+
+    @* Kept on the page while empty: a live region only announces a change made after it is already there. *@
+    <span class="bit-mde-ann" aria-live="polite" aria-atomic="true">@_announcement</span>
 
     @if (ShowStatusBar)
     {
@@ -214,14 +251,14 @@
             <div @ref="_helpRef"
                  role="dialog"
                  aria-modal="true"
-                 aria-label="@ActiveTexts.KeyboardShortcutsTitle"
+                 aria-labelledby="@HelpTitleId"
                  tabindex="-1"
                  class="bit-mde-hcr"
                  @onkeydown="OnHelpKeyDown"
                  @onclick:stopPropagation="true">
                 <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose"></span>
                 <header>
-                    <strong>@ActiveTexts.KeyboardShortcutsTitle</strong>
+                    <h2 id="@HelpTitleId">@ActiveTexts.KeyboardShortcutsTitle</h2>
                     <button type="button" @ref="_helpCloseRef" class="bit-mde-hcl" @onclick="CloseHelp" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
                 </header>
                 <dl>
@@ -235,3 +272,24 @@
         </div>
     }
 </div>
+
+@code {
+    // The glyph of an item - its own markup, or else the built-in icon it names - and its text. The text a menu
+    // item of the default toolbar shows is its localized title, so what is read out is also what is on screen.
+    private RenderFragment RenderItemContent(BitMarkdownEditorToolbarItem item) => __builder =>
+    {
+        @if (string.IsNullOrEmpty(item.Icon) is false)
+        {
+            @((MarkupString)item.Icon)
+        }
+        else if (string.IsNullOrEmpty(item.IconName) is false)
+        {
+            <i class="bit-mde-ico @BitIconInfo.Bit(item.IconName).GetCssClasses()" aria-hidden="true"></i>
+        }
+
+        @if (item.Text is not null)
+        {
+            <span class="bit-mde-mit">@ActiveTexts.GetToolbarTitle(item.Name, item.Text)</span>
+        }
+    };
+}

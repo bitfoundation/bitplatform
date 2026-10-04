@@ -209,10 +209,11 @@ public class BitMarkdownEditorTests : BunitTestContext
         var component = RenderComponent<BitMarkdownEditor>();
 
         // Top-level toolbar buttons (dropdown triggers included, but not the buttons
-        // rendered inside a dropdown menu).
+        // rendered inside a dropdown menu). The upload button waits for an upload handler.
         var buttons = component.FindAll(".bit-mde-btn:not(.bit-mde-mi)");
 
-        Assert.AreEqual(BitMarkdownEditorToolbar.Default.Count(i => i.Type is not BitMarkdownEditorToolbarItemType.Separator), buttons.Count);
+        Assert.AreEqual(BitMarkdownEditorToolbar.Default.Count(i => i.Type is not (BitMarkdownEditorToolbarItemType.Separator or BitMarkdownEditorToolbarItemType.ImageUpload)), buttons.Count);
+        Assert.AreEqual(0, component.FindAll("[data-cmd=upload]").Count);
 
         // The default toolbar includes a heading dropdown with menu items.
         var menuItems = component.FindAll(".bit-mde-mi");
@@ -287,7 +288,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var root = component.Find(".bit-mde");
 
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-mde-height:10rem"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-MarkdownEditor-height:10rem"));
     }
 
     [TestMethod]
@@ -1272,8 +1273,8 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var style = component.Find(".bit-mde").GetAttribute("style");
 
-        Assert.Contains("--bit-mde-min-height:8rem", style);
-        Assert.Contains("--bit-mde-max-height:30rem", style);
+        Assert.Contains("--bit-MarkdownEditor-min-height:8rem", style);
+        Assert.Contains("--bit-MarkdownEditor-max-height:30rem", style);
     }
 
     [TestMethod]

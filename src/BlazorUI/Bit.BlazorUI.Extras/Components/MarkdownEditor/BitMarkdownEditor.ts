@@ -15,6 +15,8 @@
         uploadingText: string;
         autoClose: boolean;
         submit: boolean;
+        autoHeight: boolean;
+        shortcuts?: { [keys: string]: string } | null;
     };
 
     type MdeFindResult = {
@@ -122,6 +124,10 @@
             MarkdownEditor._editors[id]?.clearDraft();
         }
 
+        public static syncFocus(id: string) {
+            MarkdownEditor._editors[id]?.syncFocus();
+        }
+
         public static dispose(id: string) {
             if (!MarkdownEditor._editors[id]) return;
 
@@ -174,10 +180,20 @@
             '(': ')', '[': ']', '{': '}', '`': '`', '"': '"'
         };
         private static readonly CLOSING_CHARS = [')', ']', '}', '`', '"'];
+        private static readonly MODIFIER_KEYS = ['Shift', 'Control', 'Alt', 'Meta', 'AltGraph'];
+        // Everything the Tab key can land on, the preview's rendered links and details included.
+        private static readonly FOCUSABLE = 'a[href], area[href], button, input, select, textarea, summary, iframe, ' +
+            'audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
         // Auto-closing is skipped in front of anything that is not whitespace or a closer.
         private static readonly NOT_BEFORE_CLOSE = /[^\s)\]}>]/;
         // Ctrl/Cmd+Alt+<digit> heading shortcuts, keyed by physical code so they survive
         // keyboard layouts where the combination does not produce the digit itself.
+        // The punctuation keys a toolbar item's shortcut can name, by physical code: Shift changes what they type
+        // ("Ctrl+Shift+." arrives as a ">"), and the shortcut names the key, not the character.
+        private static readonly PUNCTUATION_CODES: { [code: string]: string } = {
+            Period: '.', Comma: ',', Slash: '/', Backslash: '\\',Minus: '-', Equal: '=', Semicolon: ';',
+            Quote: "'", BracketLeft: '[', BracketRight: ']', Backquote: '`'
+        };
         private static readonly HEADING_CODES: { [key: string]: string } = {
             Digit1: 'Heading1', Digit2: 'Heading2', Digit3: 'Heading3',
             Digit4: 'Heading4', Digit5: 'Heading5', Digit6: 'Heading6'
@@ -208,9 +224,22 @@
         // is the escape hatch that keeps the editor from becoming a keyboard trap.
         private _tabEscape = false;
         private _openDropdown: HTMLElement | null = null;
+        // The menu the pointer opened by hovering its trigger: the click that follows on that trigger is the
+        // same intent, and toggling on it would close the menu the user is reaching for.
+        private _hoverOpened: HTMLElement | null = null;
         private _scrollSyncBound = false;
         private _toolbarObserver: MutationObserver | null = null;
         private _rootObserver: MutationObserver | null = null;
+        // Whether the focus is (or was last, before nothing took it over) in one of the two panes, so a mode switch
+        // that hides the focused pane can hand the focus to the one that is now on screen.
+        private _paneFocused = false;
+        private _keyPane: HTMLElement | null = null;
+        // The observers that keep an AutoHeight editor fitted to its content: the preview re-rendered by .NET, a
+        // mode or full-screen switch, and a change of width that re-wraps the text.
+        private _fitObserver: MutationObserver | null = null;
+        private _fitResizeObserver: ResizeObserver | null = null;
+        private _fitFrame = 0;
+        private _fitWidth = -1;
 
         private textArea: HTMLTextAreaElement;
         private root: HTMLElement | undefined | null;
@@ -227,7 +256,8 @@
             this.config = config ?? {
                 imageUpload: false, syncScroll: true, autoPair: true, autoSaveKey: null,
                 changeDebounceMs: 0, maxLength: 0, autoFocus: false, reportSelection: true, tabIndents: true,
-                maxImageSize: 0, imageAccept: null, uploadingText: 'uploading', autoClose: false, submit: false
+                maxImageSize: 0, imageAccept: null, uploadingText: 'uploading', autoClose: false, submit: false,
+                autoHeight: false
             };
 
             this._baseline = this.snapshot();
@@ -255,12 +285,21 @@
 
             this.applyScrollSync();
 
+            // The preview pane is a tab stop of its own, and in the preview mode the only one: the shortcuts that
+            // drive the chrome (and bring the textarea back) have to work from there too.
+            this._keyPane = root?.querySelector<HTMLElement>('.bit-mde-ppn') ?? null;
+            this._keyPane?.addEventListener('keydown', this.previewKeyDownHandler);
+            root?.addEventListener('focusin', this.paneFocusInHandler);
+            root?.addEventListener('focusout', this.paneFocusOutHandler);
+            root?.addEventListener('keydown', this.rootKeyDownHandler);
+
             // Closes an open menu on a click anywhere outside it. Bound once for the editor's
             // whole life, since the toolbar it belongs to can come and go under it.
             document.addEventListener('pointerdown', this.documentPointerDownHandler, true);
 
             this.bindToolbar();
             this.observeRoot();
+            this.applyAutoHeight();
         }
 
         // ShowToolbar can be flipped after the editor is initialized, which replaces the
@@ -355,6 +394,8 @@
             } else if (this._openDropdown === dd) {
                 this._openDropdown = null;
             }
+
+            if (!open && this._hoverOpened === dd) this._hoverOpened = null;
         }
 
         // A menu that would run off the edge of the window hangs off the other side of its
@@ -398,6 +439,13 @@
             const target = e.target as HTMLElement;
             if (!target || !target.closest) return;
 
+            // Picking a file has to happen in the click itself: a browser only opens the file picker for a user
+            // gesture, which a round trip to .NET (a Blazor Server one above all) can outlive.
+            const upload = target.closest('[data-bit-mde-upload]') as HTMLButtonElement | null;
+            if (upload && upload.disabled === false) {
+                this.pickImages();
+            }
+
             const item = target.closest('.bit-mde-mi');
             if (item) {
                 // The item ran its command; the menu has served its purpose. An item reached by
@@ -410,7 +458,9 @@
             const trigger = target.closest('.bit-mde-btn') as HTMLButtonElement | null;
             const dd = this.dropdownOf(trigger);
             if (dd && trigger!.disabled === false) {
-                this.setDropdownOpen(dd, dd.classList.contains('bit-mde-ddo') === false);
+                const keep = this._hoverOpened === dd;
+                this._hoverOpened = null;
+                this.setDropdownOpen(dd, keep || dd.classList.contains('bit-mde-ddo') === false);
             } else if (this._openDropdown) {
                 this.setDropdownOpen(this._openDropdown, false);
             }
@@ -428,6 +478,7 @@
             const dd = target && target.closest ? target.closest('.bit-mde-dd') as HTMLElement | null : null;
             const trigger = dd?.querySelector<HTMLButtonElement>(':scope > .bit-mde-btn');
             if (dd && trigger?.disabled !== true) {
+                if (dd.classList.contains('bit-mde-ddo') === false) this._hoverOpened = dd;
                 this.setDropdownOpen(dd, true);
             } else if (this._openDropdown && this._openDropdown.contains(document.activeElement) === false) {
                 this.setDropdownOpen(this._openDropdown, false);
@@ -494,9 +545,13 @@
             if (idx < 0) idx = 0;
 
             e.preventDefault();
+            // The arrows follow what is on screen: in a right-to-left toolbar the next button sits to the left.
+            const rtl = getComputedStyle(this.toolbar!).direction === 'rtl';
+            const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
+            const backward = rtl ? 'ArrowRight' : 'ArrowLeft';
             let next = idx;
-            if (e.key === 'ArrowRight') next = (idx + 1) % buttons.length;
-            else if (e.key === 'ArrowLeft') next = (idx - 1 + buttons.length) % buttons.length;
+            if (e.key === forward) next = (idx + 1) % buttons.length;
+            else if (e.key === backward) next = (idx - 1 + buttons.length) % buttons.length;
             else if (e.key === 'Home') next = 0;
             else if (e.key === 'End') next = buttons.length - 1;
 
@@ -507,9 +562,11 @@
         // component lives, so .NET pushes the whole config again whenever one of them does.
         public setConfig(config: MarkdownEditorConfig) {
             const wasSyncing = this.config.syncScroll;
+            const wasAutoHeight = this.config.autoHeight;
             this.config = config;
 
             if (wasSyncing !== config.syncScroll) this.applyScrollSync();
+            if (wasAutoHeight !== config.autoHeight) this.applyAutoHeight();
 
             // A limit lowered below the current length takes effect immediately.
             const limited = this.limit(this.textArea.value);
@@ -552,14 +609,19 @@
             // A value longer than MaxLength was cut down here, so .NET has to hear about it
             // or it would go on holding text the editor does not contain.
             if (truncated) this.flushChange();
+
+            this.scheduleFit();
         }
 
         public resetBaseline() {
             this._baseline = this.snapshot();
         }
 
+        // The Preview mode hides the textarea, and focusing a hidden element does nothing: the focus would stay
+        // wherever it was dropped (on the page's body, once a dialog or panel that held it is gone).
         public focus() {
-            this.textArea.focus();
+            const target = this.textArea.offsetParent === null && this._keyPane?.offsetParent ? this._keyPane : this.textArea;
+            target.focus();
         }
 
         public blur() {
@@ -587,6 +649,33 @@
 
         public notifyDraftRestored(text: string) {
             this.invoke('OnDraftRestored', text);
+        }
+
+        // Called after a render that switched the display mode: a pane that held the focus and was just hidden has
+        // dropped it on the page's body, so it goes to the pane that is on screen now.
+        public syncFocus() {
+            if (!this._paneFocused || !this.root) return;
+
+            const active = document.activeElement;
+            if (active && active !== document.body && active.isConnected && (active as HTMLElement).offsetParent !== null) return;
+
+            const target = this.textArea.offsetParent !== null ? this.textArea : this._keyPane;
+            target?.focus();
+        }
+
+        // Opens the file picker and uploads what is picked, the way a pasted or dropped image is uploaded.
+        public pickImages() {
+            if (this.textArea.readOnly || this.textArea.disabled || !this.config.imageUpload) return;
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = this.config.imageAccept || 'image/*';
+            input.addEventListener('change', () => {
+                const files = this.imageFiles(input.files, null);
+                if (files.length) this.uploadFiles(files);
+            }, { once: true });
+            input.click();
         }
 
         public clearDraft() {
@@ -792,6 +881,12 @@
             this.root?.removeEventListener('dragover', this.dragOverHandler);
             this.root?.removeEventListener('dragleave', this.dragLeaveHandler);
             this.root?.removeEventListener('dragend', this.dragLeaveHandler);
+            this.root?.removeEventListener('focusin', this.paneFocusInHandler);
+            this.root?.removeEventListener('focusout', this.paneFocusOutHandler);
+            this.root?.removeEventListener('keydown', this.rootKeyDownHandler);
+            this.detachAutoHeight();
+            this._keyPane?.removeEventListener('keydown', this.previewKeyDownHandler);
+            this._keyPane = null;
             this.detachScrollSync();
 
             this._undo = [];
@@ -815,7 +910,8 @@
                 return;
             }
 
-            if (e.key !== 'Tab') this._tabEscape = false;
+            // Pressing the Shift of a Shift+Tab is a keydown of its own, and must not disarm the way out backwards.
+            if (e.key !== 'Tab' && MarkdownEditorCore.MODIFIER_KEYS.indexOf(e.key) < 0) this._tabEscape = false;
 
             // AltGr reaches the page as Ctrl+Alt, so on a French, German or Polish layout the
             // characters typed with it (AltGr+2, AltGr+C, ...) would otherwise fire the
@@ -823,6 +919,8 @@
             const altGraph = typeof e.getModifierState === 'function' && e.getModifierState('AltGraph');
             const mod = (e.ctrlKey || e.metaKey) && !altGraph;
             const key = e.key.toLowerCase();
+
+            if (this.runItemShortcut(e, true)) return;
 
             // Alt + Up/Down moves the current line(s), the way code editors do.
             if (e.altKey && !altGraph && !mod && !e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
@@ -865,6 +963,9 @@
                     }
                     return;
                 }
+
+                // Keyed by the physical key, which is where '/' sits on most layouts without Shift.
+                if (e.code === 'Slash') { e.preventDefault(); this.invoke('OnShortcut', 'help'); return; }
 
                 switch (key) {
                     case 'b': e.preventDefault(); this.runCommand('Bold'); return;
@@ -922,11 +1023,92 @@
             }
         };
 
+        private previewKeyDownHandler = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') { this.invoke('OnEscape'); return; }
+            if (this.runItemShortcut(e, false)) return;
+            if ((e.ctrlKey || e.metaKey) && e.code === 'Slash') { e.preventDefault(); this.invoke('OnShortcut', 'help'); return; }
+            if (e.key === 'F9') { e.preventDefault(); this.invoke('OnShortcut', 'mode'); return; }
+            if (e.key === 'F11') { e.preventDefault(); this.invoke('OnShortcut', 'fullscreen'); return; }
+        };
+
+        // The shortcut a toolbar item binds is looked up before any built-in one, so an app can take over the keys
+        // of a built-in (Ctrl+K for a link dialog of its own). A command only runs from the textarea, where the
+        // selection it works on is; a custom item runs from the preview pane as well.
+        private runItemShortcut(e: KeyboardEvent, editing: boolean): boolean {
+            const map = this.config.shortcuts;
+            if (!map || e.isComposing) return false;
+
+            const altGraph = typeof e.getModifierState === 'function' && e.getModifierState('AltGraph');
+            const mod = (e.ctrlKey || e.metaKey) && !altGraph;
+            const alt = e.altKey && !altGraph;
+            if (!mod && !alt && /^F\d{1,2}$/.test(e.key) === false) return false;
+
+            const keys = (mod ? 'ctrl+' : '') + (alt ? 'alt+' : '') + (e.shiftKey ? 'shift+' : '') + this.shortcutKey(e);
+            const action = map[keys];
+            if (!action) return false;
+
+            if (action.startsWith('cmd:')) {
+                if (!editing) return false;
+                e.preventDefault();
+                this.runCommand(action.slice(4));
+                return true;
+            }
+
+            e.preventDefault();
+            this.invoke('OnToolbarShortcut', action.slice(5));
+            return true;
+        }
+
+        // A letter is the one the layout types (Ctrl+Z is where the Z is printed), unless the layout types no latin
+        // letter there; a digit and a punctuation key are named by where they sit, which Shift does not change.
+        private shortcutKey(e: KeyboardEvent): string {
+            const key = e.key.toLowerCase();
+            const code = e.code || '';
+            if (/^[a-z]$/.test(key)) return key;
+            if (/^Key[A-Z]$/.test(code)) return code.slice(3).toLowerCase();
+            if (/^Digit\d$/.test(code)) return code.slice(5);
+            return MarkdownEditorCore.PUNCTUATION_CODES[code] ?? key;
+        }
+
+        // A full-screen editor covers the page, so a Tab past its last control would land on one hidden under it.
+        // The keyboard is kept inside it instead; Escape (which leaves full-screen) is the way out. The help
+        // dialog keeps the focus inside itself, and a Tab the textarea already used to indent is left alone.
+        private rootKeyDownHandler = (e: KeyboardEvent) => {
+            if (e.key !== 'Tab' || e.defaultPrevented || !this.root) return;
+            if (!this.root.classList.contains('bit-mde-fsc') || this.root.querySelector('.bit-mde-hlp')) return;
+
+            const focusables = Array.from(this.root.querySelectorAll<HTMLElement>(MarkdownEditorCore.FOCUSABLE))
+                .filter(el => el.tabIndex >= 0 && !(el as HTMLButtonElement).disabled && el.offsetParent !== null);
+            if (!focusables.length) return;
+
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            const active = document.activeElement;
+
+            if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+            else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+        };
+
+        private isPane(node: EventTarget | null) {
+            return node === this.textArea || (!!this._keyPane && node === this._keyPane);
+        }
+
+        private paneFocusInHandler = (e: FocusEvent) => {
+            this._paneFocused = this.isPane(e.target);
+        };
+
+        // A focus that moved somewhere real has left the panes for good; one that went nowhere (the pane was just
+        // hidden under it) is still theirs to put back.
+        private paneFocusOutHandler = (e: FocusEvent) => {
+            if (e.relatedTarget && !this.isPane(e.relatedTarget)) this._paneFocused = false;
+        };
+
         // Programmatic edits (commands, undo/redo, external sets) assign the value
         // directly and never raise input events, so only free-form typing lands here.
         private inputHandler = () => {
             this.recordTyping();
             this.scheduleChange();
+            this.scheduleFit();
         };
 
         private blurHandler = () => {
@@ -1237,7 +1419,7 @@
                 try {
                     const base64 = await this.fileToBase64(file);
                     const url = await this.dotnetObj?.invokeMethodAsync<string | null>('UploadImage', name, base64, file.type);
-                    const replacement = url ? `![${this.escapeAlt(name)}](${url})` : '';
+                    const replacement = url ? `![${this.escapeAlt(name)}](${this.linkDestination(url)})` : '';
 
                     // The finished markdown is usually longer than the placeholder it replaces.
                     // When it no longer fits, the placeholder is taken back out rather than the
@@ -1288,6 +1470,12 @@
             // Brackets would close the alt text early and a newline would end the image
             // markup altogether, so neither survives into the document.
             return text.replace(/[\[\]]/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        // A space or a parenthesis in a URL (a storage key built from the file name, for one) ends a plain link
+        // destination early, so such a URL goes in angle brackets, inside which only < and > need escaping.
+        private linkDestination(url: string) {
+            return /[\s()<>]/.test(url) ? `<${url.replace(/[<>]/g, c => encodeURIComponent(c))}>` : url;
         }
 
         private isUrl(text: string) {
@@ -1458,12 +1646,125 @@
         }
 
         private flushChange() {
+            this.scheduleFit();
+
             if (this._changeTimer) {
                 clearTimeout(this._changeTimer);
                 this._changeTimer = null;
             }
             if (this.config.autoSaveKey) this.saveDraft();
             this.notifyChange();
+        }
+
+        private applyAutoHeight() {
+            this.detachAutoHeight();
+
+            if (!this.config.autoHeight || !this.root) {
+                const body = this.root?.querySelector<HTMLElement>('.bit-mde-bdy');
+                if (body) body.style.height = '';
+                this.clearPaneHeights();
+                return;
+            }
+
+            const body = this.root.querySelector<HTMLElement>('.bit-mde-bdy');
+
+            if (typeof MutationObserver !== 'undefined') {
+                this._fitObserver = new MutationObserver(() => this.scheduleFit());
+                // The root's class flips with full-screen, the body's with the mode, and the preview's content
+                // whenever .NET renders it again.
+                this._fitObserver.observe(this.root, { attributes: true, attributeFilter: ['class'] });
+                if (body) this._fitObserver.observe(body, { attributes: true, attributeFilter: ['class'] });
+                if (this._keyPane) this._fitObserver.observe(this._keyPane, { childList: true, subtree: true, characterData: true });
+            }
+
+            if (typeof ResizeObserver !== 'undefined') {
+                this._fitResizeObserver = new ResizeObserver(entries => {
+                    const width = entries[0]?.contentRect.width ?? 0;
+                    if (width === this._fitWidth) return;
+                    this._fitWidth = width;
+                    this.scheduleFit();
+                });
+                this._fitResizeObserver.observe(this.root);
+            }
+
+            this.scheduleFit();
+        }
+
+        private detachAutoHeight() {
+            this._fitObserver?.disconnect();
+            this._fitObserver = null;
+            this._fitResizeObserver?.disconnect();
+            this._fitResizeObserver = null;
+            this._fitWidth = -1;
+            if (this._fitFrame) { cancelAnimationFrame(this._fitFrame); this._fitFrame = 0; }
+        }
+
+        private scheduleFit() {
+            if (!this.config.autoHeight || this._fitFrame) return;
+
+            this._fitFrame = requestAnimationFrame(() => {
+                this._fitFrame = 0;
+                this.fitHeight();
+            });
+        }
+
+        // Sizes the body to the content of its visible panes: collapsed first (to its min-height) so a pane
+        // reports what it holds rather than the room it was given, then set to that, which its max-height caps.
+        private fitHeight() {
+            const body = this.root?.querySelector<HTMLElement>('.bit-mde-bdy');
+            if (!body || !this.root) return;
+
+            this.clearPaneHeights();
+
+            if (!this.config.autoHeight || this.root.classList.contains('bit-mde-fsc')) {
+                body.style.height = '';
+                return;
+            }
+
+            const editorPane = this.textArea.parentElement;
+            const preview = this._keyPane;
+            const editorShown = !!editorPane && editorPane.offsetParent !== null;
+            const previewShown = !!preview && preview.offsetParent !== null;
+
+            const textTop = this.textArea.scrollTop;
+            const previewTop = preview?.scrollTop ?? 0;
+
+            body.style.height = '0px';
+
+            const text = editorShown ? this.textArea.scrollHeight : 0;
+            const rendered = previewShown ? preview!.scrollHeight : 0;
+            // Stacked split panes share the body's height; side by side they each take all of it. Read off how far the
+            // two overlap across the line rather than off their tops, which the preview's divider pulls a pixel apart
+            // either way: side by side they share no more than that divider, stacked they share most of their width.
+            const stacked = editorShown && previewShown && this.panesOverlap(editorPane!, preview!);
+
+            body.style.height = `${stacked ? text + rendered : Math.max(text, rendered)}px`;
+
+            // Wrapped flex lines would share out the body's height evenly rather than by what each pane holds, so
+            // stacked panes are given their own share of the room the min- and max-height left the body.
+            if (stacked) {
+                const room = body.clientHeight;
+                const textHeight = text + rendered > 0 ? Math.round(room * text / (text + rendered)) : Math.round(room / 2);
+                editorPane!.style.height = `${textHeight}px`;
+                preview!.style.height = `${room - textHeight}px`;
+            }
+
+            this.textArea.scrollTop = textTop;
+            if (preview) preview.scrollTop = previewTop;
+        }
+
+        private panesOverlap(a: HTMLElement, b: HTMLElement) {
+            const ra = a.getBoundingClientRect();
+            const rb = b.getBoundingClientRect();
+            const shared = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+
+            return shared > Math.min(ra.width, rb.width) / 2;
+        }
+
+        private clearPaneHeights() {
+            const editorPane = this.textArea?.parentElement;
+            if (editorPane) editorPane.style.height = '';
+            if (this._keyPane) this._keyPane.style.height = '';
         }
 
         private saveDraft() {

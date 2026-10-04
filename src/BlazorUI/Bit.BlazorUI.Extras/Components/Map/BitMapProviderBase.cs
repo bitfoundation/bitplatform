@@ -38,7 +38,11 @@ public abstract class BitMapProviderBase : IBitMapProvider
     /// <summary>Enable mouse/touch dragging of the map.</summary>
     public bool Dragging { get; set; } = true;
 
-    /// <summary>Enable +/- and arrow key navigation when the map container is focused.</summary>
+    /// <summary>
+    /// Pan with the arrow keys (Shift for a longer step) and zoom with plus and minus while the map
+    /// has keyboard focus. BitMap provides this on every backend, Cesium included, which has no
+    /// keyboard navigation of its own.
+    /// </summary>
     public bool KeyboardNavigation { get; set; } = true;
 
     /// <summary>
