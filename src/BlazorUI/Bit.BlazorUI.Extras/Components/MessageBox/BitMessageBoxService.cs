@@ -19,8 +19,8 @@
 /// A message box that asks something - a Confirm, or any set of buttons beyond a lone Ok - is shown as an
 /// <c>alertdialog</c>, the role the WAI-ARIA pattern gives a dialog that interrupts to get a response, and so is
 /// one whose <see cref="BitMessageBoxParameters.Color"/> is Warning, SevereWarning or Error. A notice that is only
-/// acknowledged stays a plain <c>dialog</c>. <see cref="BitModalParameters.IsAlert"/> on
-/// <see cref="BitMessageBoxParameters.Modal"/> has the last word.
+/// acknowledged stays a plain <c>dialog</c>, and so does a <see cref="Prompt(BitMessageBoxPromptParameters)"/>, which is a
+/// form. <see cref="BitModalParameters.IsAlert"/> on <see cref="BitMessageBoxParameters.Modal"/> has the last word.
 /// </remarks>
 public class BitMessageBoxService(BitModalService modalService)
 {
@@ -111,9 +111,52 @@ public class BitMessageBoxService(BitModalService modalService)
     {
         ArgumentNullException.ThrowIfNull(parameters);
 
-        var result = await Show(parameters, BitMessageBoxButtons.OkCancel, isQuestion: true, cancellationToken);
+        var result = await Show(parameters, parameters.Id ?? NewId(), BitMessageBoxButtons.OkCancel, isQuestion: true, prompt: null, cancellationToken);
 
         return result is BitMessageBoxResult.Ok or BitMessageBoxResult.Yes;
+    }
+
+    /// <summary>
+    /// Shows a <see cref="BitMessageBox"/> asking for a line of text, and returns what was typed - or <c>null</c> when
+    /// the box is dismissed rather than answered.
+    /// </summary>
+    public Task<string?> Prompt(string title, string body, string? value = null)
+    {
+        return Prompt(new BitMessageBoxPromptParameters { Title = title, Body = body, Value = value });
+    }
+
+    /// <summary>
+    /// Shows a <see cref="BitMessageBox"/> asking for a line of text, and returns what was typed - or <c>null</c> when
+    /// the box is dismissed rather than answered.
+    /// </summary>
+    public Task<string?> Prompt(BitMessageBoxPromptParameters parameters) => Prompt(parameters, CancellationToken.None);
+
+    /// <summary>
+    /// Shows a <see cref="BitMessageBox"/> asking for a line of text, and returns what was typed - or <c>null</c> when
+    /// the box is dismissed rather than answered, or once the <paramref name="cancellationToken"/> takes the question back.
+    /// </summary>
+    /// <remarks>
+    /// The box has an Ok and a Cancel button unless <see cref="BitMessageBoxParameters.Buttons"/> says otherwise. Only the
+    /// affirmative answer (Ok, or Yes) returns the value - an empty string for an empty field - and only once
+    /// <see cref="BitMessageBoxPromptParameters.Required"/> and <see cref="BitMessageBoxPromptParameters.Validator"/> have
+    /// accepted it: a refused value stays in the field with the reason under it, and the box stays open. Enter in the field
+    /// answers the way the affirmative button does.
+    /// </remarks>
+    public async Task<string?> Prompt(BitMessageBoxPromptParameters parameters, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+
+        var buttons = parameters.Buttons ?? BitMessageBoxButtons.OkCancel;
+        var affirmative = buttons is BitMessageBoxButtons.YesNo or BitMessageBoxButtons.YesNoCancel
+                            ? BitMessageBoxResult.Yes
+                            : BitMessageBoxResult.Ok;
+
+        var id = parameters.Id ?? NewId();
+        var prompt = new BitMessageBoxPromptState(parameters, id, affirmative);
+
+        var result = await Show(parameters, id, BitMessageBoxButtons.OkCancel, isQuestion: false, prompt, cancellationToken);
+
+        return result == affirmative ? prompt.Value ?? string.Empty : null;
     }
 
     /// <summary>
@@ -133,30 +176,35 @@ public class BitMessageBoxService(BitModalService modalService)
     /// </remarks>
     public Task<BitMessageBoxResult> Show(BitMessageBoxParameters parameters, CancellationToken cancellationToken)
     {
-        return Show(parameters, null, isQuestion: false, cancellationToken);
-    }
-
-    private async Task<BitMessageBoxResult> Show(BitMessageBoxParameters parameters,
-                                                 BitMessageBoxButtons? fallbackButtons,
-                                                 bool isQuestion,
-                                                 CancellationToken cancellationToken)
-    {
         ArgumentNullException.ThrowIfNull(parameters);
 
+        return Show(parameters, parameters.Id ?? NewId(), null, isQuestion: false, prompt: null, cancellationToken);
+    }
+
+    // The id is what the ids of the title and the body are derived from, and those are what the modal points its
+    // accessible name and description at - so one is made up front rather than left to the message box, whose own
+    // generated id nothing outside it can read.
+    private static string NewId() => $"bit-msb-{Guid.NewGuid():n}";
+
+    private async Task<BitMessageBoxResult> Show(BitMessageBoxParameters parameters,
+                                                 string id,
+                                                 BitMessageBoxButtons? fallbackButtons,
+                                                 bool isQuestion,
+                                                 BitMessageBoxPromptState? prompt,
+                                                 CancellationToken cancellationToken)
+    {
         if (cancellationToken.IsCancellationRequested) return BitMessageBoxResult.None;
 
         var buttons = parameters.Buttons ?? fallbackButtons ?? BitMessageBoxButtons.Ok;
 
-        // The id is what the ids of the title and the body are derived from, and those are what the modal
-        // points its accessible name and description at - so one is made up front rather than left to the
-        // message box, whose own generated id nothing outside it can read.
-        var id = parameters.Id ?? $"bit-msb-{Guid.NewGuid():n}";
+        // A prompt is a form rather than an interruption, so it stays a plain dialog whatever its buttons are.
+        var asksAQuestion = prompt is null && (isQuestion || buttons is not (BitMessageBoxButtons.Ok or BitMessageBoxButtons.None));
 
         // The parameters are built from the modal reference the service hands back, so the callbacks close
         // this very modal without a window where the reference isn't assigned yet.
         var modalRef = await modalService.Show<BitMessageBox>(
-            mr => BuildParameters(parameters, id, mr, fallbackButtons),
-            BuildModalParameters(parameters, id, isQuestion || buttons is not (BitMessageBoxButtons.Ok or BitMessageBoxButtons.None)),
+            mr => BuildParameters(parameters, id, mr, fallbackButtons, prompt),
+            BuildModalParameters(parameters, id, asksAQuestion, prompt),
             parameters.Persistent ?? false);
 
         // Close rather than Dismiss: this is the page taking the box back, which a CanClose guard has no say over.
@@ -171,12 +219,18 @@ public class BitMessageBoxService(BitModalService modalService)
 
 
 
-    private static BitModalParameters BuildModalParameters(BitMessageBoxParameters parameters, string id, bool asksAQuestion)
+    private static BitModalParameters BuildModalParameters(BitMessageBoxParameters parameters, string id, bool asksAQuestion, BitMessageBoxPromptState? prompt)
     {
         // A HeaderTemplate takes the title off the message box, so an aria-labelledby pointing at it would
         // name the dialog after an element that was never rendered - the words themselves stand in for it.
         var hasTitle = parameters.Title.HasValue() && parameters.HeaderTemplate is null;
         var hasBody = parameters.Body.HasValue() || parameters.BodyTemplate is not null;
+
+        // The body of a prompt holds its field too, so the dialog is described by the question alone - and not even by
+        // that where the question is what names the field, which would have it read out twice on opening.
+        var describedBy = prompt is null
+                            ? (hasBody ? $"{id}-bdy" : null)
+                            : (hasBody && prompt.QuestionNamesTheField is false ? prompt.MessageId : null);
 
         var defaults = new BitModalParameters
         {
@@ -188,7 +242,7 @@ public class BitMessageBoxService(BitModalService modalService)
             AriaLabel = hasTitle ? null : (parameters.Title ?? parameters.Body),
 
             // The body is the prompt, which is what the pattern asks an alert dialog to be described by.
-            SubtitleAriaId = hasBody ? $"{id}-bdy" : null,
+            SubtitleAriaId = describedBy,
 
             // The alertdialog role is for a dialog that interrupts to get a response - a question, which is what
             // the WAI-ARIA pattern's own example (a confirmation) is - and for the colors that carry urgency.
@@ -200,7 +254,11 @@ public class BitMessageBoxService(BitModalService modalService)
         return BitModalParameters.Merge(parameters.Modal, defaults)!;
     }
 
-    private Dictionary<string, object> BuildParameters(BitMessageBoxParameters parameters, string id, BitModalReference modalRef, BitMessageBoxButtons? fallbackButtons)
+    private Dictionary<string, object> BuildParameters(BitMessageBoxParameters parameters,
+                                                       string id,
+                                                       BitModalReference modalRef,
+                                                       BitMessageBoxButtons? fallbackButtons,
+                                                       BitMessageBoxPromptState? prompt)
     {
         var result = new Dictionary<string, object>
         {
@@ -255,6 +313,11 @@ public class BitMessageBoxService(BitModalService modalService)
         Add(nameof(BitMessageBox.TitleElement), parameters.TitleElement);
         Add(nameof(BitMessageBox.YesText), parameters.YesText);
 
+        if (prompt is not null)
+        {
+            AddPrompt(prompt);
+        }
+
         return result;
 
         // A parameter that was not set is left out entirely rather than handed over as null, so the default
@@ -264,6 +327,30 @@ public class BitMessageBoxService(BitModalService modalService)
             if (value is null) return;
 
             result[name] = value;
+        }
+
+        // A prompt's body is its question and the field under it, and the field - not a button - is where the focus goes.
+        // The value is checked before an affirmative answer gets through, and only then is the caller's own guard asked.
+        void AddPrompt(BitMessageBoxPromptState state)
+        {
+            result.Remove(nameof(BitMessageBox.Body));
+            result[nameof(BitMessageBox.AutoFocus)] = false;
+            result[nameof(BitMessageBox.BodyTemplate)] = (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitMessageBoxPrompt>(0);
+                builder.AddComponentParameter(1, nameof(BitMessageBoxPrompt.State), state);
+                builder.CloseComponent();
+            });
+            result[nameof(BitMessageBox.OnBeforeResult)] = EventCallback.Factory.Create<BitMessageBoxBeforeResultArgs>(this, async args =>
+            {
+                if (args.Result == state.Affirmative && state.TryAccept() is false)
+                {
+                    args.Cancel = true;
+                    return;
+                }
+
+                await parameters.OnBeforeResult.InvokeAsync(args);
+            });
         }
     }
 }

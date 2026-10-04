@@ -117,7 +117,7 @@ public partial class BitMessageBoxDemo
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The template used to render the footer of the message box, which takes the place of its action buttons. The controls in it are the page's own, so AnswerAsync is what ends the message box with an answer.",
+            Description = "The template used to render the footer of the message box, which takes the place of its action buttons. The controls in it are the page's own, so AnswerAsync is what ends the message box with an answer; the box is cascaded, so a component of your own in it can take it as a [CascadingParameter] BitMessageBox.",
         },
         new()
         {
@@ -606,7 +606,7 @@ public partial class BitMessageBoxDemo
                     Name = "FooterTemplate",
                     Type = "RenderFragment?",
                     DefaultValue = "null",
-                    Description = "The template used to render the footer of the message box."
+                    Description = "The template used to render the footer of the message box. A component of your own in it takes the box as a [CascadingParameter] BitMessageBox and answers the showing with its AnswerAsync."
                 },
                 new()
                 {
@@ -757,6 +757,78 @@ public partial class BitMessageBoxDemo
                     Description = "The text of the Yes button."
                 }
             ]
+        },
+        new()
+        {
+            Id = "prompt-parameters",
+            Title = "BitMessageBoxPromptParameters",
+            Description = "The parameters of BitMessageBoxService.Prompt: everything BitMessageBoxParameters sets, plus the text field the answer is typed into.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "InputType",
+                    Type = "BitInputType?",
+                    DefaultValue = "null",
+                    Description = "The type of the text field, such as Password or Email. Text by default."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The visible label of the text field. Without one the question in the body names the field."
+                },
+                new()
+                {
+                    Name = "MaxLength",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The maximum number of characters the text field accepts."
+                },
+                new()
+                {
+                    Name = "Multiline",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Renders a multi-line text field, where Enter starts a new line and Ctrl+Enter answers the box."
+                },
+                new()
+                {
+                    Name = "Placeholder",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The placeholder of the text field."
+                },
+                new()
+                {
+                    Name = "Required",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Refuses an empty or white-space answer, showing RequiredMessage under the field."
+                },
+                new()
+                {
+                    Name = "RequiredMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The error message a Required field shows when it is left empty. \"A value is required.\" by default."
+                },
+                new()
+                {
+                    Name = "Validator",
+                    Type = "Func<string?, string?>?",
+                    DefaultValue = "null",
+                    Description = "Checks the answer before it is accepted: return an error message to refuse it (shown under the field), or null to accept it. Re-runs on every edit once a value has been refused."
+                },
+                new()
+                {
+                    Name = "Value",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The initial value of the text field, selected when the box opens."
+                }
+            ]
         }
     ];
 
@@ -815,6 +887,7 @@ public partial class BitMessageBoxDemo
     private BitMessageBoxResult buttonsResult;
     private BitMessageBoxResult modalServiceResult;
     private bool? confirmResult;
+    private string? promptResult;
     private BitMessageBoxResult serviceResult;
 
     private readonly BitMessageBoxParams[] messageBoxParams =
@@ -926,6 +999,38 @@ public partial class BitMessageBoxDemo
             NoText = "Keep it",
             DefaultButton = BitMessageBoxResult.No,
             IconAriaLabel = "Error"
+        });
+    }
+
+    private async Task ShowPrompt()
+    {
+        promptResult = await messageBoxService.Prompt("Rename", "The new name of the file:", "report.pdf");
+    }
+
+    private async Task ShowValidatedPrompt()
+    {
+        promptResult = await messageBoxService.Prompt(new()
+        {
+            Title = "New folder",
+            Body = "Folders hold the files of a project.",
+            Label = "Name",
+            Placeholder = "Untitled folder",
+            MaxLength = 40,
+            Required = true,
+            RequiredMessage = "Give the folder a name.",
+            Validator = v => v!.IndexOfAny(['/', '\\']) >= 0 ? "A name cannot hold a slash." : null,
+            OkText = "Create"
+        });
+    }
+
+    private async Task ShowMultilinePrompt()
+    {
+        promptResult = await messageBoxService.Prompt(new()
+        {
+            Title = "Feedback",
+            Body = "What could be better?",
+            Multiline = true,
+            OkText = "Send"
         });
     }
 }

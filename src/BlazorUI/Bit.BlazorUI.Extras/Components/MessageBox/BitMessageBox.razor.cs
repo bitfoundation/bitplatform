@@ -152,7 +152,9 @@ public partial class BitMessageBox : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The controls in it are the page's own, so nothing in them answers the message box on its own:
-    /// <see cref="AnswerAsync"/> is what ends it with an answer of the caller's choosing.
+    /// <see cref="AnswerAsync"/> is what ends it with an answer of the caller's choosing. The message box is
+    /// cascaded to its templates, so a component of your own in them can take it as a
+    /// <c>[CascadingParameter] BitMessageBox</c> - the way to answer one the service shows.
     /// </remarks>
     [Parameter] public RenderFragment? FooterTemplate { get; set; }
 

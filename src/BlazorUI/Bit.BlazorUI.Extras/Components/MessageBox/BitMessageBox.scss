@@ -131,9 +131,9 @@ $msb-ttl-line-height: 1.4;
     flex-grow: 1;
     display: block;
     overflow: auto;
-    line-height: 1.5;
     overflow-wrap: anywhere;
-    letter-spacing: 0.01em;
+    line-height: $tg-body1-line-height;
+    letter-spacing: $tg-body1-letter-spacing;
     box-sizing: border-box;
     font-weight: $tg-fw-regular;
     text-align: var(--bit-msb-text-align);
@@ -147,6 +147,13 @@ $msb-ttl-line-height: 1.4;
 // would turn every newline between its elements into a blank line.
 .bit-msb-txt {
     white-space: pre-wrap;
+}
+
+// The body of a prompt the BitMessageBoxService shows: its question, then the field the answer is typed into.
+.bit-msb-pmt {
+    display: flex;
+    gap: var(--bit-MessageBox-gap, #{spacing(2)});
+    flex-direction: column;
 }
 
 .bit-msb-ftr {

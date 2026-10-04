@@ -171,7 +171,8 @@
             <div>
                 <b>BodyTemplate</b> (or child content), <b>HeaderTemplate</b> (replaces icon, title and close button) and
                 <b>FooterTemplate</b> (replaces the buttons) take markup. Controls in a custom footer answer through
-                <b>AnswerAsync</b>, which takes the same path as a pressed button.
+                <b>AnswerAsync</b>, which takes the same path as a pressed button; a component of your own gets the box as a
+                <b>[CascadingParameter] BitMessageBox</b>, which is how a footer of a service box answers.
             </div>
             <br />
             <div class="example-grid">
@@ -306,7 +307,23 @@
             <div>Last answer: <b>@confirmResult</b></div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Prompt" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>Prompt</b> asks for text and returns it, or <b>null</b> when dismissed. The field takes the focus and Enter
+                answers (Ctrl+Enter when <b>Multiline</b>). <b>Required</b> and <b>Validator</b> refuse a value with a message
+                under the field; <b>Label</b>, <b>Placeholder</b>, <b>InputType</b> and <b>MaxLength</b> shape it.
+            </div>
+            <br />
+            <div class="example-buttons">
+                <BitButton OnClick="ShowPrompt">Rename</BitButton>
+                <BitButton OnClick="ShowValidatedPrompt">New folder</BitButton>
+                <BitButton OnClick="ShowMultilinePrompt">Feedback</BitButton>
+            </div>
+            <br />
+            <div>Last answer: <b>@(promptResult ?? "null")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>BitParams</b> with a <b>BitMessageBoxParams</b> sets defaults - button texts, colors, order, size -
                 for every message box under it; a box's own value wins (the second keeps its own Yes text). Wrap the
@@ -330,7 +347,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
+        <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
             <div>
                 <b>Color</b> is the severity: it paints the glyph and, for Info, Success, Warning, SevereWarning and
                 Error, picks it. <b>IconName</b> still overrides the glyph and <b>HideIcon</b> removes it.
@@ -361,7 +378,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
             <div>
                 <b>Icon</b> and <b>CloseIcon</b> take any CSS-class icon library (raw classes or <b>BitIconInfo.Css</b> /
                 <b>Fa</b> / <b>Bi</b>) and win over <b>IconName</b> / <b>CloseIconName</b>. Reference the library's
@@ -387,7 +404,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
+        <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
             <div>
                 <b>Size</b> scales the inset, title, body, glyph and buttons together. Medium is the default.
             </div>
@@ -405,7 +422,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (<b>ActionButton</b>
                 covers the buttons given nothing of their own). The public <b>--bit-MessageBox-*</b> variables (see the
@@ -442,7 +459,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+        <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
             <div>Use BitMessageBox in right-to-left (RTL).</div>
             <br />
             <div dir="rtl" class="example-grid">

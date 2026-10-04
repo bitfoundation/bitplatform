@@ -281,6 +281,49 @@ private async Task ShowDangerousConfirm()
 }";
 
     private readonly string example12RazorCode = @"
+<BitButton OnClick=""ShowPrompt"">Rename</BitButton>
+<BitButton OnClick=""ShowValidatedPrompt"">New folder</BitButton>
+<BitButton OnClick=""ShowMultilinePrompt"">Feedback</BitButton>
+
+<div>Last answer: <b>@(promptResult ?? ""null"")</b></div>";
+    private readonly string example12CsharpCode = @"
+[AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
+
+private string? promptResult;
+
+private async Task ShowPrompt()
+{
+    promptResult = await messageBoxService.Prompt(""Rename"", ""The new name of the file:"", ""report.pdf"");
+}
+
+private async Task ShowValidatedPrompt()
+{
+    promptResult = await messageBoxService.Prompt(new()
+    {
+        Title = ""New folder"",
+        Body = ""Folders hold the files of a project."",
+        Label = ""Name"",
+        Placeholder = ""Untitled folder"",
+        MaxLength = 40,
+        Required = true,
+        RequiredMessage = ""Give the folder a name."",
+        Validator = v => v!.IndexOfAny(['/', '\\']) >= 0 ? ""A name cannot hold a slash."" : null,
+        OkText = ""Create""
+    });
+}
+
+private async Task ShowMultilinePrompt()
+{
+    promptResult = await messageBoxService.Prompt(new()
+    {
+        Title = ""Feedback"",
+        Body = ""What could be better?"",
+        Multiline = true,
+        OkText = ""Send""
+    });
+}";
+
+    private readonly string example13RazorCode = @"
 <BitParams Parameters=""messageBoxParams"">
     <BitMessageBox Title=""Save changes?""
                    Body=""Your edits have not been saved.""
@@ -291,7 +334,7 @@ private async Task ShowDangerousConfirm()
                    Buttons=""BitMessageBoxButtons.YesNoCancel""
                    YesText=""Discard"" />
 </BitParams>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly BitMessageBoxParams[] messageBoxParams =
 [
     new()
@@ -306,7 +349,7 @@ private readonly BitMessageBoxParams[] messageBoxParams =
     }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitMessageBox Color=""BitColor.Info"" Title=""Info"" Body=""Something worth knowing."" />
 
 <BitMessageBox Color=""BitColor.Success"" Title=""Success"" Body=""Something went well."" />
@@ -321,7 +364,7 @@ private readonly BitMessageBoxParams[] messageBoxParams =
 
 <BitMessageBox Color=""BitColor.Error"" HideIcon Title=""HideIcon"" Body=""An Error without its glyph."" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -336,14 +379,14 @@ private readonly BitMessageBoxParams[] messageBoxParams =
                Title=""Bootstrap Icons""
                Body=""The glyph and the close icon come from Bootstrap Icons."" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitMessageBox Size=""BitSize.Small"" Color=""BitColor.Info"" Title=""Small"" Body=""The small size."" />
 
 <BitMessageBox Size=""BitSize.Medium"" Color=""BitColor.Info"" Title=""Medium"" Body=""The medium size."" />
 
 <BitMessageBox Size=""BitSize.Large"" Color=""BitColor.Info"" Title=""Large"" Body=""The large size."" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .custom-msg {
         background: linear-gradient(180deg, #3e0f0f, transparent) #000;
@@ -393,14 +436,14 @@ private readonly BitMessageBoxParams[] messageBoxParams =
                Color=""BitColor.Success""
                Buttons=""BitMessageBoxButtons.OkCancel""
                Style=""@cssVariablesStyle"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private const string cssVariablesStyle = ""--bit-MessageBox-text-align:center;"" +
                                          ""--bit-MessageBox-actions-justify:center;"" +
                                          ""--bit-MessageBox-icon-size:2rem;"" +
                                          ""--bit-MessageBox-title-color:var(--bit-clr-suc);"" +
                                          ""--bit-MessageBox-padding:2rem;"";";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitMessageBox Dir=""BitDir.Rtl""
                Color=""BitColor.Warning""
                Title=""عنوان پیام""
