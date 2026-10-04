@@ -44,7 +44,7 @@ public partial class BitMapDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Optional content rendered above the map canvas.",
+            Description = "Optional content rendered above the map canvas (overlays, custom controls, etc.). Each direct child is sized to its content from the top-start corner, unless positioned absolutely, and only the children take the pointer, so the map stays draggable around them. Keep them clear of the corners the provider's controls and attribution occupy.",
          },
          new()
          {
@@ -1427,7 +1427,7 @@ public partial class BitMapDemo
         geoLog = $"""
             Probe {point.Latitude:F5}, {point.Longitude:F5}
             {km:F2} km from Big Ben, {inside} the markers' bounding box
-            Box centre {box.Center.Latitude:F5}, {box.Center.Longitude:F5} — {box.LatitudeSpan:F4}° x {box.LongitudeSpan:F4}°
+            Box centre {box.Center.Latitude:F5}, {box.Center.Longitude:F5} - {box.LatitudeSpan:F4}° x {box.LongitudeSpan:F4}°
             """;
         return Task.CompletedTask;
     }
@@ -2067,8 +2067,8 @@ private readonly BitLeafletMapProvider lifecycleProvider = new() { Center = new(
             Markers=""boundMarkers"" />
 </div>
 <div>
-    Centre @boundCenter?.Latitude.ToString(""F4""), @boundCenter?.Longitude.ToString(""F4"") —
-    zoom @boundZoom?.ToString(""F1"") — @boundMarkers.Count marker(s)
+    Centre @boundCenter?.Latitude.ToString(""F4""), @boundCenter?.Longitude.ToString(""F4"") -
+    zoom @boundZoom?.ToString(""F1"") - @boundMarkers.Count marker(s)
 </div>";
     private readonly string example11CsharpCode = @"
 private BitMapLatLng? boundCenter = new(41.9028, 12.4964);

@@ -50,6 +50,11 @@ internal class BitSwiperOptions
     public int Threshold { get; set; }
 
     /// <summary>
+    /// Whether the manual navigation wraps around, which keeps both next/prev buttons at the ends.
+    /// </summary>
+    public bool Rewind { get; set; }
+
+    /// <summary>
     /// The number of items a single navigation moves.
     /// </summary>
     public int ScrollCount { get; set; }

@@ -38,6 +38,8 @@ public static partial class MauiProgram
                 CultureInfo.CurrentUICulture.Name); // 2- OS settings
         }
 
+        BitExtraThemeRegistration.Register();
+
         var builder = MauiApp.CreateBuilder();
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 

@@ -97,6 +97,24 @@ public static class BitChartTimeAxis
     private static DateTime ToDate(double oa)
         => DateTime.FromOADate(Math.Clamp(double.IsFinite(oa) ? oa : 0, MinOaDate, MaxOaDate));
 
+    /// <summary>
+    /// One axis value as the axis would label it: through the caller's formatter, or else in the unit the axis
+    /// ticks in - chosen from the axis range when it is <see cref="BitChartTimeUnit.Auto"/>.
+    /// </summary>
+    internal static string Format(double oa, double minOa, double maxOa, BitChartTimeUnit unit,
+        Func<DateTime, string>? format, CultureInfo? culture = null)
+    {
+        var d = ToDate(oa);
+        if (format is not null) return format(d);
+        if (unit == BitChartTimeUnit.Auto)
+        {
+            var min = ToDate(minOa);
+            var max = ToDate(maxOa);
+            unit = max < min ? ChooseUnit(max, min) : ChooseUnit(min, max);
+        }
+        return DefaultFormat(d, unit, culture);
+    }
+
     /// <summary>Generates (oaDateValue, label) ticks between min and max.</summary>
     public static List<(double Value, string Label)> Ticks(double minOa, double maxOa, BitChartTimeUnit unit,
         Func<DateTime, string>? format, int maxTicks = 11, CultureInfo? culture = null)

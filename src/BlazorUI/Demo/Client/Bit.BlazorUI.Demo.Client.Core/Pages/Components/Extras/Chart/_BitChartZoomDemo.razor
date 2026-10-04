@@ -2,42 +2,44 @@
 
 <DemoExample Title="Decimated line (zoom + pan)" RazorCode="@decimationRazorCode" CsharpCode="@decimationCsharpCode" Id="zoom-decimation">
     <div class="example-desc">
-        Scroll to zoom X, drag to pan, double-click to reset - and on a touch screen, drag with one finger and
-        pinch with two, which the chart claims from the browser's own gestures so they reach the plot.
-        A @(_count.ToString("N0"))-point series is downsampled to @_samples points with the LTTB algorithm, which
-        keeps the peaks that define the shape rather than sampling blindly, so it stays smooth at any zoom. Only the
-        pointer math is JavaScript; all drawing remains pure SVG.
+        Scroll to zoom X, drag to pan, double-click to reset; on touch, drag with one finger and pinch with two.
+        With the plot focused, <b>+</b> / <b>-</b> zoom and <b>0</b> resets. The @(_count.ToString("N0"))-point
+        series is LTTB-downsampled to @_samples points, keeping its peaks.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="_data" Options="_options" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Zoom both axes" RazorCode="@xyRazorCode" CsharpCode="@xyCsharpCode" Id="zoom-xy" PreventRenderForMcpClient>
     <div class="example-desc">
-        <code>Mode = XY</code> zooms and pans both axes at once, which is what a scatter plot needs. The mode names a
-        direction on screen rather than an axis id, so <code>X</code> always means the axis running across the plot
-        - on a horizontal-bar chart, the values. <code>LimitToData</code> keeps the view inside the series so
-        it can never be dragged off into empty space, and <code>MinRangeFraction</code> stops it zooming in forever.
+        <code>Mode = XY</code> zooms and pans both axes. Modes name screen directions, not axis ids: <code>X</code>
+        is the axis across the plot. <code>LimitToData</code> keeps the view inside the series;
+        <code>MinRangeFraction</code> limits how far it zooms in.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Scatter" Data="Scatter()" Options="_xy" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Drag-to-zoom box" RazorCode="@dragRazorCode" CsharpCode="@dragCsharpCode" Id="zoom-drag">
-    <div class="example-desc">With <code>DragZoom</code> the drag gesture selects a rectangle to zoom into instead of panning. Double-click resets it; from code, <code>ResetZoom()</code> and <code>ZoomTo(axisId, min, max)</code> do the same, and <code>OnZoomChange</code> reports every change.</div>
+    <div class="example-desc">
+        <code>DragZoom</code> makes dragging select a rectangle to zoom into instead of panning. Double-click or
+        <code>ResetZoom()</code> resets, <code>ZoomTo(axisId, min, max)</code> zooms from code and
+        <code>OnZoomChange</code> reports every change.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Scatter" Data="Scatter()" Options="_drag" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Category-axis zoom" RazorCode="@catZoomRazorCode" CsharpCode="@catZoomCsharpCode" Id="zoom-category">
-    <div class="example-desc">Category axes zoom too: the visible window is a range of indexes, so 40 categories can be explored a handful at a time without touching the data.</div>
+    <div class="example-desc">
+        Category axes zoom too: the visible window is a range of indexes, here a handful of the 40 categories at a
+        time.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="ManyBars()" Options="_catZoom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Overview and detail" RazorCode="@brushRazorCode" CsharpCode="@brushCsharpCode" Id="zoom-brush">
     <div class="example-desc">
-        The zoom API is enough to build the overview-and-detail pattern that dense time series want: a full-height
-        chart shows the window, a short chrome-free <code>Sparkline</code> underneath shows the whole series, and
-        <code>ZoomTo</code> moves the window while <code>GetAxisRange</code> and <code>OnZoomChange</code> report
-        where it is. Drag or scroll the top chart, or use the buttons; the readout below always names the visible
-        span.
+        Overview and detail from the zoom API: a <code>Sparkline</code> below shows the whole series,
+        <code>ZoomTo</code> moves the top chart's window, and <code>GetAxisRange</code> and
+        <code>OnZoomChange</code> report it. Drag, scroll or use the buttons.
     </div>
     <div class="buttons-container" style="gap:.5rem">
         <BitButton Variant="BitVariant.Outline" OnClick="() => ShowWindow(0, 0.25)">First quarter</BitButton>

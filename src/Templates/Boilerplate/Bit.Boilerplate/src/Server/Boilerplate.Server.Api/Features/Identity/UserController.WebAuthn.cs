@@ -30,7 +30,6 @@ public partial class UserController
 
         var authenticatorSelection = new AuthenticatorSelection
         {
-            RequireResidentKey = false,
             ResidentKey = ResidentKeyRequirement.Discouraged,
             UserVerification = UserVerificationRequirement.Required,
             AuthenticatorAttachment = AuthenticatorAttachment.Platform

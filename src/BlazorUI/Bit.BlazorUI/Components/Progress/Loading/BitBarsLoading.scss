@@ -8,34 +8,34 @@
 .bit-ldn-bar-chl {
     position: absolute;
     display: inline-block;
-    width: var(--bit-ldn-bar-16);
+    width: calc(16 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
     animation: bit-ldn-bar-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 0.5, 0.5, 1) infinite;
 }
 
 .bit-ldn-bar-ch1 {
     animation-delay: calc(-0.24s * var(--bit-ldn-mot-factor, 1));
-    left: var(--bit-ldn-bar-8);
+    left: calc(8 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-bar-ch2 {
     animation-delay: calc(-0.12s * var(--bit-ldn-mot-factor, 1));
-    left: var(--bit-ldn-bar-32);
+    left: calc(32 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-bar-ch3 {
     animation-delay: 0;
-    left: var(--bit-ldn-bar-56);
+    left: calc(56 * var(--bit-ldn-unit));
 }
 
 @keyframes bit-ldn-bar-anm {
     0% {
-        top: var(--bit-ldn-bar-8);
-        height: var(--bit-ldn-bar-64);
+        top: calc(8 * var(--bit-ldn-unit));
+        height: calc(64 * var(--bit-ldn-unit));
     }
 
     50%, 100% {
-        top: var(--bit-ldn-bar-24);
-        height: var(--bit-ldn-bar-32);
+        top: calc(24 * var(--bit-ldn-unit));
+        height: calc(32 * var(--bit-ldn-unit));
     }
 }

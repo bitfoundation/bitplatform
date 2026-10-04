@@ -52,15 +52,24 @@
     }
 
     @* The container holds nothing but the bar itself, because the segment mask that clips it is set
-       here: anything else inside would be cut into pieces along with it. *@
+       here: anything else inside would be cut into pieces along with it. A linear container also carries
+       the role: it spans the whole extent of the bar, whereas the filled part is as wide as the value - at
+       0% nothing at all, which a screen reader exploring by touch could never land on. *@
     <div style="@_BarContainerStyle"
-         class="@(Circular ? "bit-prb-crp" : "bit-prb-bcn") @Classes?.BarContainer">
+         class="@(Circular ? "bit-prb-crp" : "bit-prb-bcn") @Classes?.BarContainer"
+         role="@(Circular ? null : _Role)"
+         aria-label="@(Circular ? null : AriaLabel)"
+         aria-labelledby="@(Circular ? null : _AriaLabelledBy)"
+         aria-describedby="@(Circular ? null : _AriaDescribedBy)"
+         aria-valuetext="@(Circular ? null : AriaValueText)"
+         aria-valuemin="@(Circular ? null : _AriaValueMin)"
+         aria-valuemax="@(Circular ? null : _AriaValueMax)"
+         aria-valuenow="@(Circular ? null : _AriaValueNow)">
         @if (Circular)
         {
             @* The role sits on the svg itself, so the percentage rendered beside it stays outside an
                element whose children a screen reader treats as presentational. *@
             <svg class="bit-prb-cir"
-                 style="@GetCircleStyle()"
                  height="@(GetDiameter())px"
                  width="@(GetDiameter())px"
                  role="@_Role"
@@ -96,7 +105,7 @@
 
             @if (_ShowsPercentNumber)
             {
-                @PercentReadout("bit-prb-ctx")
+                @PercentReadout(_RingReadoutClass)
             }
         }
         else
@@ -106,16 +115,7 @@
             {
                 <div style="@GetBufferStyle()" class="bit-prb-buf @Classes?.Buffer"></div>
             }
-            <div class="@_BarClass @Classes?.Bar"
-                 role="@_Role"
-                 aria-label="@AriaLabel"
-                 aria-labelledby="@_AriaLabelledBy"
-                 aria-valuetext="@AriaValueText"
-                 aria-describedby="@_AriaDescribedBy"
-                 aria-valuemin="@_AriaValueMin"
-                 aria-valuemax="@_AriaValueMax"
-                 aria-valuenow="@_AriaValueNow"
-                 style="@GetProgressStyle()">
+            <div class="@_BarClass @Classes?.Bar" style="@GetProgressStyle()">
                 @* A readout asked to sit on the bar is rendered inside the filled part, so it travels
                    with it and is clipped by it - the whole indicator then holds to one line. The value
                    is on aria-valuenow either way, which is what the role publishes; the children of a

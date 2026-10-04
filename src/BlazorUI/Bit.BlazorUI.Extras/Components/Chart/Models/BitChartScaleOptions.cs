@@ -39,7 +39,7 @@ public sealed class BitChartScaleOptions
 
     /// <summary>Angle lines configuration (radial scales only).</summary>
     public bool AngleLines { get; set; } = true;
-    public string AngleLineColor { get; set; } = "var(--bit-clr-brd-sec, rgba(0,0,0,0.1))";
+    public string AngleLineColor { get; set; } = "var(--bit-Chart-grid-color, var(--bit-clr-brd-sec))";
     public double AngleLineWidth { get; set; } = 1;
     public List<double>? AngleLineDash { get; set; }
     /// <summary>Start angle in degrees for radial scales.</summary>
@@ -49,7 +49,7 @@ public sealed class BitChartScaleOptions
     /// <summary>Show a filled backdrop behind radial tick labels.</summary>
     public bool ShowLabelBackdrop { get; set; } = true;
     /// <summary>Backdrop color for radial tick labels.</summary>
-    public string BackdropColor { get; set; } = "var(--bit-clr-bg-pri, #fff)";
+    public string BackdropColor { get; set; } = "var(--bit-Chart-surface-color, var(--bit-clr-bg-pri))";
 
     // ---- Time scale ----
     /// <summary>The unit for a time axis. Auto picks a sensible unit from the data range.</summary>

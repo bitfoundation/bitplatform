@@ -237,7 +237,7 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "ItemTemplate",
-            Type = "RenderFragment<TItem>?",
+            Type = "RenderFragment<TItem?>?",
             DefaultValue = "null",
             Description = "The custom template content to render each item.",
         },
@@ -795,8 +795,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "OnClick",
-                   Type = "EventCallback",
-                   DefaultValue = "",
+                   Type = "Action<BitMenuButtonItem>?",
+                   DefaultValue = "null",
                    Description = "Click event handler of the item.",
                },
                new()
@@ -959,7 +959,7 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "OnClick",
-                   Type = "EventCallback",
+                   Type = "EventCallback<BitMenuButtonOption>",
                    DefaultValue = "",
                    Description = "Click event handler of the option.",
                },
@@ -1362,6 +1362,15 @@ public partial class BitMenuButtonDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.Target))",
                     Description = "Target field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Template",
+                    Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Template))",
+                    Description = "Template field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },

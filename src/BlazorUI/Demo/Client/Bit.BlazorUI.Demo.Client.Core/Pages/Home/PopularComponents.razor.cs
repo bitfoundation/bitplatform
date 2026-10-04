@@ -157,8 +157,8 @@ public partial class PopularComponents
     private double Alpha = 1;
 
 
-    private string UploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
-    private string RemoveUrl => $"{Configuration.GetApiServerAddress()}FileUpload/RemoveFile";
+    private string UploadUrl => Configuration.GetApiUrl("api/FileUpload/UploadChunkedFile");
+    private string RemoveUrl => Configuration.GetApiUrl("api/FileUpload/RemoveFile");
 
 
 

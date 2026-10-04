@@ -1,3 +1,5 @@
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
 // Every example needs a bounded flex container for the spacer to have leftover space to work with,
 // and visible children so the space it generates is actually legible on the page.
 .demo-row {
@@ -6,7 +8,7 @@
     padding: 0.5rem;
     align-items: center;
     box-sizing: border-box;
-    border: 1px solid gray;
+    border: 1px solid $bit-color-border-secondary;
 }
 
 .demo-col {
@@ -16,7 +18,7 @@
     flex-flow: column;
     align-items: flex-start;
     box-sizing: border-box;
-    border: 1px solid gray;
+    border: 1px solid $bit-color-border-secondary;
 }
 
 // The Element example needs a real list to put an "li" spacer in, without the bullets and the indent a
@@ -33,9 +35,9 @@
 }
 
 .demo-box {
-    color: white;
+    color: $bit-color-primary-text;
     white-space: nowrap;
-    background: #0078d4;
+    background: $bit-color-primary;
     padding: 0.25rem 0.75rem;
 }
 

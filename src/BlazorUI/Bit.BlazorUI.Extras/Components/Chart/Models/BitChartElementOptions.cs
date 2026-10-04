@@ -17,5 +17,5 @@ public sealed class BitChartElementOptions
     /// <summary>Default arc border thickness for pie/doughnut/polar area.</summary>
     public double ArcBorderWidth { get; set; } = 2;
     /// <summary>Default arc border color; follows the theme background so arcs separate cleanly.</summary>
-    public string ArcBorderColor { get; set; } = "var(--bit-clr-bg-pri, #fff)";
+    public string ArcBorderColor { get; set; } = "var(--bit-Chart-surface-color, var(--bit-clr-bg-pri))";
 }

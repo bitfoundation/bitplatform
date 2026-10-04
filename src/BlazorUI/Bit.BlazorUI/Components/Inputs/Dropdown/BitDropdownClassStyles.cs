@@ -13,6 +13,16 @@ public class BitDropdownClassStyles
     public string? Label { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the error message container of the BitDropdown.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the error message of the BitDropdown.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the description container of the BitDropdown.
     /// </summary>
     public string? DescriptionContainer { get; set; }

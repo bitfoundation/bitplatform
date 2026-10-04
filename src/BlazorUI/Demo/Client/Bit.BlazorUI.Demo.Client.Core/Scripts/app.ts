@@ -289,43 +289,10 @@ function registerWindowResizeListener(id: string, dotnetObj: any, methodName: st
     window.addEventListener('resize', listener);
 }
 
-// The first caller wins: the header's search box registers on every page, and a second copy of the
-// control (the gallery's) must not steal the shortcut from it. A claim only lives as long as the
-// element that made it, though: the home page renders its finder in the hero instead of the header,
-// so navigating away from it leaves the claim pointing at an element that is gone, and the next box
-// to register takes over. The listener itself is attached once, whoever holds the claim.
-let searchShortcutRootId: string | null = null;
-let searchShortcutListening = false;
-
-function registerSearchShortcut(rootElementId: string) {
-    if (searchShortcutRootId != null && document.getElementById(searchShortcutRootId) != null) return;
-
-    searchShortcutRootId = rootElementId;
-
-    if (searchShortcutListening) return;
-
-    searchShortcutListening = true;
-
-    window.addEventListener('keydown', (e: KeyboardEvent) => {
-        const isCommandK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
-
-        // A bare "/" is the other conventional docs shortcut, but only while the reader is not
-        // already typing somewhere - otherwise it would swallow the character.
-        const target = e.target as HTMLElement | null;
-        const isTyping = target != null &&
-            (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
-        const isSlash = e.key === '/' && !isTyping && !e.ctrlKey && !e.metaKey && !e.altKey;
-
-        if (!isCommandK && !isSlash) return;
-
-        const input = document.getElementById(searchShortcutRootId!)?.querySelector('input');
-        if (input == null) return;
-
-        e.preventDefault();
-        input.focus();
-        input.select();
-    });
-}
+// The Ctrl/Cmd+K (and bare "/") shortcut that puts the caret in the component finder used to be
+// hand-rolled here. BitSearchBox.FocusShortcut is that feature now, so ComponentSearchBox asks the
+// control for it - which also takes the listener back off when the box goes away, where this one
+// kept a claim on an element that had already been navigated past.
 
 function unregisterWindowResizeListener(id: string) {
     const listener = windowResizeListeners[id];
@@ -488,9 +455,8 @@ declare namespace BitBlazorUI {
 // pointed at the secondary surface the site is drawn on.
 BitBlazorUI.Theme.init({
     system: true,
+    // localStorage only, no cookie mirror: the host page is cached by the CDN and served to every
+    // visitor, so the server never paints a visitor's own theme (see App.razor) - the inline head
+    // script restores it from localStorage before first paint instead.
     persist: true,
-    // Mirror every theme change into the bit-theme-preference cookie so the server can paint the
-    // right theme into the prerendered markup (see App.razor). Without it the server would fall back
-    // to following the OS and the app would flash the wrong theme for visitors who picked one.
-    persistCookie: true,
 });

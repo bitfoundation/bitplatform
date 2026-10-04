@@ -123,6 +123,16 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public string? ImagePosition { get; set; }
 
     /// <summary>
+    /// Stands the body of the card in with a placeholder while its content is being fetched.
+    /// </summary>
+    public bool? Loading { get; set; }
+
+    /// <summary>
+    /// The custom placeholder rendered in the body of the card while Loading is set.
+    /// </summary>
+    public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
     /// Sets the maximum height of the card.
     /// </summary>
     public string? MaxHeight { get; set; }
@@ -330,6 +340,18 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (Download is not null && bitCard.HasNotBeenSet(nameof(Download)))
         {
             bitCard.Download = Download;
+        }
+
+        if (Loading.HasValue && bitCard.HasNotBeenSet(nameof(Loading)))
+        {
+            bitCard.Loading = Loading.Value;
+
+            bitCard.ClassBuilder.Reset();
+        }
+
+        if (LoadingTemplate is not null && bitCard.HasNotBeenSet(nameof(LoadingTemplate)))
+        {
+            bitCard.LoadingTemplate = LoadingTemplate;
         }
 
         if (NoPadding.HasValue && bitCard.HasNotBeenSet(nameof(NoPadding)))

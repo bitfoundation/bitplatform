@@ -9,7 +9,7 @@ public partial class BitPaginationDemo
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "The horizontal alignment of the pagination inside the room it is given, which stretches it across that room. The pagination is only as wide as its own controls without it.",
+            Description = "Stretches the pagination across its container and lines the controls up inside it. Baseline and Stretch do not apply.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum"
         },
@@ -34,7 +34,7 @@ public partial class BitPaginationDemo
             Name = "ClickableEllipsis",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns every ellipsis into a control that jumps into the middle of the pages it collapses. It follows the rest of the pagination as a button or a link, is named by EllipsisAriaLabel, and hands the focus over to the page the jump landed on."
+            Description = "Turns every ellipsis into a button (or link) that jumps into the middle of the pages it hides, named by EllipsisAriaLabel plus the page it lands on (\"More pages (Page 38)\")."
         },
         new()
         {
@@ -50,7 +50,7 @@ public partial class BitPaginationDemo
             Name = "Count",
             Type = "int",
             DefaultValue = "1",
-            Description = "The total number of pages. It is ignored while TotalItems is set, since the number of pages then follows from the number of items and the page size."
+            Description = "The total number of pages. Ignored while TotalItems is set."
         },
         new()
         {
@@ -64,7 +64,7 @@ public partial class BitPaginationDemo
             Name = "EllipsisAriaLabel",
             Type = "string",
             DefaultValue = "\"More pages\"",
-            Description = "The accessible label of the item standing in for the pages an ellipsis collapses. The glyph itself is hidden from assistive technologies and this label is announced in its place."
+            Description = "The accessible name of an ellipsis, announced in place of its glyph. A clickable one appends the label of the page it jumps to."
         },
         new()
         {
@@ -107,6 +107,13 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "GetItemsSummary",
+            Type = "Func<int, int, int, string>?",
+            DefaultValue = "null",
+            Description = "Provides the text of the summary while TotalItems is set, from the first item of the page, its last one and the total, replacing \"{first} - {last} of {total}\". Wins over GetSummary there."
+        },
+        new()
+        {
             Name = "GetPageAriaLabel",
             Type = "Func<int, bool, string>?",
             DefaultValue = "null",
@@ -117,28 +124,28 @@ public partial class BitPaginationDemo
             Name = "GetPageHref",
             Type = "Func<int, string?>?",
             DefaultValue = "null",
-            Description = "Provides the address a page control points at, from its one-based number, which turns every control of the pagination into a link instead of a button. A control with no address to point at reports aria-disabled and stays out of the tab order."
+            Description = "Provides the address of a page, which turns every control into a link. A link with nowhere to go drops its href and reports aria-disabled."
         },
         new()
         {
             Name = "GetSummary",
             Type = "Func<int, int, string>?",
             DefaultValue = "null",
-            Description = "Provides the text of the summary, from the selected page and the total number of pages, replacing the default \"Page {number} of {count}\" (or \"1 - 10 of 240\" while TotalItems is set) text."
+            Description = "Provides the text of the summary from the selected page and the page count, replacing \"Page {number} of {count}\" (and \"1 - 10 of 240\" while TotalItems is set, unless GetItemsSummary is)."
         },
         new()
         {
             Name = "GoToPageAriaLabel",
             Type = "string",
             DefaultValue = "\"Go to page\"",
-            Description = "The accessible label of the go to page input, which steps in once the visible GoToPageText beside it is dropped. While that text is there it is the one naming the input."
+            Description = "The accessible name of the go to page input while GoToPageText is empty."
         },
         new()
         {
             Name = "GoToPageText",
             Type = "string?",
             DefaultValue = "\"Go to\"",
-            Description = "The text rendered ahead of the go to page input, which names it. An empty text leaves the input on its own, named by GoToPageAriaLabel."
+            Description = "The visible label of the go to page input. Empty drops it, and GoToPageAriaLabel names the input."
         },
         new()
         {
@@ -237,35 +244,35 @@ public partial class BitPaginationDemo
             Name = "OnPageSizeChange",
             Type = "EventCallback<int>",
             DefaultValue = "null",
-            Description = "The event callback for when the page size is picked out of the page size selector. It also runs when PageSize is bound one way, and it is where Count is recomputed from the new page size."
+            Description = "The event callback for when a page size is picked. It also runs when PageSize is bound one way."
         },
         new()
         {
             Name = "PageSize",
             Type = "int",
             DefaultValue = "0",
-            Description = "The number of items a page holds, which the page size selector picks. A value that is not positive falls back to the first of the PageSizeOptions and the fallback is written back while the selector is shown, and one that is positive but not among them is offered by the selector along with them."
+            Description = "The number of items a page holds, which the page size selector picks. Not positive falls back to the first of the PageSizeOptions; one not among them is offered along with them."
         },
         new()
         {
             Name = "PageSizeAriaLabel",
             Type = "string",
             DefaultValue = "\"Items per page\"",
-            Description = "The accessible label of the page size selector, which steps in once the visible PageSizeText beside it is dropped. While that text is there it is the one naming the selector."
+            Description = "The accessible name of the page size selector while PageSizeText is empty."
         },
         new()
         {
             Name = "PageSizeOptions",
             Type = "IEnumerable<int>?",
             DefaultValue = "null",
-            Description = "The page sizes the page size selector offers. Sizes that are not positive are dropped, and an empty list falls back to the default 10, 25, 50 and 100. A PageSize the list does not hold is offered along with the others."
+            Description = "The page sizes the selector offers (10, 25, 50 and 100 by default). Sizes that are not positive are dropped."
         },
         new()
         {
             Name = "PageSizeText",
             Type = "string?",
             DefaultValue = "\"Items per page\"",
-            Description = "The text rendered ahead of the page size selector, which names it. An empty text leaves the selector on its own, named by PageSizeAriaLabel."
+            Description = "The visible label of the page size selector. Empty drops it, and PageSizeAriaLabel names the select."
         },
         new()
         {
@@ -304,7 +311,7 @@ public partial class BitPaginationDemo
             Name = "Rounded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the buttons of the pagination with fully rounded (circular) corners."
+            Description = "Renders the buttons and the ellipses of the pagination with fully rounded corners: circles, or pills where a button is wider than it is tall."
         },
         new()
         {
@@ -325,7 +332,7 @@ public partial class BitPaginationDemo
             Name = "ShowGoToPage",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows an input that jumps straight to the page number typed into it, at the end of the pagination. The jump runs when the input is committed and a number outside of the range lands on the nearest end of it."
+            Description = "Shows an input that jumps to the page typed into it on Enter or blur; a number past either end lands on that end."
         },
         new()
         {
@@ -353,7 +360,7 @@ public partial class BitPaginationDemo
             Name = "ShowPageSizeSelector",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows a selector that picks how many items a page holds, ahead of everything else in the pagination. Picking a size reports it through PageSize and OnPageSizeChange, and recomputes the range of pages while TotalItems is set."
+            Description = "Shows a selector that picks how many items a page holds, reported through PageSize and OnPageSizeChange."
         },
         new()
         {
@@ -367,7 +374,7 @@ public partial class BitPaginationDemo
             Name = "ShowSummary",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows the position in the range, which reads \"Page {number} of {count}\" (or \"1 - 10 of 240\" while TotalItems is set) unless GetSummary replaces it, ahead of the buttons of the pagination. It is a status region, so a screen reader reports the new position as the page changes."
+            Description = "Shows \"Page {number} of {count}\" (\"1 - 10 of 240\" while TotalItems is set) in a status region a screen reader announces as the page changes."
         },
         new()
         {
@@ -392,7 +399,7 @@ public partial class BitPaginationDemo
             Name = "TotalItems",
             Type = "int",
             DefaultValue = "0",
-            Description = "The total number of items the pagination pages through, which the number of pages is worked out from along with PageSize, replacing Count. Picking a new page size then keeps the first item of the current page in view, and the summary reports the items instead of the pages."
+            Description = "The number of items paged through, which with PageSize replaces Count. A new page size then keeps the first item of the page in view."
         },
         new()
         {
@@ -411,7 +418,7 @@ public partial class BitPaginationDemo
         {
             Name = "FocusAsync",
             Type = "() => ValueTask",
-            Description = "Gives the keyboard focus to the button of the selected page, falling back to the first navigation button that is rendered while the page buttons are turned off. This is what a consumer reloading the list behind the pagination calls to put the focus back on the navigation the reload was asked from."
+            Description = "Gives the keyboard focus to the button of the selected page, falling back to the first navigation button that is rendered while the page buttons are turned off. Call it after reloading the list behind the pagination to put the focus back where the reload was asked from."
         },
     ];
 
@@ -573,7 +580,7 @@ public partial class BitPaginationDemo
                 },
                 new()
                 {
-                    Name= "Standard",
+                    Name= "Outline",
                     Description="Outline styled variant.",
                     Value="1",
                 },
@@ -770,18 +777,143 @@ public partial class BitPaginationDemo
 
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Pagination-gap",
+            DefaultValue = "spacing(0.5)",
+            Description = "Room between the controls.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the summary, the labels and the ellipsis.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-font-size",
+            DefaultValue = "Per Size, --bit-tpg-fs-xs/sm/md",
+            Description = "Text size of every control.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-size",
+            DefaultValue = "Per Size, --bit-siz-ctrl-sm/md/lg",
+            Description = "Height and minimum width of a button, which the ellipsis, the summary, the selector and the jump stand at too.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the buttons and the ellipses. Rounded wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Border thickness of the buttons.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-color",
+            DefaultValue = "Per Color and Variant",
+            Description = "Label color of a button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-background",
+            DefaultValue = "Per Color and Variant",
+            Description = "Fill of a button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-border-color",
+            DefaultValue = "Per Color and Variant",
+            Description = "Border color of a button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-hover-color",
+            DefaultValue = "The Color role's on color",
+            Description = "Label color of a hovered button.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-hover-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Fill and border color of a hovered button.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-active-color",
+            DefaultValue = "--bit-Pagination-button-hover-color, then the Color role's on color",
+            Description = "Label color of a pressed button.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-button-active-background",
+            DefaultValue = "--bit-Pagination-button-hover-background, then the Color role's active color",
+            Description = "Fill and border color of a pressed button.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-selected-color",
+            DefaultValue = "The Color role's on color",
+            Description = "Label color of the current page, held under the pointer too.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-selected-background",
+            DefaultValue = "The Color role's dark color",
+            Description = "Fill and border color of the current page, held under the pointer too.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-selected-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the number of the current page, heavier than the rest so it is not told apart by color alone.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the keyboard focus ring of every control.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-input-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the page size select and the go to page input.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-input-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Fill of the page size select and the go to page input.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-input-border-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Border color of the page size select and the go to page input, under the pointer as well.",
+        },
+    ];
+
+
+
+    private int oneWaySelectedPage = 1;
+    private int twoWaySelectedPage = 2;
+    private int onChangeSelectedPage = 3;
+
+    private int totalItemsPageSize = 10;
+    private int totalItemsSelectedPage = 1;
+
     private const int totalItems = 240;
     private int selectedPageSize = 10;
     private int pageSizeSelectedPage = 1;
     private int pageSizeCount => (int)Math.Ceiling(totalItems / (double)selectedPageSize);
-
-    private string GetPageSizeSummary(int page, int count)
-    {
-        return $"Showing {(page - 1) * selectedPageSize + 1} to {Math.Min(page * selectedPageSize, totalItems)} of {totalItems}";
-    }
-
-    private int totalItemsPageSize = 10;
-    private int totalItemsSelectedPage = 1;
 
     // The links are addresses of this very page: the page they point at rides in the query string, so a click,
     // a middle click into another tab and a bookmark all land on the pagination showing the page that was asked
@@ -808,17 +940,30 @@ public partial class BitPaginationDemo
         return $"?page={page}";
     }
 
-    private int oneWaySelectedPage = 1;
-    private int twoWaySelectedPage = 2;
-    private int onChangeSelectedPage = 3;
+    private BitPagination accessiblePagination = default!;
 
     private string GetResultsRangeLabel(int page, bool isSelected)
     {
-        return $"Results {(page - 1) * 10 + 1} to {page * 10}";
+        return $"Page {page}, results {(page - 1) * 10 + 1} to {page * 10}";
     }
 
-    private string GetItemsRangeSummary(int page, int count)
-    {
-        return $"Showing {(page - 1) * 10 + 1} to {page * 10} of {count * 10} results";
-    }
+    private readonly BitPaginationParams[] paginationParams =
+    [
+        new()
+        {
+            Rounded = true,
+            ShowSummary = true,
+            ShowFirstButton = true,
+            ShowLastButton = true,
+            Variant = BitVariant.Outline,
+            FirstButtonAriaLabel = "Primera página",
+            PreviousButtonAriaLabel = "Página anterior",
+            NextButtonAriaLabel = "Página siguiente",
+            LastButtonAriaLabel = "Última página",
+            EllipsisAriaLabel = "Más páginas",
+            GetPageAriaLabel = (page, _) => $"Página {page}",
+            GetSummary = (page, count) => $"Página {page} de {count}",
+            GetItemsSummary = (first, last, total) => $"{first} - {last} de {total}",
+        }
+    ];
 }

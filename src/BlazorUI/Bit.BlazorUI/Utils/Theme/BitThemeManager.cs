@@ -113,9 +113,9 @@ public class BitThemeManager : IAsyncDisposable
     /// <summary>Applies <paramref name="bitTheme"/> as CSS custom properties on <paramref name="element"/> (default: body), overriding stylesheet tokens for that subtree.</summary>
     /// <remarks>
     /// Semantic aliases (<c>--bit-sem-*</c>) and family aliases (the per-family radii and
-    /// elevations) whose target the theme overrides are re-declared on the target element as well,
-    /// so app CSS reading the alias tier - and the components, which read the family tier - track
-    /// the override (an alias's <c>var()</c> reference is substituted where the alias is defined, so
+    /// elevations, and the per-role foregrounds and tints) whose target the theme overrides are re-declared on
+    /// the target element as well, so app CSS reading the alias tier - and the components, which read
+    /// the family tier - track the override (an alias's <c>var()</c> reference is substituted where the alias is defined, so
     /// the <c>:root</c>-level default would otherwise keep the document's value).
     /// Explicitly-set alias values always win over this re-declaration.
     /// </remarks>
@@ -127,6 +127,7 @@ public class BitThemeManager : IAsyncDisposable
         var cssVariables = BitThemeMapper.MapToCssVariables(bitTheme ?? new BitTheme());
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVariables);
         BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVariables);
+        BitThemeMapper.AugmentWithSpacingReSubstitution(cssVariables);
 
         await _js.BitThemeApplyBitTheme(cssVariables, element);
     }

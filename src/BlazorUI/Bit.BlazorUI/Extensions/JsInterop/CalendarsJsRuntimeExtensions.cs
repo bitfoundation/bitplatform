@@ -12,8 +12,8 @@ internal static class CalendarsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Calendars.dispose", id);
     }
 
-    internal static ValueTask BitCalendarsFocusCell(this IJSRuntime jsRuntime, string cellId)
+    internal static ValueTask BitCalendarsFocusCell(this IJSRuntime jsRuntime, string cellId, bool preventScroll = false)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Calendars.focusCell", cellId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Calendars.focusCell", cellId, preventScroll);
     }
 }

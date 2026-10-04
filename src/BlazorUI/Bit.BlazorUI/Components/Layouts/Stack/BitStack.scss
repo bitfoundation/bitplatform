@@ -1,17 +1,31 @@
 ﻿@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+// Public CSS variables (they inherit, so :root, an ancestor and the Style of a stack are all places to set one):
+//   --bit-Stack-gap   room between the children of a stack that was told nothing about its spacing
+//                     (default: spacing(2) of the theme, 1rem with the default theme; a single length)
+
 $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-lg-min, 'xl': $mq-xl-min, 'xxl': $mq-xxl-min );
 
 // Almost everything a stack does is an inline style, so the root class only carries what has to hold for every
 // stack: the box it takes and the two alignments a stack that was told nothing falls back to. The direction, the
 // gap and the alignments that were asked for are written onto the element, where they outrank these.
 .bit-stc {
+    // Redeclared on every stack, so each one resolves the public default against its own ancestors and a nested
+    // stack is never handed the resolved value of its parent.
+    --bit-stc-dgap: var(--bit-Stack-gap, #{spacing(2)});
     width: 100%;
     height: 100%;
     box-sizing: border-box;
     align-items: flex-start;
     justify-content: flex-start;
+
+    // The display a stack writes onto the element outranks the display:none the browser gives the hidden attribute,
+    // which would otherwise leave a stack rendered with hidden="true" on screen. hidden="until-found" is left out: the
+    // browser hides that one with content-visibility instead, so find-in-page can still reveal it.
+    &[hidden]:not([hidden="until-found" i]) {
+        display: none !important;
+    }
 }
 
 // The two axes of FillContent. The child is given the whole of the axis it is not laid out along, forcibly, so a
@@ -86,8 +100,15 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
  * A breakpoint whose alignment means nothing on the axis it lands on is handed the initial value of the property, which
  * is the guaranteed-invalid one, so the two fallbacks below are what such a breakpoint - and a stack that was told no
  * alignment at all - ends up being laid out by.
+ *
+ * The base of the direction is always written onto the element, but the base of the two alignments only is when an
+ * alignment was asked for. Both are emptied here, below the inline style that replaces them when it is, since a stack
+ * told no alignment would otherwise read its base straight off the inline style of a responsive stack around it.
  */
 .bit-stc-rsp {
+    --bit-stc-ai: initial;
+    --bit-stc-jc: initial;
+
     --bit-stc-dir-xs: var(--bit-stc-dir);
     --bit-stc-dir-sm: var(--bit-stc-dir-xs);
     --bit-stc-dir-md: var(--bit-stc-dir-sm);

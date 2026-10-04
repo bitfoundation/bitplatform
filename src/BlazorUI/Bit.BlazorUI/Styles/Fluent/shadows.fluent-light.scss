@@ -31,6 +31,8 @@
     // A snackbar has no Fabric counterpart; it is a floating notification, so it takes the floating
     // surface's own depth rather than the flat "none" the alias tier falls back to.
     --bit-shd-card: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
+    // A card that reacts to the pointer lifts one Fabric step, to where DocumentCard sits on hover.
+    --bit-shd-card-hover: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
     --bit-shd-popup: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
     --bit-shd-dialog: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
     --bit-shd-sheet: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64

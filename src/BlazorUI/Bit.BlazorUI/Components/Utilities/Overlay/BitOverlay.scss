@@ -1,12 +1,20 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of an Overlay inherits down to whatever reads it:
+//   --bit-Overlay-z-index              stacking order of an Overlay fixed to the screen     (default: $zindex-overlay; the ZIndex parameter wins)
+//   --bit-Overlay-background           fill of the layer in ModeFull                        (default: $clr-bg-overlay)
+//   --bit-Overlay-backdrop-filter      filter over what the layer covers                    (default: none; e.g. blur(4px))
+//   --bit-Overlay-padding              room kept between the content and the layer's edges  (default: 0px)
+//   --bit-Overlay-transition-duration  how long the layer takes to fade in and out          (default: $mot-duration-short)
+
 // The Overlay stays in the page while it is closed so that it fades out rather than vanishing in one
 // frame. It is hidden rather than removed, and a hidden element takes neither the clicks of the page nor
-// a place in the accessibility tree, so a closed Overlay leaves the page untouched. The durations
-// collapse to nothing under reduced motion, which the motion tokens take care of.
-// The layer is a flex container and lays its content out no further than that: what it hosts stretches
-// over the whole of it until the stylesheet of the consumer aligns it, which is two properties for the
-// scrim that centers a loader and a decision the Overlay has none of its own to make.
+// a place in the accessibility tree, so a closed Overlay leaves the page untouched - and while it is still
+// fading out, the inert the markup puts on a closed Overlay already hands both back. The durations
+// collapse to nothing under reduced motion, which the motion tokens take care of - unless a duration of the
+// consumer's own is set through --bit-Overlay-transition-duration, which is then theirs to honour.
+// The layer is a flex container: what it hosts stretches over the whole of it unless Position places it.
 // The layer is made programmatically focusable so that a press on it has somewhere inside the Overlay to
 // put the focus it takes off an input.
 // That press is left its default action, and the default of a press that is dragged is a text selection -
@@ -21,8 +29,12 @@
     position: fixed;
     visibility: hidden;
     user-select: none;
-    z-index: $zindex-overlay;
-    transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
+    box-sizing: border-box;
+    padding: var(--bit-Overlay-padding, 0px);
+    backdrop-filter: var(--bit-Overlay-backdrop-filter, none);
+    z-index: var(--bit-Overlay-z-index, #{$zindex-overlay});
+    --bit-ovl-duration: var(--bit-Overlay-transition-duration, #{$mot-duration-short});
+    transition: opacity var(--bit-ovl-duration) $mot-easing-accelerate, visibility 0s linear var(--bit-ovl-duration);
 
     @include focus-anchor;
 }
@@ -30,7 +42,7 @@
 .bit-ovl-opn {
     opacity: 1;
     visibility: visible;
-    transition: opacity $mot-duration-short $mot-easing-decelerate, visibility 0s linear 0s;
+    transition: opacity var(--bit-ovl-duration) $mot-easing-decelerate, visibility 0s linear 0s;
 }
 
 // The box the content is given so that its clicks are told apart from the layer's. display:contents takes
@@ -45,13 +57,84 @@
 // transparent catcher of clicks otherwise, so that an overlay used as a click catcher does not darken the
 // page it is meant to leave readable.
 .bit-ovl-mfl {
-    background-color: $clr-bg-overlay;
+    background-color: var(--bit-Overlay-background, #{$clr-bg-overlay});
 }
 
 // An Overlay placed over the element it was declared inside of rather than over the screen. The z-index
 // goes with the screen-level layer: inside a container the Overlay only has to cover its own siblings,
-// and lifting it to the library's overlay layer would raise it over the chrome of the page as well.
+// and lifting it to the library's overlay layer would raise it over the chrome of the page as well. It
+// takes the corners of that element, so a card with rounded corners is not dimmed past them.
 .bit-ovl-abs {
-    position: absolute;
     z-index: unset;
+    position: absolute;
+    border-radius: inherit;
+}
+
+// Position utilities map 1:1 to the BitPosition enum. The "start/end" (st/en) variants are the logical
+// counterparts of the physical "left/right" (lf/rg) ones: they share the same rules here, and the physical
+// ones are pinned back to their own side in a right-to-left layout below.
+.bit-ovl-tlf,
+.bit-ovl-tst {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bit-ovl-tcr {
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.bit-ovl-trg,
+.bit-ovl-ten {
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.bit-ovl-clf,
+.bit-ovl-cst {
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.bit-ovl-ctr {
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-ovl-crg,
+.bit-ovl-cen {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.bit-ovl-blf,
+.bit-ovl-bst {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.bit-ovl-bcr {
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.bit-ovl-brg,
+.bit-ovl-ben {
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+// flex-start and flex-end follow the inline direction, which a right-to-left layout reverses - so Left would
+// come out on the right. The physical positions are put back onto their own side here, whether the direction
+// is the Overlay's own (Dir) or the page's, leaving the start/end ones as the only ones that follow it.
+.bit-ovl-tlf:dir(rtl),
+.bit-ovl-clf:dir(rtl),
+.bit-ovl-blf:dir(rtl) {
+    justify-content: flex-end;
+}
+
+.bit-ovl-trg:dir(rtl),
+.bit-ovl-crg:dir(rtl),
+.bit-ovl-brg:dir(rtl) {
+    justify-content: flex-start;
 }

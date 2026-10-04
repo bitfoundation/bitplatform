@@ -8,6 +8,7 @@ using Azure.Monitor.OpenTelemetry.Exporter;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -161,8 +162,12 @@ public static class WebApplicationBuilderExtensions
                     httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
                 });
 
-                // Turn on resilience by default
-                http.AddStandardResilienceHandler();
+                // Turn on resilience by default, but never replay an unsafe method. A retried POST is a second
+                // attempt at something the server may already have done: an authorization code redeemed twice reads
+                // as code reuse, a captcha token verified twice comes back as a duplicate, a push notification sent
+                // twice arrives twice. Retrying one is worth asking for per client (and a job-level retry, as the
+                // Cloudflare purge uses, is usually the better place for it); losing one silently is not.
+                http.AddStandardResilienceHandler(options => options.Retry.DisableForUnsafeHttpMethods());
 
                 // Turn on service discovery by default
                 http.AddServiceDiscovery();

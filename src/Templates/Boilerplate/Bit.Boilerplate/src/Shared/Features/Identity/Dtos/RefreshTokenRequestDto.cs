@@ -12,6 +12,11 @@ public partial class RefreshTokenRequestDto
     /// </summary>
     public string? ElevatedAccessToken { get; set; }
 
+    /// <summary>
+    /// A WebAuthn assertion offered in place of <see cref="ElevatedAccessToken"/> (See IdentityController.ElevateByWebAuthn).
+    /// </summary>
+    public JsonElement? WebAuthnClientResponse { get; set; }
+
     //#if (multitenant == true)
     /// <summary>
     /// The id of the tenant the user is trying to switch into.

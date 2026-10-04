@@ -2,16 +2,18 @@
 
 <DemoExample Title="Color by sign" RazorCode="@bySignRazorCode" CsharpCode="@bySignCsharpCode" Id="scriptable-by-sign">
     <div class="example-desc">
-        A scriptable option is a function of a <code>BitChartScriptableContext</code> evaluated per element, so
-        color, radius and marker can follow the data rather than the series - here bars turn red below zero.
-        The context also carries <code>Active</code>, which is set while the renderer builds each element's hover
-        appearance, so the hovered state can be styled from the same function.
+        A scriptable option is a function of <code>BitChartScriptableContext</code> evaluated per element - here
+        <code>BackgroundColorFn</code> turns bars red below zero. The context's <code>Active</code> is set while
+        building the hover appearance, so one function styles both states.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="BySign()" Options="_noLegend" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Color by threshold" RazorCode="@byThresholdRazorCode" CsharpCode="@byThresholdCsharpCode" Id="scriptable-by-threshold">
-    <div class="example-desc">Points above 75 are highlighted with a different color and a larger radius.</div>
+    <div class="example-desc">
+        <code>PointBackgroundColorFn</code> and <code>PointRadiusFn</code> give points of 75 and above a different
+        color and a larger radius.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="ByThreshold()" Options="_noLegend" /></div></div>
 </DemoExample>
 

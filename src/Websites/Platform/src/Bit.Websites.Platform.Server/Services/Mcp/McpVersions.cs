@@ -6,7 +6,7 @@
 /// </summary>
 public sealed record McpVersion(Version Number, string Tag, string WorktreePath, string CodebaseMemoryProject, IReadOnlyDictionary<string, Uri> DocumentationEndpoints)
 {
-    /// <summary>The three part version a caller passes as ?v=, such as 10.6.1.</summary>
+    /// <summary>The three part version a caller passes as ?v=, such as 10.6.2.</summary>
     public string Name { get; } = Number.ToString(3);
 }
 

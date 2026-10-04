@@ -42,7 +42,7 @@ public partial class DevMcpDiagnosticTools
             {
                 MachineName = Environment.MachineName,
                 environment.EnvironmentName,
-                ApplicationVersion = typeof(Program).Assembly.GetName().Version?.ToString(),
+                ApplicationVersion = typeof(Program).Assembly.GetName().Version?.ToString(3),
                 Runtime = RuntimeInformation.FrameworkDescription,
                 OperatingSystem = $"{RuntimeInformation.OSDescription} ({RuntimeInformation.ProcessArchitecture})",
                 Environment.ProcessorCount,

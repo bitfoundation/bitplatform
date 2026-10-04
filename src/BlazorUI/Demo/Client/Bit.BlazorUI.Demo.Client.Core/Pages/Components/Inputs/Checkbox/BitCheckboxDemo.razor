@@ -1,15 +1,16 @@
-@page "/components/checkbox"
+﻿@page "/components/checkbox"
 @page "/components/check-box"
 
 <PageOutlet Url="components/checkbox"
             Title="Checkbox"
-            Description="A keyboard-accessible checkbox with indeterminate and three-state support, its own icon per state, label placement on any side, cancellable changes, and read-only and required modes." />
+            Description="A keyboard-accessible checkbox with indeterminate and three-state support, its own icon per state, a visible description, label placement on any side, cancellable changes, a busy state, and read-only and required modes." />
 
 <DemoPage Name="Checkbox"
-          Description="BitCheckbox turns a yes/no decision into a small clickable box with a label - check it to say yes, clear it to say no. It is backed by a real native checkbox input, so it is part of the tab order, toggles with Space, submits with forms and is announced correctly by screen readers. Beyond the two plain states it offers an indeterminate state for partially selected lists and an opt-in three-state cycle for questions whose honest third answer is no answer; each of the three states can render its own icon. The label can sit on any side of the box, changes can be cancelled before they land, and read-only and required modes plus form validation cover the form scenarios."
+          Description="BitCheckbox turns a yes/no decision into a small clickable box with a label - check it to say yes, clear it to say no. It is backed by a real native checkbox input, so it is part of the tab order, toggles with Space, submits with forms and is announced correctly by screen readers. Beyond the two plain states it offers an indeterminate state for partially selected lists and an opt-in three-state cycle for questions whose honest third answer is no answer; each of the three states can render its own icon. The label can sit on any side of the box, a second line can explain what checking it commits to, changes can be cancelled before they land or shown as still in flight, and read-only and required modes plus form validation cover the form scenarios."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
           GitHubUrl="Inputs/Checkbox/BitCheckbox.razor"
           GitHubDemoUrl="Inputs/Checkbox/BitCheckboxDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
@@ -38,8 +39,10 @@
             checked state, <b>UncheckedIconName</b> puts an always-visible icon in the otherwise empty unchecked box -
             which by default only previews the check mark on hover - and <b>IndeterminateIconName</b> replaces the
             filled square of the indeterminate state. For icons from external libraries, the
-            <BitLink Href="#example15">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
-            these parameters.
+            <BitLink Href="#example16">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
+            these parameters. The glyph is hidden from screen readers - the checkbox already announces its own
+            state - unless <b>CheckIconAriaLabel</b> names it, which is worth doing only where a custom icon
+            says something the label does not.
         </div>
         <br />
         <BitCheckbox Label="Custom check icon" CheckIconName="@BitIconName.Heart" />
@@ -51,26 +54,13 @@
         <BitCheckbox Label="Disabled custom check icon" CheckIconName="@BitIconName.WavingHand" Value="true" IsEnabled="false" />
     </DemoExample>
 
-    <DemoExample Title="Reversed" RazorCode="@example3RazorCode" Id="example3">
-        <div>
-            <b>Reversed</b> swaps the two sides, putting the label before the box - the usual layout when the
-            BitCheckbox sits at the end of a settings row. It is the single-flag shorthand of the more general
-            <b>LabelPosition</b> parameter demonstrated in the next section.
-        </div>
-        <br />
-        <BitCheckbox Label="Reversed" Reversed />
-        <br />
-        <BitCheckbox Label="Reversed - Disabled" Reversed IsEnabled="false" />
-        <br />
-        <BitCheckbox Label="Reversed - Disable Checked" Reversed IsEnabled="false" Value="true" />
-    </DemoExample>
-
-    <DemoExample Title="Label position" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Label placement" RazorCode="@example3RazorCode" Id="example3">
         <div>
             <b>LabelPosition</b> places the label on any of the four sides of the box: <b>End</b> is the default
-            reading order, <b>Start</b> matches what <b>Reversed</b> does, and <b>Top</b> and <b>Bottom</b> stack the
-            label above or below - handy in dense toolbars and table headers. Wherever the label sits, it stays part
-            of the click target. It takes precedence over <b>Reversed</b> when both are set.
+            reading order, <b>Start</b> puts it before the box - the usual layout when the BitCheckbox sits at the end
+            of a settings row - and <b>Top</b> and <b>Bottom</b> stack it above or below, which is what dense toolbars
+            and table headers need. <b>Reversed</b> is the single-flag shorthand for <b>Start</b>; the explicit
+            parameter wins when both are set. Wherever the label sits, it stays part of the click target.
         </div>
         <br />
         <div class="example-box">
@@ -78,42 +68,74 @@
             <BitCheckbox Label="Start" LabelPosition="BitLabelPosition.Start" />
             <BitCheckbox Label="Top" LabelPosition="BitLabelPosition.Top" />
             <BitCheckbox Label="Bottom" LabelPosition="BitLabelPosition.Bottom" />
+            <BitCheckbox Label="Reversed" Reversed />
         </div>
     </DemoExample>
 
-    <DemoExample Title="LabelTemplate" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="FullWidth & NoWrap" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            When a plain string is not enough - a formatted phrase, a tag, a link to the terms being agreed to -
-            <b>LabelTemplate</b> replaces the label with arbitrary markup while the box, the toggle behavior and the
-            click target all stay intact.
+            <b>FullWidth</b> stretches the BitCheckbox across its container and lets the label grow, which pushes the
+            box to the far edge - the settings row. <b>NoWrap</b> keeps a label that no longer fits on one line and
+            ends it with an ellipsis instead of wrapping; pair it with a <b>Title</b> so the part that was cut off is
+            still reachable. Both panels below are the same width.
         </div>
         <br />
-        <BitCheckbox>
-            <LabelTemplate>
-                <BitTag Color="BitColor.Success">Label Template</BitTag>
-            </LabelTemplate>
+        <div class="settings-panel">
+            <BitCheckbox FullWidth Reversed Label="Wi-Fi" DefaultValue="true" />
+            <BitCheckbox FullWidth Reversed Label="Bluetooth" />
+            <BitCheckbox FullWidth Reversed Label="Airplane mode" />
+        </div>
+        <br /><br /><br />
+        <div class="settings-panel">
+            <BitCheckbox FullWidth Label="A label short enough to fit" />
+            <BitCheckbox FullWidth NoWrap
+                         Title="Send me a weekly digest of everything that happened in my workspace"
+                         Label="Send me a weekly digest of everything that happened in my workspace" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Description" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            <b>Description</b> adds a second line under the label - the sentence that says what checking the box
+            actually commits to. It is indented to line up with the label, sits outside the click target so selecting
+            its text does not toggle the box, and is announced after the name of the checkbox. <b>DescriptionTemplate</b>
+            replaces it with markup. For an explanation that should only be announced, use <b>AriaDescription</b>
+            instead, shown in the <BitLink Href="#example12">Accessibility</BitLink> section.
+        </div>
+        <br />
+        <div class="settings-panel">
+            <BitCheckbox FullWidth Reversed
+                         Label="Auto renew"
+                         Description="The subscription is renewed one day before it expires." />
+            <BitCheckbox FullWidth Reversed
+                         Label="Share usage data"
+                         Description="Crash reports and feature usage only. Never the contents of your documents." />
+        </div>
+        <br /><br /><br />
+        <BitCheckbox Label="I accept the terms">
+            <DescriptionTemplate>
+                Read the <BitLink Href="/components/checkbox">full agreement</BitLink> before you agree.
+            </DescriptionTemplate>
         </BitCheckbox>
     </DemoExample>
 
-    <DemoExample Title="Indeterminate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Indeterminate & three-state" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             <b>Indeterminate</b> renders the third visual state - a filled square meaning "partially" - which takes
-            visual precedence over the checked state without touching the underlying <b>Value</b>. It is a
-            display-only state: the first click clears it and toggles the value, and only code can set it again
-            (unless <BitLink Href="#example7">ThreeState</BitLink> makes it part of the cycle), while
-            <b>DefaultIndeterminate</b> merely starts it there in uncontrolled mode. Screen readers
-            announce it as mixed.
+            visual precedence over the checked state without touching the underlying <b>Value</b>. It is display-only
+            by default: the first click clears it and toggles the value, and only code can set it again, while
+            <b>DefaultIndeterminate</b> merely starts it there in uncontrolled mode. Screen readers announce it as mixed.
         </div>
         <br />
-        <BitCheckbox Label="Indeterminate checkbox" Indeterminate />
+        <BitCheckbox Label="Indeterminate checkbox" @bind-Indeterminate="basicIndeterminate" />
         <br />
         <BitCheckbox Label="Indeterminate by default" DefaultIndeterminate="true" />
         <br />
         <BitCheckbox Label="Disabled indeterminate checkbox" Indeterminate IsEnabled="false" />
         <br /><br /><br />
         <div>
-            The classic home of the indeterminate state is a select-all checkbox that reflects a partially
-            selected list: checked when every item is, unchecked when none is, and indeterminate in between.
+            The classic home of the state is a select-all checkbox that reflects a partially selected list: checked
+            when every item is, unchecked when none is, and indeterminate in between.
         </div>
         <br />
         <BitCheckbox Label="Select all fruits"
@@ -125,13 +147,12 @@
             <BitCheckbox Label="Banana" Value="banana" OnChange="v => { banana = v; RefreshSelectAll(); }" />
             <BitCheckbox Label="Orange" Value="orange" OnChange="v => { orange = v; RefreshSelectAll(); }" />
         </div>
-    </DemoExample>
-
-    <DemoExample Title="Three-state" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <br /><br /><br />
         <div>
-            By default the indeterminate state is only reachable programmatically and the user can merely leave it.
-            <b>ThreeState</b> makes it part of the interaction instead: each click cycles the BitCheckbox through
-            unchecked, checked and indeterminate, for answers that are genuinely three-valued - yes, no, and no answer.
+            <b>ThreeState</b> makes the mixed state part of the interaction instead: each click cycles the BitCheckbox
+            through unchecked, checked and indeterminate, for answers that are genuinely three-valued - yes, no, and
+            no answer. Two of the three steps move <b>Value</b>; the one out of indeterminate back to unchecked leaves
+            it at false, so it is <b>Indeterminate</b> rather than <b>Value</b> that has to be watched to see every click.
         </div>
         <br />
         <BitCheckbox Label="Three-state checkbox" ThreeState
@@ -139,9 +160,20 @@
                      @bind-Indeterminate="threeStateIndeterminate" />
         <br />
         <div>Value: <b>@threeStateValue</b>, Indeterminate: <b>@threeStateIndeterminate</b></div>
+        <br /><br /><br />
+        <div>
+            A model that keeps all three answers in one <b>bool?</b> - yes, no and not answered - binds to the two
+            parameters through a pair of one-line handlers, so the nullable stays the single source of truth:
+        </div>
+        <br />
+        <BitCheckbox Label="Subscribe to the newsletter" ThreeState
+                     Value="subscribed is true" ValueChanged="HandleSubscribedValueChanged"
+                     Indeterminate="subscribed is null" IndeterminateChanged="HandleSubscribedIndeterminateChanged" />
+        <br />
+        <div>subscribed: <b>@(subscribed?.ToString() ?? "null")</b></div>
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             Both <b>Value</b> and <b>Indeterminate</b> come in the usual binding shapes. Passed one-way, the parameter
             dictates the state: the BitCheckbox renders whatever the expression says and clicks cannot move it away
@@ -177,17 +209,58 @@
         </div>
     </DemoExample>
 
+    <DemoExample Title="Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <b>LabelTemplate</b> replaces the label with arbitrary markup - a formatted phrase, a tag, a link to the
+            terms being agreed to - while the box, the toggle behavior and the click target all stay intact.
+        </div>
+        <br />
+        <BitCheckbox>
+            <LabelTemplate>
+                <BitTag Color="BitColor.Success">Label Template</BitTag>
+            </LabelTemplate>
+        </BitCheckbox>
+        <br /><br /><br />
+        <div>
+            <b>ChildContent</b> goes one step further and replaces the box and the label together: whatever markup you
+            put inside the BitCheckbox becomes its face, while the clicking, the binding and the keyboard behavior keep
+            working underneath - including the focus ring, which is drawn around the whole face once there is no box
+            left to draw it around. The content is on its own to reflect the state, here by deriving the icon from the
+            bound values.
+        </div>
+        <br />
+        <BitCheckbox @bind-Value="customCheckboxValue">
+            <BitIcon Style="display:flex;align-items:center;justify-content:center;padding:0;border:1px solid gray;width:22px;height:22px"
+                     IconName="@(customCheckboxValue ? BitIconName.Accept : null)" />
+            <span>Custom basic checkbox</span>
+        </BitCheckbox>
+        <br />
+        <div class="example-box">
+            <BitCheckbox @bind-Value="customContentValue" @bind-Indeterminate="customContentIndeterminate">
+                <BitIcon Style="display:flex;align-items:center;justify-content:center;padding:0;border:1px solid gray;width:22px;height:22px"
+                         IconName="@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))" />
+                <span>Custom indeterminate checkbox</span>
+            </BitCheckbox>
+            <BitButton OnClick="() => customContentIndeterminate = true">Make Indeterminate</BitButton>
+        </div>
+    </DemoExample>
+
     <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             Three callbacks fire in a fixed order around a click: <b>OnClick</b> first, while the state is still the
             old one; then <b>OnChanging</b>, carrying the state the BitCheckbox is about to move to; and finally
-            <b>OnChange</b>, once the new state is committed. The checkbox below has all three wired to a log -
-            click it and watch the order:
+            <b>OnChange</b>, once the new state is committed. <b>OnFocus</b>, <b>OnFocusIn</b>, <b>OnFocusOut</b> and
+            <b>OnBlur</b> follow the focus. The checkbox below has all of them wired to a log - click it, or reach it
+            with Tab, and watch the order:
         </div><br />
         <BitCheckbox Label="Click me"
                      OnClick="LogOnClick"
                      OnChanging="LogOnChanging"
-                     OnChange="LogOnChange" />
+                     OnChange="LogOnChange"
+                     OnFocus="LogOnFocus"
+                     OnFocusIn="LogOnFocusIn"
+                     OnFocusOut="LogOnFocusOut"
+                     OnBlur="LogOnBlur" />
         <br />
         <div>@(string.IsNullOrEmpty(eventsLog) ? "No clicks yet." : eventsLog)</div>
         <br /><br /><br />
@@ -230,9 +303,18 @@
         <br /><br /><br />
         <div>
             <b>Required</b> renders the native <b>required</b> attribute on the checkbox input and marks the label
-            with an asterisk:
+            with an asterisk - a templated label as well as a plain one. A read-only checkbox keeps the asterisk
+            but drops the native attribute, which would otherwise refuse the submit over a box nobody is allowed
+            to check; a disabled one drops both, since nothing is being asked of a control that is out of the
+            interaction. Either way the requirement is still announced, through <b>aria-required</b>:
         </div><br />
         <BitCheckbox Label="I accept the terms" Required />
+        <br />
+        <BitCheckbox Required>
+            <LabelTemplate>
+                I accept the <BitLink Href="/components/checkbox">terms</BitLink>
+            </LabelTemplate>
+        </BitCheckbox>
     </DemoExample>
 
     <DemoExample Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
@@ -251,8 +333,11 @@
                           OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
                     <BitCheckbox Label="I agree with the terms and conditions."
+                                 AriaDescribedby="terms-error"
                                  @bind-Value="validationModel.TermsAgreement" />
-                    <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
+                    <div id="terms-error">
+                        <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
+                    </div>
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 </EditForm>
@@ -262,37 +347,20 @@
                 <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
             }
         </div>
-    </DemoExample>
-
-    <DemoExample Title="Custom content" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <br />
         <div>
-            <b>ChildContent</b> goes one step beyond <b>LabelTemplate</b> and replaces the box and the label together:
-            whatever markup you put inside the BitCheckbox becomes its face, while the clicking, the binding and the
-            keyboard behavior keep working underneath. The content is on its own to reflect the state - here by
-            deriving the icon from the bound values.
-        </div>
-        <br />
-        <BitCheckbox @bind-Value="customCheckboxValue">
-            <BitIcon Style="border:1px solid gray;width:22px;height:22px"
-                     IconName="@(customCheckboxValue ? BitIconName.Accept : null)" />
-            <span>Custom basic checkbox</span>
-        </BitCheckbox>
-        <br />
-        <div class="example-box">
-            <BitCheckbox @bind-Value="customContentValue" @bind-Indeterminate="customContentIndeterminate">
-                <BitIcon Style="border:1px solid gray;width:22px;height:22px"
-                         IconName="@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))" />
-                <span>Custom indeterminate checkbox</span>
-            </BitCheckbox>
-            <BitButton OnClick="() => customContentIndeterminate = true">Make Indeterminate</BitButton>
+            <b>AriaDescribedby</b> points the checkbox at the element that holds the message, so the reason a submit
+            was refused is read out with the control rather than only shown next to it.
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             The BitCheckbox is backed by a real, focusable checkbox input: Tab moves the focus to it - drawing a
             focus ring around the box - Space toggles it, and screen readers announce it as a checkbox, reading the
-            indeterminate state as mixed. <b>AutoFocus</b> puts the initial focus on it when the page renders.
+            indeterminate state as mixed. Whatever its size, the click target is at least 24&times;24 CSS pixels, the
+            minimum WCAG 2.2 asks of a pointer target. <b>AutoFocus</b> puts the initial focus on it when the page
+            renders, and <b>TabIndex</b> moves it within the tab order.
         </div><br />
         <BitCheckbox Label="Focus me with Tab, toggle me with Space" />
         <br /><br /><br />
@@ -304,20 +372,28 @@
         <br /><br /><br />
         <div>
             A BitCheckbox without a visible label needs an <b>AriaLabel</b> to have an accessible name, and
-            <b>AriaDescription</b> adds a visually hidden description that screen readers read after the name:
+            <b>AriaDescription</b> adds a visually hidden description that screen readers read after the name.
+            When a visible element already labels it, <b>AriaLabelledby</b> points at that element instead of
+            repeating the wording in an <b>AriaLabel</b> that could drift out of sync with it:
         </div><br />
         <div class="example-box">
             <BitCheckbox AriaLabel="Select the row" />
             <BitCheckbox Label="Auto renew" AriaDescription="The subscription will be renewed one day before it expires." />
         </div>
-        <br /><br /><br />
-        <div>
-            When a visible element already labels the checkbox, <b>AriaLabelledby</b> points at it instead of
-            repeating the wording in an <b>AriaLabel</b> that could drift out of sync with it:
-        </div><br />
+        <br />
         <div class="example-box">
             <span id="newsletter-label">Weekly newsletter</span>
             <BitCheckbox AriaLabelledby="newsletter-label" />
+        </div>
+        <br /><br /><br />
+        <div>
+            A disabled checkbox leaves the tab order, which hides it from anyone navigating by keyboard alone.
+            <b>AllowDisabledFocus</b> keeps it reachable and announced as disabled instead, with its toggling
+            suppressed either way - what a disabled command in a toolbar or a menu needs:
+        </div><br />
+        <div class="example-box">
+            <BitCheckbox Label="Disabled and skipped" IsEnabled="false" />
+            <BitCheckbox Label="Disabled but still reachable" IsEnabled="false" AllowDisabledFocus />
         </div>
         <br /><br /><br />
         <div>
@@ -329,9 +405,72 @@
             <BitCheckbox Label="Item 3" AriaSetSize="10" AriaPositionInSet="3" />
             <BitCheckbox Label="Item 4" AriaSetSize="10" AriaPositionInSet="4" />
         </div>
+        <br /><br /><br />
+        <div>
+            <b>AriaControls</b> names the element a checkbox governs rather than merely labels - the list a
+            select-all checkbox checks and clears - so assistive technologies can offer the way from the one
+            to the other:
+        </div><br />
+        <BitCheckbox Label="Select all fruits" AriaControls="fruits" Indeterminate />
+        <div id="fruits" class="items-container">
+            <BitCheckbox Label="Apple" Value />
+            <BitCheckbox Label="Banana" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Loading" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            <b>Loading</b> turns the BitCheckbox busy: the glyph becomes a spinner, clicks are turned away and
+            the checkbox is announced as busy, while it keeps the state it is in and stays focusable. It is what
+            a checkbox that saves to a server on each toggle needs - the change is in flight, so it must not be
+            started again.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCheckbox Label="Busy" Loading />
+            <BitCheckbox Label="Busy and checked" Loading Value />
+            <BitCheckbox Label="Busy and mixed" Loading Indeterminate />
+        </div>
+        <br /><br /><br />
+        <div>
+            <b>AutoLoading</b> raises that state by itself for as long as the awaited callbacks of a change are
+            still running, so the usual case needs no flag of its own. Either way, a click landing while a change
+            is still in flight is dropped rather than starting a competing one:
+        </div>
+        <br />
+        <BitCheckbox AutoLoading
+                     Label="Sync with the server"
+                     OnChanging="HandleSlowChanging" />
+        <br />
+        <div>Saved: <b>@savedCount</b> time(s)</div>
+    </DemoExample>
+
+    <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>BitParams</b> carries a <b>BitCheckboxParams</b> down to every checkbox under it, so a settings panel, a form, or a
+            whole page sets the shared shape of its checkboxes once instead of on every one of them. What it carries is a default
+            and not an override: a checkbox that writes a parameter for itself keeps its own value, and only what it left unset is
+            filled in from the cascade, which is what lets one checkbox step out of the group it is in without the group having to
+            know about it. Every parameter of the component is on the params object, and each of them is filled in on its own, so a
+            checkbox can take its <b>CheckIconName</b> from the cascade and its <b>Reversed</b> from its own markup.
+        </div>
+        <br />
+        <div class="settings-panel">
+            <BitParams Parameters="@checkboxParams">
+                <BitCheckbox Label="Wi-Fi" DefaultValue="true" />
+
+                <BitCheckbox Label="Bluetooth" />
+
+                <BitCheckbox Reversed="false" Label="Its own placement" />
+            </BitParams>
+        </div>
+        <br /><br /><br />
+        <div class="settings-panel">
+            <BitCheckbox Label="Outside the cascade" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>Color</b> picks the theme color the checked box and the indeterminate square fill with, with
             <b>Primary</b> as the default. The semantic colors - <b>Success</b>, <b>Warning</b>, <b>Error</b> and
@@ -553,7 +692,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>
             The per-state icons are not limited to the built-in icon font: <b>CheckIcon</b>, <b>UncheckedIcon</b> and
             <b>IndeterminateIcon</b> take a <b>BitIconInfo</b> - or a raw CSS class string - that can point at any
@@ -587,7 +726,7 @@
         <BitCheckbox Label="Square (UncheckedIcon)" UncheckedIcon="@BitIconInfo.Bi("app")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Size</b> scales the box, its icon and the label together: <b>Small</b> for dense lists and table rows,
             <b>Medium</b> (the default) for forms, and <b>Large</b> where the BitCheckbox is a primary control or
@@ -621,12 +760,14 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, which inline styles and a single class cover well.
             For anything deeper, <b>Styles</b> and <b>Classes</b> reach the individual parts - box, icon, label,
-            container - and their <b>Checked</b> and <b>Indeterminate</b> entries apply only while the BitCheckbox is
-            in that state, which is how the examples below restyle the checked look without touching the unchecked one.
+            description, spinner, container - and their <b>Checked</b> and <b>Indeterminate</b> entries apply only while the
+            BitCheckbox is in that state, which is how the examples below restyle the checked look without touching
+            the unchecked one. Prefer <b>Classes</b> when your CSS should own states such as hover and focus, which
+            inline styles cannot express.
         </div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -652,9 +793,36 @@
                                                 Label="custom-label",
                                                 Box="custom-box" })" />
         </div>
+        <br /><br /><br />
+        <div>
+            The checkbox also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its
+            root for what no parameter covers. They inherit, so a value on <code>:root</code> or any ancestor re-skins
+            every checkbox below it, and one on the <b>Style</b> of an instance re-skins that one alone.
+            <b>--bit-Checkbox-box-size</b> is the one to reach for first: the glyph and the filled square of the
+            mixed state are proportions of the box, so resizing the box carries the whole face with it.
+        </div>
+        <br />
+        <div>CSS variables:</div>
+        <br />
+        <div class="example-content">
+            <BitCheckbox Label="Rounded, thick, custom fill" Value
+                         Style="--bit-Checkbox-radius: 50%; --bit-Checkbox-border-width: 2px; --bit-Checkbox-checked-background: rebeccapurple; --bit-Checkbox-check-color: white;" />
+            <BitCheckbox Label="Bigger box, wider gap" Value
+                         Style="--bit-Checkbox-box-size: 1.75rem; --bit-Checkbox-gap: 1rem;" />
+            <BitCheckbox Label="Mixed state in its own color" Indeterminate
+                         Style="--bit-Checkbox-indeterminate-color: darkorange;" />
+        </div>
+        <br />
+        <div>Set once on an ancestor, inherited by every checkbox inside it:</div>
+        <br />
+        <div class="example-content"
+             style="--bit-Checkbox-border-color: var(--bit-clr-suc); --bit-Checkbox-checked-background: var(--bit-clr-suc); --bit-Checkbox-checked-hover-background: var(--bit-clr-suc-hover); --bit-Checkbox-focus-color: var(--bit-clr-suc-focus); --bit-Checkbox-description-color: var(--bit-clr-suc);">
+            <BitCheckbox Label="Analytics" Description="Anonymous usage statistics." Value />
+            <BitCheckbox Label="Crash reports" Description="Stack traces only, never your data." />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             Setting <b>Dir</b> to <b>BitDir.Rtl</b> mirrors the whole layout for right-to-left languages: the box
             moves to the right of the label and the spacing follows, so the BitCheckbox reads naturally inside an

@@ -2,6 +2,7 @@ using Microsoft.Playwright.TestAdapter;
 
 namespace Boilerplate.Tests.Infrastructure;
 
+[DoNotParallelize]
 public class AppPageTest : PageTest
 {
     /// <summary>
@@ -42,6 +43,12 @@ public class AppPageTest : PageTest
 
         await context.AddInitScriptAsync($"localStorage.setItem('{ConsentService.StorageKey}', '{refusals}');");
     }
+
+    /// <summary>
+    /// <see cref="NewBrowserContext(Uri)"/> pointed at <paramref name="server"/>'s api, as <see cref="AppTestServer.Start"/>
+    /// points the first browser.
+    /// </summary>
+    protected Task<IBrowserContext> NewBrowserContext(AppTestServer server) => NewBrowserContext(server.ApiAppAddress);
 
     /// <summary>
     /// Opens a second browser - an isolated context, i.e. its own storage and its own session - already carrying this
@@ -147,6 +154,16 @@ public class AppPageTest : PageTest
         return TestContext.TestRunCount > 1 ? options.EnableVideoRecording(TestContext) : options;
     }
 
+    /// <summary>
+    /// No context means the browser never came up - a Playwright server that refused the client, for one - and a
+    /// NullReferenceException here would only be reported next to that error, as if it were a second one.
+    /// </summary>
     [TestCleanup]
-    public virtual async ValueTask Cleanup() => await Context.FinalizeVideoRecording(TestContext);
+    public virtual async ValueTask Cleanup()
+    {
+        if (Context is not null)
+        {
+            await Context.FinalizeVideoRecording(TestContext);
+        }
+    }
 }

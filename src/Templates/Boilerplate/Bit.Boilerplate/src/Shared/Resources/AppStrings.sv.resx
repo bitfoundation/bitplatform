@@ -1031,9 +1031,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>2FA-token har genererats och skickats till dig.</value>
   </data>
-  <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Ange den förhöjda åtkomsttoken vi just skickade till dig eller din autentiseringsappkod för att fortsätta.</value>
-  </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} är din kod i Boilerplate.</value>
   </data>
@@ -2156,4 +2153,61 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Använda appens assistent å dina vägnar.</value>
   </data>
   <!--#endif -->
+    <data name="Verify" xml:space="preserve">
+    <value>Verifiera</value>
+  </data>
+    <data name="ElevatedAccessTitle" xml:space="preserve">
+    <value>Bekräfta att det är du</value>
+  </data>
+    <data name="ElevatedAccessSubtitle" xml:space="preserve">
+    <value>Den här ändringen påverkar kontots säkerhet.</value>
+  </data>
+    <data name="ElevatedAccessPasskeyTitle" xml:space="preserve">
+    <value>Använd fingeravtryck eller Face ID</value>
+  </data>
+    <data name="ElevatedAccessPasskeySubtitle" xml:space="preserve">
+    <value>Ingen kod att vänta på.</value>
+  </data>
+    <data name="ElevatedAccessCodeLabel" xml:space="preserve">
+    <value>Ange din 6-siffriga kod</value>
+  </data>
+    <data name="ElevatedAccessInvalidCode" xml:space="preserve">
+    <value>Koden fungerade inte. Kontrollera den och försök igen.</value>
+  </data>
+    <data name="ElevatedAccessUseAuthenticatorApp" xml:space="preserve">
+    <value>Öppna din autentiseringsapp och ange koden som visas för det här kontot.</value>
+  </data>
+    <data name="ElevatedAccessUsePasskeyOrAskForCode" xml:space="preserve">
+    <value>Verifiera ovan, eller be om en kod i stället.</value>
+  </data>
+    <data name="ElevatedAccessSendCode" xml:space="preserve">
+    <value>Skicka mig en kod</value>
+  </data>
+    <data name="ElevatedAccessResendCode" xml:space="preserve">
+    <value>Skicka koden igen</value>
+  </data>
+    <data name="ElevatedAccessResendIn" xml:space="preserve">
+    <value>Skicka igen om {0:m\:ss}</value>
+  </data>
+    <data name="ElevatedAccessCodeAlreadySent" xml:space="preserve">
+    <value>En kod är redan på väg. Använd den, eller be om en ny när den har gått ut.</value>
+  </data>
+    <data name="ElevatedAccessChannelEmail" xml:space="preserve">
+    <value>din e-postadress</value>
+  </data>
+    <data name="ElevatedAccessChannelPhone" xml:space="preserve">
+    <value>din telefon</value>
+  </data>
+    <data name="ElevatedAccessChannelOtherDevices" xml:space="preserve">
+    <value>dina andra inloggade enheter</value>
+  </data>
+    <data name="ElevatedAccessNoChannel" xml:space="preserve">
+    <value>Det finns ingen bekräftad e-postadress och inget bekräftat telefonnummer på kontot att skicka en kod till.</value>
+  </data>
+    <data name="ElevatedAccessSentTo" xml:space="preserve">
+    <value>Vi skickade en kod till {0}.</value>
+  </data>
+    <data name="ElevatedAccessSentToMany" xml:space="preserve">
+    <value>Vi skickade en kod till {0} och {1}.</value>
+  </data>
 </root>

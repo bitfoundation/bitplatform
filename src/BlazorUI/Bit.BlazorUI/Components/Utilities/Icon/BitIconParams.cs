@@ -37,6 +37,11 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
     public string? AnimationDelay { get; set; }
 
     /// <summary>
+    /// How many times the animation plays before it stops. Left unset, it loops.
+    /// </summary>
+    public int? AnimationIterationCount { get; set; }
+
+    /// <summary>
     /// Draws the icon in a circle rather than in the rounded box of the design system.
     /// </summary>
     public bool? Circular { get; set; }
@@ -136,6 +141,14 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
         if (AnimationDelay.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDelay)))
         {
             bitIcon.AnimationDelay = AnimationDelay;
+
+            bitIcon.ClassBuilder.Reset();
+            bitIcon.StyleBuilder.Reset();
+        }
+
+        if (AnimationIterationCount.HasValue && bitIcon.HasNotBeenSet(nameof(AnimationIterationCount)))
+        {
+            bitIcon.AnimationIterationCount = AnimationIterationCount.Value;
 
             bitIcon.ClassBuilder.Reset();
             bitIcon.StyleBuilder.Reset();

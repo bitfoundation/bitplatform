@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -965,15 +965,17 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         Assert.AreEqual("0", incrementButton.GetAttribute("tabindex"));
         Assert.AreEqual("0", decrementButton.GetAttribute("tabindex"));
 
-        incrementButton.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        // Enter and Space on a focused button reach it as a click with a detail of zero, which is also
+        // how an assistive technology activates it.
+        incrementButton.Click(new MouseEventArgs { Detail = 0 });
         Assert.AreEqual(6, component.Instance.Value);
 
-        decrementButton.KeyDown(new KeyboardEventArgs { Key = " " });
+        decrementButton.Click(new MouseEventArgs { Detail = 0 });
         Assert.AreEqual(5, component.Instance.Value);
     }
 
     [TestMethod]
-    public void BitNumberFieldSpinButtonsShouldIgnoreNonActivationKeys()
+    public void BitNumberFieldSpinButtonsShouldIgnoreTheClickAPointerPressProduces()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -982,9 +984,15 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 5);
         });
 
-        component.Find(".bit-nfl-aup").KeyDown(new KeyboardEventArgs { Key = "a" });
+        var incrementButton = component.Find(".bit-nfl-aup");
 
-        Assert.AreEqual(5, component.Instance.Value);
+        // The press has already stepped on its pointerdown, so the click the browser fires after it -
+        // which carries a detail of at least one - must not step a second time.
+        incrementButton.PointerDown();
+        incrementButton.PointerUp();
+        incrementButton.Click(new MouseEventArgs { Detail = 1 });
+
+        Assert.AreEqual(6, component.Instance.Value);
     }
 
     [TestMethod]
@@ -998,7 +1006,7 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 5);
         });
 
-        component.Find(".bit-nfl-aup").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        component.Find(".bit-nfl-aup").Click(new MouseEventArgs { Detail = 0 });
 
         Assert.AreEqual(5, component.Instance.Value);
     }

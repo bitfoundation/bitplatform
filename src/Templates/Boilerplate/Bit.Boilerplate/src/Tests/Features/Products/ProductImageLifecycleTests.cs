@@ -50,12 +50,12 @@ public partial class ProductImageLifecycleTests
     public async Task CreatingAProductAfterUploadingItsImage_Should_AdoptTheImage()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var products = scope.ServiceProvider.GetRequiredService<IProductController>();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var products = client.GetController<IProductController>();
+        var httpClient = client.HttpClient;
 
         // Exactly what AddOrEditProductPage does: the id is minted client-side and the upload is posted against it
         // while no such product row exists.
@@ -64,7 +64,7 @@ public partial class ProductImageLifecycleTests
 
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Red));
 
-        var created = await products.Create(await NewProductDto(scope, productId, name), TestContext.CancellationToken);
+        var created = await products.Create(await NewProductDto(client, productId, name), TestContext.CancellationToken);
 
         try
         {
@@ -72,7 +72,7 @@ public partial class ProductImageLifecycleTests
                 "The image was uploaded before the row existed, so nothing but Create can adopt it. False here means " +
                 "the blob and both Attachment rows are referenced by nothing and the product renders a placeholder.");
 
-            Assert.IsNotNull(created.GetPrimaryMediumImageUrl(server.WebAppServerAddress),
+            Assert.IsNotNull(created.GetPrimaryMediumImageUrl(server.WebAppAddress),
                 "HasPrimaryImage is the only thing gating the image URL, so a false flag hides an image that is really there.");
 
             var served = await httpClient.GetByteArrayAsync(
@@ -99,15 +99,15 @@ public partial class ProductImageLifecycleTests
     public async Task UploadingAnImageOntoAnExistingProduct_Should_MoveTheConcurrencyStamp()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var products = scope.ServiceProvider.GetRequiredService<IProductController>();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var products = client.GetController<IProductController>();
+        var httpClient = client.HttpClient;
 
         var name = $"stale-version-{Guid.NewGuid():N}";
-        var created = await products.Create(await NewProductDto(scope, Guid.CreateSequentialGuid(), name), TestContext.CancellationToken);
+        var created = await products.Create(await NewProductDto(client, Guid.CreateSequentialGuid(), name), TestContext.CancellationToken);
 
         try
         {
@@ -150,18 +150,18 @@ public partial class ProductImageLifecycleTests
     public async Task DeletingAProduct_Should_TakeItsImageWithIt()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await SignIn(scope);
+        await SignIn(client);
 
-        var products = scope.ServiceProvider.GetRequiredService<IProductController>();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var products = client.GetController<IProductController>();
+        var httpClient = client.HttpClient;
 
         var productId = Guid.CreateSequentialGuid();
         await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Green));
 
         var created = await products.Create(
-            await NewProductDto(scope, productId, $"delete-image-{Guid.NewGuid():N}"), TestContext.CancellationToken);
+            await NewProductDto(client, productId, $"delete-image-{Guid.NewGuid():N}"), TestContext.CancellationToken);
 
         // Precondition: without this the assertions below would pass against a product that never had an image.
         Assert.AreEqual(2, await CountAttachments(server, productId), "One upload writes the medium and the original kind.");
@@ -171,7 +171,7 @@ public partial class ProductImageLifecycleTests
         Assert.AreEqual(0, await CountAttachments(server, productId),
             "The Attachment rows outlive the product unless Delete removes them - nothing cascades, the key is { Id, Kind }.");
 
-        // The DI HttpClient translates the server's ProblemDetails back into the original exception type
+        // The app's HttpClient translates the server's ProblemDetails back into the original exception type
         // (See ExceptionDelegatingHandler), so a 404 from GetAttachment arrives as ResourceNotFoundException.
         await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(
             () => httpClient.GetByteArrayAsync(
@@ -191,20 +191,19 @@ public partial class ProductImageLifecycleTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices(),
-                           configuration => configuration["AI:OpenAI:ChatApiKey"] = null)
+        await server.Build(configureTestConfiguration: configuration => configuration["AI:OpenAI:ChatApiKey"] = null)
                     .Start(TestContext.CancellationToken);
         return server;
     }
 
     /// <summary>
-    /// Signs the tenant-admin in within <paramref name="scope"/>, so every typed API client resolved from that scope
+    /// Signs the tenant-admin in on <paramref name="client"/>, so every controller created from that client
     /// calls the server as her. ProductController demands a privileged session, a selected tenant and
     /// ProductCatalog_Manage; a fresh password sign-in as a t-admin of the fallback tenant covers all three.
     /// </summary>
-    private async Task SignIn(AsyncServiceScope scope)
+    private async Task SignIn(AppClient client)
     {
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var requiresTwoFactor = await authManager.SignIn(new()
         {
@@ -215,9 +214,9 @@ public partial class ProductImageLifecycleTests
         Assert.IsFalse(requiresTwoFactor, $"'{TenantAdminEmail}' is not expected to have two factor authentication enabled.");
     }
 
-    private async Task<ProductDto> NewProductDto(AsyncServiceScope scope, Guid id, string name)
+    private async Task<ProductDto> NewProductDto(AppClient client, Guid id, string name)
     {
-        var categories = scope.ServiceProvider.GetRequiredService<ICategoryController>();
+        var categories = client.GetController<ICategoryController>();
         var categoryId = (await categories.Get(TestContext.CancellationToken)).First().Id;
 
         return new ProductDto
@@ -252,7 +251,7 @@ public partial class ProductImageLifecycleTests
 
     private async Task<int> CountAttachments(AppTestServer server, Guid attachmentId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Attachments.CountAsync(att => att.Id == attachmentId, TestContext.CancellationToken);

@@ -1,18 +1,12 @@
-<BitStack Style="padding:1rem">
-    <BitText>This is the title!</BitText>
-    <BitSeparator />
-    <BitText>This is the body.</BitText>
-    <BitSeparator />
-    <BitStack Horizontal>
-        <BitButton>Ok</BitButton>
-        <BitButton Variant="BitVariant.Outline" OnClick="Close">Cancel</BitButton>
+﻿<BitStack Style="padding:1rem" Gap="1rem">
+    <BitText Typography="BitTypography.H6">Hello from the service</BitText>
+    <BitText>This content reaches its own modal through the cascaded BitModalReference.</BitText>
+    <BitStack Horizontal Gap="0.5rem" AutoHeight>
+        <BitButton OnClick="() => modalReference.Close()">Ok</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="() => modalReference.Dismiss()">Cancel</BitButton>
     </BitStack>
 </BitStack>
 
 @code {
     [CascadingParameter] private BitModalReference modalReference { get; set; } = default!;
-    private void Close()
-    {
-        modalReference.Close();
-    }
 }

@@ -14,7 +14,6 @@
 }
 
 .modal-body {
-    overflow-y: hidden;
     max-width: rem2(960px);
     line-height: rem2(20px);
     padding: 0 rem2(24px) rem2(24px);
@@ -96,28 +95,12 @@
         background-color: darkgoldenrod;
     }
 
-    .custom-root {
-        border: 0.25rem solid #0054C6;
-    }
-
     .custom-overlay {
         background-color: #ffbd5a66;
     }
 
-    .custom-content {
-        margin: 1rem;
-        box-shadow: 0 0 10rem purple;
-        border-end-end-radius: 1rem;
-        border-end-start-radius: 1rem;
-    }
-
     .custom-header-container {
-        padding: 1.5rem;
         background-color: tomato;
-    }
-
-    .custom-header {
-        font-size: 2rem;
     }
 
     .custom-body {
@@ -127,8 +110,8 @@
 
     .custom-footer {
         color: brown;
-        padding: 1.5rem;
         font-size: 1.5rem;
+        padding-top: 1.5rem;
         background-color: tomato;
     }
 }

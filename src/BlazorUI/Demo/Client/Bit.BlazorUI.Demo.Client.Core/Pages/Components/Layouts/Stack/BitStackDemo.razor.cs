@@ -18,7 +18,7 @@ public partial class BitStackDemo
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Gets or sets the alignment of the children of the stack on both axes at once. This is the shorthand of setting HorizontalAlign and VerticalAlign to the same value, and each of those takes precedence over it on its own axis. A specific alignment that means nothing on the axis it was given to steps aside for this shorthand rather than silencing it.",
+            Description = "Gets or sets the alignment of the children of the stack on both axes at once. This is the shorthand of setting HorizontalAlign and VerticalAlign to the same value, and each of those takes precedence over it on its own axis. The space distributions only mean something on the axis the children are laid out along, and Baseline and Stretch only on the axis across it, so those members reach a single axis through this shorthand and are ignored on the other one. A specific alignment that means nothing on the axis it was given to steps aside for this shorthand rather than silencing it.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },
@@ -104,7 +104,7 @@ public partial class BitStackDemo
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack, using any CSS length value, 1rem by default. It takes one length for both axes, or two - the vertical one followed by the horizontal one - for a wrapping stack. HorizontalGap and VerticalGap each replace it on their own axis, GapXs to GapXxl each replace it from their own breakpoint upwards, and it takes precedence over the Size picked from the spacing scale of the theme."
+            Description = "Gets or sets the spacing between the children of the stack, using any CSS length value. Defaults to --bit-Stack-gap, or the theme spacing (1rem) where that is not set. It takes one length for both axes, or two - the vertical one followed by the horizontal one - for a wrapping stack. HorizontalGap and VerticalGap each replace it on their own axis, GapXs to GapXxl each replace it from their own breakpoint upwards, and it takes precedence over the Size picked from the spacing scale of the theme."
         },
         new()
         {
@@ -181,7 +181,7 @@ public partial class BitStackDemo
             Name = "HorizontalAlign",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Gets or sets how the children of the stack are placed on the horizontal axis. In a horizontal stack that is the axis they are laid out along, so the space distributions apply and Baseline does not; in a vertical one it is the axis across them, so Baseline and Stretch apply and the space distributions do not. A value that means nothing on the axis it lands on steps aside for Alignment. Which of the two axes this is follows the direction each breakpoint gives, so a stack that changes direction with the width of the window is realigned along with it.",
+            Description = "Gets or sets how the children of the stack are placed on the horizontal axis. In a horizontal stack that is the axis they are laid out along, so the space distributions apply and Baseline and Stretch do not (GrowContent and EqualContent are what stretch the children along it); in a vertical one it is the axis across them, so Baseline and Stretch apply and the space distributions do not. A value that means nothing on the axis it lands on steps aside for Alignment. Which of the two axes this is follows the direction each breakpoint gives, so a stack that changes direction with the width of the window is realigned along with it.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },
@@ -355,7 +355,7 @@ public partial class BitStackDemo
             Name = "VerticalAlign",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Gets or sets how the children of the stack are placed on the vertical axis. In a vertical stack that is the axis they are laid out along, so the space distributions apply and Baseline does not; in a horizontal one it is the axis across them, so Baseline and Stretch apply and the space distributions do not. A value that means nothing on the axis it lands on steps aside for Alignment. Which of the two axes this is follows the direction each breakpoint gives, so a stack that changes direction with the width of the window is realigned along with it.",
+            Description = "Gets or sets how the children of the stack are placed on the vertical axis. In a vertical stack that is the axis they are laid out along, so the space distributions apply and Baseline and Stretch do not (GrowContent and EqualContent are what stretch the children along it); in a horizontal one it is the axis across them, so Baseline and Stretch apply and the space distributions do not. A value that means nothing on the axis it lands on steps aside for Alignment. Which of the two axes this is follows the direction each breakpoint gives, so a stack that changes direction with the width of the window is realigned along with it.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },
@@ -466,13 +466,23 @@ public partial class BitStackDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Stack-gap",
+            DefaultValue = "spacing(2) of the theme (1rem)",
+            Description = "Room between the children of every stack that sets no Gap or Size. A single length.",
+        },
+    ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
         {
             Id = "alignment-enum",
             Name = "BitAlignment",
-            Description = "Determines where the children of the stack are placed on an axis. The members that share room out between the children only mean something on the axis the children are laid out along, and Baseline only means something on the axis across them.",
+            Description = "Determines where the children of the stack are placed on an axis. The members that share room out between the children only mean something on the axis the children are laid out along, and Baseline and Stretch only mean something on the axis across them.",
             Items =
             [
                 new()
@@ -520,7 +530,7 @@ public partial class BitStackDemo
                 new()
                 {
                     Name = "Stretch",
-                    Description = "Grows the children until they fill the axis.",
+                    Description = "Grows the children until they fill the axis across them.",
                     Value = "7",
                 }
             ]
@@ -545,11 +555,21 @@ public partial class BitStackDemo
 
     private bool isReversed;
     private bool isHorizontal;
-    private BitDir direction;
     private BitAlignment verticalAlign;
     private BitAlignment horizontalAlign;
 
     private double stackHeight = 15;
     private bool isWrapReversed;
     private BitAlignment alignContent;
+
+    private readonly BitStackParams[] stackParams =
+    [
+        new()
+        {
+            Horizontal = true,
+            Gap = "0.5rem",
+            VerticalAlign = BitAlignment.Center,
+            AutoHeight = true,
+        }
+    ];
 }

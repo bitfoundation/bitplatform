@@ -10,7 +10,9 @@ public enum BitFullCalendarChangeRefusal
     None,
 
     /// <summary>
-    /// The calendar - or the single event - is read-only, so nothing was changed.
+    /// The calendar, the single event, or the edit permissions (<see cref="BitFullCalendarSettings.AllowEdit"/>,
+    /// <see cref="BitFullCalendarSettings.AllowDrag"/>, <see cref="BitFullCalendarSettings.AllowResize"/>) do not allow
+    /// the change, so nothing was changed.
     /// </summary>
     ReadOnly,
 
@@ -30,5 +32,11 @@ public enum BitFullCalendarChangeRefusal
     /// The resulting range falls outside the business hours while
     /// <see cref="BitFullCalendarSettings.RestrictToBusinessHours"/> is <c>true</c>.
     /// </summary>
-    OutsideBusinessHours
+    OutsideBusinessHours,
+
+    /// <summary>
+    /// The resulting range would overlap an event marked <see cref="BitFullCalendarEvent.IsBlocking"/> on the same
+    /// resource (or one blocking every resource).
+    /// </summary>
+    Blocked
 }
