@@ -257,6 +257,13 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "KeepNationalPrefix",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the national (trunk) prefix - the 0 of \"07911 123456\" in the UK, the 1 in North America, the 8 in Russia - in the Value. By default it is dropped, so the Value is valid E.164 (+447911123456); the input keeps showing it either way. The significant leading 0 of Italy, San Marino, the Vatican, Côte d'Ivoire, the Republic of the Congo, Benin and Gabon is always kept.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -318,7 +325,7 @@ public partial class BitPhoneInputDemo
             Name = "NoDropdown",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the country dropdown, so the country of the phone input can only be set through its parameters.",
+            Description = "Removes the country dropdown, so the country of the phone input can only be set through its parameters: a number typed with the dialing code of another country is kept whole instead of moving it.",
         },
         new()
         {

@@ -124,7 +124,7 @@
                 <b>NoFlags</b> and <b>NoDialCode</b> trim the selector, <b>DropdownPlaceholder</b> fills it while no
                 country is selected, and <b>FlagUrlSelector</b> serves the flags from your own source (returning null
                 keeps the built-in one). <b>NoDropdown</b> fixes the country: it is shown and read to screen readers, but
-                can only be set through the parameters.
+                can only be set through the parameters - a pasted <code>+44</code> number does not move it.
             </div>
             <br />
             <div class="example-box">
@@ -236,8 +236,9 @@
         <DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>Value</b> (full E.164 number), <b>Number</b> (local part) and <b>Country</b> are all two-way bindable
-                and stay in step: a full number assigned from outside is split back into its parts. The text field below
-                is bound to the same Value.
+                and stay in step: a full number assigned from outside is split back into its parts. The national prefix
+                a number is written with at home (the 0 of <code>0170 1234567</code>) is dropped from Value, keeping it
+                valid E.164, unless <b>KeepNationalPrefix</b> is set. The text field below is bound to the same Value.
             </div>
             <br />
             <div style="width:300px">
@@ -328,7 +329,8 @@
         <DemoExample Title="Disabled & ReadOnly" RazorCode="@example15RazorCode" Id="example15">
             <div>
                 <b>IsEnabled="false"</b> dims both halves and takes them out of the tab order. <b>ReadOnly</b> keeps the
-                number focusable and copyable while refusing edits and country changes.
+                number focusable and copyable while refusing edits and country changes; the selector drops its caret
+                and its country is read out with the number.
             </div>
             <br />
             <div class="example-box">
