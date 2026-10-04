@@ -118,7 +118,7 @@
             <DemoExample Title="Page layout" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
                 <div>
                     <b>ScrollMode</b> stacks pages vertically, lays them in a horizontal row, wraps them, or shows one at a
-                    time. <b>SpreadMode</b> pairs them like an open book (<b>Even</b> keeps page 1 as a cover), and
+                    time (a swipe turns it on touch). <b>SpreadMode</b> pairs them like an open book (<b>Even</b> keeps page 1 as a cover), and
                     <b>CursorTool</b> switches dragging between selecting text and panning. Presentation mode
                     (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd>) combines them fullscreen and restores the layout on exit.
                 </div>
@@ -225,15 +225,29 @@
                 <div>Select an encrypted pdf file to try it:</div>
                 <InputFile OnChange="OnPasswordFileChange" accept=".pdf,application/pdf" />
                 <br /><br />
-                <BitPdfViewer Source="passwordSource" Height="400px" RespectPermissions
-                              OnError='e => passwordError = e' />
-                @if (passwordError is not null)
-                {
-                    <div role="alert">Error: @passwordError</div>
-                }
+                <BitPdfViewer Source="passwordSource" Height="400px" RespectPermissions />
             </DemoExample>
 
-            <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <DemoExample Title="Empty & error states" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+                <div>
+                    <b>EmptyTemplate</b> replaces the message of a viewer with no document, <b>ErrorTemplate</b> that of a
+                    failed load, with the message <b>OnError</b> receives. A failure is announced as an alert either way.
+                </div>
+                <br />
+                <BitButton OnClick="LoadBrokenFile">Load a broken file</BitButton>
+                <BitButton IsEnabled="statesSource is not null" OnClick="() => statesSource = null">Clear</BitButton>
+                <br /><br />
+                <BitPdfViewer Source="statesSource" Height="300px" AllowDropFile>
+                    <EmptyTemplate>
+                        <BitText>Drop a pdf file here.</BitText>
+                    </EmptyTemplate>
+                    <ErrorTemplate>
+                        <BitText Color="BitColor.Error">This file could not be opened: @context</BitText>
+                    </ErrorTemplate>
+                </BitPdfViewer>
+            </DemoExample>
+
+            <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
                 <div>
                     Every state change is reported: loading, page, zoom, rotation and sidebar, each rendered page
                     (<b>OnPageRendered</b>), download progress of a URL source (<b>OnProgress</b>), non-fatal parse
@@ -262,7 +276,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <DemoExample Title="Binding" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
                 <div>
                     <b>CurrentPage</b>, <b>Zoom</b> and <b>Rotation</b> are two-way bindable. Bound one way (no
                     <b>Changed</b> callback) the value is the host's to control, and the reader's moves arrive through the
@@ -283,7 +297,7 @@
                               @bind-Rotation="boundRotation" />
             </DemoExample>
 
-            <DemoExample Title="Public API" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <DemoExample Title="Public API" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
                 <div>
                     Every toolbar action is a method, so your own chrome can drive a viewer whose toolbar is hidden.
                     <b>Print</b> takes the whole document, a page range, or (<b>PrintCurrentPage</b>) one page, at each
@@ -327,7 +341,7 @@
                 }
             </DemoExample>
 
-            <DemoExample Title="Localization" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <DemoExample Title="Localization" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
                 <div>
                     Every string the viewer shows or announces comes from <b>Texts</b> (a <b>BitPdfViewerTexts</b>); set
                     only the ones you replace.
@@ -338,12 +352,13 @@
                 <BitPdfViewer Source="localizedSource" Height="400px" Texts="germanTexts" />
             </DemoExample>
 
-            <DemoExample Title="Keyboard & accessibility" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <DemoExample Title="Keyboard & accessibility" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
                 <div>
                     With focus inside the viewer the familiar shortcuts work (and override the browser's <kbd>Ctrl</kbd>+
                     <kbd>F</kbd> / <kbd>P</kbd> / <kbd>S</kbd>); <b>EnableKeyboardShortcuts</b>=false hands them back. The
-                    thumbnails are a listbox and the bookmarks a tree, each one tab stop moved by the arrow keys; page
-                    moves are announced; the dialogs trap focus and close on <kbd>Esc</kbd>. A disabled viewer
+                    thumbnails are a listbox and the bookmarks a tree, each one tab stop moved by the arrow keys. Each page
+                    is a named group whose text is read once, its links are named tab stops, and page moves are
+                    announced; the dialogs trap focus and close on <kbd>Esc</kbd>. A disabled viewer
                     (<b>IsEnabled</b>=false) keeps showing the document with its chrome inert.
                 </div>
                 <br />
@@ -364,7 +379,7 @@
                 <BitPdfViewer Source="a11ySource" Height="450px" DefaultSidebar="BitPdfSidebar.Bookmarks" IsEnabled="a11yEnabled" />
             </DemoExample>
 
-            <DemoExample Title="Cascading parameters" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
                 <div>
                     <b>BitParams</b> with a <b>BitPdfViewerParams</b> sets defaults - texts, toolbar, size, zoom, styles -
                     for every viewer under it. A viewer's own value wins (the second keeps its own toolbar).
@@ -379,7 +394,7 @@
                 </BitParams>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
                 <div>
                     <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part. The public
                     <b>--bit-PdfViewer-*</b> CSS variables restyle a viewer here, or every viewer from <code>:root</code> -
@@ -404,7 +419,7 @@
                 <BitPdfViewer Source="styleSource" Height="300px" Style="@cssVariablesStyle" />
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <DemoExample Title="RTL" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
                 <div>
                     With <b>Dir</b> set to <b>Rtl</b> the toolbar, sidebars and find box flip; page content keeps the
                     orientation the document defines.

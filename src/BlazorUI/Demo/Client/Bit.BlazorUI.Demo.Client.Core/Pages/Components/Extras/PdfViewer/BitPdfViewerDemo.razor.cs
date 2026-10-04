@@ -56,10 +56,24 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "EmptyTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content shown in place of the pages while no document is loaded. Defaults to the NoDocument text.",
+        },
+        new()
+        {
             Name = "EnableKeyboardShortcuts",
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the viewer handles keyboard shortcuts while it has focus: page navigation (n/j, p/k, PageUp/PageDown, Home/End, plus the arrow keys and Space while one page is shown at a time), zoom (Ctrl +, Ctrl -, Ctrl 0), rotation (r, Shift+r), find (Ctrl+F, Ctrl+G, Shift+Ctrl+G), print (Ctrl+P), download (Ctrl+S), presentation mode (Ctrl+Alt+P) and the sidebar (F4).",
+        },
+        new()
+        {
+            Name = "ErrorTemplate",
+            Type = "RenderFragment<string>?",
+            DefaultValue = "null",
+            Description = "Custom content shown in place of the pages when a document fails to load, with the message OnError receives. Announced as an alert, as the default message is.",
         },
         new()
         {
@@ -159,7 +173,7 @@ public partial class BitPdfViewerDemo
             Name = "OnProgress",
             Type = "EventCallback<double>",
             DefaultValue = "",
-            Description = "The callback for the download progress of a URL source, as a fraction from 0 to 1. Only raised when the server declares a content length; a chunked response has no total to report against.",
+            Description = "The callback for the download progress of a URL source, as a fraction from 0 to 1. Only raised when the server declares a content length (which is also when the loading bar shows the progress); a chunked response has no total to report against.",
         },
         new()
         {
@@ -1116,10 +1130,10 @@ public partial class BitPdfViewerDemo
             [
                 new()
                 {
-                    Name = "ToolbarAriaLabel, LoadingAriaLabel, DocumentAriaLabel, ThumbnailAriaLabelFormat, PageAnnouncementFormat",
+                    Name = "ToolbarAriaLabel, LoadingAriaLabel, DocumentAriaLabel, ThumbnailAriaLabelFormat, PageAriaLabelFormat, LinkAriaLabelFormat, PageAnnouncementFormat",
                     Type = "string",
-                    DefaultValue = "\"PDF viewer toolbar\", \"Loading document\", \"Document\", \"Page {0}\", \"Page {0} of {1}\"",
-                    Description = "The accessible names of the toolbar, the loading bar, the document surface (when no file name is known) and each thumbnail, and the announcement of a page move.",
+                    DefaultValue = "\"PDF viewer toolbar\", \"Loading document\", \"Document\", \"Page {0}\", \"Page {0}\", \"Go to page {0}\", \"Page {0} of {1}\"",
+                    Description = "The accessible names of the toolbar, the loading bar, the document surface (when no file name is known), each thumbnail, each page and each link to another page, and the announcement of a page move.",
                 },
                 new()
                 {
@@ -1168,7 +1182,7 @@ public partial class BitPdfViewerDemo
                     Name = "NoDocument, PageRenderFailed, PreparingPrint, PrintAborted, HttpClientRequired, FetchFailedFormat, ErrorFormat, PageCountFormat",
                     Type = "string",
                     DefaultValue = "\"No document loaded.\", ...",
-                    Description = "The status messages shown on the surface. The *Format strings receive the underlying error or the page count.",
+                    Description = "The status messages shown on the surface (PreparingPrint and PrintAborted are announced). The *Format strings receive the underlying error or the page count.",
                 },
                 new()
                 {
@@ -1345,7 +1359,7 @@ public partial class BitPdfViewerDemo
                 {
                     Name = "Page",
                     Value = "3",
-                    Description = "Only the current page (or spread) is shown; navigation replaces it rather than scrolling to it.",
+                    Description = "Only the current page (or spread) is shown; navigation replaces it rather than scrolling to it, and on a touch screen a horizontal swipe turns it.",
                 },
             ]
         },
@@ -1544,6 +1558,7 @@ public partial class BitPdfViewerDemo
     private BitPdfSource? renderingSource;
     private BitPdfSource? infoSource;
     private BitPdfSource? passwordSource;
+    private BitPdfSource? statesSource;
     private BitPdfSource? eventsSource;
     private BitPdfSource? bindingSource;
     private BitPdfSource? publicApiSource;
@@ -1555,7 +1570,6 @@ public partial class BitPdfViewerDemo
 
     private string? toolbarMessage;
     private string searchTerm = "the";
-    private string? passwordError;
     private int boundPage = 1;
     private double boundZoom = 1;
     private int boundRotation;
@@ -1613,6 +1627,8 @@ public partial class BitPdfViewerDemo
         LastPage = "Letzte Seite",
         PageNumber = "Seitenzahl",
         ThumbnailAriaLabelFormat = "Seite {0}",
+        PageAriaLabelFormat = "Seite {0}",
+        LinkAriaLabelFormat = "Gehe zu Seite {0}",
         PageAnnouncementFormat = "Seite {0} von {1}",
         ZoomIn = "Vergrößern",
         ZoomOut = "Verkleinern",
@@ -1679,9 +1695,12 @@ public partial class BitPdfViewerDemo
         basicSource = await ReadFileSource(e) ?? basicSource;
     }
 
+    // A file that only claims to be a pdf, for the empty & error states example.
+    private void LoadBrokenFile()
+        => statesSource = BitPdfSource.FromBytes("%PDF-1.7 this is not a pdf"u8.ToArray(), "broken.pdf");
+
     private async Task OnPasswordFileChange(InputFileChangeEventArgs e)
     {
-        passwordError = null;
         passwordSource = await ReadFileSource(e) ?? passwordSource;
     }
 

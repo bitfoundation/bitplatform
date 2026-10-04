@@ -199,25 +199,16 @@ private BitPdfViewer? infoViewerRef;
     private readonly string example10RazorCode = @"
 <InputFile OnChange=""OnPasswordFileChange"" accept="".pdf,application/pdf"" />
 
-<BitPdfViewer Source=""passwordSource"" Height=""400px"" RespectPermissions
-              OnError='e => passwordError = e' />
-
-@if (passwordError is not null)
-{
-    <div role=""alert"">Error: @passwordError</div>
-}
+<BitPdfViewer Source=""passwordSource"" Height=""400px"" RespectPermissions />
 
 @* A known password travels on the source: Source='passwordSource.WithPassword(""secret"")'
    and your own UI can do the asking: OnPasswordRequested=""AskForPassword"" *@";
     private readonly string example10CsharpCode = @"
-private string? passwordError;
 private BitPdfSource? passwordSource;
 
 private async Task OnPasswordFileChange(InputFileChangeEventArgs e)
 {
     if (e.FileCount == 0) return;
-
-    passwordError = null;
 
     const long maxSize = 512 * 1024 * 1024;
     if (e.File.Size <= 0 || e.File.Size > maxSize) return;
@@ -232,6 +223,25 @@ private async Task OnPasswordFileChange(InputFileChangeEventArgs e)
 // private Task<string?> AskForPassword() => myOwnDialog.ShowAsync();";
 
     private readonly string example11RazorCode = @"
+<BitButton OnClick=""LoadBrokenFile"">Load a broken file</BitButton>
+<BitButton IsEnabled=""statesSource is not null"" OnClick=""() => statesSource = null"">Clear</BitButton>
+
+<BitPdfViewer Source=""statesSource"" Height=""300px"" AllowDropFile>
+    <EmptyTemplate>
+        <BitText>Drop a pdf file here.</BitText>
+    </EmptyTemplate>
+    <ErrorTemplate>
+        <BitText Color=""BitColor.Error"">This file could not be opened: @context</BitText>
+    </ErrorTemplate>
+</BitPdfViewer>";
+    private readonly string example11CsharpCode = @"
+private BitPdfSource? statesSource;
+
+// A file that only claims to be a pdf.
+private void LoadBrokenFile()
+    => statesSource = BitPdfSource.FromBytes(""%PDF-1.7 this is not a pdf""u8.ToArray(), ""broken.pdf"");";
+
+    private readonly string example12RazorCode = @"
 <BitButton IsEnabled=""eventsSource is null""
            OnClick='() => eventsSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
@@ -253,12 +263,12 @@ private async Task OnPasswordFileChange(InputFileChangeEventArgs e)
         <div>@log</div>
     }
 </div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private BitPdfSource? eventsSource;
 
 private readonly List<string> eventsLog = [];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitButton IsEnabled=""bindingSource is null""
            OnClick='() => bindingSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
@@ -270,14 +280,14 @@ private readonly List<string> eventsLog = [];";
               @bind-CurrentPage=""boundPage""
               @bind-Zoom=""boundZoom""
               @bind-Rotation=""boundRotation"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private BitPdfSource? bindingSource;
 
 private int boundPage = 1;
 private double boundZoom = 1;
 private int boundRotation;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButton IsEnabled=""publicApiSource is null""
            OnClick='() => publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
@@ -311,7 +321,7 @@ private int boundRotation;";
 {
     <div>Selected: @(selectedText.Length == 0 ? ""(nothing)"" : selectedText)</div>
 }";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitPdfSource? publicApiSource;
 
 private BitPdfViewer pdfViewerRef = default!;
@@ -335,12 +345,12 @@ private async Task ShowSelectedText()
 // string text = pdfViewerRef.ExtractText();
 // string html = pdfViewerRef.RenderPageHtml(1);";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitButton IsEnabled=""localizedSource is null""
            OnClick='() => localizedSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""localizedSource"" Height=""400px"" Texts=""germanTexts"" />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private BitPdfSource? localizedSource;
 
 // Only the properties you assign are replaced; the rest keep their English defaults.
@@ -358,6 +368,8 @@ private readonly BitPdfViewerTexts germanTexts = new()
     LastPage = ""Letzte Seite"",
     PageNumber = ""Seitenzahl"",
     ThumbnailAriaLabelFormat = ""Seite {0}"",
+    PageAriaLabelFormat = ""Seite {0}"",
+    LinkAriaLabelFormat = ""Gehe zu Seite {0}"",
     PageAnnouncementFormat = ""Seite {0} von {1}"",
     ZoomIn = ""Vergrößern"",
     ZoomOut = ""Verkleinern"",
@@ -391,18 +403,18 @@ private readonly BitPdfViewerTexts germanTexts = new()
     PageCountFormat = ""{0} Seite(n)."",
 };";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitToggle @bind-Value=""a11yEnabled"" Label=""IsEnabled"" />
 <BitButton IsEnabled=""a11ySource is null""
            OnClick='() => a11ySource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 @* EnableKeyboardShortcuts=""false"" hands every key back to the page. *@
 <BitPdfViewer Source=""a11ySource"" Height=""450px"" DefaultSidebar=""BitPdfSidebar.Bookmarks"" IsEnabled=""a11yEnabled"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private BitPdfSource? a11ySource;
 private bool a11yEnabled = true;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitButton IsEnabled=""cascadeSource is null""
            OnClick='() => cascadeSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
@@ -410,7 +422,7 @@ private bool a11yEnabled = true;";
     <BitPdfViewer Source=""cascadeSource"" />
     <BitPdfViewer Source=""cascadeSource"" ToolbarItems=""BitPdfToolbarItems.All"" />
 </BitParams>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private BitPdfSource? cascadeSource;
 
 private readonly BitPdfViewerParams[] pdfViewerParams =
@@ -424,7 +436,7 @@ private readonly BitPdfViewerParams[] pdfViewerParams =
     }
 ];";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         box-shadow: 0 0 1rem tomato;
@@ -446,7 +458,7 @@ private readonly BitPdfViewerParams[] pdfViewerParams =
                                 ToolbarButton = ""color:var(--bit-clr-pri-text)"" })"" />
 
 <BitPdfViewer Source=""styleSource"" Height=""300px"" Style=""@cssVariablesStyle"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private BitPdfSource? styleSource;
 
 // The same variables set on :root restyle every viewer of the app.
@@ -460,11 +472,11 @@ private const string cssVariablesStyle = ""--bit-PdfViewer-border-radius:1rem;""
                                          ""--bit-PdfViewer-page-filter:invert(1) hue-rotate(180deg);"" +
                                          ""--bit-PdfViewer-search-match-background:gold;"";";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitButton IsEnabled=""rtlSource is null""
            OnClick='() => rtlSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Dir=""BitDir.Rtl"" Source=""rtlSource"" Height=""400px"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private BitPdfSource? rtlSource;";
 }
